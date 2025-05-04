@@ -1,17 +1,17 @@
-# lcc
+# Cicili Programming Language
 Lisp C Compiler aka. 'Cicili' programming language, which compiles Lisp-like syntax to C code and more extra features like method, lambda, defer.
 ## Instruction
 * Install [SBCL](www.sbcl.org).
 * `clang` required for compiling and linking. `apt` or `brew` can be used to install [Clang](https://clang.llvm.org). Current used version: `(clang-1700.0.13.3)`
-* lcc uses [Libtool](https://www.gnu.org/software/libtool) as default for perfoming better compiling and linking `C` code. Install it for your platform and put it in the `PATH` environment variable. Compiler and linker could be set in `config.lisp` file. Current used version: `(GNU libtool) 2.5.4`
-* Download and copy lcc folder to `~/common-lisp` for enabling [ASDF](https://common-lisp.net/project/asdf) access to lcc package.
-* Write your own lcc code and save it in `.lcc` or `.lisp` extension.
-* Copy `lcc.lisp` file from source folder into your project path.
-* Send your file as an argument to lcc.lisp. `sbcl --script lcc.lisp test.lisp`
+* cicili uses [Libtool](https://www.gnu.org/software/libtool) as default for perfoming better compiling and linking `C` code. Install it for your platform and put it in the `PATH` environment variable. Compiler and linker could be set in `config.lisp` file. Current used version: `(GNU libtool) 2.5.4`
+* Download and copy cicili folder to `~/common-lisp` for enabling [ASDF](https://common-lisp.net/project/asdf) access to cicili package.
+* Write your own cicili code and save it in `.cicili` or `.lisp` extension.
+* Copy `cicili.lisp` file from source folder into your project path.
+* Send your file as an argument to cicili.lisp. `sbcl --script cicili.lisp test.lisp`
 * If you are using EMACS editor, copy `mode.lisp` file content into `.emacs` or `.emacs.d/init.el` file for syntax highlighting.
 ## * New Features
-* lcc now uses `IR` (Intermediate Representation) to handle more clauses and features.
-* modularizing lcc code makes clarity and easy to follow C code but makes debugging harder. refer to [module](test/module) test folder `module.lisp` sample.
+* cicili now uses `IR` (Intermediate Representation) to handle more clauses and features.
+* modularizing cicili code makes clarity and easy to follow C code but makes debugging harder. refer to [module](test/module) test folder `module.lisp` sample.
 * `lambda` clause allows developer to write in-place function for sending as other function argument or `defer` destructure. refer to [lambda](test/lambda) test folder `lambda.lisp` sample.
 * `defer` attribute. only available for variables defined by `let` expression. Allows developers to set a function how to destruct a variable or a pointer. refer to [defer](test/lambda) test folder `defer.lisp` sample.
 * auto deferral is a way let expressions will defined to automatically release dynamic memory allocated by `alloc` clause. refer to [alloc](test/lambda) test folder `defer.lisp` sample.
@@ -46,7 +46,7 @@ const int * const SIDE2 = &SIDE1;
 ```
 ## Operators
 ### Arithmetic
-lcc Operator | C Operator
+cicili Operator | C Operator
 ------------ | ----------
 `+`|`+`
 `-`|`-`
@@ -70,7 +70,7 @@ total = total + amount;
 }
 ```
 ### Increment and Decrement
-lcc Operator | C Operator
+cicili Operator | C Operator
 ------------ | ----------
 `++`|prefix `++`
 `--`|prefix `--`
@@ -113,7 +113,7 @@ int main()
 }
 ```
 ### Relational
-lcc Operator | C Operator
+cicili Operator | C Operator
 ------------ | ----------
 `==`|`==`
 `!=`|`!=`
@@ -122,13 +122,13 @@ lcc Operator | C Operator
 `>=`|`>=`
 `<=`|`<=`
 ### Logical
-lcc Operator | C Operator
+cicili Operator | C Operator
 ------------ | ----------
 `and`|`&&`
 `or`|`\|\|`
 `not`|`!`
 ### Bitwise
-lcc Operator | C Operator
+cicili Operator | C Operator
 ------------ | ----------
 `<<`|`<<`
 `>>`|`>>`
@@ -138,7 +138,7 @@ lcc Operator | C Operator
 `xor`|`^`
 `^`|`^`
 ### Assignment
-lcc Operator | C Operator
+cicili Operator | C Operator
 ------------ | ----------
 `set`|`=`
 `+=`|`+=`
@@ -149,7 +149,7 @@ lcc Operator | C Operator
 `<<=`|`<<=`
 `>>=`|`>>=`
 ### Conditional
-lcc Operator | C Operator
+cicili Operator | C Operator
 ------------ | ----------
 `?`|`?:`
 ```lisp
@@ -159,7 +159,7 @@ lcc Operator | C Operator
 a = (b == 2) ? 20 : 30;
 ```
 ### Special
-lcc Operator | C Operator
+cicili Operator | C Operator
 ------------ | ----------
 `sizeof`|`sizeof()`
 `typeof`|`typeof()`
@@ -172,8 +172,8 @@ ANSI C provides three types of data types:
 * Derived Data Types: Array, References, and Pointers.
 * User Defined Data Types: Structure, Union, and Enumeration.
 
-lcc supports declaration and definition of all ANCI C data types.
-lcc Data Type | C Data Type
+cicili supports declaration and definition of all ANCI C data types.
+cicili Data Type | C Data Type
 ------------- | -----------
 `nil`|`NULL`
 `void`|`void`
@@ -212,7 +212,7 @@ lcc Data Type | C Data Type
                     (auto identity . '(lambda ((int x)) (out int) (return x))))))) ; lambda initialization
 ```
 ```c
-int __lccLambda_main_178 (int x) {
+int __ciciliLambda_main_178 (int x) {
   return x ;
 }
 int main () {
@@ -220,7 +220,7 @@ int main () {
     double price = 500.4;
     double price_array[] = {100.2, 230.7, 924.8};
     double price_calc = calculate_price ();
-    __auto_type identity = __lccLambda_main_178 ;
+    __auto_type identity = __ciciliLambda_main_178 ;
   } 
 }
 ```
@@ -272,7 +272,7 @@ A scoped variable can has some attributes or storage class. each attribute enclo
                 (printf "area: %d" (* width height)))))
 ```
 ```c
-void __lccLambda_main_178 (Employee ** empPtr) {
+void __ciciliLambda_main_178 (Employee ** empPtr) {
   free ((*empPtr));
   printf ("from defer, emp is freed\n");
 }
@@ -280,7 +280,7 @@ int main () {
   { 
     static int width = 3;
     register int height = 4;
-    Employee * emp __attribute__((__cleanup__(__lccLambda_main_178))) = ((Employee *)malloc(sizeof(Employee)));
+    Employee * emp __attribute__((__cleanup__(__ciciliLambda_main_178))) = ((Employee *)malloc(sizeof(Employee)));
     printf ("area: %d", (width * height));
   } 
 }
@@ -337,7 +337,7 @@ main ()
 }
 ```
 ## Program Structure
-lcc program involves one or many header or source forms calling targets.
+cicili program involves one or many header or source forms calling targets.
 targets are translating its content forms to C code. header targets only compile its content without resolving, but source targets resolves attribue and method access of any struct variable. for example 
 ```lisp
 (let ((Employee emp)
@@ -418,83 +418,83 @@ All features could be omitted or if available accept `#t` for default behaviour 
 	    (return EXIT_SUCCESS)))
 ```
 ```
-lcc % sbcl --script lcc.lisp test/test.lisp
+cicili % sbcl --script cicili.lisp test/test.lisp
 software type: "Darwin"
 arg specified: test/mylib.lisp
-lcc: specifying target mymath.h
-lcc: resolving target mymath.h
-lcc: specifying target obj1.c
-lcc: resolving target obj1.c.run1.c
+cicili: specifying target mymath.h
+cicili: resolving target mymath.h
+cicili: specifying target obj1.c
+cicili: resolving target obj1.c.run1.c
 run out 1 > glibtool: compile:  clang -g -O "" -c obj1.c.run1.c  -fno-common -DPIC -o .libs/obj1.c.run1.o 
 run out 1 > glibtool: compile:  clang -g -O "" -c obj1.c.run1.c -o obj1.c.run1.o >/dev/null 2>&1 
-lcc: resolving target obj1.c.run2.c
+cicili: resolving target obj1.c.run2.c
 run out 2 > glibtool: compile:  clang -g -O "" -c obj1.c.run2.c  -fno-common -DPIC -o .libs/obj1.c.run2.o 
 run out 2 > glibtool: compile:  clang -g -O "" -c obj1.c.run2.c -o obj1.c.run2.o >/dev/null 2>&1 
-lcc: resolving target obj1.c.run3.c
+cicili: resolving target obj1.c.run3.c
 run out 3 > glibtool: compile:  clang -g -O "" -c obj1.c.run3.c  -fno-common -DPIC -o .libs/obj1.c.run3.o 
 run out 3 > glibtool: compile:  clang -g -O "" -c obj1.c.run3.c -o obj1.c.run3.o >/dev/null 2>&1 
-lcc: compiling target obj1.c
+cicili: compiling target obj1.c
 glibtool: compile:  clang -g -O "" -c obj1.c  -fno-common -DPIC -o .libs/obj1.o
 glibtool: compile:  clang -g -O "" -c obj1.c -o obj1.o >/dev/null 2>&1
-lcc: specifying target obj2.c
-lcc: resolving target obj2.c.run1.c
+cicili: specifying target obj2.c
+cicili: resolving target obj2.c.run1.c
 run out 1 > glibtool: compile:  clang -g -O "" -c obj2.c  -fno-common -DPIC -o .libs/objmul.o 
 run out 1 > glibtool: compile:  clang -g -O "" -c obj2.c -o objmul.o >/dev/null 2>&1 
-lcc: resolving target obj2.c.run2.c
+cicili: resolving target obj2.c.run2.c
 run out 2 > glibtool: compile:  clang -g -O "" -c obj2.c  -fno-common -DPIC -o .libs/objmul.o 
 run out 2 > glibtool: compile:  clang -g -O "" -c obj2.c -o objmul.o >/dev/null 2>&1 
-lcc: resolving target obj2.c.run3.c
+cicili: resolving target obj2.c.run3.c
 run out 3 > glibtool: compile:  clang -g -O "" -c obj2.c  -fno-common -DPIC -o .libs/objmul.o 
 run out 3 > glibtool: compile:  clang -g -O "" -c obj2.c -o objmul.o >/dev/null 2>&1 
-lcc: compiling target obj2.c
+cicili: compiling target obj2.c
 glibtool: compile:  clang -g -O "" -c obj2.c  -fno-common -DPIC -o .libs/objmul.o
 glibtool: compile:  clang -g -O "" -c obj2.c -o objmul.o >/dev/null 2>&1
-lcc: specifying target obj3.c
-lcc: resolving target obj3.c.run1.c
+cicili: specifying target obj3.c
+cicili: resolving target obj3.c.run1.c
 run out 1 > glibtool: compile:  clang -g -O "" -c obj3.c.run1.c  -fno-common -DPIC -o .libs/obj3.c.run1.o 
 run out 1 > glibtool: compile:  clang -g -O "" -c obj3.c.run1.c -o obj3.c.run1.o >/dev/null 2>&1 
 run out 1 > glibtool: link: rm -fr  .libs/libMyMath.a .libs/libMyMath.la 
 run out 1 > glibtool: link: ar cr .libs/libMyMath.a .libs/obj1.o .libs/objmul.o .libs/obj3.o  
 run out 1 > glibtool: link: ranlib .libs/libMyMath.a 
 run out 1 > glibtool: link: ( cd ".libs" && rm -f "libMyMath.la" && ln -s "../libMyMath.la" "libMyMath.la" ) 
-lcc: resolving target obj3.c.run2.c
+cicili: resolving target obj3.c.run2.c
 run out 2 > glibtool: compile:  clang -g -O "" -c obj3.c.run2.c  -fno-common -DPIC -o .libs/obj3.c.run2.o 
 run out 2 > glibtool: compile:  clang -g -O "" -c obj3.c.run2.c -o obj3.c.run2.o >/dev/null 2>&1 
 run out 2 > glibtool: link: rm -fr  .libs/libMyMath.a .libs/libMyMath.la 
 run out 2 > glibtool: link: ar cr .libs/libMyMath.a .libs/obj1.o .libs/objmul.o .libs/obj3.o  
 run out 2 > glibtool: link: ranlib .libs/libMyMath.a 
 run out 2 > glibtool: link: ( cd ".libs" && rm -f "libMyMath.la" && ln -s "../libMyMath.la" "libMyMath.la" ) 
-lcc: resolving target obj3.c.run3.c
+cicili: resolving target obj3.c.run3.c
 run out 3 > glibtool: compile:  clang -g -O "" -c obj3.c.run3.c  -fno-common -DPIC -o .libs/obj3.c.run3.o 
 run out 3 > glibtool: compile:  clang -g -O "" -c obj3.c.run3.c -o obj3.c.run3.o >/dev/null 2>&1 
 run out 3 > glibtool: link: rm -fr  .libs/libMyMath.a .libs/libMyMath.la 
 run out 3 > glibtool: link: ar cr .libs/libMyMath.a .libs/obj1.o .libs/objmul.o .libs/obj3.o  
 run out 3 > glibtool: link: ranlib .libs/libMyMath.a 
 run out 3 > glibtool: link: ( cd ".libs" && rm -f "libMyMath.la" && ln -s "../libMyMath.la" "libMyMath.la" ) 
-lcc: compiling target obj3.c
+cicili: compiling target obj3.c
 glibtool: compile:  clang -g -O "" -c obj3.c  -fno-common -DPIC -o .libs/obj3.o
 glibtool: compile:  clang -g -O "" -c obj3.c -o obj3.o >/dev/null 2>&1
 glibtool: link: rm -fr  .libs/libMyMath.a .libs/libMyMath.la
 glibtool: link: ar cr .libs/libMyMath.a .libs/obj1.o .libs/objmul.o .libs/obj3.o 
 glibtool: link: ranlib .libs/libMyMath.a
 glibtool: link: ( cd ".libs" && rm -f "libMyMath.la" && ln -s "../libMyMath.la" "libMyMath.la" )
-lcc: specifying target main.c
-lcc: resolving target main.c.run1.c
+cicili: specifying target main.c
+cicili: resolving target main.c.run1.c
 run out 1 > glibtool: compile:  clang -g -O "" -c main.c.run1.c  -fno-common -DPIC -o .libs/main.c.run1.o 
 run out 1 > glibtool: compile:  clang -g -O "" -c main.c.run1.c -o main.c.run1.o >/dev/null 2>&1 
-run out 1 > glibtool: link: clang -g -O "" -o CompileTest .libs/main.o  -L/Users/a1/Projects/GitHub/lcc/test/ /Users/a1/Projects/GitHub/lcc/test/.libs/libMyMath.a  
-lcc: resolving target main.c.run2.c
+run out 1 > glibtool: link: clang -g -O "" -o CompileTest .libs/main.o  -L/Users/a1/Projects/GitHub/cicili/test/ /Users/a1/Projects/GitHub/cicili/test/.libs/libMyMath.a  
+cicili: resolving target main.c.run2.c
 run out 2 > glibtool: compile:  clang -g -O "" -c main.c.run2.c  -fno-common -DPIC -o .libs/main.c.run2.o 
 run out 2 > glibtool: compile:  clang -g -O "" -c main.c.run2.c -o main.c.run2.o >/dev/null 2>&1 
-run out 2 > glibtool: link: clang -g -O "" -o CompileTest .libs/main.o  -L/Users/a1/Projects/GitHub/lcc/test/ /Users/a1/Projects/GitHub/lcc/test/.libs/libMyMath.a  
-lcc: resolving target main.c.run3.c
+run out 2 > glibtool: link: clang -g -O "" -o CompileTest .libs/main.o  -L/Users/a1/Projects/GitHub/cicili/test/ /Users/a1/Projects/GitHub/cicili/test/.libs/libMyMath.a  
+cicili: resolving target main.c.run3.c
 run out 3 > glibtool: compile:  clang -g -O "" -c main.c.run3.c  -fno-common -DPIC -o .libs/main.c.run3.o 
 run out 3 > glibtool: compile:  clang -g -O "" -c main.c.run3.c -o main.c.run3.o >/dev/null 2>&1 
-run out 3 > glibtool: link: clang -g -O "" -o CompileTest .libs/main.o  -L/Users/a1/Projects/GitHub/lcc/test/ /Users/a1/Projects/GitHub/lcc/test/.libs/libMyMath.a  
-lcc: compiling target main.c
+run out 3 > glibtool: link: clang -g -O "" -o CompileTest .libs/main.o  -L/Users/a1/Projects/GitHub/cicili/test/ /Users/a1/Projects/GitHub/cicili/test/.libs/libMyMath.a  
+cicili: compiling target main.c
 glibtool: compile:  clang -g -O "" -c main.c  -fno-common -DPIC -o .libs/main.o
 glibtool: compile:  clang -g -O "" -c main.c -o main.o >/dev/null 2>&1
-glibtool: link: clang -g -O "" -o CompileTest .libs/main.o  -L/Users/a1/Projects/GitHub/lcc/test/ /Users/a1/Projects/GitHub/lcc/test/.libs/libMyMath.a
+glibtool: link: clang -g -O "" -o CompileTest .libs/main.o  -L/Users/a1/Projects/GitHub/cicili/test/ /Users/a1/Projects/GitHub/cicili/test/.libs/libMyMath.a
 ```
 ### Sections
 * Documentations: starts with semi-colon(s) ";"
@@ -507,7 +507,7 @@ glibtool: link: clang -g -O "" -o CompileTest .libs/main.o  -L/Users/a1/Projects
   ;; some commented code or documentation inside code
   (return (* a a)))
 ```
-* Preprocessor Forms: a form which starts with at-sign "@" and accepts one argument. code form is used for writing C code inside lcc.
+* Preprocessor Forms: a form which starts with at-sign "@" and accepts one argument. code form is used for writing C code inside cicili.
 ```lisp
 (@define (code "SHA1_ROTL(bits, word) (((word) << (bits)) | ((word) >> (32-(bits)))"))
 
@@ -543,7 +543,7 @@ typedef struct SHA512Context {
   int Corrupted;
 } SHA512Context;
 ```
-* Main Function: The main function is where program execution begins. Every lcc program must contain only one main function.
+* Main Function: The main function is where program execution begins. Every cicili program must contain only one main function.
 ## Decision Making
 ### if
 If form accepts 2 or 3 argument. condition, form for true evaluation of condition and form for false evaluation. third part(else) could be omitted. use ```block``` form if you need more forms in each part.
@@ -636,7 +636,7 @@ If form accepts 2 or 3 argument. condition, form for true evaluation of conditio
 (let ((int n . 1)
       (int times . 5))
   (while (<= n times)
-    (printf "lcc while loops: %d\n" n)
+    (printf "cicili while loops: %d\n" n)
     (1+ n)))
 ```
 ```c
@@ -654,7 +654,7 @@ If form accepts 2 or 3 argument. condition, form for true evaluation of conditio
 (let ((int n . 1)
       (int times . 5))
   (do
-    (printf "lcc do loops: %d\n" n)
+    (printf "cicili do loops: %d\n" n)
     (1+ n)
     (<= n times))) ; last form of do clause checks the condition
 ```
@@ -676,7 +676,7 @@ If form accepts 2 or 3 argument. condition, form for true evaluation of conditio
                       (times . 5))     ; initialize
                   (<= n times)         ; test
                   ((1+ n))             ; step
-                  (printf "lcc for loop: %d\n" n)))
+                  (printf "cicili for loop: %d\n" n)))
 
               (for ((int n . 1)
                     (times . 2))     ; initialize
@@ -689,7 +689,7 @@ If form accepts 2 or 3 argument. condition, form for true evaluation of conditio
     int n;
     int times;
     for ( n = 1, times = 5; (n <= times); (n ++)) {
-      printf ("lcc for loop: %d\n", n);
+      printf ("cicili for loop: %d\n", n);
     } 
   }
   for (int n = 1, times = 2; (n <= times); (n ++)) {
@@ -697,7 +697,7 @@ If form accepts 2 or 3 argument. condition, form for true evaluation of conditio
   } 
 ```
 ## Function
-lcc has some points on functions:
+cicili has some points on functions:
 * Use returns form for setting the return type. returns form must be first form of a function after arguments list. A fucntion without returns form will returns void instead of main which returns int.
 * Function's attributes must set in declaration time. each attribute enclosed in braces or parentheses.
     * {declare}    
@@ -778,21 +778,21 @@ int addition (int * a, int * b) {
                 (printf "a: %d, b: %d\n" ($ mrt a) ($ mrt b)))))
 ```
 ```c
-typedef struct __lccStruct_aMultiReturnFunc_177 {
+typedef struct __ciciliStruct_aMultiReturnFunc_177 {
   int a;
   int b;
-} __lccStruct_aMultiReturnFunc_177;
-__lccStruct_aMultiReturnFunc_177 aMultiReturnFunc (int x, int y) {
-  return ((__lccStruct_aMultiReturnFunc_177){x , y});
+} __ciciliStruct_aMultiReturnFunc_177;
+__ciciliStruct_aMultiReturnFunc_177 aMultiReturnFunc (int x, int y) {
+  return ((__ciciliStruct_aMultiReturnFunc_177){x , y});
 }
-typedef struct __lccStruct_aMultiReturnFuncS_178 {
+typedef struct __ciciliStruct_aMultiReturnFuncS_178 {
   int a;
   int b;
-} __lccStruct_aMultiReturnFuncS_178;
-__lccStruct_aMultiReturnFuncS_178 aMultiReturnFuncS (int x, int y) {
+} __ciciliStruct_aMultiReturnFuncS_178;
+__ciciliStruct_aMultiReturnFuncS_178 aMultiReturnFuncS (int x, int y) {
   { 
     typeof(aMultiReturnFuncS (x , y)) s = {x , y};
-    return ((__lccStruct_aMultiReturnFuncS_178)s);
+    return ((__ciciliStruct_aMultiReturnFuncS_178)s);
   } 
 }
 int main () {
@@ -931,16 +931,16 @@ Allocation with `alloc` and equivalent code in C:
           (printf "x is %d\n" x))))
 ```
 ```c
-void __lccLambda_main_178 (int * xPtr) {
+void __ciciliLambda_main_178 (int * xPtr) {
   printf("x was %d\n", (*xPtr));
 }
-void __lccLambda_main_179 (int ** ax) {
+void __ciciliLambda_main_179 (int ** ax) {
   free((*ax));
 }
 int main () {
   {
-    int x __attribute__((__cleanup__(__lccLambda_main_178))) = 6;
-    int * ax __attribute__((__cleanup__(__lccLambda_main_179))) = ((int *)calloc(5, sizeof(int)));
+    int x __attribute__((__cleanup__(__ciciliLambda_main_178))) = 6;
+    int * ax __attribute__((__cleanup__(__ciciliLambda_main_179))) = ((int *)calloc(5, sizeof(int)));
     printf("x is %d\n", x);
   }
 }
@@ -952,14 +952,14 @@ int main () {
   (printf "Matrix allocated\n"))
 ```
 ```c
-void __lccLambda_main_178 (int *** matrix) {
+void __ciciliLambda_main_178 (int *** matrix) {
   free((*matrix));
 }
 int main () {
   {
     int n_rows = 4;
     int n_columns = 5;
-    int ** matrix __attribute__((__cleanup__(__lccLambda_main_178))) = ((int **)malloc(((n_rows * n_columns) * sizeof(int))));
+    int ** matrix __attribute__((__cleanup__(__ciciliLambda_main_178))) = ((int **)malloc(((n_rows * n_columns) * sizeof(int))));
     printf ("Matrix allocated\n");
   }
 }
@@ -970,12 +970,12 @@ Allocation by `alloc` and equivalent `calloc`:
   (printf "Memory allocated safely\n"))
 ```
 ```c
-void __lccLambda_main_178 (char ** safe_alloc) {
+void __ciciliLambda_main_178 (char ** safe_alloc) {
   free((*safe_alloc));
 }
 int main () {
   {
-    char * safe_alloc __attribute__((__cleanup__(__lccLambda_main_178))) = ((char *)calloc(15, sizeof(char)));
+    char * safe_alloc __attribute__((__cleanup__(__ciciliLambda_main_178))) = ((char *)calloc(15, sizeof(char)));
     printf ("Memory allocated safely\n");
   }
 }
@@ -1097,8 +1097,8 @@ typedef struct Student {
 ```c
 typedef int * intptr_t;
 ```
-## lcc.lisp Command Line Arguments
-`sbcl --script /path/to/lcc.lisp /path/to/some-lcc-file.lisp {args}`
+## cicili.lisp Command Line Arguments
+`sbcl --script /path/to/cicili.lisp /path/to/some-cicili-file.lisp {args}`
 Available arguments:
 * --debug : will prints too many details about specifying, resolving and compiling.
 * --verbose : adds `-v` option to `clang` and `libtool` commands to print more details about compiling and linking. usefull when linking many complex libraries.

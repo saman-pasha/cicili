@@ -12,37 +12,37 @@ void Employee_print2 (Employee * this, Employee * emp) {
   printf ("same emp id is: %d, %d\n", (this ->id ), (emp ->id ));
 }
 long varAAA = 567;
-void lccxqUhX6O6k74k_WEKLfDVc2Xgz20__print (lccxqUhX6O6k74k_WEKLfDVc2Xgz20_ * this) {
+void cicilixqUhX6O6k74k_WEKLfDVc2Xgz20__print (cicilixqUhX6O6k74k_WEKLfDVc2Xgz20_ * this) {
   printf ("inside a emp id is: %d\n", (this ->id ));
 }
-void lcc_iLpNq6pC4V6Ha1he3EvZDUUIck_ (Employee * emp) {
+void cicili_iLpNq6pC4V6Ha1he3EvZDUUIck_ (Employee * emp) {
   printf ("inside for free emp id is: %d\n", (emp ->id ));
 }
-int lccDewUjhA1EYChyb3DkcV1Bxj6O9w_ (int g) {
+int cicilitS6_F5Im8YmLZoOCtlFH_i5NCBY_ (int g) {
   return (3 +  g  );
 }
-struct lccNYIEm58bvuz3hSlh4pgyqCSsNas_ lccTozMYGkJ8oVe_3afFeftV_4FBR8_ (int x, int y) {
-  return ((struct lccNYIEm58bvuz3hSlh4pgyqCSsNas_){lccDewUjhA1EYChyb3DkcV1Bxj6O9w_ (x ), y });
+struct cicilieRNEdffFcVKE3N_AxZ_B6HLLN9Q_ ciciliTozMYGkJ8oVe_3afFeftV_4FBR8_ (int x, int y) {
+  return ((struct cicilieRNEdffFcVKE3N_AxZ_B6HLLN9Q_){cicilitS6_F5Im8YmLZoOCtlFH_i5NCBY_ (x ), y });
 }
-int lcclQZb1M_HJMuzcAwWqkY_bEGhxzE_ (int g) {
+int cicilinzjLwDtSvwk5d8Poro1rxq7iRZE_ (int g) {
   return (6 +  g  );
 }
-struct lccUdAKs4R4JUDKuSRwXvSWOr6ZcUQ_ lcctoldQFn2V3YHvs0kVlusT3lYqCs_ (int x, int y) {
-  return ((struct lccUdAKs4R4JUDKuSRwXvSWOr6ZcUQ_){lcclQZb1M_HJMuzcAwWqkY_bEGhxzE_ (x ), y });
+struct ciciliaHDOjsyShn3IwyvTQAvaRw5Sg20_ cicilitoldQFn2V3YHvs0kVlusT3lYqCs_ (int x, int y) {
+  return ((struct ciciliaHDOjsyShn3IwyvTQAvaRw5Sg20_){cicilinzjLwDtSvwk5d8Poro1rxq7iRZE_ (x ), y });
 }
-long lccC41hdVPk87iu_w5AQBJtphUnZF8_ = 876;
-void lccEHa_SpDFo5BFIAK1zxc3Gc8SVdg__print (lccEHa_SpDFo5BFIAK1zxc3Gc8SVdg_ * this) {
+long ciciliC41hdVPk87iu_w5AQBJtphUnZF8_ = 876;
+void ciciliEHa_SpDFo5BFIAK1zxc3Gc8SVdg__print (ciciliEHa_SpDFo5BFIAK1zxc3Gc8SVdg_ * this) {
   printf ("inside d emp id is: %d\n", (this ->id ));
 }
-int lcc2JLjN2ycQOPYcMmCT2UjaxuNFMg_ (int g) {
+int cicili_mZKLEyLVos4fuRTgTkGm_r6myc_ (int g) {
   return (9 +  g  );
 }
-struct lcc61aK4XladKLk9Ieh_Ag_NXewtOE_ lcc7hMT88tey7fEi_6cHAML4lQ3Vg4_ (int x, int y) {
-  return ((struct lcc61aK4XladKLk9Ieh_Ag_NXewtOE_){lcc2JLjN2ycQOPYcMmCT2UjaxuNFMg_ (x ), y });
+struct cicilib2eaI3jQOhFEEPgQlN9cyRpIyAY_ cicili7hMT88tey7fEi_6cHAML4lQ3Vg4_ (int x, int y) {
+  return ((struct cicilib2eaI3jQOhFEEPgQlN9cyRpIyAY_){cicili_mZKLEyLVos4fuRTgTkGm_r6myc_ (x ), y });
 }
-struct lccuG_ZMkOWJCAIn6AuSabjRb9vtuM_ lccSCZ69Ii4twzs6m1xrpUrU_Y2Jjk_ (int x, int y) {
-  { /* lcc#Let103 */
-    typeof(lccSCZ69Ii4twzs6m1xrpUrU_Y2Jjk_ (x , y )) s = {x , y };
-    return ((struct lccuG_ZMkOWJCAIn6AuSabjRb9vtuM_)s );
-  } /* lcc#Let103 */
+struct cicilioqKSjuXEdrKL0mwhU39GE5dW930_ ciciliSCZ69Ii4twzs6m1xrpUrU_Y2Jjk_ (int x, int y) {
+  { /* cicili#Let103 */
+    typeof(ciciliSCZ69Ii4twzs6m1xrpUrU_Y2Jjk_ (x , y )) s = {x , y };
+    return ((struct cicilioqKSjuXEdrKL0mwhU39GE5dW930_)s );
+  } /* cicili#Let103 */
 }
