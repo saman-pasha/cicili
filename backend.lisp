@@ -1,4 +1,4 @@
-(in-package :lcc)
+(in-package :cicili)
 
 (defun compile-name (name globals)
   (if (symbolp name)
@@ -62,7 +62,7 @@
   (when modifier  (output " ") (set-ast-line (output "~A" modifier)))
   (when const-ptr (output " ") (set-ast-line (output "const" const-ptr)))
   (when name      (output " ")
-        (set-ast-line (output "~A" (if (str:starts-with-p "_lccParam_" (symbol-name name)) " " name))))
+        (set-ast-line (output "~A" (if (str:starts-with-p "_ciciliParam_" (symbol-name name)) " " name))))
   (compile-array array-def globals))
 
 (defun compile-spec-type (spec globals)
@@ -130,7 +130,7 @@
                               (set-ast-line (output "\&~A" value)))
                              ((str:containsp "passing 'typeof ((" info)
                               (set-ast-line (output "\&~A" value)))
-                             ((str:containsp "__lccLambda" info)
+                             ((str:containsp "__ciciliLambda" info)
                               (set-ast-line (output "\&~A" value)))
                              (t (error (format nil "~A" info))))
                        (set-ast-line (output "~A " value)))))))
@@ -230,7 +230,7 @@
                   (progn
                     (set-resolved "->")
                     (set-ast-line (output "->")))
-                  (error (format nil "lcc\: unresolved member reference type ~A~%" spec))))))
+                  (error (format nil "\: unresolved member reference type ~A~%" spec))))))
     (compile-form member globals)
     (output ")")))
 
@@ -266,14 +266,14 @@
                        (progn
                          (set-resolved (format nil "~A_~A" (string-right-trim "'" (cadr parts)) (string-trim "'" method)))
                          (set-ast-line (output "~A_" (string-right-trim "'" (cadr parts)))))
-                       (error (format nil "lcc\: unresolved method reference type ~A~%" spec)))
+                       (error (format nil "cicili\: unresolved method reference type ~A~%" spec)))
                    (set-ast-line (output "~A " (string-trim "'" method)))
                    (output "(")
                    (compile-form receiver globals)
                    (compile-args (default args) globals t)
                    (output ")")
                    (funcall *col-num* 0 :reset (+ col-n (length (getf ast 'res))))))
-                (t (error (format nil "lcc\: unresolved method reference type ~A~%" spec))))))))
+                (t (error (format nil "cicili\: unresolved method reference type ~A~%" spec))))))))
 
 (defun compile-sizeof (spec globals)
   (set-ast-line (output "sizeof("))
@@ -491,7 +491,7 @@
 
 (defun compile-for-each (form lvl globals)
   (when (or (< (length form) 4) (not (listp (nth 1 form)))) (error (format nil "wrong for each form ~A" form)))
-  (let ((counter (gensym "__lccForEach")))
+  (let ((counter (gensym "__ciciliForEach")))
     (output "~&~A" (indent lvl))
     (set-ast-line (output "for (int ~A = 0; ~A < " counter counter))
     (compile-form (nth 3 form) globals)

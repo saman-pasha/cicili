@@ -1,5 +1,5 @@
-(defsystem "lcc"
-  :version "0.0.8"
+(defsystem "cicili"
+  :version "0.0.9"
   :author  "Saman Heidarzadeh Pasha (saman.h.pasha@gmail.com)"
   :license "MIT License"
   :depends-on ("sha1" "base64" "str" "cl-ppcre")
@@ -11,5 +11,5 @@
 	           (:file "core"       :depends-on ("config"))
 	           (:file "config"     :depends-on ("package"))
 	           (:file "package"))
-  :description "Lisp C Compiler aka. 'El-Cici' programming language, which compiles Lisp-like syntax to C code and more extra features like method, lambda, defer."
+  :description "Lisp C Compiler aka. 'Cicili' programming language, which compiles Lisp-like syntax to C code and more extra features like struct's method, lambda, variable's defer and function-like macro."
   :in-order-to ((test-op (test-op "test"))))

@@ -1,5 +1,5 @@
-;; lcc Customization
-(defun lcc-add-types (face-name keyword-rules)
+;; cicili Customization
+(defun cicili-add-types (face-name keyword-rules)
   (let* ((keyword-list (mapcar #'(lambda (x)
 				   (symbol-name (cdr x)))
 			       keyword-rules))
@@ -14,7 +14,7 @@
 		 (car x)))
 	keyword-rules))
  
-(lcc-add-types
+(cicili-add-types
  'font-lock-type-face
  '((1 . const)
    (1 . func)
@@ -78,7 +78,7 @@
    (1 . auto)
    ))
 
-(defun lcc-add-keywords (face-name keyword-rules)
+(defun cicili-add-keywords (face-name keyword-rules)
   (let* ((keyword-list (mapcar #'(lambda (x)
 				   (symbol-name (cdr x)))
 			       keyword-rules))
@@ -93,7 +93,7 @@
 		 (car x)))
 	keyword-rules))
  
-(lcc-add-keywords
+(cicili-add-keywords
  'font-lock-keyword-face
  '((1 . format)
    (1 . code)
@@ -140,7 +140,7 @@
    (1 . ->)
    ))
 
-(defun lcc-add-attributes (face-name keyword-rules)
+(defun cicili-add-attributes (face-name keyword-rules)
   (let* ((keyword-list (mapcar #'(lambda (x)
 				   (symbol-name (cdr x)))
 			       keyword-rules))
@@ -155,7 +155,7 @@
 		 (car x)))
 	keyword-rules))
  
-(lcc-add-attributes
+(cicili-add-attributes
  'font-lock-preprocessor-face
  '((1 . static)
    (1 . decl)

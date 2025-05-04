@@ -1,4 +1,4 @@
-(in-package :lcc)
+(in-package :cicili)
 
 ;; IR Intermediate Representation
 (defun create-globals (ir &optional (globals (make-hash-table :test 'eql)))
@@ -93,7 +93,7 @@
                ))
 	        (t (error (format nil "header or source form is missing for ~A" name)))))))
 
-(defun compile-lcc-file (file-name)
+(defun compile-cicili-file (file-name)
   (let ((file-path (make-pathname :directory (pathname-directory file-name)))
         (rt (copy-readtable nil)))
     (ensure-directories-exist file-path)
