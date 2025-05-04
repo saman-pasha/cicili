@@ -1,4 +1,4 @@
-# lcc
+# Cicili Programming Language
 Lisp C Compiler aka. 'Cicili' programming language, which compiles Lisp-like syntax to C code and more extra features like method, lambda, defer.
 ## Instruction
 * Install [SBCL](www.sbcl.org).
