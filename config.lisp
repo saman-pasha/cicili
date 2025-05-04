@@ -1,4 +1,4 @@
-(in-package :lcc)
+(in-package :cicili)
 
 ;; prints too many details about compiling and resolving
 (defparameter *debug* nil)

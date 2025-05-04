@@ -1,21 +1,11 @@
-(in-package :lcc)
-
-(defvar *lcc-std* "#ifndef __LCC_STD__
-#define __LCC_STD__
-#define __lcc_is_same_type(a, b)  __builtin_types_compatible_p(typeof(a), typeof(b))
-#define __lcc_is_pointer_or_array(p)  (__builtin_classify_type(p) == 5)
-#define __lcc_decay(p)  (&*__builtin_choose_expr(__lcc_is_pointer_or_array(p), p, NULL))
-#define __lcc_is_pointer(p)  __lcc_is_same_type(p, __lcc_decay(p))
-#define __lcc_pointout(v) (__builtin_choose_expr(__lcc_is_pointer(v), v, &v))
-#define __lcc_receiver(s, m) typeof(*__lcc_pointout(s))##_info __lcc_ m
-#endif // __LCC_STD__~%")
+(in-package :cicili)
 
 (defun specify-target (target)
   (let* ((name    (nth 1 target))
 	     (args    (nth 2 target))
 	     (clauses (nthcdr 3 target))
 	     (target-specifier (make-specifier name '|@TARGET| nil nil nil nil nil nil args)))
-    (format t "lcc: specifying target ~A~%" name)
+    (format t "cicili: specifying target ~A~%" name)
     (unless (zerop (mod (length args) 2)) (error (format nil "wrong target features ~A" name)))
     (let ((attributes '()))
       (dolist (clause clauses)
@@ -77,14 +67,13 @@
 			          :if-exists :supersede)))
         (error (format t "target should be a file path")))
     (if (and dump (not header))
-        (format t "lcc: resolving target ~A~%" file)
-        (format t "lcc: compiling target ~A~%" file))
+        (format t "cicili: resolving target ~A~%" file)
+        (format t "cicili: compiling target ~A~%" file))
     (unwind-protect
          (handler-case 
 	         (progn
                (funcall *line-num* 0 :reset 1)
                (funcall *col-num* 0 :reset 1)
-	           ;; (output *lcc-std*)
 	           (dotimes (i (length args))
 	             (when (zerop (mod i 2))
 	               (when (key-eq (nth i args) ':|std|)

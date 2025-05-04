@@ -1,4 +1,4 @@
-(in-package :lcc)
+(in-package :cicili)
 
 ;;;; specifier
 (defclass sp ()
@@ -198,9 +198,9 @@
               ((key-eq '|typeof| ty) (specify-typeof-expr type))
               ((and (not (null *function-spec*)) (key-eq 'QUOTE ty)) ; inline struct
                (let* ((fname (name *function-spec*))
-                      (sname (if (str:starts-with-p "__lccStruct_" (symbol-name fname))
+                      (sname (if (str:starts-with-p "__ciciliStruct_" (symbol-name fname))
                                  (intern (format nil "~A_" fname))
-                                 (intern (format nil "__lccStruct_~A_" fname))))
+                                 (intern (format nil "__ciciliStruct_~A_" fname))))
                       (struct-spec (specify-struct (append (list '|struct| sname) (cadr type)) '() :inline t)))
                  (add-inner struct-spec *function-spec*)
                  (list '|struct| (if *module-path* (free-name *module-path* sname) sname))))
@@ -577,9 +577,9 @@
                     (let ((quoted (cadr def)))
                       (if (key-eq (car quoted) '|lambda|) ; lambda
                           (let* ((fname (name *function-spec*))
-                                 (lname (if (str:starts-with-p "__lccLambda_" (symbol-name fname))
+                                 (lname (if (str:starts-with-p "__ciciliLambda_" (symbol-name fname))
                                             (gensym (format nil "~A_" fname))
-                                            (gensym (format nil "__lccLambda_~A_" fname))))
+                                            (gensym (format nil "__ciciliLambda_~A_" fname))))
                                  (func-spec (specify-function (append (list '|lambda| lname) (cdr quoted)) '())))
                             (add-inner func-spec *function-spec*)
                             (specify-symbol-expr (if *module-path* (free-name *module-path* lname) lname)))
@@ -652,7 +652,7 @@
 
 (defun specify-let (def)
   (when (or (< (length def) 2) (not (listp (nth 1 def)))) (error (format nil "wrong let form ~A" def)))
-  (let ((let-var (make-specifier (gensym "lcc#Let") '|@LET| nil nil nil nil nil nil '())))
+  (let ((let-var (make-specifier (gensym "cicili#Let") '|@LET| nil nil nil nil nil nil '())))
     (let ((is-static   nil)
           (is-register nil)
 	      (is-auto     nil)
@@ -714,7 +714,7 @@
     let-var))
 
 (defun specify-block (def)
-  (let ((block-var (make-specifier (gensym "lcc#Block") '|@BLOCK| nil nil nil nil nil nil '())))
+  (let ((block-var (make-specifier (gensym "cicili#Block") '|@BLOCK| nil nil nil nil nil nil '())))
     (setf (body block-var) (specify-body (cdr def)))
     block-var))
 
@@ -812,7 +812,7 @@
 ;;;; for-each and loop
 (defun specify-for-each (def)
   (when (or (< (length def) 4) (not (listp (nth 1 def)))) (error (format nil "wrong for each form ~A" def)))
-  (let* ((counter (gensym "__lccCounter"))
+  (let* ((counter (gensym "__ciciliCounter"))
          (vari    (specify-type< (nth 1 def)))
          (argv    (specify-expr  (nth 2 def)))
          (argc    (specify-expr  (nth 3 def)))
@@ -879,7 +879,7 @@
 	              (multiple-value-bind (const type modifier const-ptr variable array default)
 	                  (specify-type-value< param)
 	                (when (or (null variable) (key-eq '_ variable))
-                      (setq variable (gensym (format nil "_lccParam_~D" i))))
+                      (setq variable (gensym (format nil "_ciciliParam_~D" i))))
 	                  ; (setq is-anonymous t))
                     (add-param
                         (make-specifier
@@ -893,7 +893,7 @@
   (when (> (length attrs) 0) (error (format nil "wrong attributes ~A" attrs)))
   (when (> (length def) 2) (error (format nil "wrong preprocessor definition ~A" def)))
   (let ((preproc-specifier
-            (make-specifier (gensym "lcc#PreProc") '|@PREPROC| nil (specify-symbol-expr (car def)) nil nil nil nil nil)))
+            (make-specifier (gensym "cicili#PreProc") '|@PREPROC| nil (specify-symbol-expr (car def)) nil nil nil nil nil)))
     (unless (null (cadr def)) (setf (default preproc-specifier) (specify-expr (cadr def))))
     preproc-specifier))
 
@@ -918,7 +918,7 @@
 (defun specify-enum (def attrs &key ((:nested is-nested) nil))
   (when (> (length attrs) 0) (error (format nil "wrong attributes ~A" attrs)))
   (let* ((is-anonymous (or (= (length def) 1) (not (symbolp (nth 1 def)))))
-	     (name (specify-decl-name< (if is-anonymous (gensym "lccEnum") (nth 1 def))))
+	     (name (specify-decl-name< (if is-anonymous (gensym "ciciliEnum") (nth 1 def))))
 	     (constants (if is-anonymous (nthcdr 1 def) (nthcdr 2 def)))
 	     (enum-specifier (make-specifier name '|@ENUM| nil nil nil nil nil nil nil)))
     (setf (anonymous enum-specifier) is-anonymous)
@@ -937,7 +937,7 @@
 (defun specify-struct (def attrs &key ((:nested is-nested) nil) ((:inline is-inline) nil))
   (when (> (length attrs) 0) (error (format nil "wrong attributes ~A" attrs)))
   (let* ((is-anonymous (or (= (length def) 1) (not (symbolp (nth 1 def)))))
-	     (name (specify-decl-name< (if is-anonymous (gensym "lccStruct") (nth 1 def))))
+	     (name (specify-decl-name< (if is-anonymous (gensym "ciciliStruct") (nth 1 def))))
 	     (clauses (if is-anonymous (nthcdr 1 def) (nthcdr 2 def)))
 	     (struct-specifier (make-specifier name '|@STRUCT| nil nil nil nil nil nil nil)))
     (when (and is-anonymous (not is-nested)) (error (format nil "only nested structs could be anonymous")))
@@ -990,7 +990,7 @@
 (defun specify-union (def attrs &key ((:nested is-nested) nil))
   (when (> (length attrs) 0) (error (format nil "wrong attributes ~A" attrs)))
   (let* ((is-anonymous (or (= (length def) 1) (not (symbolp (nth 1 def)))))
-	     (name (specify-decl-name< (if is-anonymous (gensym "lccUnion") (nth 1 def))))
+	     (name (specify-decl-name< (if is-anonymous (gensym "ciciliUnion") (nth 1 def))))
 	     (clauses (if is-anonymous (nthcdr 1 def) (nthcdr 2 def)))
 	     (union-specifier (make-specifier name '|@UNION| nil nil nil nil nil nil nil)))
     (when (and is-anonymous (not is-nested)) (error (format nil "only nested unions could be anonymous")))

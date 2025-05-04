@@ -1,4 +1,4 @@
-(in-package :lcc)
+(in-package :cicili)
 
 (defun specify-module (def attrs)
   (when (> (length attrs) 0) (error (format nil "wrong attributes ~A" attrs)))

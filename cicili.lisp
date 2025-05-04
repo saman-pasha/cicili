@@ -9,7 +9,7 @@
   (when (probe-file quicklisp-init)
     (load quicklisp-init)))
 
-(asdf:load-system "lcc")
+(asdf:load-system "cicili")
 
 (let ((argv (uiop:command-line-arguments)))
   (if (> (length argv) 0)
@@ -21,8 +21,8 @@
               do (progn
                    (format t "arg specified: ~A~%" arg)
                    (cond
-                     ((string= arg "--debug")    (setf lcc:*debug*   t))
-                     ((string= arg "--warn")     (setf lcc:*warn*    t))
-                     ((string= arg "--verbose")  (setf lcc:*verbose* "-v")))))
-        (lcc:compile-lcc-file (first argv)))
-      (error (format nil "at least pass the lcc .lisp file to compile"))))
+                     ((string= arg "--debug")    (setf cicili:*debug*   t))
+                     ((string= arg "--warn")     (setf cicili:*warn*    t))
+                     ((string= arg "--verbose")  (setf cicili:*verbose* "-v")))))
+        (cicili:compile-cicili-file (first argv)))
+      (error (format nil "at least pass the cicili .lisp file to compile"))))

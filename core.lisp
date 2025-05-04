@@ -1,4 +1,4 @@
-(in-package :lcc)
+(in-package :cicili)
 
 (defvar *output* t)
 
@@ -138,7 +138,7 @@
 ;; (setf sb-ext:*invoke-debugger-hook*
 ;;       #'(lambda (&rest args)
 ;;           (format *error-output* ";~%")
-;;           (format *error-output* "; lcc error:~%")
+;;           (format *error-output* "; cicili error:~%")
 ;;           (format *error-output* ";~%")
 ;;           (format *error-output* "; ~A~%" (car args))
 ;;           (format *error-output* ";~%")
@@ -232,7 +232,7 @@
 (defun free-name (path name)
   ;; (when (listp name) (error (format nil "wrong object name inside module: ~A ~A" path name)))
   (intern
-   (format nil "lcc~A"
+   (format nil "cicili~A"
            (str:replace-all "[=+/]" "_"
                             (sha1:sha1-base64
                                 (format nil "~{~A~}"
