@@ -7,4 +7,5 @@
     :*warn*
     :*verbose*
     :compile-ast
-    :compile-cicili-file))
+    :compile-cicili-file
+    :load-macro-file))

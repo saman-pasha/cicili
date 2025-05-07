@@ -78,6 +78,8 @@
            (setf (inners  instance)     (make-hash-table :test 'eql)))
 	      ((eql construct '|@TARGET|)
 	       (setf (inners  instance)     (make-hash-table :test 'eql)))
+          ((eql construct '|@MACRO|)
+	       (setf (params  instance)     (make-hash-table :test 'eql)))
 	      (t t))
     instance))
 
@@ -570,7 +572,8 @@
 (defun specify-expr (def)
   (cond ((key-eq  def '|nil|) (specify-nil-expr))
         ((atom    def)        (specify-atom-expr def))
-        (t (let ((func (car def)))
+        (t (let* ((func (car def))
+                  (macro (if (symbolp func) (gethash (symbol-name func) *macros*) nil)))
 	         (cond ((key-eq func '|code|)   (specify-code-expr (cadr def)))
                    ((key-eq func 'FUNCTION) (specify-expr      (cadr def)))
 		           ((key-eq func 'QUOTE)
@@ -596,7 +599,12 @@
                    ((key-eq func '|->|)     (specify-->-expr     def)) ; method access operator
                    ((key-eq func '|sizeof|) (specify-sizeof-expr def))
                    ((key-eq func '|typeof|) (specify-typeof-expr def))
-		           (t (specify-call-expr def)))))))
+		           (macro   (let ((expr (macroexpand `(,macro ,@(cdr def)))))
+                              (display "ME" expr #\Newline)
+                              (if (listp expr)
+                                  (specify-body (list expr))
+                                  (specify-expr expr))))
+                   (t (specify-call-expr def)))))))
 
 (defun specify-variable (def attrs)
   (let* ((is-auto     nil)
@@ -644,7 +652,6 @@
 		                   ((key-eq func '|while|)    (specify-while         form)) 
 		                   ((key-eq func '|do|)       (specify-do            form)) 
 		                   ((key-eq func '|for|)      (specify-for           form)) 
-		                   ((key-eq func '|for-each|) (specify-for-each      form)) 
 		                   (t (specify-expr form))))))
           (body body-specifier)))
     (setf (body body-specifier) (reverse (body body-specifier)))
@@ -805,18 +812,6 @@
                            (make-specifier (specify-decl-name< variable) '|@VAR| const typeof modifier const-ptr array
                                            (if (null value) nil (specify-expr value)) attributes))
                      for-var))))))
-    (setf (body for-var) (specify-body (nthcdr 4 def)))
-    for-var))
-
-;;;; remained for macro definition
-;;;; for-each and loop
-(defun specify-for-each (def)
-  (when (or (< (length def) 4) (not (listp (nth 1 def)))) (error (format nil "wrong for each form ~A" def)))
-  (let* ((counter (gensym "__ciciliCounter"))
-         (vari    (specify-type< (nth 1 def)))
-         (argv    (specify-expr  (nth 2 def)))
-         (argc    (specify-expr  (nth 3 def)))
-         (for-var (make-specifier argv '|@FOREACH| nil vari nil nil nil argc '())))
     (setf (body for-var) (specify-body (nthcdr 4 def)))
     for-var))
 

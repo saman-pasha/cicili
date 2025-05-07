@@ -11,6 +11,8 @@
 
 (asdf:load-system "cicili")
 
+;; (cicili:load-macro-file "builtin.lisp")
+
 (let ((argv (uiop:command-line-arguments)))
   (if (> (length argv) 0)
       (progn

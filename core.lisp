@@ -7,6 +7,33 @@
 (defvar *assignments* '(|+=| |-=| |*=| |/=| |%=| |<<=| |>>=|))
 (defvar *modifiers* '(|&| |*| |**| |***|))
 
+;; current target spec during target specifying
+(defparameter *target-spec* nil)
+;; storing file name during compiling
+(defparameter *target-file* "main.c")
+;; current target is header
+(defparameter *target-header* nil)
+;; current target is source
+(defparameter *target-source* nil)
+;; current module spec during module compiling
+(defparameter *module-spec* nil)
+;; current module spec during module compiling
+(defparameter *module-path* nil)
+;; current function spec during function compiling
+(defparameter *function-spec* nil)
+;; resolve current function
+(defparameter *resolve* t)
+;; storing line num and col num of target's ASTs
+(defparameter *ast-lines* '())
+;; stores current resolver run number
+(defparameter *ast-run* 0)
+;; stores names symbols of all loaded macros
+(defvar *macros* (make-hash-table :test 'equal))
+
+;; adds a macro to macros list *macros*
+(defun add-macro (macro def)
+  (setf (gethash macro *macros*) def))
+
 (defun reving (list result)
   (cond ((consp list) (reving (cdr list) (cons (car list) result)))
         ((null list) result)
@@ -48,27 +75,6 @@
                               (if reset
                                   (setf count reset)
                                   (setf count (+ count step))))))
-
-;; current target spec during target specifying
-(defparameter *target-spec* nil)
-;; storing file name during compiling
-(defparameter *target-file* "main.c")
-;; current target is header
-(defparameter *target-header* nil)
-;; current target is source
-(defparameter *target-source* nil)
-;; current module spec during module compiling
-(defparameter *module-spec* nil)
-;; current module spec during module compiling
-(defparameter *module-path* nil)
-;; current function spec during function compiling
-(defparameter *function-spec* nil)
-;; resolve current function
-(defparameter *resolve* t)
-;; storing line num and col num of target's ASTs
-(defparameter *ast-lines* '())
-;; stores current resolver run number
-(defparameter *ast-run* 0)
 
 (defun ast-key< (line-n col-n &key (file *target-file*))
   (format nil "~A:~D:~D" *target-file* line-n col-n))
@@ -177,8 +183,6 @@
                     (funcall *col-num* (1- (- (length result) index)))))
           (funcall *col-num* (length result)))
       (when *debug* (display result #\NewLine))
-      ;; (display line-n (+ col-n space-count) result)
-      ;; (values line-n col-n)
       result)))
 
 (defun read-file (path)
@@ -189,7 +193,7 @@
 		(DO ((target (READ file) (READ file NIL NIL)))
 			((NULL target) T)
 		  (PUSH target targets))))
-    (nreverse targets)))
+    (reverse targets)))
 
 (defun indent (lvl)
   (make-string (* lvl 2) :initial-element #\Space))

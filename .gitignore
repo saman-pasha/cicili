@@ -83,3 +83,11 @@ test/module/main.c.run3.c
 test/module/module.c.run1.c
 test/module/module.c.run2.c
 test/module/module.c.run3.c
+test/macro/basic-macro.c.run1.c
+test/macro/basic-macro.c.run2.c
+test/macro/basic-macro.c.run3.c
+test/macro/main.dSYM/Contents/Info.plist
+test/macro/main.dSYM/Contents/Resources/DWARF/main
+test/macro/main.dSYM/Contents/Resources/Relocations/x86_64/main.yml
+test/macro/main
+test/macro/.\#basic.lisp
