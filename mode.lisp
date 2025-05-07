@@ -138,6 +138,7 @@
    (1 . free)
    (1 . $)
    (1 . ->)
+   (1 . import)
    ))
 
 (defun cicili-add-attributes (face-name keyword-rules)

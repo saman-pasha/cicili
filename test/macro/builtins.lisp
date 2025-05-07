@@ -1,3 +1,8 @@
+
+;;;; init functions will be called per macro file when imported and receives import arguments
+(DEFUN init (a-simple-name)
+  (FORMAT T "builtins loaded at compile time: ~A~%" a-simple-name))
+
 ;;;; loops over any indexable structures in C for each item []
 (DEFMACRO for-each (counter      ; name of counter variable
                     item         ; name of iterator pointer

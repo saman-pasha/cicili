@@ -3,7 +3,7 @@
   `(== ,a ,b))
 
 ;;;; cicili file contains many useful macros
-(import "builtins.lisp")
+(import "builtins.lisp" "cicili")
 
 (source "basic-macro.c" (:std #t :compile #t :link #t)
         (func main ()
