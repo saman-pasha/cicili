@@ -8,6 +8,8 @@
 (defparameter *verbose* "")
 ;; debug macroexpand for all recognized macros
 (defparameter *macroexpand* nil)
+;; debug all loaded macros with namespace
+(defparameter *debug-macros* nil)
 
 (format t "software type: ~S~%" (software-type))
 ;;;; os specific toolset
