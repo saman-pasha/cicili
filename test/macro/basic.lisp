@@ -14,10 +14,10 @@
               (printf "are equal 3 == (+ 1 2): %d\n" (simple-equal 3 (+ 1 2)))
 
               (let ((int array [5] . '{ 1 3 2 5 4 }))
-                (bi.for-each ; bi namespace
+                (bi.for-each ; bi macros namespace
                     i it array 5
                     (set (nth i array) (+ (nth i array) 10))
-                    (for-each ; no namespace means CL-USER
+                    (for-each ; without namespace means CL-USER
                         j jt array 5
                         (printf "i: %d it: %d, j: %d jt: %d\n" i (cof it) j (cof jt)))))
         ))

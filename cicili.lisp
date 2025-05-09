@@ -23,8 +23,9 @@
               do (progn
                    (format t "arg specified: ~A~%" arg)
                    (cond
-                     ((string= arg "--debug")    (setf cicili:*debug*   t))
-                     ((string= arg "--warn")     (setf cicili:*warn*    t))
-                     ((string= arg "--verbose")  (setf cicili:*verbose* "-v"))
+                     ((string= arg "--debug")       (setf cicili:*debug*       t))
+                     ((string= arg "--warn")        (setf cicili:*warn*        t))
+                     ((string= arg "--verbose")     (setf cicili:*verbose*  "-v"))
+                     ((string= arg "--macroexpand") (setf cicili:*macroexpand* t))
                      (t (cicili:compile-cicili-file arg))))))
       (error (format nil "at least pass the cicili .lisp file to compile"))))

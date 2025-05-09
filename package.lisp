@@ -6,6 +6,7 @@
     :*debug*
     :*warn*
     :*verbose*
+    :*macroexpand*
     :compile-ast
     :compile-cicili-file
     :load-macro-file))
