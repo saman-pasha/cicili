@@ -25,6 +25,6 @@
                    (cond
                      ((string= arg "--debug")    (setf cicili:*debug*   t))
                      ((string= arg "--warn")     (setf cicili:*warn*    t))
-                     ((string= arg "--verbose")  (setf cicili:*verbose* "-v")))))
-        (cicili:compile-cicili-file (first argv)))
+                     ((string= arg "--verbose")  (setf cicili:*verbose* "-v"))
+                     (t (cicili:compile-cicili-file arg))))))
       (error (format nil "at least pass the cicili .lisp file to compile"))))

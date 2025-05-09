@@ -1,7 +1,8 @@
+(IN-PACKAGE :CL-USER)
 
 ;;;; init functions will be called per macro file when imported and receives import arguments
-(DEFUN init (a-simple-name)
-  (FORMAT T "builtins loaded at compile time: ~A~%" a-simple-name))
+(DEFUN init (a-list)
+  (FORMAT T "sample helper loaded at compile time: ~A~%" a-list))
 
 ;;;; loops over any indexable structures in C for each item []
 (DEFMACRO for-each (counter      ; name of counter variable
