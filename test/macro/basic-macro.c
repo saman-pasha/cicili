@@ -12,6 +12,7 @@ int main () {
     { /* cicili#Let178 */
       typeof(array [0]) * it = array ;
       for (int i = 0; (i  <  5 ); (++it ), (++i )) {
+        array [i ] = (array [i ] +  10 );
         { /* cicili#Let179 */
           typeof(array [0]) * jt = array ;
           for (int j = 0; (j  <  5 ); (++jt ), (++j )) {

@@ -132,6 +132,7 @@
    (1 . while)
    (1 . for)
    (1 . for-each)
+   (1 . for-each-const)
    (1 . new)
    (1 . printf)
    (1 . scanf)

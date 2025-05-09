@@ -110,7 +110,7 @@
         (set-macro-character #\| function non-terminating-p)))))
 
 ;;;; a file contains many cicili macro definitions will be loaded into CL-USER PACKAGE
-(defun load-macro-file (file-name pack init-args)
+(defun load-macro-file (file-name &optional pack init-args)
   (when (key-eq pack '|nil|) (setq pack nil))
   (let ((file-path (make-pathname :directory (pathname-directory file-name)))
         (rt (copy-readtable nil)))
