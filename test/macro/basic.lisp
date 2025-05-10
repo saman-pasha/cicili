@@ -23,5 +23,12 @@
 
          (when #t (printf "when was true\n"))
          (unless #f (printf "unless was false\n"))
-         (printf "result from progn %d\n" (progn (* 8 7)))
-        ))
+         (printf "result from progn %d\n" (progn (* 4 5))) ; returns last form
+         (printf "result from progn let %d\n" (progn ; let inside progn returns last form
+                                                (let ((int x . 6)
+                                                      (int y . 7))
+                                                  (* x y))))
+         (printf "result from letn %d\n" (letn ((int x . 8) ; letn returns last form
+                                                (int y . 9))
+                                           (* x y)))
+         ))

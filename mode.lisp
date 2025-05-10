@@ -142,6 +142,7 @@
    (1 . $)
    (1 . ->)
    (1 . import)
+   (1 . letn)
    ))
 
 (defun cicili-add-attributes (face-name keyword-rules)

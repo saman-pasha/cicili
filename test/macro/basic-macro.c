@@ -18,10 +18,10 @@ int main () {
           for (int j = 0; (j  <  5 ); (++jt ), (++j )) {
             printf ("i: %d it: %d, j: %d jt: %d\n", i , (*it ), j , (*jt ));
           } 
-        } /* cicili#Let184 */
+        }
       } 
-    } /* cicili#Let182 */
-  } /* cicili#Let180 */
+    }
+  }
   if (true ) 
     { /* cicili#Block186 */
       printf ("when was true\n");
@@ -33,7 +33,19 @@ int main () {
     } /* cicili#Block188 */
 
   printf ("result from progn %d\n", ({ /* cicili#Progn189 */
-      (8 *  7 );
+      (4 *  5 );
+    }));
+  printf ("result from progn let %d\n", ({ /* cicili#Progn190 */
+      ({ /* cicili#Let191 */
+        int x = 6;
+        int y = 7;
+        (x  *  y  );
+      });
+    }));
+  printf ("result from letn %d\n", ({ /* cicili#Let192 */
+      int x = 8;
+      int y = 9;
+      (x  *  y  );
     }));
 }
 
