@@ -9,15 +9,19 @@
 (import "helper.lisp" nil '(1 3 7 10))
 
 (source "basic-macro.c" (:std #t :compile #t :link #t)
-        (func main ()
-              (printf "are equal 3 == 3: %d\n" (simple-equal 3 3))
-              (printf "are equal 3 == (+ 1 2): %d\n" (simple-equal 3 (+ 1 2)))
+        (CMACRO 1 #\C)
+        (main
+         (printf "are equal 3 == 3: %d\n" (simple-equal 3 3))
+         (printf "are equal 3 == (+ 1 2): %d\n" (simple-equal 3 (+ 1 2)))
 
-              (let ((int array [5] . '{ 1 3 2 5 4 }))
-                (bi.for-each ; bi macros namespace
-                    i it array 5
-                    (set (nth i array) (+ (nth i array) 10))
-                    (for-each ; without namespace means CL-USER
-                        j jt array 5
-                        (printf "i: %d it: %d, j: %d jt: %d\n" i (cof it) j (cof jt)))))
+         (let ((int array [5] . '{ 1 3 2 5 4 }))
+           (bi.for-each ; bi macros namespace
+               i it array 5
+               (set (nth i array) (+ (nth i array) 10))
+               (for-each ; without namespace means CL-USER
+                   j jt array 5
+                   (printf "i: %d it: %d, j: %d jt: %d\n" i (cof it) j (cof jt)))))
+
+         (when #t (printf "when was true\n"))
+         (unless #f (printf "unless was false\n"))
         ))

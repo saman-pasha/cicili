@@ -51,7 +51,7 @@
                     ((key-eq construct '|module|)
 		             (add-inner (specify-module   clause attributes) target-specifier)
 		             (setq attributes '()))
-		            (t (error (format nil "unknown clause ~A in target ~A" construct name)))))
+		            (t (add-inner (specify-expr   clause) target-specifier))))
 	        (error (format nil "syntax error ~A" clause))))
       target-specifier)))
 
@@ -98,8 +98,8 @@
 			                  ('|@UNION|    (compile-union        in-spec 0 globals))
 			                  ('|@GUARD|    (compile-guard        in-spec 0 globals))
 			                  ('|@MODULE|   (compile-module       in-spec 0 globals))
-			                  (otherwise
-                               (error (format nil "unknown construct ~A in ~A" (construct in-spec) in-name)))))
+			                  (otherwise    (compile-form         in-spec globals)
+                                            (output "~%"))))
 		                (inners spec))
 	           (close *output*)
                (when header (return-from compile-target t))

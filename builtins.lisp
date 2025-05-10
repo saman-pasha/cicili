@@ -1,3 +1,13 @@
+;;;; main simple form
+(DEFMACRO main (&REST body)
+  `(func main () (out int) ,@body))
+
+(DEFMACRO when (cond &REST body)
+  `(if ,cond (block ,@body)))
+
+(DEFMACRO unless (cond &REST body)
+  `(if (not ,cond) (block ,@body)))
+
 ;;;; loops over any indexable structures in C for each item []
 (DEFMACRO for-each (counter      ; name of counter variable
                     item         ; name of iterator pointer

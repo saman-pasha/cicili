@@ -320,6 +320,7 @@
       ('|@->|     (compile-->         spec globals))
       ('|@SIZEOF| (compile-sizeof     spec globals))
       ('|@TYPEOF| (compile-typeof     spec globals))
+      ('|@FUNC|   (compile-function   spec 0 globals))
       ('|@CALL|   (compile-call       spec -1 globals))
       ('|@BODY|   (compile-body       spec -1 globals))
       (t (error (format nil "expr syntax error ~A" spec))))))
@@ -502,7 +503,10 @@
                        (if *target-header*
                            (error (format nil "inline structs in header file outside of any module: ~A" los))
                            (compile-struct   los lvl globals :nested t :unique is-unique)))   ; inline structs
-                   (compile-function los lvl globals :unique is-unique)))))                   ; lambdas
+                   (progn ; lambdas
+                     (push (cons '|static| t) (attrs los))
+                     (compile-function los lvl globals :unique is-unique)
+                     (pop (attrs los)))))))
   ;; resolve ?
   (let ((is-static  nil)
 	    (is-declare as-type)
@@ -756,6 +760,7 @@
 		           ('|@UNION|    (compile-union        in-spec lvl globals))
 		           ('|@GUARD|    (compile-guard        in-spec lvl globals :nested t))
 		           ('|@MODULE|   (compile-module       in-spec lvl globals))
-		           (otherwise nil)))
+		           (otherwise    (compile-form         in-spec globals)
+                                 (output "~%"))))
 	         (inners spec))    
     (set-ast-line (output "~&#endif /* ~A */ ~%" name))))

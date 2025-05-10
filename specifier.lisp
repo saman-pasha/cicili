@@ -599,6 +599,7 @@
                    ((key-eq func '|->|)     (specify-->-expr     def)) ; method access operator
                    ((key-eq func '|sizeof|) (specify-sizeof-expr def))
                    ((key-eq func '|typeof|) (specify-typeof-expr def))
+                   ((key-eq func '|func|)   (specify-function    def '()))
 		           (macro   (let ((expr (macroexpand `(,macro ,@(cdr def)))))
                               (when *macroexpand* (let ((id (gensym "me:")))
                                                     (format t "~A ~A~%~A ~A~%" id def id expr #\Newline)))
@@ -706,7 +707,7 @@
                                           ((key-eq '|**| modifier) '|***|)
                                           (t (error (format nil "not suitable for auto deferral alloc"))))
                                      ,variable))
-                                  (|free| (|cof| ,variable))))))
+                                  (|free| (|cast| (|void| *) (|cof| ,variable)))))))
 		             (when (and has-defer (not (eq has-defer t)))
                        (push (cons '|defer|    (specify-expr has-defer)) attributes))
                      (add-param
@@ -1069,6 +1070,6 @@
 		            ((key-eq construct '|module|)
 		             (add-inner (specify-module   clause attributes) guard-specifier)
 		             (setq attributes '()))
-		            (t (error (format nil "unknown clause ~A in guard ~A" construct name)))))
+		            (t (add-inner (specify-expr   clause) guard-specifier))))
 	        (error (format nil "syntax error ~A" clause)))))
     guard-specifier))
