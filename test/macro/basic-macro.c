@@ -32,5 +32,8 @@ int main () {
       printf ("unless was false\n");
     } /* cicili#Block188 */
 
+  printf ("result from progn %d\n", ({ /* cicili#Progn189 */
+      (8 *  7 );
+    }));
 }
 

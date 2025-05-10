@@ -98,7 +98,7 @@
 			                  ('|@UNION|    (compile-union        in-spec 0 globals))
 			                  ('|@GUARD|    (compile-guard        in-spec 0 globals))
 			                  ('|@MODULE|   (compile-module       in-spec 0 globals))
-			                  (otherwise    (compile-form         in-spec globals)
+			                  (otherwise    (compile-form         in-spec 0 globals)
                                             (output "~%"))))
 		                (inners spec))
 	           (close *output*)

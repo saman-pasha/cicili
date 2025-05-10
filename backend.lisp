@@ -1,10 +1,10 @@
 (in-package :cicili)
 
-(defun compile-name (name globals)
+(defun compile-name (name lvl globals)
   (if (symbolp name)
       (set-ast-line (output (symbol-name name)))
       (if (and (typep name 'sp) (key-eq '|@TYPEOF| (construct name)))
-          (compile-typeof name globals)
+          (compile-typeof name lvl globals)
           (let ((type (car name)))
             (cond ((or (key-eq '|struct| type) (key-eq '|union| type))
                    (set-ast-line (output (symbol-name type)))
@@ -12,11 +12,11 @@
                    (set-ast-line (output (symbol-name (cadr name)))))
                   ((key-eq '|typeof| type)
                    (set-ast-line (output "typeof("))
-                   (compile-form (cadr name) globals)
+                   (compile-form (cadr name) (1+ lvl) globals)
                    (set-ast-line (output ")")))
                   (t (error (format nil  "wrong name: ~A" name))))))))
 
-(defun compile-type-name (name globals)
+(defun compile-type-name (name lvl globals)
   (cond ((key-eq name '|uchar|)  (set-ast-line (output "unsigned char")))
 	    ((key-eq name '|ushort|) (set-ast-line (output "unsigned short")))
 	    ((key-eq name '|uint|)   (set-ast-line (output "unsigned int")))
@@ -35,37 +35,37 @@
 	    ((key-eq name '|u128|)   (set-ast-line (output "unsigned __int128")))
 	    ((key-eq name '|real|)   (set-ast-line (output "long double")))
 	    ((key-eq name '|auto|)   (set-ast-line (output "__auto_type")))
-	    (t (compile-name name globals))))
+	    (t (compile-name name lvl globals))))
 
-(defun compile-array (desc globals)
+(defun compile-array (desc lvl globals)
   (cond ((null desc) t) ; empty
         ((= (length desc) 1)
          (set-ast-line (output "["))
          (let ((amount (nth 0 desc)))
-           (unless (key-eq '|NULL| (name amount)) (compile-form (nth 0 desc) globals)))
+           (unless (key-eq '|NULL| (name amount)) (compile-form (nth 0 desc) (1+ lvl) globals)))
          (set-ast-line (output "]")))
         ((= (length desc) 2)
          (set-ast-line (output "["))
          (let ((amount (nth 0 desc)))
-           (unless (key-eq '|NULL| (name amount)) (compile-form (nth 0 desc) globals)))
+           (unless (key-eq '|NULL| (name amount)) (compile-form (nth 0 desc) (1+ lvl) globals)))
          (set-ast-line (output "]"))
          (set-ast-line (output "["))
          (let ((amount (nth 1 desc)))
-           (unless (key-eq '|NULL| (name amount)) (compile-form (nth 1 desc) globals)))
+           (unless (key-eq '|NULL| (name amount)) (compile-form (nth 1 desc) (1+ lvl) globals)))
          (set-ast-line (output "]")))
         (t (error (format nil "wrong array description ~A" desc)))))
 
-(defun format-type (const typeof modifier const-ptr name array-def anonymous globals)
+(defun format-type (const typeof modifier const-ptr name array-def anonymous lvl globals)
   (when anonymous (setq name (format nil "/* ~A */" name)))
   (when const     (set-ast-line (output "const ")))
-  (unless (null typeof) (compile-type-name typeof globals))
+  (unless (null typeof) (compile-type-name typeof lvl globals))
   (when modifier  (output " ") (set-ast-line (output "~A" modifier)))
   (when const-ptr (output " ") (set-ast-line (output "const" const-ptr)))
   (when name      (output " ")
         (set-ast-line (output "~A" (if (str:starts-with-p "_ciciliParam_" (symbol-name name)) " " name))))
-  (compile-array array-def globals))
+  (compile-array array-def lvl globals))
 
-(defun compile-spec-type (spec globals)
+(defun compile-spec-type (spec lvl globals)
   (let ((const     (const      spec))
 	    (typeof    (typeof     spec))
 	    (modifier  (modifier   spec))
@@ -76,24 +76,24 @@
     (if (key-eq typeof '|func|)
         (progn
           (when const (set-ast-line (output "const ")))
-          (compile-function (car array-def) 0 '() :type t))
-        (format-type const typeof modifier const-ptr name array-def anonymous globals))))
+          (compile-function (car array-def) lvl '() :type t))
+        (format-type const typeof modifier const-ptr name array-def anonymous lvl globals))))
 
-(defun format-type-value (const typeof modifier const-ptr name array-def default anonymous globals &optional defer)
+(defun format-type-value (const typeof modifier const-ptr name array-def default anonymous lvl globals &optional defer)
   (when anonymous (setq name (format nil "/* ~A */" name)))
-  (format-type const typeof modifier const-ptr name array-def anonymous globals)
+  (format-type const typeof modifier const-ptr name array-def anonymous lvl globals)
   (when defer
     (output " ")
     (set-ast-line (output "__attribute__(("))
     (set-ast-line (output "__cleanup__("))
-    (compile-form defer globals)
+    (compile-form defer (1+ lvl) globals)
     (set-ast-line (output ")))")))
   (when (and (not (null default)) (not (key-eq (construct default) '|@NIL|)))
     (output " ")
     (set-ast-line (output "= "))
-    (compile-form default globals)))
+    (compile-form default (1+ lvl) globals)))
 
-(defun compile-spec-type-value (spec globals &optional defer &key ((:unique is-unique) nil))
+(defun compile-spec-type-value (spec lvl globals &optional defer &key ((:unique is-unique) nil))
   (let ((const     (const      spec))
 	    (typeof    (typeof     spec))
 	    (modifier  (modifier   spec))
@@ -105,16 +105,16 @@
     (if (key-eq typeof '|func|)
         (progn
           (when const (set-ast-line (output "const ")))
-          (compile-function (car array-def) 0 '() :type t)
+          (compile-function (car array-def) lvl '() :type t)
           (when (and (not (null default)) (not (key-eq (construct default) '|@NIL|)))
             (output " ")
             (set-ast-line (output "= "))
             (set-ast-line (output "~A" (if is-unique (unique default) (name default))))))
         (format-type-value const typeof modifier const-ptr
                            (if is-unique (unique spec) name)
-                           array-def default anonymous globals defer))))
+                           array-def default anonymous lvl globals defer))))
 
-(defun compile-atom (spec globals)
+(defun compile-atom (spec lvl globals)
   (with-slots (construct (value name) typeof) spec
     (unless (or (key-eq construct '|@ATOM|) (key-eq construct '|@SYMBOL|))
       (error (format nil "atom syntax error \"~A\"" spec)))
@@ -136,11 +136,11 @@
                        (set-ast-line (output "~A " value)))))))
           (t (set-ast-line (output "~A" value))))))
 
-(defun compile-code (spec globals)
+(defun compile-code (spec lvl globals)
   (with-slots ((content default)) spec
     (set-ast-line (output "~A" content))))
 
-(defun compile-list (spec globals)
+(defun compile-list (spec lvl globals)
   (with-slots ((items default)) spec
     (set-ast-line (output "{"))
     (let ((l (length items))
@@ -156,28 +156,28 @@
                        (set-ast-line (output "~A " (str:replace-all "$" "." (symbol-name (name item))))))
                      (progn
                        (when m-init (set-ast-line (output "= ")))
-                       (compile-form item globals)
+                       (compile-form item (1+ lvl) globals)
                        (setq m-init nil)))
                  (when (and (not m-init) (< i l)) (output ", ")))))
     (set-ast-line (output "}"))))
 
-(defun compile-unary (spec globals)
+(defun compile-unary (spec lvl globals)
   (with-slots ((oprt name) (is-postfix modifier) (oprnd default)) spec
     (output "(")
     (if is-postfix
         (progn
-          (compile-form oprnd globals)
+          (compile-form oprnd (1+ lvl) globals)
 	      (set-ast-line (output "~A"  oprt)))
         (progn
           (set-ast-line (output "~A" oprt))
-          (compile-form oprnd globals)))
+          (compile-form oprnd (1+ lvl) globals)))
     (output ")")))
 
-(defun compile-operator (spec globals)
+(defun compile-operator (spec lvl globals)
   (with-slots ((opr name) (seq default)) spec
     (output "(")
     (dolist (frm seq)
-      (compile-form frm globals)
+      (compile-form frm (1+ lvl) globals)
       (output " "))
     (output ")")))
 
@@ -185,39 +185,39 @@
   (with-slots ((opr name) (seq default)) spec
     (when (> lvl -1) (output "~&~A" (indent lvl)))
     (dolist (frm seq)
-      (compile-form frm globals)
+      (compile-form frm globals (1+ lvl))
       (output " "))
     (when (> lvl -1) (output ";~%"))))
 
-(defun compile-nth (spec globals)
+(defun compile-nth (spec lvl globals)
   (with-slots ((index name) (array default)) spec
-    (compile-form array globals)
+    (compile-form array (1+ lvl) globals)
     (output "[")
-    (compile-form index globals)
+    (compile-form index (1+ lvl) globals)
     (output "]")))
 
-(defun compile-? (spec globals)
+(defun compile-? (spec lvl globals)
   (with-slots ((condition name) (exprs default)) spec
     (output "((")
-    (compile-form condition globals)
+    (compile-form condition (1+ lvl) globals)
     (output ") ? ")
-    (compile-form (nth 0 exprs) globals)
+    (compile-form (nth 0 exprs) (1+ lvl) globals)
     (output " \: ")
-    (compile-form (nth 1 exprs) globals)
+    (compile-form (nth 1 exprs) (1+ lvl) globals)
     (output ")")))
 
-(defun compile-cast (spec globals)
+(defun compile-cast (spec lvl globals)
   (with-slots (typeof (value default)) spec
     (output "((")
-    (compile-spec-type spec globals)
+    (compile-spec-type spec lvl globals)
     (output ")")
-    (compile-form value globals)
+    (compile-form value (1+ lvl) globals)
     (output ")")))
 
-(defun compile-$ (spec globals)
+(defun compile-$ (spec lvl globals)
   (with-slots ((receiver name) (member default)) spec
     (output "(")
-    (compile-form receiver globals)
+    (compile-form receiver (1+ lvl) globals)
     (let* ((ast  (current-ast<))
            (info (getf ast 'info)))
       (if (or (null *resolve*) (null ast))
@@ -231,10 +231,10 @@
                     (set-resolved "->")
                     (set-ast-line (output "->")))
                   (error (format nil "\: unresolved member reference type ~A~%" spec))))))
-    (compile-form member globals)
+    (compile-form member (1+ lvl) globals)
     (output ")")))
 
-(defun compile--> (spec globals)
+(defun compile--> (spec lvl globals)
   (with-slots ((receiver name) (method default) (args body)) spec
     (let* ((obj-ast (current-ast< 0 1))
            (opr-ast (current-ast< 0 (1+ (length (getf obj-ast 'res)))))
@@ -246,15 +246,15 @@
             (if (null res)
                 (progn ;; access member by pointer
                   (output "(")
-                  (compile-form receiver globals)
+                  (compile-form receiver (1+ lvl) globals)
                   (set-ast-line (output "->"))
-                  (compile-form method globals)
+                  (compile-form method (1+ lvl) globals)
                   (output ")"))
                 (progn
                   (set-ast-line (output res))
                   (output "(")
-                  (compile-form receiver globals)
-                  (compile-args (default args) globals t)
+                  (compile-form receiver (1+ lvl) globals)
+                  (compile-args (default args) lvl globals t)
                   (output ")")
                   (funcall *col-num* 0 :reset (+ col-n (length res))))))
           (cond ((str:containsp "no member named" info)
@@ -269,58 +269,59 @@
                        (error (format nil "cicili\: unresolved method reference type ~A~%" spec)))
                    (set-ast-line (output "~A " (string-trim "'" method)))
                    (output "(")
-                   (compile-form receiver globals)
-                   (compile-args (default args) globals t)
+                   (compile-form receiver (1+ lvl) globals)
+                   (compile-args (default args) lvl globals t)
                    (output ")")
                    (funcall *col-num* 0 :reset (+ col-n (length (getf ast 'res))))))
                 (t (error (format nil "cicili\: unresolved method reference type ~A~%" spec))))))))
 
-(defun compile-sizeof (spec globals)
+(defun compile-sizeof (spec lvl globals)
   (set-ast-line (output "sizeof("))
-  (compile-spec-type spec globals)
+  (compile-spec-type spec lvl globals)
   (output ")"))
 
-(defun compile-typeof (spec globals)
+(defun compile-typeof (spec lvl globals)
   (set-ast-line (output "typeof("))
-  (compile-form (default spec) globals)
+  (compile-form (default spec) (1+ lvl) globals)
   (output ")"))
 
-(defun compile-args (args globals comma-first)
+(defun compile-args (args lvl globals comma-first)
   (loop for arg in args
         with l = (1- (length args))
         for i from 0 to l
         do (progn
              (when comma-first (output ", "))
-             (compile-form arg globals)
+             (compile-form arg (1+ lvl) globals)
              (when (< i l) (output ", ")))))
 
 (defun compile-call (spec lvl globals)
   (with-slots ((func name) (args default)) spec
     (when (> lvl -1) (output "~&~A" (indent lvl)))
-    (compile-form func globals)
+    (compile-form func (1+ lvl) globals)
     (output "(")
-    (unless (null args) (compile-args args globals nil))
+    (unless (null args) (compile-args args lvl globals nil))
     (output ")")
     (when (> lvl -1) (output ";~%"))))
 
-(defun compile-form (spec globals)
+(defun compile-form (spec lvl globals)
   (with-slots (construct) spec
     (case construct
       ('|@NIL|    t)
-      ('|@SYMBOL| (compile-atom       spec globals))
-      ('|@ATOM|   (compile-atom       spec globals))
-      ('|@CODE|   (compile-code       spec globals))
-      ('|@LIST|   (compile-list       spec globals))
-      ('|@UNARY|  (compile-unary      spec globals))
-      ('|@OPR|    (compile-operator   spec globals))
-      ('|@NTH|    (compile-nth        spec globals))
-      ('|@?|      (compile-?          spec globals))
-      ('|@CAST|   (compile-cast       spec globals))
-      ('|@$|      (compile-$          spec globals))      
-      ('|@->|     (compile-->         spec globals))
-      ('|@SIZEOF| (compile-sizeof     spec globals))
-      ('|@TYPEOF| (compile-typeof     spec globals))
-      ('|@FUNC|   (compile-function   spec 0 globals))
+      ('|@SYMBOL| (compile-atom       spec lvl globals))
+      ('|@ATOM|   (compile-atom       spec lvl globals))
+      ('|@CODE|   (compile-code       spec lvl globals))
+      ('|@LIST|   (compile-list       spec lvl globals))
+      ('|@UNARY|  (compile-unary      spec lvl globals))
+      ('|@OPR|    (compile-operator   spec lvl globals))
+      ('|@NTH|    (compile-nth        spec lvl globals))
+      ('|@?|      (compile-?          spec lvl globals))
+      ('|@CAST|   (compile-cast       spec lvl globals))
+      ('|@$|      (compile-$          spec lvl globals))      
+      ('|@->|     (compile-->         spec lvl globals))
+      ('|@SIZEOF| (compile-sizeof     spec lvl globals))
+      ('|@TYPEOF| (compile-typeof     spec lvl globals))
+      ('|@PROGN|  (compile-progn      spec lvl globals))
+      ('|@FUNC|   (compile-function   spec lvl globals))
       ('|@CALL|   (compile-call       spec -1 globals))
       ('|@BODY|   (compile-body       spec -1 globals))
       (t (error (format nil "expr syntax error ~A" spec))))))
@@ -345,7 +346,7 @@
     (when is-static   (set-ast-line (output "static ")))
     (when is-register (set-ast-line (output "register ")))
     (when is-auto     (set-ast-line (output "auto ")))
-    (compile-spec-type-value spec globals has-defer :unique is-unique)
+    (compile-spec-type-value spec lvl globals has-defer :unique is-unique)
     (output ";~%")))
 
 (defun compile-body (spec lvl globals)
@@ -355,6 +356,7 @@
              ('|@CALL|   (compile-call       form (1+ lvl) globals))
              ('|@LET|    (compile-let        form (1+ lvl) globals))
              ('|@BLOCK|  (compile-block      form (1+ lvl) globals))
+             ('|@PROGN|  (compile-progn      form (1+ lvl) globals))
              ('|@SET|    (compile-set        form (1+ lvl) globals))
              ('|@RETURN| (compile-return     form (1+ lvl) globals))
              ('|@IF|     (compile-if         form (1+ lvl) globals))
@@ -364,7 +366,7 @@
              ('|@DO|     (compile-do         form (1+ lvl) globals))
              ('|@BODY|   (compile-body       form     lvl  globals))
              (t (unless (= lvl -1) (output "~&~A" (indent (1+ lvl))))
-                (compile-form form globals)
+                (compile-form form (1+ lvl) globals)
                 (unless (= lvl -1) (output ";~%"))))))
 
 (defun compile-let (spec lvl globals)
@@ -388,27 +390,34 @@
     (output "~&~A" (indent lvl))
     (output "} /* ~A */~%" (name spec))))
 
+(defun compile-progn (spec lvl globals)
+  (let ((locals      (copy-specifiers globals)))
+    (output "({ /* ~A */~%" (name spec))
+    (compile-body (body spec) lvl locals)
+    (output "~&~A" (indent lvl))
+    (output "})" (name spec))))
+
 (defun compile-set (spec lvl globals)
   (with-slots ((items default)) spec
     (dolist (item items)
       (when (> lvl -1) (output "~&~A" (indent lvl)))
-      (compile-form (nth 0 item) globals)
+      (compile-form (nth 0 item) (1+ lvl) globals)
       (output " ")
       (set-ast-line (output "= "))
-      (compile-form (nth 1 item) globals)
+      (compile-form (nth 1 item) (1+ lvl) globals)
       (when (> lvl -1) (output ";~%")))))
 
 (defun compile-return (spec lvl globals)
   (output "~&~A" (indent lvl))
   (set-ast-line (output "return "))
-  (compile-form (default spec) globals)
+  (compile-form (default spec) (1+ lvl) globals)
   (output ";~%"))
 
 (defun compile-if (spec lvl globals)
   (let ((locals (copy-specifiers globals)))
     (output "~&~A" (indent lvl))
     (set-ast-line (output "if ("))
-    (compile-form (name spec) globals) ; condition
+    (compile-form (name spec) (1+ lvl) globals) ; condition
     (set-ast-line (output ") ~%"))
     (compile-body (default spec) lvl locals)
     (let ((else-body (body spec))
@@ -422,14 +431,14 @@
 (defun compile-switch (spec lvl globals)
   (output "~&~A" (indent lvl))
   (set-ast-line (output "switch ("))
-  (compile-form (name spec) globals)
+  (compile-form (name spec) (1+ lvl) globals)
   (set-ast-line (output ") {~%"))
   (dolist (ch-form (default spec))
     (let ((constr (construct ch-form)))
       (cond ((key-eq constr '|@CASE|)
              (output "~&~A" (indent lvl))
              (set-ast-line (output "case "))
-             (compile-form (name ch-form) globals)
+             (compile-form (name ch-form) (1+ lvl) globals)
              (output ":~%")
              (compile-body (body ch-form) (+ lvl 2) globals))
 	        ((key-eq constr '|@DEFAULT|)
@@ -443,7 +452,7 @@
   (let ((locals (copy-specifiers globals)))
     (output "~&~A" (indent lvl))
     (set-ast-line (output "while ("))
-    (compile-form (name spec) globals) ; condition
+    (compile-form (name spec) (1+ lvl) globals) ; condition
     (set-ast-line (output ") {~%"))
     (compile-body (body spec) lvl locals)
     (output "~&~A" (indent lvl))
@@ -456,7 +465,7 @@
     (compile-body (body spec) lvl locals)
     (output "~&~A" (indent lvl))
     (output "} while (")
-    (compile-form (name spec) globals) ; condition
+    (compile-form (name spec) (1+ lvl) globals) ; condition
     (set-ast-line (output ");~%"))))
 
 (defun compile-for (spec lvl globals)
@@ -468,10 +477,10 @@
           with lc = (1- (hash-table-count params))
           for i from 0 to lc
           do (progn
-               (compile-spec-type-value var locals)
+               (compile-spec-type-value var lvl locals)
                (when (< i lc) (output ", "))))
     (output "; ")
-    (compile-form (name spec) locals) ; condition
+    (compile-form (name spec) (1+ lvl) locals) ; condition
     (set-ast-line (output "; "))
     (let ((forms (body (default spec))))
       (loop for form in forms
@@ -479,8 +488,8 @@
             for i from 0 to lc
             do (progn
                  (case (construct form)
-                   ('|@ATOM|   (compile-atom       form locals))
-                   ('|@UNARY|  (compile-unary      form locals))
+                   ('|@ATOM|   (compile-atom       form lvl locals))
+                   ('|@UNARY|  (compile-unary      form lvl locals))
                    ('|@ASSIGN| (compile-assignment form -1 locals))
                    ('|@CALL|   (compile-call       form -1 locals))
                    ('|@SET|    (compile-set        form -1 locals))
@@ -538,7 +547,7 @@
         (when is-extern (set-ast-line (output "extern ")))
         (when is-inline (set-ast-line (output "__attribute__((weak)) ")))
         (when is-static (set-ast-line (output "static ")))
-        (format-type (const spec) (typeof spec) (modifier spec) nil (const-ptr spec) (array-def spec) nil locals)
+        (format-type (const spec) (typeof spec) (modifier spec) nil (const-ptr spec) (array-def spec) nil lvl locals)
         (output " ")
         (set-ast-line (output "~A " (if is-unique (unique spec)
                                         (if is-method
@@ -551,7 +560,7 @@
               with lc = (1- (hash-table-count params))
               for i from 0 to lc
               do (progn
-                   (compile-spec-type-value param locals)
+                   (compile-spec-type-value param lvl locals)
                    (when (< i lc) (output ", "))))
         (output ")")
         (if is-declare
@@ -569,8 +578,8 @@
 (defun compile-preprocessor (spec lvl globals)
   (with-slots ((directive typeof) (macro default)) spec
     (setf (char (symbol-name (name directive)) 0) #\#)
-    (compile-form directive globals)
-    (when macro (compile-form macro globals))
+    (compile-form directive (1+ lvl) globals)
+    (when macro (compile-form macro (1+ lvl) globals))
     (output "~%")))
 
 (defun compile-include (spec lvl globals)
@@ -586,7 +595,7 @@
 
 (defun compile-typedef (spec lvl globals)
   (set-ast-line (output "~&typedef "))
-  (compile-spec-type spec globals)
+  (compile-spec-type spec lvl globals)
   (output ";~%"))
 
 (defun compile-enum (spec lvl globals &key ((:nested is-nested) nil) ((:unique is-unique) nil))
@@ -621,7 +630,7 @@
 		            (set-ast-line (output "~A" (if is-unique (unique in-spec) (name in-name))))
                     (unless (null (default in-spec))
                       (set-ast-line (output " = "))
-                      (compile-form (default in-spec) locals))
+                      (compile-form (default in-spec) (1+ lvl) locals))
                     (when (< counter count) (output ","))
                     (output "~%"))
 		           (otherwise (error (format nil "unknown clause ~A inside ~A" in-name in-spec))))
@@ -686,7 +695,7 @@
                 with l = (1- (hash-table-count declares))
                 for i from 0 to l
                 do (progn
-                     (compile-spec-type dec globals)
+                     (compile-spec-type dec lvl globals)
                      (when (< i l) (output ",")))))
         (progn
           (output " ")
@@ -736,7 +745,7 @@
                 with l = (1- (hash-table-count declares))
                 for i from 0 to l
                 do (progn
-                     (compile-spec-type dec globals)
+                     (compile-spec-type dec lvl globals)
                      (when (< i l) (output ",")))))
         (progn
           (output " ")
@@ -760,7 +769,7 @@
 		           ('|@UNION|    (compile-union        in-spec lvl globals))
 		           ('|@GUARD|    (compile-guard        in-spec lvl globals :nested t))
 		           ('|@MODULE|   (compile-module       in-spec lvl globals))
-		           (otherwise    (compile-form         in-spec globals)
+		           (otherwise    (compile-form         in-spec lvl globals)
                                  (output "~%"))))
 	         (inners spec))    
     (set-ast-line (output "~&#endif /* ~A */ ~%" name))))

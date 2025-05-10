@@ -599,6 +599,7 @@
                    ((key-eq func '|->|)     (specify-->-expr     def)) ; method access operator
                    ((key-eq func '|sizeof|) (specify-sizeof-expr def))
                    ((key-eq func '|typeof|) (specify-typeof-expr def))
+                   ((key-eq func '|progn|)  (specify-progn       def))
                    ((key-eq func '|func|)   (specify-function    def '()))
 		           (macro   (let ((expr (macroexpand `(,macro ,@(cdr def)))))
                               (when *macroexpand* (let ((id (gensym "me:")))
@@ -645,6 +646,7 @@
                             (specify-assignment-expr form))
 		                   ((key-eq func '|let|)      (specify-let           form)) 
 		                   ((key-eq func '|block|)    (specify-block         form)) 
+		                   ((key-eq func '|progn|)    (specify-progn         form)) 
 		                   ((key-eq func '|set|)      (specify-set-expr      form))
 		                   ((key-eq func '|return|)   (specify-return-expr   form))
 		                   ((key-eq func '|break|)    (specify-symbol-expr   form))
@@ -726,6 +728,11 @@
   (let ((block-var (make-specifier (gensym "cicili#Block") '|@BLOCK| nil nil nil nil nil nil '())))
     (setf (body block-var) (specify-body (cdr def)))
     block-var))
+
+(defun specify-progn (def)
+  (let ((progn-var (make-specifier (gensym "cicili#Progn") '|@PROGN| nil nil nil nil nil nil '())))
+    (setf (body progn-var) (specify-body (cdr def)))
+    progn-var))
 
 (defun specify-set-expr (def)
   (when (= (rem (length (cdr def)) 2) 1) (error (format nil "wrong set form ~A" def)))

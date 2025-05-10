@@ -9,7 +9,6 @@
 (import "helper.lisp" nil '(1 3 7 10))
 
 (source "basic-macro.c" (:std #t :compile #t :link #t)
-        (CMACRO 1 #\C)
         (main
          (printf "are equal 3 == 3: %d\n" (simple-equal 3 3))
          (printf "are equal 3 == (+ 1 2): %d\n" (simple-equal 3 (+ 1 2)))
@@ -24,4 +23,5 @@
 
          (when #t (printf "when was true\n"))
          (unless #f (printf "unless was false\n"))
+         (printf "result from progn %d\n" (progn (* 8 7)))
         ))
