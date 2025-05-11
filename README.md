@@ -698,7 +698,7 @@ If form accepts 2 or 3 argument. condition, form for true evaluation of conditio
 ```
 ## Function
 cicili has some points on functions:
-* Use returns form for setting the return type. returns form must be first form of a function after arguments list. A fucntion without returns form will returns void instead of main which returns int.
+* Use out form for setting the return type. out form must be first form of a function after arguments list. A fucntion without out form will returns void instead of main which returns int.
 * Function's attributes must set in declaration time. each attribute enclosed in braces or parentheses.
     * {declare}    
     * {static}
