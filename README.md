@@ -499,8 +499,8 @@ glibtool: link: clang -g -O "" -o CompileTest .libs/main.o  -L/Users/a1/Projects
 ### Sections
 * Documentations: starts with semi-colon(s) ";"
 ```lisp
-;;; about a lisp file
-;;;; author, licence and/or documentation about each target
+;;;; about a lisp file
+;;; author, licence and/or documentation about each target
 (var long height) ; description of a form
 (func sqr ((double a)) 
   (out double)
