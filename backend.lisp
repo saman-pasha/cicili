@@ -277,7 +277,9 @@
 
 (defun compile-sizeof (spec lvl globals)
   (set-ast-line (output "sizeof("))
-  (compile-spec-type spec lvl globals)
+  (if (default spec)
+      (compile-form (default spec) lvl globals)
+      (compile-spec-type spec lvl globals))
   (output ")"))
 
 (defun compile-typeof (spec lvl globals)
@@ -322,7 +324,16 @@
       ('|@TYPEOF| (compile-typeof     spec lvl globals))
       ('|@PROGN|  (compile-progn      spec lvl globals))
       ('|@LETN|   (compile-let        spec lvl globals spec t))
-      ('|@FUNC|   (compile-function   spec lvl globals))
+      ('|@INCLUDE|(compile-include    spec 0   globals)) 
+      ('|@VAR|    (compile-variable   spec 0   globals)) ; inside macros
+      ('|@FUNC|   (compile-function   spec 0   globals)) 
+      ('|@METHOD| (compile-function   spec 0   globals)) 
+      ('|@ENUM|   (compile-enum       spec 0   globals)) 
+      ('|@STRUCT| (compile-struct     spec 0   globals)) 
+      ('|@UNION|  (compile-union      spec 0   globals)) 
+      ('|@TYPEDEF|(compile-typedef    spec 0   globals)) 
+      ('|@GUARD|  (compile-guard      spec 0   globals)) 
+      ('|@MODULE| (compile-module     spec 0   globals)) ; down here for inside macros 
       ('|@CALL|   (compile-call       spec -1  globals))
       ('|@BODY|   (compile-body       spec -1  globals spec))
       (t (error (format nil "expr syntax error ~A" spec))))))

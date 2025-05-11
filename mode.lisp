@@ -97,6 +97,7 @@
 (cicili-add-keywords
  'font-lock-keyword-face
  '((1 . main)
+   (1 . main*)
    (1 . format)
    (1 . code)
    (1 . header)

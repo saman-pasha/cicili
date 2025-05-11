@@ -22,3 +22,22 @@
        ((++ ,item)
         (++ ,counter))
        ,@body)))
+
+;;; QUOTED cicili forms allow to compile source or header targets during loading macro file
+'(header "charlist.h" (:std #f :compile #f :link #f)
+  (struct CharList
+    (member char arr [30]))
+
+  (interface-string CharList
+    (format file "inside string interface %.*s" 30 (-> this arr))))
+
+'(source "charlist.c" (:std #t :compile #t :link "-o charlist -L{$CWD} -lcharlist.o")
+  (include "charlist.h")
+  
+  (main
+   (let ((CharList cl . '{ "CICILI INTERFACE MECHANISM\n" }))
+     (-> cl toString stdout))))
+   
+;;; dynamic inclusion by macro
+(DEFMACRO include-helpers-files ()
+  `(include "charlist.h"))

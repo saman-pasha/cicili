@@ -134,7 +134,9 @@
                   ((key-eq tname '|DEFMACRO|)
                    (let ((symb (eval (eval `(quote ,target)))))
                      (add-macro (if (null pack) (symbol-name symb)
-                                    (format nil "~A.~A" pack (symbol-name symb))) symb))))))))))
+                                    (format nil "~A.~A" pack (symbol-name symb))) symb)))
+                  ((key-eq tname '|QUOTE|)
+                   (compile-ast (cdr target))))))))))
 
 (set-dispatch-macro-character
  #\# #\t #'(lambda (stream char1 char2)

@@ -91,3 +91,9 @@ test/macro/main.dSYM/Contents/Resources/DWARF/main
 test/macro/main.dSYM/Contents/Resources/Relocations/x86_64/main.yml
 test/macro/main
 test/macro/.\#basic.lisp
+test/list.c.run1.c
+test/list.c.run2.c
+test/list.c.run3.c
+test/macro/charlist.c.run1.c
+test/macro/charlist.c.run2.c
+test/macro/charlist.c.run3.c

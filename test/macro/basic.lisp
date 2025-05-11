@@ -10,6 +10,8 @@
 (import "helper.lisp" nil '(1 3 7 10))
 
 (source "basic-macro.c" (:std #t :compile #t :link #t)
+        (include-helpers-files)
+        
         (main
          (printf "are equal 3 == 3: %d\n" (simple-equal 3 3))
          (printf "are equal 3 == (+ 1 2): %d\n" (simple-equal 3 (+ 1 2)))
