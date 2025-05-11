@@ -1,3 +1,5 @@
+;;;; an external package sample
+;;; package to non confliction
 (DEFPACKAGE :bi
   (:USE :CL)
   (:EXPORT
@@ -6,11 +8,11 @@
 
 (IN-PACKAGE :bi)
 
-;;;; init functions will be called per macro file when imported and receives import arguments
+;;; init functions will be called per macro file when imported and receives import arguments
 (DEFUN init (a-simple-name)
   (FORMAT T "sample bi-helper loaded at compile time: ~A~%" a-simple-name))
 
-;;;; loops over any indexable structures in C for each item []
+;;; loops over any indexable structures in C for each item []
 (DEFMACRO for-each (counter      ; name of counter variable
                     item         ; name of iterator pointer
                     array        ; array to be traveresed or pointer to its one of items

@@ -1,10 +1,11 @@
+;;;; use these macros without namespace prefix
 (IN-PACKAGE :CL-USER)
 
-;;;; init functions will be called per macro file when imported and receives import arguments
+;;; init functions will be called per macro file when imported and receives import arguments
 (DEFUN init (a-list)
   (FORMAT T "sample helper loaded at compile time: ~A~%" a-list))
 
-;;;; loops over any indexable structures in C for each item []
+;;; loops over any indexable structures in C for each item []
 (DEFMACRO for-each (counter      ; name of counter variable
                     item         ; name of iterator pointer
                     array        ; array to be traveresed or pointer to its one of items

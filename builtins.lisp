@@ -1,6 +1,19 @@
-;;;; main simple form
+;;;; builtins includes many useful macros for cicili
+
+;;; main simple form
 (DEFMACRO main (&REST body)
   `(func main () (out int) ,@body))
+
+;;; default char buffer for format out char * use nil as fd
+(DEFVAR +FORMAT-STRING-DEFAULT-BUFFER-SIZE+ 1024)
+;;; use format lisp clause insted of printf
+;;; fd file descriptor
+;;; #t short for stdout
+;;; #t short for stderr
+(DEFMACRO format (fd fmt &REST args)
+  (COND ((EQ fd '#t) (SETQ fd 'stdout))
+        ((EQ fd '#f) (SETQ fd 'stderr)))
+  `(fprintf ,fd ,fmt ,@args))
 
 (DEFMACRO when (cond &REST body)
   `(if ,cond (block ,@body)))
@@ -8,7 +21,7 @@
 (DEFMACRO unless (cond &REST body)
   `(if (not ,cond) (block ,@body)))
 
-;;;; loops over any indexable structures in C for each item []
+;;; loops over any indexable structures in C for each item []
 (DEFMACRO for-each (counter      ; name of counter variable
                     item         ; name of iterator pointer
                     array        ; array to be traveresed or pointer to its one of items

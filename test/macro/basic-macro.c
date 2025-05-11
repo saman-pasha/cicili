@@ -24,25 +24,25 @@ int main () {
   }
   if (true ) 
     { /* cicili#Block186 */
-      printf ("when was true\n");
+      fprintf (stdout , "when was true\n");
     } /* cicili#Block186 */
 
   if ((!false )) 
-    { /* cicili#Block188 */
-      printf ("unless was false\n");
-    } /* cicili#Block188 */
+    { /* cicili#Block189 */
+      fprintf (stderr , "unless was false\n");
+    } /* cicili#Block189 */
 
-  printf ("result from progn %d\n", ({ /* cicili#Progn189 */
+  fprintf (stdout , "result from progn %d\n", ({ /* cicili#Progn192 */
       (4 *  5 );
     }));
-  printf ("result from progn let %d\n", ({ /* cicili#Progn190 */
-      ({ /* cicili#Let191 */
+  fprintf (stderr , "result from progn let %d\n", ({ /* cicili#Progn194 */
+      ({ /* cicili#Let195 */
         int x = 6;
         int y = 7;
         (x  *  y  );
       });
     }));
-  printf ("result from letn %d\n", ({ /* cicili#Let192 */
+  fprintf (stdout , "result from letn %d\n", ({ /* cicili#Let197 */
       int x = 8;
       int y = 9;
       (x  *  y  );

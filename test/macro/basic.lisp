@@ -1,11 +1,12 @@
-;;;; macros are defined outside of targets
+;;;; macros inclusion
+;;; macros are defined outside of targets
 (DEFMACRO simple-equal (a b)
   `(== ,a ,b))
 
-;;;; all macros inside this file will be registered for the specified namespace (the second argument)
-;;;; all other arguments will be sent to init function if exists and exported from specified package
+;;; all macros inside this file will be registered for the specified namespace (the second argument)
+;;; all other arguments will be sent to init function if exists and exported from specified package
 (import "bi-helper.lisp" :bi "an initiation arg")
-;;;; nil as namespace means CL-USER
+;;; nil as namespace means CL-USER
 (import "helper.lisp" nil '(1 3 7 10))
 
 (source "basic-macro.c" (:std #t :compile #t :link #t)
@@ -21,14 +22,14 @@
                    j jt array 5
                    (printf "i: %d it: %d, j: %d jt: %d\n" i (cof it) j (cof jt)))))
 
-         (when #t (printf "when was true\n"))
-         (unless #f (printf "unless was false\n"))
-         (printf "result from progn %d\n" (progn (* 4 5))) ; returns last form
-         (printf "result from progn let %d\n" (progn ; let inside progn returns last form
-                                                (let ((int x . 6)
-                                                      (int y . 7))
-                                                  (* x y))))
-         (printf "result from letn %d\n" (letn ((int x . 8) ; letn returns last form
-                                                (int y . 9))
-                                           (* x y)))
+         (when #t (format #t "when was true\n"))
+         (unless #f (format #f "unless was false\n"))
+         (format stdout "result from progn %d\n" (progn (* 4 5))) ; returns last form
+         (format stderr "result from progn let %d\n" (progn ; let inside progn returns last form
+                                                       (let ((int x . 6)
+                                                             (int y . 7))
+                                                         (* x y))))
+         (format #t "result from letn %d\n" (letn ((int x . 8) ; letn returns last form
+                                                   (int y . 9))
+                                              (* x y)))
          ))
