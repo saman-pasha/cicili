@@ -499,8 +499,8 @@ glibtool: link: clang -g -O "" -o CompileTest .libs/main.o  -L/Users/a1/Projects
 ### Sections
 * Documentations: starts with semi-colon(s) ";"
 ```lisp
-;;; about a lisp file
-;;;; author, licence and/or documentation about each target
+;;;; about a lisp file
+;;; author, licence and/or documentation about each target
 (var long height) ; description of a form
 (func sqr ((double a)) 
   (out double)
@@ -698,9 +698,9 @@ If form accepts 2 or 3 argument. condition, form for true evaluation of conditio
 ```
 ## Function
 cicili has some points on functions:
-* Use returns form for setting the return type. returns form must be first form of a function after arguments list. A fucntion without returns form will returns void instead of main which returns int.
+* Use out form for setting the return type. out form must be first form of a function after arguments list. A fucntion without out form will returns void instead of main which returns int.
 * Function's attributes must set in declaration time. each attribute enclosed in braces or parentheses.
-    * {declare}    
+    * {decl}    
     * {static}
     * {inline}
     * {extern}
