@@ -1,4 +1,3 @@
-```markdown
 # Cicili Programming Language
 
 Welcome to **Cicili** – a compiler that bridges the expressive power of Lisp-like syntax with the raw performance of C. Whether you’re a systems programmer or a developer looking for a more elegant way to write C code, Cicili provides a flexible platform that combines high-level abstractions with low-level control.
@@ -125,7 +124,6 @@ Welcome to Cicili—the fusion of high-level expressiveness and low-level power.
 ---
 
 *Happy Coding!*
-```
 
 # Cicili Programming Language
 Lisp C Compiler aka. 'Cicili' programming language, which compiles Lisp-like syntax to C code and more extra features like method, lambda, defer.
