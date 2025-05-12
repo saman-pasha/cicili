@@ -1,7 +1,3 @@
-Below is the complete `readme.dm` file for Cicili. You can save it as `readme.dm` and tweak it as necessary:
-
----
-
 ```markdown
 # Cicili Programming Language
 
@@ -129,11 +125,6 @@ Welcome to Cicili—the fusion of high-level expressiveness and low-level power.
 ---
 
 *Happy Coding!*
-```
-
----
-
-This README presents a comprehensive overview of Cicili: its philosophy, strengths, unique features, and an introduction to its macro and module systems. Enjoy exploring and building with Cicili!
 ```
 
 # Cicili Programming Language
