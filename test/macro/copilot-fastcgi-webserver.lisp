@@ -1,5 +1,5 @@
 ;------------------------------------------------------------
-; File: copilot_fastcgi_webserver.lisp
+; File: copilot-fastcgi-webserver.lisp
 ;------------------------------------------------------------
 
 (header "router.h" ()
