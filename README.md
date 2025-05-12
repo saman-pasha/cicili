@@ -370,7 +370,12 @@ Cicili — The low-level language with a high-level soul.
 
 *Original Documentation*
 # Cicili Programming Language
-Lisp C Compiler aka. 'Cicili' programming language, which compiles Lisp-like syntax to C code and more extra features like method, lambda, defer.
+Lisp C Compiler aka. 'Cicili' programming language, which compiles Lisp-like syntax to C code and more extra features like struct's method, lambda, variable's defer and function-like macro.
+
+*Lisp is a language for doing what you've been told is impossible.
+
+— Kent Pitman*  [CAVEMAN2](https://8arrow.org/caveman/)
+
 ## Instruction
 * Install [SBCL](www.sbcl.org).
 * `clang` required for compiling and linking. `apt` or `brew` can be used to install [Clang](https://clang.llvm.org). Current used version: `(clang-1700.0.13.3)`
@@ -380,8 +385,9 @@ Lisp C Compiler aka. 'Cicili' programming language, which compiles Lisp-like syn
 * Copy `cicili.lisp` file from source folder into your project path.
 * Send your file as an argument to cicili.lisp. `sbcl --script cicili.lisp test.lisp`
 * If you are using EMACS editor, copy `mode.lisp` file content into `.emacs` or `.emacs.d/init.el` file for syntax highlighting.
-## * New Features
+## Features
 * cicili now uses `IR` (Intermediate Representation) to handle more clauses and features.
+* cicili macro system lets developers to code in extremely higher order syntax but produce low level C code by using cicili clauses. there is builtins macros here [builtins](builtins.lisp) and macro test folder [macro](test/macro) for sample usages and way to define.
 * modularizing cicili code makes clarity and easy to follow C code but makes debugging harder. refer to [module](test/module) test folder `module.lisp` sample.
 * `lambda` clause allows developer to write in-place function for sending as other function argument or `defer` destructure. refer to [lambda](test/lambda) test folder `lambda.lisp` sample.
 * `defer` attribute. only available for variables defined by `let` expression. Allows developers to set a function how to destruct a variable or a pointer. refer to [defer](test/lambda) test folder `defer.lisp` sample.
@@ -1469,10 +1475,12 @@ typedef struct Student {
 typedef int * intptr_t;
 ```
 ## cicili.lisp Command Line Arguments
-`sbcl --script /path/to/cicili.lisp /path/to/some-cicili-file.lisp {args}`
+`sbcl --script /path/to/cicili.lisp {args} /path/to/cicili-files.lisp`
 Available arguments:
 * --debug : will prints too many details about specifying, resolving and compiling.
 * --verbose : adds `-v` option to `clang` and `libtool` commands to print more details about compiling and linking. usefull when linking many complex libraries.
+* --macros : prints all macros defined in a macro file when loading by import clause.
+* --macroexpand : prints all expanded macros both usage and output
 
 `{$CWD}` placeholder is available inside `:compile` and `:link` command for every targets. 
 ## C++ Compiler
