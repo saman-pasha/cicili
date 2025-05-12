@@ -545,9 +545,15 @@
         '|@CAST| const type modifier const-ptr array (specify-expr (nth 2 def)) '()))))
 
 (defun specify-$-expr (def)
-  (unless (= (length def) 3) (error (format nil "wrong access member $ form ~A" def)))
-  (unless (is-symbol (nth 2 def)) (error (format nil "wrong access member name ~A" def)))
-  (make-specifier (specify-expr (nth 1 def)) '|@$| nil nil nil nil nil (specify-symbol-expr (nth 2 def)) '()))
+  (let ((len (length def))
+        (member (car (last def))))
+    (unless (>= len 3) (error (format nil "wrong access member $ form ~A" def)))
+    (unless (is-symbol member) (error (format nil "wrong access member name ~A" def)))
+    (make-specifier (if (> len 3)
+                        (specify-expr (without-last def))
+                        (specify-expr (car (last (without-last def)))))
+      '|@$| nil nil nil nil nil
+      (specify-symbol-expr member) '())))
 
 (defun specify-->-expr (def)
   (when (< (length def) 3) (error (format nil "wrong access method -> form ~A" def)))

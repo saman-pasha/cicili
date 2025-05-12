@@ -185,7 +185,7 @@
   (with-slots ((opr name) (seq default)) spec
     (when (> lvl -1) (output "~&~A" (indent lvl)))
     (dolist (frm seq)
-      (compile-form frm globals (1+ lvl))
+      (compile-form frm (1+ lvl) globals)
       (output " "))
     (when (> lvl -1) (output ";~%"))))
 

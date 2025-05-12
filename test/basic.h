@@ -15,15 +15,15 @@ typedef union Mixed {
 typedef struct Employee {
   int id;
   char * name;
-  union { /* lccUnion179 */
+  union { /* ciciliUnion179 */
     int tag_id;
     char * custom_tag;
   } tag;
-  struct { /* lccStruct180 */
+  struct { /* ciciliStruct180 */
     int role_id;
     char * role_name;
-    char * (*resolve) (char * prob);
-    const void (*sign) (char * doc);
+        char * (*resolve) (char * prob);
+    const     void (*sign) (char * doc);
   } role, * sub_roles[];
 } Employee;
 #endif /* __TEST_H__ */ 

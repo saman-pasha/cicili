@@ -52,9 +52,10 @@
                 (printf "postfix 1+: %d, prefix ++: %d\n" (1+ ($ emp id)) (++ ($ emp id)))
                 (+= ($ emp id) 1)
                 (printf "after assignment: %d\n" ($ emp1 id))
-
+                ;; use $ for access inner member too
+                (format #t "access inner member: ($ emp3 tag tag_id): %d\n" ($ emp3 tag tag_id))
                 )
               
               (block
-                  (printf "Hi from inside of a block"))
+                  (printf "Hi from inside of a block\n"))
               (return 0)))
