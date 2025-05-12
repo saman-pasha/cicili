@@ -255,7 +255,7 @@ Cicili features a **Lisp-based macro system** that allows you to manipulate synt
 ```lisp
 (defmacro when (cond &rest body)
   `(if ,cond (block ,@body)))
-
+```
 Macros are written in Lisp and output Cicili syntax (in lowercase).
 
 Macros support:
