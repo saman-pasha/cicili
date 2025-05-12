@@ -194,6 +194,181 @@ Cicili's macro system, inspired by Lisp, is a core feature:
 
 Cicili offers a unique blend of high-level expressiveness and low-level control. While it may have a learning curve, its powerful features can lead to more efficient and maintainable code. Dive in and explore the possibilities!
 
+*ChatGPT opinion on Cicili*
+# Cicili Programming Language
+
+**Cicili** is a modern systems programming language that blends the low-level performance of C with the expressive power and metaprogramming capabilities of Lisp. It is designed for developers who want full control over memory, execution, and code generation—without sacrificing code readability, modularity, or scalability.
+
+---
+
+## Table of Contents
+
+- [Why Cicili?](#why-cicili)
+- [Core Philosophy](#core-philosophy)
+- [Language Features](#language-features)
+- [Macro System](#macro-system)
+- [Modules and Scoping](#modules-and-scoping)
+- [Interop with C](#interop-with-c)
+- [Getting Started](#getting-started)
+- [Sample Code](#sample-code)
+- [Contributing](#contributing)
+
+---
+
+## Why Cicili?
+
+Cicili is built to address the pain points of traditional C development:
+
+- **Tired of header/source boilerplate?** Cicili structures your project cleanly with automatic compilation targets.
+- **Need modularity and namespacing?** Cicili has built-in hierarchical modules.
+- **Wish for higher-level constructs?** Use Lisp-style macros to define reusable, expressive code that compiles to efficient C.
+- **Frustrated with macro limitations in C?** Cicili’s macro system is Turing-complete and type-aware.
+
+---
+
+## Core Philosophy
+
+1. **Performance First**: Every Cicili program compiles to efficient, optimized C code.
+2. **Simplicity & Power**: Clean syntax with advanced tools like pattern-matching, macros, and scoped modules.
+3. **Code Generation as First-Class**: Macros are not a feature—they’re the foundation.
+4. **Modular by Default**: Namespacing and file-level encapsulation are core primitives.
+5. **No Hidden Magic**: All expansions are transparent and traceable.
+
+---
+
+## Language Features
+
+- **C-level types**: `int`, `char`, `float`, `struct`, `enum`, pointers, arrays—just like C.
+- **Scoped `let`, `letn` blocks** for safe, readable declarations.
+- **Modules**: Define `module a`, `module a/c/d`, etc., with structured imports and free/global resolution.
+- **Object-like methods**: Use `(method Type->functionName (...))` to simulate methods.
+- **Function output tuples**: Support for multiple return values with destructuring.
+- **Macro expansion at compile-time** with real Lisp power.
+- **Readable syntax with uniform quoting semantics**.
+
+---
+
+## Macro System
+
+Cicili features a **Lisp-based macro system** that allows you to manipulate syntax before code generation:
+
+```lisp
+(defmacro when (cond &rest body)
+  `(if ,cond (block ,@body)))
+
+Macros are written in Lisp and output Cicili syntax (in lowercase).
+
+Macros support:
+
+Custom control flow (when, unless, match)
+
+Code generation (interface-string, autodefer)
+
+Iteration helpers (for-each, for-each-const)
+
+Compile-time inclusion of header/source files
+
+
+Supports namespaces via (import "file.lisp" :namespace ...)
+
+Compile-time init functions per macro file
+
+
+
+---
+
+Modules and Scoping
+
+Cicili provides hierarchical module namespaces:
+
+(module a
+  (module c
+    (module d ...)))
+
+Use / to refer to global symbols: (/Employee *)
+
+Nested references like a/c/d/Employee are valid
+
+Supports method and type resolution within module scopes
+
+
+
+---
+
+Interop with C
+
+Generated code is valid C and can be compiled with GCC/Clang.
+
+Use :compile and :link options in (source ...) blocks.
+
+Include C headers, call C functions, and link against external libraries.
+
+
+
+---
+
+Getting Started
+
+1. Install Cicili (compiler or CLI — coming soon)
+
+
+2. Write your program using .lisp, .c, .h targets
+
+
+3. Use macros for clarity, reusability, and abstraction
+
+
+4. Compile and run
+
+
+
+Example:
+
+(source "main.c" (:std #t :compile #t :link #t)
+  (include "myheader.h")
+  (main
+    (printf "Hello, Cicili!\n")))
+
+
+---
+
+Sample Code
+
+Define and Use Structs and Methods
+
+(struct Employee
+  (member int id)
+  (member char name [32]))
+
+(method Employee->print ((Employee * emp))
+  (printf "Employee ID: %d, Name: %s\n" ($ emp id) ($ emp name)))
+
+Use Macros for Iteration
+
+(for-each i item array 5
+  (printf "Element %d: %d\n" i (cof item)))
+
+
+---
+
+Contributing
+
+Cicili is actively evolving! Contributions are welcome in:
+
+Language design
+
+Macro libraries
+
+Tooling (compiler, IDE integration)
+
+Documentation and examples
+
+
+---
+
+Cicili — The low-level language with a high-level soul.
+
+*Original Documentation*
 # Cicili Programming Language
 Lisp C Compiler aka. 'Cicili' programming language, which compiles Lisp-like syntax to C code and more extra features like method, lambda, defer.
 ## Instruction
