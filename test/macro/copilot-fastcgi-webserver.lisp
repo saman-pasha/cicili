@@ -1,12 +1,12 @@
 ;------------------------------------------------------------
-; File: copilot-fastcgi-webserver.lisp
+; File: copilot_fastcgi_webserver.lisp
 ;------------------------------------------------------------
 
 (header "router.h" ()
   (guard __ROUTER_H__
     (include <stdio.h> <stdlib.h> <string.h> <fcgiapp.h>)
 
-    ;; Define the Route structure with three members: method, path, and handler.
+    ;; Define the Route structure.
     (struct Route
       (member char * method)
       (member char * path)
@@ -17,29 +17,38 @@
     (var int routesCount . 0)
 
     ;; Declarations:
-    ;; - register_route: for adding routes.
-    ;; - Route->handle: a method for Route to handle requests.
-    ;; - process_routes: processes incoming requests.
     {decl} (func register_route ((Route route)))
     {decl} (method Route->handle ((FCGX_Request * req)))
     {decl} (func process_routes ((FCGX_Request * req)))
   ))
 
-(source "router.c" (:std #t :compile #t :link #t)
+;------------------------------------------------------------
+; Macros (processed during Cicili compilation)
+;------------------------------------------------------------
+
+(DEFMACRO route (http_method route_path &rest body)
+  `(register_route
+     (let ((Route r))
+       (set ($ r method) ,(string-upcase (symbol-name http_method)))
+       (set ($ r path) ,route_path)
+       (set ($ r handler) '(lambda ((FCGX_Request * req)) ,@body))
+       r)))
+
+;------------------------------------------------------------
+; Router Implementation
+;------------------------------------------------------------
+
+(source "router.c" (:std #t :compile #t :link #f)
   (include "router.h")
 
   (func register_route ((Route route))
-    ;; If no routes have been registered, allocate space for 10 routes.
     (when (== routesCount 0)
       (set routesList (calloc 10 (sizeof Route))))
     (set (nth routesCount routesList) route)
     (set routesCount (+ routesCount 1))
   )
 
-  ;; Define the method for Route to handle a request.
   (method Route->handle ((FCGX_Request * req))
-    ;; In a method, 'this' refers to a pointer to the current Route instance.
-    ;; Call the function pointer stored in the 'handler' member.
     (return (($ this handler) req))
   )
 
@@ -54,27 +63,21 @@
                        (== (strncmp rq_uri "/api/" 5) 0)))
               (-> r handle req))
           (set i (+ i 1))))
-      ;; If no route is matched, send a 404 response.
       (FCGX_PutS "HTTP/1.1 404 Not Found\r\nContent-Type: text/plain\r\n\r\nPage not found.\n"
                  ($ req out))
     )
   )
 )
 
+;------------------------------------------------------------
+; Application Logic
+;------------------------------------------------------------
+
 (source "app.c" (:std #t :compile #t :link #t)
   (include "router.h")
   (include <fcgiapp.h>)
 
-  ;; Define the route macro to simplify route registration.
-  (DEFMACRO route (http_method route_path &rest body)
-    `(register_route
-       (let ((Route r))
-         (set ($ r method) ,(string-upcase (symbol-name http_method)))
-         (set ($ r path) ,route_path)
-         (set ($ r handler) '(lambda ((FCGX_Request * req)) ,@body))
-         r)))
-
-  ;; Define GET routes.
+  ;; Define GET routes using the `route` macro.
   (route GET "/"
     (FCGX_PutS "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n\r\nWelcome to the FastCGI Cicili Server!\n"
                ($ req out)))
@@ -87,14 +90,14 @@
     (FCGX_PutS "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n\r\nHello, FastCGI World!\n"
                ($ req out)))
 
-  ;; Define an /api/ route — any URI starting with "/api/" is handled here.
+  ;; API Route
   (route GET "/api/"
     (let ((char * api_endpoint . #'(substring (FCGX_GetParam "REQUEST_URI" ($ req envp)) 5)))
       (format #t "API handler received endpoint: %s\n" api_endpoint)
       (FCGX_PutS "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\n\r\n{\"status\":\"API response\"}\n"
                  ($ req out))))
 
-  ;; Define a POST route at "/submit".
+  ;; POST Route for "/submit"
   (route POST "/submit"
     (let ((char * clstr . #'(FCGX_GetParam "CONTENT_LENGTH" ($ req envp)))
           (int content_len . 0))
@@ -108,7 +111,7 @@
         (FCGX_PutS "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n\r\nPOST data processed.\n"
                    ($ req out)))))
 
-  ;; The FastCGI server loop.
+  ;; FastCGI Server Loop
   (func start_fastcgi_app ()
     (let ((FCGX_Request request))
       (FCGX_Init)
