@@ -165,7 +165,9 @@
 (set-macro-character
  #\" #'(lambda (stream char)
 	     (declare (ignore char))
-	     (with-output-to-string (out)
-		   (do ((char (read-char stream nil nil) (read-char stream nil nil)))
-			   ((char= char #\") nil)
-			 (write char :stream out :escape nil)))))
+         (let ((prev-char nil))
+	       (with-output-to-string (out)
+		     (do ((char (read-char stream nil nil) (read-char stream nil nil)))
+			     ((and (char= char #\") (not (char= prev-char #\\))) nil)
+			   (write char :stream out :escape nil)
+               (setq prev-char char))))))

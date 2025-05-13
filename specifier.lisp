@@ -610,9 +610,11 @@
                    ((key-eq func '|->|)     (specify-->-expr     def)) ; method access operator
                    ((key-eq func '|sizeof|) (specify-sizeof-expr def))
                    ((key-eq func '|typeof|) (specify-typeof-expr def))
-                   ((key-eq func '|progn|)  (specify-progn       def))
+                   ((key-eq func '|let|)    (specify-let         def)) ; inside macros
                    ((key-eq func '|letn|)   (specify-let         def t))
-		           ((key-eq func '|static|)   (push def attributes))             ; inside macros
+                   ((key-eq func '|block|)  (specify-block       def))
+                   ((key-eq func '|progn|)  (specify-progn       def))
+		           ((key-eq func '|static|)   (push def attributes))     
 		           ((key-eq func '|decl|)     (push def attributes))
 		           ((key-eq func '|inline|)   (push def attributes))
 		           ((key-eq func '|register|) (push def attributes))
@@ -813,7 +815,9 @@
                                                             (const-ptr *function-spec*)
                                                             (array-def *function-spec*)))
                                                (nth 1 def))) '())
-      (make-specifier nil '|@RETURN| nil nil nil nil nil (specify-expr (nth 1 def)) '())))
+      (make-specifier nil '|@RETURN| nil nil nil nil nil
+                      (if (null (nth 1 def)) nil
+                          (specify-expr (nth 1 def))) '())))
 
 (defun specify-if (def)
   (when (or (< (length def) 3) (> (length def) 4)) (error (format nil "wrong if form ~A" def)))
@@ -1108,7 +1112,10 @@
 		            ((key-eq construct '|register|) (push clause attributes))
 		            ((key-eq construct '|auto|)     (push clause attributes))
 		            ((key-eq construct '|extern|)   (push clause attributes))
-		            ((key-eq construct '|include|)  (setq attributes '()))
+		            ((key-eq construct '|resolve|)  (push clause attributes))
+		            ((key-eq construct '|include|)
+		             (add-inner (specify-include  clause attributes) guard-specifier)
+		             (setq attributes '()))
 		            ((key-eq construct '|var|)
 		             (add-inner (specify-variable clause attributes) guard-specifier)
 		             (setq attributes '()))

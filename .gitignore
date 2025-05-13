@@ -97,3 +97,11 @@ test/list.c.run3.c
 test/macro/charlist.c.run1.c
 test/macro/charlist.c.run2.c
 test/macro/charlist.c.run3.c
+test/macro/router.c.run1.c
+test/macro/router.c.run2.c
+test/macro/router.c.run3.c
+.\#builtins.lisp
+test/macro/app.c.run1.c
+test/macro/app.c.run2.c
+test/macro/app.c.run3.c
+test/macro/fastcgi_server
