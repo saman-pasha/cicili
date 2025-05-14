@@ -1223,4 +1223,6 @@ C++ compiler could be used instead of C compiler then some features availables:
 * Default value for members of structs.
 * `func` form for defining a member function inside of structs. Call these methods by `$` member access operator `(($ emp Sign) aDoc)`. 
 
+Cicili is the bridge between vision and execution—where **ideas transform into structured reality**, and **code bends to your creativity**, unlocking limitless potential in software engineering. 🚀
+
 # Good Luck!
