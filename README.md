@@ -110,6 +110,75 @@ That's such an inspiring quote by Kent Pitman! Lisp truly stands apart from many
 
 In essence, Lisp allows you to break free from conventional constraints. Where traditional languages expect you to use fixed constructs, Lisp inspires you to extend, compose, and even alter the language to meet your unique challenges. It's this spirit of innovation and radical flexibility that has influenced so many programmers and paved the way for systems like Cicili, which leverage Lisp's capabilities to push boundaries further.
 
+**Cicili and Rust comparision**
+Cicili and Rust are both designed for **high-performance systems programming**, but they take **fundamentally different approaches** to achieving efficiency, safety, and expressiveness. Let’s compare them across key dimensions:
+
+---
+
+## **1️⃣ Philosophy & Design Goals**
+| **Feature**         | **Cicili**                                        | **Rust**                                         |
+|---------------------|-------------------------------------------------|--------------------------------------------------|
+| **Core Philosophy** | Uses **Lisp-based metaprogramming** to generate efficient C code. | Focuses on **memory safety without garbage collection** using ownership and borrowing. |
+| **Execution Model** | **Compile-time macro expansion** to optimize code before execution. | **Zero-cost abstractions** that ensure safety while keeping runtime efficiency. |
+| **Target Use Cases** | Web frameworks, embedded systems, DSLs, automation, C code generation. | Systems programming, game engines, web backends, embedded software, secure applications. |
+
+### **🔹 Summary:**  
+Cicili leans heavily into **code generation** and flexibility, while Rust focuses on **strict memory safety and concurrency**. Cicili is great for DSL creation and metaprogramming, whereas Rust is better suited for **safe, high-performance system development**.
+
+---
+
+## **2️⃣ Memory Management**
+| **Feature**        | **Cicili**                                     | **Rust**                                        |
+|--------------------|----------------------------------------------|------------------------------------------------|
+| **Memory Safety**  | Uses **defer attributes** for memory cleanup within scopes. | **Ownership & Borrowing** guarantees memory safety with strict lifetime rules. |
+| **Garbage Collection** | **No explicit GC**, relies on macros and structured memory cleanup. | **No GC**, manual memory management via ownership and borrowing. |
+| **Pointer Safety** | Supports **manual pointer manipulation**. | Prevents unsafe memory access via ownership model. |
+
+### **🔹 Summary:**  
+Both avoid traditional **garbage collection**, but Rust ensures safety through **compile-time borrowing checks**, while Cicili relies on **structured allocation and cleanup via macros**.
+
+---
+
+## **3️⃣ Performance**
+| **Feature**           | **Cicili**                                      | **Rust**                                        |
+|----------------------|-----------------------------------------------|------------------------------------------------|
+| **Speed**           | **Near-native C performance**, optimized via macro expansion. | **Comparable to C++**, thanks to low-level control and LLVM optimizations. |
+| **Parallelism**      | No built-in concurrency model, but can integrate with C libraries for threading. | **First-class concurrency & threading support** via ownership rules. |
+| **Inline Optimizations** | Supports **low-level inline C code** for extreme optimization. | Uses **LLVM-backed optimizations** with zero-cost abstractions. |
+
+### **🔹 Summary:**  
+Rust is **more optimized for concurrency**, while Cicili is **better at raw code generation and low-level C optimizations**.
+
+---
+
+## **4️⃣ Metaprogramming & Language Expressiveness**
+| **Feature**         | **Cicili**                                      | **Rust**                                        |
+|---------------------|----------------------------------------------|------------------------------------------------|
+| **Macros**         | **Advanced Lisp macros** for DSL creation and code generation. | **Procedural & declarative macros**, less powerful than Lisp-style metaprogramming. |
+| **Domain-Specific Language (DSL) Support** | **Designed for DSL creation**, allowing deep customization. | **Macros enable DSLs**, but not as flexible as Cicili. |
+| **Syntax Style**    | Lisp-like macros that generate structured C. | Statically typed with modern syntax for clarity. |
+
+### **🔹 Summary:**  
+Cicili excels at **DSL creation and metaprogramming**, while Rust provides **strict type safety and a modern syntax** for general-purpose development.
+
+---
+
+## **Final Verdict**
+| **Criteria**      | **Best Choice** |
+|------------------|----------------|
+| **Raw Performance** | Tie (Both compile to optimized machine code). |
+| **Safety & Memory Management** | Rust (Ownership system ensures memory safety). |
+| **Metaprogramming & DSLs** | Cicili (Lisp-based macros offer deeper customization). |
+| **Concurrency & Multi-threading** | Rust (Built-in threading and async support). |
+| **Web Development & API Frameworks** | Cicili (Macros streamline request handling & server logic). |
+| **Embedded Systems & Low-Level Optimization** | Tie (Rust for safety; Cicili for direct C integration). |
+
+### **🔹 TL;DR:**
+- **Use Cicili** if you need **deep metaprogramming, DSL creation, and structured code generation** while maintaining raw C performance.
+- **Use Rust** if you need **safe concurrency, memory safety guarantees, and modern syntax for scalable systems programming**.
+
+Both languages serve **different niches**, but they are **powerful tools for high-performance applications**. 
+
 ## Instruction
 * Install [SBCL](www.sbcl.org).
 * `clang` required for compiling and linking. `apt` or `brew` can be used to install [Clang](https://clang.llvm.org). Current used version: `(clang-1700.0.13.3)`
