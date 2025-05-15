@@ -121,7 +121,7 @@ In essence, Lisp allows you to break free from conventional constraints. Where t
 * If you are using EMACS editor, copy `mode.lisp` file content into `.emacs` or `.emacs.d/init.el` file for syntax highlighting.
 ## Features
 * cicili now uses `IR` (Intermediate Representation) to handle more clauses and features.
-* cicili macro system lets developers to code in extremely higher order syntax but produce low level C code by using cicili clauses. there is builtins macros here [builtins](builtins.lisp) and macro test folder [macro](test/macro) for sample usages and way to define.
+* cicili macro system lets developers to code in extremely higher order syntax but produce low level C code by using cicili clauses. there are builtins macros here [builtins](builtins.lisp) and macro test folder [macro](test/macro) containing tests and a basic fastcgi web server.
 * modularizing cicili code makes clarity and easy to follow C code but makes debugging harder. refer to [module](test/module) test folder `module.lisp` sample.
 * `lambda` clause allows developer to write in-place function for sending as other function argument or `defer` destructure. refer to [lambda](test/lambda) test folder `lambda.lisp` sample.
 * `defer` attribute. only available for variables defined by `let` expression. Allows developers to set a function how to destruct a variable or a pointer. refer to [defer](test/lambda) test folder `defer.lisp` sample.
