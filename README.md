@@ -100,11 +100,14 @@ Cicili — The low-level language with a high-level soul.
 
 *Original Documentation*
 # Cicili Programming Language
+
 Lisp C Compiler aka. 'Cicili' programming language, which compiles Lisp-like syntax to C code and more extra features like struct's method, lambda, variable's defer and function-like macro.
 
-*Lisp is a language for doing what you've been told is impossible.
+Cicili is a **high-level, metaprogramming-driven language** designed for efficient, expressive, and highly extensible development. It emphasizes **deferred execution**, **macro-based transformations**, making it particularly useful in systems programming, scripting, web applications, database integration, and embedded environments.
 
-— Kent Pitman*  [CAVEMAN2](https://8arrow.org/caveman/)
+**Lisp is a language for doing what you've been told is impossible.
+
+— Kent Pitman**  [CAVEMAN2](https://8arrow.org/caveman/)
 
 That's such an inspiring quote by Kent Pitman! Lisp truly stands apart from many other languages by giving you the power to redefine your tools and even the language itself. Its homoiconicity—and the idea that code and data share the same structure—means you can manipulate code with code. This opens the door to metaprogramming, macros, and the creation of powerful domain-specific languages that can do things others say are impossible.
 
@@ -119,12 +122,6 @@ In essence, Lisp allows you to break free from conventional constraints. Where t
 * Copy `cicili.lisp` file from source folder into your project path.
 * Send your file as an argument to cicili.lisp. `sbcl --script cicili.lisp test.lisp`
 * If you are using EMACS editor, copy `mode.lisp` file content into `.emacs` or `.emacs.d/init.el` file for syntax highlighting.
-## Features
-# Cicili Programming Language - Comprehensive Guide
-
-Cicili is a **high-level, metaprogramming-driven language** designed for efficient, expressive, and highly extensible development. It emphasizes **deferred execution**, **macro-based transformations**, and **runtime flexibility**, making it particularly useful in systems programming, scripting, web applications, and embedded environments.
-
----
 
 ## 📌 Key Features
 ### **Deferred Execution**
@@ -144,6 +141,7 @@ Cicili is a **high-level, metaprogramming-driven language** designed for efficie
 - Efficient **low-memory footprint execution**.
 - **Cross-platform adaptability** (Linux, BSD, Windows).
 
+## Features
 * cicili now uses `IR` (Intermediate Representation) to handle more clauses and features.
 * cicili macro system lets developers to code in extremely higher order syntax but produce low level C code by using cicili clauses. there are builtins macros here [builtins](builtins.lisp) and macro test folder [macro](test/macro) containing tests and a basic fastcgi web server.
 * modularizing cicili code makes clarity and easy to follow C code but makes debugging harder. refer to [module](test/module) test folder `module.lisp` sample.
