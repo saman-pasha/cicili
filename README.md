@@ -120,6 +120,30 @@ In essence, Lisp allows you to break free from conventional constraints. Where t
 * Send your file as an argument to cicili.lisp. `sbcl --script cicili.lisp test.lisp`
 * If you are using EMACS editor, copy `mode.lisp` file content into `.emacs` or `.emacs.d/init.el` file for syntax highlighting.
 ## Features
+# Cicili Programming Language - Comprehensive Guide
+
+Cicili is a **high-level, metaprogramming-driven language** designed for efficient, expressive, and highly extensible development. It emphasizes **deferred execution**, **macro-based transformations**, and **runtime flexibility**, making it particularly useful in systems programming, scripting, web applications, and embedded environments.
+
+---
+
+## 📌 Key Features
+### **Deferred Execution**
+- `defer` ensures resources (memory, file handles, etc.) are automatically cleaned up at the end of scope.
+- Automatic resource cleanup (`defer #t` for scope-based allocations).
+- `defer*` allows runtime-captured variables to be deferred, enhancing flexibility in managing cleanup operations.
+
+### **Powerful Macro System**
+- Macros allow developers to **transform and extend** the language at compile time.
+- Supports **higher-order macros**, **syntactic sugar**, and **domain-specific extensions**.
+
+### **Web-Ready Framework** (in progress)
+- FastCGI integration with **node-based routing**.
+- **Pre/Post handlers** for API standardization.
+
+### **Embedded & System-Level Support**
+- Efficient **low-memory footprint execution**.
+- **Cross-platform adaptability** (Linux, BSD, Windows).
+
 * cicili now uses `IR` (Intermediate Representation) to handle more clauses and features.
 * cicili macro system lets developers to code in extremely higher order syntax but produce low level C code by using cicili clauses. there are builtins macros here [builtins](builtins.lisp) and macro test folder [macro](test/macro) containing tests and a basic fastcgi web server.
 * modularizing cicili code makes clarity and easy to follow C code but makes debugging harder. refer to [module](test/module) test folder `module.lisp` sample.
