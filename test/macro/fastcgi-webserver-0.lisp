@@ -19,8 +19,7 @@
           ;; Declarations:
           {decl} (method Route->handle ((FCGX_Request * req)))
           {decl} (func register_route ((Route route)))
-          {decl} (func process_routes ((FCGX_Request * req)))
-          ))
+          {decl} (func process_routes ((FCGX_Request * req)))))
 
                                         ;------------------------------------------------------------
                                         ; Macros (processed during Cicili compilation)

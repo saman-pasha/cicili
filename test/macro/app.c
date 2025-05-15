@@ -10,20 +10,20 @@ void string_substr (char * source, int start, int length, char * destination) {
   strncpy (destination , (source  +  start  ), length );
   destination [length ] = '\0';
 }
-static void __ciciliLambda_setup_routes_107 (FCGX_Request * req) {
+static void __ciciliL_108 (FCGX_Request * req) {
   FCGX_PutS ("HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n\r\n", (req ->out ));
   FCGX_PutS ("Welcome to the FastCGI Cicili Server!\n", (req ->out ));
 }
-static void __ciciliLambda_setup_routes_112 (FCGX_Request * req) {
+static void __ciciliL_114 (FCGX_Request * req) {
   FCGX_PutS ("HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n\r\n", (req ->out ));
   FCGX_PutS ("About: This is a sample Cicili application.\n", (req ->out ));
 }
-static void __ciciliLambda_setup_routes_117 (FCGX_Request * req) {
+static void __ciciliL_120 (FCGX_Request * req) {
   FCGX_PutS ("HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n\r\n", (req ->out ));
   FCGX_PutS ("Hello, FastCGI World!\n", (req ->out ));
 }
-static void __ciciliLambda_setup_routes_122 (FCGX_Request * req) {
-  { /* cicili#Let124 */
+static void __ciciliL_126 (FCGX_Request * req) {
+  { /* cicili#Let128 */
     char api_endpoint[50];
     string_substr (FCGX_GetParam ("REQUEST_URI", (req ->envp )), 5, 49, api_endpoint );
     fprintf (stdout , "API handler received endpoint: %s\n", api_endpoint );
@@ -31,21 +31,21 @@ static void __ciciliLambda_setup_routes_122 (FCGX_Request * req) {
     FCGX_PutS ("{\"status\":\"API response\"}\n", (req ->out ));
   }
 }
-static void __ciciliLambda_setup_routes_130 (FCGX_Request * req) {
-  { /* cicili#Let132 */
+static void __ciciliL_136 (FCGX_Request * req) {
+  { /* cicili#Let138 */
     char * clstr = FCGX_GetParam ("CONTENT_LENGTH", (req ->envp ));
     int content_len = 0;
     if (clstr ) 
-      { /* cicili#Block136 */
+      { /* cicili#Block143 */
         content_len  = atoi (clstr );
-      } /* cicili#Block136 */
+      } /* cicili#Block143 */
 
-    { /* cicili#Let138 */
+    { /* cicili#Let145 */
       char request_body[1024];
       if (content_len  >  1024 ) 
-        { /* cicili#Block142 */
+        { /* cicili#Block150 */
           content_len  = 1023;
-        } /* cicili#Block142 */
+        } /* cicili#Block150 */
 
       content_len  = FCGX_GetStr (request_body , content_len , (req ->in ));
       fprintf (stdout , "Received POST data: %.*s\n", content_len , request_body );
@@ -55,44 +55,44 @@ static void __ciciliLambda_setup_routes_130 (FCGX_Request * req) {
   }
 }
 void setup_routes () {
-  { /* cicili#Let105 */
+  { /* cicili#Let106 */
     Route r;
     (r . method ) = "GET";
     (r . path ) = "/";
-    (r . handler ) = __ciciliLambda_setup_routes_107 ;
+    (r . handler ) = __ciciliL_108 ;
     register_route (r );
   }
-  { /* cicili#Let110 */
+  { /* cicili#Let112 */
     Route r;
     (r . method ) = "GET";
     (r . path ) = "/about";
-    (r . handler ) = __ciciliLambda_setup_routes_112 ;
+    (r . handler ) = __ciciliL_114 ;
     register_route (r );
   }
-  { /* cicili#Let115 */
+  { /* cicili#Let118 */
     Route r;
     (r . method ) = "GET";
     (r . path ) = "/hello";
-    (r . handler ) = __ciciliLambda_setup_routes_117 ;
+    (r . handler ) = __ciciliL_120 ;
     register_route (r );
   }
-  { /* cicili#Let120 */
+  { /* cicili#Let124 */
     Route r;
     (r . method ) = "GET";
     (r . path ) = "/api/";
-    (r . handler ) = __ciciliLambda_setup_routes_122 ;
+    (r . handler ) = __ciciliL_126 ;
     register_route (r );
   }
-  { /* cicili#Let128 */
+  { /* cicili#Let134 */
     Route r;
     (r . method ) = "POST";
     (r . path ) = "/submit";
-    (r . handler ) = __ciciliLambda_setup_routes_130 ;
+    (r . handler ) = __ciciliL_136 ;
     register_route (r );
   }
 }
 void start_fastcgi_app () {
-  { /* cicili#Let146 */
+  { /* cicili#Let155 */
     int server_fd = -1;
     char * server_path = "/opt/local/var/run/fcgi.sock";
     FCGX_Request request;

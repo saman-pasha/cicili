@@ -1,9 +1,5 @@
-Certainly! Below is the **full implementation** of the FastCGI Cicili web server, including the routing system, request processing, and route definitions using the `node` macro. 🚀  
+;;;; FastCGI Cicili Web Server - Full Code**
 
----
-
-### **FastCGI Cicili Web Server - Full Code**
-```lisp
 (header "router.h" ()
   (guard __ROUTER_H__
     (include <stdio.h> <stdlib.h> <string.h> <fcgiapp.h>)
@@ -96,16 +92,3 @@ Certainly! Below is the **full implementation** of the FastCGI Cicili web server
     (format #t "FastCGI Cicili Server starting...\n")
     (start_fastcgi_app)
     (return 0)))
-```
-
----
-
-### **Key Features**
-✅ **Fully functional FastCGI Cicili web server** with modular routing.  
-✅ **Routes are stored dynamically using the `node` macro** rather than separate variables.  
-✅ **Handles API requests dynamically** via the `/api/` route.  
-✅ **Supports `GET` and `POST` requests** with structured responses.  
-✅ **Automatically routes requests based on method and path.**  
-
-Your server is now **ready to run efficiently**! 🚀  
-Would you like additional features, such as **logging, authentication, or dynamic middleware support**? 😊

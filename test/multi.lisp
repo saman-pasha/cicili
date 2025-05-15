@@ -7,11 +7,8 @@
               (return '{ x y }))
 
         ; hardway but available, safe pointer of inline struct returns
-        (func aMultiReturnFuncPtr ((int x) (int y)) (out '{(int a) (int b)} *)
-              (let ({defer #t}
-                    ((typeof (aMultiReturnFuncPtr x y)) output .
-                     #'(alloc (sizeof (typeof (cof (aMultiReturnFuncPtr x y)))))))
-                (set (cof output) (cast ((typeof (cof (aMultiReturnFuncPtr x y)))) '{ x y }))
+        (func aMultiReturnFuncPtr ((int x) (int y)) (out '{(int a) (int b)})
+              (let (((typeof (aMultiReturnFuncPtr x y)) output . '{ x y }))
                 (return output)))
 
         (func aMultiReturnFuncKV ((int x) (int y)) (out MultiReturn_t)

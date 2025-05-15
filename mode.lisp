@@ -103,6 +103,7 @@
    (1 . header)
    (1 . source)
    (1 . guard)
+   (1 . ghost)
    (1 . module)
    (1 . include)
    (1 . var)
@@ -150,7 +151,7 @@
   (let* ((keyword-list (mapcar #'(lambda (x)
 				   (symbol-name (cdr x)))
 			       keyword-rules))
-	 (keyword-regexp (concat "{\\("
+	 (keyword-regexp (concat "(\\("
 				 (regexp-opt keyword-list)
 				 "\\)[ \t\n]*")))
     (font-lock-add-keywords 'lisp-mode
@@ -170,6 +171,7 @@
    (1 . register)
    (1 . auto)
    (1 . defer)
+   (1 . defer*)
    (1 . resolve)
    ))
 

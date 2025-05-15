@@ -56,7 +56,7 @@
         (progn ; in header file
           (maphash #'(lambda (in-name in-spec)
 		               (case (construct in-spec)
-		                 ('|@VAR|      (compile-variable     in-spec lvl globals :unique t))
+		                 ('|@VAR|      (compile-variable     in-spec lvl globals t :unique t))
 		                 ('|@FUNC|     (compile-function     in-spec lvl globals :unique t))
 		                 ('|@METHOD|   (compile-function     in-spec lvl globals :unique t))
 		                 ('|@PREPROC|  (compile-preprocessor in-spec lvl globals))
@@ -108,7 +108,7 @@
         (progn ; in source file
           (maphash #'(lambda (in-name in-spec)
 		               (case (construct in-spec)
-		                 ('|@VAR|      (compile-variable     in-spec lvl globals :unique t))
+		                 ('|@VAR|      (compile-variable     in-spec lvl globals t :unique t))
 		                 ('|@FUNC|     (compile-function     in-spec lvl globals :unique t))
 		                 ('|@METHOD|   (compile-function     in-spec lvl globals :unique t))
 		                 ('|@PREPROC|  (compile-preprocessor in-spec lvl globals))

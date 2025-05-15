@@ -50,7 +50,7 @@
         (++ ,counter))
        ,@body)))
 
-;;;; loops over any indexable constant structures in C for each item []
+;;; loops over any indexable constant structures in C for each item []
 (DEFMACRO for-each-const (counter      ; name of counter variable
                           item         ; name of iterator pointer
                           array        ; array to be traveresed or pointer to its one of items
@@ -67,3 +67,27 @@
        ((++ ,item)
         (++ ,counter))
        ,@body)))
+
+;;; defers execution at end of current scope
+;;; var list is lamda parameters and works to get and store this values or pointers to use in defer execution
+;;; usage:
+;;; (defer ((FILE * file) (char * message))
+;;;   (format file "%s\n" message)
+;;;   (fclose file))
+(DEFMACRO defer* (var-list &REST body)
+  (LET* ((name (GENSYM "ciciliDefer"))
+         (pname (INTERN (FORMAT NIL "~A_ptr" name))))
+    `(ghost
+         (defer ()
+           ,@(MAP 'LIST #'(LAMBDA (var)
+                            (MULTIPLE-VALUE-BIND (const type modifier const-ptr variable array-def)
+                                (CICILI:SPECIFY-TYPE< var)
+                              `(var ,@var . (FUNCTION ($ ,pname ,variable)))))
+                  var-list)
+           ,@body) 
+       (var '(,@var-list) ,name . 
+            '(,@(MAP 'LIST #'(LAMBDA (var)
+                                    (MULTIPLE-VALUE-BIND (const type modifier const-ptr variable array-def)
+                                        (CICILI:SPECIFY-TYPE< var)
+                                      variable))
+                          var-list))))))

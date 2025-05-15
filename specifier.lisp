@@ -35,7 +35,8 @@
     (cond ((eql construct '|@VAR|)
            (when *module-path*
              (setf (module instance) *module-path*)
-             (setf (unique instance) (free-name *module-path* name))))
+             (setf (unique instance) (free-name *module-path* name)))
+ 	       (setf (inners  instance)     (make-hash-table :test 'eql))) ; contains type inline struct
           ((eql construct '|@LET|)
 	       (setf (params  instance)     (make-hash-table :test 'eql)))
           ((eql construct '|@LETN|)
@@ -72,6 +73,8 @@
 	       (setf (params  instance)     (make-hash-table :test 'eql))
 	       (setf (inners  instance)     (make-hash-table :test 'eql)))
 	      ((eql construct '|@GUARD|)
+	       (setf (inners  instance)     (make-hash-table :test 'eql)))
+	      ((eql construct '|@GHOST|)
 	       (setf (inners  instance)     (make-hash-table :test 'eql)))
 	      ((eql construct '|@MODULE|)
            (when *module-path*
@@ -193,18 +196,29 @@
 (defun specify-typeof< (type)
   (if (atom type)
       (if (typep type 'sp)
-          (progn (setf (name type) (specify-name-with-module< (name type)))
+          (progn
+            (setf (name type) (specify-name-with-module< (name type)))
             type)
           (specify-name-with-module< type))
       (let ((ty (car type)))
         (cond ((or (key-eq '|struct| ty) (key-eq '|union| ty))
                (list ty (specify-name-with-module< (cadr type))))
               ((key-eq '|typeof| ty) (specify-typeof-expr type))
-              ((and (not (null *function-spec*)) (key-eq 'QUOTE ty)) ; inline struct
+              ((and (null *function-spec*) *variable-spec* (key-eq 'QUOTE ty)) ; inline struct global var
+               (let* ((sname (gensym "__ciciliS_"))
+                      (struct-spec (specify-struct (append (list '|struct| sname) (cadr type)) '() :inline t)))
+                 (add-inner struct-spec *variable-spec*)
+                 (list '|struct| (if *module-path* (free-name *module-path* sname) sname))))
+              ((and *function-outp* *function-spec* (key-eq 'QUOTE ty)) ; inline struct as function out type
                (let* ((fname (name *function-spec*))
-                      (sname (if (str:starts-with-p "__ciciliStruct_" (symbol-name fname))
+                      (sname (if (str:starts-with-p "__ciciliS_" (symbol-name fname))
                                  (intern (format nil "~A_" fname))
-                                 (intern (format nil "__ciciliStruct_~A_" fname))))
+                                 (intern (format nil "__ciciliS_~A_" fname))))
+                      (struct-spec (specify-struct (append (list '|struct| sname) (cadr type)) '() :inline t)))
+                 (add-inner struct-spec *function-spec*)
+                 (list '|struct| (if *module-path* (free-name *module-path* sname) sname))))
+              ((and *function-spec* (key-eq 'QUOTE ty)) ; inline struct inside function body
+               (let* ((sname (gensym "__ciciliS_"))
                       (struct-spec (specify-struct (append (list '|struct| sname) (cadr type)) '() :inline t)))
                  (add-inner struct-spec *function-spec*)
                  (list '|struct| (if *module-path* (free-name *module-path* sname) sname))))
@@ -461,6 +475,7 @@
   (make-specifier (format nil "\"~A\"" def) '|@ATOM| nil '|@STRING| nil nil nil nil '()))
 
 (defun specify-symbol-expr (def)
+  (display "nAMe" def (specify-name< def) #\Newline)
   (make-specifier (specify-name< def) '|@ATOM| nil '|@SYMBOL| nil nil nil nil '()))
 
 (defun specify-atom-expr (def)
@@ -590,12 +605,9 @@
 		           ((key-eq func 'QUOTE)
                     (let ((quoted (cadr def)))
                       (if (key-eq (car quoted) '|lambda|) ; lambda
-                          (let* ((fname (name *function-spec*))
-                                 (lname (if (str:starts-with-p "__ciciliLambda_" (symbol-name fname))
-                                            (gensym (format nil "~A_" fname))
-                                            (gensym (format nil "__ciciliLambda_~A_" fname))))
+                          (let* ((lname (gensym "__ciciliL_"))
                                  (func-spec (specify-function (append (list '|lambda| lname) (cdr quoted)) '())))
-                            (add-inner func-spec *function-spec*)
+                            (add-inner func-spec (if *function-spec* *function-spec* *variable-spec*))
                             (specify-symbol-expr (if *module-path* (free-name *module-path* lname) lname)))
                           (specify-list-expr quoted))))   ; list
 		           ((and (> (length def) 2) (key-eq func '\|) (key-eq (cadr def) '\|))
@@ -657,6 +669,10 @@
                     (let ((out-spec (specify-guard       def attributes)))
                       (setq attributes '())
                       out-spec))
+		           ((key-eq func '|ghost|)
+                    (let ((out-spec (specify-guard       def attributes t)))
+                      (setq attributes '())
+                      out-spec))
 		           ((key-eq func '|module|)
                     (let ((out-spec (specify-module      def attributes)))
                       (setq attributes '())
@@ -674,6 +690,8 @@
 	     (is-register nil)
 	     (is-static   nil)
 	     (is-extern   nil)
+         (is-alloc    nil)
+         (has-defer   nil)
 	     (type  (cdr def)))
     (dolist (attr attrs)
       (let ((name (car attr)))
@@ -681,16 +699,74 @@
 	          ((key-eq name '|register|) (setq is-register t))
 	          ((key-eq name '|static|)   (setq is-static t))
 	          ((key-eq name '|extern|)   (setq is-extern t))
+              ((key-eq (car attr)'|defer|)
+               (let ((quoted (cadr attr)))
+                 (if (null quoted)
+                     (setq has-defer (cddr attr))
+                     (if (and (key-eq '|true| quoted) (null (cddr attr)))
+                         (setq has-defer t)
+                         (error (format nil "wrong defer definition ~A, #t means pure free" attr))))))
 	          (t (error (format nil "unknown variable attribute ~A" attr))))))
-    (multiple-value-bind (const type modifier const-ptr variable array default)
-        (specify-type-value< type)
-      (let ((attributes '()))
-	    (when is-extern   (push (cons '|extern|   t) attributes))
-	    (when is-static   (push (cons '|static|   t) attributes))
-	    (when is-register (push (cons '|register| t) attributes))
-	    (when is-auto     (push (cons '|auto|     t) attributes))
-	    (make-specifier (specify-decl-name< variable) '|@VAR| const type modifier const-ptr array
-                        (if (null default) nil (specify-expr default)) attributes)))))
+    (let ((tmp-variable-spec *variable-spec*)
+          (var-spec (make-specifier nil '|@VAR| nil nil nil nil nil nil ()))) ; name and unique name further be replaced
+      (setf *variable-spec* var-spec)
+      (multiple-value-bind (const typeof modifier const-ptr variable array value)
+		  (specify-type-value< type)
+        (setf (name var-spec) (specify-decl-name< variable))
+        (if *module-path* (setf (unique var-spec) (free-name *module-path* (name var-spec))))
+        (setf (const var-spec) const)
+        (setf (typeof var-spec) typeof)
+        (setf (modifier var-spec) modifier)
+        (setf (const-ptr var-spec) const-ptr)
+        (setf (array-def var-spec) array)
+        (setf (default var-spec) (if (null value) nil (specify-expr value)))
+        (when (and (listp value) (key-eq (first value) '|alloc|))
+          (setq is-alloc t)
+		  (when (or (= (length value) 1) (> (length value) 3))
+		    (error (format nil "wrong alloc form ~A" value)))
+		  (if (= (length value) 2)
+		      (setq value (list '|cast| (remove nil (list const typeof modifier const-ptr))
+					            (list '|malloc| (nth 1 value))))
+		      (setq value (list '|cast| (remove nil (list const typeof modifier const-ptr))
+				                (list '|calloc| (nth 1 value) (nth 2 value))))))
+	    (let ((attributes '()))
+	      (when is-extern   (push (cons '|extern|   t) attributes))
+		  (when is-static   (push (cons '|static|   t) attributes))
+		  (when is-register (push (cons '|register| t) attributes))
+		  (when is-auto     (push (cons '|auto|     t) attributes))
+		  (when (or (eq has-defer t) (and is-alloc (null has-defer)))
+            (push (cons '|alloc| t) attributes)
+            (when (or (null has-defer) (eq has-defer t)) ; auto deferment
+              (push (cons '|defer| 
+                          (specify-expr
+                              `'(|lambda|
+                                 (,(remove nil
+                                   `(,const ,typeof
+                                     ,(cond
+                                        ((key-eq '|*|  modifier) '|**|)
+                                        ((key-eq '|**| modifier) '|***|)
+                                        (t (error (format nil "not suitable for auto deferral"))))
+                                     ,const-ptr ,variable ,array)))
+                                 (|free| (|cast| (|void| *) (|cof| ,variable)))))) attributes)))
+		  (when (and has-defer (not (eq has-defer t)))
+            (let ((ptr-name (intern (format nil "~A_ptr" variable))))
+              (push (cons '|defer|
+                          (specify-expr
+                              `'(|lambda|
+                                 (,(remove nil
+                                   `(,const ,typeof
+                                     ,(cond
+                                        ((null  modifier) '|*|)
+                                        ((key-eq '|*|  modifier) '|**|)
+                                        ((key-eq '|**| modifier) '|***|)
+                                        (t (error (format nil "not suitable for deferment"))))
+                                     ,const-ptr ,ptr-name ,array)))
+                                 ,(remove nil `(var ,const ,typeof ,modifier ,const-ptr
+                                                  ,variable ,array . #'(cof ,ptr-name)))
+                                 ,@has-defer))) attributes)))
+          (setf (attrs var-spec) attributes)
+          (setf *variable-spec* tmp-variable-spec)
+          var-spec)))))
 
 (defun specify-body (def)
   (let ((body-specifier (make-specifier (gensym "cicili#Body") '@|BODY| nil nil nil nil nil nil nil)))
@@ -736,15 +812,14 @@
 	    (cond ((and (key-eq (car type-desc) '|register|) (= (length (cdr type-desc)) 0)) (setq is-register t))
               ((and (key-eq (car type-desc) '|auto|)     (= (length (cdr type-desc)) 0)) (setq is-auto t))
 	          ((and (key-eq (car type-desc) '|static|)   (= (length (cdr type-desc)) 0)) (setq is-static t))
-	          ((key-eq (car type-desc)      '|defer|)
+	          ((key-eq (car type-desc) '|defer|)
                (let ((quoted (cadr type-desc)))
-                 (if (key-eq '|true| quoted)
-                   (setq has-defer t)
-                   (progn
-                     (unless (and (= (length type-desc) 2) (key-eq '|lambda| (caadr quoted)))
-                       (error (format nil "wrong defer definition ~A" type-desc)))
-                     (setq has-defer quoted)))))
-	          (t (multiple-value-bind (const typeof modifier const-ptr variable array value)
+                 (if (null quoted)
+                     (setq has-defer (cddr type-desc))
+                     (if (and (key-eq '|true| quoted) (null (cddr type-desc)))
+                         (setq has-defer t)
+                         (error (format nil "wrong defer definition ~A, #t means pure free" type-desc))))))
+              (t (multiple-value-bind (const typeof modifier const-ptr variable array value)
 		             (specify-type-value< type-desc)
 		           (when (and (listp value) (key-eq (first value) '|alloc|))
                      (setq is-alloc t)
@@ -759,20 +834,36 @@
 		             (when is-static   (push (cons '|static|   t) attributes))
 		             (when is-register (push (cons '|register| t) attributes))
 		             (when is-auto     (push (cons '|auto|     t) attributes))
-		             (when is-alloc
-                       (push (cons '|alloc|    t) attributes)
-                       (unless has-defer ; auto deferment
-                         (setq has-defer
-                               `'(|lambda|
-                                  ((,typeof
-                                       ,(cond
-                                          ((key-eq '|*|  modifier) '|**|)
-                                          ((key-eq '|**| modifier) '|***|)
-                                          (t (error (format nil "not suitable for auto deferral alloc"))))
-                                     ,variable))
-                                  (|free| (|cast| (|void| *) (|cof| ,variable)))))))
+		             (when (or (eq has-defer t) (and is-alloc (null has-defer)))
+                       (push (cons '|alloc| t) attributes)
+                       (when (or (null has-defer) (eq has-defer t)) ; auto deferment
+                         (push (cons '|defer| 
+                                     (specify-expr
+                                         `'(|lambda|
+                                            (,(remove nil
+                                              `(,const ,typeof
+                                                  ,(cond
+                                                     ((key-eq '|*|  modifier) '|**|)
+                                                     ((key-eq '|**| modifier) '|***|)
+                                                     (t (error (format nil "not suitable for auto deferral"))))
+                                                ,const-ptr ,variable ,array)))
+                                            (|free| (|cast| (|void| *) (|cof| ,variable)))))) attributes)))
 		             (when (and has-defer (not (eq has-defer t)))
-                       (push (cons '|defer|    (specify-expr has-defer)) attributes))
+                       (let ((ptr-name (intern (format nil "~A_ptr" variable))))
+                         (push (cons '|defer|
+                                     (specify-expr
+                                         `'(|lambda|
+                                            (,(remove nil
+                                              `(,const ,typeof
+                                                ,(cond
+                                                   ((null  modifier) '|*|)
+                                                   ((key-eq '|*|  modifier) '|**|)
+                                                   ((key-eq '|**| modifier) '|***|)
+                                                   (t (error (format nil "not suitable for deferment"))))
+                                                ,const-ptr ,ptr-name ,array)))
+                                            ,(remove nil `(var ,const ,typeof ,modifier ,const-ptr
+                                                             ,variable ,array . #'(cof ,ptr-name)))
+                                            ,@has-defer))) attributes)))
                      (add-param
                          (make-specifier (specify-decl-name< variable) '|@VAR| const typeof modifier const-ptr array
                                          (if (null value) nil (specify-expr value)) attributes)
@@ -805,7 +896,7 @@
     (make-specifier nil '|@SET| nil nil nil nil nil items '())))
 
 (defun specify-return-expr (def)
-  (if (and (not (null *function-spec*)) (listp (typeof *function-spec*)))
+  (if (and *function-spec* (listp (typeof *function-spec*)))
       (make-specifier nil '|@RETURN| nil nil nil nil nil
                       (specify-cast-expr (list '|cast|
                                                (remove nil (list
@@ -913,8 +1004,9 @@
     (when (and is-declare is-inline) (error (format nil "inline functions should be defined ~A" def)))
     (when (< (length def) 3) (error (format nil "wrong function definition ~A" def)))
     (when (and is-declare body) (error (format nil "function declaration with body '~A' ~A" name (first body))))
-    (let ((attributes '())
-          (tmp-specifier nil))
+    (let ((attributes    '())
+          (tmp-specifier nil)
+          (tmp-outp      nil))
 	  (when is-extern  (push (cons '|extern|  t) attributes))
 	  (when is-inline  (push (cons '|inline|  t) attributes))
 	  (when is-static  (push (cons '|static|  t) attributes))
@@ -924,9 +1016,12 @@
       (setq function-specifier (make-specifier name (if is-method '|@METHOD| '|@FUNC|)
                                                nil nil nil nil nil nil attributes)) ;; for specify out
       (setq tmp-specifier *function-spec*)
+      (setq tmp-outp      *function-outp*)
       (setf *function-spec* function-specifier)
+      (setf *function-outp* t)
 	  (multiple-value-bind (const type modifier const-ptr variable array)
 	      (specify-type< (cdr returns) t)
+        (setf *function-outp* tmp-outp)
         (setf (const function-specifier) const)
         (setf (typeof function-specifier) type)
         (setf (modifier function-specifier) modifier)
@@ -1094,11 +1189,11 @@
           (setf (typeof var-spec) '||))))
       union-specifier))
 
-(defun specify-guard (def attrs)
+(defun specify-guard (def attrs &optional is-ghost)
   (when (> (length attrs) 0) (error (format nil "wrong attributes ~A" attrs)))
-  (let* ((name (specify-decl-name< (nth 1 def)))
-	     (clauses (nthcdr 2 def))
-	     (guard-specifier (make-specifier name '|@GUARD| nil nil nil nil nil nil nil)))
+  (let* ((name (specify-decl-name< (if is-ghost (gensym "ciciliGhost") (nth 1 def))))
+	     (clauses (if is-ghost (nthcdr 1 def) (nthcdr 2 def)))
+	     (guard-specifier (make-specifier name (if is-ghost '|@GHOST| '|@GUARD|) nil nil nil nil nil nil nil)))
     (let ((attributes '()))
       (dolist (clause clauses)
 	    (if (consp clause)
@@ -1113,6 +1208,7 @@
 		            ((key-eq construct '|auto|)     (push clause attributes))
 		            ((key-eq construct '|extern|)   (push clause attributes))
 		            ((key-eq construct '|resolve|)  (push clause attributes))
+		            ((key-eq construct '|defer|)    (push clause attributes))
 		            ((key-eq construct '|include|)
 		             (add-inner (specify-include  clause attributes) guard-specifier)
 		             (setq attributes '()))
@@ -1139,6 +1235,9 @@
 		             (setq attributes '()))
 		            ((key-eq construct '|guard|)
 		             (add-inner (specify-guard    clause attributes) guard-specifier)
+		             (setq attributes '()))
+		            ((key-eq construct '|ghost|)
+		             (add-inner (specify-guard    clause attributes t) guard-specifier)
 		             (setq attributes '()))
 		            ((key-eq construct '|module|)
 		             (add-inner (specify-module   clause attributes) guard-specifier)

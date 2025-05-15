@@ -19,8 +19,12 @@
 (defparameter *module-spec* nil)
 ;; current module spec during module compiling
 (defparameter *module-path* nil)
+;; current variable spec during type inline struct compiling
+(defparameter *variable-spec* nil)
 ;; current function spec during function compiling
 (defparameter *function-spec* nil)
+;; current function out part is compiling
+(defparameter *function-outp* nil)
 ;; resolve current function
 (defparameter *resolve* t)
 ;; storing line num and col num of target's ASTs

@@ -8,39 +8,38 @@ typedef struct MultiReturn_t {
   int a;
   int b;
 } MultiReturn_t;
-typedef struct __lccStruct_aMultiReturnFunc_177 {
+struct __ciciliStruct_aMultiReturnFunc_ {
   int a;
   int b;
-} __lccStruct_aMultiReturnFunc_177;
-__lccStruct_aMultiReturnFunc_177 aMultiReturnFunc (int x, int y) {
-  return ((__lccStruct_aMultiReturnFunc_177){x , y });
+} __ciciliStruct_aMultiReturnFunc_;
+struct __ciciliStruct_aMultiReturnFunc_ aMultiReturnFunc (int x, int y) {
+  return ((struct __ciciliStruct_aMultiReturnFunc_){x , y });
 }
-typedef struct __lccStruct_aMultiReturnFuncPtr_178 {
+struct __ciciliStruct_aMultiReturnFuncPtr_ {
   int a;
   int b;
-} __lccStruct_aMultiReturnFuncPtr_178;
-__lccStruct_aMultiReturnFuncPtr_178 * aMultiReturnFuncPtr (int x, int y) {
-  { /* lcc#Let179 */
-    typeof(aMultiReturnFuncPtr (x , y )) output = ((typeof(aMultiReturnFuncPtr (x , y )))malloc (sizeof(typeof((*aMultiReturnFuncPtr (x , y ))))));
-    (*output ) = ((typeof((*aMultiReturnFuncPtr (x , y )))){x , y });
-    return ((__lccStruct_aMultiReturnFuncPtr_178 *)output );
-  } /* lcc#Let179 */
+} __ciciliStruct_aMultiReturnFuncPtr_;
+struct __ciciliStruct_aMultiReturnFuncPtr_ aMultiReturnFuncPtr (int x, int y) {
+  { /* cicili#Let179 */
+    typeof(aMultiReturnFuncPtr (x , y )) output = {x , y };
+    return ((struct __ciciliStruct_aMultiReturnFuncPtr_)output );
+  }
 }
 MultiReturn_t aMultiReturnFuncKV (int x, int y) {
   return ((MultiReturn_t){.a = x , .b = y });
 }
-typedef struct __lccStruct_aMultiReturnFuncS_180 {
+struct __ciciliStruct_aMultiReturnFuncS_ {
   int a;
   int b;
-} __lccStruct_aMultiReturnFuncS_180;
-__lccStruct_aMultiReturnFuncS_180 aMultiReturnFuncS (int x, int y) {
-  { /* lcc#Let181 */
+} __ciciliStruct_aMultiReturnFuncS_;
+struct __ciciliStruct_aMultiReturnFuncS_ aMultiReturnFuncS (int x, int y) {
+  { /* cicili#Let183 */
     typeof(aMultiReturnFuncS (x , y )) s = {x , y };
-    return ((__lccStruct_aMultiReturnFuncS_180)s );
-  } /* lcc#Let181 */
+    return ((struct __ciciliStruct_aMultiReturnFuncS_)s );
+  }
 }
 int main () {
-  { /* lcc#Let182 */
+  { /* cicili#Let186 */
     int n = 3;
     int t = 4;
     MultiReturn_t mrt;
@@ -51,6 +50,6 @@ int main () {
     mrt  = aMultiReturnFuncKV ((++n ), (++t ));
     printf ("a: %d, b: %d\n", (mrt . a ), (mrt . b ));
     mrtPtr  = aMultiReturnFuncPtr ((++n ), (++t ));
-    printf ("a: %d, b: %d\n", (mrtPtr ->a ), (mrtPtr ->b ));
-  } /* lcc#Let182 */
+    printf ("a: %d, b: %d\n", (mrtPtr . a ), (mrtPtr . b ));
+  }
 }

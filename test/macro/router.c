@@ -10,9 +10,9 @@ int routesCount = 0;
 void register_route (Route route) {
   fprintf (stdout , "Route %s\n", (route . path ));
   if (routesCount  ==  0 ) 
-    { /* cicili#Block105 */
+    { /* cicili#Block107 */
       routesList  = calloc (10, sizeof(Route));
-    } /* cicili#Block105 */
+    } /* cicili#Block107 */
 
   routesList [(routesCount ++)] = route ;
 }
@@ -21,19 +21,19 @@ void Route_handle (Route * this, FCGX_Request * req) {
 }
 void process_routes (FCGX_Request * req) {
   fprintf (stdout , "Processing request: %d ...\n", (req ->requestId ));
-  { /* cicili#Let110 */
+  { /* cicili#Let113 */
     char * rq_method = FCGX_GetParam ("REQUEST_METHOD", (req ->envp ));
     char * rq_uri = FCGX_GetParam ("REQUEST_URI", (req ->envp ));
     int i = 0;
     fprintf (stdout , "Requested METHOD: %s, URI: %s\n", rq_method , rq_uri );
     while ((i  <  routesCount  )) {
-      { /* cicili#Let114 */
+      { /* cicili#Let118 */
         Route r = routesList [i ];
         if ((strcmp ((r . path ), rq_uri ) ==  0 ) ||  ((strcmp ((r . path ), "/api/") ==  0 ) &&  (strncmp (rq_uri , "/api/", 5) ==  0 ) ) ) 
-          { /* cicili#Block118 */
+          { /* cicili#Block123 */
             Route_handle(&r, req );
             return ;
-          } /* cicili#Block118 */
+          } /* cicili#Block123 */
 
         (i ++);
       }

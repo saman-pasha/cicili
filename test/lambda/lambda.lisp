@@ -6,7 +6,7 @@
           (member int width)
           (member func dynamicDraw (((struct Shape) * _))))
 
-        {decl} (method Shape->staticDraw ())))
+        (decl) (method Shape->staticDraw ())))
           
 (source "lambda.c" (:std #f
                     :compile #t
@@ -44,8 +44,7 @@
                     (int x . 4)
                     (int y . 5)
 
-                    {defer '(lambda ((Shape * shp))
-                             (printf "Shape destructured\n"))}
+                    (defer () (printf "Shape destructured\n"))
                     (Shape shp . '{ 10 20 }))
                 
                 (printf "addition of x and y: %d\n" (addFunVar x y))
