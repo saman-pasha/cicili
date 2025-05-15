@@ -13,20 +13,31 @@
         (include "defer.h")
 
         (func main ()
-              (let ({defer '(lambda ((Employee ** empPtr))
-                             (let ((Employee * emp . #'(cof empPtr)))
-                               (printf "from defer, emp id is: %d and emp name is: %s\n" ($ emp Id) ($ emp Name))
-                               (free ($ (cof empPtr) Name))
-                               (free emp)
-                               (printf "from defer, emp is freed\n")))}
-                     (Employee * emp . #'(alloc (sizeof Employee)))
-                     (Employee * empOther . #'(alloc (sizeof Employee))))
+              (let ((defer () ; deferment using defer attribute by let
+                      (printf "from defer, emp id is: %d and emp name is: %s\n" ($ emp Id) ($ emp Name))
+                      (free ($ emp Name))
+                      (free emp) ; if deferral is overrided so developer should do free by ownself
+                      (printf "from defer, emp is freed\n"))
+                    (Employee * emp . #'(alloc (sizeof Employee))) ; has custom deferment at the end of scope
+                    (Employee * empOther . #'(alloc (sizeof Employee))) ; alloc has auto free deferment at the end of scope
+                    (defer #t) ; means only automatic free deferment at the end of scope
+                    (Employee * empOzzi . #'(malloc (sizeof Employee))) ; 
+                    (char * msg . "a message from defer execution\n"))
+                
+                (var FILE * file . #'(fopen "deferral.txt" "w+"))
 
+                (format file "first line from main execution\n")
+                
                 (set ($ emp Id)   100
                      ($ emp Name) (calloc 8 (sizeof char)))
 
+                ;; defer after some task done
+                (defer* ((FILE * file) (char * msg)) ; deferment using defer builtin macro, capture list required
+                  (format file "%s\n" msg)
+                  (fclose file))
+                
                 (memcpy ($ emp Name) "Jon Doe\0" 8)
                 
-                (printf "emp id is: %d and emp name is: %s\n" ($ emp Id) ($ emp Name))
+                (format #t "emp id is: %d and emp name is: %s\n" ($ emp Id) ($ emp Name))
 
                 )))

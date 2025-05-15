@@ -18,31 +18,31 @@ void cicilixqUhX6O6k74k_WEKLfDVc2Xgz20__print (cicilixqUhX6O6k74k_WEKLfDVc2Xgz20
 void cicili_iLpNq6pC4V6Ha1he3EvZDUUIck_ (Employee * emp) {
   printf ("inside for free emp id is: %d\n", (emp ->id ));
 }
-int cicilitS6_F5Im8YmLZoOCtlFH_i5NCBY_ (int g) {
+static int ciciliGfxZAh_r1rjF_G0i1X8rCX1ziVA_ (int g) {
   return (3 +  g  );
 }
-struct cicilieRNEdffFcVKE3N_AxZ_B6HLLN9Q_ ciciliTozMYGkJ8oVe_3afFeftV_4FBR8_ (int x, int y) {
-  return ((struct cicilieRNEdffFcVKE3N_AxZ_B6HLLN9Q_){cicilitS6_F5Im8YmLZoOCtlFH_i5NCBY_ (x ), y });
+struct cicilirPoYbcc0rjAkoGbxIGwn3nWUiTc_ ciciliTozMYGkJ8oVe_3afFeftV_4FBR8_ (int x, int y) {
+  return ((struct cicilirPoYbcc0rjAkoGbxIGwn3nWUiTc_){ciciliGfxZAh_r1rjF_G0i1X8rCX1ziVA_ (x ), y });
 }
-int cicilinzjLwDtSvwk5d8Poro1rxq7iRZE_ (int g) {
+static int cicili25utlAfJhClz_0nmAOYxIYH2gzQ_ (int g) {
   return (6 +  g  );
 }
-struct ciciliaHDOjsyShn3IwyvTQAvaRw5Sg20_ cicilitoldQFn2V3YHvs0kVlusT3lYqCs_ (int x, int y) {
-  return ((struct ciciliaHDOjsyShn3IwyvTQAvaRw5Sg20_){cicilinzjLwDtSvwk5d8Poro1rxq7iRZE_ (x ), y });
+struct cicilibLyaplZB200bwG0_onreJdOdY7o_ cicilitoldQFn2V3YHvs0kVlusT3lYqCs_ (int x, int y) {
+  return ((struct cicilibLyaplZB200bwG0_onreJdOdY7o_){cicili25utlAfJhClz_0nmAOYxIYH2gzQ_ (x ), y });
 }
 long ciciliC41hdVPk87iu_w5AQBJtphUnZF8_ = 876;
 void ciciliEHa_SpDFo5BFIAK1zxc3Gc8SVdg__print (ciciliEHa_SpDFo5BFIAK1zxc3Gc8SVdg_ * this) {
   printf ("inside d emp id is: %d\n", (this ->id ));
 }
-int cicili_mZKLEyLVos4fuRTgTkGm_r6myc_ (int g) {
+static int cicili55IuYzEbzEqXTIvR9HnfcYqXPeM_ (int g) {
   return (9 +  g  );
 }
-struct cicilib2eaI3jQOhFEEPgQlN9cyRpIyAY_ cicili7hMT88tey7fEi_6cHAML4lQ3Vg4_ (int x, int y) {
-  return ((struct cicilib2eaI3jQOhFEEPgQlN9cyRpIyAY_){cicili_mZKLEyLVos4fuRTgTkGm_r6myc_ (x ), y });
+struct ciciliOrP78LLTePng0jTz3NK2ygd2NTk_ cicili7hMT88tey7fEi_6cHAML4lQ3Vg4_ (int x, int y) {
+  return ((struct ciciliOrP78LLTePng0jTz3NK2ygd2NTk_){cicili55IuYzEbzEqXTIvR9HnfcYqXPeM_ (x ), y });
 }
-struct cicilioqKSjuXEdrKL0mwhU39GE5dW930_ ciciliSCZ69Ii4twzs6m1xrpUrU_Y2Jjk_ (int x, int y) {
-  { /* cicili#Let103 */
+struct ciciliSMjlE5bR2GzG_Wn2qkpMImkCVUE_ ciciliSCZ69Ii4twzs6m1xrpUrU_Y2Jjk_ (int x, int y) {
+  { /* cicili#Let116 */
     typeof(ciciliSCZ69Ii4twzs6m1xrpUrU_Y2Jjk_ (x , y )) s = {x , y };
-    return ((struct cicilioqKSjuXEdrKL0mwhU39GE5dW930_)s );
-  } /* cicili#Let103 */
+    return ((struct ciciliSMjlE5bR2GzG_Wn2qkpMImkCVUE_)s );
+  }
 }

@@ -5,9 +5,9 @@
             (member char name [12]))
 
           ;; refers to Employee outside module a
-          {decl} (method Employee->print1 ((Employee * emp)))
+          (decl) (method Employee->print1 ((Employee * emp)))
           ;; refers to Employee outside any module because of starts with '/'
-          {decl} (method Employee->print2 ((/Employee * emp)))
+          (decl) (method Employee->print2 ((/Employee * emp)))
 
           (var long varAAA)
 
@@ -22,15 +22,15 @@
                     (member char name [12]))
 
                   ;; therefor current scope is a every objects without '/' resolution sign refer will be defined inside a
-                  {decl} (method Employee->print ()) ; refers to Employee inside module a
+                  (decl) (method Employee->print ()) ; refers to Employee inside module a
 
                   ;; refers to Employee outside module a '/' sign means free resolution
-                  {decl} (func print ((/Employee * emp)))
+                  (decl) (func print ((/Employee * emp)))
 
-                  {decl} (func aFunc ((int x) (int y)) (out '{(int a) (int b)})) ; inside module a
+                  (decl) (func aFunc ((int x) (int y)) (out '{(int a) (int b)})) ; inside module a
 
                   (module c
-                          {decl} (func aFunc ((int x) (int y)) (out '{(int a) (int b)})) ; inside module a/c
+                          (decl) (func aFunc ((int x) (int y)) (out '{(int a) (int b)})) ; inside module a/c
 
                           (var long varAAA)
 
@@ -39,9 +39,9 @@
                                     (member int id)
                                     (member char name [12]))
                                   ;; refers to Employee inside module d
-                                  {decl} (method Employee->print ()) 
+                                  (decl) (method Employee->print ()) 
                                   
-                                  {decl} (func aFunc ((int x) (int y)) (out '{(int a) (int b)})) ; inside module a/c/d
+                                  (decl) (func aFunc ((int x) (int y)) (out '{(int a) (int b)})) ; inside module a/c/d
                                   )
                           )
                   )
@@ -54,7 +54,7 @@
                   (Circle . 5)
                   (Rectangle))
                 
-                {decl} (func aFunc ((int x) (int y)) (out '{(int a) (int b)})) ; same name inside module b
+                (decl) (func aFunc ((int x) (int y)) (out '{(int a) (int b)})) ; same name inside module b
                 
                 ))
 
@@ -117,16 +117,16 @@
                     (a/Employee     aEmp . '{ 11 "Jon Doe" })
                     (a/c/d/Employee dEmp . '{ 12 "Saman Pasha" })
                     )
-                (printf "a module a: %d, b: %d\n" ($ mra a) ($ mra b))
-                (printf "b module a: %d, b: %d\n" ($ mrb a) ($ mrb b))
-                (printf "c module a: %d, b: %d\n" ($ mrc a) ($ mrc b))
-                (printf "d module a: %d, b: %d\n" ($ mrd a) ($ mrd b))
+                (format #t "a module a: %d, b: %d\n" ($ mra a) ($ mra b))
+                (format #t "b module a: %d, b: %d\n" ($ mrb a) ($ mrb b))
+                (format #t "c module a: %d, b: %d\n" ($ mrc a) ($ mrc b))
+                (format #t "d module a: %d, b: %d\n" ($ mrd a) ($ mrd b))
                 (-> fEmp print1 (cast (Employee *) (aof aEmp)));
                 (-> fEmp print2 (cast (Employee *) (aof dEmp)));
                 (-> aEmp print);
                 (-> dEmp print);
-                (printf "free varAAA: %ld, inside c: %ld\n" varAAA a/c/varAAA)
-                (printf "free Circle: %d, inside b: %d\n" Circle b/Circle)
-                (printf "free Rectangle: %d, inside b: %d\n" Rectangle b/Rectangle)
+                (format #t "free varAAA: %ld, inside c: %ld\n" varAAA a/c/varAAA)
+                (format #t "free Circle: %d, inside b: %d\n" Circle b/Circle)
+                (format #t "free Rectangle: %d, inside b: %d\n" Rectangle b/Rectangle)
                 ))
         )

@@ -1,5 +1,118 @@
+*Copilot opinion on Cicili*
+
+# Cicili – The Ultimate Lisp-Powered Metaprogramming-Driven Language
+
+## Overview
+
+Cicili is a powerful metaprogramming system built on the expressive foundation of Lisp. It empowers developers to design domain-specific languages (DSLs), generate efficient C code through macro expansion, and build high-performance web and system applications. With Cicili, you can develop modular software components—from dynamic web servers and API pipelines to automation scripts and embedded systems—while enjoying near-native execution speed and highly maintainable code.
+
+## Philosophy
+
+At its core, Cicili embraces:
+
+- **Expressive Metaprogramming:**  
+  Write high-level, declarative Lisp-like macros that generate robust, optimized C code. Code writes code—improving maintainability and reducing boilerplate.
+
+- **Performance by Design:**  
+  Cicili compiles directly to C, ensuring extremely fast execution. With features like deferred memory management (`defer` for let variables) and efficient macro expansion, your application benefits from native-like speed without the overhead of interpretation.
+
+- **Modular and Extensible Architecture:**  
+  Cicili’s versatile module system and namespace resolution mechanism (including free resolution via a simple `/` prefix) allow the creation of isolated libraries and components. This makes it simple to reuse, extend, and collaborate on large projects.
+
+- **Clean DSL Development:**  
+  By abstracting common tasks (e.g., looping over arrays, conditional execution, function interpolation via lambda, routing for web servers), Cicili creates a natural DSL that integrates smoothly with C’s low-level system programming.
+
+## Features
+
+### High-Performance Compile-Time Generation
+
+- **Compiled to C Code:**  
+  Your high-level Cicili code is translated into optimized, idiomatic C, enabling blazing-fast performance and minimal runtime overhead.
+
+- **Deferred Memory Management:**  
+  Using the `defer` attribute in `let` bindings, Cicili automatically frees memory allocated during scope creation. This ensures resource safety and minimizes memory leaks without extra manual cleanup.
+
+- **Macro System:**  
+  Enjoy a rich macro language that lets you define your own DSLs. Built-in macros for conditionals (`when`, `unless`), loops (`for-each`, `for-each-const`), and string formatting (`format`) save you time and reduce boilerplate.
+
+### Object-Oriented and Functional Constructs
+
+- **Structs with Methods:**  
+  Define C-like structures using Lisp macros and attach methods (both inline and dynamically resolved) to simulate object-oriented programming without the runtime cost of inheritance.
+
+- **Lambda Expressions as First-Class Citizens:**  
+  Cicili supports quoted lambda expressions. These provide first-class functions that can be stored in function variables, passed as parameters, or assigned as method implementations.
+
+- **Function Variables and Inline Helpers:**  
+  Declare and assign functions dynamically, empowering functional programming patterns that blend seamlessly with low-level system constraints.
+
+### Modular Design & Namespace Control
+
+- **Sophisticated Module System:**  
+  Organize code into packages and modules to avoid symbol conflicts. Use free resolution (with a `/` prefix) when you need to refer to global types and methods outside the current module context.
+
+- **Dynamic Imports and Initialization:**  
+  Import external macro files into specific namespaces (or the default CL-USER package) and even supply compile-time initialization arguments to configure their behavior.
+
+### Web Development and FastCGI Integration
+
+- **Complete Web Server Toolkit:**  
+  Built on FastCGI, Cicili provides robust routing macros that simplify the definition of GET/POST endpoints, API routes, and parameter handling. The `route` macro and request processing functions let you build a full-featured web server that’s both modular and high performance.
+
+- **Dynamic Route Dispatching:**  
+  Process incoming HTTP requests by dynamically matching their paths and methods against registered routes. Support for serving both static content and dynamic API responses is built right in.
+
+### Extensibility and Future Potential
+
+- **DSL Ecosystem:**  
+  Cicili is not confined to web development. Its powerful macro and module system make it ideal for any domain where code generation and customization are required—from automation tools to embedded systems.
+
+- **Cross-Domain Integration:**  
+  Seamlessly integrate with existing C libraries, and extend Cicili to support advanced features such as parallel processing, WebSockets, or database connectivity as your project grows.
+
+- **Performance Optimizations:**  
+  With further potential enhancements like inline assembly optimizations, task parallelism, and even GPU-accelerated computation, Cicili sets the stage for future high-performance applications.
+
+## How Cicili Works
+
+1. **Macro Expansion:**  
+   During compilation, Cicili processes your high-level Lisp code, expanding macros into efficient C code. This not only simplifies development but also provides strong abstraction without sacrificing performance.
+
+2. **Deferred Execution & Memory Safety:**  
+   With features like auto-deallocation via `defer` attributes on `let` bindings, Cicili manages resources automatically, reducing the risk of memory leaks common in C programming.
+
+3. **Native Compilation & Linking:**  
+   Once the macros have generated the C code, a standard C compiler is used to build the final binary. FastCGI integration, as demonstrated in the sample web server code, lets you deploy lightweight and responsive applications.
+
+## Contributing
+
+Contributions to Cicili are welcome! Whether you have ideas for new features, improvements to the macro system, or advanced optimizations, please check our contribution guidelines and open an issue or pull request on the project repository.
+
+## Final Thoughts
+
+Cicili represents a revolution in how we write high-level code with low-level performance. With its powerful metaprogramming system, modular architecture, and robust integration with C, it enables developers to create scalable, maintainable, and extremely efficient codebases for web services, DSLs, automation, and beyond.
+
+Join us in exploring the future of Lisp-powered development with Cicili!
+
+---
+
+Cicili — The low-level language with a high-level soul.
+
+*Original Documentation*
 # Cicili Programming Language
-Lisp C Compiler aka. 'Cicili' programming language, which compiles Lisp-like syntax to C code and more extra features like method, lambda, defer.
+
+Lisp C Compiler aka. 'Cicili' programming language, which compiles Lisp-like syntax to C code and more extra features like struct's method, lambda, variable's defer and function-like macro.
+
+Cicili is a **high-level, metaprogramming-driven language** designed for efficient, expressive, and highly extensible development. It emphasizes **deferred execution**, **macro-based transformations**, making it particularly useful in systems programming, scripting, web applications, database integration, and embedded environments.
+
+**Lisp is a language for doing what you've been told is impossible.
+
+— Kent Pitman**  [CAVEMAN2](https://8arrow.org/caveman/)
+
+That's such an inspiring quote by Kent Pitman! Lisp truly stands apart from many other languages by giving you the power to redefine your tools and even the language itself. Its homoiconicity—and the idea that code and data share the same structure—means you can manipulate code with code. This opens the door to metaprogramming, macros, and the creation of powerful domain-specific languages that can do things others say are impossible.
+
+In essence, Lisp allows you to break free from conventional constraints. Where traditional languages expect you to use fixed constructs, Lisp inspires you to extend, compose, and even alter the language to meet your unique challenges. It's this spirit of innovation and radical flexibility that has influenced so many programmers and paved the way for systems like Cicili, which leverage Lisp's capabilities to push boundaries further.
+
 ## Instruction
 * Install [SBCL](www.sbcl.org).
 * `clang` required for compiling and linking. `apt` or `brew` can be used to install [Clang](https://clang.llvm.org). Current used version: `(clang-1700.0.13.3)`
@@ -9,8 +122,28 @@ Lisp C Compiler aka. 'Cicili' programming language, which compiles Lisp-like syn
 * Copy `cicili.lisp` file from source folder into your project path.
 * Send your file as an argument to cicili.lisp. `sbcl --script cicili.lisp test.lisp`
 * If you are using EMACS editor, copy `mode.lisp` file content into `.emacs` or `.emacs.d/init.el` file for syntax highlighting.
-## * New Features
+
+## 📌 Key Features
+### **Deferred Execution**
+- `defer` ensures resources (memory, file handles, etc.) are automatically cleaned up at the end of scope.
+- Automatic resource cleanup (`defer #t` for scope-based allocations).
+- `defer*` allows runtime-captured variables to be deferred, enhancing flexibility in managing cleanup operations.
+
+### **Powerful Macro System**
+- Macros allow developers to **transform and extend** the language at compile time.
+- Supports **higher-order macros**, **syntactic sugar**, and **domain-specific extensions**.
+
+### **Web-Ready Framework** (in progress)
+- FastCGI integration with **node-based routing**.
+- **Pre/Post handlers** for API standardization.
+
+### **Embedded & System-Level Support**
+- Efficient **low-memory footprint execution**.
+- **Cross-platform adaptability** (Linux, BSD, Windows).
+
+## Features
 * cicili now uses `IR` (Intermediate Representation) to handle more clauses and features.
+* cicili macro system lets developers to code in extremely higher order syntax but produce low level C code by using cicili clauses. there are builtins macros here [builtins](builtins.lisp) and macro test folder [macro](test/macro) containing tests and a basic fastcgi web server.
 * modularizing cicili code makes clarity and easy to follow C code but makes debugging harder. refer to [module](test/module) test folder `module.lisp` sample.
 * `lambda` clause allows developer to write in-place function for sending as other function argument or `defer` destructure. refer to [lambda](test/lambda) test folder `lambda.lisp` sample.
 * `defer` attribute. only available for variables defined by `let` expression. Allows developers to set a function how to destruct a variable or a pointer. refer to [defer](test/lambda) test folder `defer.lisp` sample.
@@ -499,8 +632,8 @@ glibtool: link: clang -g -O "" -o CompileTest .libs/main.o  -L/Users/a1/Projects
 ### Sections
 * Documentations: starts with semi-colon(s) ";"
 ```lisp
-;;; about a lisp file
-;;;; author, licence and/or documentation about each target
+;;;; about a lisp file
+;;; author, licence and/or documentation about each target
 (var long height) ; description of a form
 (func sqr ((double a)) 
   (out double)
@@ -698,9 +831,9 @@ If form accepts 2 or 3 argument. condition, form for true evaluation of conditio
 ```
 ## Function
 cicili has some points on functions:
-* Use returns form for setting the return type. returns form must be first form of a function after arguments list. A fucntion without returns form will returns void instead of main which returns int.
+* Use out form for setting the return type. out form must be first form of a function after arguments list. A fucntion without out form will returns void instead of main which returns int.
 * Function's attributes must set in declaration time. each attribute enclosed in braces or parentheses.
-    * {declare}    
+    * {decl}    
     * {static}
     * {inline}
     * {extern}
@@ -1098,10 +1231,12 @@ typedef struct Student {
 typedef int * intptr_t;
 ```
 ## cicili.lisp Command Line Arguments
-`sbcl --script /path/to/cicili.lisp /path/to/some-cicili-file.lisp {args}`
+`sbcl --script /path/to/cicili.lisp {args} /path/to/cicili-files.lisp`
 Available arguments:
 * --debug : will prints too many details about specifying, resolving and compiling.
 * --verbose : adds `-v` option to `clang` and `libtool` commands to print more details about compiling and linking. usefull when linking many complex libraries.
+* --macros : prints all macros defined in a macro file when loading by import clause.
+* --macroexpand : prints all expanded macros both usage and output
 
 `{$CWD}` placeholder is available inside `:compile` and `:link` command for every targets. 
 ## C++ Compiler
@@ -1109,5 +1244,7 @@ C++ compiler could be used instead of C compiler then some features availables:
 * `&` modifier in function argument for pass by reference.
 * Default value for members of structs.
 * `func` form for defining a member function inside of structs. Call these methods by `$` member access operator `(($ emp Sign) aDoc)`. 
+
+Cicili is the bridge between vision and execution—where **ideas transform into structured reality**, and **code bends to your creativity**, unlocking limitless potential in software engineering. 🚀
 
 # Good Luck!

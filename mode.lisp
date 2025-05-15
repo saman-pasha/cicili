@@ -16,7 +16,8 @@
  
 (cicili-add-types
  'font-lock-type-face
- '((1 . const)
+ '((1 . main)
+   (1 . const)
    (1 . func)
    (1 . this)
    (1 . void)
@@ -95,11 +96,14 @@
  
 (cicili-add-keywords
  'font-lock-keyword-face
- '((1 . format)
+ '((1 . main)
+   (1 . main*)
+   (1 . format)
    (1 . code)
    (1 . header)
    (1 . source)
    (1 . guard)
+   (1 . ghost)
    (1 . module)
    (1 . include)
    (1 . var)
@@ -132,19 +136,22 @@
    (1 . while)
    (1 . for)
    (1 . for-each)
+   (1 . for-each-const)
    (1 . new)
    (1 . printf)
    (1 . scanf)
    (1 . free)
    (1 . $)
    (1 . ->)
+   (1 . import)
+   (1 . letn)
    ))
 
 (defun cicili-add-attributes (face-name keyword-rules)
   (let* ((keyword-list (mapcar #'(lambda (x)
 				   (symbol-name (cdr x)))
 			       keyword-rules))
-	 (keyword-regexp (concat "{\\("
+	 (keyword-regexp (concat "(\\("
 				 (regexp-opt keyword-list)
 				 "\\)[ \t\n]*")))
     (font-lock-add-keywords 'lisp-mode
@@ -164,6 +171,7 @@
    (1 . register)
    (1 . auto)
    (1 . defer)
+   (1 . defer*)
    (1 . resolve)
    ))
 

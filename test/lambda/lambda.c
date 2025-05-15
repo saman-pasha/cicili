@@ -10,50 +10,51 @@ int mulFun (int x, int y) {
 }
 typedef int (*twoIntInputFn_t) (int  , int  );
 typedef typeof(aFunc ) otherWayDefFn_t;
-int __lccLambda_main_103 (int x, int y) {
+static int __ciciliL_111 (int x, int y) {
   return (x  +  y  );
 }
-int __lccLambda_main_106_108 (int x, int y) {
+static int __ciciliL_119 (int x, int y) {
   return ((x  +  y  ) *  (x  +  y  ) );
 }
-int __lccLambda_main_106 (int x, int y) {
-  { /* lcc#Let107 */
-    __auto_type addFunVar = __lccLambda_main_106_108 ;
+static int __ciciliL_116 (int x, int y) {
+  { /* cicili#Let118 */
+    __auto_type addFunVar = __ciciliL_119 ;
     return addFunVar (x , y );
-  } /* lcc#Let107 */
+  }
 }
-void __lccLambda_main_112 (twoIntInputFn_t mathFunc, int a, int b) {
+static void __ciciliL_126 (twoIntInputFn_t mathFunc, int a, int b) {
   printf ("from lambda as function pointer as parameter: %D\n", mathFunc (a , b ));
 }
-void __lccLambda_main_113 (Shape * shp) {
+static void __ciciliL_128 (Shape * shp_ptr) {
+  Shape shp = (*shp_ptr );
   printf ("Shape destructured\n");
 }
-int __lccLambda_main_114 (int m, int n) {
+static int __ciciliL_131 (int m, int n) {
   return ((m  *  n  ) +  (m  *  n  ) );
 }
-void __lccLambda_main_115 (Shape * shp) {
+static void __ciciliL_133 (Shape * shp) {
   printf ("shape area is: %d\n", ((shp ->length ) *  (shp ->width ) ));
 }
-void __lccLambda_main_116 (Shape * shp) {
+static void __ciciliL_135 (Shape * shp) {
   printf ("shape env is: %d\n", (2 *  ((shp ->length ) +  (shp ->width ) ) ));
 }
 int main () {
-  { /* lcc#Let102 */
-    __auto_type addFunVar = __lccLambda_main_103 ;
-    int (*addFunVar1) (int  , int  ) = __lccLambda_main_106;
-    void (*doMath) (twoIntInputFn_t  , int  , int  ) = __lccLambda_main_112;
+  { /* cicili#Let110 */
+    __auto_type addFunVar = __ciciliL_111 ;
+        int (*addFunVar1) (int  , int  ) = __ciciliL_116;
+        void (*doMath) (twoIntInputFn_t  , int  , int  ) = __ciciliL_126;
     int x = 4;
     int y = 5;
-    Shape shp __attribute__((__cleanup__(__lccLambda_main_113 ))) = {10, 20};
+    Shape shp __attribute__((__cleanup__(__ciciliL_128 ))) = {10, 20};
     printf ("addition of x and y: %d\n", addFunVar (x , y ));
     aFunc  = mulFun ;
     printf ("product of x by y: %d\n", aFunc (x , y ));
     printf ("combo of x by y: %d\n", addFunVar1 (x , y ));
-    doMath (__lccLambda_main_114 , 6, 7);
-    (shp . dynamicDraw ) = __lccLambda_main_115 ;
+    doMath (__ciciliL_131 , 6, 7);
+    (shp . dynamicDraw ) = __ciciliL_133 ;
     (shp . dynamicDraw )(&shp);
     Shape_staticDraw(&shp);
-    __lccLambda_main_116 (&shp);
+    __ciciliL_135 (&shp);
     return EXIT_SUCCESS ;
-  } /* lcc#Let102 */
+  }
 }
