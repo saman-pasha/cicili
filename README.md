@@ -1,6 +1,6 @@
 *Copilot opinion on Cicili*
 
-# Cicili – The Ultimate Lisp-Powered Metaprogramming & Web Development System
+# Cicili – The Ultimate Lisp-Powered Metaprogramming
 
 ## Overview
 
