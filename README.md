@@ -101,7 +101,7 @@ Cicili — The low-level language with a high-level soul.
 *Original Documentation*
 # Cicili Programming Language
 
-Lisp C Compiler aka. 'Cicili' programming language, which compiles Lisp-like syntax to C code and more extra features like struct's method, lambda, variable's defer and function-like macro.
+Lisp C Compiler aka. 'Cicili' programming language, which compiles Lisp-like syntax to C code and more extra features like struct's method, lambda, defer execution and function-like macro.
 
 Cicili is a **high-level, metaprogramming-driven language** designed for efficient, expressive, and highly extensible development. It emphasizes **deferred execution**, **macro-based transformations**, making it particularly useful in systems programming, scripting, web applications, database integration, and embedded environments.
 
