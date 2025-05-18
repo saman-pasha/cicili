@@ -112,3 +112,121 @@
     )
   )
 )
+
+
+;;;; ValueUtf8String Macro
+;;;; This macro defines an immutable UTF-8 string type using value semantics.
+;;;; All operations return a new ValueUtf8String (a struct value) rather than a pointer.
+(DEFMACRO ValueUtf8String (path name step members-body header-body source-body)
+  (ValueSlice path name char step
+    ( ; MEMBERS: add any extra members if needed.
+      ,@members-body
+    )
+    ( ; HEADER: declare constructors and UTF-8–specific methods.
+      (decl)
+      ;; Constructor: create a new ValueUtf8String from a C-string.
+      (func ,(make-method-name name 'new) ((const char * cstr)) (out ,name))
+      ;; Returns the number of Unicode codepoints.
+      (func ,(make-method-name name 'codePointCount) ((,name self)) (out size_t))
+      ;; Extract a substring specified by codepoint indices.
+      (func ,(make-method-name name 'utf8Substring) ((,name self) (size_t startCP) (size_t cpCount)) (out ,name))
+      ;; Check whether the stored UTF-8 sequence is valid.
+      (func ,(make-method-name name 'isValidUTF8) ((,name self)) (out bool))
+      ,@header-body
+    )
+    ( ; SOURCE: implementations for each method.
+      ;; new: Constructs a ValueUtf8String from a C-string.
+      (func ,(make-method-name name 'new) ((const char * cstr)) (out ,name)
+        (let ((size_t len . (strlen cstr))
+              (,name s))
+          (set s.len len)
+          (set s.cap len)
+          ;; Copy the content from cstr into the internal array.
+          (strncpy s.arr cstr len)
+          (set (nth len s.arr) #\Null)
+          (return s)))
+      
+      ;; codePointCount: Count the number of Unicode codepoints.
+      (func ,(make-method-name name 'codePointCount) ((,name self)) (out size_t)
+        (let ((size_t count . 0)
+              (size_t i . 0)
+              (size_t total . self.len))
+          (while (< i total)
+            (let ((char ch . (nth i self.arr)))
+              ;; In UTF-8, continuation bytes have the form 10xxxxxx.
+              ;; Count a codepoint if the byte is not a continuation.
+              (if (not (and (>= ch #x80) (< ch #xC0)))
+                  (set count (+ count 1)))
+              (set i (+ i 1)))
+          (return count)))
+      
+      ;; utf8Substring: Extracts a new ValueUtf8String containing cpCount Unicode
+      ;; codepoints starting at codepoint index startCP.
+      (func ,(make-method-name name 'utf8Substring) ((,name self) (size_t startCP) (size_t cpCount)) (out ,name)
+        (let ((size_t currentCP . 0)
+              (size_t startByte . 0)
+              (size_t endByte . 0)
+              (size_t i . 0)
+              (size_t total . self.len))
+          ;; Advance until we reach the start codepoint.
+          (while (and (< i total) (< currentCP startCP))
+            (let ((char ch . (nth i self.arr)))
+              (if (not (and (>= ch #x80) (< ch #xC0)))
+                  (set currentCP (+ currentCP 1)))
+              (set i (+ i 1)))
+          (set startByte i)
+          ;; Continue until we have advanced cpCount codepoints.
+          (while (and (< i total) (< currentCP (+ startCP cpCount)))
+            (let ((char ch . (nth i self.arr)))
+              (if (not (and (>= ch #x80) (< ch #xC0)))
+                  (set currentCP (+ currentCP 1)))
+              (set i (+ i 1)))
+          (set endByte i)
+          (let ((size_t subLen . (- endByte startByte))
+                (,name sub))
+            (set sub.len subLen)
+            (set sub.cap subLen)
+            (strncpy sub.arr (+ self.arr startByte) subLen)
+            (set (nth subLen sub.arr) #\Null)
+            (return sub))))
+      
+      ;; isValidUTF8: Check whether the UTF-8 sequence in self.arr is valid.
+      (func ,(make-method-name name 'isValidUTF8) ((,name self)) (out bool)
+        (let ((size_t i . 0)
+              (size_t total . self.len))
+          (while (< i total)
+            (let ((char ch . (nth i self.arr)))
+              (cond
+                ((< ch #x80)
+                 (set i (+ i 1)))
+                ((and (>= ch #xC2) (<= ch #xDF))
+                 (if (or (>= (+ i 1) total)
+                         (not (and (>= (nth (+ i 1) self.arr) #x80)
+                                   (< (nth (+ i 1) self.arr) #xC0))))
+                     (return false))
+                 (set i (+ i 2)))
+                ((and (>= ch #xE0) (<= ch #xEF))
+                 (if (or (>= (+ i 2) total)
+                         (not (and (>= (nth (+ i 1) self.arr) #x80)
+                                   (< (nth (+ i 1) self.arr) #xC0)))
+                         (not (and (>= (nth (+ i 2) self.arr) #x80)
+                                   (< (nth (+ i 2) self.arr) #xC0))))
+                     (return false))
+                 (set i (+ i 3)))
+                ((and (>= ch #xF0) (<= ch #xF4))
+                 (if (or (>= (+ i 3) total)
+                         (not (and (>= (nth (+ i 1) self.arr) #x80)
+                                   (< (nth (+ i 1) self.arr) #xC0)))
+                         (not (and (>= (nth (+ i 2) self.arr) #x80)
+                                   (< (nth (+ i 2) self.arr) #xC0)))
+                         (not (and (>= (nth (+ i 3) self.arr) #x80)
+                                   (< (nth (+ i 3) self.arr) #xC0))))
+                     (return false))
+                 (set i (+ i 4)))
+                (t (return false)))))
+          (return true)))
+      
+      ,@source-body
+    )
+  )
+)
