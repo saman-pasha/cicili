@@ -15,6 +15,10 @@
                )
               ( ; header
                (decl) (func ,(make-method-name name 'new) ((const ,elem-type * cstr)))
+               (decl) (method ,(make-method-name name 'substring) ((size_t start) (size_t length)) (out ,name *))
+               (decl) (method ,(make-method-name name 'concat) ((const ,name * other)) (out ,name *))
+               (decl) (method ,(make-method-name name 'find) ((char ch)) (out size_t))
+               (decl) (method ,(make-method-name name 'equals) ((const ,name * other)) (out bool))
                ,@header-body
                )
               ( ; source
@@ -25,6 +29,27 @@
                        (strncpy ($ str arr) cstr len)
                        (set (nth len ($ str arr)) #\Null)
                        (return str)))
+               ;; Extracts a substring as a new String
+    (method ,(make-method-name name 'substring) ((size_t start) (size_t length)) (out ,name *)
+      (if (>= (+ start length) ($ this len))
+          (return #'(-> String new "")))
+      (let ((,name * sub . #'(-> String newEmpty length)))
+        (strncpy ($ sub arr) (+ ($ this arr) start) length)
+        (set (nth length ($ sub arr)) #\Null)
+        (return sub)))
+
+    ;; Concatenates another string and returns a new instance
+    (method ,(make-method-name name 'concat) ((const ,name * other)) (out ,name *)
+      (return #'(-> this appendNew other)))
+
+    ;; Finds the first occurrence of a character, returns index or -1
+    (method ,(make-method-name name 'find) ((char ch)) (out size_t)
+      (let ((char * pos . #'(strchr ($ this arr) ch)))
+        (return (or (- pos ($ this arr)) -1))))
+
+    ;; Compares two strings for equality
+    (method ,(make-method-name name 'equals) ((const ,name * other)) (out bool)
+      (return (== (strcmp ($ this arr) ($ other arr)) 0)))
                ,@source-body
                ))))
 
