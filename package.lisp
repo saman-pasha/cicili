@@ -6,8 +6,8 @@
     :*debug*
     :*warn*
     :*verbose*
-    :*macroexpand*
     :*debug-macros*
+    :*debug-macroexpand*
     :compile-ast
     :compile-cicili-file
     :load-macro-file
