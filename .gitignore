@@ -112,3 +112,6 @@ lib/std/.\#slice.lisp
 lib/std/cicili_string.c.run1.c
 lib/std/cicili_string.c.run2.c
 lib/std/cicili_string.c.run3.c
+lib/std/cicili_bytevector.c.run1.c
+lib/std/cicili_bytevector.c.run2.c
+lib/std/cicili_bytevector.c.run3.c

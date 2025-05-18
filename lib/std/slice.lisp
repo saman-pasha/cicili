@@ -8,7 +8,8 @@
 ;;; header-body custom functionalities in header file
 ;;; source-body custom functionalities in source file
 (DEFMACRO Slice-Scope (&REST body)
-  `(LET ((header-file         (STRING-DOWNCASE (FORMAT NIL "cicili_~A~A.h"    path name)))
+  `(LET ((header-file         (STRING-DOWNCASE (FORMAT NIL "cicili_~A~A.h"  path name)))
+         (guard-label (INTERN (STRING-UPCASE   (FORMAT NIL "__CICILI_~A_H_" name))))
          (growth-step (INTERN (STRING-UPCASE   (FORMAT NIL "~A_GROWTH_STEP" name))))
          (elem-type   (INTERN (STRING-DOWNCASE (FORMAT NIL "~A_elem_t"      name)))))
      ,@body))
@@ -18,40 +19,41 @@
       `(cicili
          ;; header file
          (header ,header-file ()
-                 
-                 (include <stddef.h>)
+                 (guard ,guard-label
+                   
+                   (include <stddef.h>)
 
-                 ;; amount each time the capacity will be grown
-                 (var const size_t ,growth-step . ,step)
-                 
-                 ;; element type of the array
-                 (typedef ,element ,elem-type)
-                 
-                 ;; Designed to be safe, fast and optimal with copy-on-write solution
-                 (struct ,name
-                   (member size_t len)
-                   (member size_t cap)
-                   (member ,elem-type arr [])
-                   ,@members-body)
+                   ;; amount each time the capacity will be grown
+                   (var const size_t ,growth-step . ,step)
+                   
+                   ;; element type of the array
+                   (typedef ,element ,elem-type)
+                   
+                   ;; Designed to be safe, fast and optimal with copy-on-write solution
+                   (struct ,name
+                     (member size_t len)
+                     (member size_t cap)
+                     (member ,elem-type arr [])
+                     ,@members-body)
 
-                 ;; Cicili struct constructors begin with new keyword and aren't method
-                 ;; they didn't get this pointer and their out type always is pointer of the struct
-                 ;; Slice constructors
-                 (decl) (func ,(make-method-name name 'newEmpty)     ((size_t xcap)))
-                 (decl) (func ,(make-method-name name 'newFromArray) ((const ,elem-type * xarr) (size_t xlen)))
-                 (decl) (func ,(make-method-name name 'newCopy)      ((const ,name * other)))
-                 ;; collention of useful Slice methods
-                 (decl) (method ,(make-method-name name 'clone)      () (out ,name *))
-                 (decl) (method ,(make-method-name name 'cloneArray) () (out ,elem-type *))
-                 (decl) (method ,(make-method-name name 'appendNew)  ((const ,name * other)) (out ,name *))
-                 (decl) (method ,(make-method-name name 'append)     ((const ,name * other)) (out ,name *))
+                   ;; Cicili struct constructors begin with new keyword and aren't method
+                   ;; they didn't get this pointer and their out type always is pointer of the struct
+                   ;; Slice constructors
+                   (decl) (func ,(make-method-name name 'newEmpty)     ((size_t xcap)))
+                   (decl) (func ,(make-method-name name 'newFromArray) ((const ,elem-type * xarr) (size_t xlen)))
+                   (decl) (func ,(make-method-name name 'newCopy)      ((const ,name * other)))
+                   ;; collention of useful Slice methods
+                   (decl) (method ,(make-method-name name 'clone)      () (out ,name *))
+                   (decl) (method ,(make-method-name name 'cloneArray) () (out ,elem-type *))
+                   (decl) (method ,(make-method-name name 'appendNew)  ((const ,name * other)) (out ,name *))
+                   (decl) (method ,(make-method-name name 'append)     ((const ,name * other)) (out ,name *))
 
-                 ,@header-body)
+                 ,@header-body))
 
        ;; source file
-       (source ,(STRING-DOWNCASE (FORMAT NIL "cicili_~A~A.c" path name)) (:std #f :compile #t :link #f)
+       (source ,(STRING-DOWNCASE (FORMAT NIL "cicili_~A~A.c" path name)) (:std #t :compile #t :link #f)
 
-               (include <stdlib.h> <string.h> ,header-file)
+               (include <ctype.h> <stdarg.h> ,header-file)
 
                (static)
                (func ,(make-method-name name 'calcCap) ((size_t xcap)) (out '{ (size_t len) (size_t size) })
