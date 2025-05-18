@@ -1,78 +1,39 @@
-(import "slice.lisp" ())
-(import "utf8string.lisp" ())
+(source "/tests/string_test.c")
 
-(IN-PACKAGE :CL-USER)
+(include "string.c")
 
-;; The main function to test all String and UTF8String functionalities.
 (func main () (out int)
-  (format #t "\n--- Testing String Functionality ---\n")
-  ;; Create a new String instance.
-  (let ((String * s1 . (-> String new "Hello, Cicili!")))
-    (format #t "s1: %s\n" ($ s1 arr))
-    
-    ;; Test clone
-    (let ((String * s2 . (-> s1 clone)))
-      (format #t "s2 (clone of s1): %s\n" ($ s2 arr))
-      (if (-> s1 equals s2)
-          (format #t "s1 equals s2: Yes\n")
-          (format #t "s1 equals s2: No\n")))
-    
-    ;; Test substring (extract a substring starting at byte index 7 for 8 bytes)
-    (let ((String * sub . (-> s1 substring 7 8)))
-      (format #t "s1 substring (index 7, len 8): %s\n" ($ sub arr)))
-    
-    ;; Test concatenation: concatenate s1 with another string.
-    (let ((String * s3 . (-> String new " World")))
-      (let ((String * concatStr . (-> s1 concat s3)))
-        (format #t "Concat (s1 + s3): %s\n" ($ concatStr arr))))
-    
-    ;; Test find: get the index of character 'C'
-    (let ((size_t pos . (-> s1 find #\C)))
-      (format #t "Index of 'C' in s1: %d\n" pos))
-    
-    ;; Test format: build a new string via format.
-    (let ((String * formatted . (-> String format "Name: %s, Score: %d" "Alice" 95)))
-      (format #t "Formatted String: %s\n" ($ formatted arr)))
-    
-    ;; Test toUpper: convert s1 to uppercase.
-    (let ((String * upper . (-> s1 toUpper)))
-      (format #t "Uppercase s1: %s\n" ($ upper arr)))
-    
-    ;; Test toLower: convert s1 to lowercase.
-    (let ((String * lower . (-> s1 toLower)))
-      (format #t "Lowercase s1: %s\n" ($ lower arr)))
-    
-    ;; Test encodeBase64: (note that the actual base64 encoding implementation is pseudo-code).
-    (let ((String * b64 . (-> s1 encodeBase64)))
-      (format #t "Base64 encoded s1: %s\n" ($ b64 arr))))
-  
-  (format #t "\n--- Testing UTF8String Functionality ---\n")
-  ;; Create a new UTF8String instance with mixed-language content.
-  (let ((UTF8String * ustr . (-> UTF8String new "Héllo, 世界!")))
-    (format #t "UTF8String: %s\n" ($ ustr arr))
-    
-    ;; Test codePointCount
-    (let ((size_t cpCount . (-> ustr codePointCount)))
-      (format #t "CodePoint Count: %d\n" cpCount))
-    
-    ;; Test isValidUTF8
-    (if (-> ustr isValidUTF8)
-        (format #t "UTF8String is valid UTF-8.\n")
-        (format #t "UTF8String is NOT valid UTF-8!\n"))
-    
-    ;; Test utf8Substring: extract 5 codepoints starting from index 2.
-    (let ((UTF8String * uSub . (-> ustr utf8Substring 2 5)))
-      (format #t "UTF8Substring (5 cp starting at cp index 2): %s\n" ($ uSub arr)))
-    
-    ;; Test toUTF16: convert UTF8String to UTF-16.
-    (let ((uint16_t * utf16buf . (-> ustr toUTF16)))
-      (format #t "UTF16 Buffer (hex): ")
-      (let ((size_t i . 0)
-            (size_t cp . (-> ustr codePointCount)))  ; number of codepoints inserted
-        (while (< i cp)
-          (format #t "%04X " (nth i utf16buf))
-          (set i (+ i 1)))
-        (format #t "\n")))
-    )
-  
+  (letn
+    ((String * a . #'(-> String new "hello"))
+     (String * b . #'(-> String new "world"))
+     (String * helloWorld . #'(-> a concat b))
+     (String * formatted . #'(-> String format "value: %d, %s" 42 "test"))
+     (String * upper . #'(-> a toUpper))
+     (String * lower . #'(-> upper toLower))
+     (String * trimmed . #'(-> (-> String new "   padded   ") trim))
+     (String * replaced . #'(-> (-> String new "a-b-c-d") replace #\- #\_))
+     (String * substr . #'(-> helloWorld substring 3 4))
+     (String * prefix . #'(-> String new "hel"))
+     (String * suffix . #'(-> String new "rld"))
+     (bool eq1 . #'(-> a equals a))
+     (bool eq2 . #'(-> a equals b))
+     (size_t index . #'(-> a find #\l))
+     (bool sw . #'(-> a startsWith prefix))
+     (bool ew . #'(-> helloWorld endsWith suffix)))
+
+    (printf "a: %s\n" ($ a arr))
+    (printf "b: %s\n" ($ b arr))
+    (printf "helloWorld: %s\n" ($ helloWorld arr))
+    (printf "formatted: %s\n" ($ formatted arr))
+    (printf "upper: %s\n" ($ upper arr))
+    (printf "lower: %s\n" ($ lower arr))
+    (printf "trimmed: [%s]\n" ($ trimmed arr))
+    (printf "replaced: %s\n" ($ replaced arr))
+    (printf "substring(3,4): %s\n" ($ substr arr))
+    (printf "a equals a: %s\n" (? eq1 "true" "false"))
+    (printf "a equals b: %s\n" (? eq2 "true" "false"))
+    (printf "find 'l' in a: %zu\n" index)
+    (printf "a starts with 'hel': %s\n" (? sw "true" "false"))
+    (printf "helloWorld ends with 'rld': %s\n" (? ew "true" "false")))
+
   (return 0))
