@@ -35,6 +35,7 @@
 	    ((key-eq name '|u128|)   (set-ast-line (output "unsigned __int128")))
 	    ((key-eq name '|real|)   (set-ast-line (output "long double")))
 	    ((key-eq name '|auto|)   (set-ast-line (output "__auto_type")))
+	    ((key-eq name '|$$$|)    (set-ast-line (output "...")))
 	    (t (compile-name name lvl globals))))
 
 (defun compile-array (desc lvl globals)
@@ -413,6 +414,7 @@
              ('|@SWITCH| (compile-switch     form (1+ lvl) globals))
              ('|@WHILE|  (compile-while      form (1+ lvl) globals))
              ('|@FOR|    (compile-for        form (1+ lvl) globals))
+             ('|@COND|   (compile-cond       form (1+ lvl) globals))
              ('|@DO|     (compile-do         form (1+ lvl) globals))
              ('|@BODY|   (compile-body       form     lvl  globals spec))
              (t (unless (= lvl -1) (output "~&~A" (indent (1+ lvl))))
@@ -556,6 +558,22 @@
     (compile-body (body spec) lvl locals spec)
     (output "~&~A" (indent lvl))
     (output "} ~%")))
+
+(defun compile-cond (spec lvl globals)
+  (let ((locals (copy-specifiers globals))
+        (nodes (body spec)))
+    (loop for node in nodes
+          for i from 0 to (length nodes)
+          do (let ((condition (car node))
+                   (body (cadr node)))
+               (output "~&~A" (indent lvl))
+               (set-ast-line (if (= i 0) (output "if ") (output "else if ")))
+               (let ((is-atom (key-eq '|@ATOM| condition)))
+                (when is-atom (output "("))
+                (compile-form condition lvl globals) ; each condition
+                (when is-atom (output ")")))
+               (set-ast-line (output " ~%"))
+               (compile-body body lvl locals spec)))))
 
 (defun compile-function (spec lvl globals &key ((:type as-type) nil) ((:unique is-unique) nil))
   ;; compile lambdas and online structs before function
@@ -816,6 +834,7 @@
     (output ";~%")))
 
 (defun compile-guard (spec lvl globals &optional is-ghost &key ((:nested is-nested) nil))
+  (display "GURD" (name spec) is-ghost is-nested)
   (let ((name (name spec)))
     (unless is-ghost
       (set-ast-line (output "~&#ifndef ~A~%" name))

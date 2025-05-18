@@ -1,5 +1,11 @@
+#include <stdio.h>
+#include <stddef.h>
+#include <stdint.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <string.h>
+#include <ctype.h>
+#include <stdarg.h>
 #include "cicili_string.h"
 static struct __ciciliS_String_m_calcCap_ {
   size_t len;
@@ -75,5 +81,64 @@ String * String_s_new (const string_elem_t * cstr) {
     strncpy ((str ->arr ), cstr , len );
     (str ->arr )[len ] = '\0';
     return str ;
+  }
+}
+String * String_m_substring (String * this, size_t start, size_t length) {
+  if ((start  +  length  ) >=  (this ->len ) ) 
+    return String_s_new("");
+
+  { /* cicili#Let134 */
+    String * sub = String_s_newEmpty(length );
+    strncpy ((sub ->arr ), ((this ->arr ) +  start  ), length );
+    (sub ->arr )[length ] = '\0';
+    return sub ;
+  }
+}
+String * String_m_concat (String * this, const String * other) {
+  return String_m_appendNew(this , other );
+}
+size_t String_m_find (String * this, string_elem_t ch) {
+  { /* cicili#Let138 */
+    string_elem_t * pos = strchr ((this ->arr ), ch );
+    return (((pos  !=  NULL  )) ? (pos  -  (this ->arr ) ) : -1);
+  }
+}
+bool String_m_equals (String * this, const String * other) {
+  return (strcmp ((this ->arr ), (other ->arr )) ==  0 );
+}
+String * String_m_format (String * this, const char * fmt, ...  ) {
+  { /* cicili#Let142 */
+    string_elem_t buffer[4096];
+    va_list va_args;
+    va_start (va_args , fmt );
+    vsnprintf (buffer , 4096, fmt , va_args );
+    va_end (va_args );
+    return String_s_new(buffer );
+  }
+}
+String * String_m_toUpper (String * this) {
+  { /* cicili#Let146 */
+    String * strCopy = String_s_newCopy(this );
+    { /* cicili#Let148 */
+      size_t i = 0;
+      while ((i  <  (strCopy ->len ) )) {
+        (strCopy ->arr )[i ] = toupper ((strCopy ->arr )[i ]);
+        i  = (i  +  1 );
+      } 
+    }
+    return strCopy ;
+  }
+}
+String * String_m_toLower (String * this) {
+  { /* cicili#Let152 */
+    String * strCopy = String_s_newCopy(this );
+    { /* cicili#Let154 */
+      size_t i = 0;
+      while ((i  <  (strCopy ->len ) )) {
+        (strCopy ->arr )[i ] = tolower ((strCopy ->arr )[i ]);
+        i  = (i  +  1 );
+      } 
+    }
+    return strCopy ;
   }
 }

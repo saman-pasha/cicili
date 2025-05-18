@@ -95,8 +95,7 @@
                           (push (make-hash-table :test 'equal) *ast-lines*)
                           (setq *ast-run* (1+ *ast-run*))
                           (setf *gensym-counter* 100)
-	                      (compile-target *target-file* ir globals *standard-output* *error-output* nil nil))
-                        ))
+	                      (compile-target *target-file* ir globals *standard-output* *error-output* nil nil))))
 	                 (t (error (format nil "header or source form is missing for ~A" tname)))))
             ((or macro (macro-function tname))
              (let ((tmp-expantion *macroexpand*)
@@ -125,6 +124,7 @@
 
 ;;;; a file contains many cicili macro definitions will be loaded into CL-USER PACKAGE
 (defun load-macro-file (file-name &optional pack init-args)
+  (display "LOAD" file-name pack init-args #\Newline)
   (when (key-eq pack '|nil|) (setq pack nil))
   (let ((file-path (make-pathname :directory (pathname-directory file-name)))
         (rt (copy-readtable nil)))

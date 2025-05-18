@@ -795,6 +795,7 @@
 		                   ((key-eq func '|while|)    (specify-while         form)) 
 		                   ((key-eq func '|do|)       (specify-do            form)) 
 		                   ((key-eq func '|for|)      (specify-for           form)) 
+		                   ((key-eq func '|cond|)     (specify-cond          form)) 
 		                   (t (specify-expr form))))))
           (body body-specifier)))
     (setf (body body-specifier) (reverse (body body-specifier)))
@@ -980,6 +981,14 @@
     (setf (body for-var) (specify-body (nthcdr 4 def)))
     for-var))
 
+(defun specify-cond (def)
+  (when (< (length def) 2) (error (format nil "wrong cond form ~A" def)))
+  (let ((cond-var (make-specifier nil '|@COND| nil nil nil nil nil nil '()))
+        (nodes (loop for node in (cdr def)
+                     collect (list (specify-expr (car node)) (specify-body (cdr node))))))
+    (setf (body cond-var) nodes)
+    cond-var))
+
 (defun specify-function (def attrs)
   (let* ((is-static  nil)
 	     (is-declare nil)
@@ -1051,8 +1060,10 @@
             do (let ((is-anonymous nil))
 	              (multiple-value-bind (const type modifier const-ptr variable array)
 	                  (specify-type< param)
-	                (when (or (null variable) (key-eq '_ variable))
-                      (setq variable (gensym (format nil "_ciciliParam_~D" i))))
+	                (cond ((or (null variable) (key-eq '_ variable))
+                           (setq variable (gensym (format nil "_ciciliParam_~D" i))))
+                          ((key-eq '$$$ variable)
+                           (setq variable '|...|)))
 	                  ; (setq is-anonymous t))
                     (add-param
                         (make-specifier

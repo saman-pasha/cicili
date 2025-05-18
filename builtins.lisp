@@ -1,5 +1,8 @@
 ;;;; builtins includes many useful macros for cicili
 
+(DEFUN import (file-name &OPTIONAL pack init-args)
+  (CICILI:LOAD-MACRO-FILE file-name pack init-args))
+
 ;;; main simple forms
 (DEFMACRO main (&REST body)
   `(func main () (out int) ,@body))
@@ -84,7 +87,7 @@
                                 (CICILI:SPECIFY-TYPE< var)
                               `(var ,@var . (FUNCTION ($ ,pname ,variable)))))
                   var-list)
-           ,@body) 
+           ,@body)
        (var '(,@var-list) ,name . 
             '(,@(MAP 'LIST #'(LAMBDA (var)
                                     (MULTIPLE-VALUE-BIND (const type modifier const-ptr variable array-def)
