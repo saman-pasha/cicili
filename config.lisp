@@ -6,10 +6,10 @@
 (defparameter *warn* nil)
 ;; prints verbosity of compilation and link
 (defparameter *verbose* "")
-;; debug macroexpand for all recognized macros
-(defparameter *macroexpand* nil)
 ;; debug all loaded macros with namespace
 (defparameter *debug-macros* nil)
+;; debug macroexpand for all recognized macros
+(defparameter *debug-macroexpand* nil)
 
 (format t "software type: ~S~%" (software-type))
 ;;;; os specific toolset
@@ -18,11 +18,13 @@
     (cond 
       ((string= os "Linux") (list
                              'dumper   nil ; '("-Xclang" "-ast-dump")
-                             'compiler `("libtool" "--tag=CC" "--mode=compile" "clang" "-g" "-O" *verbose*)
+                             'compiler `("libtool" "--tag=CC" "--mode=compile"
+                                                   "clang" "-g" "-O" "-ferror-limit=1000" *verbose*)
                              'linker   `("libtool" "--tag=CC" "--mode=link" "clang" "-g" "-O" *verbose*)))
       ((string= os "Darwin") (list
                               'dumper   nil ; '("-Xclang" "-ast-dump")
-                              'compiler `("glibtool" "--tag=CC" "--mode=compile" "clang" "-g" "-O" *verbose*)
+                              'compiler `("glibtool" "--tag=CC" "--mode=compile"
+                                                     "clang" "-g" "-O" "-ferror-limit=1000" *verbose*)
                               'linker   `("glibtool" "--tag=CC" "--mode=link" "clang" "-g" "-O" *verbose*)))
       (t (list
           'dumper   nil ; '("-Xclang" "-ast-dump")

@@ -105,3 +105,10 @@ test/macro/app.c.run1.c
 test/macro/app.c.run2.c
 test/macro/app.c.run3.c
 test/macro/fastcgi_server
+test/macro/webserver.c.run1.c
+test/macro/webserver.c.run2.c
+test/macro/webserver.c.run3.c
+lib/std/.\#slice.lisp
+lib/std/cicili_string.c.run1.c
+lib/std/cicili_string.c.run2.c
+lib/std/cicili_string.c.run3.c

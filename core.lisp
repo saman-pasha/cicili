@@ -31,8 +31,10 @@
 (defparameter *ast-lines* '())
 ;; stores current resolver run number
 (defparameter *ast-run* 0)
-;; stores names symbols of all loaded macros
+;; stores names symbols of all loaded macros 
 (defvar *macros* (make-hash-table :test 'equal))
+;; whether cicili is during macro expantion
+(defparameter *macroexpand* (make-hash-table :test 'equal))
 
 ;; adds a macro to macros list *macros*
 (defun add-macro (macro symbol)
@@ -202,6 +204,12 @@
 
 (defun indent (lvl)
   (make-string (* lvl 2) :initial-element #\Space))
+
+(defun make-method-name (struct method)
+  (format nil "~A_m_~A" struct method))
+
+(defun make-shared-name (struct method)
+  (format nil "~A_s_~A" struct method))
 
 (defun is-name (name) (symbolp name))
 

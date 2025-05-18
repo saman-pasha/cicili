@@ -40,7 +40,7 @@
                     (Employee emp2 . '{ $id 1 $name "John Doe" })
                     (Employee emp3 . '{ $id 1 $name "John Doe" $tag$tag_id 1001 })
                     (Employee emp_array [] . '{ '{ 1 "John Doe" } '{ 2 "Saman Pasha" } })
-                    {defer #t} (Employee * emp . #'(alloc (sizeof Employee))) ; defer #t means no auto defferal
+                    (defer #t) (Employee * emp . #'(alloc (sizeof Employee))) ; defer #t means auto free defferal
                     (Employee * emps_arr . #'(alloc 5 (sizeof Employee)))
                     (Employee * emps_ptr_arr . #'(alloc 10 (sizeof Employee *)))
                     )

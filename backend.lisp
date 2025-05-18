@@ -143,7 +143,7 @@
 
 (defun compile-list (spec lvl globals)
   (with-slots ((items default)) spec
-    (set-ast-line (output "{"))
+    (set-ast-line (output "{ "))
     (let ((l (length items))
           (m-init nil))
       (loop for i from 1 to l
@@ -241,7 +241,7 @@
            (opr-ast (current-ast< 0 (1+ (length (getf obj-ast 'res)))))
            (ast     (current-ast< 0 (1+ (+ (length (getf obj-ast 'res)) (length (getf opr-ast 'res))))))
            (info    (getf ast 'info)))
-      (if (or (null *resolve*) (null ast))
+      (if (or (null *resolve*) (null ast)) ; *resolve* nil: means during a function with resolve attribute #f
           (let ((col-n (funcall *col-num* 0))
                 (res   (current-resolved<)))
             (if (null res)
@@ -252,30 +252,48 @@
                   (compile-form method (1+ lvl) globals)
                   (compile-args (default args) lvl globals t)
                   (output ")"))
-                (progn
-                  (set-ast-line (output res))
-                  (output "(")
-                  (compile-form receiver (1+ lvl) globals)
-                  (compile-args (default args) lvl globals t)
-                  (output ")")
-                  (funcall *col-num* 0 :reset (+ col-n (length res))))))
+                (progn ; next run after resolved comes here
+                  (if (str:starts-with-p (make-shared-name (name receiver) "") res) ; was shared or method
+                      (progn
+                        (set-ast-line (output res))
+                        (output "(")
+                        (compile-args (default args) lvl globals nil)
+                        (output ")")
+                        (funcall *col-num* 0 :reset (+ col-n (length res))))
+                      (progn
+                        (set-ast-line (output res))
+                        (output "(")
+                        (compile-form receiver (1+ lvl) globals)
+                        (compile-args (default args) lvl globals t)
+                        (output ")")
+                        (funcall *col-num* 0 :reset (+ col-n (length res))))))))
           (cond ((str:containsp "no member named" info)
                  (let* ((col-n       (funcall *col-num* 0))
                         (matches     (ppcre:all-matches-as-strings "'(struct\\s+)?\\w+'" info))
                         (method      (car matches))
                         (parts       (str:split #\Space (cadr matches))))
                    (if (string= (car parts) "'struct")
-                       (progn
-                         (set-resolved (format nil "~A_~A" (string-right-trim "'" (cadr parts)) (string-trim "'" method)))
-                         (set-ast-line (output "~A_" (string-right-trim "'" (cadr parts)))))
-                       (error (format nil "cicili\: unresolved method reference type ~A~%" spec)))
-                   (set-ast-line (output "~A " (string-trim "'" method)))
+                       (set-resolved (make-method-name
+                                         (string-right-trim "'" (cadr parts)) (string-trim "'" method)))
+                       (error (format nil "cicili\: unresolved method reference type ~A~% ~A~%" spec info)))
+                   (set-ast-line (output "~A" (make-method-name
+                                                  (string-right-trim "'" (cadr parts)) (string-trim "'" method))))
                    (output "(")
                    (compile-form receiver (1+ lvl) globals)
                    (compile-args (default args) lvl globals t)
                    (output ")")
                    (funcall *col-num* 0 :reset (+ col-n (length (getf ast 'res))))))
-                (t (error (format nil "cicili\: unresolved method reference type ~A~%" spec))))))))
+                ((and opr-ast (str:containsp "expected ')'" (getf opr-ast 'info)))
+                 (let ((col-n       (funcall *col-num* 0)))
+                   (display "ERR" (getf opr-ast 'info) #\Newline)
+                   (set-resolved (make-shared-name (name receiver) (name method)))
+                   (set-ast-line (output "~A" (make-shared-name (name receiver) (name method))))
+                   (output "(")
+                   (compile-args (default args) lvl globals nil)
+                   (output ")")
+                   (funcall *col-num* 0 :reset (+ col-n (length (getf ast 'res))))))
+                (t (error (format nil "cicili\: unresolved method reference type ~A~% ~A~%" spec
+                                  (or info (getf opr-ast 'info) (getf obj-ast 'info))))))))))
 
 (defun compile-sizeof (spec lvl globals)
   (set-ast-line (output "sizeof("))
@@ -349,10 +367,10 @@
              (if (key-eq '|@STRUCT| (construct los))
                  (if (module spec)
                      (when *target-header*
-                       (compile-struct   los lvl globals :nested t :unique is-unique))      ; inline structs
+                       (compile-struct   los lvl globals :nested t :unique is-unique :static t))      ; inline structs
                      (if *target-header*
                          (error (format nil "inline structs in header file outside of any module: ~A" los))
-                         (compile-struct   los lvl globals :nested t :unique is-unique)))   ; inline structs
+                         (compile-struct   los lvl globals :nested t :unique is-unique :static t)))   ; inline structs
                  (progn ; lambdas
                    (push (cons '|static| t) (attrs los))
                    (compile-function los lvl globals :unique is-unique)
@@ -381,7 +399,8 @@
 
 (defun compile-body (spec lvl globals parent-spec)
   (loop for form in (body spec)
-        do (case (construct form)
+        do (progn
+             (case (construct form)
              ('|@ASSIGN| (compile-assignment form (1+ lvl) globals))
              ('|@CALL|   (compile-call       form (1+ lvl) globals))
              ('|@LET|    (compile-let        form (1+ lvl) globals parent-spec))
@@ -398,7 +417,7 @@
              ('|@BODY|   (compile-body       form     lvl  globals spec))
              (t (unless (= lvl -1) (output "~&~A" (indent (1+ lvl))))
                 (compile-form form (1+ lvl) globals)
-                (unless (= lvl -1) (output ";~%"))))))
+                (unless (= lvl -1) (output ";~%")))))))
 
 (defun compile-let (spec lvl globals parent-spec &optional is-n) ; is-n means letn -> scope is statement
   (let ((dynamics    '())
@@ -546,10 +565,10 @@
                (if (key-eq '|@STRUCT| (construct los))
                    (if (module spec)
                        (when *target-header*
-                         (compile-struct   los lvl globals :nested t :unique is-unique))      ; inline structs
+                         (compile-struct   los lvl globals :nested t :unique is-unique :static t)) ; inline structs
                        (if *target-header*
                            (error (format nil "inline structs in header file outside of any module: ~A" los))
-                           (compile-struct   los lvl globals :nested t :unique is-unique)))   ; inline structs
+                           (compile-struct   los lvl globals :nested t :unique is-unique :static t))) ; inline structs
                    (progn ; lambdas
                      (push (cons '|static| t) (attrs los))
                      (compile-function los lvl globals :unique is-unique)
@@ -569,8 +588,9 @@
         ('|resolve| (setq do-resolve (cdr attr)))))
     (when (and (> *ast-run* 1) (key-eq '|false| do-resolve)) (setq *resolve* nil))
     ;; compile function
-    (let* ((is-method  (if (key-eq (construct spec) '|@METHOD|) t nil))
-	       (name       (name   spec))
+    (let* ((name       (name   spec))
+	       (is-method  (if (key-eq (construct spec) '|@METHOD|) t nil))
+	       (is-shared  (and (listp name) (not is-method)))
 	       (params     (params spec))
 	       (body       (body   spec))
 	       (locals     (copy-specifiers globals)))
@@ -588,10 +608,14 @@
         (format-type (const spec) (typeof spec) (modifier spec) nil (const-ptr spec) (array-def spec) nil lvl locals)
         (output " ")
         (set-ast-line (output "~A " (if is-unique (unique spec)
-                                        (if is-method
+                                        (if (or is-method is-shared)
                                             (if as-type
-                                                (format nil "(*~A_~A)" (car name) (cdr name))
-                                                (format nil "~A_~A" (car name) (cdr name)))
+                                                (format nil "(*~A)" (if is-method
+                                                                        (make-method-name (car name) (cdr name))
+                                                                        (make-shared-name (car name) (cdr name))))
+                                                (if is-method
+                                                    (make-method-name (car name) (cdr name))
+                                                    (make-shared-name (car name) (cdr name))))
                                             (if as-type (format nil "(*~A)" name) name)))))
         (output "(")
         (loop for param being the hash-value of params
@@ -680,7 +704,7 @@
       (set-ast-line (output "~A" (if is-unique (unique spec) name))))
     (output ";~%")))
 
-(defun compile-struct (spec lvl globals &key ((:nested is-nested) nil) ((:unique is-unique) nil))
+(defun compile-struct (spec lvl globals &key ((:nested is-nested) nil) ((:unique is-unique) nil) ((:static is-static) nil))
   (let ((name         (name spec))
 	    (is-anonymous (anonymous spec))
 	    (declares     (params spec))
@@ -702,6 +726,7 @@
 		           (otherwise (error (format nil "unknown clause ~A inside ~A" in-name in-spec)))))
 	         (inners spec))
     (output "~&~A" (indent lvl))
+    (when is-static (set-ast-line (output "static ")))
     (if is-anonymous
         (set-ast-line (output "struct "))
         (if is-nested

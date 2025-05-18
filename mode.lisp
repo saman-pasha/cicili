@@ -16,7 +16,8 @@
  
 (cicili-add-types
  'font-lock-type-face
- '((1 . main)
+ '((1 . cicili)
+   (1 . main)
    (1 . const)
    (1 . func)
    (1 . this)
@@ -77,6 +78,7 @@
    (1 . false)
    (1 . nil)
    (1 . auto)
+   (1 . size_t)
    ))
 
 (defun cicili-add-keywords (face-name keyword-rules)
