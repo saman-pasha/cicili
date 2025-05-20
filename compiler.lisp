@@ -32,7 +32,7 @@
     (let* ((tname   (car target))
 	       (ir      nil)
            (macro (if (symbolp tname) (gethash (symbol-name tname) *macros*) nil)))
-      (cond ((key-eq tname '|import|) (load-macro-file (cadr target) (caddr target) (cdddr target)))
+      (cond ((key-eq tname '|import|) (load-macro-file (cadr target) (caddr target) (cadddr target)))
             ((key-eq tname '|DEFMACRO|)
              (let ((symb (eval target)))
                (add-macro (symbol-name symb) symb)))
@@ -53,8 +53,14 @@
                         (setq *ast-lines* '())
                         (push (make-hash-table :test 'equal) *ast-lines*)
                         (setq *ast-run* 0)
-                        (dotimes (run (if (key-eq tname '|header|) 1 3)) ; resolver runs
-                          (push (make-hash-table :test 'equal) *ast-lines*)
+                        (do ((run 0 (1+ run))) ; resolver runs
+                            ((or *only-link* (= run (if (key-eq tname '|header|) 1
+                                                        (if *more-run*
+                                                            (setq *ast-total-runs* (1+ *ast-total-runs*))
+                                                            *ast-total-runs*)))))
+                          (setf *more-run* nil)
+                          (push *next-ast-line* *ast-lines*)
+                          (setf *next-ast-line* (make-hash-table :test 'equal))
 	                      (setq globals (create-globals ir))
                           (setq *ast-run* (1+ run))
                           (unless (key-eq tname '|header|)
@@ -69,10 +75,11 @@
                             (do ((s (read-line err-stream nil nil) (read-line err-stream nil nil)))
                                 ((eql s nil))
                               (when (str:starts-with-p file s)
-                                (let* ((err-line (str:split #\: s :limit 4))
+                                (let* ((err-line (str:split #\: s :limit 5))
                                        (ast-key (ast-key< (parse-integer (nth 1 err-line))
                                                   (parse-integer (nth 2 err-line)) :file *target-file*)))
-                                  (setf (getf (gethash ast-key (nth 0 *ast-lines*)) 'info) s)))
+                                  (when (string-equal (nth 3 err-line) " error")
+                                    (setf (getf (gethash ast-key (nth 0 *ast-lines*)) 'info) s))))
                               (display "run err" *ast-run* ">" s #\NewLine)))
                           (with-input-from-string (out-stream (get-output-stream-string stdout))
                             (do ((s (read-line out-stream nil nil) (read-line out-stream nil nil)))
@@ -95,7 +102,7 @@
                           (push (make-hash-table :test 'equal) *ast-lines*)
                           (setq *ast-run* (1+ *ast-run*))
                           (setf *gensym-counter* 100)
-	                      (compile-target *target-file* ir globals *standard-output* *error-output* nil nil))))
+	                      (compile-target (name ir) ir globals *standard-output* *error-output* nil nil))))
 	                 (t (error (format nil "header or source form is missing for ~A" tname)))))
             ((or macro (macro-function tname))
              (let ((tmp-expantion *macroexpand*)
@@ -124,7 +131,6 @@
 
 ;;;; a file contains many cicili macro definitions will be loaded into CL-USER PACKAGE
 (defun load-macro-file (file-name &optional pack init-args)
-  (display "LOAD" file-name pack init-args #\Newline)
   (when (key-eq pack '|nil|) (setq pack nil))
   (let ((file-path (make-pathname :directory (pathname-directory file-name)))
         (rt (copy-readtable nil)))

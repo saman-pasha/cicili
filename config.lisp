@@ -1,7 +1,9 @@
 (in-package :cicili)
 
-;; prints too many details about compiling and resolving
+;; prints too many details about compiling ast
 (defparameter *debug* nil)
+;; prints resolved members and methods
+(defparameter *debug-resolve* nil)
 ;; prints warning about symbols and function
 (defparameter *warn* nil)
 ;; prints verbosity of compilation and link
@@ -10,6 +12,8 @@
 (defparameter *debug-macros* nil)
 ;; debug macroexpand for all recognized macros
 (defparameter *debug-macroexpand* nil)
+;; supposed all header and source targets are compiled and only need to make binaries
+(defparameter *only-link* nil)
 
 (format t "software type: ~S~%" (software-type))
 ;;;; os specific toolset
