@@ -14,8 +14,25 @@ String * String_s_newCopy (const String * other);
 String * String_m_clone (String * this);
 string_elem_t * String_m_cloneArray (String * this);
 String * String_m_appendNew (String * this, const String * other);
-String * String_m_append (String * this, const String * other);
+struct __ciciliS_String_m_append_ {
+  String * out;
+  bool newp;
+};
+struct __ciciliS_String_m_append_ String_m_append (String * this, const String * other);
 void String_m_free (String * this);
+String * String_m_push (String * this, string_elem_t val);
+struct __ciciliS_String_m_pop_ {
+  string_elem_t out;
+  bool outp;
+};
+struct __ciciliS_String_m_pop_ String_m_pop (String * this);
+String * String_m_shrink (String * this);
+String * String_m_insert (String * this, size_t index, string_elem_t val);
+String * String_m_removeAt (String * this, size_t index);
+bool String_m_contains (String * this, string_elem_t val);
+size_t String_m_indexOf (String * this, string_elem_t val);
+size_t String_m_lastIndexOf (String * this, string_elem_t val);
+size_t String_m_count (String * this, string_elem_t val);
 String * String_s_new (const string_elem_t * cstr);
 String * String_s_newFormat (const char * fmt, ...  );
 String * String_m_substring (String * this, size_t start, size_t length);

@@ -123,3 +123,14 @@ lib/std/tests/string_test.c.run4.c
 lib/std/tests/string_test.c.run5.c
 lib/std/tests/string_test.c.run6.c
 lib/std/tests/string_test.c.run7.c
+lib/std/tests/bytevector_test.c.run1.c
+lib/std/tests/bytevector_test.c.run2.c
+lib/std/tests/bytevector_test.c.run3.c
+lib/std/tests/bytevector_test.c.run4.c
+lib/std/tests/slice_test.c.run1.c
+lib/std/tests/slice_test.c.run2.c
+lib/std/tests/slice_test.c.run3.c
+lib/std/tests/slice_test.c.run4.c
+lib/std/tests/string_test
+lib/std/tests/slice_test
+lib/std/tests/bytevector_test

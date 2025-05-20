@@ -833,13 +833,15 @@
 					                       (list '|malloc| (nth 1 value))))
 		                 (setq value (list '|cast| (remove nil (list const typeof modifier const-ptr))
 				                           (list '|calloc| (nth 1 value) (nth 2 value))))))
-		           (let ((attributes '()))
+		           (let ((attributes '())
+                         (has-atsign (equal (char (symbol-name typeof) 0) #\@)))
+                     (when has-atsign (setq typeof (intern (str:replace-first "@" "" (symbol-name typeof)))))
 		             (when is-static   (push (cons '|static|   t) attributes))
 		             (when is-register (push (cons '|register| t) attributes))
 		             (when is-auto     (push (cons '|auto|     t) attributes))
-		             (when (or (eq has-defer t) (and is-alloc (null has-defer)))
+		             (when (or has-atsign (eq has-defer t) (and is-alloc (null has-defer)))
                        (push (cons '|alloc| t) attributes)
-                       (when (or (null has-defer) (eq has-defer t)) ; auto deferment
+                       (when (or has-atsign (null has-defer) (eq has-defer t)) ; auto deferment
                          (push (cons '|defer| 
                                      (specify-expr
                                          `'(|lambda|
@@ -849,8 +851,10 @@
                                                      ((key-eq '|*|  modifier) '|**|)
                                                      ((key-eq '|**| modifier) '|***|)
                                                      (t (error (format nil "not suitable for auto deferral"))))
-                                                ,const-ptr ,variable ,array)))
-                                            (|free| (|cast| (|void| *) (|cof| ,variable)))))) attributes)))
+                                                  ,const-ptr ,variable ,array)))
+                                            ,(if has-atsign
+                                                 `(|->| (|cof| ,variable) |free|)
+                                                 `(|free| (|cast| (|void| *) (|cof| ,variable))))))) attributes)))
 		             (when (and has-defer (not (eq has-defer t)))
                        (let ((ptr-name (intern (format nil "~A_ptr" variable))))
                          (push (cons '|defer|
