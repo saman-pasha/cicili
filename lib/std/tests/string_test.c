@@ -5,10 +5,16 @@
 #include <stdbool.h>
 #include <string.h>
 #include "cicili_string.h"
+static void __ciciliL_182 (String ** a) {
+  String_m_free((*a ));
+}
+static void __ciciliL_184 (String ** b) {
+  String_m_free((*b ));
+}
 int main () {
-  { /* cicili#Let104 */
-    String * a = String_s_new("hello");
-    String * b = String_s_new("world");
+  { /* cicili#Let181 */
+    String * a __attribute__((__cleanup__(__ciciliL_182 ))) = String_s_new("hello");
+    String * b __attribute__((__cleanup__(__ciciliL_184 ))) = String_s_new("world");
     String * formatted = String_s_newFormat("value: %d, %s", 42, "test");
     String * helloWorld = String_m_concat(a , b );
     String * upper = String_m_toUpper(a );
@@ -37,8 +43,6 @@ int main () {
     fprintf (stdout , "find 'l' in a: %zu\n", index );
     fprintf (stdout , "a starts with 'hel': %s\n", ((sw ) ? "true" : "false"));
     fprintf (stdout , "helloWorld ends with 'rld': %s\n", ((ew ) ? "true" : "false"));
-    String_m_free(a );
-    String_m_free(b );
     String_m_free(helloWorld );
     String_m_free(formatted );
     String_m_free(upper );

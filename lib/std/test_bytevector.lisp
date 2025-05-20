@@ -1,27 +1,55 @@
-(header "bytevector_test.h" ()
-  (include "cicili_bytevector.h"))
 
-(source "bytevector_test.c" (:std #t :compile #t :link "-o bytevector_test -L{$CWD} -lcicili_bytevector.o")
-  (include <stdio.h> <string.h> "bytevector_test.h")
+(source "./tests/bytevector_test.c"
+  (:std #t :compile #t :link "-L{$CWD} cicili_bytevector.lo bytevector_test.lo -o ./tests/bytevector_test")
 
-  (func main ()
-    (let ((uchar data [6] . '{ 0x41, 0x42, 0x43, 0x44, 0x45, 0x00 }) ; "ABCDE"
-          (ByteVector * vec1 . #'(-> ByteVector newFromArray data 5))
-          (ByteVector * vec2 . #'(-> ByteVector newCopy vec1))
-          (ByteVector * vec3 . #'(-> vec1 appendNew vec2))
-          (uchar * raw1 . #'(-> vec3 cloneArray))))
+        (include "cicili_bytevector.h")
 
-      (printf "vec1: %.*s\n" ($ vec1 len) ($ vec1 arr)) ; ABCDE
-      (printf "vec2 (copy): %.*s\n" ($ vec2 len) ($ vec2 arr)) ; ABCDE
-      (printf "vec3 (appended): %.*s\n" ($ vec3 len) raw1) ; ABCDEABCDE
+        (main
+            (let
+                ((@ByteVector * bv . #'(-> ByteVector newEmpty 5)))
 
-      ;; mutate vec2 to show vec1 is unaffected
-      (set (nth 0 ($ vec2 arr)) 0x5A) ; 'Z'
-      (printf "vec2 after mutation: %.*s\n" ($ vec2 len) ($ vec2 arr)) ; ZBCDE
-      (printf "vec1 after vec2 mutation: %.*s\n" ($ vec1 len) ($ vec1 arr)) ; ABCDE
+              ;; Append bytes
+              (-> bv push #x41) ; 'A'
+              (-> bv push #x42) ; 'B'
+              (-> bv push #x43) ; 'C'
+              (-> bv push #x41) ; 'A'
+              (-> bv push #x44) ; 'D'
+              (-> bv push #x41) ; 'A'
 
-      ;; cleanup
-      (free vec1)
-      (free vec2)
-      (free vec3)
-      (free raw1))))
+              ;; Insert at index 2
+              (-> bv insert 2 #x58) ; 'X'
+
+              ;; Remove index 3
+              (-> bv removeAt 3)
+
+              ;; Check contents
+              (format #t "ByteVector contents as chars:\n")
+              (for ((size_t i . 0)) (< i ($ bv len)) ((++ i))
+                (format #t "%c " (nth i ($ bv arr))))
+              (format #t "\n")
+
+              ;; Query operations
+              (let ((bool hasA . #'(-> bv contains #x41))
+                    (size_t firstA . #'(-> bv indexOf #x41))
+                    (size_t lastA . #'(-> bv lastIndexOf #x41))
+                    (size_t countA . #'(-> bv count #x41)))
+
+                (format #t "Contains 'A': %s\n" (? hasA "true" "false"))
+                (format #t "First index of 'A': %zu\n" firstA)
+                (format #t "Last index of 'A': %zu\n" lastA)
+                (format #t "Count of 'A': %zu\n" countA))
+
+              ;; Pop one byte
+              (let ((auto last . #'(-> bv pop)))
+                (when ($ last outp)
+                    (format #t "Popped: %c\n" ($ last out))))
+
+              ;; Final state
+              (format #t "Final ByteVector contents:\n")
+              (for ((size_t i . 0)) (< i ($ bv len)) ((++ i))
+                (format #t "%c " (nth i ($ bv arr))))
+              (format #t "\n")
+
+              ;; Cleanup
+              ;; (-> bv free) ; no need to free @ told cicili to use free method at end of scope instead
+              (return 0))))
