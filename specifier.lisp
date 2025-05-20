@@ -467,8 +467,8 @@
 
 (defun specify-character-expr (def)
   (if (eql def #\Null)
-      (make-specifier "'\\0'" '|@ATOM| nil '|@CHAR| nil nil nil nil '())
-      (make-specifier def     '|@ATOM| nil '|@CHAR| nil nil nil nil '())))
+      (make-specifier "\\0" '|@ATOM| nil '|@CHAR| nil nil nil nil '())
+      (make-specifier def   '|@ATOM| nil '|@CHAR| nil nil nil nil '())))
 
 (defun specify-string-expr (def)
   (make-specifier (format nil "\"~A\"" def) '|@ATOM| nil '|@STRING| nil nil nil nil '()))
@@ -1075,10 +1075,13 @@
 
 (defun specify-preprocessor (def attrs)
   (when (> (length attrs) 0) (error (format nil "wrong attributes ~A" attrs)))
-  (when (> (length def) 2) (error (format nil "wrong preprocessor definition ~A" def)))
+  (when (> (length def) 3) (error (format nil "wrong preprocessor definition ~A" def)))
   (let ((preproc-specifier
-            (make-specifier (gensym "cicili#PreProc") '|@PREPROC| nil (specify-symbol-expr (car def)) nil nil nil nil nil)))
-    (unless (null (cadr def)) (setf (default preproc-specifier) (specify-expr (cadr def))))
+            (make-specifier (gensym "cicili#PreProc")
+              '|@PREPROC| (specify-symbol-expr (car def)) nil nil nil nil nil nil)))
+    (setf (char (symbol-name (name (const preproc-specifier))) 0) #\#)
+    (unless (null (cadr  def)) (setf (typeof  preproc-specifier) (specify-expr (cadr  def))))
+    (unless (null (caddr def)) (setf (default preproc-specifier) (specify-expr (caddr def))))
     preproc-specifier))
 
 (defun specify-include (def attrs)

@@ -4,10 +4,12 @@
   (:use :cl)
   (:export
     :*debug*
+    :*debug-resolve*
     :*warn*
     :*verbose*
     :*debug-macros*
     :*debug-macroexpand*
+    :*only-link*
     :compile-ast
     :compile-cicili-file
     :load-macro-file

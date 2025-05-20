@@ -29,8 +29,14 @@
 (defparameter *resolve* t)
 ;; storing line num and col num of target's ASTs
 (defparameter *ast-lines* '())
+;; storing the next hash table for *ast-lines*
+(defparameter *next-ast-line* (make-hash-table :test 'equal))
 ;; stores current resolver run number
 (defparameter *ast-run* 0)
+;; stores total resolver run number
+(defparameter *ast-total-runs* 3)
+;; stores whether resolver needs another run run number
+(defparameter *more-run* nil)                 
 ;; stores names symbols of all loaded macros 
 (defvar *macros* (make-hash-table :test 'equal))
 ;; whether cicili is during macro expantion
@@ -71,17 +77,29 @@
 (defmacro warning! (&rest rest)
   `(format t ,@rest))
 
-(defparameter *line-num* (let ((count 1))
-                           #'(lambda (step &key reset)
+(defparameter *line-num* (let ((count 1)
+                               (actual-count 1))
+                           #'(lambda (step &key reset actual)
                                (if reset
-                                   (setf count reset)
-                                   (setf count (+ count step))))))
+                                   (if actual
+                                       (setf actual-count reset)
+                                       (setf count reset))
+                                   (progn
+                                     (setf count (+ count step))
+                                     (setf actual-count (+ actual-count step))))
+                               (if actual actual-count count))))
 
-(defparameter *col-num* (let ((count 1))
-                          #'(lambda (step &key reset)
+(defparameter *col-num* (let ((count 1)
+                              (actual-count 1))
+                          #'(lambda (step &key reset actual)
                               (if reset
-                                  (setf count reset)
-                                  (setf count (+ count step))))))
+                                  (if actual
+                                      (setf actual-count reset)
+                                      (setf count reset))
+                                  (progn
+                                    (setf count (+ count step))
+                                    (setf actual-count (+ actual-count step))))
+                              (if actual actual-count count))))
 
 (defun ast-key< (line-n col-n &key (file *target-file*))
   (format nil "~A:~D:~D" *target-file* line-n col-n))
@@ -110,6 +128,8 @@
             (,item   (gethash (ast-key< ,line-n ,col-n) (nth 0 *ast-lines*)))
             (,result ,out))
        (when *debug* (display "set-run" *ast-run* ">" (ast-key< ,line-n ,col-n) ""))
+       (setf (getf ,item 'line-n) ,line-n)
+       (setf (getf ,item 'col-n) ,col-n)
        (setf (getf ,item 'res) ,result)
        (unless (getf ,item 'bt)
          (setf (getf ,item 'bt)  (cdr (backtrace))))
@@ -118,13 +138,14 @@
 (defmacro set-resolved (outstr)
   (let ((line-n (gensym))
         (col-n  (gensym))
-        (result (gensym))
-        (item   (gensym)))
+        (item   (gensym))
+        (outs   (gensym)))
     `(let* ((,line-n (funcall *line-num* 0))
             (,col-n  (funcall *col-num* 0))
-            (,item   (gethash (ast-key< ,line-n ,col-n) (nth *ast-run* *ast-lines*))))
-       (when *debug* (display "set-resolved" *ast-run* ">" (ast-key< ,line-n ,col-n) ""))
-       (setf (getf ,item 'res) ,outstr)
+            (,item   (gethash (ast-key< ,line-n ,col-n) (nth *ast-run* *ast-lines*)))
+            (,outs   ,outstr))
+       (when *debug-resolve* (display "set-resolved" (1- *ast-run*) ">" (ast-key< ,line-n ,col-n) "" ,outs #\Newline))
+       (setf (getf ,item 'res) ,outs)
        (unless (getf ,item 'bt)
          (setf (getf ,item 'bt)  (cdr (backtrace))))
        (setf (gethash (ast-key< ,line-n ,col-n) (nth *ast-run* *ast-lines*)) ,item))))
@@ -177,9 +198,7 @@
 (defvar *new-line* (format nil "~%"))
 
 (defun output (ctrl &rest rest)
-  (let ((line-n (funcall *line-num* 0))
-        (col-n  (funcall *col-num* 0))
-        (result (apply 'format (append (list nil ctrl) rest))))
+  (let ((result (apply 'format (append (list nil ctrl) rest))))
     (apply 'format (list *output* result))
     (let* ((index (search *new-line* result :from-end t))
            (line-count (str:count-substring *new-line* result)))
@@ -187,6 +206,7 @@
       (if index (progn
                   (let ((last-line (str:substring (1+ index) t result)))
                     (funcall *col-num* 0 :reset 1)
+                    (funcall *col-num* 0 :reset 1 :actual t)
                     (funcall *col-num* (1- (- (length result) index)))))
           (funcall *col-num* (length result)))
       (when *debug* (display result #\NewLine))

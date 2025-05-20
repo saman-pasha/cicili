@@ -115,3 +115,11 @@ lib/std/cicili_string.c.run3.c
 lib/std/cicili_bytevector.c.run1.c
 lib/std/cicili_bytevector.c.run2.c
 lib/std/cicili_bytevector.c.run3.c
+lib/std/string_test
+lib/std/tests/string_test.c.run1.c
+lib/std/tests/string_test.c.run2.c
+lib/std/tests/string_test.c.run3.c
+lib/std/tests/string_test.c.run4.c
+lib/std/tests/string_test.c.run5.c
+lib/std/tests/string_test.c.run6.c
+lib/std/tests/string_test.c.run7.c
