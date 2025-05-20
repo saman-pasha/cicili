@@ -49,6 +49,16 @@
                      (decl) (method ,(make-method-name name 'append)     ((const ,name * other)) (out ,name *))
                      (decl) (method ,(make-method-name name 'free)       ())
 
+                   (decl) (method ,(make-method-name name 'push)   ((,elem-type val)) (out ,name *))
+(decl) (method ,(make-method-name name 'pop)    ((,elem-type * out)) (out bool))
+(decl) (method ,(make-method-name name 'shrink) () (out ,name *))
+                   (decl) (method ,(make-method-name name 'insert)   ((size_t index) (,elem-type val)) (out ,name *))
+(decl) (method ,(make-method-name name 'removeAt) ((size_t index)) (out ,name *))
+                   (decl) (method ,(make-method-name name 'contains) ((,elem-type val)) (out bool))
+(decl) (method ,(make-method-name name 'indexOf)  ((,elem-type val)) (out size_t))
+                   (decl) (method ,(make-method-name name 'lastIndexOf) ((,elem-type val)) (out size_t))
+(decl) (method ,(make-method-name name 'count)       ((,elem-type val)) (out size_t))
+                   
                      ,@header-body))
 
          ;; source file
@@ -117,6 +127,107 @@
                  ;; Frees the Slice instance
                  (method ,(make-method-name name 'free) ()
                          (free this))
+
+                 ;; Pushes a new element to the end of the Slice. Grows if needed.
+(method ,(make-method-name name 'push) ((,elem-type val)) (out ,name *)
+  (if (== ($ this len) ($ this cap))
+      ;; Need to reallocate with more capacity
+      (block
+        (let ((size_t newLen . #'(+ ($ this len) 1)))
+          (let ((,name * newSlice . #'(-> ,name newEmpty newLen)))
+            (memcpy ($ newSlice arr) ($ this arr) (* (sizeof ,elem-type) ($ this len)))
+            (set ($ newSlice len) newLen)
+            (set ($ newSlice arr [$ this len]) val)
+            (-> this free)
+            (return newSlice))))
+      ;; Enough capacity, insert directly
+      (block
+        (set ($ this arr [$ this len]) val)
+        (++ ($ this len))
+        (return this))))
+
+;; Pops the last element and stores it in *out. Returns true if successful.
+(method ,(make-method-name name 'pop) ((,elem-type * out)) (out bool)
+  (if (== ($ this len) 0)
+      (return #f)
+      (block
+        (-- ($ this len))
+        (if out (set (* out) ($ this arr [$ this len])))
+        (return #t))))
+
+;; Shrinks allocated memory to current length, freeing unused capacity.
+(method ,(make-method-name name 'shrink) () (out ,name *)
+  (let ((,name * newSlice . #'(-> ,name newEmpty ($ this len))))
+    (memcpy ($ newSlice arr) ($ this arr) (* (sizeof ,elem-type) ($ this len)))
+    (-> this free)
+    (return newSlice)))
+
+;; Inserts val at index. If index > len, appends to the end. Grows if needed.
+(method ,(make-method-name name 'insert) ((size_t index) (,elem-type val)) (out ,name *)
+  (let ((size_t safeIndex . #'(? (> index ($ this len)) ($ this len) index))))
+    (if (== ($ this len) ($ this cap))
+        ;; Grow Slice
+        (let ((,name * newSlice . #'(-> ,name newEmpty (+ ($ this len) 1))))
+          ;; Copy before index
+          (memcpy ($ newSlice arr) ($ this arr) (* (sizeof ,elem-type) safeIndex))
+          ;; Insert element
+          (set ($ newSlice arr [safeIndex]) val)
+          ;; Copy after index
+          (memcpy (+ ($ newSlice arr) (+ safeIndex 1))
+                  (+ ($ this arr) safeIndex)
+                  (* (sizeof ,elem-type) (- ($ this len) safeIndex)))
+          (set ($ newSlice len) (+ ($ this len) 1))
+          (-> this free)
+          (return newSlice))
+        ;; No grow needed
+        (block
+          (memmove (+ ($ this arr) (+ safeIndex 1))
+                   (+ ($ this arr) safeIndex)
+                   (* (sizeof ,elem-type) (- ($ this len) safeIndex)))
+          (set ($ this arr [safeIndex]) val)
+          (++ ($ this len))
+          (return this)))))
+
+;; Removes element at index and shifts remaining elements left. Returns this.
+(method ,(make-method-name name 'removeAt) ((size_t index)) (out ,name *)
+  (if (>= index ($ this len))
+      (return this) ;; Index out of bounds, do nothing
+      (block
+        (memmove (+ ($ this arr) index)
+                 (+ ($ this arr) (+ index 1))
+                 (* (sizeof ,elem-type) (- ($ this len) (+ index 1))))
+        (-- ($ this len))
+        (return this))))
+
+;; Returns true if the Slice contains the given value
+(method ,(make-method-name name 'contains) ((,elem-type val)) (out bool)
+  (for ((size_t i 0) (< i ($ this len)) (++ i))
+    (if (== ($ this arr [i]) val)
+        (return #t)))
+  (return #f))
+
+;; Returns index of the given value, or len if not found
+(method ,(make-method-name name 'indexOf) ((,elem-type val)) (out size_t)
+  (for ((size_t i 0) (< i ($ this len)) (++ i))
+    (if (== ($ this arr [i]) val)
+        (return i)))
+  ;; Not found: return len (similar to C-style idiom)
+  (return ($ this len)))
+
+;; Returns the index of the last occurrence of val, or len if not found
+(method ,(make-method-name name 'lastIndexOf) ((,elem-type val)) (out size_t)
+  (for ((size_t i (- ($ this len) 1)) (>= 0 i) (-- i))
+    (if (== ($ this arr [i]) val)
+        (return i)))
+  (return ($ this len)))
+
+;; Returns how many times val appears in the slice
+(method ,(make-method-name name 'count) ((,elem-type val)) (out size_t)
+  (let ((size_t c 0))
+    (for ((size_t i 0) (< i ($ this len)) (++ i))
+      (if (== ($ this arr [i]) val)
+          (++ c)))
+    (return c)))
 
                  ,@source-body))))
 
