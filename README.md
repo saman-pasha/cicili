@@ -1236,6 +1236,7 @@ typedef int * intptr_t;
 `sbcl --script /path/to/cicili.lisp {args} /path/to/cicili-files.lisp`
 Available arguments:
 * --debug : will prints too many details about specifying, resolving and compiling.
+* --resolve : shows which and how Cicicli resolving `$` member and `->` method accesses.
 * --verbose : adds `-v` option to `clang` and `libtool` commands to print more details about compiling and linking. usefull when linking many complex libraries.
 * --macros : prints all macros defined in a macro file when loading by import clause.
 * --macroexpand : prints all expanded macros both usage and output
