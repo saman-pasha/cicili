@@ -134,3 +134,15 @@ lib/std/tests/slice_test.c.run4.c
 lib/std/tests/string_test
 lib/std/tests/slice_test
 lib/std/tests/bytevector_test
+lib/std/cicili_intslice.c.run1.c
+lib/std/cicili_intslice.c.run2.c
+lib/std/cicili_intslice.c.run3.c
+lib/std/cicili_tf.c.run1.c
+lib/std/cicili_tf.c.run2.c
+lib/std/cicili_tf.c.run3.c
+lib/std/cicili_tensorslice.c.run1.c
+lib/std/cicili_tensorslice.c.run2.c
+lib/std/cicili_tensorslice.c.run3.c
+lib/std/cicili_tensor.c.run1.c
+lib/std/cicili_tensor.c.run2.c
+lib/std/cicili_tensor.c.run3.c

@@ -2,9 +2,11 @@
 
 (IN-PACKAGE :CL-USER)
 
-(DEFMACRO String (path name element step members-body header-body source-body)
+(DEFMACRO String (path name element step include-body members-body header-body source-body)
   (Slice-Scope
       `(Slice ,path ,name ,element ,step
+              ( ; includes
+               ,@include-body)
               ( ; members
                ,@members-body)
               ( ; header
@@ -24,11 +26,9 @@
               ( ; source
                (func ,(make-method-name name 'new) ((const ,elem-type * cstr))
                      (let ((size_t len . #'(strlen cstr))
-                           (,name * str . #'(malloc (+ (sizeof ,name) (* (sizeof ,elem-type) (+ len 1))))))
+                           (,name * str . #'(-> ,name newEmpty len)))
                        (strncpy ($ str arr) cstr len)
                        (set (nth len ($ str arr)) #\Null)
-                       (set ($ str len) len)
-                       (set ($ str cap) len)
                        (return str)))
                
                (func ,(make-method-name name 'newFormat) ((const char * fmt) ($$$))
@@ -40,7 +40,7 @@
                          (return (-> ,name new buffer))))
                
                (method ,(make-method-name name 'substring) ((size_t start) (size_t length)) (out ,name *)
-                       (if (>= (+ start length) ($ this len))
+                       (if (> (+ start length) ($ this len))
                            (return #'(-> ,name new "")))
                        (let ((,name * sub . #'(-> ,name newEmpty length)))
                          (strncpy ($ sub arr) (+ ($ this arr) start) length)

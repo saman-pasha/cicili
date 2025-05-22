@@ -10,6 +10,8 @@
    (const-ptr     :initarg :const-ptr :accessor const-ptr)
    (array-def     :initarg :array-def :accessor array-def)
    (default       :initarg :default   :accessor default)
+   (key           :initform nil :accessor key) ; resolver key per run
+   (res           :initform nil :accessor res) ; resolved result
    (module        :initform nil :accessor module)
    (unique        :initform nil :accessor unique)
    (attrs         :initarg :attrs     :accessor attrs)
@@ -1027,7 +1029,8 @@
 	          (t (error (format nil "unknown function attribute ~A" attr))))))
     (when (and is-declare is-inline) (error (format nil "inline functions should be defined ~A" def)))
     (when (< (length def) 3) (error (format nil "wrong function definition ~A" def)))
-    (when (and is-declare body) (error (format nil "function declaration with body '~A' ~A" name (first body))))
+    (when (and is-declare body)
+      (error (format nil "function declaration with body, may be 'out' missed '~A' ~A" name (first body))))
     (let ((attributes    '())
           (tmp-specifier nil)
           (tmp-outp      nil))

@@ -33,6 +33,8 @@
 	       (ir      nil)
            (macro (if (symbolp tname) (gethash (symbol-name tname) *macros*) nil)))
       (cond ((key-eq tname '|import|) (load-macro-file (cadr target) (caddr target) (cadddr target)))
+            ((key-eq tname '|cicili|)
+             (compile-ast (cdr target)))
             ((key-eq tname '|DEFMACRO|)
              (let ((symb (eval target)))
                (add-macro (symbol-name symb) symb)))
@@ -55,7 +57,7 @@
                         (setq *ast-run* 0)
                         (do ((run 0 (1+ run))) ; resolver runs
                             ((or *only-link* (= run (if (key-eq tname '|header|) 1
-                                                        (if *more-run*
+                                                        (if (and *more-run* (= run (1+ *ast-total-runs*)))
                                                             (setq *ast-total-runs* (1+ *ast-total-runs*))
                                                             *ast-total-runs*)))))
                           (setf *more-run* nil)
@@ -78,7 +80,7 @@
                                 (let* ((err-line (str:split #\: s :limit 5))
                                        (ast-key (ast-key< (parse-integer (nth 1 err-line))
                                                   (parse-integer (nth 2 err-line)) :file *target-file*)))
-                                  (when (string-equal (nth 3 err-line) " error")
+                                  (when (string-equal (nth 3 err-line) " error") ; logs on current ended run hash table
                                     (setf (getf (gethash ast-key (nth 0 *ast-lines*)) 'info) s))))
                               (display "run err" *ast-run* ">" s #\NewLine)))
                           (with-input-from-string (out-stream (get-output-stream-string stdout))

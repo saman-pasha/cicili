@@ -104,20 +104,18 @@
 (defun ast-key< (line-n col-n &key (file *target-file*))
   (format nil "~A:~D:~D" *target-file* line-n col-n))
 
-(defun current-ast< (&optional (plus-line 0) (plus-col 0))
+;; reads log from second hash table, previous run
+(defun prev-ast< (&optional (plus-line 0) (plus-col 0))
   (let* ((line-n  (funcall *line-num* 0))
          (col-n   (funcall *col-num* 0))
          (ast-key (ast-key< (+ line-n plus-line) (+ col-n plus-col))))
     (when *debug* (display "M:" ast-key (gethash ast-key (nth 1 *ast-lines*)) #\NewLine))
     (gethash ast-key (nth 1 *ast-lines*))))
 
-(defun current-resolved< (&optional (plus-line 0) (plus-col 0))
-  (let* ((line-n  (funcall *line-num* 0))
-         (col-n   (funcall *col-num* 0))
-         (ast-key (ast-key< (+ line-n plus-line) (+ col-n plus-col))))
-    (when *debug* (display "R:" ast-key (gethash ast-key (nth *ast-run* *ast-lines*)) #\NewLine))
-    (getf (gethash ast-key (nth *ast-run* *ast-lines*)) 'res)))
+(defun prev-ast-by-key< (ast-key)
+  (gethash ast-key (nth 1 *ast-lines*)))
 
+;; logs on last pushed hash table, first, current run
 (defmacro set-ast-line (out)
   (let ((line-n (gensym))
         (col-n  (gensym))
@@ -135,6 +133,15 @@
          (setf (getf ,item 'bt)  (cdr (backtrace))))
        (setf (gethash (ast-key< ,line-n ,col-n) (nth 0 *ast-lines*)) ,item))))
 
+;; reads log from the same hash table all the time
+(defun resolved-ast< (&optional (plus-line 0) (plus-col 0))
+  (let* ((line-n  (funcall *line-num* 0))
+         (col-n   (funcall *col-num* 0))
+         (ast-key (ast-key< (+ line-n plus-line) (+ col-n plus-col))))
+    (when *debug* (display "R:" ast-key (gethash ast-key (nth *ast-run* *ast-lines*)) #\NewLine))
+    (getf (gethash ast-key (nth *ast-run* *ast-lines*)) 'res)))
+
+;; logs always on the same hash table (second from end)
 (defmacro set-resolved (outstr)
   (let ((line-n (gensym))
         (col-n  (gensym))
@@ -144,7 +151,7 @@
             (,col-n  (funcall *col-num* 0))
             (,item   (gethash (ast-key< ,line-n ,col-n) (nth *ast-run* *ast-lines*)))
             (,outs   ,outstr))
-       (when *debug-resolve* (display "set-resolved" (1- *ast-run*) ">" (ast-key< ,line-n ,col-n) "" ,outs #\Newline))
+       (when *debug-resolve* (display "* Resolved" (1- *ast-run*) ">" (ast-key< ,line-n ,col-n) "" ,outs #\Newline))
        (setf (getf ,item 'res) ,outs)
        (unless (getf ,item 'bt)
          (setf (getf ,item 'bt)  (cdr (backtrace))))

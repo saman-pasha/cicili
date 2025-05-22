@@ -194,11 +194,9 @@ size_t String_m_count (String * this, string_elem_t val) {
 String * String_s_new (const string_elem_t * cstr) {
   { /* cicili#Let198 */
     size_t len = strlen (cstr );
-    String * str = malloc ((sizeof(String) +  (sizeof(string_elem_t) *  (len  +  1 ) ) ));
+    String * str = String_s_newEmpty(len );
     strncpy ((str ->arr ), cstr , len );
     (str ->arr )[len ] = '\0';
-    (str ->len ) = len ;
-    (str ->cap ) = len ;
     return str ;
   }
 }
@@ -213,7 +211,7 @@ String * String_s_newFormat (const char * fmt, ...  ) {
   }
 }
 String * String_m_substring (String * this, size_t start, size_t length) {
-  if ((start  +  length  ) >=  (this ->len ) ) 
+  if ((start  +  length  ) >  (this ->len ) ) 
     return String_s_new("");
 
   { /* cicili#Let206 */
