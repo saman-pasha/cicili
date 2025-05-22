@@ -105,6 +105,8 @@ Lisp C Compiler aka. 'Cicili' programming language, which compiles Lisp-like syn
 
 Cicili is a **high-level, metaprogramming-driven language** designed for efficient, expressive, and highly extensible development. It emphasizes **deferred execution**, **macro-based transformations**, making it particularly useful in systems programming, scripting, web applications, database integration, and embedded environments.
 
+![Cicili Big Picture](./Cicili-Big-Picture.png)
+
 **Lisp is a language for doing what you've been told is impossible.
 
 — Kent Pitman**  [CAVEMAN2](https://8arrow.org/caveman/)
