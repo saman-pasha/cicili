@@ -41,11 +41,6 @@
                     array        ; array to be traveresed or pointer to its one of items
                     length       ; length of array or count of loop should go through
                     &REST body)  ; what to do each turn
-  (UNLESS (AND (SYMBOLP counter)
-            (SYMBOLP item)
-            (SYMBOLP array)
-            (NUMBERP length))
-    (ERROR (FORMAT T "for-each invalid input: ~A ~A ~A ~A~%" counter item array length)))
   `(let (((typeof (nth 0 ,array)) * ,item . ,array))
      (for ((int ,counter . 0))
        (< ,counter ,length)
@@ -59,11 +54,6 @@
                           array        ; array to be traveresed or pointer to its one of items
                           length       ; length of array or count of loop should go through
                           &REST body)  ; what to do each turn
-  (UNLESS (AND (SYMBOLP counter)
-            (SYMBOLP item)
-            (SYMBOLP array)
-            (NUMBERP length))
-    (ERROR (FORMAT T "for-each invalid input: ~A ~A ~A ~A~%" counter item array length)))
   `(let ((const (typeof (nth 0 ,array)) * ,item . ,array))
      (for ((int ,counter . 0))
        (< ,counter ,length)
@@ -94,3 +84,30 @@
                                         (CICILI:SPECIFY-TYPE< var)
                                       variable))
                           var-list))))))
+
+;; optional helper macro will auto defer all vars
+(DEFMACRO defer-let (var-list &REST body)
+  `(block ,@(MAP 'LIST #'(LAMBDA (var)
+                            `(ghost (defer #t) (var ,@var)))
+                  var-list)
+     ,@body))
+
+(DEFMACRO dolist (vars &REST body)
+  (LET ((var   (FIRST  vars))
+        (array (SECOND vars))
+        (len   (THIRD  vars))
+        (counter (GENSYM "ciciliCounter")))
+    `(let (((typeof (nth 0 ,array)) * ,var . ,array))
+       (for ((int ,counter . 0))
+         (< ,counter ,len)
+         ((++ ,var)
+          (++ ,counter))
+         ,@body))))
+
+(DEFMACRO dotimes (vars &REST body)
+  (LET ((var   (CAR  vars))
+        (count (CADR vars)))
+    `(for ((int ,var . 0))
+       (< ,var ,count)
+       ((++ ,var))
+       ,@body)))

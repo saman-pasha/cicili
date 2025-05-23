@@ -53,7 +53,7 @@
                             (out '{ (,name * out) (bool newp) }))
              
              (decl) (method ,(make-method-name name 'free)        ())
-             (decl) (method ,(make-method-name name 'push)        ((,elem-type val)) (out ,name *))
+             (decl) (method ,(make-method-name name 'push)        ((,elem-type val)) (out '{ (,name * out) (bool newp) }))
              (decl) (method ,(make-method-name name 'pop)         () (out '{ (,elem-type out) (bool outp) }))
              (decl) (method ,(make-method-name name 'shrink)      () (out ,name *))
              (decl) (method ,(make-method-name name 'insert)      ((size_t index) (,elem-type val)) (out ,name *))
@@ -133,7 +133,7 @@
                  (free this))
 
          ;; Pushes a new element to the end of the Slice. Grows if needed.
-         (method ,(make-method-name name 'push) ((,elem-type val)) (out ,name *)
+         (method ,(make-method-name name 'push) ((,elem-type val)) (out '{ (,name * out) (bool newp) })
                  (if (== ($ this len) ($ this cap))
                      ;; Need to reallocate with more capacity
                      (block
@@ -143,12 +143,12 @@
                              (set ($ newSlice len) newLen)
                              (set (nth ($ this len) ($ newSlice arr)) val)
                              (-> this free)
-                             (return newSlice))))
+                             (return '{ newSlice #t }))))
                      ;; Enough capacity, insert directly
                      (block
                          (set (nth ($ this len) ($ this arr)) val)
                        (++ ($ this len))
-                       (return this))))
+                       (return '{ this #f }))))
 
          ;; Pops the last element and stores it in *out. Returns true if successful.
          (method ,(make-method-name name 'pop) () (out '{ (,elem-type out) (bool outp) })

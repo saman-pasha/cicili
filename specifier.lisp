@@ -481,6 +481,7 @@
 (defun specify-atom-expr (def)
   (cond ((null       def) (make-specifier nil '|@NIL| nil nil nil nil nil nil '())) ; ignore nil values like ([ NIL ])
         ((key-eq     def '|nil|) (specify-nil-expr))
+        ((key-eq     def '|NIL|) (specify-nil-expr))
         ((numberp    def)        (specify-number-expr def))
 	    ((characterp def)        (specify-character-expr def))
 	    ((stringp    def)        (specify-string-expr def))
@@ -596,6 +597,7 @@
 
 (defun specify-expr (def)
   (cond ((key-eq  def '|nil|) (specify-nil-expr))
+        ((key-eq  def '|NIL|) (specify-nil-expr))
         ((atom    def)        (specify-atom-expr def))
         (t (let* ((func (car def))
                   (attributes '())
@@ -778,6 +780,7 @@
     (dolist (form def)
       (push
           (cond ((key-eq  form '|nil|) (specify-nil-expr))
+                ((key-eq  form '|NIL|) (specify-nil-expr))
                 ((atom    form)        (specify-atom-expr   form))
 	            (t (let ((func (car form)))
 	                 (cond ((and (= (length form) 2) (find func *unaries*     :test #'key-eq))

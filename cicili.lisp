@@ -9,6 +9,10 @@
   (when (probe-file quicklisp-init)
     (load quicklisp-init)))
 
+;; error handling and debuging
+;; (setf *print-pretty* t)
+;; (setf *print-vector-length* 500)
+
 (asdf:load-system "cicili")
 
 (cicili:load-macro-file "builtins.lisp")

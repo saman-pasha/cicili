@@ -54,7 +54,7 @@
          (let ((amount (nth 1 desc)))
            (unless (key-eq '|NULL| (name amount)) (compile-form (nth 1 desc) (1+ lvl) globals)))
          (set-ast-line (output "]")))
-        (t (error (format nil "wrong array description ~A" desc)))))
+        (t (error (format nil "wrong array description, maybe #' missed for function initializer ~A" desc)))))
 
 (defun format-type (const typeof modifier const-ptr name array-def anonymous lvl globals)
   (when anonymous (setq name (format nil "/* ~A */" name)))
@@ -62,8 +62,7 @@
   (unless (null typeof) (compile-type-name typeof lvl globals))
   (when modifier  (output " ") (set-ast-line (output "~A" modifier)))
   (when const-ptr (output " ") (set-ast-line (output "const" const-ptr)))
-  (when name      (output " ")
-        (set-ast-line (output "~A" (if (str:starts-with-p "_ciciliParam_" (symbol-name name)) " " name))))
+  (when name      (output " ") (compile-symbol (if (str:starts-with-p "_ciciliParam_" (symbol-name name)) " " name)))
   (compile-array array-def lvl globals))
 
 (defun compile-spec-type (spec lvl globals)
@@ -115,6 +114,24 @@
                            (if is-unique (unique spec) name)
                            array-def default anonymous lvl globals defer))))
 
+(defun compile-symbol (symbol)
+  (let* ((ast (prev-ast<))
+         (res (resolved-ast<)))
+    (if (null ast)
+	    (set-ast-line (output "~A " symbol))
+        (let ((info (getf ast 'info)))
+          (if (and info (null res))
+              (cond ((str:containsp "take the address with &" info)
+                     (set-ast-line (output "\&~A" symbol)))
+                    ((str:containsp "passing 'typeof ((" info)
+                     (set-ast-line (output "\&~A" symbol)))
+                    ((str:containsp "__ciciliL_" info)
+                     (set-ast-line (output "\&~A" symbol)))
+                    ((str:containsp "expression result unused" info))
+                    ;; (t (set-ast-line (output "~A" symbol))))
+                    (t (error (format nil "cicili: atom: ~S" (str:substring 0 340 info)))))
+              (set-ast-line (output "~A " symbol)))))))
+
 (defun compile-atom (spec lvl globals)
   (with-slots (construct (value name) typeof) spec
     (unless (or (key-eq construct '|@ATOM|) (key-eq construct '|@SYMBOL|))
@@ -122,21 +139,7 @@
     (cond ((and (key-eq typeof '|@SYMBOL|) (string= (symbol-name value) "this"))
            (set-ast-line (output "~A " '|this|)))
           ((key-eq typeof '|@SYMBOL|)
-           (let* ((ast (prev-ast<))
-                  (res (resolved-ast<)))
-             (if (null ast)
-	             (set-ast-line (output "~A " value))
-                 (let ((info (getf ast 'info)))
-                   (if (and info (null res))
-                       (cond ((str:containsp "take the address with &" info)
-                              (set-ast-line (output "\&~A" value)))
-                             ((str:containsp "passing 'typeof ((" info)
-                              (set-ast-line (output "\&~A" value)))
-                             ((str:containsp "__ciciliL_" info)
-                              (set-ast-line (output "\&~A" value)))
-                             ((str:containsp "expression result unused" info))
-                             (t (set-ast-line (output "~A" value)))) ; (error (format nil "atom: ~A" info))
-                       (set-ast-line (output "~A " value)))))))
+           (compile-symbol value))
           ((key-eq typeof '|@CHAR|) (set-ast-line (output "'~A'" value))) 
           (t (set-ast-line (output "~A" value))))))
 
@@ -146,7 +149,13 @@
 
 (defun compile-list (spec lvl globals)
   (with-slots ((items default)) spec
-    (set-ast-line (output "{ "))
+    (let ((ast (prev-ast<)))
+      (if (null ast)
+	      (set-ast-line (output "{ "))
+          (let ((info (getf ast 'info)))
+            (if info
+                (error (format nil "cicili: list: ~S" (str:substring 0 340 info)))
+                (set-ast-line (output "{ "))))))
     (let ((l (length items))
           (m-init nil))
       (loop for i from 1 to l
@@ -283,7 +292,8 @@
                (set-ast-line (output resu))
                (compile-form member (1+ lvl) globals)
                (output ")")))
-             (t (error (format nil "\: unresolved member reference type ~A ~A~%" spec-key spec)))))))
+            (t (error (format nil "cicili\: unresolved member reference type ~A. ~S~%~A"
+                              spec-key (str:substring 0 340 (or mtd-info ptr-info begin-info)) spec)))))))
 
 (defun compile--> (spec lvl globals)
   (with-slots ((receiver name) (method default) (args body)) spec
@@ -322,18 +332,32 @@
              (output ")"))
             ((and (null begin-info) (null ptr-info) (null mtd-info) (null end-info))
              (let ((resu (res spec)))
-               (if (str:starts-with-p (str:replace-first "\\(.*" "" (make-shared-name (name receiver) "") :regex t)
-                     resu) ; was shared or method
+               (if resu
+                   (if (str:starts-with-p (str:replace-first "\\(.*" "" (make-shared-name (name receiver) "") :regex t)
+                         resu) ; was shared or method
+                       (progn
+                         (set-ast-line (output resu))
+                         (output "(")
+                         (compile-args (default args) lvl globals nil)
+                         (output ")"))
+                       (progn
+                         (set-ast-line (output resu))
+                         (output "(")
+                         (compile-form receiver (1+ lvl) globals)
+                         (compile-args (default args) lvl globals t)
+                         (output ")")))
                    (progn
-                     (set-ast-line (output resu))
-                     (output "(")
-                     (compile-args (default args) lvl globals nil)
-                     (output ")"))
-                   (progn
-                     (set-ast-line (output resu))
-                     (output "(")
+                     (set-ast-line (output "("))
                      (compile-form receiver (1+ lvl) globals)
+                     (setf (getf (gethash (ast-key< line-n col-n) (nth 0 *ast-lines*)) 'ptr)
+                           (ast-key< (funcall *line-num* 0) (funcall *col-num* 0)))
+                     (set-ast-line (output "->"))
+                     (setf (getf (gethash (ast-key< line-n col-n) (nth 0 *ast-lines*)) 'mtd)
+                           (ast-key< (funcall *line-num* 0) (funcall *col-num* 0)))
+                     (compile-form method (1+ lvl) globals)
                      (compile-args (default args) lvl globals t)
+                     (setf (getf (gethash (ast-key< line-n col-n) (nth 0 *ast-lines*)) 'end)
+                           (ast-key< (funcall *line-num* 0) (funcall *col-num* 0)))
                      (output ")")))))
             ((and ptr-info (str:containsp "expected ')'" ptr-info))
              (let ((resu (make-shared-name (name receiver) (name method))))
@@ -375,13 +399,15 @@
                    (progn
                      (setf *more-run* t)               
                      (setf (res spec) resu))
-                   (error (format nil "cicili\: nnn unresolved method reference type ~A~% ~A~%" spec-key spec)))
+                   (error (format nil "cicili\: nnn unresolved method reference type ~A. ~s~%~A"
+                                  spec-key (str:substring 0 340 (or mtd-info ptr-info begin-info)) spec)))
                (set-ast-line (output "~A" resu))
                (output "(")
                (compile-form receiver lvl globals)
                (compile-args (default args) lvl globals t)
                (output ")")))
-            (t (error (format nil "cicili\: unresolved method reference type ~A~% ~A~%" spec-key spec)))))))
+            (t (error (format nil "cicili\: unresolved method reference type ~A. ~S~%~A"
+                              spec-key (str:substring 0 340 (or mtd-info ptr-info begin-info)) spec)))))))
                   
 (defun compile-sizeof (spec lvl globals)
   (set-ast-line (output "sizeof("))
@@ -410,7 +436,13 @@
     (compile-form func (1+ lvl) globals)
     (output "(")
     (unless (null args) (compile-args args lvl globals nil))
-    (output ")")
+    (let ((ast (prev-ast<)))
+      (if (null ast)
+	      (set-ast-line (output ")"))
+          (let ((info (getf ast 'info)))
+            (if info
+                (t (error (format nil "cicili: call: ~S" (str:substring 0 340 info))))
+                (set-ast-line (output ")"))))))
     (when (> lvl -1) (output ";~%"))))
 
 (defun compile-form (spec lvl globals)
