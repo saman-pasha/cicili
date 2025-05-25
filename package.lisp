@@ -10,6 +10,7 @@
     :*debug-macros*
     :*debug-macroexpand*
     :*only-link*
+    :*debug-runs*
     :compile-ast
     :compile-cicili-file
     :load-macro-file

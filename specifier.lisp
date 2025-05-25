@@ -592,6 +592,7 @@
   (make-specifier nil '|@TYPEOF| nil nil nil nil nil (specify-expr (cadr def)) '()))
 
 (defun specify-call-expr (def)
+  (when (key-eq (car def) '|aof|) (error (format nil "address of aka 'aof' takes only one argument ~A" def)))
   (make-specifier (specify-expr (nth 0 def)) '|@CALL| nil nil nil nil nil
                   (if (> (length def) 1) (loop for item in (nthcdr 1 def) collect (specify-expr item)) nil) '()))
 
@@ -908,19 +909,20 @@
     (make-specifier nil '|@SET| nil nil nil nil nil items '())))
 
 (defun specify-return-expr (def)
-  (if (and *function-spec* (listp (typeof *function-spec*)))
-      (make-specifier nil '|@RETURN| nil nil nil nil nil
-                      (specify-cast-expr (list '|cast|
-                                               (remove nil (list
-                                                            (const *function-spec*)
-                                                            (typeof *function-spec*)
-                                                            (modifier *function-spec*)
-                                                            (const-ptr *function-spec*)
-                                                            (array-def *function-spec*)))
-                                               (nth 1 def))) '())
-      (make-specifier nil '|@RETURN| nil nil nil nil nil
-                      (if (null (nth 1 def)) nil
-                          (specify-expr (nth 1 def))) '())))
+  (let ((output (nth 1 def)))
+    (if (and *function-spec* (or (listp (typeof *function-spec*)) (and (listp output) (key-eq (car output) '|QUOTE|))))
+        (make-specifier nil '|@RETURN| nil nil nil nil nil
+                        (specify-cast-expr (list '|cast|
+                                                 (remove nil (list
+                                                              (const *function-spec*)
+                                                              (typeof *function-spec*)
+                                                              (modifier *function-spec*)
+                                                              (const-ptr *function-spec*)
+                                                              (array-def *function-spec*)))
+                                                 output)) '())
+        (make-specifier nil '|@RETURN| nil nil nil nil nil
+                        (if (null output) nil
+                            (specify-expr output)) '()))))
 
 (defun specify-if (def)
   (when (or (< (length def) 3) (> (length def) 4)) (error (format nil "wrong if form ~A" def)))

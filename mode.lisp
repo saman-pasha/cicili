@@ -194,6 +194,16 @@
 
 (font-lock-add-keywords
  'lisp-mode
+ '(("(method[ \t\n]+\\(\\(\\sw\\|\\s_\\)+\\)[ \t\n]*"
+    (1 'font-lock-function-name-face))))
+
+(font-lock-add-keywords
+ 'lisp-mode
+ '(("(member[ \t\n]+\\(\\(\\sw\\|\\s_\\)+\\)[ \t\n]*"
+    (1 'font-lock-function-name-face))))
+
+(font-lock-add-keywords
+ 'lisp-mode
  '(("(enum[ \t\n]+\\(\\(\\sw\\|\\s_\\)+\\)[ \t\n]*"
     (1 'font-lock-type-face))))
 

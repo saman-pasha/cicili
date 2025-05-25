@@ -65,7 +65,7 @@
                           (setf *next-ast-line* (make-hash-table :test 'equal))
 	                      (setq globals (create-globals ir))
                           (setq *ast-run* (1+ run))
-                          (unless (key-eq tname '|header|)
+                          (when (and *debug-runs* (key-eq tname '|source|)) ;; --separate
                             (setq file (format nil "~A.run~D.~A" (name ir) *ast-run* (pathname-type (name ir)))))
                           (setq stdout  (make-string-output-stream))
                           (setq stderr  (make-string-output-stream))
@@ -79,16 +79,18 @@
                               (do ((s (read-line err-stream nil nil) (read-line err-stream nil nil)))
                                   ((eql s nil))
                                 (if (str:starts-with-p file s)
-                                  (let* ((err-line (str:split #\: s :limit 5)))
-                                    (if (string-equal (nth 3 err-line) " error") ; logs on current ended run hash table
-                                        (progn
-                                          (setf (getf (gethash ast-key (nth 0 *ast-lines*)) 'info) info)
-                                          (setq ast-key (ast-key< (parse-integer (nth 1 err-line))
-                                                          (parse-integer (nth 2 err-line)) :file *target-file*))
-                                          (setq info s))
-                                        (progn
-                                          (setq info (concatenate 'string info '(#\NewLine) s)))))
-                                  (setq info (concatenate 'string info '(#\NewLine) s)))
+                                    (let* ((err-line (str:split #\: s :limit 5)))
+                                      ;; logs on current ended run hash table
+                                      (if (or (string-equal (nth 3 err-line) " error")
+                                            (string-equal (nth 3 err-line) " warning"))
+                                          (progn
+                                            (setf (getf (gethash ast-key (nth 0 *ast-lines*)) 'info) info)
+                                            (setq ast-key (ast-key< (parse-integer (nth 1 err-line))
+                                                            (parse-integer (nth 2 err-line)) :file *target-file*))
+                                            (setq info s))
+                                          (progn
+                                            (setq info (concatenate 'string info '(#\NewLine) s)))))
+                                    (setq info (concatenate 'string info '(#\NewLine) s)))
                                 (display "run err" *ast-run* ">" s #\NewLine)))
                             (setf (getf (gethash ast-key (nth 0 *ast-lines*)) 'info) info))
                           (with-input-from-string (out-stream (get-output-stream-string stdout))

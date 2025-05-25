@@ -14,6 +14,8 @@
 (defparameter *debug-macroexpand* nil)
 ;; supposed all header and source targets are compiled and only need to make binaries
 (defparameter *only-link* nil)
+;; writes each source in distinct .run#.c file --separate
+(defparameter *debug-runs* nil)
 
 (format t "software type: ~S~%" (software-type))
 ;;;; os specific toolset

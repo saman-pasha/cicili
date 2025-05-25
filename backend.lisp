@@ -127,8 +127,10 @@
                      (set-ast-line (output "\&~A" symbol)))
                     ((str:containsp "__ciciliL_" info)
                      (set-ast-line (output "\&~A" symbol)))
-                    ((str:containsp "expression result unused" info))
-                    ;; (t (set-ast-line (output "~A" symbol))))
+                    ((str:containsp "expression result unused" info)
+                     (set-ast-line (output "~A " symbol))) 
+                    ((str:containsp "member reference type" info)
+                     (set-ast-line (output "~A " symbol)))
                     (t (error (format nil "cicili: atom: ~S" (str:substring 0 340 info)))))
               (set-ast-line (output "~A " symbol)))))))
 
@@ -177,6 +179,11 @@
 (defun compile-unary (spec lvl globals)
   (with-slots ((oprt name) (is-postfix modifier) (oprnd default)) spec
     (output "(")
+    (let ((ast (prev-ast<)))
+      (unless (null ast)
+        (let ((info (getf ast 'info)))
+          (when info
+            (error (format nil "cicili: unary: ~S" (str:substring 0 340 info)))))))
     (if is-postfix
         (progn
           (compile-form oprnd (1+ lvl) globals)
@@ -189,6 +196,11 @@
 (defun compile-operator (spec lvl globals)
   (with-slots ((opr name) (seq default)) spec
     (output "(")
+    (let ((ast (prev-ast<)))
+      (unless (null ast)
+        (let ((info (getf ast 'info)))
+          (when info
+            (error (format nil "cicili: operator: ~S" (str:substring 0 340 info)))))))
     (dolist (frm seq)
       (compile-form frm (1+ lvl) globals)
       (output " "))
@@ -339,12 +351,16 @@
                          (set-ast-line (output resu))
                          (output "(")
                          (compile-args (default args) lvl globals nil)
+                         (setf (getf (gethash (ast-key< line-n col-n) (nth 0 *ast-lines*)) 'end)
+                               (ast-key< (funcall *line-num* 0) (funcall *col-num* 0)))
                          (output ")"))
                        (progn
                          (set-ast-line (output resu))
                          (output "(")
                          (compile-form receiver (1+ lvl) globals)
                          (compile-args (default args) lvl globals t)
+                         (setf (getf (gethash (ast-key< line-n col-n) (nth 0 *ast-lines*)) 'end)
+                               (ast-key< (funcall *line-num* 0) (funcall *col-num* 0)))
                          (output ")")))
                    (progn
                      (set-ast-line (output "("))
@@ -390,6 +406,8 @@
                    (setf (getf (gethash (ast-key< line-n col-n) (nth 0 *ast-lines*)) 'end)
                          (ast-key< (funcall *line-num* 0) (funcall *col-num* 0)))
                    (output ")"))))
+            ((and end-info (str:containsp "too few arguments" end-info))
+             (error (format nil "cicili\: call: ~S" (str:substring 0 330 end-info))))
             ((and mtd-info (str:containsp "no member named" mtd-info))
              (let* ((matches     (ppcre:all-matches-as-strings "'(struct\\s+)?\\w+'" mtd-info))
                     (method      (car matches))
@@ -411,6 +429,11 @@
                   
 (defun compile-sizeof (spec lvl globals)
   (set-ast-line (output "sizeof("))
+  (let ((ast (prev-ast<)))
+    (unless (null ast)
+      (let ((info (getf ast 'info)))
+        (when info
+          (error (format nil "cicili: unary: ~S" (str:substring 0 340 info)))))))
   (if (default spec)
       (compile-form (default spec) lvl globals)
       (compile-spec-type spec lvl globals))
@@ -426,8 +449,16 @@
   (loop for arg in args
         with l = (1- (length args))
         for i from 0 to l
-        do (progn           
-             (compile-form arg (1+ lvl) globals)
+        do (progn
+             (let ((ast (prev-ast<)))
+               (if (null ast)
+	               (compile-form arg (1+ lvl) globals)
+                   (let ((info (getf ast 'info)))
+                     (if info
+                         (cond ((str:containsp "member reference type" info)
+                                (compile-form arg (1+ lvl) globals))
+                               (t (error (format nil "cicili: args: ~S" (str:substring 0 340 info)))))
+                         (compile-form arg (1+ lvl) globals)))))
              (when (< i l) (output ", ")))))
 
 (defun compile-call (spec lvl globals)
@@ -441,7 +472,7 @@
 	      (set-ast-line (output ")"))
           (let ((info (getf ast 'info)))
             (if info
-                (t (error (format nil "cicili: call: ~S" (str:substring 0 340 info))))
+                (error (format nil "cicili: call: ~S" (str:substring 0 340 info)))
                 (set-ast-line (output ")"))))))
     (when (> lvl -1) (output ";~%"))))
 
@@ -760,7 +791,12 @@
               do (progn
                    (compile-spec-type-value param lvl locals)
                    (when (< i lc) (output ", "))))
-        (output ")")
+        (let ((ast (prev-ast<)))
+          (unless (null ast)
+            (let ((info (getf ast 'info)))
+              (when info
+                (error (format nil "cicili: function: ~S" (str:substring 0 340 info)))))))
+        (set-ast-line (output ")"))
         (if is-declare
             (unless as-type (output ";~%"))
             (progn

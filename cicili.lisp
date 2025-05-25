@@ -34,5 +34,6 @@
                      ((string= arg "--macros")      (setf cicili:*debug-macros*       t))
                      ((string= arg "--macroexpand") (setf cicili:*debug-macroexpand*  t))
                      ((string= arg "--only-link")   (setf cicili:*only-link*          t))
+                     ((string= arg "--separate")    (setf cicili:*debug-runs*         t))
                      (t (cicili:compile-cicili-file arg))))))
       (error (format nil "at least pass the cicili .lisp file to compile"))))

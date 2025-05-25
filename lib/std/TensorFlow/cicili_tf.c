@@ -5,56 +5,8 @@
 #include <stdbool.h>
 #include <string.h>
 #include "cicili_tf.h"
-Graph * Graph_s_new () {
-  { /* cicili#Let105 */
-    Graph * graph  = malloc (sizeof(Graph));
-    (graph ->ptr ) = TF_NewGraph ();
-    return graph ;
-  }
-}
-void Graph_m_free (Graph * this ) {
-  TF_DeleteGraph ((this ->ptr ));
-  free (this );
-}
-void Graph_m_AddOp (Graph * this , const char * op_type , const char * name , TF_Output * inputs , int num_inputs ) {
-  { /* cicili#Let109 */
-    TF_OperationDescription * desc  = TF_NewOperation ((this ->ptr ), op_type , name );
-    if (num_inputs  >  0 ) 
-      for (int i  = 0; (i  <  num_inputs  ); (++i )) {
-        TF_AddInput (desc , inputs [i ]);
-      } 
-
-    { /* cicili#Let114 */
-      TF_Operation * op  = TF_FinishOperation (desc , ((this ->status ). ptr ));
-      return op ;
-    }
-  }
-}
-void Graph_m_AddOpEx (Graph * this , const char * op_type , const char * name , TF_Output * inputs , int num_inputs , TF_Operation ** ctrl_inputs , int num_ctrl_inputs , void (*set_attrs) (TF_OperationDescription *   )) {
-  { /* cicili#Let117 */
-    TF_OperationDescription * desc  = TF_NewOperation ((this ->ptr ), op_type , name );
-    if (num_inputs  >  0 ) 
-      for (int i  = 0; (i  <  num_inputs  ); (++i )) {
-        TF_AddInput (desc , inputs [i ]);
-      } 
-
-    if (num_ctrl_inputs  >  0 ) 
-      for (int i  = 0; (i  <  num_ctrl_inputs  ); (++i )) {
-        TF_AddControlInput (desc , ctrl_inputs [i ]);
-      } 
-
-    if (set_attrs ) 
-      set_attrs (desc );
-
-    { /* cicili#Let126 */
-      TF_Operation * op  = TF_FinishOperation (desc , ((this ->status ). ptr ));
-      return op ;
-    }
-  }
-}
-
 Status * Status_s_new () {
-  { /* cicili#Let134 */
+  { /* cicili#Let105 */
     Status * status  = malloc (sizeof(Status));
     (status ->ptr ) = TF_NewStatus ();
     return status ;
@@ -74,15 +26,171 @@ bool Status_m_ok (Status * this ) {
   return (TF_GetCode ((this ->ptr )) ==  TF_OK  );
 }
 
-Tensor * Tensor_s_new (const TF_DataType dtype , const int64_t * dims , const int num_dims , void * data , const size_t len , void (*deallocator) (void * data , size_t len , void * arg ), void * deallocator_arg ) {
+Graph * Graph_s_new () {
+  { /* cicili#Let115 */
+    Graph * graph  = malloc (sizeof(Graph));
+    (graph ->ptr ) = TF_NewGraph ();
+    return graph ;
+  }
+}
+void Graph_m_free (Graph * this ) {
+  TF_DeleteGraph ((this ->ptr ));
+  free (this );
+}
+TF_Operation * Graph_m_AddOp (Graph * this , const char * op_type , const char * name , TF_Output * inputs , int num_inputs ) {
+  { /* cicili#Let119 */
+    TF_OperationDescription * desc  = TF_NewOperation ((this ->ptr ), op_type , name );
+    for (int i  = 0; (i  <  num_inputs  ); (++i )) {
+      TF_AddInput (desc , inputs [i ]);
+    } 
+    return TF_FinishOperation (desc , ((this ->status )->ptr ));
+  }
+}
+TF_Operation * Graph_m_AddOpEx (Graph * this , const char * op_type , const char * name , TF_Output * inputs , int num_inputs , TF_Operation ** ctrl_inputs , int num_ctrl_inputs , void (*set_attrs) (TF_OperationDescription *   )) {
+  { /* cicili#Let124 */
+    TF_OperationDescription * desc  = TF_NewOperation ((this ->ptr ), op_type , name );
+    for (int i  = 0; (i  <  num_inputs  ); (++i )) {
+      TF_AddInput (desc , inputs [i ]);
+    } 
+    for (int i  = 0; (i  <  num_ctrl_inputs  ); (++i )) {
+      TF_AddControlInput (desc , ctrl_inputs [i ]);
+    } 
+    if (set_attrs ) 
+      set_attrs (desc );
+
+    return TF_FinishOperation (desc , ((this ->status )->ptr ));
+  }
+}
+TF_Output Graph_m_Placeholder (Graph * this , const char * name , const TF_DataType dtype , const int64_t * dims , const int num_dims ) {
+  { /* cicili#Let134 */
+    TF_OperationDescription * desc  = TF_NewOperation ((this ->ptr ), "Placeholder", name );
+    TF_SetAttrType (desc , "dtype", dtype );
+    TF_SetAttrShape (desc , "shape", dims , num_dims );
+    { /* cicili#Let136 */
+      TF_Operation * op  = TF_FinishOperation (desc , 0);
+      return ((TF_Output){ op , 0});
+    }
+  }
+}
+TF_Output Graph_m_MatMul (Graph * this , TF_Output a , TF_Output b , bool transpose_a , bool transpose_b ) {
+  { /* cicili#Let139 */
+    TF_OperationDescription * desc  = TF_NewOperation ((this ->ptr ), "MatMul", "matmul");
+    TF_AddInput (desc , a );
+    TF_AddInput (desc , b );
+    TF_SetAttrBool (desc , "transpose_a", transpose_a );
+    TF_SetAttrBool (desc , "transpose_b", transpose_b );
+    { /* cicili#Let141 */
+      TF_Operation * op  = TF_FinishOperation (desc , 0);
+      return ((TF_Output){ op , 0});
+    }
+  }
+}
+TF_Output Graph_m_BiasAdd (Graph * this , TF_Output value , TF_Output bias ) {
   { /* cicili#Let144 */
+    TF_OperationDescription * desc  = TF_NewOperation ((this ->ptr ), "BiasAdd", "bias_add");
+    TF_AddInput (desc , value );
+    TF_AddInput (desc , bias );
+    TF_SetAttrType (desc , "T", TF_FLOAT );
+    { /* cicili#Let146 */
+      TF_Operation * op  = TF_FinishOperation (desc , 0);
+      return ((TF_Output){ op , 0});
+    }
+  }
+}
+TF_Output Graph_m_Variable (Graph * this , const char * name , const TF_DataType dtype , const int64_t * dims , int ndims ) {
+  { /* cicili#Let149 */
+    TF_OperationDescription * desc  = TF_NewOperation ((this ->ptr ), "VariableV2", name );
+    TF_SetAttrType (desc , "dtype", dtype );
+    TF_SetAttrShape (desc , "shape", dims , ndims );
+    return ((TF_Output){ TF_FinishOperation (desc , ((this ->status )->ptr )), 0});
+  }
+}
+TF_Output Graph_m_Const (Graph * this , const char * name , TF_Tensor * tensor ) {
+  { /* cicili#Let152 */
+    TF_OperationDescription * desc  = TF_NewOperation ((this ->ptr ), "Const", name );
+    TF_SetAttrTensor (desc , "value", tensor , (this ->status ));
+    TF_SetAttrType (desc , "dtype", TF_TensorType (tensor ));
+    { /* cicili#Let154 */
+      TF_Operation * op  = TF_FinishOperation (desc , ((this ->status )->ptr ));
+      return ((TF_Output){ op , 0});
+    }
+  }
+}
+TF_Output Graph_m_ConstFloat (Graph * this , const char * name , float value ) {
+  { /* cicili#Let157 */
+    float * val  = malloc (sizeof(float));
+    (*val ) = value ;
+    { /* cicili#Let159 */
+      TF_Tensor * tensor  = TF_NewTensor (TF_FLOAT , 0, 0, val , sizeof(float), 0, 0);
+      return Graph_m_Const(this , name , tensor );
+    }
+  }
+}
+TF_Operation * Graph_m_Assign (Graph * this , const char * name , TF_Output var , TF_Tensor * value ) {
+  { /* cicili#Let162 */
+    TF_Output const_val  = Graph_m_Const(this , "assign_value", value );
+    { /* cicili#Let164 */
+      TF_OperationDescription * desc  = TF_NewOperation ((this ->ptr ), "Assign", name );
+      TF_AddInput (desc , var );
+      TF_AddInput (desc , const_val );
+      return ((TF_Operation *){ TF_FinishOperation (desc , ((this ->status )->ptr )), 0});
+    }
+  }
+}
+TF_Output * Graph_m_AddSymbolicGradients (Graph * this , TF_Output * ys , int y_count , TF_Output * xs , int x_count , TF_Output * grads , Status * status ) {
+  TF_AddGradients ((this ->ptr ), ys , y_count , xs , x_count , 0, grads , ((this ->status )->ptr ));
+  return grads ;
+}
+TF_Operation * Graph_m_ApplyGradientDescent (Graph * this , const char * name , TF_Output var , TF_Tensor * lr , TF_Output grad ) {
+  { /* cicili#Let168 */
+    TF_OperationDescription * desc  = TF_NewOperation ((this ->ptr ), "ApplyGradientDescent", name );
+    TF_AddInput (desc , var );
+    TF_AddInput (desc , Graph_m_Const(this , "lr_const", lr ));
+    TF_AddInput (desc , grad );
+    return TF_FinishOperation (desc , ((this ->status )->ptr ));
+  }
+}
+TF_Operation * Graph_m_NoOp (Graph * this , const char * name , TF_Operation ** control_deps , int num_control_deps ) {
+  { /* cicili#Let171 */
+    TF_OperationDescription * desc  = TF_NewOperation ((this ->ptr ), "NoOp", name );
+    for (int i  = 0; (i  <  num_control_deps  ); (++i )) {
+      TF_AddControlInput (desc , control_deps [i ]);
+    } 
+    return TF_FinishOperation (desc , ((this ->status )->ptr ));
+  }
+}
+TF_Output Graph_m_Sub (Graph * this , const char * name , TF_Output x , TF_Output y ) {
+  { /* cicili#Let176 */
+    TF_Output ios [] = { x , y };
+    return ((TF_Output){ Graph_m_AddOp(this , "Sub", name , ios , 2), 0});
+  }
+}
+TF_Output Graph_m_Square (Graph * this , const char * name , TF_Output x ) {
+  return ((TF_Output){ Graph_m_AddOp(this , "Square", name , (&x ), 1), 0});
+}
+TF_Output Graph_m_Mean (Graph * this , const char * name , TF_Output x ) {
+  { /* cicili#Let180 */
+    int dims  = 1;
+    int64_t shape  = 1;
+    int data  = 0;
+    TF_Tensor * axis_tensor  = TF_NewTensor (TF_INT32 , (&shape ), dims , (&data ), sizeof(int), NULL , NULL );
+    { /* cicili#Let182 */
+      TF_Output axis  = Graph_m_Const(this , "axis", axis_tensor );
+      TF_Output ios [] = { x , axis };
+      return ((TF_Output){ Graph_m_AddOp(this , "Mean", name , ios , 2), 0});
+    }
+  }
+}
+
+Tensor * Tensor_s_new (const TF_DataType dtype , const int64_t * dims , const int num_dims , void * data , const size_t len , void (*deallocator) (void * data , size_t len , void * arg ), void * deallocator_arg ) {
+  { /* cicili#Let188 */
     Tensor * tensor  = malloc (sizeof(Tensor));
     (tensor ->ptr ) = TF_NewTensor (dtype , dims , num_dims , data , len , deallocator , deallocator_arg );
     return tensor ;
   }
 }
 Tensor * Tensor_s_newFromData (const TF_DataType dtype , const int64_t * dims , const int num_dims , void * data , const size_t len ) {
-  { /* cicili#Let148 */
+  { /* cicili#Let192 */
     Tensor * tensor  = malloc (sizeof(Tensor));
     (tensor ->ptr ) = TF_NewTensor (dtype , dims , num_dims , data , len , 0, 0);
     return tensor ;
@@ -92,52 +200,52 @@ Tensor * Tensor_s_newFloat (const int64_t * dims , const int num_dims , float * 
   return Tensor_s_newFromData(TF_FLOAT , dims , num_dims , data , sizeof(float));
 }
 Tensor * Tensor_s_newFromFloatArray (float * values , int64_t * shape , int rank , int value_count ) {
-  { /* cicili#Let152 */
+  { /* cicili#Let196 */
     int64_t total_bytes  = (value_count  *  sizeof(float) );
     int64_t * dims  = shape ;
     TF_Tensor * t  = TF_NewTensor (TF_FLOAT , dims , rank , values , total_bytes , 0, 0);
-    return Tensor_s_new(t );
+    return ((Tensor){ t });
   }
 }
 Tensor * Tensor_s_newFromIntArray (int32_t * values , int64_t * shape , int rank , int value_count ) {
-  { /* cicili#Let155 */
+  { /* cicili#Let199 */
     int64_t total_bytes  = (value_count  *  sizeof(int32_t) );
     int64_t * dims  = shape ;
     TF_Tensor * t  = TF_NewTensor (TF_INT32 , dims , rank , values , total_bytes , 0, 0);
-    return Tensor_s_new(t );
+    return ((Tensor){ t });
   }
 }
 Tensor * Tensor_s_newFromInt64Array (int64_t * arr , int * dims , int num_dims ) {
-  { /* cicili#Let158 */
+  { /* cicili#Let202 */
     int64_t total_size  = 1;
     for (int i  = 0; (i  <  num_dims  ); (++i )) {
       total_size  = (total_size  *  dims [i ] );
     } 
-    { /* cicili#Let162 */
+    { /* cicili#Let206 */
       TF_Tensor * t  = TF_NewTensor (TF_INT64 , dims , num_dims , arr , (total_size  *  sizeof(int64_t) ), 0, 0);
-      return Tensor_s_new(t );
+      return ((Tensor){ t });
     }
   }
 }
 Tensor * Tensor_s_newFromBoolArray (uint8_t * arr , int * dims , int num_dims ) {
-  { /* cicili#Let165 */
+  { /* cicili#Let209 */
     int64_t total_size  = 1;
     for (int i  = 0; (i  <  num_dims  ); (++i )) {
       total_size  = (total_size  *  dims [i ] );
     } 
-    { /* cicili#Let169 */
+    { /* cicili#Let213 */
       TF_Tensor * t  = TF_NewTensor (TF_BOOL , dims , num_dims , arr , total_size , 0, 0);
-      return Tensor_s_new(t );
+      return ((Tensor){ t });
     }
   }
 }
 Tensor * Tensor_s_newFromScalarFloat (float value ) {
-  { /* cicili#Let172 */
+  { /* cicili#Let216 */
     float * val_ptr  = malloc (sizeof(float));
     * (val_ptr ) = value ;
-    { /* cicili#Let174 */
+    { /* cicili#Let218 */
       TF_Tensor * t  = TF_NewTensor (TF_FLOAT , 0, 0, val_ptr , sizeof(float), 0, 0);
-      return Tensor_s_new(t );
+      return ((Tensor){ t });
     }
   }
 }
@@ -168,13 +276,13 @@ struct __ciciliS_IOSlice_m_calcCap_ {
   size_t size ;
 };
 static struct __ciciliS_IOSlice_m_calcCap_ IOSlice_s_calcCap (size_t len ) {
-  { /* cicili#Let187 */
+  { /* cicili#Let231 */
     size_t capLen  = ((((len  %  IOSLICE_GROWTH_STEP  ) >  0 )) ? ((len  /  IOSLICE_GROWTH_STEP  ) +  1 ) : (len  /  IOSLICE_GROWTH_STEP  ));
     return ((struct __ciciliS_IOSlice_m_calcCap_){ capLen , (sizeof(ioslice_elem_t) *  capLen  )});
   }
 }
 IOSlice * IOSlice_s_newEmpty (size_t len ) {
-  { /* cicili#Let190 */
+  { /* cicili#Let234 */
     __auto_type cap  = IOSlice_s_calcCap(len );
     IOSlice * slice  = malloc ((sizeof(IOSlice) +  (cap . size ) ));
     (slice ->len ) = len ;
@@ -183,14 +291,14 @@ IOSlice * IOSlice_s_newEmpty (size_t len ) {
   }
 }
 IOSlice * IOSlice_s_newFromArray (const ioslice_elem_t * arr , size_t len ) {
-  { /* cicili#Let193 */
+  { /* cicili#Let237 */
     IOSlice * slice  = IOSlice_s_newEmpty(len );
     memcpy ((slice ->arr ), arr , (sizeof(ioslice_elem_t) *  len  ));
     return slice ;
   }
 }
 IOSlice * IOSlice_s_newCopy (const IOSlice * other ) {
-  { /* cicili#Let196 */
+  { /* cicili#Let240 */
     IOSlice * slice  = IOSlice_s_newEmpty((other ->len ));
     memcpy ((slice ->arr ), (other ->arr ), (sizeof(ioslice_elem_t) *  (other ->len ) ));
     return slice ;
@@ -203,7 +311,7 @@ IOSlice * IOSlice_m_clone (IOSlice * this ) {
   return IOSlice_s_newCopy(this );
 }
 ioslice_elem_t * IOSlice_m_cloneArray (IOSlice * this ) {
-  { /* cicili#Let201 */
+  { /* cicili#Let245 */
     size_t size  = (sizeof(ioslice_elem_t) *  (this ->len ) );
     ioslice_elem_t * arr  = malloc (size );
     memcpy (arr , (this ->arr ), size );
@@ -211,9 +319,9 @@ ioslice_elem_t * IOSlice_m_cloneArray (IOSlice * this ) {
   }
 }
 IOSlice * IOSlice_m_appendNew (IOSlice * this , const IOSlice * other ) {
-  { /* cicili#Let204 */
+  { /* cicili#Let248 */
     size_t totalLen  = ((this ->len ) +  (other ->len ) );
-    { /* cicili#Let206 */
+    { /* cicili#Let250 */
       IOSlice * slice  = IOSlice_s_newEmpty(totalLen );
       memcpy ((slice ->arr ), (this ->arr ), (sizeof(ioslice_elem_t) *  (this ->len ) ));
       memcpy (((slice ->arr ) +  (this ->len ) ), (other ->arr ), (sizeof(ioslice_elem_t) *  (other ->len ) ));
@@ -222,13 +330,13 @@ IOSlice * IOSlice_m_appendNew (IOSlice * this , const IOSlice * other ) {
   }
 }
 struct __ciciliS_IOSlice_m_append_ IOSlice_m_append (IOSlice * this , const IOSlice * other ) {
-  { /* cicili#Let209 */
+  { /* cicili#Let253 */
     size_t totalLen  = ((this ->len ) +  (other ->len ) );
     if (totalLen  <=  (this ->cap ) ) 
-      { /* cicili#Block212 */
+      { /* cicili#Block256 */
         memcpy (((this ->arr ) +  (this ->len ) ), (other ->arr ), (sizeof(ioslice_elem_t) *  (other ->len ) ));
         return ((struct __ciciliS_IOSlice_m_append_){ this , false });
-      } /* cicili#Block212 */
+      } /* cicili#Block256 */
     else 
       return ((struct __ciciliS_IOSlice_m_append_){ IOSlice_m_appendNew(this , other ), true });
   }
@@ -238,10 +346,10 @@ void IOSlice_m_free (IOSlice * this ) {
 }
 struct __ciciliS_IOSlice_m_push_ IOSlice_m_push (IOSlice * this , ioslice_elem_t val ) {
   if ((this ->len ) ==  (this ->cap ) ) 
-    { /* cicili#Block218 */
-      { /* cicili#Let220 */
+    { /* cicili#Block262 */
+      { /* cicili#Let264 */
         size_t newLen  = ((this ->len ) +  1 );
-        { /* cicili#Let222 */
+        { /* cicili#Let266 */
           IOSlice * newSlice  = IOSlice_s_newEmpty(newLen );
           memcpy ((newSlice ->arr ), (this ->arr ), (sizeof(ioslice_elem_t) *  (this ->len ) ));
           (newSlice ->len ) = newLen ;
@@ -250,25 +358,25 @@ struct __ciciliS_IOSlice_m_push_ IOSlice_m_push (IOSlice * this , ioslice_elem_t
           return ((struct __ciciliS_IOSlice_m_push_){ newSlice , true });
         }
       }
-    } /* cicili#Block218 */
+    } /* cicili#Block262 */
   else 
-    { /* cicili#Block225 */
+    { /* cicili#Block269 */
       (this ->arr )[(this ->len )] = val ;
       (++(this ->len ));
       return ((struct __ciciliS_IOSlice_m_push_){ this , false });
-    } /* cicili#Block225 */
+    } /* cicili#Block269 */
 }
 struct __ciciliS_IOSlice_m_pop_ IOSlice_m_pop (IOSlice * this ) {
   if ((this ->len ) ==  0 ) 
     return ((struct __ciciliS_IOSlice_m_pop_){ (this ->arr )[0], false });
   else 
-    { /* cicili#Block230 */
+    { /* cicili#Block274 */
       (--(this ->len ));
       return ((struct __ciciliS_IOSlice_m_pop_){ (this ->arr )[(this ->len )], true });
-    } /* cicili#Block230 */
+    } /* cicili#Block274 */
 }
 IOSlice * IOSlice_m_shrink (IOSlice * this ) {
-  { /* cicili#Let233 */
+  { /* cicili#Let277 */
     IOSlice * newSlice  = IOSlice_s_newEmpty((this ->len ));
     memcpy ((newSlice ->arr ), (this ->arr ), (sizeof(ioslice_elem_t) *  (this ->len ) ));
     IOSlice_m_free(this );
@@ -276,10 +384,10 @@ IOSlice * IOSlice_m_shrink (IOSlice * this ) {
   }
 }
 IOSlice * IOSlice_m_insert (IOSlice * this , size_t index , ioslice_elem_t val ) {
-  { /* cicili#Let236 */
+  { /* cicili#Let280 */
     size_t safeIndex  = (((index  >  (this ->len ) )) ? (this ->len ) : index );
     if ((this ->len ) ==  (this ->cap ) ) 
-      { /* cicili#Let239 */
+      { /* cicili#Let283 */
         IOSlice * newSlice  = IOSlice_s_newEmpty(((this ->len ) +  1 ));
         memcpy ((newSlice ->arr ), (this ->arr ), (sizeof(ioslice_elem_t) *  safeIndex  ));
         (newSlice ->arr )[safeIndex ] = val ;
@@ -289,23 +397,23 @@ IOSlice * IOSlice_m_insert (IOSlice * this , size_t index , ioslice_elem_t val )
         return newSlice ;
       }
     else 
-      { /* cicili#Block242 */
+      { /* cicili#Block286 */
         memmove (((this ->arr ) +  (safeIndex  +  1 ) ), ((this ->arr ) +  safeIndex  ), (sizeof(ioslice_elem_t) *  ((this ->len ) -  safeIndex  ) ));
         (this ->arr )[safeIndex ] = val ;
         (++(this ->len ));
         return this ;
-      } /* cicili#Block242 */
+      } /* cicili#Block286 */
   }
 }
 IOSlice * IOSlice_m_removeAt (IOSlice * this , size_t index ) {
   if (index  >=  (this ->len ) ) 
     return this ;
   else 
-    { /* cicili#Block247 */
+    { /* cicili#Block291 */
       memmove (((this ->arr ) +  index  ), ((this ->arr ) +  (index  +  1 ) ), (sizeof(ioslice_elem_t) *  ((this ->len ) -  (index  +  1 ) ) ));
       (--(this ->len ));
       return this ;
-    } /* cicili#Block247 */
+    } /* cicili#Block291 */
 }
 
 #include <ctype.h>
@@ -315,13 +423,13 @@ struct __ciciliS_TensorSlice_m_calcCap_ {
   size_t size ;
 };
 static struct __ciciliS_TensorSlice_m_calcCap_ TensorSlice_s_calcCap (size_t len ) {
-  { /* cicili#Let254 */
+  { /* cicili#Let298 */
     size_t capLen  = ((((len  %  TENSORSLICE_GROWTH_STEP  ) >  0 )) ? ((len  /  TENSORSLICE_GROWTH_STEP  ) +  1 ) : (len  /  TENSORSLICE_GROWTH_STEP  ));
     return ((struct __ciciliS_TensorSlice_m_calcCap_){ capLen , (sizeof(tensorslice_elem_t) *  capLen  )});
   }
 }
 TensorSlice * TensorSlice_s_newEmpty (size_t len ) {
-  { /* cicili#Let257 */
+  { /* cicili#Let301 */
     __auto_type cap  = TensorSlice_s_calcCap(len );
     TensorSlice * slice  = malloc ((sizeof(TensorSlice) +  (cap . size ) ));
     (slice ->len ) = len ;
@@ -330,14 +438,14 @@ TensorSlice * TensorSlice_s_newEmpty (size_t len ) {
   }
 }
 TensorSlice * TensorSlice_s_newFromArray (const tensorslice_elem_t * arr , size_t len ) {
-  { /* cicili#Let260 */
+  { /* cicili#Let304 */
     TensorSlice * slice  = TensorSlice_s_newEmpty(len );
     memcpy ((slice ->arr ), arr , (sizeof(tensorslice_elem_t) *  len  ));
     return slice ;
   }
 }
 TensorSlice * TensorSlice_s_newCopy (const TensorSlice * other ) {
-  { /* cicili#Let263 */
+  { /* cicili#Let307 */
     TensorSlice * slice  = TensorSlice_s_newEmpty((other ->len ));
     memcpy ((slice ->arr ), (other ->arr ), (sizeof(tensorslice_elem_t) *  (other ->len ) ));
     return slice ;
@@ -350,7 +458,7 @@ TensorSlice * TensorSlice_m_clone (TensorSlice * this ) {
   return TensorSlice_s_newCopy(this );
 }
 tensorslice_elem_t * TensorSlice_m_cloneArray (TensorSlice * this ) {
-  { /* cicili#Let268 */
+  { /* cicili#Let312 */
     size_t size  = (sizeof(tensorslice_elem_t) *  (this ->len ) );
     tensorslice_elem_t * arr  = malloc (size );
     memcpy (arr , (this ->arr ), size );
@@ -358,9 +466,9 @@ tensorslice_elem_t * TensorSlice_m_cloneArray (TensorSlice * this ) {
   }
 }
 TensorSlice * TensorSlice_m_appendNew (TensorSlice * this , const TensorSlice * other ) {
-  { /* cicili#Let271 */
+  { /* cicili#Let315 */
     size_t totalLen  = ((this ->len ) +  (other ->len ) );
-    { /* cicili#Let273 */
+    { /* cicili#Let317 */
       TensorSlice * slice  = TensorSlice_s_newEmpty(totalLen );
       memcpy ((slice ->arr ), (this ->arr ), (sizeof(tensorslice_elem_t) *  (this ->len ) ));
       memcpy (((slice ->arr ) +  (this ->len ) ), (other ->arr ), (sizeof(tensorslice_elem_t) *  (other ->len ) ));
@@ -369,13 +477,13 @@ TensorSlice * TensorSlice_m_appendNew (TensorSlice * this , const TensorSlice * 
   }
 }
 struct __ciciliS_TensorSlice_m_append_ TensorSlice_m_append (TensorSlice * this , const TensorSlice * other ) {
-  { /* cicili#Let276 */
+  { /* cicili#Let320 */
     size_t totalLen  = ((this ->len ) +  (other ->len ) );
     if (totalLen  <=  (this ->cap ) ) 
-      { /* cicili#Block279 */
+      { /* cicili#Block323 */
         memcpy (((this ->arr ) +  (this ->len ) ), (other ->arr ), (sizeof(tensorslice_elem_t) *  (other ->len ) ));
         return ((struct __ciciliS_TensorSlice_m_append_){ this , false });
-      } /* cicili#Block279 */
+      } /* cicili#Block323 */
     else 
       return ((struct __ciciliS_TensorSlice_m_append_){ TensorSlice_m_appendNew(this , other ), true });
   }
@@ -385,10 +493,10 @@ void TensorSlice_m_free (TensorSlice * this ) {
 }
 struct __ciciliS_TensorSlice_m_push_ TensorSlice_m_push (TensorSlice * this , tensorslice_elem_t val ) {
   if ((this ->len ) ==  (this ->cap ) ) 
-    { /* cicili#Block285 */
-      { /* cicili#Let287 */
+    { /* cicili#Block329 */
+      { /* cicili#Let331 */
         size_t newLen  = ((this ->len ) +  1 );
-        { /* cicili#Let289 */
+        { /* cicili#Let333 */
           TensorSlice * newSlice  = TensorSlice_s_newEmpty(newLen );
           memcpy ((newSlice ->arr ), (this ->arr ), (sizeof(tensorslice_elem_t) *  (this ->len ) ));
           (newSlice ->len ) = newLen ;
@@ -397,25 +505,25 @@ struct __ciciliS_TensorSlice_m_push_ TensorSlice_m_push (TensorSlice * this , te
           return ((struct __ciciliS_TensorSlice_m_push_){ newSlice , true });
         }
       }
-    } /* cicili#Block285 */
+    } /* cicili#Block329 */
   else 
-    { /* cicili#Block292 */
+    { /* cicili#Block336 */
       (this ->arr )[(this ->len )] = val ;
       (++(this ->len ));
       return ((struct __ciciliS_TensorSlice_m_push_){ this , false });
-    } /* cicili#Block292 */
+    } /* cicili#Block336 */
 }
 struct __ciciliS_TensorSlice_m_pop_ TensorSlice_m_pop (TensorSlice * this ) {
   if ((this ->len ) ==  0 ) 
     return ((struct __ciciliS_TensorSlice_m_pop_){ (this ->arr )[0], false });
   else 
-    { /* cicili#Block297 */
+    { /* cicili#Block341 */
       (--(this ->len ));
       return ((struct __ciciliS_TensorSlice_m_pop_){ (this ->arr )[(this ->len )], true });
-    } /* cicili#Block297 */
+    } /* cicili#Block341 */
 }
 TensorSlice * TensorSlice_m_shrink (TensorSlice * this ) {
-  { /* cicili#Let300 */
+  { /* cicili#Let344 */
     TensorSlice * newSlice  = TensorSlice_s_newEmpty((this ->len ));
     memcpy ((newSlice ->arr ), (this ->arr ), (sizeof(tensorslice_elem_t) *  (this ->len ) ));
     TensorSlice_m_free(this );
@@ -423,10 +531,10 @@ TensorSlice * TensorSlice_m_shrink (TensorSlice * this ) {
   }
 }
 TensorSlice * TensorSlice_m_insert (TensorSlice * this , size_t index , tensorslice_elem_t val ) {
-  { /* cicili#Let303 */
+  { /* cicili#Let347 */
     size_t safeIndex  = (((index  >  (this ->len ) )) ? (this ->len ) : index );
     if ((this ->len ) ==  (this ->cap ) ) 
-      { /* cicili#Let306 */
+      { /* cicili#Let350 */
         TensorSlice * newSlice  = TensorSlice_s_newEmpty(((this ->len ) +  1 ));
         memcpy ((newSlice ->arr ), (this ->arr ), (sizeof(tensorslice_elem_t) *  safeIndex  ));
         (newSlice ->arr )[safeIndex ] = val ;
@@ -436,27 +544,27 @@ TensorSlice * TensorSlice_m_insert (TensorSlice * this , size_t index , tensorsl
         return newSlice ;
       }
     else 
-      { /* cicili#Block309 */
+      { /* cicili#Block353 */
         memmove (((this ->arr ) +  (safeIndex  +  1 ) ), ((this ->arr ) +  safeIndex  ), (sizeof(tensorslice_elem_t) *  ((this ->len ) -  safeIndex  ) ));
         (this ->arr )[safeIndex ] = val ;
         (++(this ->len ));
         return this ;
-      } /* cicili#Block309 */
+      } /* cicili#Block353 */
   }
 }
 TensorSlice * TensorSlice_m_removeAt (TensorSlice * this , size_t index ) {
   if (index  >=  (this ->len ) ) 
     return this ;
   else 
-    { /* cicili#Block314 */
+    { /* cicili#Block358 */
       memmove (((this ->arr ) +  index  ), ((this ->arr ) +  (index  +  1 ) ), (sizeof(tensorslice_elem_t) *  ((this ->len ) -  (index  +  1 ) ) ));
       (--(this ->len ));
       return this ;
-    } /* cicili#Block314 */
+    } /* cicili#Block358 */
 }
 
 Session * Session_s_new (Graph * graph , Status * status ) {
-  { /* cicili#Let320 */
+  { /* cicili#Let364 */
     Session * session  = malloc (sizeof(Session));
     (session ->graph ) = graph ;
     (session ->status ) = status ;
@@ -474,85 +582,102 @@ void Session_m_free (Session * this ) {
 void Session_m_run (Session * this , IOSlice * inputs , TensorSlice * input_values , IOSlice * outputs , TensorSlice * output_values ) {
   TF_SessionRun ((this ->ptr ), 0, (inputs ->arr ), ((TF_Tensor ** const)TensorSlice_m_firstElement(input_values )), (inputs ->len ), (outputs ->arr ), ((TF_Tensor ** const)TensorSlice_m_firstElement(output_values )), (outputs ->len ), 0, 0, 0, ((this ->status )->ptr ));
 }
-static void __ciciliL_331 (IOSlice ** inputs ) {
+static void __ciciliL_375 (IOSlice ** inputs ) {
   free (((void *)(*inputs )));
 }
-static void __ciciliL_334 (TensorSlice ** input_vals ) {
+static void __ciciliL_378 (TensorSlice ** input_vals ) {
   free (((void *)(*input_vals )));
 }
-static void __ciciliL_337 (IOSlice ** outputs ) {
+static void __ciciliL_381 (IOSlice ** outputs ) {
   free (((void *)(*outputs )));
 }
-static void __ciciliL_340 (TensorSlice ** out_vals ) {
+static void __ciciliL_384 (TensorSlice ** out_vals ) {
   free (((void *)(*out_vals )));
 }
 Tensor * Session_m_runSimple (Session * this , TF_Output input , Tensor * input_tensor , TF_Output output ) {
-  { /* cicili#Block328 */
-    IOSlice * inputs  __attribute__((__cleanup__(__ciciliL_331 ))) = IOSlice_s_newFromArray((&input ), 1);
-    TensorSlice * input_vals  __attribute__((__cleanup__(__ciciliL_334 ))) = TensorSlice_s_newFromArray((&input_tensor ), 1);
-    IOSlice * outputs  __attribute__((__cleanup__(__ciciliL_337 ))) = IOSlice_s_newFromArray((&output ), 1);
-    TensorSlice * out_vals  __attribute__((__cleanup__(__ciciliL_340 ))) = TensorSlice_s_newEmpty(1);
+  { /* cicili#Block372 */
+    IOSlice * inputs  __attribute__((__cleanup__(__ciciliL_375 ))) = IOSlice_s_newFromArray((&input ), 1);
+    TensorSlice * input_vals  __attribute__((__cleanup__(__ciciliL_378 ))) = TensorSlice_s_newFromArray((&input_tensor ), 1);
+    IOSlice * outputs  __attribute__((__cleanup__(__ciciliL_381 ))) = IOSlice_s_newFromArray((&output ), 1);
+    TensorSlice * out_vals  __attribute__((__cleanup__(__ciciliL_384 ))) = TensorSlice_s_newEmpty(1);
     Session_m_run(this , inputs , input_vals , outputs , out_vals );
     return TensorSlice_m_firstElement(out_vals );
-  } /* cicili#Block328 */
+  } /* cicili#Block372 */
+}
+void Session_m_runWithLabelsAndLoss (Session * this , IOSlice * inputs , TensorSlice * input_vals , IOSlice * labels , TensorSlice * label_vals , IOSlice * loss_outs , TensorSlice * result ) {
+  TF_SessionRun ((this ->ptr ), 0, (inputs ->arr ), ((TF_Tensor ** const)TensorSlice_m_firstElement(input_vals )), ((inputs ->len ) +  (labels ->len ) ), (loss_outs ->arr ), ((TF_Tensor ** const)TensorSlice_m_firstElement(result )), (loss_outs ->len ), 0, 0, 0, ((this ->status )->ptr ));
 }
 
-TF_Output Placeholder (Graph * g , const char * name , const TF_DataType dtype , const int64_t * dims , const int num_dims );
-TF_Output MatMul (Graph * g , TF_Output a , TF_Output b , bool transpose_a , bool transpose_b );
-TF_Output BiasAdd (Graph * g , TF_Output value , TF_Output bias );
-TF_Output Variable (Graph * g , const char * name , const TF_DataType dtype , const int64_t * dims , int ndims );
-TF_Output Const (Graph * g , const char * name , TF_Tensor * tensor );
-TF_Output ConstFloat (Graph * g , const char * name , float value );
-TF_Operation * Assign (Graph * g , const char * name , TF_Output var , TF_Tensor * value );
-TF_Output * AddSymbolicGradients (Graph * g , TF_Output * ys , int y_count , TF_Output * xs , int x_count , TF_Output * grads , Status * status );
-TF_Operation * ApplyGradientDescent (Graph * g , const char * name , TF_Output var , TF_Tensor * lr , TF_Output grad );
-TF_Operation * NoOp (Graph * g , const char * name , TF_Operation ** control_deps , int num_control_deps );
-TF_Output Sub (Graph * g , const char * name , TF_Output x , TF_Output y );
-TF_Output Square (Graph * g , const char * name , TF_Output x );
-TF_Output Mean (Graph * g , const char * name , TF_Output x );
+IOSlice * mergeIOSlices (IOSlice * a , IOSlice * b ) {
+  { /* cicili#Let391 */
+    int total  = ((a ->len ) +  (b ->len ) );
+    IOSlice * result  = IOSlice_s_newEmpty(total );
+    for (int i  = 0; (i  <  (a ->len ) ); (++i )) {
+      IOSlice_m_push(result , (a ->arr )[i ]);
+    } 
+    for (int i  = 0; (i  <  (b ->len ) ); (++i )) {
+      IOSlice_m_push(result , (b ->arr )[i ]);
+    } 
+    return result ;
+  }
+}
+TensorSlice * mergeTensorSlices (TensorSlice * a , TensorSlice * b ) {
+  { /* cicili#Let402 */
+    int total  = ((a ->len ) +  (b ->len ) );
+    TensorSlice * result  = TensorSlice_s_newEmpty(total );
+    for (int i  = 0; (i  <  (a ->len ) ); (++i )) {
+      TensorSlice_m_push(result , (a ->arr )[i ]);
+    } 
+    for (int i  = 0; (i  <  (b ->len ) ); (++i )) {
+      TensorSlice_m_push(result , (b ->arr )[i ]);
+    } 
+    return result ;
+  }
+}
 
 Model * Model_s_new () {
-  { /* cicili#Let362 */
+  { /* cicili#Let416 */
     Model * model  = malloc (sizeof(Model));
     int64_t dims [] = { -1, 4};
     (model ->status ) = Status_s_new();
     (model ->graph ) = Graph_s_new();
-    (model ->input ) = Placeholder ((model ->graph ), "input", TF_FLOAT , dims , 2);
+    (model ->input ) = Graph_m_Placeholder((model ->graph ), "input", TF_FLOAT , dims , 2);
     (model ->input_placeholders ) = IOSlice_s_newFromArray((&(model ->input )), 1);
     return model ;
   }
 }
 TF_Output * Model_m_addDense (Model * this , int units ) {
-  { /* cicili#Let365 */
+  { /* cicili#Let419 */
     TF_Output * last_output  = (this ->output );
     if (last_output  ==  NULL  ) 
-      { /* cicili#Block370 */
+      { /* cicili#Block424 */
         last_output  = (&(this ->input ));
-      } /* cicili#Block370 */
+      } /* cicili#Block424 */
 
-    { /* cicili#Let372 */
-      TF_Output out  = malloc (sizeof(TF_Outout));
-      (*out ) = ({ /* cicili#Progn376 */
-({ /* cicili#Let378 */
-    TF_Output dense_w  = Variable ((this ->graph ), "dense_w", TF_FLOAT , NULL , 2);
-    TF_Output dense_b  = Variable ((this ->graph ), "dense_b", TF_FLOAT , NULL , 1);
-({ /* cicili#Let380 */
+    { /* cicili#Let426 */
+      TF_Output * out  = malloc (sizeof(TF_Output));
+      (*out ) = ({ /* cicili#Progn430 */
+({ /* cicili#Let432 */
+    TF_Output dense_w  = Graph_m_Variable((this ->graph ), "dense_w", TF_FLOAT , NULL , 2);
+    TF_Output dense_b  = Graph_m_Variable((this ->graph ), "dense_b", TF_FLOAT , NULL , 1);
+({ /* cicili#Let434 */
       TF_OperationDescription * desc  = TF_NewOperation (((this ->graph )->ptr ), "MatMul", "dense_matmul");
       TF_AddInput (desc , (*last_output ));
       TF_AddInput (desc , dense_w );
       TF_SetAttrBool (desc , "transpose_a", 0);
       TF_SetAttrBool (desc , "transpose_b", 0);
-({ /* cicili#Let382 */
-        TF_Output matmul_out  = ((TF_Output){ TF_FinishOperation (desc , (((this ->graph )->status ). ptr )), 0});
+({ /* cicili#Let436 */
+        TF_Output matmul_out  = ((TF_Output){ TF_FinishOperation (desc , (((this ->graph )->status )->ptr )), 0});
         TF_OperationDescription * desc2  = TF_NewOperation (((this ->graph )->ptr ), "BiasAdd", "dense_out");
         TF_AddInput (desc2 , matmul_out );
         TF_AddInput (desc2 , dense_b );
-({ /* cicili#Let384 */
-          TF_Output dense  = TF_FinishOperation (desc2 , (((this ->graph )->status ). ptr ));
+({ /* cicili#Let438 */
+          TF_Operation * op  = TF_FinishOperation (desc2 , (((this ->graph )->status )->ptr ));
+          TF_Output dense  = ((TF_Output){ op , 0});
           dense ;
         })      })    })  })});
-      (this ->output ) = (&out );
-      return &out;
+      (this ->output ) = out ;
+      return out ;
     }
   }
 }
@@ -560,7 +685,7 @@ void Model_m_compile (Model * this ) {
   (this ->session ) = Session_s_new((this ->graph ), (this ->status ));
 }
 TensorSlice * Model_m_predict (Model * this , TensorSlice * input_vals ) {
-  { /* cicili#Let388 */
+  { /* cicili#Let442 */
     TensorSlice * out_vals  = TensorSlice_s_newEmpty(1);
     Session_m_run((this ->session ), (this ->input_placeholders ), input_vals , (this ->input_placeholders ), out_vals );
     return out_vals ;
@@ -574,48 +699,48 @@ void Model_m_free (Model * this ) {
   free (this );
 }
 void Model_m_compileWithLoss (Model * this , const char * label_name ) {
-  { /* cicili#Let392 */
+  { /* cicili#Let446 */
     int64_t dims [] = { -1, 1};
-    TF_Output labels  = Placeholder ((this ->graph ), label_name , TF_FLOAT , dims , 2);
+    TF_Output labels  = Graph_m_Placeholder((this ->graph ), label_name , TF_FLOAT , dims , 2);
     (this ->labels ) = labels ;
     (this ->output_placeholders ) = IOSlice_s_newFromArray((&labels ), 1);
   }
-  { /* cicili#Let394 */
-    TF_Output diff  = Sub ((this ->graph ), "diff", (*(this ->output )), (this ->labels ));
-    TF_Output sq  = Square ((this ->graph ), "sq", diff );
-    TF_Output loss  = Mean ((this ->graph ), "loss", sq );
+  { /* cicili#Let448 */
+    TF_Output diff  = Graph_m_Sub((this ->graph ), "diff", (*(this ->output )), (this ->labels ));
+    TF_Output sq  = Graph_m_Square((this ->graph ), "sq", diff );
+    TF_Output loss  = Graph_m_Mean((this ->graph ), "loss", sq );
     (this ->loss ) = loss ;
   }
-  { /* cicili#Let396 */
+  { /* cicili#Let450 */
     int num_vars  = ((this ->trainable_vars )->len );
     TF_Output * grad_arr  = malloc ((num_vars  *  sizeof(TF_Output) ));
-    AddSymbolicGradients ((this ->graph ), (&(this ->loss )), 1, ((this ->trainable_vars )->arr ), num_vars , grad_arr , (this ->status ));
+    Graph_m_AddSymbolicGradients((this ->graph ), (&(this ->loss )), 1, ((this ->trainable_vars )->arr ), num_vars , grad_arr , (this ->status ));
     (this ->gradients ) = IOSlice_s_newFromArray(grad_arr , num_vars );
-    { /* cicili#Let398 */
+    { /* cicili#Let452 */
       TF_Output * lr_arr  = malloc ((num_vars  *  sizeof(TF_Output) ));
       for (int i  = 0; (i  <  num_vars  ); (++i )) {
-        { /* cicili#Let402 */
+        { /* cicili#Let456 */
           float * lr_val  = malloc (sizeof(float));
           * (lr_val ) = 0.01f ;
-          { /* cicili#Let404 */
+          { /* cicili#Let458 */
             TF_Tensor ** lr_tensors  = malloc ((num_vars  *  sizeof(TF_Tensor *) ));
             TF_Tensor * lr_tensor  = TF_NewTensor (TF_FLOAT , 0, 0, lr_val , sizeof(float), 0, 0);
-            lr_arr [i ] = ConstFloat ((this ->graph ), "lr", 0.01f );
+            lr_arr [i ] = Graph_m_ConstFloat((this ->graph ), "lr", 0.01f );
             lr_tensors [i ] = lr_tensor ;
             (this ->learning_rates_tensors ) = TensorSlice_s_newFromArray(lr_tensors , num_vars );
             (this ->learning_rates ) = IOSlice_s_newFromArray(lr_arr , num_vars );
           }
         }
       } 
-      { /* cicili#Let406 */
+      { /* cicili#Let460 */
         TF_Operation ** ops  = malloc ((num_vars  *  sizeof(TF_Operation *) ));
         for (int i  = 0; (i  <  num_vars  ); (++i )) {
-          { /* cicili#Let410 */
-            TF_Operation * op  = ApplyGradientDescent ((this ->graph ), "apply_grad", ((this ->trainable_vars )->arr )[i ], ((this ->learning_rates_tensors )->arr )[i ], ((this ->gradients )->arr )[i ]);
+          { /* cicili#Let464 */
+            TF_Operation * op  = Graph_m_ApplyGradientDescent((this ->graph ), "apply_grad", ((this ->trainable_vars )->arr )[i ], ((this ->learning_rates_tensors )->arr )[i ], ((this ->gradients )->arr )[i ]);
             ops [i ] = op ;
           }
         } 
-        (this ->train_op ) = NoOp ((this ->graph ), "train", ops , num_vars );
+        (this ->train_op ) = Graph_m_NoOp((this ->graph ), "train", ops , num_vars );
       }
       (this ->session ) = Session_s_new((this ->graph ), (this ->status ));
     }
@@ -623,25 +748,27 @@ void Model_m_compileWithLoss (Model * this , const char * label_name ) {
 }
 void Model_m_fit (Model * this , TensorSlice * inputs , TensorSlice * targets , int epochs ) {
   for (int i  = 0; (i  <  epochs  ); (++i )) {
-    { /* cicili#Let415 */
+    { /* cicili#Let469 */
+      int batch_size  = (inputs ->len );
       IOSlice * inputs_  = IOSlice_s_newFromArray((&(this ->input )), 1);
-      TensorSlice * input_vals_  = TensorSlice_s_newCopy(inputs , 1);
       IOSlice * labels_  = IOSlice_s_newFromArray((&(this ->labels )), 1);
-      TensorSlice * label_vals_  = TensorSlice_s_newCopy(targets , 1);
+      TensorSlice * input_vals_  = TensorSlice_s_newFromArray((inputs ->arr ), batch_size );
+      TensorSlice * label_vals_  = TensorSlice_s_newFromArray((targets ->arr ), batch_size );
       Session_m_run((this ->session ), inputs_ , input_vals_ , labels_ , label_vals_ );
     }
   } 
 }
 float Model_m_evaluate (Model * this , TensorSlice * inputs , TensorSlice * targets ) {
-  { /* cicili#Let418 */
+  { /* cicili#Let472 */
+    int batch_size  = (inputs ->len );
     IOSlice * inputs_  = IOSlice_s_newFromArray((&(this ->input )), 1);
-    TensorSlice * input_vals_  = TensorSlice_s_newCopy(inputs , 1);
+    TensorSlice * input_vals_  = TensorSlice_s_newFromArray((inputs ->arr ), batch_size );
     IOSlice * labels_  = IOSlice_s_newFromArray((&(this ->labels )), 1);
-    TensorSlice * label_vals_  = TensorSlice_s_newCopy(targets , 1);
+    TensorSlice * label_vals_  = TensorSlice_s_newFromArray((targets ->arr ), batch_size );
     IOSlice * loss_outs  = IOSlice_s_newFromArray((&(this ->loss )), 1);
     TensorSlice * result  = TensorSlice_s_newEmpty(1);
-    Session_m_run((this ->session ), inputs_ , input_vals_ , loss_outs , result );
-    { /* cicili#Let420 */
+    Session_m_runWithLabelsAndLoss((this ->session ), inputs_ , input_vals_ , labels_ , label_vals_ , loss_outs , result );
+    { /* cicili#Let474 */
       Tensor * loss_tensor  = (result ->arr )[0];
       float * loss_data  = ((float *)(loss_tensor ->ptr ));
       return * (loss_data );
@@ -649,24 +776,26 @@ float Model_m_evaluate (Model * this , TensorSlice * inputs , TensorSlice * targ
   }
 }
 TF_Output Model_m_addTrainable (Model * this , const char * name , int size ) {
-  { /* cicili#Let423 */
-    TF_Output var  = Variable ((this ->graph ), name , TF_FLOAT , (&size ), 1);
-    { /* cicili#Let425 */
-      TF_Tensor * zero  = Tensor_s_newFromFloatArray((&0.0), 1, (&size ), 1);
+  { /* cicili#Let477 */
+    TF_Output var  = Graph_m_Variable((this ->graph ), name , TF_FLOAT , (&size ), 1);
+    { /* cicili#Let479 */
+      float value  = 0;
+      int64_t shape [] = { 1};
+      TF_Tensor * zero  = Tensor_s_newFromFloatArray((&value ), shape , size , 1);
       char buffer [100];
       size_t buffer_len  = sprintf (buffer , "%s_init", name );
-      Graph_m_AddOp((this ->graph ), Assign ((this ->graph ), buffer , var , zero ));
+      Graph_m_Assign((this ->graph ), buffer , var , zero );
     }
     if ((this ->trainable_vars ) ==  NULL  ) 
       (this ->trainable_vars ) = IOSlice_s_newFromArray((&var ), 1);
     else 
-      { /* cicili#Let429 */
+      { /* cicili#Let483 */
         __auto_type out  = IOSlice_m_push((this ->trainable_vars ), var );
         if (out . newp ) 
-          { /* cicili#Block434 */
+          { /* cicili#Block488 */
             IOSlice_m_free((this ->trainable_vars ));
             (this ->trainable_vars ) = (out . out );
-          } /* cicili#Block434 */
+          } /* cicili#Block488 */
 
       }
     return var ;
@@ -676,66 +805,66 @@ void Model_m_setLearningRate (Model * this , float lr ) {
   (this ->learning_rate ) = lr ;
 }
 void Model_m_compileWithLossAndOptimizer (Model * this , const char * label_name ) {
-  { /* cicili#Let438 */
+  { /* cicili#Let492 */
     int64_t dims [] = { -1, 1};
-    TF_Output labels  = Placeholder ((this ->graph ), label_name , TF_FLOAT , dims , 2);
+    TF_Output labels  = Graph_m_Placeholder((this ->graph ), label_name , TF_FLOAT , dims , 2);
     (this ->labels ) = labels ;
     (this ->output_placeholders ) = IOSlice_s_newFromArray((&labels ), 1);
   }
-  { /* cicili#Let440 */
-    TF_Output diff  = Sub ((this ->graph ), "diff", (*(this ->output )), (this ->labels ));
-    TF_Output sq  = Square ((this ->graph ), "sq", diff );
-    TF_Output loss  = Mean ((this ->graph ), "loss", sq );
+  { /* cicili#Let494 */
+    TF_Output diff  = Graph_m_Sub((this ->graph ), "diff", (*(this ->output )), (this ->labels ));
+    TF_Output sq  = Graph_m_Square((this ->graph ), "sq", diff );
+    TF_Output loss  = Graph_m_Mean((this ->graph ), "loss", sq );
     (this ->loss ) = loss ;
   }
-  { /* cicili#Let442 */
+  { /* cicili#Let496 */
     int var_count  = ((this ->trainable_vars )->len );
     TF_Output * vars  = ((this ->trainable_vars )->arr );
     TF_Output * grad_arr  = malloc ((var_count  *  sizeof(TF_Output) ));
-    AddSymbolicGradients ((this ->graph ), (&(this ->loss )), 1, vars , var_count , grad_arr , (this ->status ));
+    Graph_m_AddSymbolicGradients((this ->graph ), (&(this ->loss )), 1, vars , var_count , grad_arr , (this ->status ));
     for (int i  = 0; (i  <  var_count  ); (++i )) {
-      { /* cicili#Let446 */
+      { /* cicili#Let500 */
         TF_Output var  = vars [i ];
         TF_Output grad  = grad_arr [i ];
         TF_Tensor * lr  = Tensor_s_newFromScalarFloat((this ->learning_rate ));
         char buffer [9];
         size_t buffer_len  = sprintf (buffer , "apply_%d", i );
-        ApplyGradientDescent ((this ->graph ), buffer , var , lr , grad );
+        Graph_m_ApplyGradientDescent((this ->graph ), buffer , var , lr , grad );
       }
     } 
   }
   (this ->session ) = Session_s_new((this ->graph ), (this ->status ));
 }
 void Model_m_prepareTrain (Model * this , TF_Output loss , float lr ) {
-  { /* cicili#Let449 */
+  { /* cicili#Let503 */
     int count  = ((this ->trainable_vars )->len );
     TF_Output * grad_arr  = malloc ((count  *  sizeof(TF_Output) ));
-    AddSymbolicGradients ((this ->graph ), (&loss ), 1, ((this ->trainable_vars )->arr ), count , grad_arr , (this ->status ));
-    { /* cicili#Let451 */
+    Graph_m_AddSymbolicGradients((this ->graph ), (&loss ), 1, ((this ->trainable_vars )->arr ), count , grad_arr , (this ->status ));
+    { /* cicili#Let505 */
       IOSlice * grads  = IOSlice_s_newFromArray(grad_arr , count );
       TensorSlice * lrs  = TensorSlice_s_newEmpty(count );
       IOSlice * lr_outputs  = IOSlice_s_newEmpty(count );
       float * lr_val  = malloc (sizeof(float));
       * (lr_val ) = lr ;
       for (int i  = 0; (i  <  count  ); (++i )) {
-        { /* cicili#Let457 */
+        { /* cicili#Let511 */
           Tensor * tensor  = Tensor_s_newFromData(TF_FLOAT , 0, 0, lr_val , sizeof(float));
-          TF_Output out  = Const ((this ->graph ), "lr", tensor );
+          TF_Output out  = Graph_m_Const((this ->graph ), "lr", tensor );
           (lrs ->arr )[i ] = tensor ;
           (lr_outputs ->arr )[i ] = out ;
         }
       } 
-      { /* cicili#Let459 */
+      { /* cicili#Let513 */
         TF_Operation * train_op  = 0;
         for (int i  = 0; (i  <  count  ); (++i )) {
-          { /* cicili#Let465 */
+          { /* cicili#Let519 */
             char buffer [12];
             size_t buffer_len  = sprintf (buffer , "train_op_%d", i );
-            TF_Operation * op  = ApplyGradientDescent ((this ->graph ), buffer , ((this ->trainable_vars )->arr )[i ], ((lrs ->arr )[i ]->ptr ), (grads ->arr )[i ]);
+            TF_Operation * op  = Graph_m_ApplyGradientDescent((this ->graph ), buffer , ((this ->trainable_vars )->arr )[i ], ((lrs ->arr )[i ]->ptr ), (grads ->arr )[i ]);
             if (i  ==  0 ) 
               train_op  = op ;
             else 
-              { /* cicili#Let469 */
+              { /* cicili#Let523 */
                 TF_OperationDescription * desc  = TF_NewOperation (((this ->graph )->ptr ), "NoOp", "train_group");
                 TF_AddControlInput (desc , train_op );
                 TF_AddControlInput (desc , op );

@@ -16,8 +16,21 @@ typedef struct Graph {
 } Graph;
 Graph * Graph_s_new ();
 void Graph_m_free (Graph * this );
-void Graph_m_AddOp (Graph * this , const char * op_type , const char * name , TF_Output * inputs , int num_inputs );
-void Graph_m_AddOpEx (Graph * this , const char * op_type , const char * name , TF_Output * inputs , int num_inputs , TF_Operation ** ctrl_inputs , int num_ctrl_inputs , void (*set_attrs) (TF_OperationDescription   , *   ));
+TF_Operation * Graph_m_AddOp (Graph * this , const char * op_type , const char * name , TF_Output * inputs , int num_inputs );
+TF_Operation * Graph_m_AddOpEx (Graph * this , const char * op_type , const char * name , TF_Output * inputs , int num_inputs , TF_Operation ** ctrl_inputs , int num_ctrl_inputs , void (*set_attrs) (TF_OperationDescription *   ));
+TF_Output Graph_m_Placeholder (Graph * this , const char * name , const TF_DataType dtype , const int64_t * dims , const int num_dims );
+TF_Output Graph_m_MatMul (Graph * this , TF_Output a , TF_Output b , bool transpose_a , bool transpose_b );
+TF_Output Graph_m_BiasAdd (Graph * this , TF_Output value , TF_Output bias );
+TF_Output Graph_m_Variable (Graph * this , const char * name , const TF_DataType dtype , const int64_t * dims , int ndims );
+TF_Output Graph_m_Const (Graph * this , const char * name , TF_Tensor * tensor );
+TF_Output Graph_m_ConstFloat (Graph * this , const char * name , float value );
+TF_Operation * Graph_m_Assign (Graph * this , const char * name , TF_Output var , TF_Tensor * value );
+TF_Output * Graph_m_AddSymbolicGradients (Graph * this , TF_Output * ys , int y_count , TF_Output * xs , int x_count , TF_Output * grads , Status * status );
+TF_Operation * Graph_m_ApplyGradientDescent (Graph * this , const char * name , TF_Output var , TF_Tensor * lr , TF_Output grad );
+TF_Operation * Graph_m_NoOp (Graph * this , const char * name , TF_Operation ** control_deps , int num_control_deps );
+TF_Output Graph_m_Sub (Graph * this , const char * name , TF_Output x , TF_Output y );
+TF_Output Graph_m_Square (Graph * this , const char * name , TF_Output x );
+TF_Output Graph_m_Mean (Graph * this , const char * name , TF_Output x );
 
 #include <tensorflow/c/c_api.h>
 typedef struct Tensor {
@@ -124,20 +137,10 @@ void Session_m_close (Session * this );
 void Session_m_free (Session * this );
 void Session_m_run (Session * this , IOSlice * inputs , TensorSlice * input_values , IOSlice * outputs , TensorSlice * output_values );
 Tensor * Session_m_runSimple (Session * this , TF_Output input , Tensor * input_tensor , TF_Output output );
+void Session_m_runWithLabelsAndLoss (Session * this , IOSlice * inputs , TensorSlice * input_vals , IOSlice * labels , TensorSlice * label_vals , IOSlice * loss_outs , TensorSlice * result );
 
-TF_Output Placeholder (Graph * g , const char * name , const TF_DataType dtype , const int64_t * dims , const int num_dims );
-TF_Output MatMul (Graph * g , TF_Output a , TF_Output b , bool transpose_a , bool transpose_b );
-TF_Output BiasAdd (Graph * g , TF_Output value , TF_Output bias );
-TF_Output Variable (Graph * g , const char * name , const TF_DataType dtype , const int64_t * dims , int ndims );
-TF_Output Const (Graph * g , const char * name , TF_Tensor * tensor );
-TF_Output ConstFloat (Graph * g , const char * name , float value );
-TF_Operation * Assign (Graph * g , const char * name , TF_Output var , TF_Tensor * value );
-TF_Output * AddSymbolicGradients (Graph * g , TF_Output * ys , int y_count , TF_Output * xs , int x_count , TF_Output * grads , Status * status );
-TF_Operation * ApplyGradientDescent (Graph * g , const char * name , TF_Output var , TF_Tensor * lr , TF_Output grad );
-TF_Operation * NoOp (Graph * g , const char * name , TF_Operation ** control_deps , int num_control_deps );
-TF_Output Sub (Graph * g , const char * name , TF_Output x , TF_Output y );
-TF_Output Square (Graph * g , const char * name , TF_Output x );
-TF_Output Mean (Graph * g , const char * name , TF_Output x );
+IOSlice * mergeIOSlices (IOSlice * a , IOSlice * b );
+TensorSlice * mergeTensorSlices (TensorSlice * a , TensorSlice * b );
 
 typedef struct Model {
   Graph * graph ;

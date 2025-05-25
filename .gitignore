@@ -147,3 +147,4 @@ lib/std/cicili_tensor.c.run1.c
 lib/std/cicili_tensor.c.run2.c
 lib/std/cicili_tensor.c.run3.c
 lib/std/cicili_tf.c.run4.c
+lib/std/TensorFlow/.\#model.lisp
