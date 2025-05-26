@@ -16,23 +16,23 @@ typedef struct Graph {
 } Graph;
 Graph * Graph_s_new ();
 void Graph_m_free (Graph * this );
-TF_Operation * Graph_m_AddOp (Graph * this , const char * op_type , const char * name , TF_Output * inputs , int num_inputs );
-TF_Operation * Graph_m_AddOpEx (Graph * this , const char * op_type , const char * name , TF_Output * inputs , int num_inputs , TF_Operation ** ctrl_inputs , int num_ctrl_inputs , void (*set_attrs) (TF_OperationDescription *   ));
-TF_Output Graph_m_Placeholder (Graph * this , const char * name , const TF_DataType dtype , const int64_t * dims , const int num_dims );
-TF_Output Graph_m_MatMul (Graph * this , TF_Output a , TF_Output b , bool transpose_a , bool transpose_b );
-TF_Output Graph_m_BiasAdd (Graph * this , TF_Output value , TF_Output bias );
-TF_Output Graph_m_Variable (Graph * this , const char * name , const TF_DataType dtype , const int64_t * dims , int ndims );
-TF_Output Graph_m_Const (Graph * this , const char * name , TF_Tensor * tensor );
-TF_Output Graph_m_ConstFloat (Graph * this , const char * name , float value );
-TF_Operation * Graph_m_Assign (Graph * this , const char * name , TF_Output var , TF_Tensor * value );
-TF_Output * Graph_m_AddSymbolicGradients (Graph * this , TF_Output * ys , int y_count , TF_Output * xs , int x_count , TF_Output * grads , Status * status );
-TF_Operation * Graph_m_ApplyGradientDescent (Graph * this , const char * name , TF_Output var , TF_Tensor * lr , TF_Output grad );
-TF_Operation * Graph_m_NoOp (Graph * this , const char * name , TF_Operation ** control_deps , int num_control_deps );
-TF_Output Graph_m_Sub (Graph * this , const char * name , TF_Output x , TF_Output y );
-TF_Output Graph_m_Square (Graph * this , const char * name , TF_Output x );
-TF_Output Graph_m_Mean (Graph * this , const char * name , TF_Output x );
+TF_Operation * Graph_m_addOp (Graph * this , const char * op_type , const char * name , TF_Output * inputs , int num_inputs );
+TF_Operation * Graph_m_addOpEx (Graph * this , const char * op_type , const char * name , TF_Output * inputs , int num_inputs , TF_Operation ** ctrl_inputs , int num_ctrl_inputs , void (*set_attrs) (TF_OperationDescription *   ));
+TF_Output Graph_m_placeholder (Graph * this , const char * name , const TF_DataType dtype , const int64_t * dims , const int num_dims );
+TF_Output Graph_m_matMul (Graph * this , TF_Output a , TF_Output b , bool transpose_a , bool transpose_b );
+TF_Output Graph_m_biasAdd (Graph * this , TF_Output value , TF_Output bias );
+TF_Output Graph_m_variable (Graph * this , const char * name , const TF_DataType dtype , const int64_t * dims , int ndims );
+TF_Output Graph_m_constant (Graph * this , const char * name , TF_Tensor * tensor );
+TF_Output Graph_m_constFloat (Graph * this , const char * name , float value );
+TF_Operation * Graph_m_assign (Graph * this , const char * name , TF_Output var , TF_Tensor * value );
+TF_Output * Graph_m_addSymbolicGradients (Graph * this , TF_Output * ys , int y_count , TF_Output * xs , int x_count , TF_Output * grads );
+TF_Operation * Graph_m_applyGradientDescent (Graph * this , const char * name , TF_Output var , TF_Tensor * lr , TF_Output grad );
+TF_Operation * Graph_m_noOp (Graph * this , const char * name , TF_Operation ** control_deps , int num_control_deps );
+TF_Output Graph_m_sub (Graph * this , const char * name , TF_Output x , TF_Output y );
+TF_Output Graph_m_square (Graph * this , const char * name , TF_Output x );
+TF_Output Graph_m_mean (Graph * this , const char * name , TF_Output x );
+TF_Output Graph_m_relu (Graph * this , const char * name , TF_Output input );
 
-#include <tensorflow/c/c_api.h>
 typedef struct Tensor {
   TF_Tensor * ptr ;
 } Tensor;

@@ -12,17 +12,17 @@
 
           ;; receivers of Sample struct
           ;; functions which will be defined in source file could use resolver
-          {decl} (method Sample->PrintAttrA ())
-          {decl} (method Sample->SetAttrA ((int a)))
-          {decl} (method Sample->PrintAttrB ())
-          {decl} (method Sample->SetAttrB ((char * b)))
-          {decl} (method Sample->PrintBoth ())
+          (decl) (method (Sample . PrintAttrA) ())
+          (decl) (method (Sample . SetAttrA) ((int a)))
+          (decl) (method (Sample . PrintAttrB) ())
+          (decl) (method (Sample . SetAttrB) ((char * b)))
+          (decl) (method (Sample . PrintBoth) ())
 
           ;; functions which defined inside header file couldn't use resolver
-          {inline} (method Sample->WithoutResolver ()
+          (inline) (method (Sample . WithoutResolver) ()
                            (set (-> this AttrA) 12)
                            (set ($ (cof this) AttrB) "Saman")
-                           (Sample_PrintBoth this))
+                           (Sample_m_PrintBoth this))
           
         ))
 
@@ -32,19 +32,19 @@
 
         ;; methods of Sample struct which access to Sample members and other methods
 
-        (method Sample->PrintAttrA ()
+        (method (Sample . PrintAttrA) ()
                 (printf "AttrA: %d\n" ($ this AttrA)))
 
-        (method Sample->SetAttrA ((int a))
+        (method (Sample . SetAttrA) ((int a))
                 (set ($ this AttrA) a))
         
-        (method Sample->PrintAttrB ()
+        (method (Sample . PrintAttrB) ()
                 (printf "AttrB: %s\n" ($ this AttrB)))
 
-        (method Sample->SetAttrB ((char * b))
+        (method (Sample . SetAttrB) ((char * b))
                 (set ($ this AttrB) b))
         
-        (method Sample->PrintBoth ()
+        (method (Sample . PrintBoth) ()
                 (-> this PrintAttrA)
                 (-> this PrintAttrB)))
 

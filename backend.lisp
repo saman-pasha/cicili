@@ -62,7 +62,8 @@
   (unless (null typeof) (compile-type-name typeof lvl globals))
   (when modifier  (output " ") (set-ast-line (output "~A" modifier)))
   (when const-ptr (output " ") (set-ast-line (output "const" const-ptr)))
-  (when name      (output " ") (compile-symbol (if (str:starts-with-p "_ciciliParam_" (symbol-name name)) " " name)))
+  (when name      (output " ")
+        (set-ast-line (output "~A "(if (str:starts-with-p "_ciciliParam_" (symbol-name name)) " " name))))
   (compile-array array-def lvl globals))
 
 (defun compile-spec-type (spec lvl globals)
@@ -114,25 +115,42 @@
                            (if is-unique (unique spec) name)
                            array-def default anonymous lvl globals defer))))
 
-(defun compile-symbol (symbol)
-  (let* ((ast (prev-ast<))
-         (res (resolved-ast<)))
+(defun compile-symbol (spec symbol)
+  (let* ((line-n (funcall *line-num* 0))
+         (col-n (funcall *col-num* 0))
+         (ast (prev-ast<))
+         (info (getf ast 'info))
+         (spec-key   (ast-key< line-n col-n)))
+    (setf (key spec) spec-key)
+    (when *debug-resolve*
+      (display "resolving symbol:" line-n col-n "RES:" (res spec) "INFO:" info #\Newline))
     (if (null ast)
 	    (set-ast-line (output "~A " symbol))
-        (let ((info (getf ast 'info)))
-          (if (and info (null res))
-              (cond ((str:containsp "take the address with &" info)
-                     (set-ast-line (output "\&~A" symbol)))
-                    ((str:containsp "passing 'typeof ((" info)
-                     (set-ast-line (output "\&~A" symbol)))
-                    ((str:containsp "__ciciliL_" info)
-                     (set-ast-line (output "\&~A" symbol)))
-                    ((str:containsp "expression result unused" info)
-                     (set-ast-line (output "~A " symbol))) 
-                    ((str:containsp "member reference type" info)
-                     (set-ast-line (output "~A " symbol)))
-                    (t (error (format nil "cicili: atom: ~S" (str:substring 0 340 info)))))
-              (set-ast-line (output "~A " symbol)))))))
+        (if info
+            (cond ((str:containsp "take the address with &" info)
+                   (let ((resu (format nil "\&~A" symbol)))
+                     (setf (res spec) resu)
+                     (set-ast-line (output resu))))
+                  ((str:containsp "passing 'typeof ((" info)
+                   (let ((resu (format nil "\&~A" symbol)))
+                     (setf (res spec) resu)
+                     (set-ast-line (output resu))))
+                  ((str:containsp "__ciciliL_" info)
+                   (let ((resu (format nil "\&~A" symbol)))
+                     (setf (res spec) resu)
+                     (set-ast-line (output resu))))
+                  ((str:containsp "expression result unused" info)
+                   (let ((resu (format nil "~A " symbol)))
+                     (setf (res spec) resu)
+                     (set-ast-line (output resu))))
+                  ((str:containsp "member reference type" info)
+                   (let ((resu (format nil "~A " symbol)))
+                     (setf (res spec) resu)
+                     (set-ast-line (output resu))))
+                  (t (error (format nil "cicili: atom: ~A. ~S~%~A" spec-key (str:substring 0 340 info) spec))))
+            (if (null (res spec))
+                (set-ast-line (output "~A " symbol))
+                (set-ast-line (output (res spec))))))))
 
 (defun compile-atom (spec lvl globals)
   (with-slots (construct (value name) typeof) spec
@@ -141,7 +159,7 @@
     (cond ((and (key-eq typeof '|@SYMBOL|) (string= (symbol-name value) "this"))
            (set-ast-line (output "~A " '|this|)))
           ((key-eq typeof '|@SYMBOL|)
-           (compile-symbol value))
+           (compile-symbol spec value))
           ((key-eq typeof '|@CHAR|) (set-ast-line (output "'~A'" value))) 
           (t (set-ast-line (output "~A" value))))))
 
@@ -248,10 +266,6 @@
            (ptr-ast    (prev-ast-by-key< (getf begin-ast 'ptr)))
            (mtd-ast    (prev-ast-by-key< (getf begin-ast 'mtd)))
            (end-ast    (prev-ast-by-key< (getf begin-ast 'end)))
-           (begin-res  (getf begin-ast 'res))  ; --
-           (ptr-res    (getf ptr-ast   'res))
-           (mtd-res    (getf mtd-ast   'res))
-           (end-res    (getf end-ast   'res))
            (begin-info (getf begin-ast 'info)) ; --
            (ptr-info   (getf ptr-ast   'info))
            (mtd-info   (getf mtd-ast   'info))
@@ -259,8 +273,7 @@
            (spec-key   (ast-key< line-n col-n)))
       (setf (key spec) spec-key)
       (when *debug-resolve*
-        (display "resolving .:" line-n col-n begin-res ptr-res mtd-res end-res "RES:" (res spec) "INFO:"
-                 begin-info ptr-info mtd-info end-info #\Newline))
+        (display "resolving .:" line-n col-n "RES:" (res spec) "INFO:" begin-info ptr-info mtd-info end-info #\Newline))
       (cond ((or (null *resolve*) ; function without resolver (inline in header or attr resolve #f)
                (null begin-ast))  ; access member by instance default for first run
              (set-ast-line (output "("))
@@ -315,10 +328,6 @@
            (ptr-ast    (prev-ast-by-key< (getf begin-ast 'ptr)))
            (mtd-ast    (prev-ast-by-key< (getf begin-ast 'mtd)))
            (end-ast    (prev-ast-by-key< (getf begin-ast 'end)))
-           (begin-res  (getf begin-ast 'res))  ; --
-           (ptr-res    (getf ptr-ast   'res))
-           (mtd-res    (getf mtd-ast   'res))
-           (end-res    (getf end-ast   'res))
            (begin-info (getf begin-ast 'info)) ; --
            (ptr-info   (getf ptr-ast   'info))
            (mtd-info   (getf mtd-ast   'info))
@@ -326,8 +335,7 @@
            (spec-key   (ast-key< line-n col-n)))
       (setf (key spec) spec-key)
       (when *debug-resolve*
-        (display "resolving ->:" line-n col-n begin-res ptr-res mtd-res end-res "RES:" (res spec) "INFO:"
-                 begin-info ptr-info mtd-info end-info #\Newline))
+        (display "resolving ->:" line-n col-n "RES:" (res spec) "INFO:" begin-info ptr-info mtd-info end-info #\Newline))
       (cond ((or (null *resolve*) ; function without resolver (inline in header or attr resolve #f)
                (null begin-ast))  ; access member by pointer default for first run
              (set-ast-line (output "("))

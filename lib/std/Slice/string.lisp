@@ -3,35 +3,35 @@
 (IN-PACKAGE :CL-USER)
 
 (DEFMACRO String (path name element step include-body members-body header-body source-body)
-  (Slice-Scope
+  (SliceScope
       `(Slice ,path ,name ,element ,step
               ( ; includes
                ,@include-body)
               ( ; members
                ,@members-body)
               ( ; header
-               (decl) (func   ,(make-method-name name 'new) ((const ,elem-type * cstr)))
-               (decl) (func   ,(make-method-name name 'newFormat) ((const char * fmt) ($$$)))
-               (decl) (method ,(make-method-name name 'substring) ((size_t start) (size_t length)) (out ,name *))
-               (decl) (method ,(make-method-name name 'concat) ((const ,name * other)) (out ,name *))
-               (decl) (method ,(make-method-name name 'find) ((char ch)) (out size_t))
-               (decl) (method ,(make-method-name name 'equals) ((const ,name * other)) (out bool))
-               (decl) (method ,(make-method-name name 'toUpper) () (out ,name *))
-               (decl) (method ,(make-method-name name 'toLower) () (out ,name *))
-               (decl) (method ,(make-method-name name 'trim) () (out ,name *))
-               (decl) (method ,(make-method-name name 'replace) ((char oldch) (char newch)) (out ,name *))
-               (decl) (method ,(make-method-name name 'startsWith) ((const ,name * prefix)) (out bool))
-               (decl) (method ,(make-method-name name 'endsWith) ((const ,name * suffix)) (out bool))
+               (decl) (func   (,name . new) ((const ,elem-type * cstr)))
+               (decl) (func   (,name . newFormat) ((const char * fmt) ($$$)))
+               (decl) (method (,name . substring) ((size_t start) (size_t length)) (out ,name *))
+               (decl) (method (,name . concat) ((const ,name * other)) (out ,name *))
+               (decl) (method (,name . find) ((char ch)) (out size_t))
+               (decl) (method (,name . equals) ((const ,name * other)) (out bool))
+               (decl) (method (,name . toUpper) () (out ,name *))
+               (decl) (method (,name . toLower) () (out ,name *))
+               (decl) (method (,name . trim) () (out ,name *))
+               (decl) (method (,name . replace) ((char oldch) (char newch)) (out ,name *))
+               (decl) (method (,name . startsWith) ((const ,name * prefix)) (out bool))
+               (decl) (method (,name . endsWith) ((const ,name * suffix)) (out bool))
                ,@header-body)
               ( ; source
-               (func ,(make-method-name name 'new) ((const ,elem-type * cstr))
+               (func (,name . new) ((const ,elem-type * cstr))
                      (let ((size_t len . #'(strlen cstr))
                            (,name * str . #'(-> ,name newEmpty len)))
                        (strncpy ($ str arr) cstr len)
                        (set (nth len ($ str arr)) #\Null)
                        (return str)))
                
-               (func ,(make-method-name name 'newFormat) ((const char * fmt) ($$$))
+               (func (,name . newFormat) ((const char * fmt) ($$$))
                        (let ((,elem-type buffer [4096])
                              (va_list va_args))
                          (va_start va_args fmt)
@@ -39,7 +39,7 @@
                          (va_end va_args)
                          (return (-> ,name new buffer))))
                
-               (method ,(make-method-name name 'substring) ((size_t start) (size_t length)) (out ,name *)
+               (method (,name . substring) ((size_t start) (size_t length)) (out ,name *)
                        (if (> (+ start length) ($ this len))
                            (return #'(-> ,name new "")))
                        (let ((,name * sub . #'(-> ,name newEmpty length)))
@@ -48,17 +48,17 @@
                          (set ($ sub len) length)
                          (return sub)))
 
-               (method ,(make-method-name name 'concat) ((const ,name * other)) (out ,name *)
+               (method (,name . concat) ((const ,name * other)) (out ,name *)
                        (return #'(-> this appendNew other)))
 
-               (method ,(make-method-name name 'find) ((,elem-type ch)) (out size_t)
+               (method (,name . find) ((,elem-type ch)) (out size_t)
                        (let ((,elem-type * pos . #'(strchr ($ this arr) ch)))
                          (return (? (!= pos nil) (- pos ($ this arr)) -1))))
 
-               (method ,(make-method-name name 'equals) ((const ,name * other)) (out bool)
+               (method (,name . equals) ((const ,name * other)) (out bool)
                        (return (== (strcmp ($ this arr) ($ other arr)) 0)))
                
-               (method ,(make-method-name name 'toUpper) () (out ,name *)
+               (method (,name . toUpper) () (out ,name *)
                        (let ((,name * strCopy . #'(-> ,name newCopy this))
                              (size_t i . 0))
                          (while (< i ($ strCopy len))
@@ -66,7 +66,7 @@
                            (set i (+ i 1)))
                          (return strCopy)))
                
-               (method ,(make-method-name name 'toLower) () (out ,name *)
+               (method (,name . toLower) () (out ,name *)
                        (let ((,name * strCopy . #'(-> ,name newCopy this))
                              (size_t i . 0))
                          (while (< i ($ strCopy len))
@@ -74,7 +74,7 @@
                            (set i (+ i 1)))
                          (return strCopy)))
 
-               (method ,(make-method-name name 'trim) () (out ,name *)
+               (method (,name . trim) () (out ,name *)
                        (let ((char * start . #'($ this arr))
                              (char * end . #'(+ ($ this arr) (- ($ this len) 1))))
                          (while (and (< (- start ($ this arr)) ($ this len)) (isspace (* start)))
@@ -84,7 +84,7 @@
                          (let ((size_t newlen . #'(+ 1 (- end start))))
                            (return #'(-> ,name newFromArray start newlen)))))
 
-               (method ,(make-method-name name 'replace) ((char oldch) (char newch)) (out ,name *)
+               (method (,name . replace) ((char oldch) (char newch)) (out ,name *)
                        (let ((,name * strCopy . #'(-> ,name newCopy this))
                              (size_t i . 0))
                          (while (< i ($ strCopy len))
@@ -93,12 +93,12 @@
                            (set i (+ i 1)))
                          (return strCopy)))
 
-               (method ,(make-method-name name 'startsWith) ((const ,name * prefix)) (out bool)
+               (method (,name . startsWith) ((const ,name * prefix)) (out bool)
                        (if (< ($ this len) ($ prefix len))
                            (return false))
                        (return (== (strncmp ($ this arr) ($ prefix arr) ($ prefix len)) 0)))
 
-               (method ,(make-method-name name 'endsWith) ((const ,name * suffix)) (out bool)
+               (method (,name . endsWith) ((const ,name * suffix)) (out bool)
                        (if (< ($ this len) ($ suffix len))
                            (return false))
                        (let ((size_t offset . #'(- ($ this len) ($ suffix len))))

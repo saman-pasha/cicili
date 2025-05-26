@@ -189,12 +189,12 @@
 
 (font-lock-add-keywords
  'lisp-mode
- '(("(func[ \t\n]+\\(\\(\\sw\\|\\s_\\)+\\)[ \t\n]*"
+ '(("(func[ \t\n]+(?\\(\\(\\sw\\|\\s_\\)+\\)[ \t\n]*"
     (1 'font-lock-function-name-face))))
 
 (font-lock-add-keywords
  'lisp-mode
- '(("(method[ \t\n]+\\(\\(\\sw\\|\\s_\\)+\\)[ \t\n]*"
+ '(("(method[ \t\n]+(\\(\\(\\sw\\|\\s_\\)+\\)[ \t\n]*"
     (1 'font-lock-function-name-face))))
 
 (font-lock-add-keywords

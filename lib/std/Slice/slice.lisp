@@ -38,26 +38,25 @@
              ;; Cicili struct constructors begin with new keyword and aren't methods
              ;; They don't get this pointer and their out type always is pointer of the struct
              ;; Slice constructors
-             (decl) (func ,(make-method-name name 'newEmpty)      ((size_t len)))
-             (decl) (func ,(make-method-name name 'newFromArray)  ((const ,elem-type * arr) (size_t len)))
-             (decl) (func ,(make-method-name name 'newCopy)       ((const ,name * other)))
+             (decl) (func (,name . newEmpty)      ((size_t len)))
+             (decl) (func (,name . newFromArray)  ((const ,elem-type * arr) (size_t len)))
+             (decl) (func (,name . newCopy)       ((const ,name * other)))
 
              ;; C compatibility
-             (decl) (method ,(make-method-name name 'firstElement)  () (out ,@(IF (LISTP element) element (LIST element))))
+             (decl) (method (,name . firstElement)  () (out ,@(IF (LISTP element) element (LIST element))))
              
              ;; Collection of useful Slice methods
-             (decl) (method ,(make-method-name name 'clone)       () (out ,name *))
-             (decl) (method ,(make-method-name name 'cloneArray)  () (out ,elem-type *))
-             (decl) (method ,(make-method-name name 'appendNew)   ((const ,name * other)) (out ,name *))
-             (decl) (method ,(make-method-name name 'append)      ((const ,name * other))
-                            (out '{ (,name * out) (bool newp) }))
+             (decl) (method (,name . clone)       () (out ,name *))
+             (decl) (method (,name . cloneArray)  () (out ,elem-type *))
+             (decl) (method (,name . appendNew)   ((const ,name * other)) (out ,name *))
+             (decl) (method (,name . append)      ((const ,name * other)) (out '{ (,name * out) (bool newp) }))
              
-             (decl) (method ,(make-method-name name 'free)        ())
-             (decl) (method ,(make-method-name name 'push)        ((,elem-type val)) (out '{ (,name * out) (bool newp) }))
-             (decl) (method ,(make-method-name name 'pop)         () (out '{ (,elem-type out) (bool outp) }))
-             (decl) (method ,(make-method-name name 'shrink)      () (out ,name *))
-             (decl) (method ,(make-method-name name 'insert)      ((size_t index) (,elem-type val)) (out ,name *))
-             (decl) (method ,(make-method-name name 'removeAt)    ((size_t index)) (out ,name *))
+             (decl) (method (,name . free)        ())
+             (decl) (method (,name . push)        ((,elem-type val)) (out '{ (,name * out) (bool newp) }))
+             (decl) (method (,name . pop)         () (out '{ (,elem-type out) (bool outp) }))
+             (decl) (method (,name . shrink)      () (out ,name *))
+             (decl) (method (,name . insert)      ((size_t index) (,elem-type val)) (out ,name *))
+             (decl) (method (,name . removeAt)    ((size_t index)) (out ,name *))
              
              ,@header-body))))
 
@@ -67,14 +66,14 @@
            (include <ctype.h> <stdarg.h>)
 
          (static)
-         (func ,(make-method-name name 'calcCap) ((size_t len)) (out '{ (size_t capLen) (size_t size) })
+         (func (,name . calcCap) ((size_t len)) (out '{ (size_t capLen) (size_t size) })
                (let ((size_t capLen . #'(? (> (% len ,growth-step) 0)
                                            (+ (/ len ,growth-step) 1)
                                            (/ len ,growth-step))))
                  (return '{ capLen (* (sizeof ,elem-type) capLen) })))
 
          ;; Creates a new Slice instance with allocated cap size
-         (func ,(make-method-name name 'newEmpty) ((size_t len))
+         (func (,name . newEmpty) ((size_t len))
                (let ((auto cap . #'(-> ,name calcCap len))
                      (,name * slice . #'(malloc (+ (sizeof ,name) ($ cap size)))))
                  (set ($ slice len) len)
@@ -82,27 +81,27 @@
                  (return slice)))
 
          ;; Initializes a new Slice and hard copy of array memory allocated
-         (func ,(make-method-name name 'newFromArray) ((const ,elem-type * arr) (size_t len))
+         (func (,name . newFromArray) ((const ,elem-type * arr) (size_t len))
                (let ((,name * slice . #'(-> ,name newEmpty len)))
                  (memcpy ($ slice arr) arr (* (sizeof ,elem-type) len))
                  (return slice)))
 
          ;; Initializes a hard copy of a Slice memory allocated
-         (func ,(make-method-name name 'newCopy) ((const ,name * other))
+         (func (,name . newCopy) ((const ,name * other))
                (let ((,name * slice . #'(-> ,name newEmpty ($ other len))))
                  (memcpy ($ slice arr) ($ other arr) (* (sizeof ,elem-type) ($ other len)))
                  (return slice)))
 
          ;; returns address of first item for using as C array (element *)
-         (method ,(make-method-name name 'firstElement) () (out ,@(IF (LISTP element) element (LIST element)))
+         (method (,name . firstElement) () (out ,@(IF (LISTP element) element (LIST element)))
                  (return (cast ,element (nth 0 ($ this arr)))))
 
          ;; Uses newCopy constructor but as a method
-         (method ,(make-method-name name 'clone) () (out ,name *)
+         (method (,name . clone) () (out ,name *)
                  (return (-> ,name newCopy this)))
 
          ;; Clones only the arr
-         (method ,(make-method-name name 'cloneArray) () (out ,elem-type *)
+         (method (,name . cloneArray) () (out ,elem-type *)
                  (let ((size_t size . #'(* (sizeof ,elem-type) ($ this len)))
                        (,elem-type * arr . #'(malloc size)))
                    (memcpy arr ($ this arr) size)
@@ -110,7 +109,7 @@
 
          ;; Creates a new instance and appends both this and other arrs to created instance and returns that
          ;; this and other remain unmodified
-         (method ,(make-method-name name 'appendNew) ((const ,name * other)) (out ,name *)
+         (method (,name . appendNew) ((const ,name * other)) (out ,name *)
                  (let ((size_t totalLen . #'(+ ($ this len) ($ other len))))
                    (let ((,name * slice . #'(-> ,name newEmpty totalLen)))
                      (memcpy ($ slice arr) ($ this arr) (* (sizeof ,elem-type) ($ this len)))
@@ -119,7 +118,7 @@
 
          ;; Appends other arr at the end of current instance (if has cap) and returns this
          ;; other remains unmodified
-         (method ,(make-method-name name 'append) ((const ,name * other)) (out '{ (,name * out) (bool newp) })
+         (method (,name . append) ((const ,name * other)) (out '{ (,name * out) (bool newp) })
                  (let ((size_t totalLen . #'(+ ($ this len) ($ other len))))
                    (if (<= totalLen ($ this cap))
                        (block
@@ -129,11 +128,11 @@
                        (return '{ (-> this appendNew other) #t }))))
 
          ;; Frees the Slice instance
-         (method ,(make-method-name name 'free) ()
+         (method (,name . free) ()
                  (free this))
 
          ;; Pushes a new element to the end of the Slice. Grows if needed.
-         (method ,(make-method-name name 'push) ((,elem-type val)) (out '{ (,name * out) (bool newp) })
+         (method (,name . push) ((,elem-type val)) (out '{ (,name * out) (bool newp) })
                  (if (== ($ this len) ($ this cap))
                      ;; Need to reallocate with more capacity
                      (block
@@ -151,7 +150,7 @@
                        (return '{ this #f }))))
 
          ;; Pops the last element and stores it in *out. Returns true if successful.
-         (method ,(make-method-name name 'pop) () (out '{ (,elem-type out) (bool outp) })
+         (method (,name . pop) () (out '{ (,elem-type out) (bool outp) })
                  (if (== ($ this len) 0)
                      (return '{ (nth 0 ($ this arr)) #f })
                      (block
@@ -159,14 +158,14 @@
                        (return '{ (nth ($ this len) ($ this arr)) #t }))))
 
          ;; Shrinks allocated memory to current length, freeing unused capacity.
-         (method ,(make-method-name name 'shrink) () (out ,name *)
+         (method (,name . shrink) () (out ,name *)
                  (let ((,name * newSlice . #'(-> ,name newEmpty ($ this len))))
                    (memcpy ($ newSlice arr) ($ this arr) (* (sizeof ,elem-type) ($ this len)))
                    (-> this free)
                    (return newSlice)))
 
          ;; Inserts val at index. If index > len, appends to the end. Grows if needed.
-         (method ,(make-method-name name 'insert) ((size_t index) (,elem-type val)) (out ,name *)
+         (method (,name . insert) ((size_t index) (,elem-type val)) (out ,name *)
                  (let ((size_t safeIndex . #'(? (> index ($ this len)) ($ this len) index)))
                    (if (== ($ this len) ($ this cap))
                        ;; Grow Slice
@@ -192,7 +191,7 @@
                          (return this)))))
 
          ;; Removes element at index and shifts remaining elements left. Returns this.
-         (method ,(make-method-name name 'removeAt) ((size_t index)) (out ,name *)
+         (method (,name . removeAt) ((size_t index)) (out ,name *)
                  (if (>= index ($ this len))
                      (return this) ;; Index out of bounds, do nothing
                      (block
@@ -223,33 +222,33 @@
                    ( ; members
                     ,@members-body)
                    ( ; header
-                    (decl) (method ,(make-method-name name 'contains)    ((,elem-type val)) (out bool))
-                    (decl) (method ,(make-method-name name 'indexOf)     ((,elem-type val)) (out size_t))
-                    (decl) (method ,(make-method-name name 'lastIndexOf) ((,elem-type val)) (out size_t))
-                    (decl) (method ,(make-method-name name 'count)       ((,elem-type val)) (out size_t))
+                    (decl) (method (,name . contains)    ((,elem-type val)) (out bool))
+                    (decl) (method (,name . indexOf)     ((,elem-type val)) (out size_t))
+                    (decl) (method (,name . lastIndexOf) ((,elem-type val)) (out size_t))
+                    (decl) (method (,name . count)       ((,elem-type val)) (out size_t))
                     ,@header-body)
                    ( ; source
                     ;; Returns true if the Slice contains the given value
-                    (method ,(make-method-name name 'contains) ((,elem-type val)) (out bool)
+                    (method (,name . contains) ((,elem-type val)) (out bool)
                             (for ((size_t i . 0)) (< i ($ this len)) ((++ i))
                                  (when (== (nth i ($ this arr)) val) (return #t)))
                             (return #f))
 
                     ;; Returns index of the given value, or len if not found
-                    (method ,(make-method-name name 'indexOf) ((,elem-type val)) (out size_t)
+                    (method (,name . indexOf) ((,elem-type val)) (out size_t)
                             (for ((size_t i . 0)) (< i ($ this len)) ((++ i))
                                  (when (== (nth i ($ this arr)) val) (return i)))
                             ;; Not found: return len (similar to C-style idiom)
                             (return ($ this len)))
 
                     ;; Returns the index of the last occurrence of val, or len if not found
-                    (method ,(make-method-name name 'lastIndexOf) ((,elem-type val)) (out size_t)
+                    (method (,name . lastIndexOf) ((,elem-type val)) (out size_t)
                             (for ((size_t i . #'(- ($ this len) 1))) (>= 0 i) ((-- i))
                                  (when (== (nth i ($ this arr)) val) (return i)))
                             (return ($ this len)))
 
                     ;; Returns how many times val appears in the slice
-                    (method ,(make-method-name name 'count) ((,elem-type val)) (out size_t)
+                    (method (,name . count) ((,elem-type val)) (out size_t)
                             (let ((size_t c . 0))
                               (for ((size_t i . 0)) (< i ($ this len)) ((++ i))
                                    (when (== (nth i ($ this arr)) val) (++ c)))

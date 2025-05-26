@@ -21,7 +21,6 @@
 
 (DEFMACRO utils-source ()
   `(ghost
-
      (func mergeIOSlices ((IOSlice * a) (IOSlice * b)) (out IOSlice *)
            (let ((int total . #'(+ (-> a len) (-> b len)))
                  (IOSlice * result . #'(-> IOSlice newEmpty total)))
@@ -47,8 +46,8 @@
          (biasadd-name (FORMAT NIL "~A_out"    name)))
     `(progn
        ;; Dense weight: [input_dim, units]
-       (letn ((TF_Output ,w-symb . #'(-> ($ this graph) Variable ,w-name TF_FLOAT ,input_dims 2))
-              (TF_Output ,b-symb . #'(-> ($ this graph) Variable ,b-name TF_FLOAT ,input_dims 1)))
+       (letn ((TF_Output ,w-symb . #'(-> ($ this graph) variable ,w-name TF_FLOAT ,input_dims 2))
+              (TF_Output ,b-symb . #'(-> ($ this graph) variable ,b-name TF_FLOAT ,input_dims 1)))
          ;; MatMul(input, weight)
          (letn ((TF_OperationDescription * desc . #'(TF_NewOperation ($ this graph ptr) "MatMul" ,matmul-name)))
            (TF_AddInput desc ,input)

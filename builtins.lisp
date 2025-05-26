@@ -10,9 +10,6 @@
 (DEFMACRO main* (&REST body)
   `(func main ((int argc) (char * argv [])) (out int) ,@body))
 
-(DEFUN make-method-name (struct method)
-  (INTERN (FORMAT NIL "~A->~A" struct method)))
-
 ;;; each struct which implements string can write itself to a FILE *
 ;;; notice inline methods won't be resolved and -> is point to, not method access
 (DEFMACRO interface-string (struct &REST body)
@@ -92,12 +89,16 @@
                   var-list)
      ,@body))
 
+;; list should have a len member
 (DEFMACRO dolist (vars &REST body)
-  (LET ((var   (FIRST  vars))
-        (array (SECOND vars))
-        (len   (THIRD  vars))
+  (LET ((var     (FIRST  vars))
+        (list    (SECOND vars))
+        (array   (GENSYM "ciciliArr"))
+        (len     (GENSYM "ciciliLen"))
         (counter (GENSYM "ciciliCounter")))
-    `(let (((typeof (nth 0 ,array)) * ,var . ,array))
+    `(let ((auto ,array . ,(IF (LISTP list) #'list list))
+           ((typeof (nth 0 ,array)) * ,var . ,array)
+           (size_t ,len . #'($ ,array len)))
        (for ((int ,counter . 0))
          (< ,counter ,len)
          ((++ ,var)

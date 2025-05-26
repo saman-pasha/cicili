@@ -5,9 +5,9 @@
             (member char name [12]))
 
           ;; refers to Employee outside module a
-          (decl) (method Employee->print1 ((Employee * emp)))
+          (decl) (method (Employee . print1) ((Employee * emp)))
           ;; refers to Employee outside any module because of starts with '/'
-          (decl) (method Employee->print2 ((/Employee * emp)))
+          (decl) (method (Employee . print2) ((/Employee * emp)))
 
           (var long varAAA)
 
@@ -22,7 +22,7 @@
                     (member char name [12]))
 
                   ;; therefor current scope is a every objects without '/' resolution sign refer will be defined inside a
-                  (decl) (method Employee->print ()) ; refers to Employee inside module a
+                  (decl) (method (Employee . print) ()) ; refers to Employee inside module a
 
                   ;; refers to Employee outside module a '/' sign means free resolution
                   (decl) (func print ((/Employee * emp)))
@@ -39,7 +39,7 @@
                                     (member int id)
                                     (member char name [12]))
                                   ;; refers to Employee inside module d
-                                  (decl) (method Employee->print ()) 
+                                  (decl) (method (Employee . print) ()) 
                                   
                                   (decl) (func aFunc ((int x) (int y)) (out '{(int a) (int b)})) ; inside module a/c/d
                                   )
@@ -61,16 +61,16 @@
 (source "module.c" (:std #t :compile #t :link #f)
         (include "module.h")
 
-        (method Employee->print1 ((Employee * emp)) ; refers to Employee outside module a
+        (method (Employee . print1) ((Employee * emp)) ; refers to Employee outside module a
                 (printf "same emp id is: %d, %d\n" ($ this id) ($ emp id)))
-        (method Employee->print2 ((/Employee * emp)) ; refers to Employee outside any module because of starts with '/'
+        (method (Employee . print2) ((/Employee * emp)) ; refers to Employee outside any module because of starts with '/'
                 (printf "same emp id is: %d, %d\n" ($ this id) ($ emp id)))
 
         (var long varAAA . 567)
         
         (module a
                 ;;;; / resolution sign refer to type inside a
-                (method Employee->print ()
+                (method (Employee . print) ()
                         (printf "inside a emp id is: %d\n" ($ this id)))
 
                 (func print ((/Employee * emp)) ; refers to Employee outside module a '/' sign means free resolution
@@ -86,7 +86,7 @@
                         (var long varAAA . 876)
                         
                         (module d
-                                (method Employee->print ()
+                                (method (Employee . print) ()
                                         (printf "inside d emp id is: %d\n" ($ this id)))
 
                                 (func aFunc ((int x) (int y)) (out '{(int a) (int b)}) ; inside module d
