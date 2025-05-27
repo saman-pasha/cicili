@@ -143,33 +143,17 @@ IOSlice * mergeIOSlices (IOSlice * a , IOSlice * b );
 TensorSlice * mergeTensorSlices (TensorSlice * a , TensorSlice * b );
 
 typedef struct Model {
-  Graph * graph ;
-  Status * status ;
-  Session * session ;
-  TF_Output input ;
-  TF_Output * output ;
-  IOSlice * input_placeholders ;
-  IOSlice * output_placeholders ;
-  IOSlice * weight_placeholders ;
-  TF_Output labels ;
-  TF_Output loss ;
-  IOSlice * trainable_vars ;
-  IOSlice * learning_rates ;
-  TensorSlice * learning_rates_tensors ;
-  IOSlice * gradients ;
-  TF_Operation * train_op ;
+  List<TF_CiciliLayer*> layers ;
+  char * optimizer ;
+  char * loss_function ;
   float learning_rate ;
 } Model;
+typedef void (*train_callback_t) (   );
 Model * Model_s_new ();
-TF_Output Model_m_addDense (Model * this , int units );
-void Model_m_compile (Model * this );
-TensorSlice * Model_m_predict (Model * this , TensorSlice * input_vals );
+void Model_m_addLayer (Model * this , TF_CiciliLayer* layer );
+void Model_m_compile (Model * this , const char * optimizer , const char * loss_function , float learning_rate );
+void Model_m_train (Model * this , Dataset dataset , int batch_size , int epochs , train_callback_t * callbacks , int num_callbacks );
+Tensor * Model_m_predict (Model * this , Tensor * input );
 void Model_m_free (Model * this );
-void Model_m_compileWithLoss (Model * this , const char * label_name );
-void Model_m_fit (Model * this , TensorSlice * inputs , TensorSlice * targets , int epochs );
-float Model_m_evaluate (Model * this , TensorSlice * inputs , TensorSlice * targets );
-TF_Output Model_m_addTrainable (Model * this , const char * name , int size );
-void Model_m_setLearningRate (Model * this , float lr );
-void Model_m_prepareTrain (Model * this , TF_Output loss , float lr );
 
 #endif /* __CICILI_TF_H_ */ 

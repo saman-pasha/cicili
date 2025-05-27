@@ -86,6 +86,8 @@
              (setf (module instance) *module-path*)
              (setf (unique instance) (free-name *module-path* name)))
            (setf (inners  instance)     (make-hash-table :test 'eql)))
+	      ((eql construct '|@GENERIC|)
+	       (setf (inners  instance)     (make-hash-table :test 'eql)))
 	      ((eql construct '|@TARGET|)
 	       (setf (inners  instance)     (make-hash-table :test 'eql)))
 	      (t t))
@@ -509,6 +511,7 @@
     (cond ((key-eq oprt '|not|) (setq oprt '|!|))
 	      ((key-eq oprt '|cof|) (setq oprt '|*|))
           ((key-eq oprt '|aof|) (setq oprt '|&|))
+          ((key-eq oprt '|stringize|) (setq oprt '|#|))  ; only inside generics
           ((key-eq oprt '|1+|)  (setq oprt '|++|) (setq is-postfix t))
 	      ((key-eq oprt '|1-|)  (setq oprt '|--|) (setq is-postfix t)))
     (if is-postfix
@@ -576,9 +579,10 @@
 
 (defun specify-->-expr (def)
   (when (< (length def) 3) (error (format nil "wrong access method -> form ~A" def)))
-  (unless (is-symbol (nth 2 def)) (error (format nil "wrong access method name ~A" def)))
+  ;; (unless (is-symbol (nth 2 def)) (error (format nil "wrong access method name ~A" def)))
   (let ((method-var (make-specifier (specify-expr (nth 1 def)) '|@->| nil nil nil nil nil
-                                    (specify-symbol-expr (nth 2 def)) '())))
+                                    ;; (specify-symbol-expr (nth 2 def)) '())))
+                                    (specify-expr (nth 2 def)) '())))
     (setf (body method-var) (specify-list-expr (nthcdr 3 def)))
     method-var))
 
@@ -1011,7 +1015,17 @@
 	     (is-inline  nil)
 	     (is-extern  nil)
 	     (do-resolve nil)
-	     (name (nth 1 def))
+	     (name (if (consp (nth 1 def))
+                   (if *generic*                       
+                       (cons
+                        (if (str:ends-with-p "!" (symbol-name (car (nth 1 def))))
+                            (intern (str:replace-first "!" "" (symbol-name (car (nth 1 def)))))
+                            (intern (make-generic-name (car (nth 1 def)) *generic*)))
+                        (intern (make-generic-name (cdr (nth 1 def)) *generic*)))
+                       (nth 1 def))
+                   (if *generic*
+                       (intern (make-generic-name (nth 1 def) *generic*))
+                       (nth 1 def))))
          (is-method (if (key-eq (car def) '|method|) t nil))
          (is-shared (and (listp name) (not is-method)))
 	     (params (nth 2 def))
@@ -1139,7 +1153,13 @@
 (defun specify-struct (def attrs &key ((:nested is-nested) nil) ((:inline is-inline) nil))
   (when (> (length attrs) 0) (error (format nil "wrong attributes ~A" attrs)))
   (let* ((is-anonymous (or (= (length def) 1) (not (symbolp (nth 1 def)))))
-	     (name (specify-decl-name< (if is-anonymous (gensym "ciciliStruct") (nth 1 def))))
+	     (name (specify-decl-name< (if is-anonymous
+                                       (gensym "ciciliStruct")
+                                       (if is-nested
+                                           (nth 1 def)
+                                           (if *generic*
+                                               (intern (make-generic-name (nth 1 def) *generic*))
+                                               (nth 1 def))))))
 	     (clauses (if is-anonymous (nthcdr 1 def) (nthcdr 2 def)))
 	     (struct-specifier (make-specifier name '|@STRUCT| nil nil nil nil nil nil nil)))
     (when (and is-anonymous (not is-nested)) (error (format nil "only nested structs could be anonymous")))
@@ -1188,7 +1208,13 @@
 (defun specify-union (def attrs &key ((:nested is-nested) nil))
   (when (> (length attrs) 0) (error (format nil "wrong attributes ~A" attrs)))
   (let* ((is-anonymous (or (= (length def) 1) (not (symbolp (nth 1 def)))))
-	     (name (specify-decl-name< (if is-anonymous (gensym "ciciliUnion") (nth 1 def))))
+	     (name (specify-decl-name< (if is-anonymous
+                                       (gensym "ciciliUnion")
+                                       (if is-nested
+                                           (nth 1 def)
+                                           (if *generic*
+                                               (intern (make-generic-name (nth 1 def) *generic*))
+                                               (nth 1 def))))))
 	     (clauses (if is-anonymous (nthcdr 1 def) (nthcdr 2 def)))
 	     (union-specifier (make-specifier name '|@UNION| nil nil nil nil nil nil nil)))
     (when (and is-anonymous (not is-nested)) (error (format nil "only nested unions could be anonymous")))
@@ -1223,7 +1249,11 @@
 
 (defun specify-guard (def attrs &optional is-ghost)
   (when (> (length attrs) 0) (error (format nil "wrong attributes ~A" attrs)))
-  (let* ((name (specify-decl-name< (if is-ghost (gensym "ciciliGhost") (nth 1 def))))
+  (let* ((name (specify-decl-name< (if is-ghost
+                                       (gensym "ciciliGhost")
+                                       (if *generic*
+                                           (intern (make-generic-name (nth 1 def) *generic*))
+                                           (nth 1 def)))))
 	     (clauses (if is-ghost (nthcdr 1 def) (nthcdr 2 def)))
 	     (guard-specifier (make-specifier name (if is-ghost '|@GHOST| '|@GUARD|) nil nil nil nil nil nil nil)))
     (let ((attributes '()))

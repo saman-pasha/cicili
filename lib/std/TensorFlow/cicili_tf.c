@@ -306,7 +306,7 @@ IOSlice * IOSlice_s_newFromArray (const ioslice_elem_t * arr , size_t len ) {
 }
 IOSlice * IOSlice_s_newCopy (const IOSlice * other ) {
   { /* cicili#Let243 */
-    IOSlice * slice  = IOSlice_s_newEmpty((other ->len ));
+    IOSlice * slice  = IOSlice_s_newEmpty((other . len ));
     memcpy ((slice ->arr ), (other ->arr ), (sizeof(ioslice_elem_t) *  (other ->len ) ));
     return slice ;
   }
@@ -384,7 +384,7 @@ struct __ciciliS_IOSlice_m_pop_ IOSlice_m_pop (IOSlice * this ) {
 }
 IOSlice * IOSlice_m_shrink (IOSlice * this ) {
   { /* cicili#Let280 */
-    IOSlice * newSlice  = IOSlice_s_newEmpty((this ->len ));
+    IOSlice * newSlice  = IOSlice_s_newEmpty((this . len ));
     memcpy ((newSlice ->arr ), (this ->arr ), (sizeof(ioslice_elem_t) *  (this ->len ) ));
     IOSlice_m_free(this );
     return newSlice ;
@@ -395,7 +395,7 @@ IOSlice * IOSlice_m_insert (IOSlice * this , size_t index , ioslice_elem_t val )
     size_t safeIndex  = (((index  >  (this ->len ) )) ? (this ->len ) : index );
     if ((this ->len ) ==  (this ->cap ) ) 
       { /* cicili#Let286 */
-        IOSlice * newSlice  = IOSlice_s_newEmpty(((this ->len ) +  1 ));
+        IOSlice * newSlice  = IOSlice_s_newEmpty(((this . len ) +  1 ));
         memcpy ((newSlice ->arr ), (this ->arr ), (sizeof(ioslice_elem_t) *  safeIndex  ));
         (newSlice ->arr )[safeIndex ] = val ;
         memcpy (((newSlice ->arr ) +  (safeIndex  +  1 ) ), ((this ->arr ) +  safeIndex  ), (sizeof(ioslice_elem_t) *  ((this ->len ) -  safeIndex  ) ));
@@ -453,7 +453,7 @@ TensorSlice * TensorSlice_s_newFromArray (const tensorslice_elem_t * arr , size_
 }
 TensorSlice * TensorSlice_s_newCopy (const TensorSlice * other ) {
   { /* cicili#Let310 */
-    TensorSlice * slice  = TensorSlice_s_newEmpty((other ->len ));
+    TensorSlice * slice  = TensorSlice_s_newEmpty((other . len ));
     memcpy ((slice ->arr ), (other ->arr ), (sizeof(tensorslice_elem_t) *  (other ->len ) ));
     return slice ;
   }
@@ -531,7 +531,7 @@ struct __ciciliS_TensorSlice_m_pop_ TensorSlice_m_pop (TensorSlice * this ) {
 }
 TensorSlice * TensorSlice_m_shrink (TensorSlice * this ) {
   { /* cicili#Let347 */
-    TensorSlice * newSlice  = TensorSlice_s_newEmpty((this ->len ));
+    TensorSlice * newSlice  = TensorSlice_s_newEmpty((this . len ));
     memcpy ((newSlice ->arr ), (this ->arr ), (sizeof(tensorslice_elem_t) *  (this ->len ) ));
     TensorSlice_m_free(this );
     return newSlice ;
@@ -542,7 +542,7 @@ TensorSlice * TensorSlice_m_insert (TensorSlice * this , size_t index , tensorsl
     size_t safeIndex  = (((index  >  (this ->len ) )) ? (this ->len ) : index );
     if ((this ->len ) ==  (this ->cap ) ) 
       { /* cicili#Let353 */
-        TensorSlice * newSlice  = TensorSlice_s_newEmpty(((this ->len ) +  1 ));
+        TensorSlice * newSlice  = TensorSlice_s_newEmpty(((this . len ) +  1 ));
         memcpy ((newSlice ->arr ), (this ->arr ), (sizeof(tensorslice_elem_t) *  safeIndex  ));
         (newSlice ->arr )[safeIndex ] = val ;
         memcpy (((newSlice ->arr ) +  (safeIndex  +  1 ) ), ((this ->arr ) +  safeIndex  ), (sizeof(tensorslice_elem_t) *  ((this ->len ) -  safeIndex  ) ));
@@ -645,92 +645,4 @@ TensorSlice * mergeTensorSlices (TensorSlice * a , TensorSlice * b ) {
 Model * Model_s_new () {
   { /* cicili#Let419 */
     Model * model  = malloc (sizeof(Model));
-    int64_t dims [] = { -1, 4};
-    (model ->status ) = Status_s_new();
-    (model ->graph ) = Graph_s_new();
-    (model ->input ) = Graph_m_placeholder((model ->graph ), "input", TF_FLOAT , dims , 2);
-    (model ->input_placeholders ) = IOSlice_s_newFromArray((&(model ->input )), 1);
-    return model ;
-  }
-}
-TF_Output * Model_m_addDense (Model * this , int units ) {
-  { /* cicili#Let422 */
-    TF_Output * last_output  = (this ->output );
-    if (last_output  ==  NULL  ) 
-      { /* cicili#Block427 */
-        last_output  = (&(this ->input ));
-      } /* cicili#Block427 */
-
-    { /* cicili#Let429 */
-      TF_Output * out  = malloc (sizeof(TF_Output));
-      (*out ) = ({ /* cicili#Progn433 */
-({ /* cicili#Let435 */
-    TF_Output dense_w  = Graph_m_variable((this ->graph ), "dense_w", TF_FLOAT , NULL , 2);
-    TF_Output dense_b  = Graph_m_variable((this ->graph ), "dense_b", TF_FLOAT , NULL , 1);
-({ /* cicili#Let437 */
-      TF_OperationDescription * desc  = TF_NewOperation (((this ->graph )->ptr ), "MatMul", "dense_matmul");
-      TF_AddInput (desc , (*last_output ));
-      TF_AddInput (desc , dense_w );
-      TF_SetAttrBool (desc , "transpose_a", 0);
-      TF_SetAttrBool (desc , "transpose_b", 0);
-({ /* cicili#Let439 */
-        TF_Output matmul_out  = ((TF_Output){ TF_FinishOperation (desc , (((this ->graph )->status )->ptr )), 0});
-        TF_OperationDescription * desc2  = TF_NewOperation (((this ->graph )->ptr ), "BiasAdd", "dense_out");
-        TF_AddInput (desc2 , matmul_out );
-        TF_AddInput (desc2 , dense_b );
-({ /* cicili#Let441 */
-          TF_Operation * op  = TF_FinishOperation (desc2 , (((this ->graph )->status )->ptr ));
-          TF_Output dense  = ((TF_Output){ op , 0});
-          dense ;
-        })      })    })  })});
-      (this ->output ) = out ;
-      return out ;
-    }
-  }
-}
-void Model_m_compile (Model * this ) {
-  (this ->session ) = Session_s_new((this ->graph ), (this ->status ));
-}
-TensorSlice * Model_m_predict (Model * this , TensorSlice * input_vals ) {
-  { /* cicili#Let445 */
-    TensorSlice * out_vals  = TensorSlice_s_newEmpty(1);
-    Session_m_run((this ->session ), (this ->input_placeholders ), input_vals , (this ->input_placeholders ), out_vals );
-    return out_vals ;
-  }
-}
-void Model_m_free (Model * this ) {
-  Session_m_close((this ->session ));
-  Session_m_free((this ->session ));
-  Graph_m_free((this ->graph ));
-  Status_m_free((this ->status ));
-  free (this );
-}
-void Model_m_compileWithLoss (Model * this , const char * label_name ) {
-  { /* cicili#Let449 */
-    TF_Output labels  = Graph_m_placeholder((this ->graph ), label_name , TF_FLOAT , ((int64_t[]){ -1, 1}), 2);
-    (this ->labels ) = labels ;
-    (this ->output_placeholders ) = IOSlice_s_newFromArray((&labels ), 1);
-  }
-  { /* cicili#Let451 */
-    TF_Output diff  = Graph_m_sub((this ->graph ), "diff", (*(this ->output )), (this ->labels ));
-    TF_Output sq  = Graph_m_square((this ->graph ), "sq", diff );
-    TF_Output loss  = Graph_m_mean((this ->graph ), "loss", sq );
-    (this ->loss ) = loss ;
-  }
-  { /* cicili#Let453 */
-    int num_vars  = ((this ->trainable_vars )->len );
-    TF_Output * grad_arr  = malloc ((num_vars  *  sizeof(TF_Output) ));
-    Graph_m_addSymbolicGradients((this ->graph ), (&(this ->loss )), 1, ((this ->trainable_vars )->arr ), num_vars , grad_arr );
-    (this ->gradients ) = IOSlice_s_newFromArray(grad_arr , num_vars );
-    { /* cicili#Let455 */
-      TF_Output * lr_arr  = malloc ((num_vars  *  sizeof(TF_Output) ));
-      TF_Tensor ** lr_tensors  = malloc ((num_vars  *  sizeof(TF_Tensor *) ));
-      for (int i  = 0; (i  <  num_vars  ); (++i )) {
-        { /* cicili#Let459 */
-          float * lr_val  = malloc (sizeof(float));
-          (*lr_val ) = 0.01f ;
-          { /* cicili#Let461 */
-            TF_Tensor * lr_tensor  = TF_NewTensor (TF_FLOAT , 0, 0, lr_val , sizeof(float), 0, 0);
-            lr_arr [i ] = Graph_m_constFloat((this ->graph ), "lr", 0.01f );
-            lr_tensors [i ] = lr_tensor ;
-            (this ->learning_rates_tensors ) = TensorSlice_s_newFromArray(
+    (model ->

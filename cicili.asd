@@ -1,10 +1,11 @@
 (defsystem "cicili"
-  :version "0.0.9"
+  :version "0.0.10"
   :author  "Saman Heidarzadeh Pasha (saman.h.pasha@gmail.com)"
   :license "MIT License"
   :depends-on ("sha1" "base64" "str" "cl-ppcre")
   :components ((:file "compiler"   :depends-on ("target"))
-	           (:file "target"     :depends-on ("module" "backend"))
+	           (:file "target"     :depends-on ("generic" "module" "backend"))
+	           (:file "generic"    :depends-on ("backend"))
 	           (:file "module"     :depends-on ("backend"))
 	           (:file "backend"    :depends-on ("specifier"))
 	           (:file "specifier"  :depends-on ("core"))

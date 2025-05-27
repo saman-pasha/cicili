@@ -100,6 +100,7 @@
  'font-lock-keyword-face
  '((1 . main)
    (1 . main*)
+   (1 . generic)
    (1 . format)
    (1 . code)
    (1 . header)
@@ -185,6 +186,11 @@
 (font-lock-add-keywords
  'lisp-mode
  '(("(guard[ \t\n]+\\(\\(\\sw\\|\\s_\\)+\\)[ \t\n]*"
+    (1 'font-lock-preprocessor-face))))
+
+(font-lock-add-keywords
+ 'lisp-mode
+ '(("(generic[ \t\n]+\\(\\(\\sw\\|\\s_\\)+\\)[ \t\n]*"
     (1 'font-lock-preprocessor-face))))
 
 (font-lock-add-keywords

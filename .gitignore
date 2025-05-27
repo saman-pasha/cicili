@@ -148,3 +148,7 @@ lib/std/cicili_tensor.c.run2.c
 lib/std/cicili_tensor.c.run3.c
 lib/std/cicili_tf.c.run4.c
 lib/std/TensorFlow/.\#model.lisp
+lib/std/TensorFlow/.\#optimizer.lisp
+test/macro/generic.c.run1.c
+test/macro/generic.c.run2.c
+test/macro/generic.c.run3.c

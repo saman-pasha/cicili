@@ -2,7 +2,7 @@
 
 (defvar *output* t)
 
-(defvar *unaries* '(|+| |-| |++| |1+| |--| |1-| |~| |not| |cof| |aof|))
+(defvar *unaries* '(|+| |-| |++| |1+| |--| |1-| |~| |not| |cof| |aof| |symbolize| |stringize|))
 (defvar *operators* '(|+| |-| |*| |/| |%| |==| |!=| |>| |<| |>=| |<=| |^| |<<| |>>| |xor| |and| |or| |bitand| |bitor|))
 (defvar *assignments* '(|+=| |-=| |*=| |/=| |%=| |<<=| |>>=|))
 (defvar *modifiers* '(|&| |*| |**| |***|))
@@ -41,6 +41,8 @@
 (defvar *macros* (make-hash-table :test 'equal))
 ;; whether cicili is during macro expantion
 (defparameter *macroexpand* (make-hash-table :test 'equal))
+;; holds the params name appended to each func, struct, union
+(defparameter *generic* nil)
 
 ;; adds a macro to macros list *macros*
 (defun add-macro (macro symbol)
@@ -172,6 +174,7 @@
 (defvar *new-line* (format nil "~%"))
 
 (defun output (ctrl &rest rest)
+  (when *generic* (setq ctrl (str:replace-all "~%" " \\~%" ctrl)))
   (let ((result (apply 'format (append (list nil ctrl) rest))))
     (apply 'format (list *output* result))
     (let* ((index (search *new-line* result :from-end t))
@@ -199,23 +202,38 @@
 (defun indent (lvl)
   (make-string (* lvl 2) :initial-element #\Space))
 
+(defun make-generic-name (name generic)
+  (format nil "~A ## _ ~A" name generic))
+
 (defun make-method-name (struct method)
-  (format nil "~A_m_~A" struct method))
+  (if *generic*
+      (format nil "~A ## _m_ ## ~A" struct method)
+      (format nil "~A_m_~A" struct method)))
 
 (defun make-shared-name (struct method)
-  (format nil "~A_s_~A" struct method))
+  (if *generic*
+      (format nil "~A ## _s_ ## ~A" struct method)
+      (format nil "~A_s_~A" struct method)))
 
 (defun is-name (name) (symbolp name))
 
 (defun is-decl-name (name)
   (let ((name (symbol-name name)))
-    (cond ((string= name "const") nil)
-	      ((not (find (char name 0) "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_.")) nil)
-	      (t (progn
-	           (dotimes (i (- (length name) 1))
-		         (unless (find (char name (+ i 1)) "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_1234567890_.")
-		           (return-from is-decl-name nil)))
-	           t)))))
+    (if *generic*
+        (cond ((string= name "const") nil)
+	          ((not (find (char name 0) "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_")) nil)
+	          (t (progn
+	               (dotimes (i (- (length name) 1))
+		             (unless (find (char name (+ i 1)) "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_1234567890 #!")
+		               (return-from is-decl-name nil)))
+	               t)))
+        (cond ((string= name "const") nil)
+	          ((not (find (char name 0) "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_")) nil)
+	          (t (progn
+	               (dotimes (i (- (length name) 1))
+		             (unless (find (char name (+ i 1)) "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_1234567890")
+		               (return-from is-decl-name nil)))
+	               t))))))
 
 (defun is-symbol (name)
   (let ((name (symbol-name name)))

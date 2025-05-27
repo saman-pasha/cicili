@@ -10,13 +10,14 @@
 (DEFMACRO main* (&REST body)
   `(func main ((int argc) (char * argv [])) (out int) ,@body))
 
+(DEFMACRO <> (name &REST body)
+  (INTERN (FORMAT NIL "~A_~{~A~}" name body)))
+
 ;;; each struct which implements string can write itself to a FILE *
 ;;; notice inline methods won't be resolved and -> is point to, not method access
-(DEFMACRO interface-string (struct &REST body)
-  `{inline} `(method ,(make-method-name struct 'toString) ((FILE * file)) ,@body))
+(DEFMACRO IString (struct)
+  `(ghost (decl) (method (,struct . toString) ((FILE * file)))))
 
-;;; default char buffer for format out char * use nil as fd
-(DEFVAR +FORMAT-STRING-DEFAULT-BUFFER-SIZE+ 1024)
 ;;; use format lisp clause insted of printf
 ;;; f  FILE *
 ;;; #t short for stdout
@@ -96,7 +97,7 @@
         (array   (GENSYM "ciciliArr"))
         (len     (GENSYM "ciciliLen"))
         (counter (GENSYM "ciciliCounter")))
-    `(let ((auto ,array . ,(IF (LISTP list) #'list list))
+    `(let ((auto ,array . ,(IF (LISTP list) `(FUNCTION ,list) list))
            ((typeof (nth 0 ,array)) * ,var . ,array)
            (size_t ,len . #'($ ,array len)))
        (for ((int ,counter . 0))
@@ -112,3 +113,6 @@
        (< ,var ,count)
        ((++ ,var))
        ,@body)))
+
+(DEFMACRO null (value)
+  `(== ,value nil))
