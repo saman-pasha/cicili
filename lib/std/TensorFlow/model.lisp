@@ -7,6 +7,7 @@
          (member char * optimizer)
          (member char * loss_function)
          (member float learning_rate)
+         (member void * optimizer)
          (member TF_Session* session)      ;; New field: reused session.
          )
 

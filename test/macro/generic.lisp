@@ -6,7 +6,7 @@
           (member char name [10]))
 
         (generic __TEST1_G_ (ID PRNT)
-                 ;; with '!' means the struct is not generic and only function is generic
+                 ;; with '!' means the struct is not generic itself and only function is generic
                  (method (Employee! . print) ()
                          (PRNT "employee! ID: %s\n" (stringize ID))))
 

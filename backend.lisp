@@ -147,6 +147,8 @@
                    (let ((resu (format nil "~A " symbol)))
                      (setf (res spec) resu)
                      (set-ast-line (output resu))))
+                  ((str:containsp "no member named" info)
+                   (set-ast-line (output "~A " symbol))) ; ignore for ->
                   (t (error (format nil "cicili: atom: ~A. ~S~%~A" spec-key (str:substring 0 340 info) spec))))
             (if (null (res spec))
                 (set-ast-line (output "~A " symbol))
@@ -515,7 +517,8 @@
       ('|@TYPEDEF|(compile-typedef    spec 0   globals)) 
       ('|@GUARD|  (compile-guard      spec 0   globals)) 
       ('|@GHOST|  (compile-guard      spec 0   globals t)) 
-      ('|@MODULE| (compile-module     spec 0   globals)) ; down here for inside macros 
+      ('|@MODULE| (compile-module     spec 0   globals))
+      ('|@GENERIC|(compile-generic    spec 0   globals)) ; down here for inside macros 
       ('|@CALL|   (compile-call       spec -1  globals))
       ('|@BODY|   (compile-body       spec -1  globals spec))
       (t (error (format nil "expr syntax error ~A" spec))))))
@@ -1014,6 +1017,7 @@
 		           ('|@GUARD|    (compile-guard        in-spec lvl globals nil :nested t))
 		           ('|@GHOST|    (compile-guard        in-spec lvl globals t :nested t))
 		           ('|@MODULE|   (compile-module       in-spec lvl globals))
+		           ('|@GENERIC|  (compile-generic      in-spec lvl globals))
 		           (otherwise    (compile-form         in-spec lvl globals)
                                  (output "~%"))))
 	         (inners spec))

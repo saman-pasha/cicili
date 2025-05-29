@@ -1,3 +1,7 @@
+
+(DEFMACRO IOptimizer (struct) 
+  (decl) (method (,struct . applyGradients) ((Graph * graph) (ILayer * layer) (Tensor * grad)))
+  )
 ;;;;*************************************************************************
 ;;;; BasicTFOptimizerHeader – Base Optimizer Interface for TF Models
 ;;;;*************************************************************************

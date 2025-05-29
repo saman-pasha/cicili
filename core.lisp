@@ -43,6 +43,8 @@
 (defparameter *macroexpand* (make-hash-table :test 'equal))
 ;; holds the params name appended to each func, struct, union
 (defparameter *generic* nil)
+;; holds the generic names and its arguements
+(defparameter *specific* nil)
 
 ;; adds a macro to macros list *macros*
 (defun add-macro (macro symbol)
@@ -174,7 +176,8 @@
 (defvar *new-line* (format nil "~%"))
 
 (defun output (ctrl &rest rest)
-  (when *generic* (setq ctrl (str:replace-all "~%" " \\~%" ctrl)))
+  ;; (when *generic* (setq ctrl (str:replace-all "~%" " \\~%" ctrl)))
+  ;; (when (and *specific* *generic*)
   (let ((result (apply 'format (append (list nil ctrl) rest))))
     (apply 'format (list *output* result))
     (let* ((index (search *new-line* result :from-end t))
@@ -201,6 +204,9 @@
 
 (defun indent (lvl)
   (make-string (* lvl 2) :initial-element #\Space))
+
+(defun <> (name &rest body)
+  (intern (format nil "~A_~{~A~}" name body)))
 
 (defun make-generic-name (name generic)
   (format nil "~A ## _ ~A" name generic))

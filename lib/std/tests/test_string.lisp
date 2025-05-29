@@ -1,8 +1,8 @@
 
-(source "./tests/string_test.c"
-  (:std #t :compile #t :link "-L{$CWD} cicili_string.lo string_test.lo -o ./tests/string_test")
+(source "string_test.c"
+  (:std #t :compile #t :link "-L{$CWD} -L{$CWD}../Slice -lcicili_string.lo string_test.lo -o string_test")
 
-        (include "cicili_string.h")
+        (include "../Slice/cicili_string.h")
 
         (main
             (let

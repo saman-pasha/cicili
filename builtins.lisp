@@ -10,6 +10,13 @@
 (DEFMACRO main* (&REST body)
   `(func main ((int argc) (char * argv [])) (out int) ,@body))
 
+(DEFMACRO generic (macro types &REST body)
+  `(DEFMACRO ,macro (&REST args)
+     (LET ((types ',types)
+           (body (COPY-LIST ',body)))
+       (MAPCAN #'(LAMBDA (a g) (NSUBST a g body)) args types)
+       `(ghost ,@body))))
+
 (DEFMACRO <> (name &REST body)
   (INTERN (FORMAT NIL "~A_~{~A~}" name body)))
 
@@ -39,7 +46,7 @@
                     array        ; array to be traveresed or pointer to its one of items
                     length       ; length of array or count of loop should go through
                     &REST body)  ; what to do each turn
-  `(let (((typeof (nth 0 ,array)) * ,item . ,array))
+  `(let (((typeof (nth 0 ,array)) * ,item . ,(IF (LISTP array) `(FUNCTION ,array) array)))
      (for ((int ,counter . 0))
        (< ,counter ,length)
        ((++ ,item)
@@ -52,7 +59,7 @@
                           array        ; array to be traveresed or pointer to its one of items
                           length       ; length of array or count of loop should go through
                           &REST body)  ; what to do each turn
-  `(let ((const (typeof (nth 0 ,array)) * ,item . ,array))
+  `(let ((const (typeof (nth 0 ,array)) * ,item . ,(IF (LISTP array) `(FUNCTION ,array) array)))
      (for ((int ,counter . 0))
        (< ,counter ,length)
        ((++ ,item)

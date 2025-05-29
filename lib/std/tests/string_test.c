@@ -4,31 +4,31 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
-#include "cicili_string.h"
-static void __ciciliL_182 (String ** a) {
+#include "../Slice/cicili_string.h"
+static void __ciciliL_182 (String ** a ) {
   String_m_free((*a ));
 }
-static void __ciciliL_184 (String ** b) {
+static void __ciciliL_184 (String ** b ) {
   String_m_free((*b ));
 }
 int main () {
   { /* cicili#Let181 */
-    String * a __attribute__((__cleanup__(__ciciliL_182 ))) = String_s_new("hello");
-    String * b __attribute__((__cleanup__(__ciciliL_184 ))) = String_s_new("world");
-    String * formatted = String_s_newFormat("value: %d, %s", 42, "test");
-    String * helloWorld = String_m_concat(a , b );
-    String * upper = String_m_toUpper(a );
-    String * lower = String_m_toLower(upper );
-    String * trimmed = String_m_trim(String_s_new("   padded   "));
-    String * replaced = String_m_replace(String_s_new("a-b-c-d"), '-', '_');
-    String * substr = String_m_substring(helloWorld , 3, 4);
-    String * prefix = String_s_new("hel");
-    String * suffix = String_s_new("rld");
-    bool eq1 = String_m_equals(a , a );
-    bool eq2 = String_m_equals(a , b );
-    size_t index = String_m_find(a , 'l');
-    bool sw = String_m_startsWith(a , prefix );
-    bool ew = String_m_endsWith(helloWorld , suffix );
+    String * a  __attribute__((__cleanup__(__ciciliL_182 ))) = String_s_new("hello");
+    String * b  __attribute__((__cleanup__(__ciciliL_184 ))) = String_s_new("world");
+    String * formatted  = String_s_newFormat("value: %d, %s", 42, "test");
+    String * helloWorld  = String_m_concat(a , b );
+    String * upper  = String_m_toUpper(a );
+    String * lower  = String_m_toLower(upper );
+    String * trimmed  = String_m_trim(String_s_new("   padded   "));
+    String * replaced  = String_m_replace(String_s_new("a-b-c-d"), '-', '_');
+    String * substr  = String_m_substring(helloWorld , 3, 4);
+    String * prefix  = String_s_new("hel");
+    String * suffix  = String_s_new("rld");
+    bool eq1  = String_m_equals(a , a );
+    bool eq2  = String_m_equals(a , b );
+    size_t index  = String_m_find(a , 'l');
+    bool sw  = String_m_startsWith(a , prefix );
+    bool ew  = String_m_endsWith(helloWorld , suffix );
     fprintf (stdout , "a: %s\n", (a ->arr ));
     fprintf (stdout , "b: %s\n", (b ->arr ));
     fprintf (stdout , "helloWorld: %s\n", (helloWorld ->arr ));
