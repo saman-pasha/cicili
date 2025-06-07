@@ -14,7 +14,7 @@ struct __ciciliS_ByteVector_m_calcCap_ {
 static struct __ciciliS_ByteVector_m_calcCap_ ByteVector_s_calcCap (size_t len ) {
   { /* cicili#Let106 */
     size_t capLen  = ((((len  %  BYTEVECTOR_GROWTH_STEP  ) >  0 )) ? ((len  /  BYTEVECTOR_GROWTH_STEP  ) +  1 ) : (len  /  BYTEVECTOR_GROWTH_STEP  ));
-    return ((struct __ciciliS_ByteVector_m_calcCap_){ capLen , (sizeof(bytevector_elem_t) *  capLen  )});
+    return ((struct __ciciliS_ByteVector_m_calcCap_){ len , (capLen  *  BYTEVECTOR_GROWTH_STEP  )});
   }
 }
 ByteVector * ByteVector_s_newEmpty (size_t len ) {
@@ -22,7 +22,7 @@ ByteVector * ByteVector_s_newEmpty (size_t len ) {
     __auto_type cap  = ByteVector_s_calcCap(len );
     ByteVector * slice  = malloc ((sizeof(ByteVector) +  (cap . size ) ));
     (slice ->len ) = len ;
-    (slice ->cap ) = (cap . capLen );
+    (slice ->cap ) = (cap . size );
     return slice ;
   }
 }

@@ -14,7 +14,7 @@ struct __ciciliS_String_m_calcCap_ {
 static struct __ciciliS_String_m_calcCap_ String_s_calcCap (size_t len ) {
   { /* cicili#Let106 */
     size_t capLen  = ((((len  %  STRING_GROWTH_STEP  ) >  0 )) ? ((len  /  STRING_GROWTH_STEP  ) +  1 ) : (len  /  STRING_GROWTH_STEP  ));
-    return ((struct __ciciliS_String_m_calcCap_){ capLen , (sizeof(string_elem_t) *  capLen  )});
+    return ((struct __ciciliS_String_m_calcCap_){ len , (capLen  *  STRING_GROWTH_STEP  )});
   }
 }
 String * String_s_newEmpty (size_t len ) {
@@ -22,7 +22,7 @@ String * String_s_newEmpty (size_t len ) {
     __auto_type cap  = String_s_calcCap(len );
     String * slice  = malloc ((sizeof(String) +  (cap . size ) ));
     (slice ->len ) = len ;
-    (slice ->cap ) = (cap . capLen );
+    (slice ->cap ) = (cap . size );
     return slice ;
   }
 }
@@ -197,9 +197,10 @@ size_t String_m_count (String * this , string_elem_t val ) {
 String * String_s_new (const string_elem_t * cstr ) {
   { /* cicili#Let203 */
     size_t len  = strlen (cstr );
-    String * str  = String_s_newEmpty(len );
+    String * str  = String_s_newEmpty((len  +  1 ));
     strncpy ((str ->arr ), cstr , len );
     (str ->arr )[len ] = '\0';
+    (str ->len ) = len ;
     return str ;
   }
 }
@@ -218,7 +219,7 @@ String * String_m_substring (String * this , size_t start , size_t length ) {
     return String_s_new("");
 
   { /* cicili#Let211 */
-    String * sub  = String_s_newEmpty(length );
+    String * sub  = String_s_newEmpty((length  +  1 ));
     strncpy ((sub ->arr ), ((this ->arr ) +  start  ), length );
     (sub ->arr )[length ] = '\0';
     (sub ->len ) = length ;
@@ -226,10 +227,18 @@ String * String_m_substring (String * this , size_t start , size_t length ) {
   }
 }
 String * String_m_concat (String * this , const String * other ) {
-  return String_m_appendNew(this , other );
+  { /* cicili#Let214 */
+    size_t len  = ((this ->len ) +  (other ->len ) );
+    String * str  = String_s_newEmpty((len  +  1 ));
+    strncpy ((str ->arr ), (this ->arr ), (this ->len ));
+    strncpy (((str ->arr ) +  (this ->len ) ), (other ->arr ), len );
+    (str ->arr )[len ] = '\0';
+    (str ->len ) = len ;
+    return str ;
+  }
 }
 size_t String_m_find (String * this , string_elem_t ch ) {
-  { /* cicili#Let215 */
+  { /* cicili#Let217 */
     string_elem_t * pos  = strchr ((this ->arr ), ch );
     return (((pos  !=  NULL  )) ? (pos  -  (this ->arr ) ) : -1);
   }
@@ -238,7 +247,7 @@ bool String_m_equals (String * this , const String * other ) {
   return (strcmp ((this ->arr ), (other ->arr )) ==  0 );
 }
 String * String_m_toUpper (String * this ) {
-  { /* cicili#Let219 */
+  { /* cicili#Let221 */
     String * strCopy  = String_s_newCopy(this );
     size_t i  = 0;
     while ((i  <  (strCopy ->len ) )) {
@@ -249,7 +258,7 @@ String * String_m_toUpper (String * this ) {
   }
 }
 String * String_m_toLower (String * this ) {
-  { /* cicili#Let223 */
+  { /* cicili#Let225 */
     String * strCopy  = String_s_newCopy(this );
     size_t i  = 0;
     while ((i  <  (strCopy ->len ) )) {
@@ -260,7 +269,7 @@ String * String_m_toLower (String * this ) {
   }
 }
 String * String_m_trim (String * this ) {
-  { /* cicili#Let227 */
+  { /* cicili#Let229 */
     char * start  = (this ->arr );
     char * end  = ((this ->arr ) +  ((this ->len ) -  1 ) );
     while ((((start  -  (this ->arr ) ) <  (this ->len ) ) &&  isspace (* (start )) )) {
@@ -269,14 +278,14 @@ String * String_m_trim (String * this ) {
     while (((end  >=  start  ) &&  isspace (* (end )) )) {
       end  = (end  -  1 );
     } 
-    { /* cicili#Let231 */
+    { /* cicili#Let233 */
       size_t newlen  = (1 +  (end  -  start  ) );
       return String_s_newFromArray(start , newlen );
     }
   }
 }
 String * String_m_replace (String * this , char oldch , char newch ) {
-  { /* cicili#Let234 */
+  { /* cicili#Let236 */
     String * strCopy  = String_s_newCopy(this );
     size_t i  = 0;
     while ((i  <  (strCopy ->len ) )) {
@@ -298,12 +307,15 @@ bool String_m_endsWith (String * this , const String * suffix ) {
   if ((this ->len ) <  (suffix ->len ) ) 
     return false ;
 
-  { /* cicili#Let242 */
+  { /* cicili#Let244 */
     size_t offset  = ((this ->len ) -  (suffix ->len ) );
     return (strncmp (((this ->arr ) +  offset  ), (suffix ->arr ), (suffix ->len )) ==  0 );
   }
 }
 String * char_s_toString (const char * cstr ) {
   return String_s_new(cstr );
+}
+char * String_s_tochar (String * str ) {
+  return String_m_deref(str );
 }
 

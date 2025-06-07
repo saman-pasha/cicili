@@ -51,5 +51,6 @@ String * String_m_replace (String * this , char oldch , char newch );
 bool String_m_startsWith (String * this , const String * prefix );
 bool String_m_endsWith (String * this , const String * suffix );
 String * char_s_toString (const char * cstr );
+char * String_s_tochar (String * str );
 #endif /* CICILI_STRING_H_ */ 
 

@@ -70,14 +70,14 @@
                (let ((size_t capLen . #'(? (> (% len ,growth-step) 0)
                                            (+ (/ len ,growth-step) 1)
                                            (/ len ,growth-step))))
-                 (return '{ capLen (* (sizeof ,elem-type) capLen) })))
+                 (return '{ len (* capLen ,growth-step) })))
 
          ;; Creates a new Slice instance with allocated cap size
          (func (,name . newEmpty) ((size_t len))
                (let ((auto cap . #'(-> ,name calcCap len))
                      (,name * slice . #'(malloc (+ (sizeof ,name) ($ cap size)))))
                  (set ($ slice len) len)
-                 (set ($ slice cap) ($ cap capLen))
+                 (set ($ slice cap) ($ cap size))
                  (return slice)))
 
          ;; Initializes a new Slice and hard copy of array memory allocated

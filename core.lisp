@@ -7,6 +7,8 @@
 (defvar *assignments* '(|+=| |-=| |*=| |/=| |%=| |<<=| |>>=|))
 (defvar *modifiers* '(|&| |*| |**| |***|))
 
+(defvar *trait-regex* "'(?:const\\s)?(\\w+?)(?:\\[\\d*\\]|\\s\\*)'.*?'(?:const\\s)?(\\w+?)(?:\\[\\d*\\]|\\s\\*)'")
+
 ;; current target spec during target specifying
 (defparameter *target-spec* nil)
 ;; storing file name during compiling
