@@ -100,7 +100,10 @@
                           (let ((d-file  "TranslationUnitDecl")
                                 (d-line  "-1")
                                 (d-col   "0")
-                                (ast-key ""))
+                                (ast-key "")
+                                (object-sym nil)
+                                (object-val nil)
+                                (object-fld '()))
                             (with-input-from-string (out-stream (get-output-stream-string stdout))
                               (do ((s (read-line out-stream nil nil) (read-line out-stream nil nil)))
                                   ((eql s nil))
@@ -128,10 +131,40 @@
                                                          (parse-integer (elt matches 4)) :file d-file))))
                                   
                                   (when (and (> (length matches) 0) (elt matches 0))
-                                    ;; (display (cons matches s) ast-key #\Space)
-                                    (push (cons matches s) (getf (gethash ast-key (nth 0 *ast-lines*)) 'dump)))
-                                )))
-                          
+                                    (push (cons matches s) (getf (gethash ast-key (nth 0 *ast-lines*)) 'dump))
+
+                                    (when (and object-sym (string/= (elt matches 1) "FieldDecl"))
+                                      (setf (gethash object-sym *globals*) `(list ,@object-val ,(reverse object-fld)))
+                                      (setq object-sym nil)
+                                      (setq object-val nil)
+                                      (setq object-fld '()))
+                                    
+                                    (cond ((string= (elt matches 1) "FunctionDecl")
+                                           (let* ((resultDecl (multiple-value-list (ppcre:scan-to-strings
+                                                                                       "\\s(\\w+?)\\s'(.+?)'" s)))
+                                                  (matchesDecl (cadr resultDecl)))
+                                             (when (and (> (length matchesDecl) 0) (elt matchesDecl 0))
+                                               (setf (gethash (intern (elt matchesDecl 0)) *globals*)
+                                                     (list (elt matches 1) (elt matchesDecl 1) s)))))
+                                          
+                                          ((string= (elt matches 1) "RecordDecl")
+                                           (let* ((resultDecl (multiple-value-list
+                                                                  (ppcre:scan-to-strings
+                                                                      "(struct|union)\\s(\\w+?)\\sdefinition" s)))
+                                                  (matchesDecl (cadr resultDecl)))
+                                             (when (and (> (length matchesDecl) 0) (elt matchesDecl 0))
+                                               (setq object-sym (intern (elt matchesDecl 1)))
+                                               (setq object-val (list (elt matches 1) (elt matchesDecl 0) s))
+                                               )))
+
+                                          ((string= (elt matches 1) "FieldDecl")
+                                           (let* ((resultDecl (multiple-value-list
+                                                                  (ppcre:scan-to-strings
+                                                                      "\\s(\\w+?)\\s('.+')" s)))
+                                                  (matchesDecl (cadr resultDecl)))
+                                             (when (and (> (length matchesDecl) 0) (elt matchesDecl 0))
+                                               (push (list (elt matchesDecl 0) (elt matchesDecl 1)) object-fld)
+                                           ))))))))
                           ))
                         ;; iterate over ast lines
                         ;; (with-input-from-string (out-stream (get-output-stream-string stdout))

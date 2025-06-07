@@ -8,3 +8,8 @@
   (member func onLearningRateChanged ((int epoch) (float new_learning_rate)))
   (member func onTrainEnd ()))
 
+(struct Layer
+  (member void * instance)
+  (member func forward ())
+  (member func backward ())
+  (member func summary ()))

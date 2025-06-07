@@ -34,8 +34,8 @@ int main () {
     String * helloWorld  = String_m_concat(a , b );
     String * upper  = String_m_toUpper(a );
     String * lower  = String_m_toLower(upper );
-    String * trimmed  = String_m_trim(String_s_new("   padded   "));
-    String * replaced  = String_m_replace(String_s_new("a-b-c-d"), '-', '_');
+    String * trimmed  = (String_s_new("   padded   ")->trim );
+    String * replaced  = (String_s_new("a-b-c-d")->replace , '-', '_');
     String * substr  = String_m_substring(helloWorld , 3, 4);
     String * prefix  = String_s_new("hel");
     String * suffix  = String_s_new("rld");
@@ -50,39 +50,4 @@ int main () {
     char * fromString1  = String_s_tochar(trait1 );
     char * fromString2 ;
     trait3  = char_s_toString("toString trait 3 call");
-    fromString2  = String_s_tochar(trait2 );
-    fprintf (stdout , "a: %s\n", (a ->arr ));
-    fprintf (stdout , "b: %s\n", (b ->arr ));
-    fprintf (stdout , "helloWorld: %s\n", (helloWorld ->arr ));
-    fprintf (stdout , "formatted: %s\n", (formatted ->arr ));
-    fprintf (stdout , "upper: %s\n", (upper ->arr ));
-    fprintf (stdout , "lower: %s\n", (lower ->arr ));
-    fprintf (stdout , "trimmed: [%s]\n", (trimmed ->arr ));
-    fprintf (stdout , "replaced: %s\n", (replaced ->arr ));
-    fprintf (stdout , "substring(3,4): %s\n", (substr ->arr ));
-    fprintf (stdout , "a equals a: %s\n", ((eq1 ) ? "true" : "false"));
-    fprintf (stdout , "a equals b: %s\n", ((eq2 ) ? "true" : "false"));
-    fprintf (stdout , "find 'l' in a: %zu\n", index );
-    fprintf (stdout , "a starts with 'hel': %s\n", ((sw ) ? "true" : "false"));
-    fprintf (stdout , "helloWorld ends with 'rld': %s\n", ((ew ) ? "true" : "false"));
-    fprintf (stdout , "%s\n", String_m_deref(trait1 ));
-    fprintf (stdout , "%s\n", String_m_deref(trait2 ));
-    fprintf (stdout , "%s\n", String_s_tochar(trait3 ));
-    fprintf (stdout , "%s\n", fromString1 );
-    fprintf (stdout , "%s\n", fromString2 );
-    printString (trait1 );
-    printString (char_s_toString("Alice and Bob"));
-    printChars (String_s_tochar(trait3 ));
-    String_m_free(helloWorld );
-    String_m_free(formatted );
-    String_m_free(upper );
-    String_m_free(lower );
-    String_m_free(trimmed );
-    String_m_free(replaced );
-    String_m_free(substr );
-    String_m_free(prefix );
-    String_m_free(suffix );
-    return 0;
-  }
-}
-
+    trait2  

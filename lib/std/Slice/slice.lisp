@@ -243,7 +243,7 @@
 
                     ;; Returns the index of the last occurrence of val, or len if not found
                     (method (,name . lastIndexOf) ((,elem-type val)) (out size_t)
-                            (for ((size_t i . #'(- ($ this len) 1))) (>= 0 i) ((-- i))
+                            (for ((size_t i . #'(- ($ this len) 1))) (>= i 0) ((-- i))
                                  (when (== (nth i ($ this arr)) val) (return i)))
                             (return ($ this len)))
 

@@ -17,6 +17,12 @@
        (MAPCAN #'(LAMBDA (a g) (NSUBST a g body)) args types)
        `(ghost ,@body))))
 
+(DEFMACRO shared-func-name (struct method)
+  (INTERN (FORMAT NIL "~A_s_~A" struct method)))
+
+(DEFMACRO method-func-name (struct method)
+  (INTERN (FORMAT NIL "~A_m_~A" struct method)))
+
 (DEFMACRO <> (name &REST body)
   (INTERN (FORMAT NIL "~A_~{~A~}" name body)))
 
