@@ -6,6 +6,9 @@
 
         (func printString ((String * str)) ; accepts both (char *) and (String *)
               (format #t "the str: %s\n" (-> str deref)))
+
+        (func printChars ((const char * cstr))
+              (format #t "cstr: %s\n" cstr))
         
         (main
             (let
@@ -28,9 +31,14 @@
                  
                  (@String * trait1 . #'(-> char toString "toString trait 1 call")) ; char toString trait
                  (@String * trait2 . "toString trait 2 call") ; char toString trait
-                 (@String * trait3))
-              (set trait3 "toString trait 2 call") ; char toString trait
+                 (@String * trait3)
 
+                 (char * fromString1 . trait1)
+                 (char * fromString2))
+
+              (set trait3 "toString trait 3 call") ; char toString trait
+              (set fromString2 trait2)
+              
               (format #t "a: %s\n" ($ a arr))
               (format #t "b: %s\n" ($ b arr))
               (format #t "helloWorld: %s\n" ($ helloWorld arr))
@@ -47,11 +55,15 @@
               (format #t "helloWorld ends with 'rld': %s\n" (? ew "true" "false"))
               (format #t "%s\n" (-> trait1 deref))
               (format #t "%s\n" (-> trait2 deref))
-              (format #t "%s\n" (-> trait3 deref))
+              (format #t "%s\n" trait3)
+              (format #t "%s\n" fromString1)
+              (format #t "%s\n" fromString2)
+              
               
               (printString trait1)
               (printString "Alice and Bob") ; char toString trait
-
+              (printChars trait3)
+              
               ;; (-> a free) ; no need to free @ told cicili to use free method at end of scope instead
               ;; (-> b free)
               (-> helloWorld free)

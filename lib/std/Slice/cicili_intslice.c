@@ -14,7 +14,7 @@ struct __ciciliS_IntSlice_m_calcCap_ {
 static struct __ciciliS_IntSlice_m_calcCap_ IntSlice_s_calcCap (size_t len ) {
   { /* cicili#Let106 */
     size_t capLen  = ((((len  %  INTSLICE_GROWTH_STEP  ) >  0 )) ? ((len  /  INTSLICE_GROWTH_STEP  ) +  1 ) : (len  /  INTSLICE_GROWTH_STEP  ));
-    return ((struct __ciciliS_IntSlice_m_calcCap_){ capLen , (sizeof(intslice_elem_t) *  capLen  )});
+    return ((struct __ciciliS_IntSlice_m_calcCap_){ len , (capLen  *  INTSLICE_GROWTH_STEP  )});
   }
 }
 IntSlice * IntSlice_s_newEmpty (size_t len ) {
@@ -22,7 +22,7 @@ IntSlice * IntSlice_s_newEmpty (size_t len ) {
     __auto_type cap  = IntSlice_s_calcCap(len );
     IntSlice * slice  = malloc ((sizeof(IntSlice) +  (cap . size ) ));
     (slice ->len ) = len ;
-    (slice ->cap ) = (cap . capLen );
+    (slice ->cap ) = (cap . size );
     return slice ;
   }
 }

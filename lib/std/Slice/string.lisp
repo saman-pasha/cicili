@@ -27,15 +27,18 @@
 
                ;; literal c (element *) to String
                (decl) (func (,element . toString) ((const ,element * cstr)) (out String *))
+               ;; String to c (element *)
+               (decl) (func (,name . ,(INTERN (FORMAT NIL "to~A" element))) ((,name * str)) (out ,element *))
                
                ,@header-body)
               
               ( ; source
                (func (,name . new) ((const ,elem-type * cstr))
                      (let ((size_t len . #'(strlen cstr))
-                           (,name * str . #'(-> ,name newEmpty len)))
+                           (,name * str . #'(-> ,name newEmpty (+ len 1))))
                        (strncpy ($ str arr) cstr len)
                        (set (nth len ($ str arr)) #\Null)
+                       (set ($ str len) len)
                        (return str)))
                
                (func (,name . newFormat) ((const char * fmt) ($$$))
@@ -49,14 +52,20 @@
                (method (,name . substring) ((size_t start) (size_t length)) (out ,name *)
                        (if (> (+ start length) ($ this len))
                            (return #'(-> ,name new "")))
-                       (let ((,name * sub . #'(-> ,name newEmpty length)))
+                       (let ((,name * sub . #'(-> ,name newEmpty (+ length 1))))
                          (strncpy ($ sub arr) (+ ($ this arr) start) length)
                          (set (nth length ($ sub arr)) #\Null)
                          (set ($ sub len) length)
                          (return sub)))
 
                (method (,name . concat) ((const ,name * other)) (out ,name *)
-                       (return #'(-> this appendNew other)))
+                       (let ((size_t len . #'(+ ($ this len) ($ other len)))
+                             (,name * str . #'(-> ,name newEmpty (+ len 1))))
+                         (strncpy ($ str arr) ($ this arr) ($ this len))
+                         (strncpy (+ ($ str arr) ($ this len)) ($ other arr) len)
+                         (set (nth len ($ str arr)) #\Null)
+                         (set ($ str len) len)
+                         (return str)))
 
                (method (,name . find) ((,elem-type ch)) (out size_t)
                        (let ((,elem-type * pos . #'(strchr ($ this arr) ch)))
@@ -113,5 +122,8 @@
 
                (func (,element . toString) ((const ,element * cstr)) (out String *)
                      (return (-> String new cstr)))
+
+               (func (,name . ,(INTERN (FORMAT NIL "to~A" element))) ((,name * str)) (out ,element *)
+                     (return (-> str deref)))
 
                ,@source-body))))

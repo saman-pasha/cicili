@@ -120,13 +120,20 @@
                (compile-form default (1+ lvl) globals)
                (output ")"))
               ((str:containsp "incompatible pointer types" info)
-               (let* ((result (multiple-value-list
-                                  (ppcre:scan-to-strings
-                                      "'(\\w+?)(?:\\[\\d*\\]|\\s\\*)'.*?'(\\w+?)(?:\\[\\d*\\]|\\s\\*)'"
-                                    info)))
+               (let* ((result (multiple-value-list (ppcre:scan-to-strings *trait-regex* info)))
                       (matches (cadr result)))
                  ;; (display "GGGGGG" matches #\Newline)
                  (let ((resu (make-shared-name (elt matches 1) (format nil "to~A" (elt matches 0)))))
+                   (setf (gethash 'res-def (keys default)) resu)
+                   (set-ast-line (output "~A" resu))
+                   (set-ast-line (output "("))
+                   (compile-form default (1+ lvl) globals)
+                   (output ")"))))
+              ((str:containsp "format specifies type" info)
+               (let* ((result (multiple-value-list (ppcre:scan-to-strings *trait-regex* info)))
+                      (matches (cadr result)))
+                 ;; (display "GGGGGG" matches #\Newline)
+                 (let ((resu (make-shared-name (elt matches 0) (format nil "to~A" (elt matches 1)))))
                    (setf (gethash 'res-def (keys default)) resu)
                    (set-ast-line (output "~A" resu))
                    (set-ast-line (output "("))
@@ -190,6 +197,10 @@
                      (set-ast-line (output resu))))
                   ((str:containsp "no member named" info)
                    (set-ast-line (output "~A " symbol))) ; ignore for ->
+                  ((str:containsp "format specifies type" info)
+                   (set-ast-line (output "~A " symbol))) ; ignore for arg
+                  ((str:containsp "incompatible pointer types" info)
+                   (set-ast-line (output "~A " symbol))) ; ignore for arg
                   (t (error (format nil "cicili: atom: ~A. ~S~%~A" spec-key (str:substring 0 340 info) spec))))
             (if (null res)
                 (set-ast-line (output "~A " symbol))
@@ -321,8 +332,15 @@
         (display "resolving .:" line-n col-n "RES:" res "INFO:"
                  begin-info ptr-info mtd-info end-info #\Newline begin-dump #\Newline))
       
-      (cond ((or (null *resolve*) ; function without resolver (inline in header or attr resolve #f)
-               (null begin-ast))  ; access member by instance default for first run
+      (cond (res
+             (set-ast-line (output "("))
+             (compile-form receiver (1+ lvl) globals)
+             (set-ast-line (output res))
+             (compile-form member (1+ lvl) globals)
+             (output ")"))
+            ((or (null *resolve*) ; function without resolver (inline in header or attr resolve #f)
+               (null begin-ast)  ; access member by instance default for first run
+               (and (null begin-info) (null ptr-info) (null mtd-info) (null end-info)))
              (set-ast-line (output "("))
              (compile-form receiver (1+ lvl) globals)
              (setf (getf (gethash (ast-key< line-n col-n) (nth 0 *ast-lines*)) 'ptr)
@@ -333,12 +351,6 @@
              (compile-form member (1+ lvl) globals)
              (setf (getf (gethash (ast-key< line-n col-n) (nth 0 *ast-lines*)) 'end)
                    (ast-key< (funcall *line-num* 0) (funcall *col-num* 0)))
-             (output ")"))
-            (res
-             (set-ast-line (output "("))
-             (compile-form receiver (1+ lvl) globals)
-             (set-ast-line (output res))
-             (compile-form member (1+ lvl) globals)
              (output ")"))
             ((and (str:containsp "member reference type" ptr-info) (str:containsp "is a pointer" ptr-info))
              (let ((resu "->"))
@@ -373,21 +385,7 @@
         (display "resolving ->:" line-n col-n "RES:" res "INFO:" 
                  begin-info ptr-info mtd-info end-info #\Newline begin-dump #\Newline))
       
-      (cond ((or (null *resolve*) ; function without resolver (inline in header or attr resolve #f)
-               (null begin-ast))  ; access member by pointer default for first run
-             (set-ast-line (output "("))
-             (compile-form receiver (1+ lvl) globals)
-             (setf (getf (gethash (ast-key< line-n col-n) (nth 0 *ast-lines*)) 'ptr)
-                   (ast-key< (funcall *line-num* 0) (funcall *col-num* 0)))
-             (set-ast-line (output "->"))
-             (setf (getf (gethash (ast-key< line-n col-n) (nth 0 *ast-lines*)) 'mtd)
-                   (ast-key< (funcall *line-num* 0) (funcall *col-num* 0)))
-             (compile-form method (1+ lvl) globals)
-             (compile-args (default args) lvl globals t)
-             (setf (getf (gethash (ast-key< line-n col-n) (nth 0 *ast-lines*)) 'end)
-                   (ast-key< (funcall *line-num* 0) (funcall *col-num* 0)))
-             (output ")"))
-            (res
+      (cond (res
              (if (str:starts-with-p (str:replace-first "\\(.*" "" (make-shared-name (name receiver) "") :regex t)
                    res) ; was shared or method
                  (progn
@@ -405,6 +403,21 @@
                    (setf (getf (gethash (ast-key< line-n col-n) (nth 0 *ast-lines*)) 'end)
                          (ast-key< (funcall *line-num* 0) (funcall *col-num* 0)))
                    (output ")"))))
+            ((or (null *resolve*) ; function without resolver (inline in header or attr resolve #f)
+               (null begin-ast)  ; access member by pointer default for first run
+               (and (null begin-info) (null ptr-info) (null mtd-info) (null end-info)))
+             (set-ast-line (output "("))
+             (compile-form receiver (1+ lvl) globals)
+             (setf (getf (gethash (ast-key< line-n col-n) (nth 0 *ast-lines*)) 'ptr)
+                   (ast-key< (funcall *line-num* 0) (funcall *col-num* 0)))
+             (set-ast-line (output "->"))
+             (setf (getf (gethash (ast-key< line-n col-n) (nth 0 *ast-lines*)) 'mtd)
+                   (ast-key< (funcall *line-num* 0) (funcall *col-num* 0)))
+             (compile-form method (1+ lvl) globals)
+             (compile-args (default args) lvl globals t)
+             (setf (getf (gethash (ast-key< line-n col-n) (nth 0 *ast-lines*)) 'end)
+                   (ast-key< (funcall *line-num* 0) (funcall *col-num* 0)))
+             (output ")"))
             ((and ptr-info (str:containsp "expected ')'" ptr-info))
              (let ((resu (make-shared-name (name receiver) (name method))))
                (setf *more-run* t)               
@@ -499,13 +512,20 @@
                       (compile-form arg lvl globals)
                       (output ")"))
                      ((str:containsp "incompatible pointer types" info)
-                      (let* ((result (multiple-value-list
-                                         (ppcre:scan-to-strings
-                                             "'(\\w+?)(?:\\[\\d*\\]|\\s\\*)'.*?'(\\w+?)(?:\\[\\d*\\]|\\s\\*)'"
-                                           info)))
+                      (let* ((result (multiple-value-list (ppcre:scan-to-strings *trait-regex* info)))
                              (matches (cadr result)))
                         ;; (display "GGGGGG" matches #\Newline)
                         (let ((resu (make-shared-name (elt matches 0) (format nil "to~A" (elt matches 1)))))
+                          (setf (gethash 'res-arg (keys arg)) resu)
+                          (set-ast-line (output "~A" resu))
+                          (set-ast-line (output "("))
+                          (compile-form arg lvl globals)
+                          (output ")"))))
+                     ((str:containsp "format specifies type" info)
+                      (let* ((result (multiple-value-list (ppcre:scan-to-strings *trait-regex* info)))
+                             (matches (cadr result)))
+                        ;; (display "GGGGGG" matches #\Newline)
+                        (let ((resu (make-shared-name (elt matches 1) (format nil "to~A" (elt matches 0)))))
                           (setf (gethash 'res-arg (keys arg)) resu)
                           (set-ast-line (output "~A" resu))
                           (set-ast-line (output "("))
@@ -687,12 +707,21 @@
                (compile-form (nth 1 item) (1+ lvl) globals)
                (output ")"))
               ((str:containsp "incompatible pointer types" info)
-               (let* ((result (multiple-value-list
-                                  (ppcre:scan-to-strings
-                                      "'(\\w+?)(?:\\[\\d*\\]|\\s\\*)'.*?'(\\w+?)(?:\\[\\d*\\]|\\s\\*)'" info)))
+               (let* ((result (multiple-value-list (ppcre:scan-to-strings *trait-regex* info)))
                       (matches (cadr result)))
                  ;; (display "GGGGGG" matches #\Newline)
                  (let ((resu (make-shared-name (elt matches 1) (format nil "to~A" (elt matches 0)))))
+                   (setf (gethash 'res-set (keys (nth 1 item))) resu)
+                   (set-ast-line (output "= "))
+                   (set-ast-line (output "~A" resu))
+                   (set-ast-line (output "("))
+                   (compile-form (nth 1 item) (1+ lvl) globals)
+                   (output ")"))))
+              ((str:containsp "format specifies type" info)
+               (let* ((result (multiple-value-list (ppcre:scan-to-strings *trait-regex* info)))
+                      (matches (cadr result)))
+                 ;; (display "GGGGGG" matches #\Newline)
+                 (let ((resu (make-shared-name (elt matches 0) (format nil "to~A" (elt matches 1)))))
                    (setf (gethash 'res-set (keys (nth 1 item))) resu)
                    (set-ast-line (output "= "))
                    (set-ast-line (output "~A" resu))
