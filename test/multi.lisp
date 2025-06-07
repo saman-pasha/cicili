@@ -2,21 +2,22 @@
         (struct MultiReturn_t
           (member int a)
           (member int b))
-        
-        (func aMultiReturnFunc ((int x) (int y)) (out '{(int a) (int b)})
-              (return '{ x y }))
+        ;; * NOTICE *
+        ;; multi return functions should (have (decl) ) be declared in a header file or should be static
+        (static) (func aMultiReturnFunc ((int x) (int y)) (out '{(int a) (int b)})
+                       (return '{ x y }))
 
         ; hardway but available, safe pointer of inline struct returns
-        (func aMultiReturnFuncPtr ((int x) (int y)) (out '{(int a) (int b)})
-              (let (((typeof (aMultiReturnFuncPtr x y)) output . '{ x y }))
-                (return output)))
+        (static) (func aMultiReturnFuncPtr ((int x) (int y)) (out '{(int a) (int b)})
+                       (let (((typeof (aMultiReturnFuncPtr x y)) output . '{ x y }))
+                         (return output)))
 
         (func aMultiReturnFuncKV ((int x) (int y)) (out MultiReturn_t)
               (return (cast MultiReturn_t '{ $a x $b y })))
 
-        (func aMultiReturnFuncS ((int x) (int y)) (out '{(int a) (int b)})
-              (let (((typeof (aMultiReturnFuncS x y)) s . '{ x y })) 
-                (return s)))
+        (static) (func aMultiReturnFuncS ((int x) (int y)) (out '{(int a) (int b)})
+                       (let (((typeof (aMultiReturnFuncS x y)) s . '{ x y })) 
+                         (return s)))
         
         (func main ()
               (let ((int n . 3)

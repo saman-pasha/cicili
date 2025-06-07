@@ -16,8 +16,7 @@
  
 (cicili-add-types
  'font-lock-type-face
- '((1 . cicili)
-   (1 . main)
+ '((1 . main)
    (1 . const)
    (1 . func)
    (1 . this)
@@ -98,8 +97,10 @@
  
 (cicili-add-keywords
  'font-lock-keyword-face
- '((1 . main)
+ '((1 . cicili)
+   (1 . main)
    (1 . main*)
+   (1 . generic)
    (1 . format)
    (1 . code)
    (1 . header)
@@ -189,7 +190,22 @@
 
 (font-lock-add-keywords
  'lisp-mode
- '(("(func[ \t\n]+\\(\\(\\sw\\|\\s_\\)+\\)[ \t\n]*"
+ '(("(generic[ \t\n]+\\(\\(\\sw\\|\\s_\\)+\\)[ \t\n]*"
+    (1 'font-lock-preprocessor-face))))
+
+(font-lock-add-keywords
+ 'lisp-mode
+ '(("(func[ \t\n]+(?\\(\\(\\sw\\|\\s_\\)+\\)[ \t\n]*"
+    (1 'font-lock-function-name-face))))
+
+(font-lock-add-keywords
+ 'lisp-mode
+ '(("(method[ \t\n]+(\\(\\(\\sw\\|\\s_\\)+\\)[ \t\n]*"
+    (1 'font-lock-function-name-face))))
+
+(font-lock-add-keywords
+ 'lisp-mode
+ '(("(member[ \t\n]+\\(\\(\\sw\\|\\s_\\)+\\)[ \t\n]*"
     (1 'font-lock-function-name-face))))
 
 (font-lock-add-keywords

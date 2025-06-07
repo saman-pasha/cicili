@@ -10,16 +10,21 @@
 (DEFMACRO main* (&REST body)
   `(func main ((int argc) (char * argv [])) (out int) ,@body))
 
-(DEFUN make-method-name (struct method)
-  (INTERN (FORMAT NIL "~A->~A" struct method)))
+(DEFMACRO generic (macro types &REST body)
+  `(DEFMACRO ,macro (&REST args)
+     (LET ((types ',types)
+           (body (COPY-LIST ',body)))
+       (MAPCAN #'(LAMBDA (a g) (NSUBST a g body)) args types)
+       `(ghost ,@body))))
+
+(DEFMACRO <> (name &REST body)
+  (INTERN (FORMAT NIL "~A_~{~A~}" name body)))
 
 ;;; each struct which implements string can write itself to a FILE *
 ;;; notice inline methods won't be resolved and -> is point to, not method access
-(DEFMACRO interface-string (struct &REST body)
-  `{inline} `(method ,(make-method-name struct 'toString) ((FILE * file)) ,@body))
+(DEFMACRO IString (struct)
+  `(ghost (decl) (method (,struct . toString) ((FILE * file)))))
 
-;;; default char buffer for format out char * use nil as fd
-(DEFVAR +FORMAT-STRING-DEFAULT-BUFFER-SIZE+ 1024)
 ;;; use format lisp clause insted of printf
 ;;; f  FILE *
 ;;; #t short for stdout
@@ -41,12 +46,7 @@
                     array        ; array to be traveresed or pointer to its one of items
                     length       ; length of array or count of loop should go through
                     &REST body)  ; what to do each turn
-  (UNLESS (AND (SYMBOLP counter)
-            (SYMBOLP item)
-            (SYMBOLP array)
-            (NUMBERP length))
-    (ERROR (FORMAT T "for-each invalid input: ~A ~A ~A ~A~%" counter item array length)))
-  `(let (((typeof (nth 0 ,array)) * ,item . ,array))
+  `(let (((typeof (nth 0 ,array)) * ,item . ,(IF (LISTP array) `(FUNCTION ,array) array)))
      (for ((int ,counter . 0))
        (< ,counter ,length)
        ((++ ,item)
@@ -59,12 +59,7 @@
                           array        ; array to be traveresed or pointer to its one of items
                           length       ; length of array or count of loop should go through
                           &REST body)  ; what to do each turn
-  (UNLESS (AND (SYMBOLP counter)
-            (SYMBOLP item)
-            (SYMBOLP array)
-            (NUMBERP length))
-    (ERROR (FORMAT T "for-each invalid input: ~A ~A ~A ~A~%" counter item array length)))
-  `(let ((const (typeof (nth 0 ,array)) * ,item . ,array))
+  `(let ((const (typeof (nth 0 ,array)) * ,item . ,(IF (LISTP array) `(FUNCTION ,array) array)))
      (for ((int ,counter . 0))
        (< ,counter ,length)
        ((++ ,item)
@@ -94,3 +89,37 @@
                                         (CICILI:SPECIFY-TYPE< var)
                                       variable))
                           var-list))))))
+
+;; optional helper macro will auto defer all vars
+(DEFMACRO defer-let (var-list &REST body)
+  `(block ,@(MAP 'LIST #'(LAMBDA (var)
+                            `(ghost (defer #t) (var ,@var)))
+                  var-list)
+     ,@body))
+
+;; list should have a len member
+(DEFMACRO dolist (vars &REST body)
+  (LET ((var     (FIRST  vars))
+        (list    (SECOND vars))
+        (array   (GENSYM "ciciliArr"))
+        (len     (GENSYM "ciciliLen"))
+        (counter (GENSYM "ciciliCounter")))
+    `(let ((auto ,array . ,(IF (LISTP list) `(FUNCTION ,list) list))
+           ((typeof (nth 0 ,array)) * ,var . ,array)
+           (size_t ,len . #'($ ,array len)))
+       (for ((int ,counter . 0))
+         (< ,counter ,len)
+         ((++ ,var)
+          (++ ,counter))
+         ,@body))))
+
+(DEFMACRO dotimes (vars &REST body)
+  (LET ((var   (CAR  vars))
+        (count (CADR vars)))
+    `(for ((int ,var . 0))
+       (< ,var ,count)
+       ((++ ,var))
+       ,@body)))
+
+(DEFMACRO null (value)
+  `(== ,value nil))

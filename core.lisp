@@ -2,7 +2,7 @@
 
 (defvar *output* t)
 
-(defvar *unaries* '(|+| |-| |++| |1+| |--| |1-| |~| |not| |cof| |aof|))
+(defvar *unaries* '(|+| |-| |++| |1+| |--| |1-| |~| |not| |cof| |aof| |symbolize| |stringize|))
 (defvar *operators* '(|+| |-| |*| |/| |%| |==| |!=| |>| |<| |>=| |<=| |^| |<<| |>>| |xor| |and| |or| |bitand| |bitor|))
 (defvar *assignments* '(|+=| |-=| |*=| |/=| |%=| |<<=| |>>=|))
 (defvar *modifiers* '(|&| |*| |**| |***|))
@@ -41,6 +41,10 @@
 (defvar *macros* (make-hash-table :test 'equal))
 ;; whether cicili is during macro expantion
 (defparameter *macroexpand* (make-hash-table :test 'equal))
+;; holds the params name appended to each func, struct, union
+(defparameter *generic* nil)
+;; holds the generic names and its arguements
+(defparameter *specific* nil)
 
 ;; adds a macro to macros list *macros*
 (defun add-macro (macro symbol)
@@ -102,22 +106,20 @@
                               (if actual actual-count count))))
 
 (defun ast-key< (line-n col-n &key (file *target-file*))
-  (format nil "~A:~D:~D" *target-file* line-n col-n))
+  (format nil "~A:~D:~D" file line-n col-n))
 
-(defun current-ast< (&optional (plus-line 0) (plus-col 0))
+;; reads log from second hash table, previous run
+(defun prev-ast< (&optional (plus-line 0) (plus-col 0))
   (let* ((line-n  (funcall *line-num* 0))
          (col-n   (funcall *col-num* 0))
          (ast-key (ast-key< (+ line-n plus-line) (+ col-n plus-col))))
     (when *debug* (display "M:" ast-key (gethash ast-key (nth 1 *ast-lines*)) #\NewLine))
     (gethash ast-key (nth 1 *ast-lines*))))
 
-(defun current-resolved< (&optional (plus-line 0) (plus-col 0))
-  (let* ((line-n  (funcall *line-num* 0))
-         (col-n   (funcall *col-num* 0))
-         (ast-key (ast-key< (+ line-n plus-line) (+ col-n plus-col))))
-    (when *debug* (display "R:" ast-key (gethash ast-key (nth *ast-run* *ast-lines*)) #\NewLine))
-    (getf (gethash ast-key (nth *ast-run* *ast-lines*)) 'res)))
+(defun prev-ast-by-key< (ast-key)
+  (gethash ast-key (nth 1 *ast-lines*)))
 
+;; logs on last pushed hash table, first, current run
 (defmacro set-ast-line (out)
   (let ((line-n (gensym))
         (col-n  (gensym))
@@ -134,30 +136,6 @@
        (unless (getf ,item 'bt)
          (setf (getf ,item 'bt)  (cdr (backtrace))))
        (setf (gethash (ast-key< ,line-n ,col-n) (nth 0 *ast-lines*)) ,item))))
-
-(defmacro set-resolved (outstr)
-  (let ((line-n (gensym))
-        (col-n  (gensym))
-        (item   (gensym))
-        (outs   (gensym)))
-    `(let* ((,line-n (funcall *line-num* 0))
-            (,col-n  (funcall *col-num* 0))
-            (,item   (gethash (ast-key< ,line-n ,col-n) (nth *ast-run* *ast-lines*)))
-            (,outs   ,outstr))
-       (when *debug-resolve* (display "set-resolved" (1- *ast-run*) ">" (ast-key< ,line-n ,col-n) "" ,outs #\Newline))
-       (setf (getf ,item 'res) ,outs)
-       (unless (getf ,item 'bt)
-         (setf (getf ,item 'bt)  (cdr (backtrace))))
-       (setf (gethash (ast-key< ,line-n ,col-n) (nth *ast-run* *ast-lines*)) ,item))))
-
-(defun hash-table-keys< (ht)
-  (let ((keys nil))
-    (maphash
-     #'(lambda (k v)
-         (declare (ignore v))
-         (push k keys))
-     ht)
-    keys))
 
 (defun backtrace ()
   (let ((bt (list (or *compile-file-truename* *load-truename*) (uiop:command-line-arguments))))
@@ -198,6 +176,8 @@
 (defvar *new-line* (format nil "~%"))
 
 (defun output (ctrl &rest rest)
+  ;; (when *generic* (setq ctrl (str:replace-all "~%" " \\~%" ctrl)))
+  ;; (when (and *specific* *generic*)
   (let ((result (apply 'format (append (list nil ctrl) rest))))
     (apply 'format (list *output* result))
     (let* ((index (search *new-line* result :from-end t))
@@ -225,23 +205,41 @@
 (defun indent (lvl)
   (make-string (* lvl 2) :initial-element #\Space))
 
+(defun <> (name &rest body)
+  (intern (format nil "~A_~{~A~}" name body)))
+
+(defun make-generic-name (name generic)
+  (format nil "~A ## _ ~A" name generic))
+
 (defun make-method-name (struct method)
-  (format nil "~A_m_~A" struct method))
+  (if *generic*
+      (format nil "~A ## _m_ ## ~A" struct method)
+      (format nil "~A_m_~A" struct method)))
 
 (defun make-shared-name (struct method)
-  (format nil "~A_s_~A" struct method))
+  (if *generic*
+      (format nil "~A ## _s_ ## ~A" struct method)
+      (format nil "~A_s_~A" struct method)))
 
 (defun is-name (name) (symbolp name))
 
 (defun is-decl-name (name)
   (let ((name (symbol-name name)))
-    (cond ((string= name "const") nil)
-	      ((not (find (char name 0) "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_.")) nil)
-	      (t (progn
-	           (dotimes (i (- (length name) 1))
-		         (unless (find (char name (+ i 1)) "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_1234567890_.")
-		           (return-from is-decl-name nil)))
-	           t)))))
+    (if *generic*
+        (cond ((string= name "const") nil)
+	          ((not (find (char name 0) "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_")) nil)
+	          (t (progn
+	               (dotimes (i (- (length name) 1))
+		             (unless (find (char name (+ i 1)) "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_1234567890 #!")
+		               (return-from is-decl-name nil)))
+	               t)))
+        (cond ((string= name "const") nil)
+	          ((not (find (char name 0) "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_")) nil)
+	          (t (progn
+	               (dotimes (i (- (length name) 1))
+		             (unless (find (char name (+ i 1)) "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_1234567890")
+		               (return-from is-decl-name nil)))
+	               t))))))
 
 (defun is-symbol (name)
   (let ((name (symbol-name name)))

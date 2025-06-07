@@ -9,6 +9,10 @@
   (when (probe-file quicklisp-init)
     (load quicklisp-init)))
 
+;; error handling and debuging
+;; (setf *print-pretty* t)
+;; (setf *print-vector-length* 500)
+
 (asdf:load-system "cicili")
 
 (cicili:load-macro-file "builtins.lisp")
@@ -30,5 +34,7 @@
                      ((string= arg "--macros")      (setf cicili:*debug-macros*       t))
                      ((string= arg "--macroexpand") (setf cicili:*debug-macroexpand*  t))
                      ((string= arg "--only-link")   (setf cicili:*only-link*          t))
+                     ((string= arg "--separate")    (setf cicili:*debug-runs*         t))
+                     ((string= arg "--dump")        (setf cicili:*debug-dump*         t))
                      (t (cicili:compile-cicili-file arg))))))
       (error (format nil "at least pass the cicili .lisp file to compile"))))

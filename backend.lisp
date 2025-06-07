@@ -54,7 +54,7 @@
          (let ((amount (nth 1 desc)))
            (unless (key-eq '|NULL| (name amount)) (compile-form (nth 1 desc) (1+ lvl) globals)))
          (set-ast-line (output "]")))
-        (t (error (format nil "wrong array description ~A" desc)))))
+        (t (error (format nil "wrong array description, maybe #' missed for function initializer ~A" desc)))))
 
 (defun format-type (const typeof modifier const-ptr name array-def anonymous lvl globals)
   (when anonymous (setq name (format nil "/* ~A */" name)))
@@ -62,9 +62,14 @@
   (unless (null typeof) (compile-type-name typeof lvl globals))
   (when modifier  (output " ") (set-ast-line (output "~A" modifier)))
   (when const-ptr (output " ") (set-ast-line (output "const" const-ptr)))
-  (when name      (output " ")
-        (set-ast-line (output "~A" (if (str:starts-with-p "_ciciliParam_" (symbol-name name)) " " name))))
-  (compile-array array-def lvl globals))
+  (let ((line-n   -1)
+        (col-n    -1))
+    (when name      (output " ")
+          (setq line-n   (funcall *line-num* 0))
+          (setq col-n    (funcall *col-num* 0))
+          (set-ast-line (output "~A "(if (str:starts-with-p "_ciciliParam_" (symbol-name name)) " " name))))
+    (compile-array array-def lvl globals)
+    (values line-n col-n)))
 
 (defun compile-spec-type (spec lvl globals)
   (let ((const     (const      spec))
@@ -82,17 +87,52 @@
 
 (defun format-type-value (const typeof modifier const-ptr name array-def default anonymous lvl globals &optional defer)
   (when anonymous (setq name (format nil "/* ~A */" name)))
-  (format-type const typeof modifier const-ptr name array-def anonymous lvl globals)
-  (when defer
-    (output " ")
-    (set-ast-line (output "__attribute__(("))
-    (set-ast-line (output "__cleanup__("))
-    (compile-form defer (1+ lvl) globals)
-    (set-ast-line (output ")))")))
-  (when (and (not (null default)) (not (key-eq (construct default) '|@NIL|)))
-    (output " ")
-    (set-ast-line (output "= "))
-    (compile-form default (1+ lvl) globals)))
+  (let ((ns (multiple-value-list
+                (format-type const typeof modifier const-ptr name array-def anonymous lvl globals))))
+
+    (when defer
+      (output " ")
+      (set-ast-line (output "__attribute__(("))
+      (set-ast-line (output "__cleanup__("))
+      (compile-form defer (1+ lvl) globals)
+      (set-ast-line (output ")))")))
+    
+    (when (and (not (null default)) (not (key-eq (construct default) '|@NIL|)))
+      (output " ")
+      (set-ast-line (output "= "))
+
+      (let* ((line-n   (nth 0 ns))
+             (col-n    (nth 1 ns))
+             (ast      (prev-ast-by-key< (gethash 'key-def (keys default))))
+             (info     (getf ast 'info))
+             (dump     (reverse (getf ast 'dump)))
+             (spec-key (ast-key< line-n col-n))
+             (res      (gethash 'res-def (keys default))))
+        (setf (gethash 'key-def (keys default)) spec-key)
+        (when *debug-resolve*
+          (display "resolving def:" line-n col-n "RES:" res "INFO:" info #\Newline dump #\Newline))
+        
+        (cond ((null ast)
+	           (compile-form default (1+ lvl) globals))
+              (res
+               (set-ast-line (output "~A" res))
+               (set-ast-line (output "("))
+               (compile-form default (1+ lvl) globals)
+               (output ")"))
+              ((str:containsp "incompatible pointer types" info)
+               (let* ((result (multiple-value-list
+                                  (ppcre:scan-to-strings
+                                      "'(\\w+?)(?:\\[\\d*\\]|\\s\\*)'.*?'(\\w+?)(?:\\[\\d*\\]|\\s\\*)'"
+                                    info)))
+                      (matches (cadr result)))
+                 ;; (display "GGGGGG" matches #\Newline)
+                 (let ((resu (make-shared-name (elt matches 1) (format nil "to~A" (elt matches 0)))))
+                   (setf (gethash 'res-def (keys default)) resu)
+                   (set-ast-line (output "~A" resu))
+                   (set-ast-line (output "("))
+                   (compile-form default (1+ lvl) globals)
+                   (output ")"))))
+              (t (compile-form default (1+ lvl) globals)))))))
 
 (defun compile-spec-type-value (spec lvl globals &optional defer &key ((:unique is-unique) nil))
   (let ((const     (const      spec))
@@ -115,6 +155,46 @@
                            (if is-unique (unique spec) name)
                            array-def default anonymous lvl globals defer))))
 
+(defun compile-symbol (spec symbol)
+  (let* ((line-n   (funcall *line-num* 0))
+         (col-n    (funcall *col-num* 0))
+         (ast      (prev-ast-by-key< (gethash 'key-sym (keys spec))))
+         (info     (getf ast 'info))
+         (spec-key (ast-key< line-n col-n))
+         (res      (gethash 'res-sym (keys spec))))
+    (setf (gethash 'key-sym (keys spec)) spec-key)
+    (when *debug-resolve*
+      (display "resolving symbol:" line-n col-n "RES:" res "INFO:" info #\Newline))
+    (if (null ast)
+	    (set-ast-line (output "~A " symbol))
+        (if info
+            (cond ((str:containsp "take the address with &" info)
+                   (let ((resu (format nil "\&~A" symbol)))
+                     (setf (gethash 'res-sym (keys spec)) resu)
+                     (set-ast-line (output resu))))
+                  ((str:containsp "passing 'typeof ((" info)
+                   (let ((resu (format nil "\&~A" symbol)))
+                     (setf (gethash 'res-sym (keys spec)) resu)
+                     (set-ast-line (output resu))))
+                  ((str:containsp "__ciciliL_" info)
+                   (let ((resu (format nil "\&~A" symbol)))
+                     (setf (gethash 'res-sym (keys spec)) resu)
+                     (set-ast-line (output resu))))
+                  ((str:containsp "expression result unused" info)
+                   (let ((resu (format nil "~A " symbol)))
+                     (setf (gethash 'res-sym (keys spec)) resu)
+                     (set-ast-line (output resu))))
+                  ((str:containsp "member reference type" info)
+                   (let ((resu (format nil "~A " symbol)))
+                     (setf (gethash 'res-sym (keys spec)) resu)
+                     (set-ast-line (output resu))))
+                  ((str:containsp "no member named" info)
+                   (set-ast-line (output "~A " symbol))) ; ignore for ->
+                  (t (error (format nil "cicili: atom: ~A. ~S~%~A" spec-key (str:substring 0 340 info) spec))))
+            (if (null res)
+                (set-ast-line (output "~A " symbol))
+                (set-ast-line (output res)))))))
+
 (defun compile-atom (spec lvl globals)
   (with-slots (construct (value name) typeof) spec
     (unless (or (key-eq construct '|@ATOM|) (key-eq construct '|@SYMBOL|))
@@ -122,21 +202,7 @@
     (cond ((and (key-eq typeof '|@SYMBOL|) (string= (symbol-name value) "this"))
            (set-ast-line (output "~A " '|this|)))
           ((key-eq typeof '|@SYMBOL|)
-           (let* ((ast (current-ast<))
-                  (res (current-resolved<)))
-             (if (null ast)
-	             (set-ast-line (output "~A " value))
-                 (let ((info (getf ast 'info)))
-                   (if (and info (null res))
-                       (cond ((str:containsp "take the address with &" info)
-                              (set-ast-line (output "\&~A" value)))
-                             ((str:containsp "passing 'typeof ((" info)
-                              (set-ast-line (output "\&~A" value)))
-                             ((str:containsp "__ciciliL_" info)
-                              (set-ast-line (output "\&~A" value)))
-                             ((str:containsp "expression result unused" info))
-                             (t (set-ast-line (output "~A" value)))) ; (error (format nil "atom: ~A" info))
-                       (set-ast-line (output "~A " value)))))))
+           (compile-symbol spec value))
           ((key-eq typeof '|@CHAR|) (set-ast-line (output "'~A'" value))) 
           (t (set-ast-line (output "~A" value))))))
 
@@ -146,7 +212,13 @@
 
 (defun compile-list (spec lvl globals)
   (with-slots ((items default)) spec
-    (set-ast-line (output "{ "))
+    (let ((ast (prev-ast<)))
+      (if (null ast)
+	      (set-ast-line (output "{ "))
+          (let ((info (getf ast 'info)))
+            (if info
+                (error (format nil "cicili: list: ~S" (str:substring 0 340 info)))
+                (set-ast-line (output "{ "))))))
     (let ((l (length items))
           (m-init nil))
       (loop for i from 1 to l
@@ -168,6 +240,11 @@
 (defun compile-unary (spec lvl globals)
   (with-slots ((oprt name) (is-postfix modifier) (oprnd default)) spec
     (output "(")
+    (let ((ast (prev-ast<)))
+      (unless (null ast)
+        (let ((info (getf ast 'info)))
+          (when info
+            (error (format nil "cicili: unary: ~S" (str:substring 0 340 info)))))))
     (if is-postfix
         (progn
           (compile-form oprnd (1+ lvl) globals)
@@ -180,6 +257,11 @@
 (defun compile-operator (spec lvl globals)
   (with-slots ((opr name) (seq default)) spec
     (output "(")
+    (let ((ast (prev-ast<)))
+      (unless (null ast)
+        (let ((info (getf ast 'info)))
+          (when info
+            (error (format nil "cicili: operator: ~S" (str:substring 0 340 info)))))))
     (dolist (frm seq)
       (compile-form frm (1+ lvl) globals)
       (output " "))
@@ -220,139 +302,168 @@
 
 (defun compile-$ (spec lvl globals)
   (with-slots ((receiver name) (member default)) spec
-    (output "(")
-    (compile-form receiver (1+ lvl) globals)
-    (let* ((ast    (current-ast<))
-           (line-n (funcall *line-num* 0))
-           (col-n  (funcall *col-num* 0))
-           (info   (getf ast 'info))
-           (res    (current-resolved<)))
-      (when *debug-resolve* (display "resolving $:" line-n col-n (getf ast 'res) res #\Newline))
-      (if (or (null *resolve*) (null ast))
-          (progn
-            (set-resolved ". ")
-            (set-ast-line (output ". ")))
-          (if (null info)
-              (set-ast-line (output res))
-              (if (and (str:containsp "member reference type" info) (str:containsp "is a pointer" info))
-                  (progn
-                    (set-resolved "->")
-                    (set-ast-line (output "->")))
-                  (error (format nil "\: unresolved member reference type ~A~%" spec))))))
-    (compile-form member (1+ lvl) globals)
-    (output ")")))
+    (let* ((line-n     (funcall *line-num* 0))
+           (col-n      (funcall *col-num* 0))
+           (begin-ast  (prev-ast-by-key< (gethash 'key-$ (keys spec))))        ; --
+           (ptr-ast    (prev-ast-by-key< (getf begin-ast 'ptr)))
+           (mtd-ast    (prev-ast-by-key< (getf begin-ast 'mtd)))
+           (end-ast    (prev-ast-by-key< (getf begin-ast 'end)))
+           (begin-info (getf begin-ast 'info)) ; --
+           (begin-dump (reverse (getf begin-ast 'dump))) ; --
+           
+           (ptr-info   (getf ptr-ast   'info))
+           (mtd-info   (getf mtd-ast   'info))
+           (end-info   (getf end-ast   'info))
+           (spec-key   (ast-key< line-n col-n))
+           (res        (gethash 'res-$ (keys spec))))
+      (setf (gethash 'key-$ (keys spec)) spec-key)
+      (when *debug-resolve*
+        (display "resolving .:" line-n col-n "RES:" res "INFO:"
+                 begin-info ptr-info mtd-info end-info #\Newline begin-dump #\Newline))
+      
+      (cond ((or (null *resolve*) ; function without resolver (inline in header or attr resolve #f)
+               (null begin-ast))  ; access member by instance default for first run
+             (set-ast-line (output "("))
+             (compile-form receiver (1+ lvl) globals)
+             (setf (getf (gethash (ast-key< line-n col-n) (nth 0 *ast-lines*)) 'ptr)
+                   (ast-key< (funcall *line-num* 0) (funcall *col-num* 0)))
+             (set-ast-line (output ". "))
+             (setf (getf (gethash (ast-key< line-n col-n) (nth 0 *ast-lines*)) 'mtd)
+                   (ast-key< (funcall *line-num* 0) (funcall *col-num* 0)))
+             (compile-form member (1+ lvl) globals)
+             (setf (getf (gethash (ast-key< line-n col-n) (nth 0 *ast-lines*)) 'end)
+                   (ast-key< (funcall *line-num* 0) (funcall *col-num* 0)))
+             (output ")"))
+            (res
+             (set-ast-line (output "("))
+             (compile-form receiver (1+ lvl) globals)
+             (set-ast-line (output res))
+             (compile-form member (1+ lvl) globals)
+             (output ")"))
+            ((and (str:containsp "member reference type" ptr-info) (str:containsp "is a pointer" ptr-info))
+             (let ((resu "->"))
+               (setf *more-run* t)
+               (setf (gethash 'res-$ (keys spec)) resu)
+               (set-ast-line (output "("))
+               (compile-form receiver (1+ lvl) globals)
+               (set-ast-line (output resu))
+               (compile-form member (1+ lvl) globals)
+               (output ")")))
+            (t (error (format nil "cicili\: unresolved member reference type ~A. ~S~%~A"
+                              spec-key (str:substring 0 340 (or mtd-info ptr-info begin-info)) spec)))))))
 
 (defun compile--> (spec lvl globals)
   (with-slots ((receiver name) (method default) (args body)) spec
-    (let* ((prn-ast (current-ast< 0 0))
-           (obj-ast (current-ast< 0 1))
-           (opr-ast (current-ast< 0 (1+ (length (getf obj-ast 'res)))))
-           (mtd-ast (current-ast< 0 (1+ (+ (length (getf obj-ast 'res)) (length (getf opr-ast 'res))))))
-           (info    (getf mtd-ast 'info))
-           (line-n  (funcall *line-num* 0))
-           (col-n   (funcall *col-num* 0))
-           (res     (current-resolved<)))
-      (when *debug-resolve* (display "resolving ->:" line-n col-n (getf prn-ast 'res) (getf obj-ast 'res)
-                                     (getf opr-ast 'res) (getf mtd-ast 'res) res #\Newline))
-      ;; *resolve* nil: means during a function with resolve attribute #f
-      (cond ((or (null *resolve*) (and (null prn-ast) (null mtd-ast))) ;; access member by pointer
+    (let* ((line-n     (funcall *line-num* 0))
+           (col-n      (funcall *col-num* 0))
+           (begin-ast  (prev-ast-by-key< (gethash 'key--> (keys spec))))        ; --
+           (ptr-ast    (prev-ast-by-key< (getf begin-ast 'ptr)))
+           (mtd-ast    (prev-ast-by-key< (getf begin-ast 'mtd)))
+           (end-ast    (prev-ast-by-key< (getf begin-ast 'end)))
+           (begin-info (getf begin-ast 'info)) ; --
+           (begin-dump (reverse (getf begin-ast 'dump))) ; --
+           
+           (ptr-info   (getf ptr-ast   'info))
+           (mtd-info   (getf mtd-ast   'info))
+           (end-info   (getf end-ast   'info))
+           (spec-key   (ast-key< line-n col-n))
+           (res        (gethash 'res--> (keys spec))))
+      (setf (gethash 'key--> (keys spec)) spec-key)
+      (when *debug-resolve*
+        (display "resolving ->:" line-n col-n "RES:" res "INFO:" 
+                 begin-info ptr-info mtd-info end-info #\Newline begin-dump #\Newline))
+      
+      (cond ((or (null *resolve*) ; function without resolver (inline in header or attr resolve #f)
+               (null begin-ast))  ; access member by pointer default for first run
              (set-ast-line (output "("))
              (compile-form receiver (1+ lvl) globals)
+             (setf (getf (gethash (ast-key< line-n col-n) (nth 0 *ast-lines*)) 'ptr)
+                   (ast-key< (funcall *line-num* 0) (funcall *col-num* 0)))
              (set-ast-line (output "->"))
+             (setf (getf (gethash (ast-key< line-n col-n) (nth 0 *ast-lines*)) 'mtd)
+                   (ast-key< (funcall *line-num* 0) (funcall *col-num* 0)))
              (compile-form method (1+ lvl) globals)
              (compile-args (default args) lvl globals t)
+             (setf (getf (gethash (ast-key< line-n col-n) (nth 0 *ast-lines*)) 'end)
+                   (ast-key< (funcall *line-num* 0) (funcall *col-num* 0)))
              (output ")"))
-            ((or res (not (string-equal "(" (getf prn-ast 'res)))) ; next run after resolved comes here
-             (let ((resu (if res res (getf prn-ast 'res))))
-               (if (str:starts-with-p
-                       (str:replace-first "\\(.*" ""
-                                          (make-shared-name (name receiver) "") :regex t)
-                     resu) ; was shared or method
-                   (progn
-                     (set-ast-line (output resu))
-                     (output "(")
-                     (compile-args (default args) lvl globals nil)
-                     (output ")")
-                     (funcall *col-num* 0 :reset (+ col-n (length resu))))
-                   (progn
-                     (set-ast-line (output resu))
-                     (output "(")
-                     (compile-form receiver (1+ lvl) globals)
-                     (compile-args (default args) lvl globals t)
-                     (output ")")
-                     (funcall *col-num* 0 :reset (+ col-n (length resu)))))))
-            ((str:containsp "no member named" (if (null info) (getf prn-ast 'info) info))
-             (let* ((info        (if (null info) (getf prn-ast 'info) info))
-                    (matches     (ppcre:all-matches-as-strings "'(struct\\s+)?\\w+'" info))
+            (res
+             (if (str:starts-with-p (str:replace-first "\\(.*" "" (make-shared-name (name receiver) "") :regex t)
+                   res) ; was shared or method
+                 (progn
+                   (set-ast-line (output res))
+                   (output "(")
+                   (compile-args (default args) lvl globals nil)
+                   (setf (getf (gethash (ast-key< line-n col-n) (nth 0 *ast-lines*)) 'end)
+                         (ast-key< (funcall *line-num* 0) (funcall *col-num* 0)))
+                   (output ")"))
+                 (progn
+                   (set-ast-line (output res))
+                   (output "(")
+                   (compile-form receiver (1+ lvl) globals)
+                   (compile-args (default args) lvl globals t)
+                   (setf (getf (gethash (ast-key< line-n col-n) (nth 0 *ast-lines*)) 'end)
+                         (ast-key< (funcall *line-num* 0) (funcall *col-num* 0)))
+                   (output ")"))))
+            ((and ptr-info (str:containsp "expected ')'" ptr-info))
+             (let ((resu (make-shared-name (name receiver) (name method))))
+               (setf *more-run* t)               
+               (setf (gethash 'res--> (keys spec)) resu)
+               (set-ast-line (output "~A" resu))
+               (output "(")
+               (compile-args (default args) lvl globals nil)
+               (output ")")))
+            ((and ptr-info (str:containsp "expected expression" ptr-info))
+             (if (key-eq (construct receiver) '|@ATOM|) 
+                 (let ((resu (make-method-name (name receiver) (name method))))
+                   (setf *more-run* t)               
+                   (setf (gethash 'res--> (keys spec)) resu)
+                   (set-ast-line (output resu))
+                   (output "(")
+                   (compile-form receiver (1+ lvl) globals)
+                   (compile-args (default args) lvl globals t)
+                   (output ")"))
+                 (progn
+                   (set-ast-line (output "("))
+                   (compile-form receiver (1+ lvl) globals)
+                   (setf (getf (gethash (ast-key< line-n col-n) (nth 0 *ast-lines*)) 'ptr)
+                         (ast-key< (funcall *line-num* 0) (funcall *col-num* 0)))
+                   (set-ast-line (output "->"))
+                   (setf (getf (gethash (ast-key< line-n col-n) (nth 0 *ast-lines*)) 'mtd)
+                         (ast-key< (funcall *line-num* 0) (funcall *col-num* 0)))
+                   (compile-form method (1+ lvl) globals)
+                   (compile-args (default args) lvl globals t)
+                   (setf (getf (gethash (ast-key< line-n col-n) (nth 0 *ast-lines*)) 'end)
+                         (ast-key< (funcall *line-num* 0) (funcall *col-num* 0)))
+                   (output ")"))))
+            ((and end-info (str:containsp "too few arguments" end-info))
+             (error (format nil "cicili\: call: ~S" (str:substring 0 330 end-info))))
+            ((and mtd-info (str:containsp "no member named" mtd-info))
+             (let* ((matches     (ppcre:all-matches-as-strings "'(struct\\s+)?\\w+'" mtd-info))
                     (method      (car matches))
                     (parts       (str:split #\Space (cadr matches)))
                     (resu        (make-method-name (string-right-trim "'" (cadr parts)) (string-trim "'" method))))
                (if (string-equal (car parts) "'struct")
-                   (set-resolved resu)
-                   (error (format nil "cicili\: nnn unresolved method reference type ~A~% ~A~%" spec info)))
+                   (progn
+                     (setf *more-run* t)               
+                     (setf (gethash 'res--> (keys spec)) resu))
+                   (error (format nil "cicili\: nnn unresolved method reference type ~A. ~s~%~A"
+                                  spec-key (str:substring 0 340 (or mtd-info ptr-info begin-info)) spec)))
                (set-ast-line (output "~A" resu))
                (output "(")
-               (if (body receiver)
-                   (progn
-                     (set-ast-line (output (getf obj-ast 'res)))
-                     (output "(")
-                     (compile-args (default (body receiver)) lvl globals nil)
-                     (output ")")
-                     (compile-args (default args) lvl globals t))
-                   (progn
-                     (compile-form receiver lvl globals)
-                     (compile-args (default args) lvl globals t)))
-               (output ")")
-               (funcall *col-num* 0 :reset (+ col-n (length (getf obj-ast 'res))))))
-            ((and opr-ast (str:containsp "expected ')'" (getf opr-ast 'info)))
-             (let ((opr-res (make-shared-name (name receiver) (name method))))
-               (set-resolved opr-res)
-               (set-ast-line (output "~A" opr-res))
-               (output "(")
-               (compile-args (default args) lvl globals nil)
-               (output ")")
-               (funcall *col-num* 0 :reset (+ col-n (- (length opr-res) (length res))))))
-            ((and opr-ast (str:containsp "expected expression" (getf opr-ast 'info)))
-             (let ((opr-res (make-shared-name (name receiver) (name method))))
-               (set-resolved opr-res)
-               (set-ast-line (output "~A" opr-res))
-               (output "(")
-               (compile-args (default args) lvl globals nil)
-               (output ")")
-               (funcall *col-num* 0 :reset (+ col-n (- (length opr-res) (length res))))))
-            ((and opr-ast (str:containsp "member reference base type" (getf opr-ast 'info)))
-             (let ((opr-res (make-shared-name (name receiver) (name method))))
-               (set-resolved opr-res)
-               (set-ast-line (output "~A" opr-res))
-               (output "(")
-               (compile-args (default args) lvl globals nil)
-               (output ")")
-               (funcall *col-num* 0 :reset (+ col-n (- (length opr-res) (length res))))))
-            ((string-equal "(" (getf prn-ast 'res)) ; inner access method needs extra resolve run
-             (set-ast-line (output "("))
-             (compile-form receiver (1+ lvl) globals)
-             (set-ast-line (output "->"))
-             (let* ((inn-ast (gethash
-                              (ast-key< (funcall *line-num* 0 :actual t) (funcall *col-num* 0 :actual t))
-                              (nth 1 *ast-lines*)))
-                    (inn-info (getf inn-ast 'info)))
-               (when inn-info
-                 (setf *more-run* t)
-                 (setf (getf (gethash
-                              (ast-key< (getf mtd-ast 'line-n) (getf mtd-ast 'col-n))
-                              (nth 0 *ast-lines*)) 'info) inn-info)
-                 (setf (getf (gethash
-                              (ast-key< (getf prn-ast 'line-n) (getf prn-ast 'col-n))
-                              (nth 0 *ast-lines*)) 'info) inn-info)
-                 ))
-             (compile-form method (1+ lvl) globals)
-             (compile-args (default args) lvl globals t)
-             (output ")"))
-            (t (error (format nil "cicili\: unresolved method reference type ~A~% ~A~%" spec
-                              (or info (getf opr-ast 'info) (getf obj-ast 'info)))))))))
-
+               (compile-form receiver lvl globals)
+               (compile-args (default args) lvl globals t)
+               (output ")")))
+            (t (error (format nil "cicili\: unresolved method reference type ~A. ~S~%~A"
+                              spec-key (str:substring 0 340 (or mtd-info ptr-info begin-info)) spec)))))))
+                  
 (defun compile-sizeof (spec lvl globals)
   (set-ast-line (output "sizeof("))
+  (let ((ast (prev-ast<)))
+    (unless (null ast)
+      (let ((info (getf ast 'info)))
+        (when info
+          (error (format nil "cicili: unary: ~S" (str:substring 0 340 info)))))))
   (if (default spec)
       (compile-form (default spec) lvl globals)
       (compile-spec-type spec lvl globals))
@@ -368,8 +479,41 @@
   (loop for arg in args
         with l = (1- (length args))
         for i from 0 to l
-        do (progn           
-             (compile-form arg (1+ lvl) globals)
+        do (progn
+             (let* ((line-n   (funcall *line-num* 0))
+                    (col-n    (funcall *col-num* 0))
+                    (ast      (prev-ast-by-key< (gethash 'key-arg (keys arg))))
+                    (info     (getf ast 'info))
+                    (dump     (reverse (getf ast 'dump)))
+                    (spec-key (ast-key< line-n col-n))
+                    (res      (gethash 'res-arg (keys arg))))
+               (setf (gethash 'key-arg (keys arg)) spec-key)
+               (when *debug-resolve*
+                 (display "resolving arg:" line-n col-n "RES:" res "INFO:" info #\Newline dump #\Newline))
+               
+               (cond ((null ast)
+	                  (compile-form arg lvl globals))
+                     (res
+                      (set-ast-line (output "~A" res))
+                      (set-ast-line (output "("))
+                      (compile-form arg lvl globals)
+                      (output ")"))
+                     ((str:containsp "incompatible pointer types" info)
+                      (let* ((result (multiple-value-list
+                                         (ppcre:scan-to-strings
+                                             "'(\\w+?)(?:\\[\\d*\\]|\\s\\*)'.*?'(\\w+?)(?:\\[\\d*\\]|\\s\\*)'"
+                                           info)))
+                             (matches (cadr result)))
+                        ;; (display "GGGGGG" matches #\Newline)
+                        (let ((resu (make-shared-name (elt matches 0) (format nil "to~A" (elt matches 1)))))
+                          (setf (gethash 'res-arg (keys arg)) resu)
+                          (set-ast-line (output "~A" resu))
+                          (set-ast-line (output "("))
+                          (compile-form arg lvl globals)
+                          (output ")"))))
+                     ((str:containsp "member reference type" info)
+                      (compile-form arg lvl globals))
+                     (t (compile-form arg lvl globals))))
              (when (< i l) (output ", ")))))
 
 (defun compile-call (spec lvl globals)
@@ -378,7 +522,13 @@
     (compile-form func (1+ lvl) globals)
     (output "(")
     (unless (null args) (compile-args args lvl globals nil))
-    (output ")")
+    (let ((ast (prev-ast<)))
+      (if (null ast)
+	      (set-ast-line (output ")"))
+          (let ((info (getf ast 'info)))
+            (if info
+                (error (format nil "cicili: call: ~S" (str:substring 0 340 info)))
+                (set-ast-line (output ")"))))))
     (when (> lvl -1) (output ";~%"))))
 
 (defun compile-form (spec lvl globals)
@@ -412,7 +562,8 @@
       ('|@TYPEDEF|(compile-typedef    spec 0   globals)) 
       ('|@GUARD|  (compile-guard      spec 0   globals)) 
       ('|@GHOST|  (compile-guard      spec 0   globals t)) 
-      ('|@MODULE| (compile-module     spec 0   globals)) ; down here for inside macros 
+      ('|@MODULE| (compile-module     spec 0   globals))
+      ('|@GENERIC|(compile-generic    spec 0   globals)) ; down here for inside macros 
       ('|@CALL|   (compile-call       spec -1  globals))
       ('|@BODY|   (compile-body       spec -1  globals spec))
       (t (error (format nil "expr syntax error ~A" spec))))))
@@ -514,8 +665,42 @@
       (when (> lvl -1) (output "~&~A" (indent lvl)))
       (compile-form (nth 0 item) (1+ lvl) globals)
       (output " ")
-      (set-ast-line (output "= "))
-      (compile-form (nth 1 item) (1+ lvl) globals)
+
+      (let* ((line-n   (funcall *line-num* 0))
+             (col-n    (funcall *col-num* 0))
+             (ast      (prev-ast-by-key< (gethash 'key-set (keys (nth 1 item)))))
+             (info     (getf ast 'info))
+             (dump     (reverse (getf ast 'dump)))
+             (spec-key (ast-key< line-n col-n))
+             (res      (gethash 'res-set (keys (nth 1 item)))))
+        (setf (gethash 'key-set (keys (nth 1 item))) spec-key)
+        (when *debug-resolve*
+          (display "resolving set:" line-n col-n "RES:" res "INFO:" info #\Newline dump #\Newline))
+        
+        (cond ((null ast)
+               (set-ast-line (output "= "))
+	           (compile-form (nth 1 item) (1+ lvl) globals))
+              (res
+               (set-ast-line (output "= "))
+               (set-ast-line (output "~A" res))
+               (set-ast-line (output "("))
+               (compile-form (nth 1 item) (1+ lvl) globals)
+               (output ")"))
+              ((str:containsp "incompatible pointer types" info)
+               (let* ((result (multiple-value-list
+                                  (ppcre:scan-to-strings
+                                      "'(\\w+?)(?:\\[\\d*\\]|\\s\\*)'.*?'(\\w+?)(?:\\[\\d*\\]|\\s\\*)'" info)))
+                      (matches (cadr result)))
+                 ;; (display "GGGGGG" matches #\Newline)
+                 (let ((resu (make-shared-name (elt matches 1) (format nil "to~A" (elt matches 0)))))
+                   (setf (gethash 'res-set (keys (nth 1 item))) resu)
+                   (set-ast-line (output "= "))
+                   (set-ast-line (output "~A" resu))
+                   (set-ast-line (output "("))
+                   (compile-form (nth 1 item) (1+ lvl) globals)
+                   (output ")"))))
+              (t (set-ast-line (output "= "))
+	             (compile-form (nth 1 item) (1+ lvl) globals))))
       (when (> lvl -1) (output ";~%")))))
 
 (defun compile-return (spec lvl globals)
@@ -696,7 +881,12 @@
               do (progn
                    (compile-spec-type-value param lvl locals)
                    (when (< i lc) (output ", "))))
-        (output ")")
+        (let ((ast (prev-ast<)))
+          (unless (null ast)
+            (let ((info (getf ast 'info)))
+              (when info
+                (error (format nil "cicili: function: ~S" (str:substring 0 340 info)))))))
+        (set-ast-line (output ")"))
         (if is-declare
             (unless as-type (output ";~%"))
             (progn
@@ -906,6 +1096,7 @@
 		           ('|@GUARD|    (compile-guard        in-spec lvl globals nil :nested t))
 		           ('|@GHOST|    (compile-guard        in-spec lvl globals t :nested t))
 		           ('|@MODULE|   (compile-module       in-spec lvl globals))
+		           ('|@GENERIC|  (compile-generic      in-spec lvl globals))
 		           (otherwise    (compile-form         in-spec lvl globals)
                                  (output "~%"))))
 	         (inners spec))

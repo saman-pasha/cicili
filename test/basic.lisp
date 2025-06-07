@@ -28,6 +28,10 @@
               (member const func sign ((char * doc)))
               (declare role)
               (declare * sub_roles [])))
+
+          (method (Employee . free) () ; notice '.' between struct and method
+                  (format #t "from free method %d\n" (-> this id)) ; ($ this id) causes error, headers doesnt have resolver
+                  (free this))
         ))
 
 (source "basic.c"
@@ -41,10 +45,10 @@
                     (Employee emp3 . '{ $id 1 $name "John Doe" $tag$tag_id 1001 })
                     (Employee emp_array [] . '{ '{ 1 "John Doe" } '{ 2 "Saman Pasha" } })
                     (defer #t) (Employee * emp . #'(alloc (sizeof Employee))) ; defer #t means auto free defferal
-                    (Employee * emps_arr . #'(alloc 5 (sizeof Employee)))
-                    (Employee * emps_ptr_arr . #'(alloc 10 (sizeof Employee *)))
+                    (@Employee * emps_arr . #'(alloc 5 (sizeof Employee))) ; calls free method
+                    (@Employee * emps_ptr_arr . #'(alloc 10 (sizeof Employee *))) ; calls free method at the end of scope
                     )
-                (free emp)
+                (free emp) ; will cause malloc error t the end of scope, because of freed manually before automatically
                 (set emp (aof emp1))
                 (printf "sum of a series: %d\n" (+ 1 2 3 4 5))
                 (printf "is id one? %s\n" (? (== ($ emp1 id) 1) "true" "false"))

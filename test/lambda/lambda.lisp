@@ -6,7 +6,7 @@
           (member int width)
           (member func dynamicDraw (((struct Shape) * _))))
 
-        (decl) (method Shape->staticDraw ())))
+        (decl) (method (Shape . staticDraw) ())))
           
 (source "lambda.c" (:std #f
                     :compile #t

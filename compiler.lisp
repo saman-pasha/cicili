@@ -33,6 +33,8 @@
 	       (ir      nil)
            (macro (if (symbolp tname) (gethash (symbol-name tname) *macros*) nil)))
       (cond ((key-eq tname '|import|) (load-macro-file (cadr target) (caddr target) (cadddr target)))
+            ((key-eq tname '|cicili|)
+             (compile-ast (cdr target)))
             ((key-eq tname '|DEFMACRO|)
              (let ((symb (eval target)))
                (add-macro (symbol-name symb) symb)))
@@ -55,7 +57,7 @@
                         (setq *ast-run* 0)
                         (do ((run 0 (1+ run))) ; resolver runs
                             ((or *only-link* (= run (if (key-eq tname '|header|) 1
-                                                        (if *more-run*
+                                                        (if (and *more-run* (= run (1+ *ast-total-runs*)))
                                                             (setq *ast-total-runs* (1+ *ast-total-runs*))
                                                             *ast-total-runs*)))))
                           (setf *more-run* nil)
@@ -63,28 +65,74 @@
                           (setf *next-ast-line* (make-hash-table :test 'equal))
 	                      (setq globals (create-globals ir))
                           (setq *ast-run* (1+ run))
-                          (unless (key-eq tname '|header|)
+                          (when (and *debug-runs* (key-eq tname '|source|)) ;; --separate
                             (setq file (format nil "~A.run~D.~A" (name ir) *ast-run* (pathname-type (name ir)))))
                           (setq stdout  (make-string-output-stream))
                           (setq stderr  (make-string-output-stream))
                           (setf *gensym-counter* 100)
+                          
                           ;; manipulate ast
 	                      (compile-target file ir globals stdout stderr t (key-eq tname '|header|))
+                          
                           ;; iterate over errors
-                          (with-input-from-string (err-stream (get-output-stream-string stderr))
-                            (do ((s (read-line err-stream nil nil) (read-line err-stream nil nil)))
-                                ((eql s nil))
-                              (when (str:starts-with-p file s)
-                                (let* ((err-line (str:split #\: s :limit 5))
-                                       (ast-key (ast-key< (parse-integer (nth 1 err-line))
-                                                  (parse-integer (nth 2 err-line)) :file *target-file*)))
-                                  (when (string-equal (nth 3 err-line) " error")
-                                    (setf (getf (gethash ast-key (nth 0 *ast-lines*)) 'info) s))))
-                              (display "run err" *ast-run* ">" s #\NewLine)))
-                          (with-input-from-string (out-stream (get-output-stream-string stdout))
-                            (do ((s (read-line out-stream nil nil) (read-line out-stream nil nil)))
-                                ((eql s nil))
-                              (display "run out" *ast-run* ">" s #\NewLine))))
+                          (let ((info "")
+                                (ast-key ""))
+                            (with-input-from-string (err-stream (get-output-stream-string stderr))
+                              (do ((s (read-line err-stream nil nil) (read-line err-stream nil nil)))
+                                  ((eql s nil))
+                                (if (str:starts-with-p file s)
+                                    (let* ((err-line (str:split #\: s :limit 5)))
+                                      ;; logs on current last run hash table
+                                      (if (or (string-equal (nth 3 err-line) " error")
+                                            (string-equal (nth 3 err-line) " warning"))
+                                          (progn
+                                            (setf (getf (gethash ast-key (nth 0 *ast-lines*)) 'info) info)
+                                            (setq ast-key (ast-key< (parse-integer (nth 1 err-line))
+                                                            (parse-integer (nth 2 err-line)) :file *target-file*))
+                                            (setq info s))
+                                          (progn
+                                            (setq info (concatenate 'string info '(#\NewLine) s)))))
+                                    (setq info (concatenate 'string info '(#\NewLine) s)))
+                                (display "run err" *ast-run* ">" s #\NewLine)))
+                            (setf (getf (gethash ast-key (nth 0 *ast-lines*)) 'info) info))
+                          
+                          ;; extracts ast infos from dumped Translation Units
+                          (let ((d-file  "TranslationUnitDecl")
+                                (d-line  "-1")
+                                (d-col   "0")
+                                (ast-key ""))
+                            (with-input-from-string (out-stream (get-output-stream-string stdout))
+                              (do ((s (read-line out-stream nil nil) (read-line out-stream nil nil)))
+                                  ((eql s nil))
+                                (when *debug-dump* (display s #\NewLine))
+                                (let* ((result (multiple-value-list
+                                                   (ppcre:scan-to-strings
+                                                       "([\\||`]-)([\\w<>]+)(?:\\s.+?<(.+?):(\\d+)(?::(\\d+))?[,>])?" s)))
+                                       (matches (cadr result)))
+                                  (cond ((null matches)
+                                         (setq ast-key (ast-key< (parse-integer d-line)
+                                                         (parse-integer d-col) :file d-file)))
+                                        ((string= (elt matches 2) "col")
+                                         (setq d-col (elt matches 3))
+                                         (setq ast-key (ast-key< (parse-integer d-line)
+                                                         (parse-integer d-col) :file d-file)))
+                                        
+                                        ((string= (elt matches 2) "line")
+                                         (setq d-line (elt matches 3))
+                                         (setq ast-key (ast-key< (parse-integer d-line)
+                                                         (parse-integer (elt matches 4)) :file d-file)))
+                                                                                
+                                        ((elt matches 2)
+                                         (setq d-file (car (str:split "\\.run\\d+\\." (elt matches 2) :regex t)))
+                                         (setq ast-key (ast-key< (parse-integer (elt matches 3))
+                                                         (parse-integer (elt matches 4)) :file d-file))))
+                                  
+                                  (when (and (> (length matches) 0) (elt matches 0))
+                                    ;; (display (cons matches s) ast-key #\Space)
+                                    (push (cons matches s) (getf (gethash ast-key (nth 0 *ast-lines*)) 'dump)))
+                                )))
+                          
+                          ))
                         ;; iterate over ast lines
                         ;; (with-input-from-string (out-stream (get-output-stream-string stdout))
                         ;;   (do ((s (read-line out-stream nil nil) (read-line out-stream nil nil)))

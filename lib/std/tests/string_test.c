@@ -4,31 +4,47 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
-#include "cicili_string.h"
-static void __ciciliL_182 (String ** a) {
+#include "../Slice/cicili_string.h"
+void printString (String * str ) {
+  fprintf (stdout , "the str: %s\n", String_m_deref(str ));
+}
+static void __ciciliL_185 (String ** a ) {
   String_m_free((*a ));
 }
-static void __ciciliL_184 (String ** b) {
+static void __ciciliL_187 (String ** b ) {
   String_m_free((*b ));
 }
+static void __ciciliL_189 (String ** trait1 ) {
+  String_m_free((*trait1 ));
+}
+static void __ciciliL_191 (String ** trait2 ) {
+  String_m_free((*trait2 ));
+}
+static void __ciciliL_193 (String ** trait3 ) {
+  String_m_free((*trait3 ));
+}
 int main () {
-  { /* cicili#Let181 */
-    String * a __attribute__((__cleanup__(__ciciliL_182 ))) = String_s_new("hello");
-    String * b __attribute__((__cleanup__(__ciciliL_184 ))) = String_s_new("world");
-    String * formatted = String_s_newFormat("value: %d, %s", 42, "test");
-    String * helloWorld = String_m_concat(a , b );
-    String * upper = String_m_toUpper(a );
-    String * lower = String_m_toLower(upper );
-    String * trimmed = String_m_trim(String_s_new("   padded   "));
-    String * replaced = String_m_replace(String_s_new("a-b-c-d"), '-', '_');
-    String * substr = String_m_substring(helloWorld , 3, 4);
-    String * prefix = String_s_new("hel");
-    String * suffix = String_s_new("rld");
-    bool eq1 = String_m_equals(a , a );
-    bool eq2 = String_m_equals(a , b );
-    size_t index = String_m_find(a , 'l');
-    bool sw = String_m_startsWith(a , prefix );
-    bool ew = String_m_endsWith(helloWorld , suffix );
+  { /* cicili#Let184 */
+    String * a  __attribute__((__cleanup__(__ciciliL_185 ))) = String_s_new("hello");
+    String * b  __attribute__((__cleanup__(__ciciliL_187 ))) = String_s_new("world");
+    String * formatted  = String_s_newFormat("value: %d, %s", 42, "test");
+    String * helloWorld  = String_m_concat(a , b );
+    String * upper  = String_m_toUpper(a );
+    String * lower  = String_m_toLower(upper );
+    String * trimmed  = String_m_trim(String_s_new("   padded   "));
+    String * replaced  = String_m_replace(String_s_new("a-b-c-d"), '-', '_');
+    String * substr  = String_m_substring(helloWorld , 3, 4);
+    String * prefix  = String_s_new("hel");
+    String * suffix  = String_s_new("rld");
+    bool eq1  = String_m_equals(a , a );
+    bool eq2  = String_m_equals(a , b );
+    size_t index  = String_m_find(a , 'l');
+    bool sw  = String_m_startsWith(a , prefix );
+    bool ew  = String_m_endsWith(helloWorld , suffix );
+    String * trait1  __attribute__((__cleanup__(__ciciliL_189 ))) = char_s_toString("toString trait 1 call");
+    String * trait2  __attribute__((__cleanup__(__ciciliL_191 ))) = char_s_toString("toString trait 2 call");
+    String * trait3  __attribute__((__cleanup__(__ciciliL_193 )));
+    trait3  = char_s_toString("toString trait 2 call");
     fprintf (stdout , "a: %s\n", (a ->arr ));
     fprintf (stdout , "b: %s\n", (b ->arr ));
     fprintf (stdout , "helloWorld: %s\n", (helloWorld ->arr ));
@@ -43,6 +59,11 @@ int main () {
     fprintf (stdout , "find 'l' in a: %zu\n", index );
     fprintf (stdout , "a starts with 'hel': %s\n", ((sw ) ? "true" : "false"));
     fprintf (stdout , "helloWorld ends with 'rld': %s\n", ((ew ) ? "true" : "false"));
+    fprintf (stdout , "%s\n", String_m_deref(trait1 ));
+    fprintf (stdout , "%s\n", String_m_deref(trait2 ));
+    fprintf (stdout , "%s\n", String_m_deref(trait3 ));
+    printString (trait1 );
+    printString (char_s_toString("Alice and Bob"));
     String_m_free(helloWorld );
     String_m_free(formatted );
     String_m_free(upper );
