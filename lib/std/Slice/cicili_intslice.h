@@ -11,7 +11,7 @@ typedef struct IntSlice {
 IntSlice * IntSlice_s_newEmpty (size_t len );
 IntSlice * IntSlice_s_newFromArray (const intslice_elem_t * arr , size_t len );
 IntSlice * IntSlice_s_newCopy (const IntSlice * other );
-int IntSlice_m_firstElement (IntSlice * this );
+int * IntSlice_m_deref (IntSlice * this );
 IntSlice * IntSlice_m_clone (IntSlice * this );
 intslice_elem_t * IntSlice_m_cloneArray (IntSlice * this );
 IntSlice * IntSlice_m_appendNew (IntSlice * this , const IntSlice * other );

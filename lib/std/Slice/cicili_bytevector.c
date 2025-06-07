@@ -40,8 +40,8 @@ ByteVector * ByteVector_s_newCopy (const ByteVector * other ) {
     return slice ;
   }
 }
-unsigned char ByteVector_m_firstElement (ByteVector * this ) {
-  return ((unsigned char)(this ->arr )[0]);
+unsigned char * ByteVector_m_deref (ByteVector * this ) {
+  return (this ->arr );
 }
 ByteVector * ByteVector_m_clone (ByteVector * this ) {
   return ByteVector_s_newCopy(this );

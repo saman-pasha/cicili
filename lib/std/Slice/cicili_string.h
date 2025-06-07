@@ -11,7 +11,7 @@ typedef struct String {
 String * String_s_newEmpty (size_t len );
 String * String_s_newFromArray (const string_elem_t * arr , size_t len );
 String * String_s_newCopy (const String * other );
-char String_m_firstElement (String * this );
+char * String_m_deref (String * this );
 String * String_m_clone (String * this );
 string_elem_t * String_m_cloneArray (String * this );
 String * String_m_appendNew (String * this , const String * other );
@@ -50,5 +50,6 @@ String * String_m_trim (String * this );
 String * String_m_replace (String * this , char oldch , char newch );
 bool String_m_startsWith (String * this , const String * prefix );
 bool String_m_endsWith (String * this , const String * suffix );
+String * char_s_toString (const char * cstr );
 #endif /* CICILI_STRING_H_ */ 
 

@@ -43,7 +43,7 @@
              (decl) (func (,name . newCopy)       ((const ,name * other)))
 
              ;; C compatibility
-             (decl) (method (,name . firstElement)  () (out ,@(IF (LISTP element) element (LIST element))))
+             (decl) (method (,name . deref)       () (out ,@(IF (LISTP element) element (LIST element)) *))
              
              ;; Collection of useful Slice methods
              (decl) (method (,name . clone)       () (out ,name *))
@@ -93,8 +93,8 @@
                  (return slice)))
 
          ;; returns address of first item for using as C array (element *)
-         (method (,name . firstElement) () (out ,@(IF (LISTP element) element (LIST element)))
-                 (return (cast ,element (nth 0 ($ this arr)))))
+         (method (,name . deref) () (out ,@(IF (LISTP element) element (LIST element)) *)
+                 (return ($ this arr)))
 
          ;; Uses newCopy constructor but as a method
          (method (,name . clone) () (out ,name *)

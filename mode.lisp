@@ -16,8 +16,7 @@
  
 (cicili-add-types
  'font-lock-type-face
- '((1 . cicili)
-   (1 . main)
+ '((1 . main)
    (1 . const)
    (1 . func)
    (1 . this)
@@ -98,7 +97,8 @@
  
 (cicili-add-keywords
  'font-lock-keyword-face
- '((1 . main)
+ '((1 . cicili)
+   (1 . main)
    (1 . main*)
    (1 . generic)
    (1 . format)

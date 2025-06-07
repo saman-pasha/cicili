@@ -9,14 +9,10 @@
         (__GENERIC_SLICE_G_ int)
         
         (main
-            (let ((int ** arr . #'(alloc 6 (sizeof int *)))
+            (let ((int ** arr . #'(alloc 6 (sizeof int)))
                   (@BorrowableSlice * slice . #'(-> BorrowableSlice newFromArray
                                                     (cast (void **) arr) 6)))
               
-              (-> slice (<> iterBorrow int)
-                  '(lambda ((size_t index) (const int * value))
-                    (format #t "the borrowed index: %lu, the borrowed value: %d\n" index (cof value))))
-
               (-> slice (<> iterBorrowMut int)
                   '(lambda ((size_t index) (int * value))
                     (set (cof value) 3)))

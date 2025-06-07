@@ -16,6 +16,8 @@
 (defparameter *only-link* nil)
 ;; writes each source in distinct .run#.c file --separate
 (defparameter *debug-runs* nil)
+;; prints output of c compiler dumps
+(defparameter *debug-dump* nil)
 
 (format t "software type: ~S~%" (software-type))
 ;;;; os specific toolset
@@ -28,7 +30,7 @@
                                                    "clang" "-g" "-O" "-ferror-limit=1000" *verbose*)
                              'linker   `("libtool" "--tag=CC" "--mode=link" "clang" "-g" "-O" *verbose*)))
       ((string= os "Darwin") (list
-                              'dumper   nil ; '("-Xclang" "-ast-dump")
+                              'dumper   '("-Xclang" "-ast-dump")
                               'compiler `("glibtool" "--tag=CC" "--mode=compile"
                                                      "clang" "-g" "-O" "-ferror-limit=1000" *verbose*)
                               'linker   `("glibtool" "--tag=CC" "--mode=link" "clang" "-g" "-O" *verbose*)))

@@ -40,8 +40,8 @@ String * String_s_newCopy (const String * other ) {
     return slice ;
   }
 }
-char String_m_firstElement (String * this ) {
-  return ((char)(this ->arr )[0]);
+char * String_m_deref (String * this ) {
+  return (this ->arr );
 }
 String * String_m_clone (String * this ) {
   return String_s_newCopy(this );
@@ -302,5 +302,8 @@ bool String_m_endsWith (String * this , const String * suffix ) {
     size_t offset  = ((this ->len ) -  (suffix ->len ) );
     return (strncmp (((this ->arr ) +  offset  ), (suffix ->arr ), (suffix ->len )) ==  0 );
   }
+}
+String * char_s_toString (const char * cstr ) {
+  return String_s_new(cstr );
 }
 

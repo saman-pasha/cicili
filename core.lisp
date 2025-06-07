@@ -106,7 +106,7 @@
                               (if actual actual-count count))))
 
 (defun ast-key< (line-n col-n &key (file *target-file*))
-  (format nil "~A:~D:~D" *target-file* line-n col-n))
+  (format nil "~A:~D:~D" file line-n col-n))
 
 ;; reads log from second hash table, previous run
 (defun prev-ast< (&optional (plus-line 0) (plus-col 0))

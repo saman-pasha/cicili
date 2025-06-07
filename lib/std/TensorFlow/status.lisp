@@ -4,7 +4,7 @@
        (struct Status
          (member TF_Status * ptr))
 
-     (decl) (func (Status . new) ())
+     (decl) (func   (Status . new) ())
      (decl) (method (Status . free) ())
      (decl) (method (Status . code) () (out TF_Code))
      (decl) (method (Status . message) () (out const char *))

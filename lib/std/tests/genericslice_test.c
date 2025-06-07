@@ -34,30 +34,26 @@ static void __ciciliL_128 (int *** arr ) {
 static void __ciciliL_130 (BorrowableSlice ** slice ) {
   BorrowableSlice_m_free((*slice ));
 }
-static void __ciciliL_134 (size_t index , const int * value ) {
-  fprintf (stdout , "the borrowed index: %lu, the borrowed value: %d\n", index , (*value ));
-}
-static void __ciciliL_139 (size_t index , int * value ) {
+static void __ciciliL_134 (size_t index , int * value ) {
   (*value ) = 3;
 }
-static void __ciciliL_142 (size_t index , const int * value ) {
+static void __ciciliL_137 (size_t index , const int * value ) {
   fprintf (stdout , "the borrowed index: %lu, the borrowed value: %d\n", index , (*value ));
 }
-static void __ciciliL_147 (size_t index , int * value ) {
+static void __ciciliL_142 (size_t index , int * value ) {
   (*value ) = 12;
 }
-static void __ciciliL_150 (size_t index , const int * value ) {
+static void __ciciliL_145 (size_t index , const int * value ) {
   fprintf (stdout , "the borrowed index: %lu, the borrowed value: %d\n", index , (*value ));
 }
 int main () {
   { /* cicili#Let127 */
-    int ** arr  __attribute__((__cleanup__(__ciciliL_128 ))) = ((int **)calloc (6, sizeof(int *)));
+    int ** arr  __attribute__((__cleanup__(__ciciliL_128 ))) = ((int **)calloc (6, sizeof(int)));
     BorrowableSlice * slice  __attribute__((__cleanup__(__ciciliL_130 ))) = BorrowableSlice_s_newFromArray(((void **)arr ), 6);
-    BorrowableSlice_m_iterBorrow_int(slice , __ciciliL_134 );
-    BorrowableSlice_m_iterBorrowMut_int(slice , __ciciliL_139 );
-    BorrowableSlice_m_iterBorrow_int(slice , __ciciliL_142 );
-    BorrowableSlice_m_borrowMut_int(slice , 2, __ciciliL_147 );
-    BorrowableSlice_m_borrow_int(slice , 2, __ciciliL_150 );
+    BorrowableSlice_m_iterBorrowMut_int(slice , __ciciliL_134 );
+    BorrowableSlice_m_iterBorrow_int(slice , __ciciliL_137 );
+    BorrowableSlice_m_borrowMut_int(slice , 2, __ciciliL_142 );
+    BorrowableSlice_m_borrow_int(slice , 2, __ciciliL_145 );
   }
 }
 

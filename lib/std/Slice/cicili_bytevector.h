@@ -11,7 +11,7 @@ typedef struct ByteVector {
 ByteVector * ByteVector_s_newEmpty (size_t len );
 ByteVector * ByteVector_s_newFromArray (const bytevector_elem_t * arr , size_t len );
 ByteVector * ByteVector_s_newCopy (const ByteVector * other );
-unsigned char ByteVector_m_firstElement (ByteVector * this );
+unsigned char * ByteVector_m_deref (ByteVector * this );
 ByteVector * ByteVector_m_clone (ByteVector * this );
 bytevector_elem_t * ByteVector_m_cloneArray (ByteVector * this );
 ByteVector * ByteVector_m_appendNew (ByteVector * this , const ByteVector * other );

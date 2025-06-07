@@ -10,8 +10,7 @@
    (const-ptr     :initarg :const-ptr :accessor const-ptr)
    (array-def     :initarg :array-def :accessor array-def)
    (default       :initarg :default   :accessor default)
-   (key           :initform nil :accessor key) ; resolver key per run
-   (res           :initform nil :accessor res) ; resolved result
+   (keys          :initform nil :accessor keys) ; resolver keys
    (module        :initform nil :accessor module)
    (unique        :initform nil :accessor unique)
    (attrs         :initarg :attrs     :accessor attrs)
@@ -33,6 +32,7 @@
 				                 :default   default
 				                 :attrs     attrs
 				                 :anonymous anonymous)))
+    (setf (keys instance) (make-hash-table :test 'eql))
     
     (cond ((eql construct '|@VAR|)
            (when *module-path*
@@ -86,8 +86,6 @@
              (setf (module instance) *module-path*)
              (setf (unique instance) (free-name *module-path* name)))
            (setf (inners  instance)     (make-hash-table :test 'eql)))
-	      ((eql construct '|@GENERIC|)
-	       (setf (inners  instance)     (make-hash-table :test 'eql)))
 	      ((eql construct '|@TARGET|)
 	       (setf (inners  instance)     (make-hash-table :test 'eql)))
 	      (t t))
@@ -511,7 +509,7 @@
     (cond ((key-eq oprt '|not|) (setq oprt '|!|))
 	      ((key-eq oprt '|cof|) (setq oprt '|*|))
           ((key-eq oprt '|aof|) (setq oprt '|&|))
-          ((key-eq oprt '|stringize|) (setq oprt '|#|))  ; only inside generics
+          ((key-eq oprt '|stringize|) (setq oprt '|#|))  ; maybe inside a macro
           ((key-eq oprt '|1+|)  (setq oprt '|++|) (setq is-postfix t))
 	      ((key-eq oprt '|1-|)  (setq oprt '|--|) (setq is-postfix t)))
     (if is-postfix
@@ -666,14 +664,9 @@
                               (let ((out-spec (specify-guard       def attributes t))) (setq attributes '()) out-spec))
 		                     ((key-eq func '|module|)
                               (let ((out-spec (specify-module      def attributes))) (setq attributes '()) out-spec))
-		                     ;; ((key-eq func '|generic|)
-                             ;;  (let ((out-spec (specify-generic     def attributes))) (setq attributes '()) out-spec))
-		                     ;; ((key-eq func '|specific|)
-                             ;;  (let ((out-spec (specify-specific    def attributes))) (setq attributes '()) out-spec))
 		                     ((key-eq func '|cicili|)
                               (let ((out-spec (compile-ast         (cdr def)))) (setq attributes '()) out-spec))
 		                     ((or macro (and (symbolp func) (macro-function func)))
-                              (display "BBBBBB" (cadr def) def macro #\Newline)
                               (let ((tmp-expantion *macroexpand*)
                                     (id (gensym "me:"))
                                     (result nil))
@@ -681,9 +674,6 @@
                                 (setf *macroexpand* t)
                                 (if (key-eq func '|generic|)
                                     (let ((symb (eval (macroexpand def))))
-                                      ;; (add-macro (symbol-name (cadr def)) symb)
-                                      
-                                      (display "LLLLL1" (cadr def) symb #\Newline)
                                       (setq result (specify-guard (LIST '|ghost|) () t)))
                                     (let ((expr (if macro (macroexpand `(,macro ,@(cdr def))) (macroexpand def))))
                                       (when *debug-macroexpand* (format t "~A ~A~%" id expr))
@@ -692,9 +682,8 @@
                                                        (specify-expr expr)))))
                                 (setf *macroexpand* tmp-expantion)
                                 result))
-                             (t (display "OOOOOO" func def #\Newline) (specify-call-expr def))))
+                             (t (specify-call-expr def))))
                    ((or macro (and (symbolp func) (macro-function func)))
-                    (display "KKK" macro func #\Newline)
                     (let ((tmp-expantion *macroexpand*)
                           (id (gensym "me:"))
                           (result nil))
@@ -707,7 +696,7 @@
                                          (specify-expr expr))))
                       (setf *macroexpand* tmp-expantion)
                       result))
-                   (t (display "111111" func #\Newline) (specify-call-expr def)))))))
+                   (t (specify-call-expr def)))))))
 
 
 ;; var clause only allowed as global vars but inside macros for complex situation
@@ -722,7 +711,7 @@
 	     (type  (cdr def)))
     (dolist (attr attrs)
       (let ((name (car attr)))
-	    (cond ((key-eq name '|auto|)     (setq is-auto t))
+	    (cond ;; ((key-eq name '|auto|)     (setq is-auto t))
 	          ((key-eq name '|register|) (setq is-register t))
 	          ((key-eq name '|static|)   (setq is-static t))
 	          ((key-eq name '|extern|)   (setq is-extern t))
@@ -841,7 +830,7 @@
         (unless (and (not (null type-desc)) (listp type-desc))
           (error (format nil "wrong variable definition form ~A" type-desc)))
 	    (cond ((and (key-eq (car type-desc) '|register|) (= (length (cdr type-desc)) 0)) (setq is-register t))
-              ((and (key-eq (car type-desc) '|auto|)     (= (length (cdr type-desc)) 0)) (setq is-auto t))
+              ;; ((and (key-eq (car type-desc) '|auto|)     (= (length (cdr type-desc)) 0)) (setq is-auto t))
 	          ((and (key-eq (car type-desc) '|static|)   (= (length (cdr type-desc)) 0)) (setq is-static t))
 	          ((key-eq (car type-desc) '|defer|)
                (let ((quoted (cadr type-desc)))
@@ -1028,7 +1017,7 @@
       (let ((recv (car name))
             (mthd (cdr name)))
         (if (and (symbolp recv) (key-eq recv '<>))
-            (if (listp mthd) (apply '<> mthd) mthd)
+            (specify-decl-name< (if (listp mthd) (apply '<> mthd) mthd))
             (progn
               (when (listp recv)
                 (if (key-eq (car recv) '<>)
@@ -1036,8 +1025,8 @@
                     (error (format nil "generic names are produced by '<>', ~A" name))))
               (when (and (listp mthd) (key-eq (car mthd) '<>))
                 (setq mthd (apply '<> (cdr mthd))))
-              (cons recv mthd))))
-      name))
+              (cons (specify-decl-name< recv) (specify-decl-name< mthd)))))
+      (specify-decl-name< name)))
 
 (defun specify-function (def attrs)
   (let* ((is-static  nil)
@@ -1175,11 +1164,9 @@
   (let* ((is-anonymous (or (= (length def) 1) (not (symbolp (nth 1 def)))))
 	     (name (specify-decl-name< (if is-anonymous
                                        (gensym "ciciliStruct")
-                                       (if is-nested
-                                           (nth 1 def)
-                                           (if *generic*
-                                               (intern (make-generic-name (nth 1 def) *generic*))
-                                               (nth 1 def))))))
+                                       (if (and (listp (nth 1 def)) (key-eq (car (nth 1 def)) '<>))
+                                           (apply '<> (cdr (nth 1 def)))
+                                           (nth 1 def)))))
 	     (clauses (if is-anonymous (nthcdr 1 def) (nthcdr 2 def)))
 	     (struct-specifier (make-specifier name '|@STRUCT| nil nil nil nil nil nil nil)))
     (when (and is-anonymous (not is-nested)) (error (format nil "only nested structs could be anonymous")))
@@ -1228,13 +1215,7 @@
 (defun specify-union (def attrs &key ((:nested is-nested) nil))
   (when (> (length attrs) 0) (error (format nil "wrong attributes ~A" attrs)))
   (let* ((is-anonymous (or (= (length def) 1) (not (symbolp (nth 1 def)))))
-	     (name (specify-decl-name< (if is-anonymous
-                                       (gensym "ciciliUnion")
-                                       (if is-nested
-                                           (nth 1 def)
-                                           (if *generic*
-                                               (intern (make-generic-name (nth 1 def) *generic*))
-                                               (nth 1 def))))))
+	     (name (specify-decl-name< (if is-anonymous (gensym "ciciliUnion") (nth 1 def))))
 	     (clauses (if is-anonymous (nthcdr 1 def) (nthcdr 2 def)))
 	     (union-specifier (make-specifier name '|@UNION| nil nil nil nil nil nil nil)))
     (when (and is-anonymous (not is-nested)) (error (format nil "only nested unions could be anonymous")))
@@ -1269,11 +1250,7 @@
 
 (defun specify-guard (def attrs &optional is-ghost)
   (when (> (length attrs) 0) (error (format nil "wrong attributes ~A" attrs)))
-  (let* ((name (specify-decl-name< (if is-ghost
-                                       (gensym "ciciliGhost")
-                                       (if *generic*
-                                           (intern (make-generic-name (nth 1 def) *generic*))
-                                           (nth 1 def)))))
+  (let* ((name (specify-decl-name< (if is-ghost (gensym "ciciliGhost") (nth 1 def))))
 	     (clauses (if is-ghost (nthcdr 1 def) (nthcdr 2 def)))
 	     (guard-specifier (make-specifier name (if is-ghost '|@GHOST| '|@GUARD|) nil nil nil nil nil nil nil)))
     (let ((attributes '()))
@@ -1313,10 +1290,6 @@
 		             (add-inner (specify-guard    clause attributes t) guard-specifier) (setq attributes '()))
 		            ((key-eq construct '|module|)
 		             (add-inner (specify-module   clause attributes) guard-specifier) (setq attributes '()))
-		            ;; ((key-eq construct '|generic|)
-		            ;;  (add-inner (specify-generic  clause attributes) guard-specifier) (setq attributes '()))
-		            ;; ((key-eq construct '|specific|)
-		            ;;  (add-inner (specify-specific clause attributes) guard-specifier) (setq attributes '()))
 		            (t (add-inner (specify-expr   clause) guard-specifier))))
             (specify-guard (LIST '|ghost|) () t))))
 	        ;; (error (format nil "syntax error ~A" clause)))))

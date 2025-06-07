@@ -4,6 +4,9 @@
 
         (include "../Slice/cicili_string.h")
 
+        (func printString ((String * str)) ; accepts both (char *) and (String *)
+              (format #t "the str: %s\n" (-> str deref)))
+        
         (main
             (let
                 ((@String * a . #'(-> String new "hello"))
@@ -21,7 +24,12 @@
                  (bool eq2 . #'(-> a equals b))
                  (size_t index . #'(-> a find #\l))
                  (bool sw . #'(-> a startsWith prefix))
-                 (bool ew . #'(-> helloWorld endsWith suffix)))
+                 (bool ew . #'(-> helloWorld endsWith suffix))
+                 
+                 (@String * trait1 . #'(-> char toString "toString trait 1 call")) ; char toString trait
+                 (@String * trait2 . "toString trait 2 call") ; char toString trait
+                 (@String * trait3))
+              (set trait3 "toString trait 2 call") ; char toString trait
 
               (format #t "a: %s\n" ($ a arr))
               (format #t "b: %s\n" ($ b arr))
@@ -37,6 +45,12 @@
               (format #t "find 'l' in a: %zu\n" index)
               (format #t "a starts with 'hel': %s\n" (? sw "true" "false"))
               (format #t "helloWorld ends with 'rld': %s\n" (? ew "true" "false"))
+              (format #t "%s\n" (-> trait1 deref))
+              (format #t "%s\n" (-> trait2 deref))
+              (format #t "%s\n" (-> trait3 deref))
+              
+              (printString trait1)
+              (printString "Alice and Bob") ; char toString trait
 
               ;; (-> a free) ; no need to free @ told cicili to use free method at end of scope instead
               ;; (-> b free)
@@ -49,5 +63,7 @@
               (-> substr free)
               (-> prefix free)
               (-> suffix free)
-
+              ;; (-> trait1 free)
+              ;; (-> trait2 free)
+              
               (return 0))))

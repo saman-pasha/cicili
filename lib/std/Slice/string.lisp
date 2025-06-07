@@ -7,8 +7,10 @@
       `(Slice ,path ,name ,element ,step
               ( ; includes
                ,@include-body)
+              
               ( ; members
                ,@members-body)
+              
               ( ; header
                (decl) (func   (,name . new) ((const ,elem-type * cstr)))
                (decl) (func   (,name . newFormat) ((const char * fmt) ($$$)))
@@ -22,7 +24,12 @@
                (decl) (method (,name . replace) ((char oldch) (char newch)) (out ,name *))
                (decl) (method (,name . startsWith) ((const ,name * prefix)) (out bool))
                (decl) (method (,name . endsWith) ((const ,name * suffix)) (out bool))
+
+               ;; literal c (element *) to String
+               (decl) (func (,element . toString) ((const ,element * cstr)) (out String *))
+               
                ,@header-body)
+              
               ( ; source
                (func (,name . new) ((const ,elem-type * cstr))
                      (let ((size_t len . #'(strlen cstr))
@@ -103,5 +110,8 @@
                            (return false))
                        (let ((size_t offset . #'(- ($ this len) ($ suffix len))))
                          (return (== (strncmp (+ ($ this arr) offset) ($ suffix arr) ($ suffix len)) 0))))
+
+               (func (,element . toString) ((const ,element * cstr)) (out String *)
+                     (return (-> String new cstr)))
 
                ,@source-body))))

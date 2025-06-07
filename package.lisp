@@ -11,6 +11,7 @@
     :*debug-macroexpand*
     :*only-link*
     :*debug-runs*
+    :*debug-dump*
     :compile-ast
     :compile-cicili-file
     :load-macro-file

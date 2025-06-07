@@ -40,8 +40,8 @@ IntSlice * IntSlice_s_newCopy (const IntSlice * other ) {
     return slice ;
   }
 }
-int IntSlice_m_firstElement (IntSlice * this ) {
-  return ((int)(this ->arr )[0]);
+int * IntSlice_m_deref (IntSlice * this ) {
+  return (this ->arr );
 }
 IntSlice * IntSlice_m_clone (IntSlice * this ) {
   return IntSlice_s_newCopy(this );
