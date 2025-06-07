@@ -47,14 +47,13 @@
      
      ;; Tensor info
      (decl) (method (Tensor . type) () (out int))
-     
      (decl) (method (Tensor . numDims) () (out int))
-     
      (decl) (method (Tensor . dim) ((int i)) (out int64_t))
-     
      (decl) (method (Tensor . byteSize) () (out size_t))
-     
      (decl) (method (Tensor . data) () (out void *))
+
+     ;; Traits
+     (decl) (func (Tensor . toTF_Tensor) () (out TF_Tensor *))
      ))
 
 (DEFMACRO tensor-source ()
@@ -169,4 +168,7 @@
 
      (method (Tensor . data) () (out void *)
              (return (TF_TensorData ($ this ptr))))
+
+     (func (Tensor . toTF_Tensor) () (out TF_Tensor *)
+           (return ($ this ptr)))
      ))

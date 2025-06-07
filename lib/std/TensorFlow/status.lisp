@@ -9,6 +9,10 @@
      (decl) (method (Status . code) () (out TF_Code))
      (decl) (method (Status . message) () (out const char *))
      (decl) (method (Status . ok) () (out bool))
+     (decl) (method (Status . deref) () (out TF_Status * ptr))
+     ;; Traits
+     (decl) (func (Status . tochar) () (out const char *))
+     (decl) (func (Status . toTF_Status) () (out TF_Status *))
      ))
 
 (DEFMACRO status-source ()
@@ -30,5 +34,14 @@
 
      (method (Status . ok) () (out bool)
              (return (== (TF_GetCode ($ this ptr)) TF_OK)))
+
+     (method (Status . deref) () (out TF_Status * ptr)
+             (return ($ this ptr)))
+
+     (func ((Status . tochar)) (out const char *)
+           (return (-> this message)))
+
+     (func (Status . toTF_Status) () (out TF_Status *)
+           (return ($ this ptr)))
      ))
 

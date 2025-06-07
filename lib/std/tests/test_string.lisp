@@ -9,7 +9,7 @@
 
         (func printChars ((const char * cstr))
               (format #t "cstr: %s\n" cstr))
-        
+
         (main
             (let
                 ((@String * a . #'(-> String new "hello"))
@@ -37,6 +37,7 @@
                  (char * fromString2))
 
               (set trait3 "toString trait 3 call") ; char toString trait
+              (set trait2 (cast (char []) '{ #\H #\I }))
               (set fromString2 trait2)
               
               (format #t "a: %s\n" ($ a arr))

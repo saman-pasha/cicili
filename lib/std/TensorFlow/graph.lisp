@@ -92,6 +92,8 @@
                                     (TF_Output input))
                     (out TF_Output))
 
+     ;; Traits
+     (decl) (func (Graph . toTF_Graph) () (out TF_Graph *))
      ))
 
 (DEFMACRO graph-source ()
@@ -100,9 +102,11 @@
        (func (Graph . new) () 
              (let ((Graph * graph . #'(malloc (sizeof Graph))))
                (set ($ graph ptr) (TF_NewGraph))
+               (set ($ graph status) (-> Status new))
                (return graph)))
      
      (method (Graph . free) ()
+             (-> ($ this status) free)
              (TF_DeleteGraph ($ this ptr))
              (free this))
 
@@ -275,5 +279,7 @@
                (TF_AddInput desc input)
                (return '{ (TF_FinishOperation desc ($ this status ptr)) 0 })))
 
+     (func (Graph . toTF_Graph) () (out TF_Graph *)
+           (return ($ this ptr)))
      ))
 
