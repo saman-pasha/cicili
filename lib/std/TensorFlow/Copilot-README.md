@@ -1,4 +1,3 @@
-```markdown
 # TensorFlow C API Comprehensive Guide
 
 > The TensorFlow C API lets you build, run, and manage TensorFlow graphs directly from C or C++.  
