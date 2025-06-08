@@ -311,6 +311,9 @@ To truly master the TensorFlow C API, you should:
 1.  **Set up a development environment** (Linux, macOS, or Windows with appropriate build tools).
 2.  **Install the TensorFlow C library** (via pre-built binaries or by building from source).
 3.  **Start with small, manageable examples:** Begin with a simple "add two numbers" graph, then progress to a basic linear regression, and finally, a simple neural network.
+4.  **Experiment extensively** with the API.
+
+The TensorFlow C API is powerful but demanding due to its low-level nature. It doesn't offer the high-level conveniences like automatic differentiation, pre-built layers, or eager execution that you find in Python's TensorFlow or Keras. You are responsible for explicitly defining and managing the entire static graph.
 
 ```c
 #include <tensorflow/c/c_api.h>
@@ -389,6 +392,3 @@ int main() {
   return 0;
 }
 ```
-5.  **Experiment extensively** with the API.
-
-The TensorFlow C API is powerful but demanding due to its low-level nature. It doesn't offer the high-level conveniences like automatic differentiation, pre-built layers, or eager execution that you find in Python's TensorFlow or Keras. You are responsible for explicitly defining and managing the entire static graph.
