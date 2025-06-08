@@ -6,7 +6,7 @@
 
      (decl) (func   (Status . new) ())
      (decl) (method (Status . free) ())
-     (decl) (method (Status . code) () (out TF_Code))
+     (decl) (method (Status . code) () (out TF_Code)) ; TF_OK, TF_CANCELLED, TF_INVALID_ARGUMENT
      (decl) (method (Status . message) () (out const char *))
      (decl) (method (Status . ok) () (out bool))
      (decl) (method (Status . deref) () (out TF_Status * ptr))
