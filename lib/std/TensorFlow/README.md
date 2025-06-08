@@ -173,7 +173,81 @@ TF_Output TF_OperationOutput(TF_Operation*, int index);
 ## Full Example
 
 ```c
-// See prior example in Markdown
+#include <tensorflow/c/c_api.h>
+#include <stdio.h>
+
+int main() {
+  TF_Status* status = TF_NewStatus();
+  TF_Graph* graph = TF_NewGraph();
+
+  // Placeholder x
+  TF_OperationDescription* dx = TF_NewOperation(graph, "Placeholder", "x");
+  TF_SetAttrType(dx, "dtype", TF_FLOAT);
+  TF_Operation* x = TF_FinishOperation(dx, status);
+
+  // Placeholder y
+  TF_OperationDescription* dy = TF_NewOperation(graph, "Placeholder", "y");
+  TF_SetAttrType(dy, "dtype", TF_FLOAT);
+  TF_Operation* y = TF_FinishOperation(dy, status);
+
+  // Const b = 0.5
+  float b_val = 0.5f;
+  TF_Tensor* b_tensor = TF_NewTensor(TF_FLOAT, (int64_t[]){1}, 1, &b_val, sizeof(b_val), NULL, NULL);
+  TF_OperationDescription* db = TF_NewOperation(graph, "Const", "b");
+  TF_SetAttrType(db, "dtype", TF_FLOAT);
+  TF_SetAttrTensor(db, "value", b_tensor, status);
+  TF_Operation* b = TF_FinishOperation(db, status);
+
+  // mul = x * y
+  TF_OperationDescription* dm = TF_NewOperation(graph, "Mul", "mul");
+  TF_AddInput(dm, (TF_Output){x,0});
+  TF_AddInput(dm, (TF_Output){y,0});
+  TF_SetAttrType(dm, "T", TF_FLOAT);
+  TF_Operation* mul = TF_FinishOperation(dm, status);
+
+  // add = mul + b
+  TF_OperationDescription* da = TF_NewOperation(graph, "Add", "add");
+  TF_AddInput(da, (TF_Output){mul,0});
+  TF_AddInput(da, (TF_Output){b,0});
+  TF_SetAttrType(da, "T", TF_FLOAT);
+  TF_Operation* add = TF_FinishOperation(da, status);
+
+  // Session
+  TF_SessionOptions* opts = TF_NewSessionOptions();
+  TF_Session* sess = TF_NewSession(graph, opts, status);
+
+  // Inputs
+  float xv = 2.0f, yv = 3.0f;
+  TF_Tensor* tx = TF_NewTensor(TF_FLOAT, (int64_t[]){1}, 1, &xv, sizeof(xv), NULL, NULL);
+  TF_Tensor* ty = TF_NewTensor(TF_FLOAT, (int64_t[]){1}, 1, &yv, sizeof(yv), NULL, NULL);
+
+  TF_Output inputs[] = {{x,0}, {y,0}};
+  TF_Tensor* input_vals[] = {tx, ty};
+
+  TF_Output outputs[] = {{add,0}};
+  TF_Tensor* output_vals[1];
+
+  TF_SessionRun(sess,
+    NULL,
+    inputs, input_vals, 2,
+    outputs, output_vals, 1,
+    NULL, 0, NULL, status);
+
+  float* result = TF_TensorData(output_vals[0]);
+  printf("z = %f\n", result[0]);  // Should print 6.5
+
+  // Cleanup
+  TF_DeleteTensor(tx);
+  TF_DeleteTensor(ty);
+  TF_DeleteTensor(b_tensor);
+  TF_DeleteTensor(output_vals[0]);
+  TF_DeleteSession(sess, status);
+  TF_DeleteSessionOptions(opts);
+  TF_DeleteGraph(graph);
+  TF_DeleteStatus(status);
+
+  return 0;
+}
 ```
 
 ---
