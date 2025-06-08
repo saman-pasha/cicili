@@ -354,4 +354,3 @@ int main() {
 - **Implement Training**: add `VariableV2`, `Assign`, optimizer ops, and loop in C.  
 - **Performance Tuning**: reuse tensors, cache `TF_Output`, minimize status allocations.  
 - **Macro Wrappers**: build higher-level generators (like Cicili) to automate boilerplate.
-```
