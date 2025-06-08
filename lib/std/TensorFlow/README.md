@@ -52,7 +52,7 @@ sudo apt install wget unzip cmake build-essential
 wget https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow-cpu-linux-x86_64-<VERSION>.tar.gz
 sudo tar -C /usr/local -xzf libtensorflow-cpu-linux-x86_64-<VERSION>.tar.gz
 sudo ldconfig
-
+```
 MacOS
 
 brew install wget
