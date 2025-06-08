@@ -40,69 +40,156 @@ All C API functions are typically prefixed with `TF_` and are defined in `<tenso
 
 ### A. Error Handling
 
-* `TF_NewStatus()`: Creates a new `TF_Status` object.
-* `TF_DeleteStatus(TF_Status* s)`: Deletes a status object.
-* `TF_GetCode(const TF_Status* s)`: Returns the `TF_Code` (e.g., `TF_OK`, `TF_CANCELLED`, `TF_INVALID_ARGUMENT`).
-* `TF_Message(const TF_Status* s)`: Returns a C string describing the error.
+* ```c
+  TF_NewStatus()
+  ```
+  : Creates a new `TF_Status` object.
+* ```c
+  TF_DeleteStatus(TF_Status* s)
+  ```
+  : Deletes a status object.
+* ```c
+  TF_GetCode(const TF_Status* s)
+  ```
+  : Returns the `TF_Code` (e.g., `TF_OK`, `TF_CANCELLED`, `TF_INVALID_ARGUMENT`).
+* ```c
+  TF_Message(const TF_Status* s)
+  ```
+  : Returns a C string describing the error.
 
 **Always check the status after C API calls!**
 
 ### B. Graph Management
 
-* `TF_NewGraph()`: Creates an empty `TF_Graph`.
-* `TF_DeleteGraph(TF_Graph* graph)`: Deletes a graph and all its associated operations.
-* `TF_GraphToGraphDef(TF_Graph* graph, TF_Buffer* output_graph_def, TF_Status* s)`: Serializes a graph into a `GraphDef` protocol buffer, stored in a `TF_Buffer`.
-* `TF_GraphImportGraphDef(TF_Graph* graph, const TF_Buffer* graph_def, const TF_ImportGraphDefOptions* options, TF_Status* s)`: Imports a serialized `GraphDef` into an existing graph.
+* ```c
+  TF_NewGraph()
+  ```
+  : Creates an empty `TF_Graph`.
+* ```c
+  TF_DeleteGraph(TF_Graph* graph)
+  ```
+  : Deletes a graph and all its associated operations.
+* ```c
+  TF_GraphToGraphDef(TF_Graph* graph, TF_Buffer* output_graph_def, TF_Status* s)
+  ```
+  : Serializes a graph into a `GraphDef` protocol buffer, stored in a `TF_Buffer`.
+* ```c
+  TF_GraphImportGraphDef(TF_Graph* graph, const TF_Buffer* graph_def, const TF_ImportGraphDefOptions* options, TF_Status* s)
+  ```
+  : Imports a serialized `GraphDef` into an existing graph.
 
 ### C. Operation Definition (Building the Graph)
 
 Building operations is a step-by-step process:
 
-* `TF_NewOperation(TF_Graph* graph, const char* op_type, const char* op_name)`: Initiates the definition of a new operation. `op_type` is the string representing the operation type (e.g., "Add", "MatMul"), and `op_name` is a unique name for this operation instance within the graph. It returns a `TF_OperationDescription *`.
+* ```c
+  TF_NewOperation(TF_Graph* graph, const char* op_type, const char* op_name)
+  ```
+  : Initiates the definition of a new operation. `op_type` is the string representing the operation type (e.g., "Add", "MatMul"), and `op_name` is a unique name for this operation instance within the graph. It returns a `TF_OperationDescription *`.
 
-* `TF_AddInput(TF_OperationDescription* desc, TF_Output input)`: Adds a single `TF_Output` from a preceding operation as an input to the current operation being defined.
+* ```c
+  TF_AddInput(TF_OperationDescription* desc, TF_Output input)
+  ```
+  : Adds a single `TF_Output` from a preceding operation as an input to the current operation being defined.
 
-* `TF_AddInputList(TF_OperationDescription* desc, const TF_Output* inputs, int num_inputs)`: Adds multiple inputs, useful for operations like `ConcatV2`.
+* ```c
+  TF_AddInputList(TF_OperationDescription* desc, const TF_Output* inputs, int num_inputs)
+  ```
+  : Adds multiple inputs, useful for operations like `ConcatV2`.
 
-* `TF_AddControlInput(TF_OperationDescription* desc, TF_Operation* input)`: Adds a control dependency, ensuring the current operation only runs after the specified `input` operation has finished.
+* ```c
+  TF_AddControlInput(TF_OperationDescription* desc, TF_Operation* input)
+  ```
+  : Adds a control dependency, ensuring the current operation only runs after the specified `input` operation has finished.
 
-* `TF_SetAttrString(TF_OperationDescription* desc, const char* attr_name, const void* value, size_t length)`: Sets a string-valued attribute for the operation.
+* ```c
+  TF_SetAttrString(TF_OperationDescription* desc, const char* attr_name, const void* value, size_t length)
+  ```
+  : Sets a string-valued attribute for the operation.
 
-* `TF_SetAttrInt(TF_OperationDescription* desc, const char* attr_name, long long value)`: Sets an integer-valued attribute.
+* ```c
+  TF_SetAttrInt(TF_OperationDescription* desc, const char* attr_name, long long value)
+  ```
+  : Sets an integer-valued attribute.
 
-* `TF_SetAttrBool(TF_OperationDescription* desc, const char* attr_name, unsigned char value)`: Sets a boolean-valued attribute.
+* ```c
+  TF_SetAttrBool(TF_OperationDescription* desc, const char* attr_name, unsigned char value)
+  ```
+  : Sets a boolean-valued attribute.
 
-* `TF_SetAttrFloat(TF_OperationDescription* desc, const char* attr_name, float value)`: Sets a float-valued attribute.
+* ```c
+  TF_SetAttrFloat(TF_OperationDescription* desc, const char* attr_name, float value)
+  ```
+  : Sets a float-valued attribute.
 
-* `TF_SetAttrType(TF_OperationDescription* desc, const char* attr_name, TF_DataType value)`: Sets a data type attribute (e.g., `TF_FLOAT`, `TF_INT32`).
+* ```c
+  TF_SetAttrType(TF_OperationDescription* desc, const char* attr_name, TF_DataType value)
+  ```
+  : Sets a data type attribute (e.g., `TF_FLOAT`, `TF_INT32`).
 
-* `TF_SetAttrShape(TF_OperationDescription* desc, const char* attr_name, const long long* dims, int num_dims)`: Sets a tensor shape attribute.
+* ```c
+  TF_SetAttrShape(TF_OperationDescription* desc, const char* attr_name, const long long* dims, int num_dims)
+  ```
+  : Sets a tensor shape attribute.
 
-* `TF_SetAttrTensor(TF_OperationDescription* desc, const char* attr_name, TF_Tensor* value, TF_Status* s)`: **Crucial for `Const` operations.** Sets a tensor as an attribute, defining a constant value within the graph.
+* ```c
+  TF_SetAttrTensor(TF_OperationDescription* desc, const char* attr_name, TF_Tensor* value, TF_Status* s)
+  ```
+  : **Crucial for `Const` operations.** Sets a tensor as an attribute, defining a constant value within the graph.
 
-* `TF_FinishOperation(TF_OperationDescription* desc, TF_Status* s)`: Finalizes the operation definition. It returns the `TF_Operation *`, which can then be used to retrieve `TF_Output`s or serve as control inputs for other operations.
+* ```c
+  TF_FinishOperation(TF_OperationDescription* desc, TF_Status* s)
+  ```
+  : Finalizes the operation definition. It returns the `TF_Operation *`, which can then be used to retrieve `TF_Output`s or serve as control inputs for other operations.
 
 ### D. Tensor Creation and Manipulation
 
-* `TF_NewTensor(TF_DataType dtype, const long long* dims, int num_dims, void* data, size_t len, void (*deallocator)(void* data, size_t len, void* arg), void* deallocator_arg)`:
+* ```c
+  TF_NewTensor(TF_DataType dtype, const long long* dims, int num_dims, void* data, size_t len, void (*deallocator)(void* data, size_t len, void* arg), void* deallocator_arg)
+  ```
+  :
     Creates a `TF_Tensor`.
     * `data`: A pointer to the raw tensor data.
     * `len`: The total size of `data` in bytes.
     * `deallocator`: **VERY IMPORTANT.** A callback function that TensorFlow will use to free the `data` buffer when the tensor is no longer needed. If `NULL`, TensorFlow assumes ownership of the memory and will free it directly (e.g., `free(data)`). If you manage the memory yourself, provide a custom deallocator that handles your allocation scheme.
     * `deallocator_arg`: An optional argument passed to the deallocator.
 
-* `TF_DeleteTensor(TF_Tensor* tensor)`: Deletes a tensor object.
+* ```c
+  TF_DeleteTensor(TF_Tensor* tensor)
+  ```
+  : Deletes a tensor object.
 
-* `TF_TensorData(const TF_Tensor* tensor)`: Returns a `void*` pointer to the raw tensor data.
-* `TF_TensorByteSize(const TF_Tensor* tensor)`: Returns the total size of the tensor data in bytes.
-* `TF_TensorType(const TF_Tensor* tensor)`: Returns the `TF_DataType` of the tensor.
-* `TF_NumDims(const TF_Tensor* tensor)`: Returns the number of dimensions.
-* `TF_Dim(const TF_Tensor* tensor, int dim_index)`: Returns the size of a specific dimension.
+* ```c
+  TF_TensorData(const TF_Tensor* tensor)
+  ```
+  : Returns a `void*` pointer to the raw tensor data.
+* ```c
+  TF_TensorByteSize(const TF_Tensor* tensor)
+  ```
+  : Returns the total size of the tensor data in bytes.
+* ```c
+  TF_TensorType(const TF_Tensor* tensor)
+  ```
+  : Returns the `TF_DataType` of the tensor.
+* ```c
+  TF_NumDims(const TF_Tensor* tensor)
+  ```
+  : Returns the number of dimensions.
+* ```c
+  TF_Dim(const TF_Tensor* tensor, int dim_index)
+  ```
+  : Returns the size of a specific dimension.
 
 ### E. Session Execution
 
-* `TF_NewSession(TF_Graph* graph, const TF_SessionOptions* opts, TF_Status* s)`: Creates a new session based on a given graph.
-* `TF_DeleteSession(TF_Session* session, TF_Status* s)`: Closes and deletes a session.
+* ```c
+  TF_NewSession(TF_Graph* graph, const TF_SessionOptions* opts, TF_Status* s)
+  ```
+  : Creates a new session based on a given graph.
+* ```c
+  TF_DeleteSession(TF_Session* session, TF_Status* s)
+  ```
+  : Closes and deletes a session.
 
 * ```c
   TF_SessionRun(TF_Session* session,
@@ -126,13 +213,34 @@ Building operations is a step-by-step process:
 
 ### F. Utilities
 
-* `TF_Version()`: Returns the TensorFlow library version string.
-* `TF_GraphGetOpByName(TF_Graph* graph, const char* op_name)`: Retrieves an operation by its name.
-* `TF_OperationNumOutputs(TF_Operation* op)`: Returns the number of outputs an operation has.
-* `TF_OperationOutputListLength(TF_Operation* op, const char* prefix, int* oper_len, TF_Status* s)`: Retrieves the length of an output list.
-* `TF_OperationOutput(TF_Operation* op, int index)`: Retrieves a specific `TF_Output` from an operation by index.
-* `TF_OperationOpType(TF_Operation* op)`: Returns the operation's type string.
-* `TF_OperationName(TF_Operation* op)`: Returns the operation's name string.
+* ```c
+  TF_Version()
+  ```
+  : Returns the TensorFlow library version string.
+* ```c
+  TF_GraphGetOpByName(TF_Graph* graph, const char* op_name)
+  ```
+  : Retrieves an operation by its name.
+* ```c
+  TF_OperationNumOutputs(TF_Operation* op)
+  ```
+  : Returns the number of outputs an operation has.
+* ```c
+  TF_OperationOutputListLength(TF_Operation* op, const char* prefix, int* oper_len, TF_Status* s)
+  ```
+  : Retrieves the length of an output list.
+* ```c
+  TF_OperationOutput(TF_Operation* op, int index)
+  ```
+  : Retrieves a specific `TF_Output` from an operation by index.
+* ```c
+  TF_OperationOpType(TF_Operation* op)
+  ```
+  : Returns the operation's type string.
+* ```c
+  TF_OperationName(TF_Operation* op)
+  ```
+  : Returns the operation's name string.
 
 ---
 
