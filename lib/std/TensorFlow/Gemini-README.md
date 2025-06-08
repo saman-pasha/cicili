@@ -104,7 +104,8 @@ Building operations is a step-by-step process:
 * `TF_NewSession(TF_Graph* graph, const TF_SessionOptions* opts, TF_Status* s)`: Creates a new session based on a given graph.
 * `TF_DeleteSession(TF_Session* session, TF_Status* s)`: Closes and deletes a session.
 
-* `TF_SessionRun(TF_Session* session,
+* ```c
+  TF_SessionRun(TF_Session* session,
     const TF_Buffer* run_options, // Optional: for debugging, tracing
     const TF_Output* inputs,      // Array of TF_Output for input placeholders
     TF_Tensor** input_values,     // Array of TF_Tensor for input data
@@ -115,7 +116,9 @@ Building operations is a step-by-step process:
     const TF_Operation* const* target_opers, // Array of operations to run (e.g., training ops)
     int ntargets,                 // Number of target operations
     const TF_Buffer* run_metadata, // Optional: for debugging, tracing
-    TF_Status* s)`:
+    TF_Status* s)
+  ```
+  :
     This is the primary function for executing graph computations.
     * **Inputs:** You map `TF_Output`s (typically from `TF_Placeholder` operations) to `TF_Tensor` objects containing your actual data.
     * **Outputs:** You specify `TF_Output`s (e.g., the output of your model's final layer) that you want to fetch. TensorFlow allocates new `TF_Tensor` objects and populates `output_values` with their pointers. **You are responsible for deleting these returned tensors!**
