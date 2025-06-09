@@ -392,3 +392,294 @@ int main() {
   return 0;
 }
 ```
+---
+
+# Lesson 2: Differential and Integral Calculus
+
+Calculus, often described as the "mathematics of change," is a fundamental branch of mathematics with two main pillars: **Differential Calculus** and **Integral Calculus**. They might seem intimidating at first, but they are deeply interconnected and built on intuitive ideas.
+
+Let's break them down.
+
+## 1. Differential Calculus: The Study of Change
+
+Differential calculus is all about **rates of change** and **slopes of curves**. Imagine you're driving a car:
+
+* **Average speed** is easy to calculate: total distance / total time.
+* But what if you want to know your **exact speed at a particular instant**? This is where differential calculus comes in.
+
+**Key Concepts in Differential Calculus:**
+
+* **Functions:** Before diving into calculus, you need a solid understanding of functions. A function describes a relationship between an input ($x$) and an output ($y$), usually written as $y = f(x)$. For example, $f(x) = x^2$ means that for any input $x$, the output is $x$ squared.
+
+* **Limits:** This is the foundational concept for understanding derivatives. A limit describes what value a function "approaches" as the input approaches a certain value.
+    * Think about drawing closer and closer to a specific point on a graph. The limit is the $y$-value you're getting arbitrarily close to.
+    * Limits help us deal with situations where direct substitution might lead to undefined expressions (like division by zero).
+
+* **Derivatives:** The derivative of a function measures its **instantaneous rate of change** at any given point. Graphically, the derivative at a point is the **slope of the tangent line** to the curve at that point.
+
+    * **Notation:** The derivative of $f(x)$ is often written as $f'(x)$ (read "f prime of x") or $\frac{dy}{dx}$ (read "dee y dee x").
+    * **Intuition:** If you have a graph of distance vs. time, the derivative (slope) at any point tells you the instantaneous speed at that time. If you have a graph of temperature vs. time, the derivative tells you how fast the temperature is changing.
+
+* **Differentiation Rules:** Calculating derivatives from scratch using limits can be tedious. Thankfully, there are rules:
+    * **Power Rule:** If $f(x) = x^n$, then $f'(x) = nx^{n-1}$. (e.g., if $f(x) = x^3$, $f'(x) = 3x^2$)
+    * **Constant Rule:** If $f(x) = c$ (a constant), then $f'(x) = 0$. (e.g., if $f(x) = 5$, $f'(x) = 0$)
+    * **Sum/Difference Rule:** The derivative of a sum/difference is the sum/difference of the derivatives.
+    * **Product Rule, Quotient Rule, Chain Rule:** These are for more complex functions involving multiplication, division, and compositions of functions.
+
+* **Applications of Derivatives:**
+    * Finding the maximum and minimum values of a function (optimization problems).
+    * Determining where a function is increasing or decreasing.
+    * Calculating velocity and acceleration (rates of change of displacement and velocity).
+    * Approximating values of functions.
+
+## 2. Integral Calculus: The Study of Accumulation
+
+Integral calculus is essentially the **reverse of differential calculus**. While differentiation breaks things down to look at instantaneous change, integration **builds things up** to find **total accumulation** or **total area**.
+
+Imagine you know your car's speed at every instant, and you want to know the total distance you've traveled. This is an integration problem.
+
+**Key Concepts in Integral Calculus:**
+
+* **Antiderivatives (Indefinite Integrals):** An antiderivative is a function whose derivative is the original function.
+    * If $F'(x) = f(x)$, then $F(x)$ is an antiderivative of $f(x)$.
+    * **Notation:** The indefinite integral of $f(x)$ is written as $\int f(x) \, dx$.
+    * **The "+ C":** When you find an antiderivative, you always add a "+ C" (the constant of integration). This is because the derivative of any constant is zero. So, if $F(x)$ is an antiderivative, then $F(x) + C$ is also an antiderivative.
+
+* **Definite Integrals:** This is where integration gets its power in calculating specific quantities. A definite integral calculates the **net accumulated change** of a function over a specific interval, which can be interpreted as the **signed area under the curve** of the function.
+
+    * **Notation:** $\int_a^b f(x) \, dx$. Here, $a$ is the lower limit and $b$ is the upper limit of integration.
+    * **Intuition (Area Under the Curve):** Imagine dividing the area under a curve into infinitely many thin rectangles and summing their areas. The definite integral is the exact value of that sum. If the curve goes below the x-axis, the "area" contributed by that part is negative.
+
+* **The Fundamental Theorem of Calculus:** This is the cornerstone that connects differentiation and integration. It states that you can evaluate a definite integral by finding an antiderivative of the function and evaluating it at the upper and lower limits, then subtracting the results:
+    $$\int_a^b f(x) \, dx = F(b) - F(a)$$
+    where $F'(x) = f(x)$.
+
+* **Integration Techniques:** Just like differentiation, there are rules and techniques for integration:
+    * **Basic Rules:** Reverse power rule, integrals of common functions (e.g., $\int \frac{1}{x} \, dx = \ln|x| + C$, $\int e^x \, dx = e^x + C$).
+    * **Substitution (u-substitution):** The reverse of the chain rule.
+    * **Integration by Parts:** The reverse of the product rule.
+    * **Partial Fractions, Trigonometric Substitution, etc.:** For more complex integrals.
+
+* **Applications of Integrals:**
+    * Finding the area between curves.
+    * Calculating volumes of solids.
+    * Finding the total displacement given a velocity function.
+    * Calculating the work done by a force.
+    * Finding averages of functions.
+
+**How to Learn Differential and Integral Calculus:**
+
+1.  **Strengthen Prerequisites:** Make sure you have a solid grasp of:
+    * Algebra (solving equations, manipulating expressions)
+    * Functions (domain, range, graphing)
+    * Trigonometry
+    * Basic geometry
+
+2.  **Start with Limits:** Understand how limits work. This is the conceptual bridge to derivatives.
+
+3.  **Master Derivatives:**
+    * Understand the definition of a derivative (limit of the difference quotient).
+    * Learn and practice the basic differentiation rules (power rule, constant rule, sum/difference rule).
+    * Then move to product, quotient, and chain rules.
+    * Work through many, many practice problems.
+
+4.  **Transition to Integrals:**
+    * Understand the concept of an antiderivative.
+    * Learn the basic integration rules (reverse power rule).
+    * Understand definite integrals as area under the curve and their connection to accumulation.
+    * Grasp the Fundamental Theorem of Calculus – this is crucial!
+
+5.  **Practice Integration Techniques:** Work through u-substitution, integration by parts, and other methods as you progress.
+
+6.  **Apply Calculus:** Work on word problems and applications to see how these concepts are used in real-world scenarios (physics, engineering, economics, etc.).
+
+**Recommended Resources:**
+
+* **Khan Academy:** Excellent free videos and practice exercises for all levels of calculus.
+* **Paul's Online Math Notes:** Comprehensive notes and examples for calculus.
+* **Textbooks:** A good calculus textbook (e.g., Stewart, Larson, Thomas) is invaluable.
+* **YouTube Channels:** Channels like 3Blue1Brown (for visual intuition), Professor Leonard (for detailed lectures), and Eddie Woo often have great explanations.
+
+Calculus is a journey of understanding. Don't be afraid to revisit concepts, try different explanations, and most importantly, practice regularly!
+
+---
+
+# Lesson 3: Gradients
+
+If you've understood differential calculus, you know that the derivative of a single-variable function $f(x)$ ($f'(x)$ or $\frac{df}{dx}$) tells you the **slope** of the function at a given point, and thus its instantaneous rate of change. It points in the direction of increasing $y$.
+
+Now, imagine a function that depends on **multiple variables**. For example, $f(x, y)$ could represent the temperature at a specific point $(x, y)$ on a map. Or $f(x, y, z)$ could be the pressure in a 3D space.
+
+For such functions, the concept of a single "slope" isn't enough, because you can move in many different directions (north, south, east, west, or any combination). This is where the **gradient** comes in.
+
+## What is a Gradient? (Intuitive Explanation)
+
+Think of a mountainous landscape. The elevation at any point $(x, y)$ is given by a function $h(x, y)$.
+
+If you're standing on a mountain and want to know:
+1.  **In which direction should I walk to go uphill the fastest?**
+2.  **How steep is it in that direction?**
+
+The **gradient** answers exactly these questions!
+
+The gradient is a **vector** that points in the direction of the **steepest increase** of a function, and its magnitude (length) tells you the **rate of that steepest increase**.
+
+## Formal Definition and Notation
+
+The gradient of a multivariable function $f$ is denoted by $\nabla f$ (read "nabla f" or "del f"). It's a vector whose components are the **partial derivatives** of the function with respect to each of its variables.
+
+Let's break down partial derivatives first:
+
+* **Partial Derivatives:** If you have a function $f(x, y)$, the partial derivative with respect to $x$ (denoted $\frac{\partial f}{\partial x}$) is found by treating $y$ as a constant and differentiating $f$ with respect to $x$ as usual. Similarly, $\frac{\partial f}{\partial y}$ is found by treating $x$ as a constant and differentiating with respect to $y$.
+
+**For a function $f(x, y)$ (2 variables):**
+The gradient of $f$ is:
+$$\nabla f(x, y) = \left\langle \frac{\partial f}{\partial x}, \frac{\partial f}{\partial y} \right\rangle = \frac{\partial f}{\partial x} \mathbf{i} + \frac{\partial f}{\partial y} \mathbf{j}$$
+where $\mathbf{i}$ and $\mathbf{j}$ are unit vectors in the $x$ and $y$ directions, respectively.
+
+**For a function $f(x, y, z)$ (3 variables):**
+The gradient of $f$ is:
+$$\nabla f(x, y, z) = \left\langle \frac{\partial f}{\partial x}, \frac{\partial f}{\partial y}, \frac{\partial f}{\partial z} \right\rangle = \frac{\partial f}{\partial x} \mathbf{i} + \frac{\partial f}{\partial y} \mathbf{j} + \frac{\partial f}{\partial z} \mathbf{k}$$
+where $\mathbf{k}$ is the unit vector in the $z$ direction.
+
+## How to Calculate a Gradient (Example)
+
+Let's calculate the gradient for a simple function.
+
+**Example:** Find the gradient of the function $f(x, y) = x^2 + 3xy + y^3$ at the point $(1, 2)$.
+
+**Step 1: Find the partial derivative with respect to x ($\frac{\partial f}{\partial x}$)**
+Treat $y$ as a constant.
+$$\frac{\partial f}{\partial x} = \frac{\partial}{\partial x}(x^2) + \frac{\partial}{\partial x}(3xy) + \frac{\partial}{\partial x}(y^3)$$
+$$\frac{\partial f}{\partial x} = 2x + 3y + 0$$
+$$\frac{\partial f}{\partial x} = 2x + 3y$$
+
+**Step 2: Find the partial derivative with respect to y ($\frac{\partial f}{\partial y}$)**
+Treat $x$ as a constant.
+$$\frac{\partial f}{\partial y} = \frac{\partial}{\partial y}(x^2) + \frac{\partial}{\partial y}(3xy) + \frac{\partial}{\partial y}(y^3)$$
+$$\frac{\partial f}{\partial y} = 0 + 3x + 3y^2$$
+$$\frac{\partial f}{\partial y} = 3x + 3y^2$$
+
+**Step 3: Form the gradient vector**
+$$\nabla f(x, y) = \left\langle 2x + 3y, 3x + 3y^2 \right\rangle$$
+
+**Step 4: Evaluate the gradient at the specific point $(1, 2)$**
+Substitute $x=1$ and $y=2$ into the gradient vector:
+$$\nabla f(1, 2) = \left\langle 2(1) + 3(2), 3(1) + 3(2)^2 \right\rangle$$
+$$\nabla f(1, 2) = \left\langle 2 + 6, 3 + 3(4) \right\rangle$$
+$$\nabla f(1, 2) = \left\langle 8, 3 + 12 \right\rangle$$
+$$\nabla f(1, 2) = \left\langle 8, 15 \right\rangle$$
+
+So, at the point $(1, 2)$, the gradient vector is $\langle 8, 15 \rangle$. This vector points in the direction of the steepest increase of the function $f(x, y)$ from $(1, 2)$, and its magnitude $\sqrt{8^2 + 15^2} = \sqrt{64 + 225} = \sqrt{289} = 17$ tells you the rate of that steepest increase.
+
+## Properties and Applications of Gradients
+
+1.  **Direction of Steepest Ascent/Descent:**
+    * The gradient vector $\nabla f$ at a point points in the direction where the function increases most rapidly.
+    * The negative gradient, $-\nabla f$, points in the direction where the function decreases most rapidly (the direction of steepest descent).
+
+2.  **Magnitude of the Gradient:**
+    * The length (magnitude) of the gradient vector $|\nabla f|$ tells you the maximum rate of increase of the function at that point.
+
+3.  **Normal to Level Curves/Surfaces:**
+    * For a function $f(x, y)$, a **level curve** is a curve where $f(x, y) = c$ (a constant). The gradient vector $\nabla f$ at any point on a level curve is always **perpendicular (normal)** to that level curve.
+    * Similarly, for a function $f(x, y, z)$, a **level surface** is a surface where $f(x, y, z) = c$. The gradient vector $\nabla f$ is always normal to the level surface at that point. This is incredibly useful for finding tangent planes to surfaces.
+
+4.  **Optimization:**
+    * Gradients are fundamental in optimization problems. If you want to find the maximum or minimum value of a multivariable function, you often look for points where the gradient is the zero vector ($\nabla f = \langle 0, 0, \dots \rangle$). These are called critical points, analogous to where $f'(x) = 0$ for single-variable functions.
+
+5.  **Directional Derivatives:**
+    * While the gradient tells you the steepest direction, a **directional derivative** tells you the rate of change of a function in *any arbitrary direction*. It's calculated by taking the dot product of the gradient with a unit vector in the desired direction.
+
+The gradient is a powerful tool in multivariable calculus, providing critical information about the behavior of functions in higher dimensions. It's used extensively in physics (e.g., potential fields, fluid flow), engineering, machine learning (e.g., gradient descent algorithms), and many other fields.
+
+---
+
+# Lesson 4: Gradients in Artificial Neural Networks
+
+You're moving into the core of how neural networks learn! Gradients are absolutely fundamental to training artificial neural networks (ANNs). If the general concept of a gradient is "the direction of steepest ascent," then in ANNs, it's about finding the direction of **steepest descent** to minimize error.
+
+Let's break down gradients in the context of ANNs.
+
+## The Core Problem: Minimizing Loss
+
+An Artificial Neural Network is designed to learn from data. It takes inputs, performs calculations through its layers of interconnected "neurons" (nodes), and produces an output.
+
+The goal of training an an ANN is to make its outputs as close as possible to the *true* or *desired* outputs for a given set of inputs. To quantify "how close" it is, we use a **loss function** (also called a cost function or error function).
+
+* **Loss Function ($L$):** This function measures the discrepancy between the network's predicted output ($\hat{y}$) and the actual true output ($y$). A common example is the Mean Squared Error (MSE):
+    $$L = \frac{1}{N} \sum_{i=1}^N (y_i - \hat{y}_i)^2$$
+    where $N$ is the number of data points.
+
+The network's predictions ($\hat{y}$) depend on its internal parameters: the **weights** ($W$) and **biases** ($b$) of each neuron. These weights and biases are what the network "learns."
+
+So, the training problem becomes: **find the set of weights and biases that minimizes the loss function.**
+
+## Gradients to the Rescue: Gradient Descent
+
+This is where gradients come in. The loss function is a complex, high-dimensional surface, where each dimension corresponds to one of the network's weights or biases. We want to find the lowest point on this surface.
+
+**Gradient Descent** is the optimization algorithm used to do this. It works by iteratively adjusting the weights and biases in the direction opposite to the gradient of the loss function.
+
+* **The Gradient of the Loss Function ($\nabla L$):** This is a vector containing the partial derivatives of the loss function with respect to *every single weight and bias* in the network.
+    * For a weight $w_{ij}$ connecting neuron $i$ to neuron $j$, the component of the gradient would be $\frac{\partial L}{\partial w_{ij}}$.
+    * For a bias $b_k$ of neuron $k$, the component would be $\frac{\partial L}{\partial b_k}$.
+
+    $$\nabla L = \left\langle \frac{\partial L}{\partial w_1}, \frac{\partial L}{\partial w_2}, \dots, \frac{\partial L}{\partial b_1}, \frac{\partial L}{\partial b_2}, \dots \right\rangle$$
+
+* **Why the Negative Gradient?**
+    Recall that the gradient points in the direction of the *steepest ascent* (where the function increases most rapidly). To minimize the loss, we want to go *downhill* in the steepest way possible. Therefore, we move in the direction of the **negative gradient** ($-\nabla L$).
+
+* **The Update Rule:**
+    In each training step (iteration), the weights and biases are updated using the following rule:
+    $$\text{new\_parameter} = \text{old\_parameter} - \text{learning\_rate} \times \frac{\partial L}{\partial \text{parameter}}$$
+    The **learning rate** (often denoted by $\alpha$ or $\eta$) is a small positive number that controls the size of the steps we take. It's a crucial hyperparameter that determines how quickly (or slowly) the network learns.
+
+## How Gradients are Calculated: Backpropagation
+
+Calculating the gradient for every single weight and bias in a complex, multi-layered neural network directly would be computationally prohibitive. This is where the **Backpropagation Algorithm** shines.
+
+Backpropagation is an efficient algorithm for computing the gradients of the loss function with respect to all the weights and biases in the network. It's essentially a clever application of the **chain rule** from calculus.
+
+Here's a simplified conceptual overview of how it works:
+
+1.  **Forward Pass:**
+    * An input ($x$) is fed into the network.
+    * Information flows forward through the layers, with each neuron performing a weighted sum of its inputs and applying an activation function.
+    * This continues until the network produces an output ($\hat{y}$).
+    * The loss ($L$) is calculated by comparing $\hat{y}$ to the true output ($y$).
+
+2.  **Backward Pass (Backpropagation):**
+    * The error (or loss) is "propagated backward" from the output layer to the input layer.
+    * Starting at the output layer, the algorithm calculates how much each weight and bias contributed to the final error using the chain rule.
+    * For a weight $w$ in an earlier layer, its contribution to the loss depends on:
+        * How much the loss changes with respect to the output of its neuron.
+        * How much the output of its neuron changes with respect to its input sum.
+        * How much its input sum changes with respect to the weight itself.
+    * This process efficiently computes all the partial derivatives ($\frac{\partial L}{\partial w_{ij}}$ and $\frac{\partial L}{\partial b_k}$) required for the gradient vector.
+
+**In essence:**
+* **Backpropagation:** *Calculates* the gradients.
+* **Gradient Descent:** *Uses* those calculated gradients to *update* the network's weights and biases.
+
+## Why Gradients are So Important
+
+* **Learning:** Without gradients, neural networks wouldn't have a systematic way to learn from their mistakes and improve their performance. They provide the "compass" that guides the network towards better parameters.
+* **Efficiency:** Backpropagation makes calculating these gradients computationally feasible, allowing us to train very deep and complex networks on massive datasets.
+* **Foundation of Deep Learning:** Gradient descent (and its many variants like Stochastic Gradient Descent (SGD), Adam, RMSprop, etc.) powered by backpropagation is the backbone of almost all modern deep learning successes.
+
+## Challenges with Gradients
+
+While powerful, gradients in ANNs can present challenges:
+
+1.  **Vanishing Gradients:** In very deep networks, as gradients are propagated backward through many layers (especially with certain activation functions like sigmoid or tanh), they can become extremely small. This means the weights in earlier layers receive tiny updates, causing them to learn very slowly or effectively stop learning.
+2.  **Exploding Gradients:** Conversely, gradients can become extremely large, leading to massive weight updates that destabilize the network and cause training to diverge (e.g., loss becomes `NaN`).
+3.  **Local Minima & Saddle Points:** The loss surface can be highly non-convex, meaning there might be many "dips" (local minima) where the gradient is zero, but which are not the global minimum (the absolute best solution). The network might get stuck in these suboptimal points.
+
+**Solutions to these challenges** often involve:
+* Using different activation functions (e.g., ReLU and its variants).
+* Batch normalization.
+* Gradient clipping (limiting the magnitude of gradients).
+* More advanced optimization algorithms (e.g., Adam, RMSprop, Nesterov momentum) that adapt the learning rate or incorporate momentum.
+
+Understanding gradients is key to truly grasping how neural networks learn and how to effectively train them.
