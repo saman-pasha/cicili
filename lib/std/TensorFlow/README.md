@@ -683,3 +683,90 @@ While powerful, gradients in ANNs can present challenges:
 * More advanced optimization algorithms (e.g., Adam, RMSprop, Nesterov momentum) that adapt the learning rate or incorporate momentum.
 
 Understanding gradients is key to truly grasping how neural networks learn and how to effectively train them.
+
+### Conceptual Outline for Forward and Backward Pass (TensorFlow C API)
+
+Let's consider a very simple linear model: $y = xW + b$, where $x$ is input, $W$ is weight, $b$ is bias, and $y$ is prediction. We want to minimize the squared error loss: $L = (y_{true} - y)^2$.
+
+**Key Steps and Concepts:**
+
+1.  **Include Headers:**
+    ```c
+    #include <tensorflow/c/c_api.h>
+    #include <stdio.h>
+    #include <stdlib.h>
+    #include <string.h>
+    ```
+
+2.  **Error Handling Utility:**
+    ```c
+    void check_tf_status(TF_Status* status) {
+        if (TF_GetCode(status) != TF_OK) {
+            fprintf(stderr, "TensorFlow Error: %s\n", TF_Message(status));
+            exit(1);
+        }
+    }
+    ```
+
+3.  **Create a TensorFlow Graph:**
+    * `TF_Graph* graph = TF_NewGraph();`
+    * `TF_Status* status = TF_NewStatus();`
+
+4.  **Define Placeholders for Input and True Output:**
+    * Use `TF_NewPlaceholder` to create operations for your input `x` and true output `y_true`. You'll need to specify their data types (`TF_FLOAT`) and shapes.
+
+5.  **Define Variables for Weights (W) and Biases (b):**
+    * Use `TF_NewVariable` and `TF_AssignVariableOp` to create trainable variables. You'll need to initialize them. For simplicity, you might define initial values using `TF_Const`.
+
+6.  **Build the Forward Pass Operations:**
+    * **Matrix Multiplication (MatMul):** `TF_NewOperation(graph, "MatMul", "matmul_op")`. Connect its inputs to `x` and `W`.
+    * **Addition (Add):** `TF_NewOperation(graph, "Add", "add_op")`. Connect its inputs to the output of MatMul and `b`. This will be your predicted output `y_pred`.
+    * **Subtraction (Sub):** `TF_NewOperation(graph, "Sub", "sub_op")`. Connect its inputs to `y_true` and `y_pred`.
+    * **Square (Square):** `TF_NewOperation(graph, "Square", "square_op")`. Connect its input to the output of Sub. This is your loss.
+
+7.  **Define the Loss Operation:**
+    * The output of the `Square` operation is your scalar loss.
+
+8.  **Automatic Differentiation for Gradients:**
+    * This is where it gets complex. You need to use `TF_AddGradients` or `TF_GraphToFunction` (for more advanced scenarios) to add gradient operations to your graph.
+    * `TF_AddGradients` takes:
+        * The graph.
+        * The operations to compute gradients *with respect to* (e.g., `loss_op`).
+        * The operations whose gradients you *want* (e.g., `W_var_op`, `b_var_op`).
+        * Arrays for gradient output.
+
+    * This will add new operations to your graph that, when run, will compute $\frac{\partial L}{\partial W}$ and $\frac{\partial L}{\partial b}$.
+
+9.  **Create a TensorFlow Session:**
+    * `TF_SessionOptions* sess_opts = TF_NewSessionOptions();`
+    * `TF_Session* session = TF_NewSession(graph, sess_opts, status);`
+    * `check_tf_status(status);`
+
+10. **Initialize Variables:**
+    * You need to run an operation to initialize your variables. This is usually done by running a `TF_NewOperation(graph, "NoOp", "init_op")` that depends on `TF_NewVariable`'s initial assignment operations.
+
+11. **Run the Session (Training Loop):**
+    * **Prepare Inputs:** Create `TF_Tensor` objects for your `x` data and `y_true` labels for a batch.
+    * **Forward Pass (Inference/Loss Calculation):**
+        * Define `input_ops` (placeholders for `x`, `y_true`).
+        * Define `output_ops` (e.g., `y_pred_op`, `loss_op`).
+        * `TF_SessionRun(session, ..., input_ops, input_tensors, ..., output_ops, output_tensors, ...);`
+        * Extract the loss value from the `output_tensors`.
+    * **Backward Pass (Gradient Calculation):**
+        * Define `input_ops` (placeholders for `x`, `y_true`).
+        * Define `output_ops` (the gradient operations you added in step 8).
+        * `TF_SessionRun(session, ..., input_ops, input_tensors, ..., output_ops, gradient_tensors, ...);`
+        * Extract the gradient tensors (e.g., `grad_W`, `grad_b`).
+    * **Update Weights (Manually or using an Optimizer Op):**
+        * You'll need to create `TF_NewOperation` for subtraction (`Sub`) and assignment (`Assign`) to update `W` and `b`:
+            `new_W = old_W - learning_rate * grad_W`
+            `new_b = old_b - learning_rate * grad_b`
+            Then run these assignment operations in the session.
+    * Repeat for multiple epochs/steps.
+
+12. **Cleanup:**
+    * `TF_DeleteSession(session, status);`
+    * `TF_DeleteSessionOptions(sess_opts);`
+    * `TF_DeleteGraph(graph);`
+    * `TF_DeleteStatus(status);`
+    * Don't forget to `TF_DeleteTensor` for all tensors you created.
