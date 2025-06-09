@@ -13,15 +13,15 @@
                                   (func deallocator ((void * data) (size_t len) (void * arg)))
                                   (void * deallocator_arg)))
      
+     (decl) (func (Tensor . newFloat) ((const int64_t * dims)
+                                       (const int num_dims)
+                                       (float * data)))
+     
      (decl) (func (Tensor . newFromData) ((const TF_DataType dtype)
                                           (const int64_t * dims)
                                           (const int num_dims)
                                           (void * data)
                                           (const size_t len)))
-     
-     (decl) (func (Tensor . newFloat) ((const int64_t * dims)
-                                       (const int num_dims)
-                                       (float * data)))
      
      (decl) (func (Tensor . newFromFloatArray) ((float * values)
                                                 (int64_t * shape)
@@ -70,6 +70,11 @@
                  (TF_NewTensor dtype dims num_dims data len deallocator deallocator_arg))
                (return tensor)))
 
+     (func (Tensor . newFloat) ((const int64_t * dims)
+                                (const int num_dims)
+                                (float * data))
+           (return (-> Tensor newFromData TF_FLOAT dims num_dims data (sizeof float))))
+
      ;; Create tensor with borrowed data (no deallocator)
      (func (Tensor . newFromData) ((const TF_DataType dtype)
                                    (const int64_t * dims)
@@ -77,43 +82,36 @@
                                    (void * data)
                                    (const size_t len))
            (let ((Tensor * tensor . #'(malloc (sizeof Tensor))))
-             (set ($ tensor ptr) (TF_NewTensor dtype dims num_dims data len 0 0))
+             (set ($ tensor ptr) (TF_NewTensor dtype dims num_dims data len nil nil))
              (return tensor)))
-
-     (func (Tensor . newFloat) ((const int64_t * dims)
-                                (const int num_dims)
-                                (float * data))
-           (return (-> Tensor newFromData TF_FLOAT dims num_dims data (sizeof float))))
 
      (func (Tensor . newFromFloatArray) ((float * values)
                                          (int64_t * shape)
                                          (int rank)
                                          (int value_count))
            (let ((int64_t total_bytes . #'(* value_count (sizeof float)))
-                 (int64_t * dims . shape)
                  (TF_Tensor * t . #'(TF_NewTensor TF_FLOAT
-                                      dims
+                                      shape
                                       rank
                                       values
                                       total_bytes
-                                      0 ;; deallocator
-                                      0)))
-             (return '{ $ptr t })))
+                                      nil ;; deallocator
+                                      nil)))
+             (return '{ t })))
 
      (func (Tensor . newFromIntArray) ((int32_t * values)
                                        (int64_t * shape)
                                        (int rank)
                                        (int value_count))
            (let ((int64_t total_bytes . #'(* value_count (sizeof int32_t)))
-                 (int64_t * dims . shape)
                  (TF_Tensor * t . #'(TF_NewTensor TF_INT32
-                                      dims
+                                      shape
                                       rank
                                       values
                                       total_bytes
-                                      0 ;; deallocator
-                                      0)))
-             (return '{ $ptr t })))
+                                      nil ;; deallocator
+                                      nil)))
+             (return '{ t })))
 
      (func (Tensor . newFromInt64Array) ((int64_t * arr)
                                          (int64_t * dims)
@@ -123,8 +121,8 @@
                   (set total_size (* total_size (nth i dims))))
              (let ((TF_Tensor * t . #'(TF_NewTensor TF_INT64 dims num_dims arr
                                                     (* total_size (sizeof int64_t))
-                                                    0 0)))
-               (return '{ $ptr t }))))
+                                                    nil nil)))
+               (return '{ t }))))
 
      (func (Tensor . newFromBoolArray) ((uint8_t * arr)
                                         (int64_t * dims)
@@ -133,8 +131,8 @@
              (for ((int i . 0)) (< i num_dims) ((++ i))
                   (set total_size (* total_size (nth i dims))))
              (let ((TF_Tensor * t . #'(TF_NewTensor TF_BOOL dims num_dims arr
-                                                    total_size 0 0)))
-               (return '{ $ptr t }))))
+                                                    total_size nil nil)))
+               (return '{ t }))))
 
      (func (Tensor . newFromScalarFloat) ((float value))
            (let ((float * val_ptr . #'(malloc (sizeof float))))
@@ -144,9 +142,9 @@
                                         0
                                         val_ptr
                                         (sizeof float)
-                                        0
-                                        0)))
-               (return '{ $ptr t }))))
+                                        nil
+                                        nil)))
+               (return '{ t }))))
      
      ;; Free the tensor
      (method (Tensor . free) ()

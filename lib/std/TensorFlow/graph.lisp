@@ -101,13 +101,13 @@
 
        (func (Graph . new) () 
              (let ((Graph * graph . #'(malloc (sizeof Graph))))
-               (set ($ graph ptr) (TF_NewGraph))
                (set ($ graph status) (-> Status new))
+               (set ($ graph ptr) (TF_NewGraph))
                (return graph)))
      
      (method (Graph . free) ()
-             (-> ($ this status) free)
              (TF_DeleteGraph ($ this ptr))
+             (-> ($ this status) free)
              (free this))
 
      (method (Graph . addOp) ((const char * op_type)
@@ -126,7 +126,7 @@
                                 (const char * name)
                                 (TF_Output * inputs)
                                 (int num_inputs)
-                                (TF_Operation ** ctrl_inputs)
+                                (TF_Operation * ctrl_inputs)
                                 (int num_ctrl_inputs)
                                 (func set_attrs ((TF_OperationDescription *))))
              (out TF_Operation *)
@@ -204,7 +204,7 @@
              (out TF_Output)
              (let ((float * val . #'(malloc (sizeof float))))
                (set (cof val) value)
-               (let ((TF_Tensor * tensor . #'(TF_NewTensor TF_FLOAT 0 0 val (sizeof float) 0 0)))
+               (let ((TF_Tensor * tensor . #'(TF_NewTensor TF_FLOAT nil 0 val (sizeof float) 0 0)))
                  (return (-> this constant name tensor)))))
 
      ;; Assign
@@ -239,7 +239,7 @@
                (return (TF_FinishOperation desc ($ this status ptr)))))
 
      (method (Graph . noOp) ((const char * name)
-                             (TF_Operation ** control_deps)
+                             (TF_Operation * control_deps)
                              (int num_control_deps))
              (out TF_Operation *)
              (let ((TF_OperationDescription * desc . #'(TF_NewOperation ($ this ptr) "NoOp" name)))

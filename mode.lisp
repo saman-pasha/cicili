@@ -148,6 +148,7 @@
    (1 . ->)
    (1 . import)
    (1 . letn)
+   (1 . defer-let)
    ))
 
 (defun cicili-add-attributes (face-name keyword-rules)
