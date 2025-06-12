@@ -810,6 +810,18 @@ TF_Tensor* create_float_tensor(float value, int num_dims, long long* dims) {
     return TF_NewTensor(TF_FLOAT, dims, num_dims, data, data_size, free, NULL);
 }
 
+// --- Helper for creating a Const operation ---
+TF_Operation* create_const_op(TF_Graph* graph, const char* name, TF_Tensor* tensor, TF_Status* status) {
+    TF_OperationDescription* desc = TF_NewOperation(graph, "Const", name);
+    TF_SetAttrTensor(desc, "value", tensor, status);
+    CHECK_TF_OK(status);
+    TF_SetAttrType(desc, "dtype", TF_TensorType(tensor));
+    TF_Operation* op = TF_FinishOperation(desc, status);
+    CHECK_TF_OK(status);
+    return op;
+}
+
+
 // --- Main Training Function ---
 int main() {
     TF_Status* status = TF_NewStatus();
@@ -870,29 +882,33 @@ int main() {
     // --- Variable Initializers (using AssignVariableOp) ---
     // Initial value for W
     float initial_W = 0.0f;
-    TF_Tensor* initial_W_tensor = create_float_tensor(initial_W, 1, w_dims);
+    long long init_w_dims[] = {1};
+    TF_Tensor* initial_W_tensor = create_float_tensor(initial_W, 1, init_w_dims);
+    TF_Operation* W_init_const_op = create_const_op(graph, "W_init_const", initial_W_tensor, status);
+    TF_DeleteTensor(initial_W_tensor); // Delete after const op created
+
     TF_OperationDescription* assign_W_init_desc = TF_NewOperation(graph, "AssignVariableOp", "W_initializer");
     TF_AddInput(assign_W_init_desc, W_handle_output); // Variable resource handle
-    TF_AddInput(assign_W_init_desc, {TF_GraphConst(graph, initial_W_tensor, "W_init_const", status), 0}); // Initial value tensor
-    CHECK_TF_OK(status);
+    TF_AddInput(assign_W_init_desc, {W_init_const_op, 0}); // Initial value constant
     TF_SetAttrType(assign_W_init_desc, "dtype", TF_FLOAT);
     TF_SetAttrBool(assign_W_init_desc, "validate_shape", true);
     TF_Operation* W_initializer_op = TF_FinishOperation(assign_W_init_desc, status);
     CHECK_TF_OK(status);
-    TF_DeleteTensor(initial_W_tensor);
 
     // Initial value for b
     float initial_b = 0.0f;
-    TF_Tensor* initial_b_tensor = create_float_tensor(initial_b, 1, b_dims);
+    long long init_b_dims[] = {1};
+    TF_Tensor* initial_b_tensor = create_float_tensor(initial_b, 1, init_b_dims);
+    TF_Operation* b_init_const_op = create_const_op(graph, "b_init_const", initial_b_tensor, status);
+    TF_DeleteTensor(initial_b_tensor); // Delete after const op created
+
     TF_OperationDescription* assign_b_init_desc = TF_NewOperation(graph, "AssignVariableOp", "b_initializer");
     TF_AddInput(assign_b_init_desc, b_handle_output);
-    TF_AddInput(assign_b_init_desc, {TF_GraphConst(graph, initial_b_tensor, "b_init_const", status), 0});
-    CHECK_TF_OK(status);
+    TF_AddInput(assign_b_init_desc, {b_init_const_op, 0});
     TF_SetAttrType(assign_b_init_desc, "dtype", TF_FLOAT);
     TF_SetAttrBool(assign_b_init_desc, "validate_shape", true);
     TF_Operation* b_initializer_op = TF_FinishOperation(assign_b_init_desc, status);
     CHECK_TF_OK(status);
-    TF_DeleteTensor(initial_b_tensor);
 
     // --- 3. Define the Model's Forward Pass (y_pred = W * x + b) ---
     // W * x
@@ -952,15 +968,12 @@ int main() {
     TF_Output db_output = gradients[1]; // Gradient for b
 
     // --- 6. Use ApplyGradientDescent ops to update W and b ---
-    // Note: ApplyGradientDescent itself expects a VarHandleOp output as its first input
-    // (the resource handle of the variable to be updated).
     float learning_rate_val = 0.01f;
     long long lr_dims[] = {1};
     TF_Tensor* lr_tensor = create_float_tensor(learning_rate_val, 1, lr_dims);
-    TF_Operation* lr_const_op = TF_GraphConst(graph, lr_tensor, "learning_rate", status);
-    CHECK_TF_OK(status);
+    TF_Operation* lr_const_op = create_const_op(graph, "learning_rate", lr_tensor, status);
+    TF_DeleteTensor(lr_tensor); // Delete after const op created
     TF_Output lr_output = {lr_const_op, 0};
-    TF_DeleteTensor(lr_tensor);
 
     // Update W using ApplyGradientDescent
     TF_OperationDescription* apply_W_gd_desc = TF_NewOperation(graph, "ApplyGradientDescent", "apply_gradient_descent_W");
