@@ -802,17 +802,11 @@ TF_Tensor* create_float_tensor(float value, int num_dims, long long* dims) {
         fprintf(stderr, "Failed to allocate memory for tensor data.\n");
         exit(EXIT_FAILURE);
     }
-    // For a scalar, just copy the single value
-    // For arrays, you'd copy the array data
     if (num_elements == 1) {
         data[0] = value;
     } else {
-        // Handle array data copying if needed
-        // For this example, we'll stick to scalar/1D initialization
+        // For array data, copy element by element if needed
     }
-
-    // TensorFlow takes ownership of the data pointer.
-    // Provide a simple free deallocator.
     return TF_NewTensor(TF_FLOAT, dims, num_dims, data, data_size, free, NULL);
 }
 
@@ -822,7 +816,6 @@ int main() {
     TF_Graph* graph = TF_NewGraph();
 
     // --- 1. Define Placeholders for Input Data ---
-    // Placeholder for input feature 'x'
     long long x_dims[] = {1}; // Scalar input
     TF_OperationDescription* x_desc = TF_NewOperation(graph, "Placeholder", "x_input");
     TF_SetAttrType(x_desc, "dtype", TF_FLOAT);
@@ -831,7 +824,6 @@ int main() {
     CHECK_TF_OK(status);
     TF_Output x_output = {x_op, 0};
 
-    // Placeholder for true label 'y_true'
     long long y_true_dims[] = {1}; // Scalar output
     TF_OperationDescription* y_true_desc = TF_NewOperation(graph, "Placeholder", "y_true_input");
     TF_SetAttrType(y_true_desc, "dtype", TF_FLOAT);
@@ -840,62 +832,60 @@ int main() {
     CHECK_TF_OK(status);
     TF_Output y_true_output = {y_true_op, 0};
 
-    // --- 2. Define Trainable Variables (W, b) ---
-    // For variables, you first define the variable op, then an initializer op
+    // --- 2. Define Trainable Variables (W, b) using VarHandleOp ---
     // W (weight)
     long long w_dims[] = {1};
-    TF_OperationDescription* w_var_desc = TF_NewOperation(graph, "VariableV2", "W");
-    TF_SetAttrType(w_var_desc, "dtype", TF_FLOAT);
-    TF_SetAttrShape(w_var_desc, "shape", w_dims, 1);
-    TF_Operation* W_var_op = TF_FinishOperation(w_var_desc, status);
+    TF_OperationDescription* w_handle_desc = TF_NewOperation(graph, "VarHandleOp", "W_handle");
+    TF_SetAttrType(w_handle_desc, "dtype", TF_FLOAT);
+    TF_SetAttrShape(w_handle_desc, "shape", w_dims, 1);
+    TF_Operation* W_handle_op = TF_FinishOperation(w_handle_desc, status);
     CHECK_TF_OK(status);
-    TF_Output W_var_output = {W_var_op, 0}; // This is the 'resource' handle output
+    TF_Output W_handle_output = {W_handle_op, 0}; // This is the 'resource' handle
 
     // b (bias)
     long long b_dims[] = {1};
-    TF_OperationDescription* b_var_desc = TF_NewOperation(graph, "VariableV2", "b");
-    TF_SetAttrType(b_var_desc, "dtype", TF_FLOAT);
-    TF_SetAttrShape(b_var_desc, "shape", b_dims, 1);
-    TF_Operation* b_var_op = TF_FinishOperation(b_var_desc, status);
+    TF_OperationDescription* b_handle_desc = TF_NewOperation(graph, "VarHandleOp", "b_handle");
+    TF_SetAttrType(b_handle_desc, "dtype", TF_FLOAT);
+    TF_SetAttrShape(b_handle_desc, "shape", b_dims, 1);
+    TF_Operation* b_handle_op = TF_FinishOperation(b_handle_desc, status);
     CHECK_TF_OK(status);
-    TF_Output b_var_output = {b_var_op, 0}; // This is the 'resource' handle output
+    TF_Output b_handle_output = {b_handle_op, 0}; // This is the 'resource' handle
 
-    // To use variables in computations, you need to read their value
-    // Read W's value
+    // Read W's value from its handle
     TF_OperationDescription* read_W_desc = TF_NewOperation(graph, "ReadVariableOp", "read_W");
-    TF_AddInput(read_W_desc, W_var_output); // Input is the variable resource handle
+    TF_AddInput(read_W_desc, W_handle_output); // Input is the variable resource handle
     TF_SetAttrType(read_W_desc, "dtype", TF_FLOAT);
     TF_Operation* read_W_op = TF_FinishOperation(read_W_desc, status);
     CHECK_TF_OK(status);
     TF_Output W_value_output = {read_W_op, 0}; // This is the actual float value
 
-    // Read b's value
+    // Read b's value from its handle
     TF_OperationDescription* read_b_desc = TF_NewOperation(graph, "ReadVariableOp", "read_b");
-    TF_AddInput(read_b_desc, b_var_output);
+    TF_AddInput(read_b_desc, b_handle_output);
     TF_SetAttrType(read_b_desc, "dtype", TF_FLOAT);
     TF_Operation* read_b_op = TF_FinishOperation(read_b_desc, status);
     CHECK_TF_OK(status);
     TF_Output b_value_output = {read_b_op, 0};
 
-    // --- Variable Initializers (important!) ---
+    // --- Variable Initializers (using AssignVariableOp) ---
     // Initial value for W
     float initial_W = 0.0f;
     TF_Tensor* initial_W_tensor = create_float_tensor(initial_W, 1, w_dims);
     TF_OperationDescription* assign_W_init_desc = TF_NewOperation(graph, "AssignVariableOp", "W_initializer");
-    TF_AddInput(assign_W_init_desc, W_var_output); // Variable resource handle
+    TF_AddInput(assign_W_init_desc, W_handle_output); // Variable resource handle
     TF_AddInput(assign_W_init_desc, {TF_GraphConst(graph, initial_W_tensor, "W_init_const", status), 0}); // Initial value tensor
     CHECK_TF_OK(status);
     TF_SetAttrType(assign_W_init_desc, "dtype", TF_FLOAT);
     TF_SetAttrBool(assign_W_init_desc, "validate_shape", true);
     TF_Operation* W_initializer_op = TF_FinishOperation(assign_W_init_desc, status);
     CHECK_TF_OK(status);
-    TF_DeleteTensor(initial_W_tensor); // Delete the tensor after it's used to define the op
+    TF_DeleteTensor(initial_W_tensor);
 
     // Initial value for b
     float initial_b = 0.0f;
     TF_Tensor* initial_b_tensor = create_float_tensor(initial_b, 1, b_dims);
     TF_OperationDescription* assign_b_init_desc = TF_NewOperation(graph, "AssignVariableOp", "b_initializer");
-    TF_AddInput(assign_b_init_desc, b_var_output);
+    TF_AddInput(assign_b_init_desc, b_handle_output);
     TF_AddInput(assign_b_init_desc, {TF_GraphConst(graph, initial_b_tensor, "b_init_const", status), 0});
     CHECK_TF_OK(status);
     TF_SetAttrType(assign_b_init_desc, "dtype", TF_FLOAT);
@@ -941,22 +931,20 @@ int main() {
     CHECK_TF_OK(status);
     TF_Output square_output = {square_op, 0};
 
-    // Mean (Sum / N) is often implied for a single sample here, or use ReduceMean for batches
-    // For a single sample, square_output is effectively the loss.
-    TF_Output loss_output = square_output; // For simplicity, our MSE for a single sample
+    TF_Output loss_output = square_output;
 
     // --- 5. Use TF_AddGradients to calculate gradients ---
-    TF_Output y_to_diff[] = {loss_output}; // The loss output
-    TF_Output x_to_diff[] = {W_value_output, b_value_output}; // The variables we want gradients for (their values)
+    TF_Output y_to_diff[] = {loss_output};
+    TF_Output x_to_diff[] = {W_value_output, b_value_output}; // Differentiate wrt read values
 
-    TF_Output gradients[2]; // Array to store the computed gradients for W and b
+    TF_Output gradients[2];
     TF_AddGradients(
         graph,
-        y_to_diff, 1,    // 1 output to differentiate (loss)
-        x_to_diff, 2,    // 2 inputs to differentiate with respect to (W_value, b_value)
-        NULL,            // Initial gradients (dL/dy) - NULL implies 1s
+        y_to_diff, 1,
+        x_to_diff, 2,
+        NULL,
         status,
-        gradients        // Output array for gradients (gradients[0] for W, gradients[1] for b)
+        gradients
     );
     CHECK_TF_OK(status);
 
@@ -964,29 +952,31 @@ int main() {
     TF_Output db_output = gradients[1]; // Gradient for b
 
     // --- 6. Use ApplyGradientDescent ops to update W and b ---
+    // Note: ApplyGradientDescent itself expects a VarHandleOp output as its first input
+    // (the resource handle of the variable to be updated).
     float learning_rate_val = 0.01f;
     long long lr_dims[] = {1};
     TF_Tensor* lr_tensor = create_float_tensor(learning_rate_val, 1, lr_dims);
     TF_Operation* lr_const_op = TF_GraphConst(graph, lr_tensor, "learning_rate", status);
     CHECK_TF_OK(status);
     TF_Output lr_output = {lr_const_op, 0};
-    TF_DeleteTensor(lr_tensor); // Tensor can be deleted after op is created
+    TF_DeleteTensor(lr_tensor);
 
     // Update W using ApplyGradientDescent
     TF_OperationDescription* apply_W_gd_desc = TF_NewOperation(graph, "ApplyGradientDescent", "apply_gradient_descent_W");
-    TF_AddInput(apply_W_gd_desc, W_var_output); // Variable resource handle
+    TF_AddInput(apply_W_gd_desc, W_handle_output); // Variable resource handle
     TF_AddInput(apply_W_gd_desc, lr_output);    // Learning rate
     TF_AddInput(apply_W_gd_desc, dW_output);    // Gradient for W
     TF_SetAttrType(apply_W_gd_desc, "T", TF_FLOAT);
-    TF_SetAttrBool(apply_W_gd_desc, "use_locking", false); // Or true if variable needs locking
+    TF_SetAttrBool(apply_W_gd_desc, "use_locking", false);
     TF_Operation* apply_W_gd_op = TF_FinishOperation(apply_W_gd_desc, status);
     CHECK_TF_OK(status);
 
     // Update b using ApplyGradientDescent
     TF_OperationDescription* apply_b_gd_desc = TF_NewOperation(graph, "ApplyGradientDescent", "apply_gradient_descent_b");
-    TF_AddInput(apply_b_gd_desc, b_var_output); // Variable resource handle
+    TF_AddInput(apply_b_gd_desc, b_handle_output); // Variable resource handle
     TF_AddInput(apply_b_gd_desc, lr_output);
-    TF_AddInput(apply_b_gd_desc, db_output);    // Gradient for b
+    TF_AddInput(apply_b_gd_desc, db_output);
     TF_SetAttrType(apply_b_gd_desc, "T", TF_FLOAT);
     TF_SetAttrBool(apply_b_gd_desc, "use_locking", false);
     TF_Operation* apply_b_gd_op = TF_FinishOperation(apply_b_gd_desc, status);
@@ -997,15 +987,14 @@ int main() {
     TF_Session* sess = TF_NewSession(graph, sess_opts, status);
     CHECK_TF_OK(status);
 
-    // Run initializer ops once
     TF_Operation* init_ops[] = {W_initializer_op, b_initializer_op};
     TF_SessionRun(
         sess,
-        NULL, // run_options
-        NULL, 0, // inputs (no inputs for initialization)
-        NULL, NULL, 0, // outputs (no outputs to fetch for initialization)
-        init_ops, 2, // target_opers: run the initializer ops
-        NULL, // run_metadata
+        NULL,
+        NULL, 0,
+        NULL, NULL, 0,
+        init_ops, 2,
+        NULL,
         status
     );
     CHECK_TF_OK(status);
@@ -1016,7 +1005,6 @@ int main() {
     float training_x = 5.0f;
     float training_y_true = 12.0f; // Target: W=2, b=2 => 2*5 + 2 = 12
 
-    // Prepare input tensors for training loop
     TF_Tensor* x_input_tensor = create_float_tensor(training_x, 1, x_dims);
     TF_Tensor* y_true_input_tensor = create_float_tensor(training_y_true, 1, y_true_dims);
 
@@ -1024,12 +1012,10 @@ int main() {
     TF_Tensor* run_input_values[] = {x_input_tensor, y_true_input_tensor};
     int num_run_inputs = 2;
 
-    // Define outputs to fetch during training (e.g., loss, current W, current b)
     TF_Output run_outputs[] = {loss_output, W_value_output, b_value_output};
-    TF_Tensor* run_output_values[3] = {NULL, NULL, NULL}; // Will be populated by TF_SessionRun
+    TF_Tensor* run_output_values[3] = {NULL, NULL, NULL};
     int num_run_outputs = 3;
 
-    // Define target operations for training (the gradient descent updates)
     TF_Operation* train_step_targets[] = {apply_W_gd_op, apply_b_gd_op};
     int num_train_targets = 2;
 
@@ -1055,10 +1041,9 @@ int main() {
                    epoch + 1, current_loss, current_W, current_b);
         }
 
-        // Clean up fetched tensors for the next iteration
         for (int i = 0; i < num_run_outputs; ++i) {
             TF_DeleteTensor(run_output_values[i]);
-            run_output_values[i] = NULL; // Clear pointer for safety
+            run_output_values[i] = NULL;
         }
     }
     printf("\nTraining finished.\n");
