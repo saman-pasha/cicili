@@ -1166,7 +1166,6 @@ printf("TF_Function 'train_step' created successfully.\n");
 // inputs and produces its outputs.
 
 // The `PartitionedCall` operation would look something like this:
-/*
 TF_OperationDescription* call_train_step_desc = TF_NewOperation(graph, "PartitionedCall", "call_train_step");
 TF_SetAttrFuncName(call_train_step_desc, "f", TF_FunctionName(train_step_fn)); // Link to your function
 TF_AddInput(call_train_step_desc, x_input_op); // Function's input
@@ -1181,7 +1180,6 @@ CHECK_TF_OK(status);
 // TF_Operation* train_targets[] = {call_train_step_op};
 // TF_Output run_outputs[] = {{call_train_step_op, 0}, {call_train_step_op, 1}, {call_train_step_op, 2}};
 // TF_SessionRun(...) with these inputs, outputs, and targets.
-*/
 
 // --- Cleanup ---
 // TF_DeleteFunction(train_step_fn); // Don't forget to delete the function when done
