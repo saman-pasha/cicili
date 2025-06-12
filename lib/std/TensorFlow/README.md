@@ -1074,3 +1074,116 @@ int main() {
     return 0;
 }
 ```
+
+```c
+// ... (Previous graph creation code for x_input_op, y_true_input_op,
+//      W_var_op, b_var_op, loss_op, read_W_op, read_b_op,
+//      apply_W_gd_op, apply_b_gd_op, and initializers)
+
+// --- Define the inputs, outputs, targets, and captured elements for the function ---
+
+// Function Inputs (dynamic data for each step)
+TF_Operation* fn_inputs[] = {x_input_op, y_true_input_op};
+size_t num_fn_inputs = 2;
+
+// Function Outputs (what we want to get back)
+// We might want the loss, and the updated W and b values (read after the update)
+TF_Operation* fn_outputs_op_nodes[] = {loss_op, read_W_op, read_b_op};
+TF_Output fn_outputs[3];
+for(int i = 0; i < 3; ++i) {
+    fn_outputs[i] = {fn_outputs_op_nodes[i], 0};
+}
+size_t num_fn_outputs = 3;
+
+
+// Target Operations (operations run for side effects, i.e., variable updates)
+TF_Operation* fn_target_opers[] = {apply_W_gd_op, apply_b_gd_op};
+size_t num_fn_target_opers = 2;
+
+// Captured Inputs (the variables the function needs to operate on)
+// These are the RESOURCE HANDLES of the variables.
+TF_Output fn_captured_inputs[] = {{W_var_op, 0}, {b_var_op, 0}};
+size_t num_fn_captured_inputs = 2;
+
+// Captured Input Attr Values (only if captured_inputs are constants)
+// Since W and b are variables, not constants, this is NULL.
+const TF_Tensor* const* fn_captured_input_attr_values = NULL;
+
+// Captured Outputs (the outputs of the operations that modify captured inputs)
+// These would be the outputs of the AssignVariableOp, which represent the updated state of the variable resource.
+TF_Output fn_captured_outputs[] = {{apply_W_gd_op, 0}, {apply_b_gd_op, 0}};
+size_t num_fn_captured_outputs = 2;
+
+
+// --- Create the TF_Function ---
+TF_Function* train_step_fn = TF_GraphToFunction(
+    graph,
+    "train_step",                 // Function name
+    0,                            // Don't append hash to name
+    num_fn_inputs,                // Number of inputs
+    fn_inputs,                    // Input operations
+    num_fn_outputs,               // Number of outputs
+    fn_outputs,                   // Output operations
+    num_fn_target_opers,          // Number of target operations
+    fn_target_opers,              // Target operations
+    0, NULL,                      // num_control_outputs, control_outputs (not used in this simple case)
+    num_fn_captured_inputs,       // Number of captured inputs
+    fn_captured_inputs,           // Captured inputs (variable resource handles)
+    fn_captured_input_attr_values, // Captured input attr values
+    num_fn_captured_outputs,      // Number of captured outputs
+    fn_captured_outputs,          // Captured outputs (outputs of AssignVariableOp)
+    "A single training step for linear regression", // Description
+    status
+);
+CHECK_TF_OK(status);
+printf("TF_Function 'train_step' created successfully.\n");
+
+// --- After creating the function, you typically add it to the graph
+//     This makes it callable via a "PartitionedCall" or similar op.
+//     However, TF_SessionRun can also directly execute a function name
+//     if it's registered.
+
+// --- Training Loop (using the TF_Function) ---
+// Now, instead of running apply_W_gd_op and apply_b_gd_op directly as targets,
+// you would call the 'train_step' function.
+// This requires creating a PartitionedCall operation in the graph that invokes the function.
+
+// This part gets tricky because directly calling a TF_Function in a session run
+// without adding an explicit PartitionedCall op is less common in direct C API use.
+// Often, TF_GraphToFunction is used to create a function that you then
+// embed into *another* part of the graph using a PartitionedCall op,
+// or use it when exporting/importing functions in SavedModels.
+
+// A more practical approach might be to wrap the function call in a custom
+// TF_Operation in C++ if you want to execute it like a regular op.
+// For direct C API, you'd typically define the function and then run it
+// via TF_SessionRun's target operations.
+
+// For simple usage in TF_SessionRun with TF_Function, you might consider
+// that the function has implicitly added a `PartitionedCall` like behavior.
+// However, the most robust way to use a `TF_Function` is often to define
+// a `PartitionedCall` operation in your main graph that takes the function's
+// inputs and produces its outputs.
+
+// The `PartitionedCall` operation would look something like this:
+/*
+TF_OperationDescription* call_train_step_desc = TF_NewOperation(graph, "PartitionedCall", "call_train_step");
+TF_SetAttrFuncName(call_train_step_desc, "f", TF_FunctionName(train_step_fn)); // Link to your function
+TF_AddInput(call_train_step_desc, x_input_op); // Function's input
+TF_AddInput(call_train_step_desc, y_true_input_op); // Function's input
+// TF_SetAttrTypeList(call_train_step_desc, "Tin", ...); // Types of inputs
+// TF_SetAttrTypeList(call_train_step_desc, "Tout", ...); // Types of outputs
+
+TF_Operation* call_train_step_op = TF_FinishOperation(call_train_step_desc, status);
+CHECK_TF_OK(status);
+
+// Then, in your training loop:
+// TF_Operation* train_targets[] = {call_train_step_op};
+// TF_Output run_outputs[] = {{call_train_step_op, 0}, {call_train_step_op, 1}, {call_train_step_op, 2}};
+// TF_SessionRun(...) with these inputs, outputs, and targets.
+*/
+
+// --- Cleanup ---
+// TF_DeleteFunction(train_step_fn); // Don't forget to delete the function when done
+// ... (rest of cleanup as before)
+```
