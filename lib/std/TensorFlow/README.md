@@ -1,3 +1,5 @@
+Gemini generated, Apache 2.0 License
+
 # TensorFlow C API: A Comprehensive Guide
 
 The TensorFlow C API empowers you to build, run, and manage TensorFlow graphs directly from C or C++. It's the lowest-level official API, offering maximum control and minimal overhead. This makes it ideal for embedding TensorFlow into performance-critical applications, custom runtimes, or environments where Python isn't an option.
