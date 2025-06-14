@@ -336,8 +336,9 @@ int main() {
   TF_Operation* y = TF_FinishOperation(dy, status);
 
   // Const b = 0.5
-  float b_val = 0.5f;
-  TF_Tensor* b_tensor = TF_NewTensor(TF_FLOAT, (int64_t[]){1}, 1, &b_val, sizeof(b_val), NULL, NULL);
+  float * b_val = (float*)malloc(sizeof(float));
+  *b_val = 0.5f;
+  TF_Tensor* b_tensor = TF_NewTensor(TF_FLOAT, (int64_t[]){1}, 1, b_val, sizeof(b_val), NULL, NULL);
   TF_OperationDescription* db = TF_NewOperation(graph, "Const", "b");
   TF_SetAttrType(db, "dtype", TF_FLOAT);
   TF_SetAttrTensor(db, "value", b_tensor, status);
