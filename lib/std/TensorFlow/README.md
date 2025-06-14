@@ -220,7 +220,7 @@ Building operations is a step-by-step process:
   ```
   : Returns the TensorFlow library version string.
 * ```c
-  TF_GraphGetOpByName(TF_Graph* graph, const char* op_name)
+  TF_GraphOperationByName(TF_Graph* graph, const char* op_name)
   ```
   : Retrieves an operation by its name.
 * ```c
