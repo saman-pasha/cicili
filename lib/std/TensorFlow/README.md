@@ -363,9 +363,12 @@ int main() {
   TF_Session* sess = TF_NewSession(graph, opts, status);
 
   // Inputs
-  float xv = 2.0f, yv = 3.0f;
-  TF_Tensor* tx = TF_NewTensor(TF_FLOAT, (int64_t[]){1}, 1, &xv, sizeof(xv), NULL, NULL);
-  TF_Tensor* ty = TF_NewTensor(TF_FLOAT, (int64_t[]){1}, 1, &yv, sizeof(yv), NULL, NULL);
+  float * xv = (float*)malloc(sizeof(float));
+  float * yv = (float*)malloc(sizeof(float));
+  *xv = 2.0f;
+  *yv = 3.0f;
+  TF_Tensor* tx = TF_NewTensor(TF_FLOAT, (int64_t[]){1}, 1, xv, sizeof(xv), NULL, NULL);
+  TF_Tensor* ty = TF_NewTensor(TF_FLOAT, (int64_t[]){1}, 1, yv, sizeof(yv), NULL, NULL);
 
   TF_Output inputs[] = {{x,0}, {y,0}};
   TF_Tensor* input_vals[] = {tx, ty};
