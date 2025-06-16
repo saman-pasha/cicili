@@ -261,3 +261,6 @@
                                              (append path (if (listp name) name (list name)))))
                               #'base64:base64-encode)
                             :regex t))))
+
+(defun lvl-value (lvl)
+  (if (listp lvl) (car lvl) lvl))

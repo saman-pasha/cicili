@@ -99,3 +99,140 @@
       (TF_DeleteStatus status)
       )
   )
+
+
+;;;============================================================================
+;;; Filename: train_mlp_example.lisp
+;;; Purpose : A multi‐layer neural‐network training example in Cicili’s DSL
+;;;============================================================================
+
+(import "cicili_graph.lisp"   () ())   ; Defines Graph, Placeholder, Const, Variable, etc.
+(import "cicili_session.lisp" () ())   ; Defines session-run macro
+(import "cicili_dataset.lisp" () ())   ; Defines Dataset abstractions
+
+(source "train_mlp.c"
+  (:std #t :compile #t :link "-ltensorflow -lm -o train_mlp")
+
+  (include "cicili_graph.h")
+  (include "cicili_session.h")
+  (include "cicili_dataset.h")
+
+  (main
+    (let ((int    epochs     . 20)
+          (int    batch_size . 64)
+          (float  learning_rate . 0.001f))
+
+      ;;────────────────────────────────────────────────────────────
+      ;; 1) Build the model graph once
+      ;;────────────────────────────────────────────────────────────
+      (let ((Graph *g . #'(-> Graph new)))
+
+        ;; 1.1 Placeholders for inputs (flattened 28×28 images) and labels  
+        (-> g Placeholder x 
+             (type :dtype float) (shape (-1 784)))
+        (-> g Placeholder y_true 
+             (type :dtype float) (shape (-1 10)))
+
+        ;; 1.2 Variables: two dense layers’ weights & biases  
+        (-> g Variable W1 (shape (784 128)) 
+             (initializer random_normal :stddev 0.1f))
+        (-> g Variable b1 (shape (128)) 
+             (initializer zeros))
+        (-> g Variable W2 (shape (128 10)) 
+             (initializer random_normal :stddev 0.1f))
+        (-> g Variable b2 (shape (10)) 
+             (initializer zeros))
+
+        ;; 1.3 Forward pass  
+        (-> g MatMul    h1_lin (inputs x W1) (T float))
+        (-> g Add       h1_pre (inputs h1_lin b1))
+        (-> g Relu      h1     (inputs h1_pre))
+        (-> g MatMul    logits (inputs h1 W2) (T float))
+        (-> g Add       y_pred (inputs logits b2))
+
+        ;; 1.4 Loss & metrics  
+        (-> g SoftmaxCrossEntropyWithLogits xent 
+             (labels y_true) (logits logits))
+        (-> g Mean      loss (inputs xent) (axis (0)))
+        (-> g ArgMax    pred_label (inputs y_pred) (axis 1))
+        (-> g ArgMax    true_label (inputs y_true) (axis 1))
+        (-> g Equal     correct    (inputs pred_label true_label))
+        (-> g Cast      correct_f  (inputs correct) (DstT float))
+        (-> g Mean      accuracy   (inputs correct_f) (axis (0)))
+
+        ;; 1.5 Optimizer & training op  
+        (-> g AdamOptimizer opt 
+             (learning_rate learning_rate))
+        (-> g ComputeGradients grads 
+             (loss loss) (vars (W1 b1 W2 b2)))
+        (-> g ApplyGradients train_op 
+             (optimizer opt) (grads grads))
+
+        ;; finalize graph
+        (-> g Finalize)
+
+        ;;────────────────────────────────────────────────────────────
+        ;; 2) Initialize session & variables
+        ;;────────────────────────────────────────────────────────────
+        (session-run
+          :options nil
+          :graph   g
+          :targets ('{opt/init 0}  ;; run the Adam state‐init subgraph
+                    '{opt/apply_gradients 0})
+          :on-success '(lambda () 
+                         (format #t "Variables and optimizer initialized.~%")) )
+
+        ;;────────────────────────────────────────────────────────────
+        ;; 3) Training loop
+        ;;────────────────────────────────────────────────────────────
+        (for ((int epoch . 1)) (<= epoch epochs) ((++ epoch))
+          ;; create a streaming MNIST batch‐iterator
+          (let ((Dataset *ds . #'(-> MNIST new "train" batch_size)))
+            (for ((int step . 0)) (< step ($ ds num_batches)) ((++ step))
+              (let ((float *bx . #'(-> ds nextX))) 
+                    (float *by . #'(-> ds nextY)))
+                (session-run
+                  :graph   g
+                  :inputs  (('{x       0} (:dtype float :shape ((batch_size) 784) :data bx :size (* batch_size 784 (sizeof float))))
+                            ('{y_true  0} (:dtype float :shape ((batch_size) 10)  :data by :size (* batch_size 10  (sizeof float))))
+                           )
+                  :outputs ('{loss      0} '{accuracy 0})
+                  :targets ('{train_op  0})
+                  :on-success '(lambda ((float *lst) (float *acc))
+                                 (when (== (% step 100) 0)
+                                   (format #t 
+                                     "Epoch %2d Step %4d: loss=%f acc=%f~%" 
+                                     epoch step (nth 0 lst) (nth 0 acc))))
+                  :on-failure '(lambda ((Status *st))
+                                 (format #f "ERROR: %s~%" (-> st message)))))))
+          
+          ;; end of epoch –– do a quick validation
+          (let ((Dataset *vds . #'(-> MNIST new "validation" batch_size))
+                (float sum_loss . 0.0f)
+                (float sum_acc  . 0.0f)
+                (int   n        . 0))
+            (for ((int step . 0)) (< step ($ vds num_batches)) ((++ step))
+              (let ((float *vx . #'(-> vds nextX)))
+                    (float *vy . #'(-> vds nextY)))
+                (session-run
+                  :graph   g
+                  :inputs  (('{x       0} (:dtype float :shape ((batch_size) 784) :data vx :size (* batch_size 784 (sizeof float))))
+                            ('{y_true  0} (:dtype float :shape ((batch_size) 10)  :data vy :size (* batch_size 10  (sizeof float))))
+                           )
+                  :outputs ('{loss      0} '{accuracy 0})
+                  :on-success '(lambda ((float *lst) (float *acc))
+                                 (set sum_loss (+ sum_loss (nth 0 lst)))
+                                 (set sum_acc  (+ sum_acc  (nth 0 acc)))
+                                 (++ n))
+                  :on-failure '(lambda ((Status *st))
+                                 (format #f "ERROR: %s~%" (-> st message))))))  
+            (format #t 
+              "*** Epoch %2d complete: val_loss=%f, val_acc=%f~%" 
+              epoch
+              (/ sum_loss n)
+              (/ sum_acc  n))))  
+
+        ;;────────────────────────────────────────────────────────────
+        ;; 4) Cleanup & exit
+        ;;────────────────────────────────────────────────────────────
+        (return 0))))
