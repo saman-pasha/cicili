@@ -274,8 +274,7 @@
       ('|@TYPEDEF|(compile-typedef    spec 0   globals)) 
       ('|@GUARD|  (compile-guard      spec 0   globals)) 
       ('|@GHOST|  (compile-guard      spec 0   globals t)) 
-      ('|@MODULE| (compile-module     spec 0   globals))
-      ('|@GENERIC|(compile-generic    spec 0   globals)) ; down here for inside macros 
+      ('|@MODULE| (compile-module     spec 0   globals)) ; down here for inside macros 
       ('|@CALL|   (compile-call       spec -1  globals))
       ('|@BODY|   (compile-body       spec -1  globals spec))
       (t (error (format nil "expr syntax error ~A" spec))))))
@@ -321,7 +320,7 @@
         do (progn
              (case (construct form)
              ('|@ASSIGN| (compile-assignment form (1+ lvl) globals))
-             ('|@CALL|   (compile-call       form (1+ lvl) globals))
+             ('|@CALL|   (compile-call       form (if (= lvl -1) -1 (1+ lvl)) globals))
              ('|@LET|    (compile-let        form (1+ lvl) globals parent-spec))
              ('|@LETN|   (compile-let        form (1+ lvl) globals parent-spec t))
              ('|@BLOCK|  (compile-block      form (1+ lvl) globals))
@@ -764,7 +763,6 @@
 		           ('|@GUARD|    (compile-guard        in-spec lvl globals nil :nested t))
 		           ('|@GHOST|    (compile-guard        in-spec lvl globals t :nested t))
 		           ('|@MODULE|   (compile-module       in-spec lvl globals))
-		           ('|@GENERIC|  (compile-generic      in-spec lvl globals))
 		           (otherwise    (compile-form         in-spec lvl globals)
                                  (output "~%"))))
 	         (inners spec))
