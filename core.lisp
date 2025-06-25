@@ -246,8 +246,20 @@
     (return-from replace-args<
       (loop for arg in args
             when (or (symbolp arg) (> (length arg) 0))
-            collect (str:replace-all (car nv) (uiop:native-namestring (cadr nv))
-                                     (if (symbolp arg) (symbol-value arg) arg))))))
+            collect (str:replace-all
+                        "[^/]+?/\\.\\./" "" 
+                        (str:replace-all
+                            "[^/]+?/\\.\\./" "" 
+                            (str:replace-all
+                                "[^/]+?/\\.\\./" "" 
+                                (str:replace-all
+                                    "[^/]+?/\\.\\./" "" 
+                                    (str:replace-all (car nv) (uiop:native-namestring (cadr nv))
+                                                     (if (symbolp arg) (symbol-value arg) arg))
+                                    :regex t)
+                                :regex t)
+                            :regex t)
+                        :regex t)))))
 
 (defun free-name (path name)
   ;; (when (listp name) (error (format nil "wrong object name inside module: ~A ~A" path name)))

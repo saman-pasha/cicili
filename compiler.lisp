@@ -166,18 +166,6 @@
                                                (push (list (elt matchesDecl 0) (elt matchesDecl 1)) object-fld)
                                            ))))))))
                           ))
-                        ;; iterate over ast lines
-                        ;; (with-input-from-string (out-stream (get-output-stream-string stdout))
-                        ;;   (do ((s (read-line out-stream nil nil) (read-line out-stream nil nil)))
-                        ;;       ((eql s nil))
-                        ;;     (if reached-translation-unit
-                        ;;         (if reached-file
-                        ;;             (display "1>" s #\NewLine)  
-                        ;;             (when (str:containsp file s)
-                        ;;               (setq reached-file t)
-                        ;;               (display "d>" s #\NewLine)))
-                        ;;         (when (str:containsp "TranslationUnitDecl" s) (setq reached-translation-unit t)))
-                        ;;     ))
                         ;; compile ast
                         (when (key-eq tname '|source|)
                           (push (make-hash-table :test 'equal) *ast-lines*)

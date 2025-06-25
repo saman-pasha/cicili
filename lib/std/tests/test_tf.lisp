@@ -47,6 +47,9 @@
                         (DESTRUCTURING-BIND (pname &REST args) def
                           `(TF_Operation * ,pname . #'(Operation ,name ,status status_callback ,@def))))
                     opers))
+     ,(WHEN status-callback
+        `(if (!= (TF_GetCode ,status) TF_OK)
+             (,status-callback ,(SYMBOL-NAME name) ,status)))
      ,name))
                
 (generic __TENSOR_G_ (TY)
@@ -56,7 +59,7 @@
                  (return ptr)))
          )
 
-(source "tf_test.c" (:std #t :compile #t :link "-L{$CWD} tf_test.o -ltensorflow.2.16.2 -o tf_test")
+(source "tf_test.c" (:std #t :compile #t :link "-L{$CWD} tf_test.o -l:libtensorflow_cc.so.2 -o tf_test")
         (include <tensorflow/c/c_api.h>)
 
         (__TENSOR_G_ float)
@@ -68,6 +71,7 @@
                 (TF_Status * status . #'(TF_NewStatus))                
                 (auto gr . #'(Graph status
                                     '(lambda ((const char * name) (TF_Status * status))
+                                      (format #t "ggg")
                                       (format #t "%s status: %s\n" name (TF_Message status))) 
                                     gr
                                     (x Placeholder (type :dtype float))
@@ -78,17 +82,20 @@
                                                               (sizeof b_data)
                                                               :deallocator
                                                               '(lambda ((void * data) (size_t size) (void * arg))
-                                                                (format #t "deallocator: %f\n" (cof (cast (float *) data) ))
-                                                                (free data)))))
+                                                                (format #t "deGGGHHHH")
+                                                                (format #t "deallocator: %f\n" (cof (cast (float *) data)))
+                                                                (free data)
+                                                                (format #t "deGGG")))))
                                     (mul Mul (input '{ x 0 })   (input '{ y 0 }) (type :T float))
                                     (add Add (input '{ mul 0 }) (input '{ b 0 }) (type :T float)))))
 
+            (format #t "fff")
             (let ((float xv . 2.0f)
                   (float yv . 3.0f)
                   (TF_Tensor ** outputs)
                   (TF_SessionOptions * opts . #'(TF_NewSessionOptions))
                   (TF_Session * sess . #'(TF_NewSession gr opts status)))
-              
+
               (TF_SessionRun sess nil
                              (cast (TF_Output []) '{
                                    '{ (TF_GraphOperationByName gr "gr_x_Placeholder") 0 }

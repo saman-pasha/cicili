@@ -86,12 +86,12 @@ struct __ciciliS_ByteVector_m_push_ ByteVector_m_push (ByteVector * this , bytev
       { /* cicili#Let139 */
         size_t newLen  = ((this ->len ) +  1 );
         { /* cicili#Let141 */
-          ByteVector * newSlice  = ByteVector_s_newEmpty(newLen );
-          memcpy ((newSlice ->arr ), (this ->arr ), (sizeof(bytevector_elem_t) *  (this ->len ) ));
-          (newSlice ->len ) = newLen ;
-          (newSlice ->arr )[(this ->len )] = val ;
+          ByteVector * newVector  = ByteVector_s_newEmpty(newLen );
+          memcpy ((newVector ->arr ), (this ->arr ), (sizeof(bytevector_elem_t) *  (this ->len ) ));
+          (newVector ->len ) = newLen ;
+          (newVector ->arr )[(this ->len )] = val ;
           ByteVector_m_free(this );
-          return ((struct __ciciliS_ByteVector_m_push_){ newSlice , true });
+          return ((struct __ciciliS_ByteVector_m_push_){ newVector , true });
         }
       }
     } /* cicili#Block137 */
@@ -113,10 +113,10 @@ struct __ciciliS_ByteVector_m_pop_ ByteVector_m_pop (ByteVector * this ) {
 }
 ByteVector * ByteVector_m_shrink (ByteVector * this ) {
   { /* cicili#Let152 */
-    ByteVector * newSlice  = ByteVector_s_newEmpty((this ->len ));
-    memcpy ((newSlice ->arr ), (this ->arr ), (sizeof(bytevector_elem_t) *  (this ->len ) ));
+    ByteVector * newVector  = ByteVector_s_newEmpty((this ->len ));
+    memcpy ((newVector ->arr ), (this ->arr ), (sizeof(bytevector_elem_t) *  (this ->len ) ));
     ByteVector_m_free(this );
-    return newSlice ;
+    return newVector ;
   }
 }
 ByteVector * ByteVector_m_insert (ByteVector * this , size_t index , bytevector_elem_t val ) {
@@ -124,13 +124,13 @@ ByteVector * ByteVector_m_insert (ByteVector * this , size_t index , bytevector_
     size_t safeIndex  = (((index  >  (this ->len ) )) ? (this ->len ) : index );
     if ((this ->len ) ==  (this ->cap ) ) 
       { /* cicili#Let158 */
-        ByteVector * newSlice  = ByteVector_s_newEmpty(((this ->len ) +  1 ));
-        memcpy ((newSlice ->arr ), (this ->arr ), (sizeof(bytevector_elem_t) *  safeIndex  ));
-        (newSlice ->arr )[safeIndex ] = val ;
-        memcpy (((newSlice ->arr ) +  (safeIndex  +  1 ) ), ((this ->arr ) +  safeIndex  ), (sizeof(bytevector_elem_t) *  ((this ->len ) -  safeIndex  ) ));
-        (newSlice ->len ) = ((this ->len ) +  1 );
+        ByteVector * newVector  = ByteVector_s_newEmpty(((this ->len ) +  1 ));
+        memcpy ((newVector ->arr ), (this ->arr ), (sizeof(bytevector_elem_t) *  safeIndex  ));
+        (newVector ->arr )[safeIndex ] = val ;
+        memcpy (((newVector ->arr ) +  (safeIndex  +  1 ) ), ((this ->arr ) +  safeIndex  ), (sizeof(bytevector_elem_t) *  ((this ->len ) -  safeIndex  ) ));
+        (newVector ->len ) = ((this ->len ) +  1 );
         ByteVector_m_free(this );
-        return newSlice ;
+        return newVector ;
       }
     else 
       { /* cicili#Block161 */
@@ -172,7 +172,7 @@ size_t ByteVector_m_indexOf (ByteVector * this , bytevector_elem_t val ) {
   return (this ->len );
 }
 size_t ByteVector_m_lastIndexOf (ByteVector * this , bytevector_elem_t val ) {
-  for (size_t i  = ((this ->len ) -  1 ); (0 >=  i  ); (--i )) {
+  for (size_t i  = ((this ->len ) -  1 ); (i  >=  0 ); (--i )) {
     if ((this ->arr )[i ] ==  val  ) 
       { /* cicili#Block190 */
         return i ;

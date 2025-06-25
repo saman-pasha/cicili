@@ -4,32 +4,32 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
-#include "../Slice/cicili_string.h"
+#include "./../Vector/cicili_string.h"
 void printString (String * str ) {
   fprintf (stdout , "the str: %s\n", String_m_deref(str ));
 }
 void printChars (const char * cstr ) {
   fprintf (stdout , "cstr: %s\n", cstr );
 }
-static void __ciciliL_188 (String ** a ) {
+static void __ciciliL_193 (String ** a ) {
   String_m_free((*a ));
 }
-static void __ciciliL_190 (String ** b ) {
+static void __ciciliL_195 (String ** b ) {
   String_m_free((*b ));
 }
-static void __ciciliL_192 (String ** trait1 ) {
+static void __ciciliL_197 (String ** trait1 ) {
   String_m_free((*trait1 ));
 }
-static void __ciciliL_194 (String ** trait2 ) {
+static void __ciciliL_199 (String ** trait2 ) {
   String_m_free((*trait2 ));
 }
-static void __ciciliL_196 (String ** trait3 ) {
+static void __ciciliL_201 (String ** trait3 ) {
   String_m_free((*trait3 ));
 }
 int main () {
-  { /* cicili#Let187 */
-    String * a  __attribute__((__cleanup__(__ciciliL_188 ))) = String_s_new("hello");
-    String * b  __attribute__((__cleanup__(__ciciliL_190 ))) = String_s_new("world");
+  { /* cicili#Let192 */
+    String * a  __attribute__((__cleanup__(__ciciliL_193 ))) = String_s_new("hello");
+    String * b  __attribute__((__cleanup__(__ciciliL_195 ))) = String_s_new("world");
     String * formatted  = String_s_newFormat("value: %d, %s", 42, "test");
     String * helloWorld  = String_m_concat(a , b );
     String * upper  = String_m_toUpper(a );
@@ -44,9 +44,9 @@ int main () {
     size_t index  = String_m_find(a , 'l');
     bool sw  = String_m_startsWith(a , prefix );
     bool ew  = String_m_endsWith(helloWorld , suffix );
-    String * trait1  __attribute__((__cleanup__(__ciciliL_192 ))) = char_s_toString("toString trait 1 call");
-    String * trait2  __attribute__((__cleanup__(__ciciliL_194 ))) = char_s_toString("toString trait 2 call");
-    String * trait3  __attribute__((__cleanup__(__ciciliL_196 )));
+    String * trait1  __attribute__((__cleanup__(__ciciliL_197 ))) = char_s_toString("toString trait 1 call");
+    String * trait2  __attribute__((__cleanup__(__ciciliL_199 ))) = char_s_toString("toString trait 2 call");
+    String * trait3  __attribute__((__cleanup__(__ciciliL_201 )));
     char * fromString1  = String_s_tochar(trait1 );
     char * fromString2 ;
     trait3  = char_s_toString("toString trait 3 call");

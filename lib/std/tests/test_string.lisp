@@ -1,8 +1,8 @@
 
 (source "string_test.c"
-  (:std #t :compile #t :link "-L{$CWD} -L{$CWD}../Slice -lcicili_string.lo string_test.lo -o string_test")
+  (:std #t :compile #t :link "-L{$CWD}../Vector -lcicili_string.lo string_test.lo -o string_test")
 
-        (include "../Slice/cicili_string.h")
+        (include "./../Vector/cicili_string.h")
 
         (func printString ((String * str)) ; accepts both (char *) and (String *)
               (format #t "the str: %s\n" (-> str deref)))

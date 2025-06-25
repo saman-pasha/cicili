@@ -1,21 +1,21 @@
-;;;; Cicili standard safe Slice struct macro (IN-PACKAGE :CL-USER)
+;;;; Cicili standard safe Vector struct macro (IN-PACKAGE :CL-USER)
 
-;;; Slice template macro
-;;; name: Slice name
-;;; element Slice element type
-;;; step growth amount added to the capacity every time Slice gets full
+;;; Vector template macro
+;;; name: Vector name
+;;; element Vector element type
+;;; step growth amount added to the capacity every time Vector gets full
 ;;; header-body custom functionalities in header file
 ;;; source-body custom functionalities in source file
 
-(DEFMACRO SliceScope (&REST body)
+(DEFMACRO VectorScope (&REST body)
   `(LET ((header-file  (STRING-DOWNCASE (FORMAT NIL "~Acicili_~A.h" path name)))
          (guard-label  (INTERN (STRING-UPCASE (FORMAT NIL "CICILI_~A_H_" name))))
          (growth-step  (INTERN (STRING-UPCASE (FORMAT NIL "~A_GROWTH_STEP" name))))
          (elem-type    (INTERN (STRING-DOWNCASE (FORMAT NIL "~A_elem_t" name)))))
      ,@body))
 
-(DEFMACRO BasicSliceHeader (path name element step include-body members-body header-body)
-  (SliceScope
+(DEFMACRO BasicVectorHeader (path name element step include-body members-body header-body)
+  (VectorScope
       `(ghost
            (guard ,guard-label
 
@@ -37,15 +37,15 @@
 
              ;; Cicili struct constructors begin with new keyword and aren't methods
              ;; They don't get this pointer and their out type always is pointer of the struct
-             ;; Slice constructors
+             ;; Vector constructors
              (decl) (func (,name . newEmpty)      ((size_t len)))
              (decl) (func (,name . newFromArray)  ((const ,elem-type * arr) (size_t len)))
              (decl) (func (,name . newCopy)       ((const ,name * other)))
 
              ;; C compatibility
-             (decl) (method (,name . deref)       () (out ,@(IF (LISTP element) element (LIST element)) *))
+             (decl) (method (,name . deref)       () (out ,@(IF (LISTP element) element (LIST element *))))
              
-             ;; Collection of useful Slice methods
+             ;; Collection of useful Vector methods
              (decl) (method (,name . clone)       () (out ,name *))
              (decl) (method (,name . cloneArray)  () (out ,elem-type *))
              (decl) (method (,name . appendNew)   ((const ,name * other)) (out ,name *))
@@ -60,8 +60,8 @@
              
              ,@header-body))))
 
-(DEFMACRO BasicSliceSource (path name element step source-body)
-  (SliceScope
+(DEFMACRO BasicVectorSource (path name element step source-body)
+  (VectorScope
       `(ghost
            (include <ctype.h> <stdarg.h>)
 
@@ -72,7 +72,7 @@
                                            (/ len ,growth-step))))
                  (return '{ len (* capLen ,growth-step) })))
 
-         ;; Creates a new Slice instance with allocated cap size
+         ;; Creates a new Vector instance with allocated cap size
          (func (,name . newEmpty) ((size_t len))
                (let ((auto cap . #'(-> ,name calcCap len))
                      (,name * slice . #'(malloc (+ (sizeof ,name) ($ cap size)))))
@@ -80,20 +80,20 @@
                  (set ($ slice cap) ($ cap size))
                  (return slice)))
 
-         ;; Initializes a new Slice and hard copy of array memory allocated
+         ;; Initializes a new Vector and hard copy of array memory allocated
          (func (,name . newFromArray) ((const ,elem-type * arr) (size_t len))
                (let ((,name * slice . #'(-> ,name newEmpty len)))
                  (memcpy ($ slice arr) arr (* (sizeof ,elem-type) len))
                  (return slice)))
 
-         ;; Initializes a hard copy of a Slice memory allocated
+         ;; Initializes a hard copy of a Vector memory allocated
          (func (,name . newCopy) ((const ,name * other))
                (let ((,name * slice . #'(-> ,name newEmpty ($ other len))))
                  (memcpy ($ slice arr) ($ other arr) (* (sizeof ,elem-type) ($ other len)))
                  (return slice)))
 
          ;; returns address of first item for using as C array (element *)
-         (method (,name . deref) () (out ,@(IF (LISTP element) element (LIST element)) *)
+         (method (,name . deref) () (out ,@(IF (LISTP element) element (LIST element *)))
                  (return ($ this arr)))
 
          ;; Uses newCopy constructor but as a method
@@ -127,22 +127,22 @@
                          (return '{ this #f }))
                        (return '{ (-> this appendNew other) #t }))))
 
-         ;; Frees the Slice instance
+         ;; Frees the Vector instance
          (method (,name . free) ()
                  (free this))
 
-         ;; Pushes a new element to the end of the Slice. Grows if needed.
+         ;; Pushes a new element to the end of the Vector. Grows if needed.
          (method (,name . push) ((,elem-type val)) (out '{ (,name * out) (bool newp) })
                  (if (== ($ this len) ($ this cap))
                      ;; Need to reallocate with more capacity
                      (block
                          (let ((size_t newLen . #'(+ ($ this len) 1)))
-                           (let ((,name * newSlice . #'(-> ,name newEmpty newLen)))
-                             (memcpy ($ newSlice arr) ($ this arr) (* (sizeof ,elem-type) ($ this len)))
-                             (set ($ newSlice len) newLen)
-                             (set (nth ($ this len) ($ newSlice arr)) val)
+                           (let ((,name * newVector . #'(-> ,name newEmpty newLen)))
+                             (memcpy ($ newVector arr) ($ this arr) (* (sizeof ,elem-type) ($ this len)))
+                             (set ($ newVector len) newLen)
+                             (set (nth ($ this len) ($ newVector arr)) val)
                              (-> this free)
-                             (return '{ newSlice #t }))))
+                             (return '{ newVector #t }))))
                      ;; Enough capacity, insert directly
                      (block
                          (set (nth ($ this len) ($ this arr)) val)
@@ -159,28 +159,28 @@
 
          ;; Shrinks allocated memory to current length, freeing unused capacity.
          (method (,name . shrink) () (out ,name *)
-                 (let ((,name * newSlice . #'(-> ,name newEmpty ($ this len))))
-                   (memcpy ($ newSlice arr) ($ this arr) (* (sizeof ,elem-type) ($ this len)))
+                 (let ((,name * newVector . #'(-> ,name newEmpty ($ this len))))
+                   (memcpy ($ newVector arr) ($ this arr) (* (sizeof ,elem-type) ($ this len)))
                    (-> this free)
-                   (return newSlice)))
+                   (return newVector)))
 
          ;; Inserts val at index. If index > len, appends to the end. Grows if needed.
          (method (,name . insert) ((size_t index) (,elem-type val)) (out ,name *)
                  (let ((size_t safeIndex . #'(? (> index ($ this len)) ($ this len) index)))
                    (if (== ($ this len) ($ this cap))
-                       ;; Grow Slice
-                       (let ((,name * newSlice . #'(-> ,name newEmpty (+ ($ this len) 1))))
+                       ;; Grow Vector
+                       (let ((,name * newVector . #'(-> ,name newEmpty (+ ($ this len) 1))))
                          ;; Copy before index
-                         (memcpy ($ newSlice arr) ($ this arr) (* (sizeof ,elem-type) safeIndex))
+                         (memcpy ($ newVector arr) ($ this arr) (* (sizeof ,elem-type) safeIndex))
                          ;; Insert element
-                         (set (nth safeIndex ($ newSlice arr)) val)
+                         (set (nth safeIndex ($ newVector arr)) val)
                          ;; Copy after index
-                         (memcpy (+ ($ newSlice arr) (+ safeIndex 1))
+                         (memcpy (+ ($ newVector arr) (+ safeIndex 1))
                            (+ ($ this arr) safeIndex)
                            (* (sizeof ,elem-type) (- ($ this len) safeIndex)))
-                         (set ($ newSlice len) (+ ($ this len) 1))
+                         (set ($ newVector len) (+ ($ this len) 1))
                          (-> this free)
-                         (return newSlice))
+                         (return newVector))
                        ;; No grow needed
                        (block
                            (memmove (+ ($ this arr) (+ safeIndex 1))
@@ -203,20 +203,20 @@
 
          ,@source-body)))
 
-(DEFMACRO BasicSlice (path name element step include-body members-body header-body source-body)
-  (SliceScope
+(DEFMACRO BasicVector (path name element step include-body members-body header-body source-body)
+  (VectorScope
       `(cicili
            (header ,header-file () ;; header file
-                   (BasicSliceHeader ,path ,name ,element ,step ,include-body ,members-body ,header-body))
+                   (BasicVectorHeader ,path ,name ,element ,step ,include-body ,members-body ,header-body))
          
          ;; source file
          (source ,(STRING-DOWNCASE (FORMAT NIL "cicili_~A~A.c" path name)) (:std #t :compile #t :link #f)
                  (include ,header-file)
-                 (BasicSliceSource ,path ,name ,element ,step ,source-body)))))
+                 (BasicVectorSource ,path ,name ,element ,step ,source-body)))))
 
-(DEFMACRO Slice (path name element step include-body members-body header-body source-body)
-  (SliceScope
-      `(BasicSlice ,path ,name ,element ,step
+(DEFMACRO Vector (path name element step include-body members-body header-body source-body)
+  (VectorScope
+      `(BasicVector ,path ,name ,element ,step
                    ( ; includes
                     ,@include-body)
                    ( ; members
@@ -228,7 +228,7 @@
                     (decl) (method (,name . count)       ((,elem-type val)) (out size_t))
                     ,@header-body)
                    ( ; source
-                    ;; Returns true if the Slice contains the given value
+                    ;; Returns true if the Vector contains the given value
                     (method (,name . contains) ((,elem-type val)) (out bool)
                             (for ((size_t i . 0)) (< i ($ this len)) ((++ i))
                                  (when (== (nth i ($ this arr)) val) (return #t)))

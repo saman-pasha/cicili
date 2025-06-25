@@ -1,8 +1,10 @@
 
-(source "./tests/bytevector_test.c"
-  (:std #t :compile #t :link "-L{$CWD} cicili_bytevector.lo bytevector_test.lo -o ./tests/bytevector_test")
+(source "bytevector_test.c"
+  (:std #t
+        :compile #t
+        :link "-L{$CWD}../Vector -lcicili_bytevector.o bytevector_test.o -o bytevector_test")
 
-        (include "cicili_bytevector.h")
+        (include "./../Vector/cicili_bytevector.h")
 
         (main
             (let
