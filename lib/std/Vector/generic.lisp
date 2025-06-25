@@ -1,10 +1,10 @@
-(import "slice.lisp" NIL NIL)
+(import "vector.lisp" NIL NIL)
 
 (IN-PACKAGE :CL-USER)
 
-(DEFMACRO GenericSlice (path name element step include-body members-body header-body source-body)
-  (SliceScope
-      `(Slice ,path ,name ,element ,step
+(DEFMACRO GenericVector (path name element step include-body members-body header-body source-body)
+  (VectorScope
+      `(Vector ,path ,name ,element ,step
               ( ; includes
                ,@include-body)
               ( ; members
@@ -12,7 +12,7 @@
               ( ; header
                ,@header-body)
               ( ; source
-               (generic __GENERIC_SLICE_G_ (TY)
+               (generic __GENERIC_VECTOR_G_ (TY)
                         
                         (method (,name . (<> borrow TY)) ((size_t index)
                                                           (func borrower ((size_t index) (const TY * value))))

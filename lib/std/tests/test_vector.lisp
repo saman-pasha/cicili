@@ -1,15 +1,15 @@
 
-(source "./tests/slice_test.c"
-  (:std #t :compile #t :link "-L{$CWD} cicili_intslice.lo slice_test.lo -o ./tests/slice_test")
+(source "vector_test.c"
+  (:std #t :compile #t :link "-L{$CWD}../Vector -lcicili_intvector.o vector_test.lo -o vector_test")
 
-        (include "cicili_intslice.h")
+        (include "./../Vector/cicili_intvector.h")
 
         (main
             (let
-                ((@IntSlice * s1 . #'(-> IntSlice newEmpty 3))
-                 (@IntSlice * s2 . #'(-> IntSlice newFromArray (cast (int []) '{ 1 2 3 }) 3))
-                 (IntSlice * appended . #'(-> s2 appendNew s2))
-                 (IntSlice * clone . #'(-> s2 clone))
+                ((@IntVector * s1 . #'(-> IntVector newEmpty 3))
+                 (@IntVector * s2 . #'(-> IntVector newFromArray (cast (int []) '{ 1 2 3 }) 3))
+                 (IntVector * appended . #'(-> s2 appendNew s2))
+                 (IntVector * clone . #'(-> s2 clone))
                  (bool contains2 . #'(-> s2 contains 2))
                  (size_t idx . #'(-> s2 indexOf 2))
                  (size_t lastIdx . #'(-> appended lastIndexOf 2))

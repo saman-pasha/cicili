@@ -4,11 +4,11 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
-#include "cicili_borrowableslice.h"
-void BorrowableSlice_m_borrow_int (BorrowableSlice * this , size_t index , void (*borrower) (size_t index , const int * value )) {
+#include "cicili_borrowablevector.h"
+void BorrowableVector_m_borrow_int (BorrowableVector * this , size_t index , void (*borrower) (size_t index , const int * value )) {
   borrower (index , ((const int *)(&(this ->arr )[index ])));
 }
-void BorrowableSlice_m_iterBorrow_int (BorrowableSlice * this , void (*borrower) (size_t index , const int * value )) {
+void BorrowableVector_m_iterBorrow_int (BorrowableVector * this , void (*borrower) (size_t index , const int * value )) {
   { /* cicili#Let109 */
     const typeof((this ->arr )[0]) * item  = (this ->arr );
     for (int index  = 0; (index  <  (this ->len ) ); (++item ), (++index )) {
@@ -16,10 +16,10 @@ void BorrowableSlice_m_iterBorrow_int (BorrowableSlice * this , void (*borrower)
     } 
   }
 }
-void BorrowableSlice_m_borrowMut_int (BorrowableSlice * this , size_t index , void (*borrower) (size_t index , int * value )) {
+void BorrowableVector_m_borrowMut_int (BorrowableVector * this , size_t index , void (*borrower) (size_t index , int * value )) {
   borrower (index , ((int *)(&(this ->arr )[index ])));
 }
-void BorrowableSlice_m_iterBorrowMut_int (BorrowableSlice * this , void (*borrower) (size_t index , int * value )) {
+void BorrowableVector_m_iterBorrowMut_int (BorrowableVector * this , void (*borrower) (size_t index , int * value )) {
   { /* cicili#Let119 */
     typeof((this ->arr )[0]) * item  = (this ->arr );
     for (int index  = 0; (index  <  (this ->len ) ); (++item ), (++index )) {
@@ -31,8 +31,8 @@ void BorrowableSlice_m_iterBorrowMut_int (BorrowableSlice * this , void (*borrow
 static void __ciciliL_128 (int *** arr ) {
   free (((void *)(*arr )));
 }
-static void __ciciliL_130 (BorrowableSlice ** slice ) {
-  BorrowableSlice_m_free((*slice ));
+static void __ciciliL_130 (BorrowableVector ** vector ) {
+  BorrowableVector_m_free((*vector ));
 }
 static void __ciciliL_134 (size_t index , int * value ) {
   (*value ) = 3;
@@ -49,11 +49,11 @@ static void __ciciliL_145 (size_t index , const int * value ) {
 int main () {
   { /* cicili#Let127 */
     int ** arr  __attribute__((__cleanup__(__ciciliL_128 ))) = ((int **)calloc (6, sizeof(int)));
-    BorrowableSlice * slice  __attribute__((__cleanup__(__ciciliL_130 ))) = BorrowableSlice_s_newFromArray(((void **)arr ), 6);
-    BorrowableSlice_m_iterBorrowMut_int(slice , __ciciliL_134 );
-    BorrowableSlice_m_iterBorrow_int(slice , __ciciliL_137 );
-    BorrowableSlice_m_borrowMut_int(slice , 2, __ciciliL_142 );
-    BorrowableSlice_m_borrow_int(slice , 2, __ciciliL_145 );
+    BorrowableVector * vector  __attribute__((__cleanup__(__ciciliL_130 ))) = BorrowableVector_s_newFromArray(((void **)arr ), 6);
+    BorrowableVector_m_iterBorrowMut_int(vector , __ciciliL_134 );
+    BorrowableVector_m_iterBorrow_int(vector , __ciciliL_137 );
+    BorrowableVector_m_borrowMut_int(vector , 2, __ciciliL_142 );
+    BorrowableVector_m_borrow_int(vector , 2, __ciciliL_145 );
   }
 }
 

@@ -86,12 +86,12 @@ struct __ciciliS_String_m_push_ String_m_push (String * this , string_elem_t val
       { /* cicili#Let139 */
         size_t newLen  = ((this ->len ) +  1 );
         { /* cicili#Let141 */
-          String * newSlice  = String_s_newEmpty(newLen );
-          memcpy ((newSlice ->arr ), (this ->arr ), (sizeof(string_elem_t) *  (this ->len ) ));
-          (newSlice ->len ) = newLen ;
-          (newSlice ->arr )[(this ->len )] = val ;
+          String * newVector  = String_s_newEmpty(newLen );
+          memcpy ((newVector ->arr ), (this ->arr ), (sizeof(string_elem_t) *  (this ->len ) ));
+          (newVector ->len ) = newLen ;
+          (newVector ->arr )[(this ->len )] = val ;
           String_m_free(this );
-          return ((struct __ciciliS_String_m_push_){ newSlice , true });
+          return ((struct __ciciliS_String_m_push_){ newVector , true });
         }
       }
     } /* cicili#Block137 */
@@ -113,10 +113,10 @@ struct __ciciliS_String_m_pop_ String_m_pop (String * this ) {
 }
 String * String_m_shrink (String * this ) {
   { /* cicili#Let152 */
-    String * newSlice  = String_s_newEmpty((this ->len ));
-    memcpy ((newSlice ->arr ), (this ->arr ), (sizeof(string_elem_t) *  (this ->len ) ));
+    String * newVector  = String_s_newEmpty((this ->len ));
+    memcpy ((newVector ->arr ), (this ->arr ), (sizeof(string_elem_t) *  (this ->len ) ));
     String_m_free(this );
-    return newSlice ;
+    return newVector ;
   }
 }
 String * String_m_insert (String * this , size_t index , string_elem_t val ) {
@@ -124,13 +124,13 @@ String * String_m_insert (String * this , size_t index , string_elem_t val ) {
     size_t safeIndex  = (((index  >  (this ->len ) )) ? (this ->len ) : index );
     if ((this ->len ) ==  (this ->cap ) ) 
       { /* cicili#Let158 */
-        String * newSlice  = String_s_newEmpty(((this ->len ) +  1 ));
-        memcpy ((newSlice ->arr ), (this ->arr ), (sizeof(string_elem_t) *  safeIndex  ));
-        (newSlice ->arr )[safeIndex ] = val ;
-        memcpy (((newSlice ->arr ) +  (safeIndex  +  1 ) ), ((this ->arr ) +  safeIndex  ), (sizeof(string_elem_t) *  ((this ->len ) -  safeIndex  ) ));
-        (newSlice ->len ) = ((this ->len ) +  1 );
+        String * newVector  = String_s_newEmpty(((this ->len ) +  1 ));
+        memcpy ((newVector ->arr ), (this ->arr ), (sizeof(string_elem_t) *  safeIndex  ));
+        (newVector ->arr )[safeIndex ] = val ;
+        memcpy (((newVector ->arr ) +  (safeIndex  +  1 ) ), ((this ->arr ) +  safeIndex  ), (sizeof(string_elem_t) *  ((this ->len ) -  safeIndex  ) ));
+        (newVector ->len ) = ((this ->len ) +  1 );
         String_m_free(this );
-        return newSlice ;
+        return newVector ;
       }
     else 
       { /* cicili#Block161 */
@@ -172,7 +172,7 @@ size_t String_m_indexOf (String * this , string_elem_t val ) {
   return (this ->len );
 }
 size_t String_m_lastIndexOf (String * this , string_elem_t val ) {
-  for (size_t i  = ((this ->len ) -  1 ); (0 >=  i  ); (--i )) {
+  for (size_t i  = ((this ->len ) -  1 ); (i  >=  0 ); (--i )) {
     if ((this ->arr )[i ] ==  val  ) 
       { /* cicili#Block190 */
         return i ;

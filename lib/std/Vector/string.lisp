@@ -1,10 +1,10 @@
-(import "slice.lisp" NIL NIL)
+(import "vector.lisp" NIL NIL)
 
 (IN-PACKAGE :CL-USER)
 
 (DEFMACRO String (path name element step include-body members-body header-body source-body)
-  (SliceScope
-      `(Slice ,path ,name ,element ,step
+  (VectorScope
+      `(Vector ,path ,name ,element ,step
               ( ; includes
                ,@include-body)
               
