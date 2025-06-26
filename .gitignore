@@ -172,3 +172,7 @@ lib/std/tests/cicili_borrowableslice.c.run2.c
 lib/std/tests/cicili_borrowableslice.c.run3.c
 lib/std/tests/.\#tf_test.lisp
 .\#target.lisp
+lib/std/tests/genericvector_test
+lib/std/tests/vector_test
+lib/std/tests/tf_test
+*.c~
