@@ -14,7 +14,8 @@
   `(DEFMACRO ,macro (&REST args)
      (LET ((types ',types)
            (body (COPY-LIST ',body)))
-       (MAPCAN #'(LAMBDA (a g) (NSUBST a g body)) args types)
+       (DOTIMES (i (LENGTH args))
+         (NSUBST (NTH i args) (NTH i types) body))
        `(ghost ,@body))))
 
 (DEFMACRO shared-func-name (struct method)
