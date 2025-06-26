@@ -43,7 +43,11 @@
              (decl) (func (,name . newCopy)       ((const ,name * other)))
 
              ;; C compatibility
-             (decl) (method (,name . deref)       () (out ,@(IF (LISTP element) element (LIST element *))))
+             (decl) (method (,name . deref)       () (out ,@(IF (LISTP element)
+                                                                (MULTIPLE-VALUE-BIND (const type modifier const-ptr variable array-def)
+                                                                    (CICILI:SPECIFY-TYPE< element)
+                                                                  (IF modifier element (LIST element '*)))
+                                                                (LIST element '*))))
              
              ;; Collection of useful Vector methods
              (decl) (method (,name . clone)       () (out ,name *))
@@ -93,7 +97,11 @@
                  (return slice)))
 
          ;; returns address of first item for using as C array (element *)
-         (method (,name . deref) () (out ,@(IF (LISTP element) element (LIST element *)))
+         (method (,name . deref) () (out ,@(IF (LISTP element)
+                                               (MULTIPLE-VALUE-BIND (const type modifier const-ptr variable array-def)
+                                                   (CICILI:SPECIFY-TYPE< element)
+                                                 (IF modifier element (LIST element '*)))
+                                               (LIST element '*)))
                  (return ($ this arr)))
 
          ;; Uses newCopy constructor but as a method

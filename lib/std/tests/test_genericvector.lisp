@@ -1,12 +1,11 @@
 (import "../Vector/generic.lisp")
 
-(GenericVector "" BorrowableVector (void *) 16 NIL NIL NIL NIL)
-
 (source "genericvector_test.c" (:std #t :compile #t
-                                    :link "-L{$CWD} cicili_borrowablevector.o genericvector_test.o -o genericvector_test")
-        (include "cicili_borrowablevector.h")
+                                     :link "-L{$CWD}../Vector -lcicili_borrowablevector.o genericvector_test.o -o genericvector_test")
 
-        (__GENERIC_VECTOR_G_ int)
+        (include "./../Vector/cicili_borrowablevector.h")
+
+        (__GENERIC_VECTOR_G_ BorrowableVector int)
         
         (main
             (let ((int ** arr . #'(alloc 6 (sizeof int)))
