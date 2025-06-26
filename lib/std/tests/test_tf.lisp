@@ -59,7 +59,7 @@
                  (return ptr)))
          )
 
-(source "tf_test.c" (:std #t :compile #t :link "-L{$CWD} tf_test.o -l:libtensorflow_cc.so.2 -o tf_test")
+(source "tf_test.c" (:std #t :compile #t :link "-L{$CWD} tf_test.o -ltensorflow.2.19.0 -o tf_test")
         (include <tensorflow/c/c_api.h>)
 
         (__TENSOR_G_ float)
@@ -92,7 +92,7 @@
             (format #t "fff")
             (let ((float xv . 2.0f)
                   (float yv . 3.0f)
-                  (TF_Tensor ** outputs)
+                  (TF_Tensor * outputs [1])
                   (TF_SessionOptions * opts . #'(TF_NewSessionOptions))
                   (TF_Session * sess . #'(TF_NewSession gr opts status)))
 
