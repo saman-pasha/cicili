@@ -84,6 +84,22 @@ At its core, Cicili embraces:
 3. **Native Compilation & Linking:**  
    Once the macros have generated the C code, a standard C compiler is used to build the final binary. FastCGI integration, as demonstrated in the sample web server code, lets you deploy lightweight and responsive applications.
 
+# What Makes Cicili Unique?
+
+Unlike general-purpose macro systems in languages like Clojure or Racket, Cicili is:
+
+- **Purpose-built for C**  
+  Its output is actual `.c`/`.h` code, not just interpreted runtime templates.
+
+- **Multi-target aware**  
+  You define headers, sources, and compile settings in a single macro form.
+
+- **Lightweight and portable**  
+  No runtime, no virtual machine—just macro-expansion into raw C.
+
+- **Blends C and Lisp**  
+  It’s a perfect middle ground: low-level power, high-level ergonomics.  
+
 ## Contributing
 
 Contributions to Cicili are welcome! Whether you have ideas for new features, improvements to the macro system, or advanced optimizations, please check our contribution guidelines and open an issue or pull request on the project repository.
