@@ -9,7 +9,7 @@
           ;; refers to Employee outside any module because of starts with '/'
           (decl) (method (Employee . print2) ((/Employee * emp)))
 
-          (var long varAAA)
+          (static) (var long varAAA)
 
           (enum SHAPES
             (Square)
@@ -32,7 +32,7 @@
                   (module c
                           (decl) (func aFunc ((int x) (int y)) (out '{(int a) (int b)})) ; inside module a/c
 
-                          (var long varAAA)
+                          (static) (var long varAAA)
 
                           (module d
                                   (struct Employee
@@ -66,7 +66,7 @@
         (method (Employee . print2) ((/Employee * emp)) ; refers to Employee outside any module because of starts with '/'
                 (printf "same emp id is: %d, %d\n" ($ this id) ($ emp id)))
 
-        (var long varAAA . 567)
+        (static) (var long varAAA . 567)
         
         (module a
                 ;;;; / resolution sign refer to type inside a
@@ -83,7 +83,7 @@
                         (func aFunc ((int x) (int y)) (out '{(int a) (int b)}) ; inside module c
                               (return '{ ('(lambda ((int g)) (out int) (return (+ 6 g))) x) y }))
 
-                        (var long varAAA . 876)
+                        (static) (var long varAAA . 876)
                         
                         (module d
                                 (method (Employee . print) ()
@@ -103,8 +103,6 @@
 
 (source "main.c" (:std #t :compile #t :link "-L{$CWD} -lmodule.o -lmain.o -o main -v")
         (include "module.h")
-        
-        ;; (typedef (struct a) aA)
         
         (func main ()
               (let ((int n . 3)

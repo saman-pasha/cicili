@@ -176,3 +176,4 @@ lib/std/tests/genericvector_test
 lib/std/tests/vector_test
 lib/std/tests/tf_test
 *.c~
+test/module/.\#module.lisp
