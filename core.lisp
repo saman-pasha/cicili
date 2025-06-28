@@ -20,6 +20,8 @@
 (defparameter *module-spec* nil)
 ;; current module spec during module compiling
 (defparameter *module-path* nil)
+;; all object names inside modules
+(defvar *module-names* (make-hash-table :test 'equal))
 ;; current variable spec during type inline struct compiling
 (defparameter *variable-spec* nil)
 ;; current function spec during function compiling
@@ -41,7 +43,7 @@
 ;; stores names symbols of all loaded macros 
 (defvar *macros* (make-hash-table :test 'equal))
 ;; whether cicili is during macro expantion
-(defparameter *macroexpand* (make-hash-table :test 'equal))
+(defparameter *macroexpand* nil)
 
 ;; adds a macro to macros list *macros*
 (defun add-macro (macro symbol)
@@ -262,17 +264,30 @@
                         :regex t)))))
 
 (defun free-name (path name)
-  ;; (when (listp name) (error (format nil "wrong object name inside module: ~A ~A" path name)))
-  (intern
-   (format nil "cicili~A"
-           (str:replace-all "[=+/]" "_"
-                            (sha1:sha1-base64
-                                (format nil "~{~A~}"
-                                        (map 'list #'(lambda (x) (if (typep x 'sp) (symbol-name (name x))
-                                                                     (symbol-name x)))
-                                             (append path (if (listp name) name (list name)))))
-                              #'base64:base64-encode)
-                            :regex t))))
+  (let* ((r-name (format nil "~{~A~^/~}"
+                         (map 'list #'(lambda (x) (if (typep x 'sp) (symbol-name (name x))
+                                                      (symbol-name x)))
+                              (append path (if (listp name) name (list name))))))
+         (m-name (intern
+                  (format nil "cicili~A"
+                          (str:replace-all "[=+/]" "_"
+                                           (sha1:sha1-base64
+                                               r-name
+                                             #'base64:base64-encode)
+                                           :regex t)))))
+    (setf (gethash m-name *module-names*) r-name)
+    m-name))
+
+(defun replace-module-names (msg)
+  (cl-ppcre:regex-replace-all
+      "cicili[\\d\\w_]{28}" msg
+      (lambda (&rest match)
+        (let* ((m-name (str:substring (nth 3 match) (nth 4 match) (nth 0 match)))
+               (r-name (gethash (intern m-name) *module-names*)))
+          (if r-name
+              r-name
+              m-name)
+          ))))
 
 (defun lvl-value (lvl)
   (if (listp lvl) (car lvl) lvl))
