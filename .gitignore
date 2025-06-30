@@ -177,3 +177,7 @@ lib/std/tests/vector_test
 lib/std/tests/tf_test
 *.c~
 test/module/.\#module.lisp
+test/cpp/main.dSYM/Contents/Info.plist
+test/cpp/main.dSYM/Contents/Resources/DWARF/main
+test/cpp/main.dSYM/Contents/Resources/Relocations/x86_64/main.yml
+test/cpp/main

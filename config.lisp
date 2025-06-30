@@ -23,18 +23,38 @@
 ;;;; os specific toolset
 (defparameter *configs*
   (let ((os (software-type)))
-    (cond 
+    (cond
+      
       ((string= os "Linux") (list
-                             'dumper   nil ; '("-Xclang" "-ast-dump")
+                             ;; C
+                             'dumper   '("-Xclang" "-ast-dump")
                              'compiler `("libtool" "--tag=CC" "--mode=compile"
                                                    "clang" "-g" "-O" "-ferror-limit=1000" *verbose*)
-                             'linker   `("libtool" "--tag=CC" "--mode=link" "clang" "-g" "-O" *verbose*)))
+                             'linker   `("libtool" "--tag=CC" "--mode=link" "clang" "-g" "-O" *verbose*)
+                             ;; C++
+                             'cpp-dumper   '("-Xclang" "-ast-dump")
+                             'cpp-compiler `("libtool" "--tag=CXX" "--mode=compile"
+                                                       "clang" "-g" "-O" "-ferror-limit=1000" *verbose*)
+                             'cpp-linker   `("libtool" "--tag=CXX" "--mode=link" "clang" "-g" "-O" *verbose*)))
+      
       ((string= os "Darwin") (list
+                              ;; C
                               'dumper   '("-Xclang" "-ast-dump")
                               'compiler `("glibtool" "--tag=CC" "--mode=compile"
                                                      "clang" "-g" "-O" "-ferror-limit=1000" *verbose*)
-                              'linker   `("glibtool" "--tag=CC" "--mode=link" "clang" "-g" "-O" *verbose*)))
+                              'linker   `("glibtool" "--tag=CC" "--mode=link" "clang" "-g" "-O" *verbose*)
+                              ;; C++
+                              'cpp-dumper   '("-Xclang" "-ast-dump")
+                              'cpp-compiler `("glibtool" "--tag=CXX" "--mode=compile"
+                                                         "clang" "-g" "-O" "-ferror-limit=1000" *verbose*)
+                              'cpp-linker   `("glibtool" "--tag=CXX" "--mode=link" "clang" "-g" "-O" *verbose*)))
+      
       (t (list
-          'dumper   nil ; '("-Xclang" "-ast-dump")
+          ;; C
+          'dumper   '("-Xclang" "-ast-dump")
           'compiler `("libtool" "--tag=CC" "--mode=compile" "clang" "-g" "-O" *verbose*)
-          'linker   `("libtool" "--tag=CC" "--mode=link" "clang" "-g" "-O" *verbose*))))))
+          'linker   `("libtool" "--tag=CC" "--mode=link" "clang" "-g" "-O" *verbose*)
+          ;; C++
+          'cpp-dumper   '("-Xclang" "-ast-dump")
+          'cpp-compiler `("libtool" "--tag=CXX" "--mode=compile" "clang" "-g" "-O" *verbose*)
+          'cpp-linker   `("libtool" "--tag=CXX" "--mode=link" "clang" "-g" "-O" *verbose*))))))

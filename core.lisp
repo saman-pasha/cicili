@@ -1,13 +1,13 @@
 (in-package :cicili)
 
-(defvar *output* t)
-(defvar *unaries* '(|+| |-| |++| |1+| |--| |1-| |~| |not| |cof| |aof| |symbolize| |stringize|))
+(defvar *unaries* '(|+| |-| |++| |1+| |--| |1-| |~| |not| |cof| |aof| |stringize|))
 (defvar *operators* '(|+| |-| |*| |/| |%| |==| |!=| |>| |<| |>=| |<=| |^| |<<| |>>| |xor| |and| |or| |bitand| |bitor|))
 (defvar *assignments* '(|+=| |-=| |*=| |/=| |%=| |<<=| |>>=|))
 (defvar *modifiers* '(|&| |*| |**| |***|))
 (defvar *trait-regex* "'(?:\\w+?\\s)?(\\w+?)(?:\\[\\d*\\]|\\s\\*)'.*'(?:\\w+?\\s)?(\\w+?)(?:\\[\\d*\\]|\\s\\*)'")
 (defvar *globals* (make-hash-table :test 'eql))
 
+(defvar *output* t)
 ;; current target spec during target specifying
 (defparameter *target-spec* nil)
 ;; storing file name during compiling
@@ -44,6 +44,8 @@
 (defvar *macros* (make-hash-table :test 'equal))
 ;; whether cicili is during macro expantion
 (defparameter *macroexpand* nil)
+;; whether target uses :cpp key #t
+(defparameter *cpp* nil)
 
 ;; adds a macro to macros list *macros*
 (defun add-macro (macro symbol)
