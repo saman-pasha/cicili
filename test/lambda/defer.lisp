@@ -8,7 +8,7 @@
 
 (source "defer.c" (:std #f
                    :compile #t
-                   :link "-v -o defer_main -L{$CWD} -ldefer.o")
+                   :link "-o defer_main -L{$CWD} -ldefer.o")
         (include <stdio.h> <stdlib.h> <string.h>)
         (include "defer.h")
 
@@ -22,9 +22,8 @@
                     (Employee * empOther . #'(alloc (sizeof Employee))) ; alloc has auto free deferment at the end of scope
                     (defer #t) ; means only automatic free deferment at the end of scope
                     (Employee * empOzzi . #'(malloc (sizeof Employee))) ; 
-                    (char * msg . "a message from defer execution\n"))
-                
-                (var FILE * file . #'(fopen "deferral.txt" "w+"))
+                    (char * msg . "a message from defer execution\n")
+                    (FILE * file . #'(fopen "deferral.txt" "w+")))
 
                 (format file "first line from main execution\n")
                 

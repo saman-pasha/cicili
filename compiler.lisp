@@ -40,14 +40,15 @@
                (add-macro (symbol-name symb) symb)))
             ((or (key-eq tname '|header|) (key-eq tname '|source|))
 
-             (unless *only-link* (setq ir (specify-target target)))
-             (setf *target-spec* ir)
-             (setf *target-file* (file-namestring (nth 1 target)))
-             (setf *cpp* (and (getf (nth 2 target) ':|cpp|) (key-eq (getf (nth 2 target) ':|cpp|) '|true|)))
-
 	         (cond ((or (key-eq tname '|source|) (key-eq tname '|header|)) ; target
                     (setf *target-header* (key-eq tname '|header|))
                     (setf *target-source* (key-eq tname '|source|))
+
+                    (unless *only-link* (setq ir (specify-target target)))
+                    (setf *target-spec* ir)
+                    (setf *target-file* (file-namestring (nth 1 target)))
+                    (setf *cpp* (and (getf (nth 2 target) ':|cpp|) (key-eq (getf (nth 2 target) ':|cpp|) '|true|)))
+
                     (let ((file (nth 1 target))
                           (globals nil)
                           (reached-translation-unit nil)
@@ -55,7 +56,8 @@
                           (stdout nil)
                           (stderr nil)
                           (has-error t))
-                      ;; clear ir
+                      
+                      ;; clear IR
                       (setq *ast-lines* '())
                       (push (make-hash-table :test 'equal) *ast-lines*)
                       (setq *ast-run* 0)
@@ -72,13 +74,14 @@
 
                         ;; clear GC
                         (when (> (length *ast-lines*) 2)
-                          (clrhash (nth 2 *ast-lines*))
+                          ;; (clrhash (nth 2 *ast-lines*))
+                          ;; (display "ddd" *ast-lines* #\Newline)
                           (setf (nth 2 *ast-lines*) (make-hash-table :test 'equal)))
                         
 	                    (setq globals (create-globals ir))
                         (setq *ast-run* (1+ run))
                         (when (and *debug-runs* (key-eq tname '|source|)) ;; --separate
-                          (setq file (format nil "~A.run~D.~A" file *ast-run* (pathname-type file))))
+                          (setq file (format nil "~A.run~D.~A" (nth 1 target) *ast-run* (pathname-type (nth 1 target)))))
                         (setq stdout  (make-string-output-stream))
                         (setq stderr  (make-string-output-stream))
                         (setf *gensym-counter* 100)
@@ -117,15 +120,20 @@
                               (ast-key "")
                               (object-sym nil)
                               (object-val nil)
-                              (object-fld '()))
+                              (object-fld '())
+                              (s-unit (ppcre:create-scanner
+                                          "(^[\\| ]*?[\\|`]-)([\\w<>]+)(?:\\s.+?<(.+?):(\\d+)(?::(\\d+))?[,>])?"))
+                              (s-func   (ppcre:create-scanner "\\s(\\w+?)\\s'(.+?)'"))
+                              (s-record (ppcre:create-scanner "(struct|union)\\s(\\w+?)\\sdefinition"))
+                              (s-field  (ppcre:create-scanner "\\s(\\w+?)\\s('.+')"))
+                              )
+
                           (with-input-from-string (out-stream (get-output-stream-string stdout))
                             (do ((s (read-line out-stream nil nil) (read-line out-stream nil nil)))
                                 ((eql s nil))
                               (when *debug-dump* (display s #\NewLine))
 
-                              (let* ((result (multiple-value-list
-                                                 (ppcre:scan-to-strings
-                                                     "([\\||`]-)([\\w<>]+)(?:\\s.+?<(.+?):(\\d+)(?::(\\d+))?[,>])?" s)))
+                              (let* ((result (multiple-value-list (ppcre:scan-to-strings s-unit s)))
                                      (matches (cadr result))
                                      (elt-2 (if matches (str:replace-first "<invalid sloc>, " "" (elt matches 2)) nil)))
 
@@ -148,7 +156,7 @@
                                                        (parse-integer (elt matches 4)) :file d-file))))
                                 
                                 (when (and (> (length matches) 0) (elt matches 0))
-                                  (push (cons matches s) (getf (gethash ast-key (nth 0 *ast-lines*)) 'dump))
+                                  ;; (push (cons matches s) (getf (gethash ast-key (nth 0 *ast-lines*)) 'dump))
 
                                   (when (and object-sym (string/= (elt matches 1) "FieldDecl"))
                                     (setf (gethash object-sym *globals*) `(list ,@object-val ,(reverse object-fld)))
@@ -157,17 +165,14 @@
                                     (setq object-fld '()))
 
                                   (cond ((string= (elt matches 1) "FunctionDecl")
-                                         (let* ((resultDecl (multiple-value-list (ppcre:scan-to-strings
-                                                                                     "\\s(\\w+?)\\s'(.+?)'" s)))
+                                         (let* ((resultDecl (multiple-value-list (ppcre:scan-to-strings s-func s)))
                                                 (matchesDecl (cadr resultDecl)))
                                            (when (and (> (length matchesDecl) 0) (elt matchesDecl 0))
                                              (setf (gethash (intern (elt matchesDecl 0)) *globals*)
                                                    (list (elt matches 1) (elt matchesDecl 1) s)))))
                                         
                                         ((string= (elt matches 1) "RecordDecl")
-                                         (let* ((resultDecl (multiple-value-list
-                                                                (ppcre:scan-to-strings
-                                                                    "(struct|union)\\s(\\w+?)\\sdefinition" s)))
+                                         (let* ((resultDecl (multiple-value-list (ppcre:scan-to-strings s-record s)))
                                                 (matchesDecl (cadr resultDecl)))
                                            (when (and (> (length matchesDecl) 0) (elt matchesDecl 0))
                                              (setq object-sym (intern (elt matchesDecl 1)))
@@ -175,14 +180,12 @@
                                              )))
 
                                         ((string= (elt matches 1) "FieldDecl")
-                                         (let* ((resultDecl (multiple-value-list
-                                                                (ppcre:scan-to-strings
-                                                                    "\\s(\\w+?)\\s('.+')" s)))
+                                         (let* ((resultDecl (multiple-value-list (ppcre:scan-to-strings s-field s)))
                                                 (matchesDecl (cadr resultDecl)))
                                            (when (and (> (length matchesDecl) 0) (elt matchesDecl 0))
                                              (push (list (elt matchesDecl 0) (elt matchesDecl 1)) object-fld)
-                                             ))))))))
-                          ))
+                                             )))))))))
+                        )
 
                       ;; compile ast
                       (when (key-eq tname '|source|)

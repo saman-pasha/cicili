@@ -78,6 +78,7 @@
    (1 . nil)
    (1 . auto)
    (1 . size_t)
+   (1 . namespace)
    ))
 
 (defun cicili-add-keywords (face-name keyword-rules)
@@ -149,6 +150,10 @@
    (1 . import)
    (1 . letn)
    (1 . defer-let)
+   (1 . using)
+   (1 . $$)
+   (1 . =>)
+   (1 . t<>)
    ))
 
 (defun cicili-add-attributes (face-name keyword-rules)

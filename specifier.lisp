@@ -196,6 +196,7 @@
           ((> count$ 0) (free-name (map 'list #'intern (str:split "/" str-name)) nil))
           (t symbol))))
 
+;;; type part of any declaration
 (defun specify-typeof< (type)
   (if (atom type)
       (if (typep type 'sp)
@@ -207,6 +208,8 @@
         (cond ((or (key-eq '|struct| ty) (key-eq '|union| ty))
                (list ty (specify-name-with-module< (cadr type))))
               ((key-eq '|typeof| ty) (specify-typeof-expr type))
+              ((key-eq '|t<>| ty) (specify-expr type))
+              ((key-eq '$$ ty) (specify-expr type))
               ((and (null *function-spec*) *variable-spec* (key-eq 'QUOTE ty)) ; inline struct global var
                (let* ((sname (gensym "__ciciliS_"))
                       (struct-spec (specify-struct (append (list '|struct| sname) (cadr type)) '() :inline t)))
@@ -223,10 +226,11 @@
                  (list '|struct| (if *module-path* (free-name *module-path* sname) sname))))
               ((and *function-spec* (key-eq 'QUOTE ty)) ; inline struct inside function body
                (let* ((sname (gensym "__ciciliS_"))
-                      (struct-spec (specify-struct (append (list '|struct| sname) (cadr type)) '() :inline t)))
+                      (struct-spec (specify-struct (append (list '|struct| sname) (cadr type))
+                                     (list (list '|static|)) :inline t)))
                  (add-inner struct-spec *function-spec*)
                  (list '|struct| (if *module-path* (free-name *module-path* sname) sname))))
-              (t (error (format nil "syntax error ~A" type)))))))
+              (t (error (format nil "type syntax error ~A" type)))))))
 
 (defun specify-type< (desc &optional noVar)
   (let ((len (if (listp desc) (length desc) 1))
@@ -496,7 +500,14 @@
 	    (t (error (format nil "syntax error \"~A\"" def)))))
 
 (defun specify-code-expr (def)
-  (make-specifier nil '|@CODE| nil nil nil nil nil def '()))
+  (unless (= (length def) 2) (error (format nil "wrong code form ~A" def)))
+  (let ((pure (cadr def)))
+    (if (stringp pure)
+        (make-specifier nil '|@CODE| nil nil nil nil nil pure '())
+	    (if (key-eq (car pure) 'QUOTE)
+            (make-specifier nil '|@CODE| nil nil nil nil nil
+                            (loop for item in (cadr pure) collect (specify-expr item)) '())
+            (error (format nil "wrong code form ~A" def))))))
 
 (defun specify-list-expr (def)
   (make-specifier nil '|@LIST| nil nil nil nil nil (loop for item in def collect (specify-expr item)) '()))
@@ -584,6 +595,15 @@
     (setf (body method-var) (specify-list-expr (nthcdr 3 def)))
     method-var))
 
+(defun specify-=>-expr (def)
+  (when (< (length def) 3) (error (format nil "wrong access member function => form ~A" def)))
+  ;; (unless (is-symbol (nth 2 def)) (error (format nil "wrong access method name ~A" def)))
+  (let ((method-var (make-specifier (specify-expr (nth 1 def)) '|@=>| nil nil nil nil nil
+                                    ;; (specify-symbol-expr (nth 2 def)) '())))
+                                    (specify-expr (nth 2 def)) '())))
+    (setf (body method-var) (specify-list-expr (nthcdr 3 def)))
+    method-var))
+
 (defun specify-sizeof-expr (def)
   (when (< (length def) 2) (error (format nil "sizeof syntax error ~A" def)))
   (if (listp (second def))
@@ -608,7 +628,7 @@
         (t (let* ((func (car def))
                   (attributes '())
                   (macro (if (symbolp func) (gethash (symbol-name func) *macros*) nil)))
-	         (cond ((key-eq func '|code|)   (specify-code-expr (cadr def)))
+	         (cond ((key-eq func '|code|)   (specify-code-expr def))
                    ((key-eq func 'FUNCTION) (specify-expr      (cadr def)))
 		           ((key-eq func 'QUOTE)
                     (let ((quoted (cadr def)))
@@ -628,6 +648,7 @@
 		           ((key-eq func '|cast|)   (specify-cast-expr   def))
                    ((key-eq func '|$|)      (specify-$-expr      def)) ; member access operator
                    ((key-eq func '|->|)     (specify-->-expr     def)) ; method access operator
+                   ((key-eq func '|=>|)     (specify-=>-expr     def)) ; member function access operator
                    ((key-eq func '|sizeof|) (specify-sizeof-expr def))
                    ((key-eq func '|typeof|) (specify-typeof-expr def))
                    (*macroexpand*       ; inside macros, only during macro expantion
@@ -642,6 +663,7 @@
 		                     ((key-eq func '|auto|)     (push def attributes))
 		                     ((key-eq func '|extern|)   (push def attributes))
 		                     ((key-eq func '|resolve|)  (push def attributes))
+		                     ((key-eq func '|defer|)    (push def attributes))
 		                     ((key-eq func '|include|)
                               (let ((out-spec (specify-include     def attributes))) (setq attributes '()) out-spec))
                              ((key-eq func '|var|)
@@ -712,6 +734,7 @@
          (is-alloc    nil)
          (has-defer   nil)
 	     (type  (cdr def)))
+
     (dolist (attr attrs)
       (let ((name (car attr)))
 	    (cond ;; ((key-eq name '|auto|)     (setq is-auto t))
@@ -726,6 +749,7 @@
                          (setq has-defer t)
                          (error (format nil "wrong defer definition ~A, #t means pure free" attr))))))
 	          (t (error (format nil "unknown variable attribute ~A" attr))))))
+    
     (let ((tmp-variable-spec *variable-spec*)
           (var-spec (make-specifier nil '|@VAR| nil nil nil nil nil nil ()))) ; name and unique name further be replaced
       (setf *variable-spec* var-spec)
@@ -780,8 +804,6 @@
                                         ((key-eq '|**| modifier) '|***|)
                                         (t (error (format nil "not suitable for deferment"))))
                                      ,const-ptr ,ptr-name ,array)))
-                                 ,(remove nil `(var ,const ,typeof ,modifier ,const-ptr
-                                                  ,variable ,array . #'(cof ,ptr-name)))
                                  ,@has-defer))) attributes)))
           (setf (attrs var-spec) attributes)
           (setf *variable-spec* tmp-variable-spec)
@@ -796,12 +818,12 @@
                 ((atom    form)        (specify-atom-expr   form))
 	            (t (let ((func (car form)))
 	                 (cond ;; ((and (symbolp func) (macro-function func))
-                           ;;  (let ((expr (macroexpand def)))
-                           ;;    (display "AAAAAA" expr #\Newline)))
+                           ;;  (let ((expr (macroexpand def)))))
                            ((and (= (length form) 2) (find func *unaries*     :test #'key-eq))
                             (specify-unary-expr form))
 		                   ((and (= (length form) 3) (find func *assignments* :test #'key-eq))
                             (specify-assignment-expr form))
+		                   ((key-eq func '|var|)      (specify-variable      form '())) 
 		                   ((key-eq func '|let|)      (specify-let           form)) 
 		                   ((key-eq func '|letn|)     (specify-let           form t)) 
 		                   ((key-eq func '|block|)    (specify-block         form)) 
@@ -844,6 +866,8 @@
                          (error (format nil "wrong defer definition ~A, #t means pure free" type-desc))))))
               (t (multiple-value-bind (const typeof modifier const-ptr variable array value)
 		             (specify-type-value< type-desc)
+                   (when (key-eq typeof '|var|) (error (format nil "var keyword as a type ~A" type-desc)))
+
 		           (let ((attributes '())
                          (has-atsign (and (symbolp typeof) (equal (char (symbol-name typeof) 0) #\@))))
                      (when has-atsign (setq typeof (intern (str:replace-first "@" "" (symbol-name typeof)))))
@@ -1032,24 +1056,24 @@
       (specify-decl-name< name)))
 
 (defun specify-function (def attrs)
-  (let* ((is-static  nil)
+  (let* ((name (specify-function-name< (nth 1 def)))
+         (is-static  (if (key-eq name '|main|) t nil))
 	     (is-declare nil)
 	     (is-inline  nil)
 	     (is-extern  nil)
 	     (do-resolve nil)
-	     (name (specify-function-name< (nth 1 def)))
-         (is-method (if (key-eq (car def) '|method|) t nil))
+	     (is-method (if (key-eq (car def) '|method|) t nil))
          (is-shared (and (listp name) (not is-method)))
 	     (params (nth 2 def))
-	     (r-> (nth 3 def))
-	     (has-out (and (consp r->) (key-eq (car r->) '|out|)))
+	     (r-out (nth 3 def))
+	     (has-out (and (consp r-out) (key-eq (car r-out) '|out|)))
 	     (returns (if is-shared
                       (if (str:starts-with-p "new" (string-downcase (symbol-name (cdr name))))
                           (if has-out
                               (error (format nil "constructor has out: ~A" def))
                               (list '|out| (car name) '|*|))
-                          (if has-out r-> '(|out| |void|)))
-                      (if has-out r->
+                          (if has-out r-out '(|out| |void|)))
+                      (if has-out r-out
 		                  (if (key-eq name '|main|) '(|out| |int|) '(|out| |void|)))))
 	     (body (if has-out (nthcdr 4 def) (nthcdr 3 def)))
          (function-specifier nil))
@@ -1163,8 +1187,10 @@
     enum-specifier))
 
 (defun specify-struct (def attrs &key ((:nested is-nested) nil) ((:inline is-inline) nil))
-  (when (> (length attrs) 0) (error (format nil "wrong attributes ~A" attrs)))
-  (let* ((is-anonymous (or (= (length def) 1) (not (symbolp (nth 1 def)))))
+  (when (and is-nested (> (length attrs) 0)) (error (format nil "wrong attributes ~A" attrs)))
+  (let* ((is-static  nil)
+	     (is-declare nil)
+         (is-anonymous (or (= (length def) 1) (not (symbolp (nth 1 def)))))
 	     (name (specify-decl-name< (if is-anonymous
                                        (gensym "ciciliStruct")
                                        (if (and (listp (nth 1 def)) (key-eq (car (nth 1 def)) '<>))
@@ -1175,8 +1201,21 @@
     (when (and is-anonymous (not is-nested)) (error (format nil "only nested structs could be anonymous")))
     (when (and (not is-anonymous) is-nested) (error (format nil "nested structs should be anonymous")))
     (setf (anonymous struct-specifier) is-anonymous)
-    (let ((attributes '())
+
+    (dolist (attr attrs)
+      (let ((name (car attr)))
+	    (cond ((key-eq name '|static|)  (setq is-static  t))
+	          ((key-eq name '|decl|)    (setq is-declare t))
+	          (t (error (format nil "unknown struct attribute ~A" attr))))))
+
+    (let ((struct-attrs '())
+          (attributes '())
 	      (declares '()))
+
+      (when is-static  (push (cons '|static|  t) struct-attrs))
+	  (when is-declare (push (cons '|declare| t) struct-attrs))
+      (setf (attrs struct-specifier) struct-attrs)
+      
       (dolist (clause clauses)
 	    (if (consp clause)
 	        (let ((construct (car clause)))
@@ -1216,7 +1255,7 @@
     struct-specifier))
 
 (defun specify-union (def attrs &key ((:nested is-nested) nil))
-  (when (> (length attrs) 0) (error (format nil "wrong attributes ~A" attrs)))
+  (when (and is-nested (> (length attrs) 0)) (error (format nil "wrong attributes ~A" attrs)))
   (let* ((is-anonymous (or (= (length def) 1) (not (symbolp (nth 1 def)))))
 	     (name (specify-decl-name< (if is-anonymous (gensym "ciciliUnion") (nth 1 def))))
 	     (clauses (if is-anonymous (nthcdr 1 def) (nthcdr 2 def)))

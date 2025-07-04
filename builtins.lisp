@@ -76,7 +76,7 @@
 ;;; defers execution at end of current scope
 ;;; var list is lamda parameters and works to get and store this values or pointers to use in defer execution
 ;;; usage:
-;;; (defer ((FILE * file) (char * message))
+;;; (defer* ((FILE * file) (char * message))
 ;;;   (format file "%s\n" message)
 ;;;   (fclose file))
 (DEFMACRO defer* (var-list &REST body)
@@ -87,7 +87,7 @@
            ,@(MAP 'LIST #'(LAMBDA (var)
                             (MULTIPLE-VALUE-BIND (const type modifier const-ptr variable array-def)
                                 (CICILI:SPECIFY-TYPE< var)
-                              `(var ,@var . (FUNCTION ($ ,pname ,variable)))))
+                              `(var ,@var . (FUNCTION (-> ,pname ,variable)))))
                   var-list)
            ,@body)
        (var '(,@var-list) ,name . 

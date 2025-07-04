@@ -19,7 +19,7 @@
 ;; prints output of c compiler dumps
 (defparameter *debug-dump* nil)
 
-(format t "software type: ~S~%" (software-type))
+(format t "~&software type: ~S~%" (software-type))
 ;;;; os specific toolset
 (defparameter *configs*
   (let ((os (software-type)))
