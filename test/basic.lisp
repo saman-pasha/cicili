@@ -35,7 +35,7 @@
         ))
 
 (source "basic.c"
-        (:std #f :compile "-c basic.c -o basic.o -v" :link "-v -o basic_main -L{$CWD} -lbasic.o")
+        (:std #f :compile "-c basic.c -o basic.o" :link "-o basic_main -L{$CWD} -lbasic.o")
         
         (include <stdio.h> <stdlib.h> "basic.h")
 

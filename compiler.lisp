@@ -74,8 +74,7 @@
 
                         ;; clear GC
                         (when (> (length *ast-lines*) 2)
-                          ;; (clrhash (nth 2 *ast-lines*))
-                          ;; (display "ddd" *ast-lines* #\Newline)
+                          (clrhash (nth 2 *ast-lines*))
                           (setf (nth 2 *ast-lines*) (make-hash-table :test 'equal)))
                         
 	                    (setq globals (create-globals ir))

@@ -154,6 +154,7 @@
    (1 . $$)
    (1 . =>)
    (1 . t<>)
+   (1 . closure)
    ))
 
 (defun cicili-add-attributes (face-name keyword-rules)

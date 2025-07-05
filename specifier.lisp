@@ -226,8 +226,7 @@
                  (list '|struct| (if *module-path* (free-name *module-path* sname) sname))))
               ((and *function-spec* (key-eq 'QUOTE ty)) ; inline struct inside function body
                (let* ((sname (gensym "__ciciliS_"))
-                      (struct-spec (specify-struct (append (list '|struct| sname) (cadr type))
-                                     (list (list '|static|)) :inline t)))
+                      (struct-spec (specify-struct (append (list '|struct| sname) (cadr type)) '() :inline t)))
                  (add-inner struct-spec *function-spec*)
                  (list '|struct| (if *module-path* (free-name *module-path* sname) sname))))
               (t (error (format nil "type syntax error ~A" type)))))))
@@ -431,7 +430,7 @@
               (key-eq modifier '***))
       (setq status -5))
     (when noVar (unless (null variable) (setq status -6)))
-    (if (key-eq type '|func|)
+    (if (key-eq type '|func|) ; func type
         (progn
           (when (null array) (setq status -7))
           (setq array (list array)))
@@ -453,16 +452,19 @@
           ((and (listp l) (> (length desc) 2) (key-eq (nth (- (length desc) 2) desc) 'QUOTE)) ; ' list and lambda initializer
            (let* ((def (nthcdr (- (length desc) 2) desc))
                   (quoted (cadr def)))
-             (if (key-eq (car quoted) '|lambda|)
-                 (progn ; lambda initializer
-                   (multiple-value-bind (const type modifier const-ptr variable array)
-		               (specify-type< (without-last wl))
-		             (values const type modifier const-ptr variable array def)))
-                 (progn ; list initializer
-	               (setq l (nthcdr (- (length desc) 2) desc))
-		           (multiple-value-bind (const type modifier const-ptr variable array)
-		               (specify-type< (without-last wl))
-		             (values const type modifier const-ptr variable array l))))))
+             (cond ((key-eq (car quoted) '|lambda|) ; lambda initializer
+                    (multiple-value-bind (const type modifier const-ptr variable array)
+		                (specify-type< (without-last wl))
+		              (values const type modifier const-ptr variable array def)))
+                   ((key-eq (car quoted) '|closure*|) ; closure* initializer
+                    (multiple-value-bind (const type modifier const-ptr variable array)
+		                (specify-type< (without-last wl))
+		              (values const type modifier const-ptr variable array def)))
+                   (t ; list initializer
+	                (setq l (nthcdr (- (length desc) 2) desc))
+		            (multiple-value-bind (const type modifier const-ptr variable array)
+		                (specify-type< (without-last wl))
+		              (values const type modifier const-ptr variable array l))))))
 	      ((listp l) (specify-type< desc))
 	      (t (multiple-value-bind (const type modifier const-ptr variable array)
 	             (specify-type< wl)
@@ -632,12 +634,20 @@
                    ((key-eq func 'FUNCTION) (specify-expr      (cadr def)))
 		           ((key-eq func 'QUOTE)
                     (let ((quoted (cadr def)))
-                      (if (key-eq (car quoted) '|lambda|) ; lambda
-                          (let* ((lname (gensym "__ciciliL_"))
-                                 (func-spec (specify-function (append (list '|lambda| lname) (cdr quoted)) '())))
-                            (add-inner func-spec (if *function-spec* *function-spec* *variable-spec*))
-                            (specify-symbol-expr (if *module-path* (free-name *module-path* lname) lname)))
-                          (specify-list-expr quoted))))   ; list
+                      (cond ((key-eq (car quoted) '|lambda|) ; lambda
+                             (let* ((lname (gensym "__ciciliL_"))
+                                    (func-spec (specify-function (append (list '|lambda| lname) (cdr quoted)) '())))
+                               (add-inner func-spec (if *function-spec* *function-spec* *variable-spec*))
+                               (specify-symbol-expr (if *module-path* (free-name *module-path* lname) lname))))
+                            ((key-eq (car quoted) '|closure*|) ; closure*
+                             (display "CCCC" (caddr quoted) #\Newline)
+                             (let* ((struct-spec (specify-struct (cadr quoted) '() :nested t)))
+                               (add-inner struct-spec (if *function-spec* *function-spec* *variable-spec*))
+                               (specify-expr (caddr quoted))
+                               
+                                   ;; (specify-symbol-expr (if *module-path* (free-name *module-path* lname) lname))
+                                                   ))
+                            (t (specify-list-expr quoted)))))   ; list
 		           ((and (> (length def) 2) (key-eq func '\|) (key-eq (cadr def) '\|))
 		            (specify-operator-expr (push '\|\| (cddr def))))
 		           ((and (> (length def) 2) (key-eq func '\|)) (specify-operator-expr def))
@@ -817,8 +827,8 @@
                 ((key-eq  form '|NIL|) (specify-nil-expr))
                 ((atom    form)        (specify-atom-expr   form))
 	            (t (let ((func (car form)))
-	                 (cond ;; ((and (symbolp func) (macro-function func))
-                           ;;  (let ((expr (macroexpand def)))))
+	                 (cond ((find (char (symbol-name func) 0) "@#")
+		                    (specify-preprocessor form '()))
                            ((and (= (length form) 2) (find func *unaries*     :test #'key-eq))
                             (specify-unary-expr form))
 		                   ((and (= (length form) 3) (find func *assignments* :test #'key-eq))
