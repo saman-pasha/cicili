@@ -271,8 +271,8 @@
       ('|@LETN|   (compile-let        spec lvl globals spec t))
       ('|@BLOCK|  (compile-block      spec lvl globals spec t))
       ('|@PROGN|  (compile-progn      spec lvl globals))
-      ('|@INCLUDE|(compile-include    spec 0   globals)) 
-      ('|@VAR|    (compile-variable   spec 0   globals)) ; inside macros
+      ('|@INCLUDE|(compile-include    spec 0   globals)) ; inside macros 
+      ('|@VAR|    (compile-variable   spec 0   globals))
       ('|@FUNC|   (compile-function   spec 0   globals)) 
       ('|@METHOD| (compile-function   spec 0   globals)) 
       ('|@ENUM|   (compile-enum       spec 0   globals)) 

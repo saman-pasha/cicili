@@ -22,6 +22,14 @@
 ;;;; Date  : Jan 23, 2019
 ;;;; 
 
+(DEFMACRO Net (&KEY (name "net") (dtype float) (input '()) (hiddens '()) (output '()))
+  (LET* ((inputs  (IF (EQL (CAR input) 'QUOTE) (CDR input) (LIST input)))
+         (hiddens (CADR hiddens))
+         (outputs (IF (EQL (CAR output) 'QUOTE) (CDR output) (LIST output))))
+    (FORMAT T "Net: ~A~%" net)
+    
+    ))
+
 (source "mnist.cpp" (:cpp #t :std #f :compile #t :link #t)
 
         (include "tensorflow/cc/client/client_session.h")
@@ -36,15 +44,15 @@
         (using namespace std)
 
         ;; Adjustable Parameters
-        (@define VALIDATION_SIZE 5000) ; Size of the validation set.
-        (@define BATCH_SIZE 64)
-        (@define BATCHES_PER_EPOCHS 859) ; (55000 / BATCH_SIZE) = 859 max
-        (@define NUM_EPOCHS 10)
-        (@define EVAL_BATCH_SIZE 64)
-        (@define EVAL_FREQUENCY 100) ; Number of steps between evaluations.
-        (@define DECAY_RATE 0.95f)
-        (@define MOMENTUM 0.9f)
-        (@define BASE_LEARNING_RATE 0.01f)
+        (@define VALIDATION_SIZE 5000)     ; Size of the validation set.
+        (@define BATCH_SIZE 64)            ;
+        (@define BATCHES_PER_EPOCHS 859)   ; (55000 / BATCH_SIZE) = 859 max
+        (@define NUM_EPOCHS 10)            ;
+        (@define EVAL_BATCH_SIZE 64)       ;
+        (@define EVAL_FREQUENCY 100)       ; Number of steps between evaluations.
+        (@define DECAY_RATE 0.95f)         ;
+        (@define MOMENTUM 0.9f)            ;
+        (@define BASE_LEARNING_RATE 0.01f) ;
 
         ;; Not to change
         (@define IMAGE_SIZE 28)
@@ -78,11 +86,9 @@
 
         (main*
             (let ((Scope scope . #'(($$ Scope NewRootScope))))
-                  
               ;; 
               ;; Parse images and labels files into tensors
               ;; 
-              
               ;; Read file and decompress data
               (let ((auto inputs_contents . #'(ReadFile scope
                                                 ((t<> Const ($$ tensorflow tstring)) scope
@@ -106,16 +112,16 @@
                 
                 (if (=> status ok)
                     ;; inputs
-                    (let ((($$ std string) inputs_str . #'((=> (nth 0 outputs) (t<> scalar ($$ tensorflow tstring)))))
+                    (let ((($$ std string) inputs_str   . #'((=> (nth 0 outputs) (t<> scalar ($$ tensorflow tstring)))))
                           (const char * inputs_str_data . #'(=> inputs_str c_str))
-                          (float * inputs_data . #'(=> (=> inputs (t<> tensor float 4)) data))
-                          (int count . #'(* NUM_IMAGES IMAGE_SIZE IMAGE_SIZE NUM_CHANNELS)))
+                          (float * inputs_data          . #'(=> (=> inputs (t<> tensor float 4)) data))
+                          (int count                    . #'(* NUM_IMAGES IMAGE_SIZE IMAGE_SIZE NUM_CHANNELS)))
                       
                       (for ((int i . 0)) (< i count) ((1+ i))
                            (let ((float data . #'(cast uchar (cof (+ inputs_str_data INPUTS_HEADER_BYTES i)))))
                              (set data (/ (- data (/ PIXEL_DEPTH 2.0f)) PIXEL_DEPTH))
                              (set (nth i inputs_data) data)))
-
+                      
                       ;; labels
                       (let ((($$ std string) labels_str . #'((=> (nth 1 outputs) (t<> scalar ($$ tensorflow tstring)))))
                             (const char * labels_str_data . #'(=> labels_str c_str))
@@ -123,54 +129,59 @@
                         
                         (for ((int i . 0)) (< i NUM_IMAGES) ((1+ i))
                              (set (nth i labels_data) (cast uchar (cof (+ labels_str_data LABELS_HEADER_BYTES i)))))))
+                    
                     (block
                         (<< (LOG INFO) "Print: status: " status)
                       (return -1)))
 
                 (let ((auto rate . #'(Const scope '{ 0.1f }))
                       (int s1 . #'(* (($$ std pow) (/ IMAGE_SIZE 4) 2) 64))
+                      
                       (auto random_value . #'(closure ((const Scope & scope) (int rate))
                                                  '(lambda ((($$ std (t<> initializer_list int)) shape))
                                                    (return (Multiply scope (TruncatedNormal scope shape DT_FLOAT) rate)))))
+                      
                       (auto const_float . #'(closure ((const Scope & scope) (float rate . 0.1f))
                                                 '(lambda ((($$ std (t<> initializer_list int)) shape))
                                                   (return ((t<> Const float) scope rate (TensorShape '{ shpae }))))))
+
                       ;; Trainable variables
                       ;; Convolutional Net
                       ;; Gradient accum parameters start here
                       ;; Initialize variables
                       (auto net .
-                            #'(tf.Net
-                                  :name "mnist" :dtype float
-                                  :input  (Placeholder '{ BATCH_SIZE IMAGE_SIZE IMAGE_SIZE NUM_CHANNELS })
-                                  :vars   '{
-                                  (Variable '{ 5 5 NUM_CHANNELS 32 } (random_value '{ 5 5 NUM_CHANNELS 32 }))
-                                  (Variable '{ 32 }                  (=> (Tensor DT_FLOAT (TensorShape '{ 32 }))
-                                                                       (=> (t<> vec float) setZero)))
-                                  (Variable '{ 5 5 32 64 }           (random_value '{ 5 5 32 64 }))
-                                  (Variable '{ 64 }                  (const_float '{ 64 }))
-                                  (Variable '{ s1 512 }              (random_value '{ s1 512 }))
-                                  (Variable '{ 512 }                 (const_float '{ 512 }))
-                                  (Variable '{ 512 NUM_LABELS }      (random_value '{ 512 NUM_LABELS }))
-                                  (Variable '{ NUM_LABELS }          (const_float '{ NUM_LABELS })) }
-                                  :output (Placeholder :dtype int64 :shape '(BATCH_SIZE)))))
+                            #'(Net
+                               :name mnist :dtype float
+                               :input   (Placeholder inputs '(BATCH_SIZE IMAGE_SIZE IMAGE_SIZE NUM_CHANNELS))
+                               :hiddens '((Variable conv1_w '(5 5 NUM_CHANNELS 32) (random_value '(5 5 NUM_CHANNELS 32)))
+                                          (Variable conv1_b '(32)                  (=> (=> (Tensor
+                                                                                              DT_FLOAT (TensorShape '(32)))
+                                                                                        (t<> vec float))
+                                                                                    setZero))
+                                          (Variable conv2_w '(5 5 32 64)           (random_value '(5 5 32 64)))
+                                          (Variable conv2_b '(64)                  (const_float  '(64)))
+                                          (Variable fc1_w   '(s1 512)              (random_value '(s1 512)))
+                                          (Variable fc1_b   '(512)                 (const_float  '(512)))
+                                          (Variable fc2_w   '(512 NUM_LABELS)      (random_value '(512 NUM_LABELS)))
+                                          (Variable fc1_b   '(NUM_LABELS)          (const_float  '(NUM_LABELS))))
+                               :output  (Placeholder labels '(BATCH_SIZE) :dtype int64))))
 
                   )
                                                                     
-                (let ((auto model . #'(tf.Model :name "mnist" :dtype float 
-                                                :input-shape '(IMAGE_SIZE IMAGE_SIZE NUM_CHANNELS) :batch-size BATCH_SIZE
-                                                (Conv2D :filters 32 :kernel-size 5 :padding "same" :activation "relu")
-                                                (MaxPooling2D :pool-size '(2 2) :strides '(2 2) :padding "same")
-                                                (Conv2D :filters 32 :kernel-size 5 :padding "same" :activation "relu")
-                                                (MaxPooling2D :pool-size '(2 2) :strides '(2 2) :padding "same")
-                                                (Flatten)
-                                                (Dense 1024 :activation "relu")
-                                                (Dropout 0.4f)
-                                                (Dense 10 :activation "softmax"))))
+                ;; (let ((auto model . #'(tf.Model :name "mnist" :dtype float 
+                ;;                                 :input-shape '(IMAGE_SIZE IMAGE_SIZE NUM_CHANNELS) :batch-size BATCH_SIZE
+                ;;                                 (Conv2D :filters 32 :kernel-size 5 :padding "same" :activation "relu")
+                ;;                                 (MaxPooling2D :pool-size '(2 2) :strides '(2 2) :padding "same")
+                ;;                                 (Conv2D :filters 32 :kernel-size 5 :padding "same" :activation "relu")
+                ;;                                 (MaxPooling2D :pool-size '(2 2) :strides '(2 2) :padding "same")
+                ;;                                 (Flatten)
+                ;;                                 (Dense 1024 :activation "relu")
+                ;;                                 (Dropout 0.4f)
+                ;;                                 (Dense 10 :activation "softmax"))))
 
                   
                   
-                  )
+                ;;   )
 
                 
                        

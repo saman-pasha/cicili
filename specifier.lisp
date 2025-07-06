@@ -465,7 +465,10 @@
 		            (multiple-value-bind (const type modifier const-ptr variable array)
 		                (specify-type< (without-last wl))
 		              (values const type modifier const-ptr variable array l))))))
-	      ((listp l) (specify-type< desc))
+	      ((listp l) ; without default
+           (multiple-value-bind (const type modifier const-ptr variable array)
+               (specify-type< desc)
+             (values const type modifier const-ptr variable array nil)))
 	      (t (multiple-value-bind (const type modifier const-ptr variable array)
 	             (specify-type< wl)
 	           (values const type modifier const-ptr variable array l))))))
