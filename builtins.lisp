@@ -92,11 +92,16 @@
            ,@body)
        (var '(,@var-list) ,name . 
             '(,@(MAP 'LIST #'(LAMBDA (var)
-                                    (MULTIPLE-VALUE-BIND (const type modifier const-ptr variable array-def)
-                                        (CICILI:SPECIFY-TYPE< var)
-                                      variable))
-                          var-list))))))
+                               (MULTIPLE-VALUE-BIND (const type modifier const-ptr variable array-def)
+                                   (CICILI:SPECIFY-TYPE< var)
+                                 variable))
+                     var-list))))))
 
+;;; copies capture list to context, use pointer to keep access to context along the process
+;;; don't free pointers copied into context if the closure is alive
+;;; (closure (capture list)
+;;;     '(lambda (parameter list)
+;;;         body))   
 (DEFMACRO closure (var-list lambda)
   (LET* ((captures var-list)
          (name    (GENSYM "ciciliClosure"))
@@ -120,7 +125,6 @@
                     (IF (EQL (CAADDR lm) 'out)
                         (APPEND (LIST (CADDR lm)) vars (CDDDR lm))
                         (APPEND vars (CDDR lm))))))
-    (FORMAT T "RRRRR~A" (CAADDR (CADR lambda)))
     `'(closure* (struct ,@members (declare ,name))
        (progn
          (set ,name (cast (typeof ,name) '{ ,@values }))

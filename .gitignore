@@ -183,3 +183,4 @@ test/cpp/main.dSYM/Contents/Resources/Relocations/x86_64/main.yml
 test/cpp/main
 test/cpp/mnist.cpp.run1.cpp
 test/cpp/mnist.cpp.run2.cpp
+test/cpp/.\#mnist.lisp

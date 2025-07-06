@@ -129,9 +129,12 @@
 
                 (let ((auto rate . #'(Const scope '{ 0.1f }))
                       (int s1 . #'(* (($$ std pow) (/ IMAGE_SIZE 4) 2) 64))
-                      (auto random_value . (closure ((const Scope & scope) (int rate))
-                                               '(lambda ((($$ std (t<> initializer_list int)) shape))
-                                                 (return (Multiply scope (TruncatedNormal scope shape DT_FLOAT) rate)))))
+                      (auto random_value . #'(closure ((const Scope & scope) (int rate))
+                                                 '(lambda ((($$ std (t<> initializer_list int)) shape))
+                                                   (return (Multiply scope (TruncatedNormal scope shape DT_FLOAT) rate)))))
+                      (auto const_float . #'(closure ((const Scope & scope) (float rate . 0.1f))
+                                                '(lambda ((($$ std (t<> initializer_list int)) shape))
+                                                  (return ((t<> Const float) scope rate (TensorShape '{ shpae }))))))
                       ;; Trainable variables
                       ;; Convolutional Net
                       ;; Gradient accum parameters start here
@@ -142,14 +145,14 @@
                                   :input  (Placeholder '{ BATCH_SIZE IMAGE_SIZE IMAGE_SIZE NUM_CHANNELS })
                                   :vars   '{
                                   (Variable '{ 5 5 NUM_CHANNELS 32 } (random_value '{ 5 5 NUM_CHANNELS 32 }))
-                                  (Variable '{ 32 } (=> (Tensor DT_FLOAT (TensorShape '{ 32 }))
-                                                      (=> (t<> vec float) setZero)))
-                                  (Variable '{ 5 5 32 64 } (random_value '{ 5 5 32 64 }))
-                                  (Variable '{ 64 } ((t<> Const float) scope 0.1f (TensorShape '{ 64 })))
-                                  (Variable '{ s1 512 } (random_value '{ s1 512 }))
-                                  (Variable '{ 512 } ((t<> Const float) scope 0.1f (TensorShape '{ 512 })))
-                                  (Variable '{ 512 NUM_LABELS } (random_value '{ 512 NUM_LABELS }))
-                                  (Variable '{ NUM_LABELS } ((t<> Const float) scope 0.1f (TensorShape '{ NUM_LABELS }))) }
+                                  (Variable '{ 32 }                  (=> (Tensor DT_FLOAT (TensorShape '{ 32 }))
+                                                                       (=> (t<> vec float) setZero)))
+                                  (Variable '{ 5 5 32 64 }           (random_value '{ 5 5 32 64 }))
+                                  (Variable '{ 64 }                  (const_float '{ 64 }))
+                                  (Variable '{ s1 512 }              (random_value '{ s1 512 }))
+                                  (Variable '{ 512 }                 (const_float '{ 512 }))
+                                  (Variable '{ 512 NUM_LABELS }      (random_value '{ 512 NUM_LABELS }))
+                                  (Variable '{ NUM_LABELS }          (const_float '{ NUM_LABELS })) }
                                   :output (Placeholder :dtype int64 :shape '(BATCH_SIZE)))))
 
                   )

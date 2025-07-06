@@ -640,13 +640,9 @@
                                (add-inner func-spec (if *function-spec* *function-spec* *variable-spec*))
                                (specify-symbol-expr (if *module-path* (free-name *module-path* lname) lname))))
                             ((key-eq (car quoted) '|closure*|) ; closure*
-                             (display "CCCC" (caddr quoted) #\Newline)
                              (let* ((struct-spec (specify-struct (cadr quoted) '() :nested t)))
                                (add-inner struct-spec (if *function-spec* *function-spec* *variable-spec*))
-                               (specify-expr (caddr quoted))
-                               
-                                   ;; (specify-symbol-expr (if *module-path* (free-name *module-path* lname) lname))
-                                                   ))
+                               (specify-expr (caddr quoted))))
                             (t (specify-list-expr quoted)))))   ; list
 		           ((and (> (length def) 2) (key-eq func '\|) (key-eq (cadr def) '\|))
 		            (specify-operator-expr (push '\|\| (cddr def))))
