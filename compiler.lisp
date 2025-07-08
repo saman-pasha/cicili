@@ -35,11 +35,12 @@
       (cond ((key-eq tname '|import|) (load-macro-file (cadr target) (caddr target) (cadddr target)))
             ((key-eq tname '|cicili|)
              (compile-ast (cdr target)))
+            
             ((key-eq tname '|DEFMACRO|)
              (let ((symb (eval target)))
                (add-macro (symbol-name symb) symb)))
-            ((or (key-eq tname '|header|) (key-eq tname '|source|))
 
+            ((or (key-eq tname '|header|) (key-eq tname '|source|))
 	         (cond ((or (key-eq tname '|source|) (key-eq tname '|header|)) ; target
                     (setf *target-header* (key-eq tname '|header|))
                     (setf *target-source* (key-eq tname '|source|))

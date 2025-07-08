@@ -123,9 +123,16 @@
 
 (defun compile-code (spec lvl globals)
   (with-slots ((content default)) spec
-    (if (stringp content)
-        (set-ast-line (output "~A" content))
-        (compile-args content lvl globals nil :no-comma t))))
+    (cond ((and (typep content 'sp) (eql (construct content) '|@CODE|))
+           (compile-code content lvl globals))
+          ((and (typep content 'sp) (eql (construct content) '|@ATOM|))
+           (set-ast-line (output "~A " (name content))))
+          ((atom content)
+           (set-ast-line (output "~A " content)))
+          ((listp content)
+           (dolist (item content)
+             (compile-code item lvl globals)))
+          (t (error (format nil "wrong code clause list item ~A" content))))))
 
 (defun compile-list (spec lvl globals)
   (with-slots ((items default)) spec
@@ -212,7 +219,9 @@
 (defun compile-cast (spec lvl globals)
   (with-slots (typeof (value default)) spec
     (output "((")
-    (compile-spec-type spec lvl globals)
+    (if (and (typep typeof 'sp) (key-eq (construct typeof) '|@CODE|))
+        (compile-code typeof lvl globals)
+        (compile-spec-type spec lvl globals))
     (output ")")
     (compile-form value (1+ lvl) globals)
     (output ")")))
@@ -300,7 +309,8 @@
 	    ('|static|   (setq is-static   t))
 	    ('|extern|   (setq is-extern   t))
         ('|alloc|    (setq is-alloc    t))
-        ('|defer|    (setq has-defer   (cdr attr)))))
+        ('|defer|    (setq has-defer   (cdr attr)))
+        (otherwise (error (format nil "unknown variable attribute ~A for ~A" attr spec)))))
 
     (loop for los being the hash-value of (inners spec)
           do (progn

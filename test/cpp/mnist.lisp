@@ -22,16 +22,159 @@
 ;;;; Date  : Jan 23, 2019
 ;;;; 
 
-(DEFMACRO Net (&KEY (name "net") (dtype float) (input '()) (hiddens '()) (output '()))
-  (LET* ((inputs  (IF (EQL (CAR input) 'QUOTE) (CDR input) (LIST input)))
-         (hiddens (CADR hiddens))
-         (outputs (IF (EQL (CAR output) 'QUOTE) (CDR output) (LIST output))))
-    (FORMAT T "Net: ~A~%" net)
-    
-    ))
+(DEFMACRO Model (&KEY (scope 'scope) (name 'net) (dtype 'float) input net output node loss)
+  (FLET ((name-norm (&REST ns)
+           (INTERN (FORMAT NIL "~{~A~^_~}"
+                           (MAPCAR #'(LAMBDA (n)
+                                       (IF (STRINGP n)
+                                           (STRING-DOWNCASE n)
+                                           (STRING-DOWNCASE (SYMBOL-NAME n))))
+                                   ns))))
+         (dtype-norm (dt)
+           (INTERN (FORMAT NIL "DT_~A"
+                           (IF (STRINGP dt)
+                               (STRING-UPCASE dt)
+                               (STRING-UPCASE (SYMBOL-NAME dt))))))
+         (range (max &KEY (min 0) (step 1))
+           (LOOP FOR n FROM min BELOW max BY step
+                 COLLECT n))
+
+         (remove-kv (key seq)
+           (LET ((pos (POSITION key seq)))
+             (IF pos
+                 (APPEND (SUBSEQ seq 0 pos) (SUBSEQ seq (+ pos 2)))
+                 seq))))
+
+      (LET* ((scope scope)
+             (net-name (name-norm name))
+             (net-dtype (dtype-norm dtype))
+             (input input)
+             (output output)
+             (inputs (IF (EQL (CAR input) 'QUOTE) (CDR input) (LIST input)))
+             (net (CADR net))
+             (outputs (IF (EQL (CAR output) 'QUOTE) (CDR output) (LIST output)))
+             (node (CADR node))
+             (loss (CADR loss)))
+
+          (MACROLET ((io-case (operations &REST cases)
+                       (MACROEXPAND
+                        `(MAP 'LIST
+                              #'(LAMBDA (op)
+                                  (DESTRUCTURING-BIND (type name shape &KEY (dtype net-dtype dtype-p)) op
+                                    (CASE (CAR op)
+                                      ,@cases
+                                      (OTHERWISE (ERROR (FORMAT NIL "unknown input/output operation ~A" op))))))
+                              ,operations)))
+                     
+                     (net-case (operations &REST cases)
+                       (MACROEXPAND
+                        `(MAP 'LIST
+                              #'(LAMBDA (op)
+                                  (DESTRUCTURING-BIND (type name shape value &KEY (dtype net-dtype dtype-p)) op
+                                    (CASE (CAR op)
+                                      ,@cases
+                                      (OTHERWISE (ERROR (FORMAT NIL "unknown net operation ~A" op))))))
+                              ,operations)))
+                     
+                     (run-sequence (last-out-name operations)
+                       (MACROEXPAND
+                        `(MAP 'LIST
+                              #'(LAMBDA (i prev-op op)
+                                  (FORMAT T "~A ~A ~A~%" i prev-op op) 
+                                  (DESTRUCTURING-BIND (prev-type prev-in-name &REST prev-args)
+                                      (IF prev-op prev-op (LIST NIL NIL))
+                                    (LET ((prev-out-name (SECOND (MEMBER :out-name prev-op))))
+                                      (WHEN (> i 0)
+                                        (NSUBST (IF prev-out-name
+                                                    prev-out-name
+                                                    (name-norm net-name 'node prev-type (FORMAT NIL "~A" i)))
+                                          '$out op))
+                                      (DESTRUCTURING-BIND (type in-name &REST args) op
+                                        (LET* ((out-name (IF (MEMBER :out-name op)
+                                                             (SECOND (MEMBER :out-name op))
+                                                             (IF (= i (- (LENGTH node) 1)) ,last-out-name NIL)))
+                                               ($out )
+                                               (out-name (IF out-name
+                                                             out-name
+                                                             (name-norm net-name 'node type (FORMAT NIL "~A" (1+ i))))))
+                                          (SETQ args (remove-kv :out-name args))
+                                          `(auto ,out-name . #'(,type ,scope ,in-name ,@args)))))))
+                              (range (LENGTH ,operations)) (APPEND (LIST NIL) ,operations) ,operations))))
+          
+            ;; whole net
+            `(letn (;; inputs
+                    ,@(io-case inputs
+                        ('Placeholder `(auto ,(name-norm net-name name) .
+                                             #'(,type
+                                                ,scope
+                                                ,(IF dtype-p (dtype-norm dtype) dtype)
+                                                (($$ ,type Shape) ,shape)))))
+                    
+                      ;; net
+                      ,@(APPLY #'APPEND
+                               (net-case net
+                                 ('Variable `((auto ,(name-norm net-name name) .
+                                                    #'(,type
+                                                       ,scope
+                                                       ,shape
+                                                       ,(IF dtype-p (dtype-norm dtype) dtype)))
+                                              (auto ,(name-norm net-name 'assign name) .
+                                                    #'(Assign
+                                                       ,scope
+                                                       ,(name-norm net-name name)
+                                                       ,value))
+                                              (auto ,(name-norm net-name 'accum name) .
+                                                    #'(,type
+                                                       ,scope
+                                                       ,shape
+                                                       ,(IF dtype-p (dtype-norm dtype) dtype)))
+                                              (auto ,(name-norm net-name 'assign 'accum name) .
+                                                    #'(Assign
+                                                       ,scope
+                                                       ,(name-norm net-name 'accum name)
+                                                       (ZerosLike ,scope ,(name-norm net-name name))))))))
+                      
+                      ;; outputs
+                      ,@(io-case outputs
+                          ('Placeholder `(auto ,(name-norm net-name name) .
+                                               #'(,type
+                                                  ,scope
+                                                  ,(IF dtype-p (dtype-norm dtype) dtype)
+                                                  (($$ ,type Shape) ,shape)))))
+                      
+                      ) ; end of net declarations
+
+               ;; init vars
+               (TF_CHECK_OK
+                   (=> session Run '{
+                       ,@(net-case net
+                           ('Variable (name-norm net-name 'assign name)))
+                       } nullptr))
+
+               ;; init accums
+               (TF_CHECK_OK
+                   (=> session Run '{
+                       ,@(net-case net
+                           ('Variable (name-norm net-name 'assign 'accum name)))
+                       } nullptr))
+
+               ;; node
+               (let (;; node
+                     ,@(run-sequence 'logits node)
+                     ;; loss
+                     ,@(run-sequence 'loss loss)
+                       ;; gradients
+                       (($$ std (t<> vector Output)) ,(name-norm net-name 'grad_outputs))                       
+                       ) ; end of node declarations
+
+                 ;; initialize gradients
+                 
+                 
+               )) ; end of net, node
+            )))) ; end of Model
 
 (source "mnist.cpp" (:cpp #t :std #f :compile #t :link #t)
-
+        ;; Tensorflow 2.19.0
         (include "tensorflow/cc/client/client_session.h")
         (include "tensorflow/cc/framework/gradients.h")
         (include "tensorflow/cc/ops/dataset_ops_internal.h")
@@ -73,16 +216,14 @@
         (static)
         (func Dropout ((const Scope & scope)
                        (const Input x)
-                       (const int rate)
-                       (Output & dropout))
-              (out Status)
+                       (const int rate))
+              (out Output)
               (let ((float keep_prob . #'(- 1 rate))
                     (auto random_value5 . #'(RandomUniform scope (Shape scope x) DT_FLOAT))
                     (auto random_tensor . #'(Add scope random_value5 ((t<> Const float) scope '{ keep_prob })))
                     (auto binary_tensor . #'(Floor scope random_tensor))
                     (auto result . #'(Multiply scope (Div scope x ((t<> Const float) scope '{ keep_prob })) binary_tensor)))
-                (set dropout ($ result z)))
-              (return (=> scope status)))
+                (return ($ result z))))
 
         (main*
             (let ((Scope scope . #'(($$ Scope NewRootScope))))
@@ -133,58 +274,79 @@
                     (block
                         (<< (LOG INFO) "Print: status: " status)
                       (return -1)))
-
-                (let ((auto rate . #'(Const scope '{ 0.1f }))
-                      (int s1 . #'(* (($$ std pow) (/ IMAGE_SIZE 4) 2) 64))
-                      
-                      (auto random_value . #'(closure ((const Scope & scope) (int rate))
+                
+                (macrolet ((slice (type shape) `(cast ($$ gtl (t<> ArraySlice ,type)) ,shape)))
+                  (let ((auto rate . #'(Const scope '{ 0.1f }))
+                        (int s1 . #'(* (($$ std pow) (/ IMAGE_SIZE 4) 2) 64))
+                        (float f1 . 5e-4)
+                        
+                        (auto random_value . #'(closure ((const Scope & scope) (int rate))
                                                  '(lambda ((($$ std (t<> initializer_list int)) shape))
                                                    (return (Multiply scope (TruncatedNormal scope shape DT_FLOAT) rate)))))
-                      
-                      (auto const_float . #'(closure ((const Scope & scope) (float rate . 0.1f))
+                        
+                        (auto const_float . #'(closure ((const Scope & scope) (float rate . 0.1f))
                                                 '(lambda ((($$ std (t<> initializer_list int)) shape))
                                                   (return ((t<> Const float) scope rate (TensorShape '{ shpae }))))))
 
-                      ;; Trainable variables
-                      ;; Convolutional Net
-                      ;; Gradient accum parameters start here
-                      ;; Initialize variables
-                      (auto net .
-                            #'(Net
-                               :name mnist :dtype float
-                               :input   (Placeholder inputs '(BATCH_SIZE IMAGE_SIZE IMAGE_SIZE NUM_CHANNELS))
-                               :hiddens '((Variable conv1_w '(5 5 NUM_CHANNELS 32) (random_value '(5 5 NUM_CHANNELS 32)))
-                                          (Variable conv1_b '(32)                  (=> (=> (Tensor
-                                                                                              DT_FLOAT (TensorShape '(32)))
-                                                                                        (t<> vec float))
-                                                                                    setZero))
-                                          (Variable conv2_w '(5 5 32 64)           (random_value '(5 5 32 64)))
-                                          (Variable conv2_b '(64)                  (const_float  '(64)))
-                                          (Variable fc1_w   '(s1 512)              (random_value '(s1 512)))
-                                          (Variable fc1_b   '(512)                 (const_float  '(512)))
-                                          (Variable fc2_w   '(512 NUM_LABELS)      (random_value '(512 NUM_LABELS)))
-                                          (Variable fc1_b   '(NUM_LABELS)          (const_float  '(NUM_LABELS))))
-                               :output  (Placeholder labels '(BATCH_SIZE) :dtype int64))))
-
-                  )
-                                                                    
-                ;; (let ((auto model . #'(tf.Model :name "mnist" :dtype float 
-                ;;                                 :input-shape '(IMAGE_SIZE IMAGE_SIZE NUM_CHANNELS) :batch-size BATCH_SIZE
-                ;;                                 (Conv2D :filters 32 :kernel-size 5 :padding "same" :activation "relu")
-                ;;                                 (MaxPooling2D :pool-size '(2 2) :strides '(2 2) :padding "same")
-                ;;                                 (Conv2D :filters 32 :kernel-size 5 :padding "same" :activation "relu")
-                ;;                                 (MaxPooling2D :pool-size '(2 2) :strides '(2 2) :padding "same")
-                ;;                                 (Flatten)
-                ;;                                 (Dense 1024 :activation "relu")
-                ;;                                 (Dropout 0.4f)
-                ;;                                 (Dense 10 :activation "softmax"))))
-
-                  
-                  
-                ;;   )
-
-                
-                       
-                       
-                ))
+                        ;; Trainable variables
+                        ;; Convolutional Net
+                        ;; Gradient accum parameters start here
+                        ;; Initialize variables
+                        (auto model .
+                              #'(Model
+                                    :name    mnist
+                                    :dtype   float
+                                    :input   (Placeholder inputs_ph '(BATCH_SIZE IMAGE_SIZE IMAGE_SIZE NUM_CHANNELS))
+                                    :net     '((Variable  conv1_w '(5 5 NUM_CHANNELS 32)
+                                                (random_value '(5 5 NUM_CHANNELS 32)))
+                                               (Variable  conv1_b '(32)
+                                                (=> (=> (Tensor DT_FLOAT (TensorShape '(32))) (t<> vec float)) setZero))
+                                               (Variable  conv2_w '(5 5 32 64)           (random_value '(5 5 32 64)))
+                                               (Variable  conv2_b '(64)                  (const_float  '(64)))
+                                               (Variable  fc1_w   '(s1 512)              (random_value '(s1 512)))
+                                               (Variable  fc1_b   '(512)                 (const_float  '(512)))
+                                               (Variable  fc2_w   '(512 NUM_LABELS)      (random_value '(512 NUM_LABELS)))
+                                               (Variable  fc2_b   '(NUM_LABELS)          (const_float  '(NUM_LABELS))))
+                                    :output  (Placeholder labels_ph '(BATCH_SIZE) :dtype int64)
+                                    ;; Convnet Model begin
+                                    ;; $out referes to previous output
+                                    ;; All operations should receive (scope, input, args...) and return TF Output
+                                    ;; :out-name key enables handle complex mixed models
+                                    :node    '((Conv2D   inputs_ph conv1_w (slice int '(1 1 1 1)) "SAME")
+                                               (BiasAdd  $out conv1_b)
+                                               (Relu     $out)
+                                               (MaxPool  $out (slice int '(1 2 2 1)) (slice int '(1 2 2 1)) "SAME")
+                                               (Conv2D   $out conv2_w (slice int '(1 1 1 1)) "SAME")
+                                               (BiasAdd  $out conv2_b)
+                                               (Relu     $out)
+                                               (MaxPool  $out (slice int '(1 2 2 1)) (slice int '(1 2 2 1)) "SAME")
+                                               ;; reshape
+                                               (Reshape  $out '(BATCH_SIZE s1))
+                                               (MatMul   $out fc1_w)
+                                               (Add      $out fc1_b)
+                                               (Relu     $out)
+                                               ;; dropout
+                                               (Dropout  $out 0.5f :out-name dropped_out)
+                                               ;; model output
+                                               (MatMul   dropped_out fc2_w)
+                                               ;; default :out-name logits
+                                               (Add      $out fc2_b))
+                                    ;; loss calculation
+                                    :loss    '((SparseSoftmaxCrossEntropyWithLogits logits labels_ph)
+                                               (ReduceMean ($ $out loss) '{ 0 } :out-name reduce_mean)
+                                               (L2Loss fc1_weights :out-name lfc1_w)
+                                               (L2Loss fc1_biases  :out-name lfc1_b)
+                                               (L2Loss fc2_weights :out-name lfc2_w)
+                                               (L2Loss fc2_biases  :out-name lfc2_b)
+                                               (AddN (cast (t<> initializer_list Input) '{ lfc1_w lfc1_w lfc1_w lfc1_w })
+                                                 :out-name regularization)
+                                               ;; when Operation name is not a single symbol :out-name should be set
+                                               ((t<> Const float) '{ f1 } :out-name const_f1)
+                                               (Multiply regularization $out)
+                                               ;; default :out-name loss
+                                               (Add reduce_mean $out))
+                                    ))
+                        ) ; end let declaration
+                    
+                    ))))
           (return 0)))
