@@ -6,32 +6,32 @@
 #include <string.h>
 #include <tensorflow/c/c_api.h>
 void * scalar_float (float value ) {
-  { /* cicili#Let189 */
+  { /* cicili#Let203 */
     float * ptr  = ((float *)malloc (sizeof(float)));
     (*ptr ) = value ;
     return ptr ;
   }
 }
 
-static void __ciciliL_201 (const char * name , TF_Status * status ) {
+static void __ciciliL_215 (const char * name , TF_Status * status ) {
   fprintf (stdout , "%s status: %s\n", name , TF_Message (status ));
 }
-static void __ciciliL_224 (void * data , size_t size , void * arg ) {
+static void __ciciliL_238 (void * data , size_t size , void * arg ) {
   fprintf (stdout , "deallocator: %f\n", (*((float *)data )));
   free (data );
 }
-static void __ciciliL_242 (const char * name , TF_Status * status ) {
+static void __ciciliL_256 (const char * name , TF_Status * status ) {
   fprintf (stdout , "%s status: %s\n", name , TF_Message (status ));
 }
 int main () {
   fprintf (stdout , "TensorFlow %s\n", TF_Version ());
-  { /* cicili#Let196 */
+  { /* cicili#Let210 */
     float b_data  = 0.5f ;
     TF_Status * status  = TF_NewStatus ();
-    __auto_type gr  = ({ /* cicili#Let199 */
-    void (*status_callback) (const char * name , TF_Status * status ) = __ciciliL_201;
+    __auto_type gr  = ({ /* cicili#Let213 */
+    void (*status_callback) (const char * name , TF_Status * status ) = __ciciliL_215;
   TF_Graph * gr  = TF_NewGraph ();
-  TF_Operation * x  = ({ /* cicili#Let207 */
+  TF_Operation * x  = ({ /* cicili#Let221 */
   TF_OperationDescription * gr_x_desc  = TF_NewOperation (gr , "Placeholder", "gr_x_Placeholder");
   TF_SetAttrType (gr_x_desc , "dtype", TF_FLOAT );
   TF_Operation * x  = TF_FinishOperation (gr_x_desc , status );
@@ -40,7 +40,7 @@ int main () {
 
   x ;
 });
-  TF_Operation * y  = ({ /* cicili#Let212 */
+  TF_Operation * y  = ({ /* cicili#Let226 */
   TF_OperationDescription * gr_y_desc  = TF_NewOperation (gr , "Placeholder", "gr_y_Placeholder");
   TF_SetAttrType (gr_y_desc , "dtype", TF_FLOAT );
   TF_Operation * y  = TF_FinishOperation (gr_y_desc , status );
@@ -49,22 +49,22 @@ int main () {
 
   y ;
 });
-  TF_Operation * b  = ({ /* cicili#Let217 */
+  TF_Operation * b  = ({ /* cicili#Let231 */
   TF_OperationDescription * gr_b_desc  = TF_NewOperation (gr , "Const", "gr_b_Const");
   TF_SetAttrType (gr_b_desc , "dtype", TF_FLOAT );
-  { /* cicili#Block219 */
-    TF_SetAttrTensor (gr_b_desc , "value", TF_NewTensor (TF_FLOAT , ((int64_t[]){ 1}), 1, scalar_float (b_data ), sizeof(b_data), __ciciliL_224 , NULL ), status );
+  { /* cicili#Block233 */
+    TF_SetAttrTensor (gr_b_desc , "value", TF_NewTensor (TF_FLOAT , ((int64_t[]){ 1}), 1, scalar_float (b_data ), sizeof(b_data), __ciciliL_238 , NULL ), status );
     if (TF_GetCode (status ) !=  TF_OK  ) 
       status_callback ("gr_b_Const", status );
 
-  } /* cicili#Block219 */
+  } /* cicili#Block233 */
   TF_Operation * b  = TF_FinishOperation (gr_b_desc , status );
   if (TF_GetCode (status ) !=  TF_OK  ) 
     status_callback ("gr_b_Const", status );
 
   b ;
 });
-  TF_Operation * mul  = ({ /* cicili#Let232 */
+  TF_Operation * mul  = ({ /* cicili#Let246 */
   TF_OperationDescription * gr_mul_desc  = TF_NewOperation (gr , "Mul", "gr_mul_Mul");
   TF_AddInput (gr_mul_desc , ((TF_Output){ x , 0}));
   TF_AddInput (gr_mul_desc , ((TF_Output){ y , 0}));
@@ -75,7 +75,7 @@ int main () {
 
   mul ;
 });
-  TF_Operation * add  = ({ /* cicili#Let237 */
+  TF_Operation * add  = ({ /* cicili#Let251 */
   TF_OperationDescription * gr_add_desc  = TF_NewOperation (gr , "Add", "gr_add_Add");
   TF_AddInput (gr_add_desc , ((TF_Output){ mul , 0}));
   TF_AddInput (gr_add_desc , ((TF_Output){ b , 0}));
@@ -87,11 +87,11 @@ int main () {
   add ;
 });
   if (TF_GetCode (status ) !=  TF_OK  ) 
-    __ciciliL_242 ("gr", status );
+    __ciciliL_256 ("gr", status );
 
   gr ;
 });
-    { /* cicili#Let247 */
+    { /* cicili#Let261 */
       float xv  = 2.0f ;
       float yv  = 3.0f ;
       TF_Tensor * outputs [1];
