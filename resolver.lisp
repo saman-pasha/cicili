@@ -20,12 +20,12 @@
              (col-n    (nth 1 ns))
              (ast      (prev-ast-by-key< (gethash 'key-def (keys default))))
              (info     (getf ast 'info))
-             (dump     (reverse (getf ast 'dump)))
+             ;; (dump     (reverse (getf ast 'dump)))
              (spec-key (ast-key< line-n col-n))
              (res      (gethash 'res-def (keys default))))
         (setf (gethash 'key-def (keys default)) spec-key)
         (when *debug-resolve*
-          (display "resolving def:" line-n col-n "RES:" res "INFO:" info #\Newline dump #\Newline))
+          (display "resolving def:" line-n col-n "RES:" res "INFO:" info #\Newline)) ; dump #\Newline
         
         (cond ((null ast)
 	           (compile-form default (1+ lvl) globals))
@@ -113,7 +113,7 @@
            (mtd-ast    (prev-ast-by-key< (getf begin-ast 'mtd)))
            (end-ast    (prev-ast-by-key< (getf begin-ast 'end)))
            (begin-info (getf begin-ast 'info)) ; --
-           (begin-dump (reverse (getf begin-ast 'dump))) ; --
+           ;; (begin-dump (reverse (getf begin-ast 'dump))) ; --
            
            (ptr-info   (getf ptr-ast   'info))
            (mtd-info   (getf mtd-ast   'info))
@@ -123,7 +123,7 @@
       (setf (gethash 'key-$ (keys spec)) spec-key)
       (when *debug-resolve*
         (display "resolving .:" line-n col-n "RES:" res "INFO:"
-                 begin-info ptr-info mtd-info end-info #\Newline begin-dump #\Newline))
+                 begin-info ptr-info mtd-info end-info #\Newline)) ; begin-dump #\Newline
       
       (cond (res
              (set-ast-line (output "("))
@@ -166,7 +166,7 @@
            (mtd-ast    (prev-ast-by-key< (getf begin-ast 'mtd)))
            (end-ast    (prev-ast-by-key< (getf begin-ast 'end)))
            (begin-info (getf begin-ast 'info)) ; --
-           (begin-dump (reverse (getf begin-ast 'dump))) ; --
+           ;; (begin-dump (reverse (getf begin-ast 'dump))) ; --
            
            (ptr-info   (getf ptr-ast   'info))
            (mtd-info   (getf mtd-ast   'info))
@@ -176,7 +176,7 @@
       (setf (gethash 'key--> (keys spec)) spec-key)
       (when *debug-resolve*
         (display "resolving ->:" line-n col-n "RES:" res "INFO:" 
-                 begin-info ptr-info mtd-info end-info #\Newline begin-dump #\Newline))
+                 begin-info ptr-info mtd-info end-info #\Newline)) ; begin-dump #\Newline
       
       (cond (res
              (if (str:starts-with-p (str:replace-first "\\(.*" "" (make-shared-name (name receiver) "") :regex t)
@@ -271,8 +271,65 @@
             (t (error (format nil "cicili\: unresolved method reference type ~A. ~S~%~A"
                               spec-key (str:substring 0 340 (or mtd-info ptr-info begin-info)) spec)))))))
 
-(defun compile-args (args lvl globals comma-first)
-  (when (and comma-first (> (length args) 0)) (output ", "))
+(defun compile-=> (spec lvl globals)
+  (with-slots ((receiver name) (member default) (args body)) spec
+    (let* ((line-n     (funcall *line-num* 0))
+           (col-n      (funcall *col-num* 0))
+           (begin-ast  (prev-ast-by-key< (gethash 'key-$ (keys spec))))        ; --
+           (ptr-ast    (prev-ast-by-key< (getf begin-ast 'ptr)))
+           (mtd-ast    (prev-ast-by-key< (getf begin-ast 'mtd)))
+           (end-ast    (prev-ast-by-key< (getf begin-ast 'end)))
+           (begin-info (getf begin-ast 'info)) ; --
+           ;; (begin-dump (reverse (getf begin-ast 'dump))) ; --
+           
+           (ptr-info   (getf ptr-ast   'info))
+           (mtd-info   (getf mtd-ast   'info))
+           (end-info   (getf end-ast   'info))
+           (spec-key   (ast-key< line-n col-n))
+           (res        (gethash 'res-$ (keys spec))))
+      (setf (gethash 'key-$ (keys spec)) spec-key)
+      (when *debug-resolve*
+        (display "resolving =>:" line-n col-n "RES:" res "INFO:"
+                 begin-info ptr-info mtd-info end-info #\Newline)) ; begin-dump #\Newline
+      
+      (cond (res
+             (set-ast-line (output "("))
+             (compile-form receiver (1+ lvl) globals)
+             (set-ast-line (output res))
+             (compile-form member (1+ lvl) globals)
+             (output ")"))
+            ((or (null *resolve*) ; function without resolver (inline in header or attr resolve #f)
+               (null begin-ast)  ; access member by instance default for first run
+               (and (null begin-info) (null ptr-info) (null mtd-info) (null end-info)))
+             (set-ast-line (output "("))
+             (compile-form receiver (1+ lvl) globals)
+             (setf (getf (gethash (ast-key< line-n col-n) (nth 0 *ast-lines*)) 'ptr)
+                   (ast-key< (funcall *line-num* 0) (funcall *col-num* 0)))
+             (set-ast-line (output ". "))
+             (setf (getf (gethash (ast-key< line-n col-n) (nth 0 *ast-lines*)) 'mtd)
+                   (ast-key< (funcall *line-num* 0) (funcall *col-num* 0)))
+             (compile-form member (1+ lvl) globals)
+             (set-ast-line (output "("))
+             (compile-args (default args) lvl globals nil)
+             (setf (getf (gethash (ast-key< line-n col-n) (nth 0 *ast-lines*)) 'end)
+                   (ast-key< (funcall *line-num* 0) (funcall *col-num* 0)))
+             (output "))"))
+            ((and (str:containsp "member reference type" ptr-info) (str:containsp "is a pointer" ptr-info))
+             (let ((resu "->"))
+               (setf *more-run* t)
+               (setf (gethash 'res-$ (keys spec)) resu)
+               (set-ast-line (output "("))
+               (compile-form receiver (1+ lvl) globals)
+               (set-ast-line (output resu))
+               (compile-form member (1+ lvl) globals)
+               (set-ast-line (output "("))
+               (compile-args (default args) lvl globals nil)
+               (output "))")))
+            (t (error (format nil "cicili\: unresolved member function type ~A. ~S~%~A"
+                              spec-key (str:substring 0 340 (or mtd-info ptr-info begin-info)) spec)))))))
+
+(defun compile-args (args lvl globals comma-first &key (no-comma nil))
+  (when (and (null no-comma) comma-first (> (length args) 0)) (output ", "))
   (loop for arg in args
         with l = (1- (length args))
         for i from 0 to l
@@ -281,12 +338,12 @@
                     (col-n    (funcall *col-num* 0))
                     (ast      (prev-ast-by-key< (gethash 'key-arg (keys arg))))
                     (info     (getf ast 'info))
-                    (dump     (reverse (getf ast 'dump)))
+                    ;; (dump     (reverse (getf ast 'dump)))
                     (spec-key (ast-key< line-n col-n))
                     (res      (gethash 'res-arg (keys arg))))
                (setf (gethash 'key-arg (keys arg)) spec-key)
                (when *debug-resolve*
-                 (display "resolving arg:" line-n col-n "RES:" res "INFO:" info #\Newline dump #\Newline))
+                 (display "resolving arg:" line-n col-n "RES:" res "INFO:" info #\Newline)) ; dump #\Newline
                
                (cond ((null ast)
 	                  (compile-form arg lvl globals))
@@ -322,7 +379,7 @@
                      ((str:containsp "member reference type" info)
                       (compile-form arg lvl globals))
                      (t (compile-form arg lvl globals))))
-             (when (< i l) (output ", ")))))
+             (when (and (null no-comma) (< i l)) (output ", ")))))
 
 (defun compile-set (spec lvl globals)
   (with-slots ((items default)) spec
@@ -335,12 +392,12 @@
              (col-n    (funcall *col-num* 0))
              (ast      (prev-ast-by-key< (gethash 'key-set (keys (nth 1 item)))))
              (info     (getf ast 'info))
-             (dump     (reverse (getf ast 'dump)))
+             ;; (dump     (reverse (getf ast 'dump)))
              (spec-key (ast-key< line-n col-n))
              (res      (gethash 'res-set (keys (nth 1 item)))))
         (setf (gethash 'key-set (keys (nth 1 item))) spec-key)
         (when *debug-resolve*
-          (display "resolving set:" line-n col-n "RES:" res "INFO:" info #\Newline dump #\Newline))
+          (display "resolving set:" line-n col-n "RES:" res "INFO:" info #\Newline)) ; dump #\Newline
         
         (cond ((null ast)
                (set-ast-line (output "= "))

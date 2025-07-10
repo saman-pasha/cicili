@@ -76,7 +76,7 @@
 ;;; defers execution at end of current scope
 ;;; var list is lamda parameters and works to get and store this values or pointers to use in defer execution
 ;;; usage:
-;;; (defer ((FILE * file) (char * message))
+;;; (defer* ((FILE * file) (char * message))
 ;;;   (format file "%s\n" message)
 ;;;   (fclose file))
 (DEFMACRO defer* (var-list &REST body)
@@ -87,15 +87,45 @@
            ,@(MAP 'LIST #'(LAMBDA (var)
                             (MULTIPLE-VALUE-BIND (const type modifier const-ptr variable array-def)
                                 (CICILI:SPECIFY-TYPE< var)
-                              `(var ,@var . (FUNCTION ($ ,pname ,variable)))))
+                              `(var ,@var . (FUNCTION (-> ,pname ,variable)))))
                   var-list)
            ,@body)
        (var '(,@var-list) ,name . 
             '(,@(MAP 'LIST #'(LAMBDA (var)
-                                    (MULTIPLE-VALUE-BIND (const type modifier const-ptr variable array-def)
-                                        (CICILI:SPECIFY-TYPE< var)
-                                      variable))
-                          var-list))))))
+                               (MULTIPLE-VALUE-BIND (const type modifier const-ptr variable array-def)
+                                   (CICILI:SPECIFY-TYPE< var)
+                                 variable))
+                     var-list))))))
+
+;;; copies capture list to context, use pointer to keep access to context along the process
+;;; don't free pointers copied into context if the closure is alive
+;;; (closure (capture list)
+;;;     '(lambda (parameter list)
+;;;         body))   
+(DEFMACRO closure (var-list lambda)
+  (LET* ((captures (MAP 'LIST #'(LAMBDA (var) (MULTIPLE-VALUE-LIST (CICILI:SPECIFY-TYPE-VALUE< var))) var-list))
+         (name     (GENSYM "ciciliClosure"))
+         (values   (MAP 'LIST #'(LAMBDA (var1)
+                                  (DESTRUCTURING-BIND (const type modifier const-ptr variable array-def default) var1
+                                    (IF (NULL default) variable default)))
+                       captures))
+         (vars    (MAP 'LIST #'(LAMBDA (var2)
+                                 (DESTRUCTURING-BIND (const type modifier const-ptr variable array-def default) var2
+                                   `(var ,@(REMOVE NIL (LIST const type modifier const-ptr variable array-def)) .
+                                         (FUNCTION ($ ,name ,variable)))))
+                       captures))
+         (members (MAP 'LIST #'(LAMBDA (var3)
+                                 (DESTRUCTURING-BIND (const type modifier const-ptr variable array-def default) var3
+                                   `(member ,@(REMOVE NIL (LIST const type modifier const-ptr variable array-def)))))
+                       captures))
+         (body    (LET ((lm (CADR lambda)))
+                    (IF (EQL (CAADDR lm) 'out)
+                        (APPEND (LIST (CADDR lm)) vars (CDDDR lm))
+                        (APPEND vars (CDDR lm))))))
+    `'(closure* (struct ,@members (declare ,name))
+       (progn
+         (set ,name (cast (typeof ,name) '{ ,@values }))
+         '(lambda ,(CADADR lambda) ,@body)))))
 
 ;; optional helper macro will auto defer all vars
 (DEFMACRO defer-let (var-list &REST body)

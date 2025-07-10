@@ -1,3 +1,5 @@
 first line from main execution
+int from closure: 5
+int sqr from closure: 25
 a message from defer execution
 

@@ -12,6 +12,8 @@
     :*only-link*
     :*debug-runs*
     :*debug-dump*
+    :compile-form
+    :compile-body
     :compile-ast
     :compile-cicili-file
     :load-macro-file

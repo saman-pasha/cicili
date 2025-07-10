@@ -7,8 +7,8 @@
             (member char * Name))))
 
 (source "defer.c" (:std #f
-                   :compile #t
-                   :link "-v -o defer_main -L{$CWD} -ldefer.o")
+                        :compile #t
+                        :link "-o defer_main -L{$CWD} -ldefer.o")
         (include <stdio.h> <stdlib.h> <string.h>)
         (include "defer.h")
 
@@ -22,15 +22,26 @@
                     (Employee * empOther . #'(alloc (sizeof Employee))) ; alloc has auto free deferment at the end of scope
                     (defer #t) ; means only automatic free deferment at the end of scope
                     (Employee * empOzzi . #'(malloc (sizeof Employee))) ; 
-                    (char * msg . "a message from defer execution\n"))
-                
-                (var FILE * file . #'(fopen "deferral.txt" "w+"))
+                    (char * msg . "a message from defer execution\n")
+                    (char * msg_int . "int from closure: %d\n")
+                    (char * msg_int_sqr . "int sqr from closure: %d\n")
+                    (FILE * file . #'(fopen "./test/lambda/deferral.txt" "w+"))
+                    (auto printInts . #'(closure ((FILE * file)
+                                                  (char ** msgs . #'(cast (char * [])
+                                                                      '{ msg_int msg_int_sqr }))) ; static captured values
+                                            '(lambda ((int x))                    ; dynamic parameters
+                                              (format file (nth 0 msgs) x)
+                                              (format file (nth 1 msgs) (* x x)))))
+                    )
 
                 (format file "first line from main execution\n")
+
+                (printInts 5) ; into file
                 
                 (set ($ emp Id)   100
                      ($ emp Name) (calloc 8 (sizeof char)))
 
+                
                 ;; defer after some task done
                 (defer* ((FILE * file) (char * msg)) ; deferment using defer builtin macro, capture list required
                   (format file "%s\n" msg)

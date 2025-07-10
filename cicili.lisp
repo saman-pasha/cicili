@@ -12,10 +12,12 @@
 ;; error handling and debuging
 ;; (setf *print-pretty* t)
 ;; (setf *print-vector-length* 500)
+(format t "~&sbcl reserved memory size: ~D Bs~%" (sb-ext:dynamic-space-size))
 
 (asdf:load-system "cicili")
 
 (cicili:load-macro-file "builtins.lisp")
+(cicili:load-macro-file "cpp.lisp")
 
 (let ((argv (uiop:command-line-arguments)))
   (if (> (length argv) 0)

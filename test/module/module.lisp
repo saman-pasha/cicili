@@ -17,46 +17,46 @@
             (Rectangle))
           
           (module a
-                  (struct Employee
-                    (member int id)
-                    (member char name [12]))
+            (struct Employee
+              (member int id)
+              (member char name [12]))
 
-                  ;; therefor current scope is a every objects without '/' resolution sign refer will be defined inside a
-                  (decl) (method (Employee . print) ()) ; refers to Employee inside module a
+            ;; therefor current scope is a every objects without '/' resolution sign refer will be defined inside a
+            (decl) (method (Employee . print) ()) ; refers to Employee inside module a
 
-                  ;; refers to Employee outside module a '/' sign means free resolution
-                  (decl) (func print ((/Employee * emp)))
+            ;; refers to Employee outside module a '/' sign means free resolution
+            (decl) (func print ((/Employee * emp)))
 
-                  (decl) (func aFunc ((int x) (int y)) (out '{(int a) (int b)})) ; inside module a
+            (decl) (func aFunc ((int x) (int y)) (out '{ (int a) (int b) })) ; inside module a
 
-                  (module c
-                          (decl) (func aFunc ((int x) (int y)) (out '{(int a) (int b)})) ; inside module a/c
+            (module c
+              (decl) (func aFunc ((int x) (int y)) (out '{ (int a) (int b) })) ; inside module a/c
 
-                          (static) (var long varAAA)
+              (static) (var long varAAA)
 
-                          (module d
-                                  (struct Employee
-                                    (member int id)
-                                    (member char name [12]))
-                                  ;; refers to Employee inside module d
-                                  (decl) (method (Employee . print) ()) 
-                                  
-                                  (decl) (func aFunc ((int x) (int y)) (out '{(int a) (int b)})) ; inside module a/c/d
-                                  )
-                          )
-                  )
+              (module d
+                (struct Employee
+                  (member int id)
+                  (member char name [12]))
+                ;; refers to Employee inside module d
+                (decl) (method (Employee . print) ()) 
+                
+                (decl) (func aFunc ((int x) (int y)) (out '{ (int a) (int b) })) ; inside module a/c/d
+                )
+              )
+            )
           )
 
         
         (module b ; without guard
-                (enum SHAPES
-                  (Square)
-                  (Circle . 5)
-                  (Rectangle))
-                
-                (decl) (func aFunc ((int x) (int y)) (out '{(int a) (int b)})) ; same name inside module b
-                
-                ))
+          (enum SHAPES
+            (Square)
+            (Circle . 5)
+            (Rectangle))
+          
+          (decl) (func aFunc ((int x) (int y)) (out '{ (int a) (int b) })) ; same name inside module b
+          
+          ))
 
 (source "module.c" (:std #t :compile #t :link #f)
         (include "module.h")
@@ -70,36 +70,37 @@
         
         (module a
                 ;;;; / resolution sign refer to type inside a
-                (method (Employee . print) ()
-                        (printf "inside a emp id is: %d\n" ($ this id)))
+          (method (Employee . print) ()
+                  (printf "inside a emp id is: %d\n" ($ this id)))
 
-                (func print ((/Employee * emp)) ; refers to Employee outside module a '/' sign means free resolution
-                      (printf "inside for free emp id is: %d\n" ($ emp id)))
+          (func print ((/Employee * emp)) ; refers to Employee outside module a '/' sign means free resolution
+                (printf "inside for free emp id is: %d\n" ($ emp id)))
 
-                (func aFunc ((int x) (int y)) (out '{(int a) (int b)}) ; inside module a
-                      (return '{ ('(lambda ((int g)) (out int) (return (+ 3 g))) x) y }))
+          (func aFunc ((int x) (int y)) (out '{ (int a) (int b) }) ; inside module a
+                (return '{ ('(lambda ((int g)) (out int) (return (+ 3 g))) x) y }))
 
-                (module c
-                        (func aFunc ((int x) (int y)) (out '{(int a) (int b)}) ; inside module c
-                              (return '{ ('(lambda ((int g)) (out int) (return (+ 6 g))) x) y }))
+          (module c
+            (func aFunc ((int x) (int y)) (out '{ (int a) (int b) }) ; inside module c
+                  (return '{ ('(lambda ((int g)) (out int) (return (+ 6 g))) x) y }))
 
-                        (static) (var long varAAA . 876)
-                        
-                        (module d
-                                (method (Employee . print) ()
-                                        (printf "inside d emp id is: %d\n" ($ this id)))
+            (static) (var long varAAA . 876)
+            
+            (module d
+              (method (Employee . print) ()
+                      (printf "inside d emp id is: %d\n" ($ this id)))
 
-                                (func aFunc ((int x) (int y)) (out '{(int a) (int b)}) ; inside module d
-                                      (return '{ ('(lambda ((int g)) (out int) (return (+ 9 g))) x) y }))
-                                )
-                        )
-                )
+              (func aFunc ((int x) (int y)) (out '{ (int a) (int b) }) ; inside module d
+                    (return '{ ('(lambda ((int g)) (out int) (return (+ 9 g))) x) y }))
+              )
+            )
+          )
 
         (module b
-                (func aFunc ((int x) (int y)) (out '{(int a) (int b)}) ; same name inside module b
-                      (let (((typeof (b/aFunc x y)) s . '{ x y })) 
-                        (return s)))
-                ))
+          
+          (func aFunc ((int x) (int y)) (out '{ (int a) (int b) }) ; same name inside module b
+                (let (((typeof (b/aFunc x y)) s . '{ x y })) 
+                  (return s)))
+          ))
 
 (source "main.c" (:std #t :compile #t :link "-L{$CWD} -lmodule.o -lmain.o -o main -v")
         (include "module.h")

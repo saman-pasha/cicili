@@ -1,5 +1,5 @@
 (defsystem "cicili"
-  :version "0.0.11"
+  :version "0.0.12"
   :author  "Saman Heidarzadeh Pasha (saman.h.pasha@gmail.com)"
   :license "GPL-3.0 license"
   :depends-on ("sha1" "base64" "str" "cl-ppcre")

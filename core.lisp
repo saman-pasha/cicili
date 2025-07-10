@@ -1,13 +1,13 @@
 (in-package :cicili)
 
-(defvar *output* t)
-(defvar *unaries* '(|+| |-| |++| |1+| |--| |1-| |~| |not| |cof| |aof| |symbolize| |stringize|))
+(defvar *unaries* '(|+| |-| |++| |1+| |--| |1-| |~| |not| |cof| |aof| |stringize|))
 (defvar *operators* '(|+| |-| |*| |/| |%| |==| |!=| |>| |<| |>=| |<=| |^| |<<| |>>| |xor| |and| |or| |bitand| |bitor|))
 (defvar *assignments* '(|+=| |-=| |*=| |/=| |%=| |<<=| |>>=|))
 (defvar *modifiers* '(|&| |*| |**| |***|))
 (defvar *trait-regex* "'(?:\\w+?\\s)?(\\w+?)(?:\\[\\d*\\]|\\s\\*)'.*'(?:\\w+?\\s)?(\\w+?)(?:\\[\\d*\\]|\\s\\*)'")
 (defvar *globals* (make-hash-table :test 'eql))
 
+(defvar *output* t)
 ;; current target spec during target specifying
 (defparameter *target-spec* nil)
 ;; storing file name during compiling
@@ -44,11 +44,52 @@
 (defvar *macros* (make-hash-table :test 'equal))
 ;; whether cicili is during macro expantion
 (defparameter *macroexpand* nil)
+;; whether target uses :cpp key #t
+(defparameter *cpp* nil)
 
 ;; adds a macro to macros list *macros*
 (defun add-macro (macro symbol)
   (when *debug-macros* (format t "macro: ~A~%" macro))
   (setf (gethash macro *macros*) symbol))
+
+;; expands all defined macros
+(defun expand-macros-expr (def)
+  (let* ((func (car def))
+         (macro (if (symbolp func) (gethash (symbol-name func) *macros*) nil)))
+    (if (or macro (and (symbolp func) (macro-function func)))
+        (let ((tmp-expantion *macroexpand*)
+              (id (gensym "me:"))
+              (result nil))
+          (when *debug-macroexpand* (format t "~A ~A~%" id def))
+          (setf *macroexpand* t)
+          (if (key-eq func '|generic|)
+              (let ((symb (eval (macroexpand def))))
+                (setq result (specify-guard (LIST '|ghost|) () t)))
+              (let ((expr (if macro (macroexpand `(,macro ,@(cdr def))) (macroexpand def))))
+                (when *debug-macroexpand* (format t "~A ~A~%" id expr))
+                (setq result (if (listp expr)
+                                 (specify-body (list expr))
+                                 (specify-expr expr)))))
+          (setf *macroexpand* tmp-expantion)
+          result)
+        (specify-call-expr def))))
+
+;; for type specification only
+(defun expand-macros (def)
+  (if (atom def) def
+      (let* ((func (car def))
+             (macro (if (symbolp func) (gethash (symbol-name func) *macros*) nil)))
+        (if (or macro (and (symbolp func) (macro-function func)))
+            (let ((tmp-expantion *macroexpand*)
+                  (id (gensym "me:"))
+                  (result nil))
+              (when *debug-macroexpand* (format t "~A ~A~%" id def))
+              (setf *macroexpand* t)
+              (setq result (if macro (macroexpand `(,macro ,@(cdr def))) (macroexpand def)))
+              (when *debug-macroexpand* (format t "~A ~A~%" id result))
+              (setf *macroexpand* tmp-expantion)
+              result)
+            def))))
 
 (defun reving (list result)
   (cond ((consp list) (reving (cdr list) (cons (car list) result)))
@@ -238,7 +279,7 @@
 	           t)))))
 
 (defun key-eq (symbol1 symbol2)
-  (and (symbolp symbol1) (symbolp symbol2) (string-equal (symbol-name symbol1) (symbol-name symbol2))))
+  (and (symbolp symbol1) (symbolp symbol2) (equal (symbol-name symbol1) (symbol-name symbol2))))
 
 (defun is-array (desc)
   (when (and (listp desc) (key-eq (first desc) (intern "[")) (key-eq (car (last desc)) (intern "]"))) t))
