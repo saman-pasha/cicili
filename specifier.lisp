@@ -804,7 +804,7 @@
                 ((key-eq  form '|NIL|) (specify-nil-expr))
                 ((atom    form)        (specify-atom-expr   form))
 	            (t (let ((func (car form)))
-	                 (cond ((find (char (symbol-name func) 0) "@#")
+	                 (cond ((and (symbolp func) (find (char (symbol-name func) 0) "@#"))
 		                    (specify-preprocessor form '()))
                            ((and (= (length form) 2) (find func *unaries*     :test #'key-eq))
                             (specify-unary-expr form))

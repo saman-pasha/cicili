@@ -68,10 +68,9 @@
             (format #t "TensorFlow %s\n" (TF_Version))
           
           (let ((float b_data . 0.5f)
-                (TF_Status * status . #'(TF_NewStatus))                
+                (TF_Status * status . #'(TF_NewStatus))
                 (auto gr . #'(Graph status
                                     '(lambda ((const char * name) (TF_Status * status))
-                                      (format #t "ggg")
                                       (format #t "%s status: %s\n" name (TF_Message status))) 
                                     gr
                                     (x Placeholder (type :dtype float))
@@ -82,14 +81,11 @@
                                                               (sizeof b_data)
                                                               :deallocator
                                                               '(lambda ((void * data) (size_t size) (void * arg))
-                                                                (format #t "deGGGHHHH")
                                                                 (format #t "deallocator: %f\n" (cof (cast (float *) data)))
-                                                                (free data)
-                                                                (format #t "deGGG")))))
+                                                                (free data)))))
                                     (mul Mul (input '{ x 0 })   (input '{ y 0 }) (type :T float))
                                     (add Add (input '{ mul 0 }) (input '{ b 0 }) (type :T float)))))
 
-            (format #t "fff")
             (let ((float xv . 2.0f)
                   (float yv . 3.0f)
                   (TF_Tensor * outputs [1])
