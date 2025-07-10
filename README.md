@@ -6,6 +6,17 @@
 
 Cicili is a powerful metaprogramming system built on the expressive foundation of Lisp. It empowers developers to design domain-specific languages (DSLs), generate efficient C code through macro expansion, and build high-performance web and system applications. With Cicili, you can develop modular software components—from dynamic web servers and API pipelines to automation scripts and embedded systems—while enjoying near-native execution speed and highly maintainable code.
 
+🌌 The Vision
+
+Cicili is redefining how we write C and C++:
+
+- Safer than C
+- Lighter than C++
+- More expressive than macros
+- More composable than templates
+
+It’s a language for building languages. A tool for shaping systems. A canvas for expressing structure, behavior, and intent—without giving up performance or control.
+
 ## Philosophy
 
 At its core, Cicili embraces:
