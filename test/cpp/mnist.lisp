@@ -22,7 +22,9 @@
 ;;;; Date  : Jan 23, 2019
 ;;;; 
 
-(DEFMACRO Model (&KEY (scope 'scope) (name 'net) (dtype 'float) input net output node loss)
+(DEFMACRO Model (&KEY (scope 'scope) (name 'net) (dtype 'float) input net output node loss
+                   (log `($$ std cerr)) (lr `(Placeholder lr_ph '())))
+  
   (FLET ((name-norm (&REST ns)
            (INTERN (FORMAT NIL "~{~A~^_~}"
                            (MAPCAR #'(LAMBDA (n)
@@ -45,136 +47,227 @@
                  (APPEND (SUBSEQ seq 0 pos) (SUBSEQ seq (+ pos 2)))
                  seq))))
 
-      (LET* ((scope scope)
-             (net-name (name-norm name))
-             (net-dtype (dtype-norm dtype))
-             (input input)
-             (output output)
-             (inputs (IF (EQL (CAR input) 'QUOTE) (CDR input) (LIST input)))
-             (net (CADR net))
-             (outputs (IF (EQL (CAR output) 'QUOTE) (CDR output) (LIST output)))
-             (node (CADR node))
-             (loss (CADR loss)))
+    (LET* ((locals (MAKE-HASH-TABLE))
+           (io-locals (MAKE-HASH-TABLE))
+           (net-locals (MAKE-HASH-TABLE))
+           (scope scope)
+           (net-name (name-norm name))
+           (net-dtype (dtype-norm dtype))
+           (input input)
+           (output output)
+           (inputs (IF (EQL (CAR input) 'QUOTE) (CADR input) (LIST input)))
+           (net (CADR net))
+           (outputs (IF (EQL (CAR output) 'QUOTE) (CADR output) (LIST output)))
+           (node (CADR node))
+           (loss (CADR loss))
+           (log log)
+           (lr (LIST lr)))
 
-          (MACROLET ((io-case (operations &REST cases)
-                       (MACROEXPAND
-                        `(MAP 'LIST
-                              #'(LAMBDA (op)
-                                  (DESTRUCTURING-BIND (type name shape &KEY (dtype net-dtype dtype-p)) op
-                                    (CASE (CAR op)
-                                      ,@cases
-                                      (OTHERWISE (ERROR (FORMAT NIL "unknown input/output operation ~A" op))))))
-                              ,operations)))
-                     
-                     (net-case (operations &REST cases)
-                       (MACROEXPAND
-                        `(MAP 'LIST
-                              #'(LAMBDA (op)
-                                  (DESTRUCTURING-BIND (type name shape value &KEY (dtype net-dtype dtype-p)) op
-                                    (CASE (CAR op)
-                                      ,@cases
-                                      (OTHERWISE (ERROR (FORMAT NIL "unknown net operation ~A" op))))))
-                              ,operations)))
-                     
-                     (run-sequence (last-out-name operations)
-                       (MACROEXPAND
-                        `(MAP 'LIST
-                              #'(LAMBDA (i prev-op op)
-                                  (FORMAT T "~A ~A ~A~%" i prev-op op) 
-                                  (DESTRUCTURING-BIND (prev-type prev-in-name &REST prev-args)
-                                      (IF prev-op prev-op (LIST NIL NIL))
-                                    (LET ((prev-out-name (SECOND (MEMBER :out-name prev-op))))
-                                      (WHEN (> i 0)
-                                        (NSUBST (IF prev-out-name
-                                                    prev-out-name
-                                                    (name-norm net-name 'node prev-type (FORMAT NIL "~A" i)))
-                                          '$out op))
-                                      (DESTRUCTURING-BIND (type in-name &REST args) op
-                                        (LET* ((out-name (IF (MEMBER :out-name op)
-                                                             (SECOND (MEMBER :out-name op))
-                                                             (IF (= i (- (LENGTH node) 1)) ,last-out-name NIL)))
-                                               ($out )
-                                               (out-name (IF out-name
-                                                             out-name
-                                                             (name-norm net-name 'node type (FORMAT NIL "~A" (1+ i))))))
-                                          (SETQ args (remove-kv :out-name args))
-                                          `(auto ,out-name . #'(,type ,scope ,in-name ,@args)))))))
-                              (range (LENGTH ,operations)) (APPEND (LIST NIL) ,operations) ,operations))))
-          
-            ;; whole net
-            `(letn (;; inputs
-                    ,@(io-case inputs
-                        ('Placeholder `(auto ,(name-norm net-name name) .
-                                             #'(,type
-                                                ,scope
-                                                ,(IF dtype-p (dtype-norm dtype) dtype)
-                                                (($$ ,type Shape) ,shape)))))
+      (MACROLET ((io-case (operations &REST cases)
+                   (MACROEXPAND
+                    `(MAP 'LIST
+                          #'(LAMBDA (i op)
+                              (DESTRUCTURING-BIND (type name shape &KEY (dtype net-dtype dtype-p)) op
+                                (CASE (CAR op)
+                                  ,@cases
+                                  (OTHERWISE (ERROR (FORMAT NIL "unknown input/output operation ~A" op))))))
+                          (range (LENGTH ,operations)) ,operations)))
+                 
+                 (net-case (operations &REST cases)
+                   (MACROEXPAND
+                    `(MAP 'LIST
+                          #'(LAMBDA (i op)
+                              (DESTRUCTURING-BIND (type name shape value &KEY (dtype net-dtype dtype-p)) op
+                                (CASE (CAR op)
+                                  ,@cases
+                                  (OTHERWISE (ERROR (FORMAT NIL "unknown net operation ~A" op))))))
+                          (range (LENGTH ,operations)) ,operations)))
+                 
+                 (run-sequence (section last-out-name operations locals)
+                   (MACROEXPAND
+                    ;; replace net variables
+                    `(LET ((opers ,operations))
+                       (LOOP FOR key BEING THE HASH-KEYS OF ,locals
+                             USING (HASH-VALUE value)
+                             DO (SETQ opers (SUBST value key opers)))
+                       
+                       (MAP 'LIST
+                            #'(LAMBDA (i prev-op op)
+                                (DESTRUCTURING-BIND (prev-type prev-in-name &REST prev-args)
+                                    (IF prev-op prev-op (LIST NIL NIL))
+                                  (LET ((prev-out-name (SECOND (MEMBER :out-name prev-op))))
+                                    ;; replace $out variable
+                                    (WHEN (> i 0)
+                                      (NSUBST (IF prev-out-name
+                                                  prev-out-name
+                                                  (name-norm net-name ,section prev-type (FORMAT NIL "~A" i)))
+                                        '$out op))
+                                    (DESTRUCTURING-BIND (type in-name &REST args) op
+                                      (LET* ((out-name (IF (MEMBER :out-name op)
+                                                           (SECOND (MEMBER :out-name op))
+                                                           (IF (= i (- (LENGTH opers) 1)) ,last-out-name NIL)))
+                                             ($out )
+                                             (out-name (IF out-name
+                                                           out-name
+                                                           (name-norm net-name ,section type (FORMAT NIL "~A" (1+ i))))))
+                                        (SETQ args (remove-kv :out-name args))
+                                        `((var auto ,out-name . #'(,type ,scope ,in-name ,@args))
+                                          (<< ,log ,(FORMAT NIL "~A: " out-name) (=> ,scope status))))))))
+                            (range (LENGTH opers)) (APPEND (LIST NIL) opers) opers)))))
+        
+        ;; whole net
+        `(progn ;; inputs
+           ,@(APPLY #'APPEND
+                    (io-case inputs
+                      ('Placeholder
+                          (LET ((var-name (name-norm net-name name)))
+                            (SETF (GETHASH name locals) var-name)
+                            (SETF (GETHASH name io-locals) var-name)
+                            `((var auto ,var-name .
+                                   #'(,type
+                                      ,scope
+                                      ,(IF dtype-p (dtype-norm dtype) dtype)
+                                      (($$ ,type Shape) ,shape)))
+                              (<< ,log ,(FORMAT NIL "~A: " var-name) (=> ,scope status)))))))
                     
-                      ;; net
-                      ,@(APPLY #'APPEND
-                               (net-case net
-                                 ('Variable `((auto ,(name-norm net-name name) .
-                                                    #'(,type
-                                                       ,scope
-                                                       ,shape
-                                                       ,(IF dtype-p (dtype-norm dtype) dtype)))
-                                              (auto ,(name-norm net-name 'assign name) .
-                                                    #'(Assign
-                                                       ,scope
-                                                       ,(name-norm net-name name)
-                                                       ,value))
-                                              (auto ,(name-norm net-name 'accum name) .
-                                                    #'(,type
-                                                       ,scope
-                                                       ,shape
-                                                       ,(IF dtype-p (dtype-norm dtype) dtype)))
-                                              (auto ,(name-norm net-name 'assign 'accum name) .
-                                                    #'(Assign
-                                                       ,scope
-                                                       ,(name-norm net-name 'accum name)
-                                                       (ZerosLike ,scope ,(name-norm net-name name))))))))
-                      
-                      ;; outputs
-                      ,@(io-case outputs
-                          ('Placeholder `(auto ,(name-norm net-name name) .
-                                               #'(,type
-                                                  ,scope
-                                                  ,(IF dtype-p (dtype-norm dtype) dtype)
-                                                  (($$ ,type Shape) ,shape)))))
-                      
-                      ) ; end of net declarations
+           ;; net
+           ,@(APPLY #'APPEND
+                    (net-case net
+                      ('Variable
+                       (LET ((var-name (name-norm net-name name)))
+                         (SETF (GETHASH name locals) var-name)
+                         (SETF (GETHASH name net-locals) var-name)
+                         `((var auto ,var-name .
+                                #'(,type
+                                   ,scope
+                                   ,shape
+                                   ,(IF dtype-p (dtype-norm dtype) dtype)))
+                           (<< ,log ,(FORMAT NIL "~A: " var-name) (=> ,scope status))
+                           (var auto ,(name-norm net-name 'assign name) .
+                                #'(Assign
+                                   ,scope
+                                   ,(name-norm net-name name)
+                                   ,value))
+                           (var auto ,(name-norm net-name 'accum name) .
+                                #'(,type
+                                   ,scope
+                                   ,shape
+                                   ,(IF dtype-p (dtype-norm dtype) dtype)))
+                           (var auto ,(name-norm net-name 'assign 'accum name) .
+                                #'(Assign
+                                   ,scope
+                                   ,(name-norm net-name 'accum name)
+                                   (ZerosLike ,scope ,(name-norm net-name name)))))))))
+           
+           ;; outputs
+           ,@(APPLY #'APPEND
+                    (io-case outputs
+                      ('Placeholder
+                          (LET ((var-name (name-norm net-name name)))
+                            (SETF (GETHASH name locals) var-name)
+                            (SETF (GETHASH name io-locals) var-name)
+                            `((var auto ,var-name .
+                                   #'(,type
+                                      ,scope
+                                      ,(IF dtype-p (dtype-norm dtype) dtype)
+                                      (($$ ,type Shape) ,shape)))
+                              (<< ,log ,(FORMAT NIL "~A: " var-name) (=> ,scope status)))))))
+                    
+           ;; init vars
+           (TF_CHECK_OK
+               (=> session Run '{
+                   ,@(net-case net
+                       ('Variable (name-norm net-name 'assign name)))
+                   } nullptr))
 
-               ;; init vars
-               (TF_CHECK_OK
-                   (=> session Run '{
-                       ,@(net-case net
-                           ('Variable (name-norm net-name 'assign name)))
-                       } nullptr))
+           ;; init accums
+           (TF_CHECK_OK
+               (=> session Run '{
+                   ,@(net-case net
+                       ('Variable (name-norm net-name 'assign 'accum name)))
+                   } nullptr))
 
-               ;; init accums
-               (TF_CHECK_OK
-                   (=> session Run '{
-                       ,@(net-case net
-                           ('Variable (name-norm net-name 'assign 'accum name)))
-                       } nullptr))
+           ;; node
+           ,@(APPLY #'APPEND (run-sequence 'node 'logits node locals))
+           ;; loss
+           ,@(APPLY #'APPEND (run-sequence 'loss 'loss loss locals))
+           
+           ;; gradients
+           (var ($$ std (t<> vector Output)) ,(name-norm net-name 'grad_outputs))
+           ;; initialize gradients
+           (TF_CHECK_OK
+               (AddSymbolicGradients
+                   scope '{ ,(IF (MEMBER :out-name (CAR (LAST loss)))
+                                (SECOND (MEMBER :out-name (CAR (LAST loss))))
+                                'loss) }
+                   '{ ,@(net-case net ('Variable (name-norm net-name name))) }
+                   (aof ,(name-norm net-name 'grad_outputs))))
+           
+           ;; define lr placeholder
+           ,@(APPLY #'APPEND
+                    (io-case lr
+                      ('Placeholder
+                          (LET ((var-name (name-norm net-name name)))
+                            (SETF (GETHASH name locals) var-name)
+                            (SETF (GETHASH name io-locals) var-name)
+                            `((var auto ,var-name .
+                                   #'(,type
+                                      ,scope
+                                      ,(IF dtype-p (dtype-norm dtype) dtype)
+                                      (($$ ,type Shape) ,shape)))
+                              (<< ,log ,(FORMAT NIL "~A: " var-name) (=> ,scope status)))))))
 
-               ;; node
-               (let (;; node
-                     ,@(run-sequence 'logits node)
-                     ;; loss
-                     ,@(run-sequence 'loss loss)
-                       ;; gradients
-                       (($$ std (t<> vector Output)) ,(name-norm net-name 'grad_outputs))                       
-                       ) ; end of node declarations
+           ,@(net-case net
+               ('Variable
+                `(var auto ,(name-norm net-name 'apply name) .
+                      #'(ApplyMomentum
+                            ,scope
+                          ,(name-norm net-name name)
+                          ,(name-norm net-name 'accum name)
+                          ,(DESTRUCTURING-BIND (type name shape &KEY (dtype net-dtype dtype-p)) (CAR lr)
+                             (name-norm net-name name))
+                          (nth ,i ,(name-norm net-name 'grad_outputs))
+                          (Cast ,scope MOMENTUM ,dtype)))))
 
-                 ;; initialize gradients
-                 
-                 
-               )) ; end of net, node
-            )))) ; end of Model
+           ;; train session as a closure carries ios and net
+           ;; receives batch of tensors to apply
+           (closure ((ClientSession * session . #'(aof session))
+                     ,@(LOOP FOR key BEING THE HASH-KEYS OF io-locals
+                             USING (HASH-VALUE value)
+                             COLLECT `(Output ,value))
+                     (Output ,(IF (MEMBER :out-name (CAR (LAST loss)))
+                                  (SECOND (MEMBER :out-name (CAR (LAST loss))))
+                                  'loss))
+                     ,@(LOOP FOR key BEING THE HASH-KEYS OF net-locals
+                             COLLECT `(Output ,(name-norm net-name 'apply key))))
+             '(lambda (,@(LOOP FOR key BEING THE HASH-KEYS OF io-locals
+                               USING (HASH-VALUE value)
+                               COLLECT `(Output ,(INTERN (FORMAT NIL "~A_tensor" value))))
+                       ((t<> vector Tensor) & outputs))
+               
+               (=> session Run
+                   '{ ; ios
+                   ,@(LOOP FOR key BEING THE HASH-KEYS OF io-locals
+                           USING (HASH-VALUE value)
+                           COLLECT `'{ ,value ,(INTERN (FORMAT NIL "~A_tensor" value)) })
+                   }
+                   '{ ; loss
+                   ,(IF (MEMBER :out-name (CAR (LAST loss)))
+                        (SECOND (MEMBER :out-name (CAR (LAST loss))))
+                        'loss)
+                   ; net
+                   ,@(net-case net
+                       ('Variable
+                        (name-norm net-name 'apply name)))
+                   }
+                   '{ }
+                   (aof outputs))))
+           
+           ) ; end of net, node
+        )))) ; end of Model
 
 (source "mnist.cpp" (:cpp #t :std #f :compile #t :link #t)
-        ;; Tensorflow 2.19.0
+        ;; Tensorflow 2.12.1
         (include "tensorflow/cc/client/client_session.h")
         (include "tensorflow/cc/framework/gradients.h")
         (include "tensorflow/cc/ops/dataset_ops_internal.h")
@@ -216,7 +309,7 @@
         (static)
         (func Dropout ((const Scope & scope)
                        (const Input x)
-                       (const int rate))
+                       (const float rate))
               (out Output)
               (let ((float keep_prob . #'(- 1 rate))
                     (auto random_value5 . #'(RandomUniform scope (Shape scope x) DT_FLOAT))
@@ -280,13 +373,14 @@
                         (int s1 . #'(* (($$ std pow) (/ IMAGE_SIZE 4) 2) 64))
                         (float f1 . 5e-4)
                         
-                        (auto random_value . #'(closure ((const Scope & scope) (int rate))
-                                                 '(lambda ((($$ std (t<> initializer_list int)) shape))
-                                                   (return (Multiply scope (TruncatedNormal scope shape DT_FLOAT) rate)))))
+                        (auto random_value . #'(closure ((const Scope * scope . #'(aof scope)) (Output rate))
+                                                 '(lambda ((($$ tensorflow Input) shape)) (out Output)
+                                                   (return (Multiply (cof scope)
+                                                             (TruncatedNormal (cof scope) shape DT_FLOAT) rate)))))
                         
-                        (auto const_float . #'(closure ((const Scope & scope) (float rate . 0.1f))
-                                                '(lambda ((($$ std (t<> initializer_list int)) shape))
-                                                  (return ((t<> Const float) scope rate (TensorShape '{ shpae }))))))
+                        (auto const_float . #'(closure ((const Scope * scope . #'(aof scope)) (float rate . 0.1f))
+                                                '(lambda ((($$ std (t<> initializer_list int64_t)) shape)) (out Output)
+                                                  (return ((t<> Const float) (cof scope) rate (TensorShape '{ shape }))))))
 
                         ;; Trainable variables
                         ;; Convolutional Net
@@ -334,10 +428,10 @@
                                     ;; loss calculation
                                     :loss    '((SparseSoftmaxCrossEntropyWithLogits logits labels_ph)
                                                (ReduceMean ($ $out loss) '{ 0 } :out-name reduce_mean)
-                                               (L2Loss fc1_weights :out-name lfc1_w)
-                                               (L2Loss fc1_biases  :out-name lfc1_b)
-                                               (L2Loss fc2_weights :out-name lfc2_w)
-                                               (L2Loss fc2_biases  :out-name lfc2_b)
+                                               (L2Loss fc1_w :out-name lfc1_w)
+                                               (L2Loss fc1_b :out-name lfc1_b)
+                                               (L2Loss fc2_w :out-name lfc2_w)
+                                               (L2Loss fc2_b :out-name lfc2_b)
                                                (AddN (cast (t<> initializer_list Input) '{ lfc1_w lfc1_w lfc1_w lfc1_w })
                                                  :out-name regularization)
                                                ;; when Operation name is not a single symbol :out-name should be set
@@ -345,8 +439,45 @@
                                                (Multiply regularization $out)
                                                ;; default :out-name loss
                                                (Add reduce_mean $out))
-                                    ))
+                                    ;; logging status for each operation by << operator
+                                    ;; default ($$ std cerr)
+                                    :log     (LOG INFO)
+                                    ;; update the weights and bias using gradient descent
+                                    ;; lr be used for applying momentum
+                                    ;; default (Placeholder lr_ph '())
+                                    :lr      (Placeholder lr_ph '())))
                         ) ; end let declaration
-                    
+
+                    ;; train loop
+                    (let ((int global_step . 0))
+                      (for ((int epoch . 0)) (< epoch NUM_EPOCHS) ((1+ epoch))
+                           ;; update when each epoch
+                           (let ((float decayed_learning_rate . #'(* BASE_LEARNING_RATE (($$ std pow) DECAY_RATE epoch)))
+                                 (auto lr_tensor . #'(Tensor decayed_learning_rate)))
+
+                             (for ((int bidx . 0)) (< bidx BATCHES_PER_EPOCHS) ((1+ bidx)) 
+                                  ;; Input X
+                                  (let ((Tensor x_tensor))
+                                    (CHECK (=> x_tensor CopyFrom
+                                               (=> inputs Slice (* bidx BATCH_SIZE) (* (+ bidx 1) BATCH_SIZE))
+                                               (TensorShape '{ BATCH_SIZE IMAGE_SIZE IMAGE_SIZE NUM_CHANNELS })))
+
+                                    ;; Labels
+                                    (let ((Tensor y_tensor))
+                                      (CHECK (=> y_tensor CopyFrom
+                                                 (=> labels Slice (* bidx BATCH_SIZE) (* (+ bidx 1) BATCH_SIZE))
+                                                 (TensorShape '{ BATCH_SIZE })))
+
+                                      ;; Run
+                                      (let (((t<> vector Tensor) outputs))
+                                        (TF_CHECK_OK
+                                            (model x_tensor y_tensor lr_tensor outputs)) ; call train closure
+
+                                        (when (== (% global_step EVAL_FREQUENCY) 0) 
+                                          (<< (LOG INFO) "Print step: " global_step
+                                              ", decayed_learning_rate: " decayed_learning_rate
+                                              ", loss: " (=> (nth 0 outputs) DebugString))))))
+                                  
+                                  (1+ global_step)))))
                     ))))
           (return 0)))

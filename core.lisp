@@ -279,7 +279,7 @@
 	           t)))))
 
 (defun key-eq (symbol1 symbol2)
-  (and (symbolp symbol1) (symbolp symbol2) (string-equal (symbol-name symbol1) (symbol-name symbol2))))
+  (and (symbolp symbol1) (symbolp symbol2) (equal (symbol-name symbol1) (symbol-name symbol2))))
 
 (defun is-array (desc)
   (when (and (listp desc) (key-eq (first desc) (intern "[")) (key-eq (car (last desc)) (intern "]"))) t))
