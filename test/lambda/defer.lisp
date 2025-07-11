@@ -32,6 +32,8 @@
                                             '(lambda ((int x))                    ; dynamic parameters
                                               (format file (nth 0 msgs) x)
                                               (format file (nth 1 msgs) (* x x)))))
+                    (int first_val . 10)
+                    (int second_val . 20)
                     )
 
                 (format file "first line from main execution\n")
