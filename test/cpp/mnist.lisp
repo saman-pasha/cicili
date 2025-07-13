@@ -397,14 +397,15 @@
                                :name    mnist
                                :dtype   float
                                :input   (Placeholder inputs_ph '(BATCH_SIZE IMAGE_SIZE IMAGE_SIZE NUM_CHANNELS))
-                               :net     '((Variable  conv1_w '(5 5 NUM_CHANNELS 32) (random_value '(5 5 NUM_CHANNELS 32)))
-                                          (Variable  conv1_b '(32)                  b_zero_tensor)
-                                          (Variable  conv2_w '(5 5 32 64)           (random_value '(5 5 32 64)))
-                                          (Variable  conv2_b '(64)                  (const_float  '(64)))
-                                          (Variable  fc1_w   '(s1 512)              (random_value '(s1 512)))
-                                          (Variable  fc1_b   '(512)                 (const_float  '(512)))
-                                          (Variable  fc2_w   '(512 NUM_LABELS)      (random_value '(512 NUM_LABELS)))
-                                          (Variable  fc2_b   '(NUM_LABELS)          (const_float  '(NUM_LABELS))))
+                               :net     '((Variable conv1_w '(5 5 NUM_CHANNELS 32) (exec
+                                                                                       random_value '(5 5 NUM_CHANNELS 32)))
+                                          (Variable conv1_b '(32)                  b_zero_tensor)
+                                          (Variable conv2_w '(5 5 32 64)           (exec random_value '(5 5 32 64)))
+                                          (Variable conv2_b '(64)                  (exec const_float  '(64)))
+                                          (Variable fc1_w   '(s1 512)              (exec random_value '(s1 512)))
+                                          (Variable fc1_b   '(512)                 (exec const_float  '(512)))
+                                          (Variable fc2_w   '(512 NUM_LABELS)      (exec random_value '(512 NUM_LABELS)))
+                                          (Variable fc2_b   '(NUM_LABELS)          (exec const_float  '(NUM_LABELS))))
                                :output  (Placeholder labels_ph '(BATCH_SIZE) :dtype int64)
                                ;; Convnet Model begin
                                ;; $out referes to previous output
@@ -474,7 +475,7 @@
                                       ;; Run
                                       (let (((t<> vector Tensor) outputs))
                                         (TF_CHECK_OK
-                                            (model x_tensor y_tensor lr_tensor outputs)) ; call train closure
+                                            (exec model x_tensor y_tensor lr_tensor outputs)) ; call train closure
 
                                         (when (== (% global_step EVAL_FREQUENCY) 0) 
                                           (<< (LOG INFO) "Print step: " global_step

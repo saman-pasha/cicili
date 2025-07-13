@@ -36,53 +36,62 @@ static Output Dropout (const Scope & scope , const Input x , const float rate ) 
     return (result . z );
   }
 }
-struct { /* ciciliStruct191 */
-  const Scope * scope ;
-  Output rate ;
-} ciciliClosure189 ;
-static Output __ciciliL_194 (tensorflow :: Input  shape ) {
-  const Scope * scope  = (ciciliClosure189 . scope );
-  Output rate  = (ciciliClosure189 . rate );
+struct __ciciliC_Context_189 {
+    Output (*routine) (struct __ciciliC_Context_189 * context , tensorflow :: Input  shape );
+  struct ciciliStruct195 { /* ciciliStruct195 */
+    const Scope * scope ;
+    Output rate ;
+  } context ;
+};
+static Output __ciciliC_Context_189_s___ciciliC_Routine_190 (struct __ciciliC_Context_189 * context , tensorflow :: Input  shape ) {
+  const Scope * scope  = ((context ->context ). scope );
+  Output rate  = ((context ->context ). rate );
   return Multiply ((*scope ), TruncatedNormal ((*scope ), shape , DT_FLOAT ), rate );
 }
-struct { /* ciciliStruct201 */
-  const Scope * scope ;
-  float rate ;
-} ciciliClosure199 ;
-static Output __ciciliL_204 (std :: initializer_list < int64_t >  shape ) {
-  const Scope * scope  = (ciciliClosure199 . scope );
-  float rate  = (ciciliClosure199 . rate );
+struct __ciciliC_Context_200 {
+    Output (*routine) (struct __ciciliC_Context_200 * context , std :: initializer_list < int64_t >  shape );
+  struct ciciliStruct206 { /* ciciliStruct206 */
+    const Scope * scope ;
+    float rate ;
+  } context ;
+};
+static Output __ciciliC_Context_200_s___ciciliC_Routine_201 (struct __ciciliC_Context_200 * context , std :: initializer_list < int64_t >  shape ) {
+  const Scope * scope  = ((context ->context ). scope );
+  float rate  = ((context ->context ). rate );
   return Const < float > ((*scope ), rate , TensorShape ({ shape }));
 }
-struct { /* ciciliStruct249 */
-  ClientSession * session ;
-  Output mnist_inputs_ph ;
-  Output mnist_labels_ph ;
-  Output mnist_lr_ph ;
-  Output loss ;
-  Output mnist_apply_conv1_w ;
-  Output mnist_apply_conv1_b ;
-  Output mnist_apply_conv2_w ;
-  Output mnist_apply_conv2_b ;
-  Output mnist_apply_fc1_w ;
-  Output mnist_apply_fc1_b ;
-  Output mnist_apply_fc2_w ;
-  Output mnist_apply_fc2_b ;
-} ciciliClosure247 ;
-static Status __ciciliL_252 (Tensor mnist_inputs_ph_tensor , Tensor mnist_labels_ph_tensor , Tensor mnist_lr_ph_tensor , vector < Tensor >  & outputs ) {
-  ClientSession * session  = (ciciliClosure247 . session );
-  Output mnist_inputs_ph  = (ciciliClosure247 . mnist_inputs_ph );
-  Output mnist_labels_ph  = (ciciliClosure247 . mnist_labels_ph );
-  Output mnist_lr_ph  = (ciciliClosure247 . mnist_lr_ph );
-  Output loss  = (ciciliClosure247 . loss );
-  Output mnist_apply_conv1_w  = (ciciliClosure247 . mnist_apply_conv1_w );
-  Output mnist_apply_conv1_b  = (ciciliClosure247 . mnist_apply_conv1_b );
-  Output mnist_apply_conv2_w  = (ciciliClosure247 . mnist_apply_conv2_w );
-  Output mnist_apply_conv2_b  = (ciciliClosure247 . mnist_apply_conv2_b );
-  Output mnist_apply_fc1_w  = (ciciliClosure247 . mnist_apply_fc1_w );
-  Output mnist_apply_fc1_b  = (ciciliClosure247 . mnist_apply_fc1_b );
-  Output mnist_apply_fc2_w  = (ciciliClosure247 . mnist_apply_fc2_w );
-  Output mnist_apply_fc2_b  = (ciciliClosure247 . mnist_apply_fc2_b );
+struct __ciciliC_Context_249 {
+    Status (*routine) (struct __ciciliC_Context_249 * context , Tensor mnist_inputs_ph_tensor , Tensor mnist_labels_ph_tensor , Tensor mnist_lr_ph_tensor , vector < Tensor >  & outputs );
+  struct ciciliStruct255 { /* ciciliStruct255 */
+    ClientSession * session ;
+    Output mnist_inputs_ph ;
+    Output mnist_labels_ph ;
+    Output mnist_lr_ph ;
+    Output loss ;
+    Output mnist_apply_conv1_w ;
+    Output mnist_apply_conv1_b ;
+    Output mnist_apply_conv2_w ;
+    Output mnist_apply_conv2_b ;
+    Output mnist_apply_fc1_w ;
+    Output mnist_apply_fc1_b ;
+    Output mnist_apply_fc2_w ;
+    Output mnist_apply_fc2_b ;
+  } context ;
+};
+static Status __ciciliC_Context_249_s___ciciliC_Routine_250 (struct __ciciliC_Context_249 * context , Tensor mnist_inputs_ph_tensor , Tensor mnist_labels_ph_tensor , Tensor mnist_lr_ph_tensor , vector < Tensor >  & outputs ) {
+  ClientSession * session  = ((context ->context ). session );
+  Output mnist_inputs_ph  = ((context ->context ). mnist_inputs_ph );
+  Output mnist_labels_ph  = ((context ->context ). mnist_labels_ph );
+  Output mnist_lr_ph  = ((context ->context ). mnist_lr_ph );
+  Output loss  = ((context ->context ). loss );
+  Output mnist_apply_conv1_w  = ((context ->context ). mnist_apply_conv1_w );
+  Output mnist_apply_conv1_b  = ((context ->context ). mnist_apply_conv1_b );
+  Output mnist_apply_conv2_w  = ((context ->context ). mnist_apply_conv2_w );
+  Output mnist_apply_conv2_b  = ((context ->context ). mnist_apply_conv2_b );
+  Output mnist_apply_fc1_w  = ((context ->context ). mnist_apply_fc1_w );
+  Output mnist_apply_fc1_b  = ((context ->context ). mnist_apply_fc1_b );
+  Output mnist_apply_fc2_w  = ((context ->context ). mnist_apply_fc2_w );
+  Output mnist_apply_fc2_b  = ((context ->context ). mnist_apply_fc2_b );
   return (session . Run ({ { mnist_inputs_ph , mnist_inputs_ph_tensor }, { mnist_labels_ph , mnist_labels_ph_tensor }, { mnist_lr_ph , mnist_lr_ph_tensor }}, { loss , mnist_apply_conv1_w , mnist_apply_conv1_b , mnist_apply_conv2_w , mnist_apply_conv2_b , mnist_apply_fc1_w , mnist_apply_fc1_b , mnist_apply_fc2_w , mnist_apply_fc2_b }, { }, (&outputs )));
 }
 int main (int argc , char * argv []) {
@@ -130,16 +139,10 @@ int main (int argc , char * argv []) {
         int s1  = (std :: pow ((IMAGE_SIZE  /  4 ), 2) *  64 );
         float f1  = 5.0e-4;
         __auto_type b_zero_tensor  = Tensor (DT_FLOAT , TensorShape ({ 32}));
-        __auto_type random_value  =             ({ /* cicili#Progn192 */
-              ciciliClosure189  = ((typeof(ciciliClosure189 )){ (&scope ), rate });
-              __ciciliL_194 ;
-            });;
-        __auto_type const_float  =             ({ /* cicili#Progn202 */
-              ciciliClosure199  = ((typeof(ciciliClosure199 )){ (&scope ), 0.1f });
-              __ciciliL_204 ;
-            });;
+        __auto_type random_value  = ((struct __ciciliC_Context_189 ){ __ciciliC_Context_189_s___ciciliC_Routine_190 , { (&scope ), rate }});
+        __auto_type const_float  = ((struct __ciciliC_Context_200 ){ __ciciliC_Context_200_s___ciciliC_Routine_201 , { (&scope ), 0.1f }});
         ((b_zero_tensor . vec < float > ()). setZero ());
-        __auto_type model  =             ({ /* cicili#Progn215 */
+        __auto_type model  =             ({ /* cicili#Progn217 */
               __auto_type mnist_inputs_ph  = Placeholder (scope , DT_FLOAT , Placeholder :: Shape ({ BATCH_SIZE , IMAGE_SIZE , IMAGE_SIZE , NUM_CHANNELS }));
               (LOG (INFO ) <<  "mnist_inputs_ph: " <<  (scope . status ()) );
               __auto_type mnist_conv1_w  = Variable (scope , { 5, 5, NUM_CHANNELS , 32}, DT_FLOAT );
@@ -248,30 +251,28 @@ int main (int argc , char * argv []) {
               __auto_type mnist_apply_fc1_b  = ApplyMomentum (scope , mnist_fc1_b , mnist_accum_fc1_b , mnist_lr_ph , mnist_grad_outputs [5], Cast (scope , MOMENTUM , DT_FLOAT ));
               __auto_type mnist_apply_fc2_w  = ApplyMomentum (scope , mnist_fc2_w , mnist_accum_fc2_w , mnist_lr_ph , mnist_grad_outputs [6], Cast (scope , MOMENTUM , DT_FLOAT ));
               __auto_type mnist_apply_fc2_b  = ApplyMomentum (scope , mnist_fc2_b , mnist_accum_fc2_b , mnist_lr_ph , mnist_grad_outputs [7], Cast (scope , MOMENTUM , DT_FLOAT ));
-              ({ /* cicili#Progn250 */
-                ciciliClosure247  = ((typeof(ciciliClosure247 )){ (&session ), mnist_inputs_ph , mnist_labels_ph , mnist_lr_ph , loss , mnist_apply_conv1_w , mnist_apply_conv1_b , mnist_apply_conv2_w , mnist_apply_conv2_b , mnist_apply_fc1_w , mnist_apply_fc1_b , mnist_apply_fc2_w , mnist_apply_fc2_b });
-                __ciciliL_252 ;
-              });            });;
-        { /* cicili#Let256 */
+              ((struct __ciciliC_Context_249 ){ __ciciliC_Context_249_s___ciciliC_Routine_250 , { (&session ), mnist_inputs_ph , mnist_labels_ph , mnist_lr_ph , loss , mnist_apply_conv1_w , mnist_apply_conv1_b , mnist_apply_conv2_w , mnist_apply_conv2_b , mnist_apply_fc1_w , mnist_apply_fc1_b , mnist_apply_fc2_w , mnist_apply_fc2_b }});
+            });;
+        { /* cicili#Let259 */
           int global_step  = 0;
           for (int epoch  = 0; (epoch  <  NUM_EPOCHS  ); (epoch ++)) {
-            { /* cicili#Let260 */
+            { /* cicili#Let263 */
               float decayed_learning_rate  = (BASE_LEARNING_RATE  *  std :: pow (DECAY_RATE , epoch ) );
               __auto_type lr_tensor  = Tensor (decayed_learning_rate );
               for (int bidx  = 0; (bidx  <  BATCHES_PER_EPOCHS  ); (bidx ++)) {
-                { /* cicili#Let266 */
+                { /* cicili#Let269 */
                   Tensor x_tensor ;
                   CHECK ((x_tensor . CopyFrom ((inputs . Slice ((bidx  *  BATCH_SIZE  ), ((bidx  +  1 ) *  BATCH_SIZE  ))), TensorShape ({ BATCH_SIZE , IMAGE_SIZE , IMAGE_SIZE , NUM_CHANNELS }))));
-                  { /* cicili#Let268 */
+                  { /* cicili#Let271 */
                     Tensor y_tensor ;
                     CHECK ((y_tensor . CopyFrom ((labels . Slice ((bidx  *  BATCH_SIZE  ), ((bidx  +  1 ) *  BATCH_SIZE  ))), TensorShape ({ BATCH_SIZE }))));
-                    { /* cicili#Let270 */
+                    { /* cicili#Let273 */
                       vector < Tensor >  outputs ;
-                      TF_CHECK_OK (model (x_tensor , y_tensor , lr_tensor , outputs ));
+                      TF_CHECK_OK ((model . routine )((&model ), x_tensor , y_tensor , lr_tensor , outputs ));
                       if ((global_step  %  EVAL_FREQUENCY  ) ==  0 ) 
-                        { /* cicili#Block277 */
+                        { /* cicili#Block282 */
                           (LOG (INFO ) <<  "Print step: " <<  global_step  <<  ", decayed_learning_rate: " <<  decayed_learning_rate  <<  ", loss: " <<  (outputs [0]. DebugString ()) );
-                        } /* cicili#Block277 */
+                        } /* cicili#Block282 */
 
                     }
                   }

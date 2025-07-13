@@ -966,7 +966,9 @@
                                                               (array-def *function-spec*)))
                                                  output)) '())
         (let ((out (if (null output) nil (specify-expr output))))
-          (when (and (key-eq (car output) '|closure|) *function-spec* (key-eq (typeof *function-spec*) '|auto|))
+          (when (and (listp output)
+                  (key-eq (car output) '|closure|)
+                  *function-spec* (key-eq (typeof *function-spec*) '|auto|))
             (setf (typeof *function-spec*) (list '|struct| (name (car (body out))))))
           (make-specifier nil '|@RETURN| nil nil nil nil nil out '())))))
 
