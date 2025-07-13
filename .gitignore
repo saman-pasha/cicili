@@ -189,3 +189,4 @@ lib/std/tests/tf_test.c.run1.c
 lib/std/tests/tf_test.c.run2.c
 lib/std/tests/\#tf_test.c.run1.c\#
 lib/std/tests/tf_test.c.run3.c
+test/lambda/.\#defer.lisp

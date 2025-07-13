@@ -51,13 +51,13 @@
              (setf (unique instance)
                    (if (symbolp name)
                        (free-name *module-path* name)
-                       (intern (format nil "~A_s_~A" (symbol-name (free-name *module-path* (car name))) (cdr name))))))
+                       (intern (make-shared-name (symbol-name (free-name *module-path* (car name))) (cdr name))))))
 	       (setf (params  instance)     (make-hash-table :test 'eql))
  	       (setf (inners  instance)     (make-hash-table :test 'eql))) ; contains lambdas
 	      ((eql construct '|@METHOD|)
              (setf (module instance) *module-path*)
              (setf (unique instance)
-                   (intern (format nil "~A_m_~A" (symbol-name (free-name *module-path* (car name))) (cdr name))))
+                   (intern (make-method-name (symbol-name (free-name *module-path* (car name))) (cdr name))))
 	       (setf (params  instance)     (make-hash-table :test 'eql))
  	       (setf (inners  instance)     (make-hash-table :test 'eql))) ; contains lambdas
 	      ((eql construct '|@ENUM|)
@@ -463,6 +463,10 @@
                     (multiple-value-bind (const type modifier const-ptr variable array)
 		                (specify-type< (without-last wl))
 		              (values const type modifier const-ptr variable array def)))
+                   ((key-eq (car quoted) '|lambda*|) ; lambda* initializer
+                    (multiple-value-bind (const type modifier const-ptr variable array)
+		                (specify-type< (without-last wl))
+		              (values const type modifier const-ptr variable array def)))
                    ((key-eq (car quoted) '|closure*|) ; closure* initializer
                     (multiple-value-bind (const type modifier const-ptr variable array)
 		                (specify-type< (without-last wl))
@@ -652,11 +656,26 @@
                              (let* ((lname (gensym "__ciciliL_"))
                                     (func-spec (specify-function (append (list '|lambda| lname) (cdr quoted)) '())))
                                (add-inner func-spec (if *function-spec* *function-spec* *variable-spec*))
-                               (specify-symbol-expr (if *module-path* (free-name *module-path* lname) lname))))
+                               (let* ((fname (name func-spec))
+                                      (name (if (listp fname)
+                                                (intern (make-shared-name (car fname) (cdr fname)))
+                                                fname)))
+                               (specify-symbol-expr (if *module-path* (free-name *module-path* lname) name)))))
+                            
+                            ((key-eq (car quoted) '|lambda*|) ; lambda*
+                             (let* ((func-spec (specify-function quoted '())))
+                               (add-inner func-spec (if *function-spec* *function-spec* *variable-spec*))
+                               (let* ((fname (name func-spec))
+                                      (name (if (listp fname)
+                                                (intern (make-shared-name (car fname) (cdr fname)))
+                                                fname)))
+                               (specify-symbol-expr (if *module-path* (free-name *module-path* name) name)))))
+
                             ((key-eq (car quoted) '|closure*|) ; closure*
-                             (let* ((struct-spec (specify-struct (cadr quoted) '() :nested t)))
+                             (let ((struct-spec (specify-struct (cadr quoted) '())))
                                (add-inner struct-spec (if *function-spec* *function-spec* *variable-spec*))
                                (specify-expr (caddr quoted))))
+                            
                             (t (specify-list-expr quoted)))))   ; list
 		           ((and (> (length def) 2) (key-eq func '\|) (key-eq (cadr def) '\|))
 		            (specify-operator-expr (push '\|\| (cddr def))))
@@ -900,8 +919,8 @@
                                                    ((key-eq '|**| modifier) '|***|)
                                                    (t (error (format nil "not suitable for deferment"))))
                                                 ,const-ptr ,ptr-name ,array)))
-                                            ,(remove nil `(var ,const ,typeof ,modifier ,const-ptr
-                                                             ,variable ,array . #'(cof ,ptr-name)))
+                                            ,(remove nil `(|var| ,const ,typeof ,modifier ,const-ptr
+                                                             ,variable ,array . #'(|cof| ,ptr-name)))
                                             ,@has-defer))) attributes)))
                      (add-param
                          (make-specifier (specify-decl-name< variable) '|@VAR| const typeof modifier const-ptr array
@@ -946,10 +965,10 @@
                                                               (const-ptr *function-spec*)
                                                               (array-def *function-spec*)))
                                                  output)) '())
-        (make-specifier nil '|@RETURN| nil nil nil nil nil
-                        (if (null output)
-                            nil
-                            (specify-expr output)) '()))))
+        (let ((out (if (null output) nil (specify-expr output))))
+          (when (and (key-eq (car output) '|closure|) *function-spec* (key-eq (typeof *function-spec*) '|auto|))
+            (setf (typeof *function-spec*) (list '|struct| (name (car (body out))))))
+          (make-specifier nil '|@RETURN| nil nil nil nil nil out '())))))
 
 (defun specify-if (def)
   (when (or (< (length def) 3) (> (length def) 4)) (error (format nil "wrong if form ~A" def)))
@@ -1211,8 +1230,8 @@
           (attributes '())
 	      (declares '()))
 
-      (when is-static  (push (cons '|static|  t) struct-attrs))
-	  (when is-declare (push (cons '|declare| t) struct-attrs))
+      (when is-static  (push (cons '|static| t) struct-attrs))
+	  (when is-declare (push (cons '|decl| t) struct-attrs))
       (setf (attrs struct-specifier) struct-attrs)
       
       (dolist (clause clauses)

@@ -260,7 +260,7 @@
 
 (defun compile-form (spec lvl globals parent-spec)
   (with-slots (construct) spec
-    (display "FORM" spec #\Newline "PARENT" parent-spec #\Newline)
+    ;; (display "FORM" spec #\Newline "PARENT" parent-spec #\Newline)
     (case construct
       ('|@NIL|    t)
       ('|@SYMBOL| (compile-atom       spec lvl globals spec))
@@ -317,7 +317,7 @@
           do (progn
                (if (key-eq '|@STRUCT| (construct los)) ; default t means is multi-output
                    (when (or (and (null is-static) *target-header*) (and is-static *target-source*))
-                     (compile-struct los lvl globals spec :nested t :unique is-unique))
+                     (compile-struct los lvl globals spec :unique is-unique :no-typedef t))
                    (progn ; lambdas
                      (push (cons '|static| t) (attrs los))
                      (compile-function los lvl globals spec :unique is-unique)
@@ -333,12 +333,12 @@
     (when is-global (output ";~%"))))
 
 (defvar *parent-exprs* (list '|@CALL| '|@LIST|))
-(defvar *parent-bodies* (list '|@CICILI| '|@TARGET| '|@CALL| '|@=>|))
+(defvar *parent-bodies* (list '|@CICILI| '|@TARGET| '|@CALL| '|@=>| '|@RETURN| '|@VAR|))
 (defun compile-body (spec lvl globals parent-spec)
   (let ((is-parent-expr (if (find (construct parent-spec) *parent-exprs* :test #'eql) t nil)))
     (loop for form in (body spec)
           do (progn
-               (display "BODY" spec #\Newline "PARENT" parent-spec is-parent-expr #\Newline)
+               ;; (display "BODY" spec #\Newline "PARENT" parent-spec is-parent-expr #\Newline)
                (case (construct form)
 		         ('|@PREPROC| (compile-preprocessor form (1+ lvl) globals parent-spec))
                  ('|@ASSIGN|  (compile-assignment   form (1+ lvl) globals parent-spec :is-expr is-parent-expr))
@@ -374,7 +374,7 @@
     (output "{ /* ~A */~%" (name spec))
     (loop for var being the hash-value of (params spec)
           do (progn
-               (compile-variable var (1+ lvl) locals spec t)
+               (compile-variable var (1+ lvl) locals var t)
                (when (find '|alloc| (attrs var) :test #'key-eq) (push (name var) dynamics))))
     (compile-body (body spec) lvl locals spec)
     (output "~&~A" (indent lvl))
@@ -534,7 +534,7 @@
             do (progn
                  (if (key-eq '|@STRUCT| (construct los)) ; inline structs
                      (when (or (and (null is-static) *target-header*) (and is-static *target-source*))
-                       (compile-struct los lvl globals spec :nested t :unique is-unique))
+                       (compile-struct los lvl globals spec :unique is-unique :no-typedef t))
                      (progn ; lambdas
                        (push (cons '|static| t) (attrs los))
                        (compile-function los lvl globals spec :unique is-unique)
@@ -663,7 +663,8 @@
       (set-ast-line (output "~A" (if is-unique (unique spec) name))))
     (output ";~%")))
 
-(defun compile-struct (spec lvl globals parent-spec &key ((:nested is-nested) nil) ((:unique is-unique) nil))
+(defun compile-struct (spec lvl globals parent-spec &key ((:nested is-nested) nil)
+                            ((:unique is-unique) nil) no-typedef)
   (let ((name         (name spec))
 	    (is-anonymous (anonymous spec))
 	    (is-static    nil)
@@ -694,19 +695,16 @@
 	           (inners spec)))
     (output "~&~A" (indent lvl))
     (when is-static (set-ast-line (output "static ")))
-    (if is-anonymous
-        (set-ast-line (output "struct "))
-        (if is-nested
-            (progn
-              (set-ast-line (output "struct "))
-              (set-ast-line (output "~A " (if is-unique (unique spec) name)))
-              (when is-declare (error (format nil "declare nested struct ~A" spec))))
-            (progn
-              (set-ast-line (output "typedef "))
-              (set-ast-line (output "struct "))
-              (set-ast-line (output "~A " (if is-unique (unique spec) name)))
-              (when is-declare
-                (set-ast-line (output "~A " (if is-unique (unique spec) name)))))))
+    (if (or is-anonymous no-typedef)
+        (progn
+          (set-ast-line (output "struct "))
+          (set-ast-line (output "~A " (if is-unique (unique spec) name))))
+        (progn
+          (set-ast-line (output "typedef "))
+          (set-ast-line (output "struct "))
+          (set-ast-line (output "~A " (if is-unique (unique spec) name)))
+          (when is-declare
+            (set-ast-line (output "~A " (if is-unique (unique spec) name))))))
     (unless is-declare
       (if is-anonymous
           (output "{ /* ~A */~%" name)
@@ -731,7 +729,7 @@
                   do (progn
                        (compile-spec-type dec lvl globals spec)
                        (when (< i l) (output ",")))))
-          (unless is-nested
+          (unless no-typedef
             (output " ")
             (set-ast-line (output "~A" (if is-unique (unique spec) name))))))
     (output ";~%")))
