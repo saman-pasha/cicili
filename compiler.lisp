@@ -28,6 +28,7 @@
 
 ;;;; AST Abstract Syntax Tree
 (defun compile-ast (targets)
+  (setf *gensym-counter* 100)
   (dolist (target targets)
     (let* ((tname   (car target))
 	       (ir      nil)
@@ -84,7 +85,6 @@
                           (setq file (format nil "~A.run~D.~A" (nth 1 target) *ast-run* (pathname-type (nth 1 target)))))
                         (setq stdout  (make-string-output-stream))
                         (setq stderr  (make-string-output-stream))
-                        (setf *gensym-counter* 100)
                         
                         ;; manipulate ast
                         (setq has-error nil)

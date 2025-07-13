@@ -186,3 +186,7 @@ test/cpp/mnist.cpp.run2.cpp
 test/cpp/.\#mnist.lisp
 test/cpp/mnist.cpp.run3.cpp
 lib/std/tests/tf_test.c.run1.c
+lib/std/tests/tf_test.c.run2.c
+lib/std/tests/\#tf_test.c.run1.c\#
+lib/std/tests/tf_test.c.run3.c
+test/lambda/.\#defer.lisp

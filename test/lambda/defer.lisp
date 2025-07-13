@@ -26,17 +26,26 @@
                     (char * msg_int . "int from closure: %d\n")
                     (char * msg_int_sqr . "int sqr from closure: %d\n")
                     (FILE * file . #'(fopen "./test/lambda/deferral.txt" "w+"))
+                    
                     (auto printInts . #'(closure ((FILE * file)
                                                   (char ** msgs . #'(cast (char * [])
                                                                       '{ msg_int msg_int_sqr }))) ; static captured values
                                             '(lambda ((int x))                    ; dynamic parameters
                                               (format file (nth 0 msgs) x)
                                               (format file (nth 1 msgs) (* x x)))))
-                    )
-
+                    
+                    (auto make_closure . '(lambda ((int state)) (out auto)
+                                           (return (closure ((int state))
+                                                     '(lambda ((int dyn_var)) (out int)
+                                                       (return (+ state dyn_var)))))))
+                    (auto clo1 . #'(make_closure 10))
+                    (auto clo2 . #'(make_closure 20)))
+               
                 (format file "first line from main execution\n")
 
-                (printInts 5) ; into file
+                (format #t "clo1: %d\n" (exec clo1 5))
+                (format #t "clo2: %d\n" (exec clo2 5))
+                (exec printInts 5) ; into file
                 
                 (set ($ emp Id)   100
                      ($ emp Name) (calloc 8 (sizeof char)))

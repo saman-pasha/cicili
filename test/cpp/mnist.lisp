@@ -129,7 +129,7 @@
                                       ,(IF dtype-p (dtype-norm dtype) dtype)
                                       (($$ ,type Shape) ,shape)))
                               (<< ,log ,(FORMAT NIL "~A: " var-name) (=> ,scope status)))))))
-                    
+           
            ;; net
            ,@(APPLY #'APPEND
                     (net-case net
@@ -172,7 +172,7 @@
                                       ,(IF dtype-p (dtype-norm dtype) dtype)
                                       (($$ ,type Shape) ,shape)))
                               (<< ,log ,(FORMAT NIL "~A: " var-name) (=> ,scope status)))))))
-                    
+           
            ;; init vars
            (TF_CHECK_OK
                (=> session Run '{
@@ -198,10 +198,10 @@
            (TF_CHECK_OK
                (AddSymbolicGradients
                    scope '{ ,(IF (MEMBER :out-name (CAR (LAST loss)))
-                                (SECOND (MEMBER :out-name (CAR (LAST loss))))
-                                'loss) }
-                   '{ ,@(net-case net ('Variable (name-norm net-name name))) }
-                   (aof ,(name-norm net-name 'grad_outputs))))
+                                 (SECOND (MEMBER :out-name (CAR (LAST loss))))
+                                 'loss) }
+                                 '{ ,@(net-case net ('Variable (name-norm net-name name))) }
+                                 (aof ,(name-norm net-name 'grad_outputs))))
            
            ;; define lr placeholder
            ,@(APPLY #'APPEND
@@ -242,26 +242,28 @@
                              COLLECT `(Output ,(name-norm net-name 'apply key))))
              '(lambda (,@(LOOP FOR key BEING THE HASH-KEYS OF io-locals
                                USING (HASH-VALUE value)
-                               COLLECT `(Output ,(INTERN (FORMAT NIL "~A_tensor" value))))
+                               COLLECT `(Tensor ,(INTERN (FORMAT NIL "~A_tensor" value))))
                        ((t<> vector Tensor) & outputs))
+               (out Status)
                
-               (=> session Run
-                   '{ ; ios
-                   ,@(LOOP FOR key BEING THE HASH-KEYS OF io-locals
-                           USING (HASH-VALUE value)
-                           COLLECT `'{ ,value ,(INTERN (FORMAT NIL "~A_tensor" value)) })
-                   }
-                   '{ ; loss
-                   ,(IF (MEMBER :out-name (CAR (LAST loss)))
-                        (SECOND (MEMBER :out-name (CAR (LAST loss))))
-                        'loss)
-                   ; net
-                   ,@(net-case net
-                       ('Variable
-                        (name-norm net-name 'apply name)))
-                   }
-                   '{ }
-                   (aof outputs))))
+               (return
+                 (=> session Run
+                     '{ ; ios
+                     ,@(LOOP FOR key BEING THE HASH-KEYS OF io-locals
+                             USING (HASH-VALUE value)
+                             COLLECT `'{ ,value ,(INTERN (FORMAT NIL "~A_tensor" value)) })
+                     }
+                     '{ ; loss
+                     ,(IF (MEMBER :out-name (CAR (LAST loss)))
+                          (SECOND (MEMBER :out-name (CAR (LAST loss))))
+                          'loss)
+                                        ; net
+                     ,@(net-case net
+                         ('Variable
+                          (name-norm net-name 'apply name)))
+                     }
+                     '{ }
+                     (aof outputs)))))
            
            ) ; end of net, node
         )))) ; end of Model
@@ -372,6 +374,7 @@
                   (let ((auto rate . #'(Const scope '{ 0.1f }))
                         (int s1 . #'(* (($$ std pow) (/ IMAGE_SIZE 4) 2) 64))
                         (float f1 . 5e-4)
+                        (auto b_zero_tensor . #'(Tensor DT_FLOAT (TensorShape '{ 32 })))
                         
                         (auto random_value . #'(closure ((const Scope * scope . #'(aof scope)) (Output rate))
                                                  '(lambda ((($$ tensorflow Input) shape)) (out Output)
@@ -381,72 +384,73 @@
                         (auto const_float . #'(closure ((const Scope * scope . #'(aof scope)) (float rate . 0.1f))
                                                 '(lambda ((($$ std (t<> initializer_list int64_t)) shape)) (out Output)
                                                   (return ((t<> Const float) (cof scope) rate (TensorShape '{ shape }))))))
-
-                        ;; Trainable variables
-                        ;; Convolutional Net
-                        ;; Gradient accum parameters start here
-                        ;; Initialize variables
-                        (auto model .
-                              #'(Model
-                                    :name    mnist
-                                    :dtype   float
-                                    :input   (Placeholder inputs_ph '(BATCH_SIZE IMAGE_SIZE IMAGE_SIZE NUM_CHANNELS))
-                                    :net     '((Variable  conv1_w '(5 5 NUM_CHANNELS 32)
-                                                (random_value '(5 5 NUM_CHANNELS 32)))
-                                               (Variable  conv1_b '(32)
-                                                (=> (=> (Tensor DT_FLOAT (TensorShape '(32))) (t<> vec float)) setZero))
-                                               (Variable  conv2_w '(5 5 32 64)           (random_value '(5 5 32 64)))
-                                               (Variable  conv2_b '(64)                  (const_float  '(64)))
-                                               (Variable  fc1_w   '(s1 512)              (random_value '(s1 512)))
-                                               (Variable  fc1_b   '(512)                 (const_float  '(512)))
-                                               (Variable  fc2_w   '(512 NUM_LABELS)      (random_value '(512 NUM_LABELS)))
-                                               (Variable  fc2_b   '(NUM_LABELS)          (const_float  '(NUM_LABELS))))
-                                    :output  (Placeholder labels_ph '(BATCH_SIZE) :dtype int64)
-                                    ;; Convnet Model begin
-                                    ;; $out referes to previous output
-                                    ;; All operations should receive (scope, input, args...) and return TF Output
-                                    ;; :out-name key enables handle complex mixed models
-                                    :node    '((Conv2D   inputs_ph conv1_w (slice int '(1 1 1 1)) "SAME")
-                                               (BiasAdd  $out conv1_b)
-                                               (Relu     $out)
-                                               (MaxPool  $out (slice int '(1 2 2 1)) (slice int '(1 2 2 1)) "SAME")
-                                               (Conv2D   $out conv2_w (slice int '(1 1 1 1)) "SAME")
-                                               (BiasAdd  $out conv2_b)
-                                               (Relu     $out)
-                                               (MaxPool  $out (slice int '(1 2 2 1)) (slice int '(1 2 2 1)) "SAME")
-                                               ;; reshape
-                                               (Reshape  $out '(BATCH_SIZE s1))
-                                               (MatMul   $out fc1_w)
-                                               (Add      $out fc1_b)
-                                               (Relu     $out)
-                                               ;; dropout
-                                               (Dropout  $out 0.5f :out-name dropped_out)
-                                               ;; model output
-                                               (MatMul   dropped_out fc2_w)
-                                               ;; default :out-name logits
-                                               (Add      $out fc2_b))
-                                    ;; loss calculation
-                                    :loss    '((SparseSoftmaxCrossEntropyWithLogits logits labels_ph)
-                                               (ReduceMean ($ $out loss) '{ 0 } :out-name reduce_mean)
-                                               (L2Loss fc1_w :out-name lfc1_w)
-                                               (L2Loss fc1_b :out-name lfc1_b)
-                                               (L2Loss fc2_w :out-name lfc2_w)
-                                               (L2Loss fc2_b :out-name lfc2_b)
-                                               (AddN (cast (t<> initializer_list Input) '{ lfc1_w lfc1_w lfc1_w lfc1_w })
-                                                 :out-name regularization)
-                                               ;; when Operation name is not a single symbol :out-name should be set
-                                               ((t<> Const float) '{ f1 } :out-name const_f1)
-                                               (Multiply regularization $out)
-                                               ;; default :out-name loss
-                                               (Add reduce_mean $out))
-                                    ;; logging status for each operation by << operator
-                                    ;; default ($$ std cerr)
-                                    :log     (LOG INFO)
-                                    ;; update the weights and bias using gradient descent
-                                    ;; lr be used for applying momentum
-                                    ;; default (Placeholder lr_ph '())
-                                    :lr      (Placeholder lr_ph '())))
                         ) ; end let declaration
+                    
+                    (=> (=> b_zero_tensor (t<> vec float)) setZero)
+                    
+                    ;; Trainable variables
+                    ;; Convolutional Net
+                    ;; Gradient accum parameters start here
+                    ;; Initialize variables
+                    (var auto model .
+                         #'(Model
+                               :name    mnist
+                               :dtype   float
+                               :input   (Placeholder inputs_ph '(BATCH_SIZE IMAGE_SIZE IMAGE_SIZE NUM_CHANNELS))
+                               :net     '((Variable conv1_w '(5 5 NUM_CHANNELS 32) (exec
+                                                                                       random_value '(5 5 NUM_CHANNELS 32)))
+                                          (Variable conv1_b '(32)                  b_zero_tensor)
+                                          (Variable conv2_w '(5 5 32 64)           (exec random_value '(5 5 32 64)))
+                                          (Variable conv2_b '(64)                  (exec const_float  '(64)))
+                                          (Variable fc1_w   '(s1 512)              (exec random_value '(s1 512)))
+                                          (Variable fc1_b   '(512)                 (exec const_float  '(512)))
+                                          (Variable fc2_w   '(512 NUM_LABELS)      (exec random_value '(512 NUM_LABELS)))
+                                          (Variable fc2_b   '(NUM_LABELS)          (exec const_float  '(NUM_LABELS))))
+                               :output  (Placeholder labels_ph '(BATCH_SIZE) :dtype int64)
+                               ;; Convnet Model begin
+                               ;; $out referes to previous output
+                               ;; All operations should receive (scope, input, args...) and return TF Output
+                               ;; :out-name key enables handle complex mixed models
+                               :node    '((Conv2D   inputs_ph conv1_w (slice int '(1 1 1 1)) "SAME")
+                                          (BiasAdd  $out conv1_b)
+                                          (Relu     $out)
+                                          (MaxPool  $out (slice int '(1 2 2 1)) (slice int '(1 2 2 1)) "SAME")
+                                          (Conv2D   $out conv2_w (slice int '(1 1 1 1)) "SAME")
+                                          (BiasAdd  $out conv2_b)
+                                          (Relu     $out)
+                                          (MaxPool  $out (slice int '(1 2 2 1)) (slice int '(1 2 2 1)) "SAME")
+                                          ;; reshape
+                                          (Reshape  $out '(BATCH_SIZE s1))
+                                          (MatMul   $out fc1_w)
+                                          (Add      $out fc1_b)
+                                          (Relu     $out)
+                                          ;; dropout
+                                          (Dropout  $out 0.5f :out-name dropped_out)
+                                          ;; model output
+                                          (MatMul   dropped_out fc2_w)
+                                          ;; default :out-name logits
+                                          (Add      $out fc2_b))
+                               ;; loss calculation
+                               :loss    '((SparseSoftmaxCrossEntropyWithLogits logits labels_ph)
+                                          (ReduceMean ($ $out loss) '{ 0 } :out-name reduce_mean)
+                                          (L2Loss fc1_w :out-name lfc1_w)
+                                          (L2Loss fc1_b :out-name lfc1_b)
+                                          (L2Loss fc2_w :out-name lfc2_w)
+                                          (L2Loss fc2_b :out-name lfc2_b)
+                                          (AddN (cast (t<> initializer_list Input) '{ lfc1_w lfc1_w lfc1_w lfc1_w })
+                                            :out-name regularization)
+                                          ;; when Operation name is not a single symbol :out-name should be set
+                                          ((t<> Const float) '{ f1 } :out-name const_f1)
+                                          (Multiply regularization $out)
+                                          ;; default :out-name loss
+                                          (Add reduce_mean $out))
+                               ;; logging status for each operation by << operator
+                               ;; default ($$ std cerr)
+                               :log     (LOG INFO)
+                               ;; update the weights and bias using gradient descent
+                               ;; lr be used for applying momentum
+                               ;; default (Placeholder lr_ph '())
+                               :lr      (Placeholder lr_ph '())))
 
                     ;; train loop
                     (let ((int global_step . 0))
@@ -471,7 +475,7 @@
                                       ;; Run
                                       (let (((t<> vector Tensor) outputs))
                                         (TF_CHECK_OK
-                                            (model x_tensor y_tensor lr_tensor outputs)) ; call train closure
+                                            (exec model x_tensor y_tensor lr_tensor outputs)) ; call train closure
 
                                         (when (== (% global_step EVAL_FREQUENCY) 0) 
                                           (<< (LOG INFO) "Print step: " global_step
