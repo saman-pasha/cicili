@@ -60,9 +60,9 @@ static Output __ciciliC_Context_200_s___ciciliC_Routine_201 (struct __ciciliC_Co
   float rate  = ((context ->context ). rate );
   return Const < float > ((*scope ), rate , TensorShape ({ shape }));
 }
-struct __ciciliC_Context_249 {
-    Status (*routine) (struct __ciciliC_Context_249 * context , Tensor mnist_inputs_ph_tensor , Tensor mnist_labels_ph_tensor , Tensor mnist_lr_ph_tensor , vector < Tensor >  & outputs );
-  struct ciciliStruct255 { /* ciciliStruct255 */
+struct __ciciliC_Context_263 {
+    Status (*routine) (struct __ciciliC_Context_263 * context , Tensor mnist_inputs_ph_tensor , Tensor mnist_labels_ph_tensor , Tensor mnist_lr_ph_tensor , vector < Tensor >  & outputs );
+  struct ciciliStruct269 { /* ciciliStruct269 */
     ClientSession * session ;
     Output mnist_inputs_ph ;
     Output mnist_labels_ph ;
@@ -78,7 +78,7 @@ struct __ciciliC_Context_249 {
     Output mnist_apply_fc2_b ;
   } context ;
 };
-static Status __ciciliC_Context_249_s___ciciliC_Routine_250 (struct __ciciliC_Context_249 * context , Tensor mnist_inputs_ph_tensor , Tensor mnist_labels_ph_tensor , Tensor mnist_lr_ph_tensor , vector < Tensor >  & outputs ) {
+static Status __ciciliC_Context_263_s___ciciliC_Routine_264 (struct __ciciliC_Context_263 * context , Tensor mnist_inputs_ph_tensor , Tensor mnist_labels_ph_tensor , Tensor mnist_lr_ph_tensor , vector < Tensor >  & outputs ) {
   ClientSession * session  = ((context ->context ). session );
   Output mnist_inputs_ph  = ((context ->context ). mnist_inputs_ph );
   Output mnist_labels_ph  = ((context ->context ). mnist_labels_ph );
@@ -92,7 +92,7 @@ static Status __ciciliC_Context_249_s___ciciliC_Routine_250 (struct __ciciliC_Co
   Output mnist_apply_fc1_b  = ((context ->context ). mnist_apply_fc1_b );
   Output mnist_apply_fc2_w  = ((context ->context ). mnist_apply_fc2_w );
   Output mnist_apply_fc2_b  = ((context ->context ). mnist_apply_fc2_b );
-  return (session . Run ({ { mnist_inputs_ph , mnist_inputs_ph_tensor }, { mnist_labels_ph , mnist_labels_ph_tensor }, { mnist_lr_ph , mnist_lr_ph_tensor }}, { loss , mnist_apply_conv1_w , mnist_apply_conv1_b , mnist_apply_conv2_w , mnist_apply_conv2_b , mnist_apply_fc1_w , mnist_apply_fc1_b , mnist_apply_fc2_w , mnist_apply_fc2_b }, { }, (&outputs )));
+  return (session ->Run ({ { mnist_inputs_ph , mnist_inputs_ph_tensor }, { mnist_labels_ph , mnist_labels_ph_tensor }, { mnist_lr_ph , mnist_lr_ph_tensor }}, { loss , mnist_apply_conv1_w , mnist_apply_conv1_b , mnist_apply_conv2_w , mnist_apply_conv2_b , mnist_apply_fc1_w , mnist_apply_fc1_b , mnist_apply_fc2_w , mnist_apply_fc2_b }, { }, (&outputs )));
 }
 int main (int argc , char * argv []) {
   { /* cicili#Let142 */
@@ -147,7 +147,7 @@ int main (int argc , char * argv []) {
               (LOG (INFO ) <<  "mnist_inputs_ph: " <<  (scope . status ()) );
               __auto_type mnist_conv1_w  = Variable (scope , { 5, 5, NUM_CHANNELS , 32}, DT_FLOAT );
               (LOG (INFO ) <<  "mnist_conv1_w: " <<  (scope . status ()) );
-              __auto_type mnist_assign_conv1_w  = Assign (scope , mnist_conv1_w , random_value ({ 5, 5, NUM_CHANNELS , 32}));
+              __auto_type mnist_assign_conv1_w  = Assign (scope , mnist_conv1_w , (random_value . routine )((&random_value ), { 5, 5, NUM_CHANNELS , 32}));
               __auto_type mnist_accum_conv1_w  = Variable (scope , { 5, 5, NUM_CHANNELS , 32}, DT_FLOAT );
               __auto_type mnist_assign_accum_conv1_w  = Assign (scope , mnist_accum_conv1_w , ZerosLike (scope , mnist_conv1_w ));
               __auto_type mnist_conv1_b  = Variable (scope , { 32}, DT_FLOAT );
@@ -157,32 +157,32 @@ int main (int argc , char * argv []) {
               __auto_type mnist_assign_accum_conv1_b  = Assign (scope , mnist_accum_conv1_b , ZerosLike (scope , mnist_conv1_b ));
               __auto_type mnist_conv2_w  = Variable (scope , { 5, 5, 32, 64}, DT_FLOAT );
               (LOG (INFO ) <<  "mnist_conv2_w: " <<  (scope . status ()) );
-              __auto_type mnist_assign_conv2_w  = Assign (scope , mnist_conv2_w , random_value ({ 5, 5, 32, 64}));
+              __auto_type mnist_assign_conv2_w  = Assign (scope , mnist_conv2_w , (random_value . routine )((&random_value ), { 5, 5, 32, 64}));
               __auto_type mnist_accum_conv2_w  = Variable (scope , { 5, 5, 32, 64}, DT_FLOAT );
               __auto_type mnist_assign_accum_conv2_w  = Assign (scope , mnist_accum_conv2_w , ZerosLike (scope , mnist_conv2_w ));
               __auto_type mnist_conv2_b  = Variable (scope , { 64}, DT_FLOAT );
               (LOG (INFO ) <<  "mnist_conv2_b: " <<  (scope . status ()) );
-              __auto_type mnist_assign_conv2_b  = Assign (scope , mnist_conv2_b , const_float ({ 64}));
+              __auto_type mnist_assign_conv2_b  = Assign (scope , mnist_conv2_b , (const_float . routine )((&const_float ), { 64}));
               __auto_type mnist_accum_conv2_b  = Variable (scope , { 64}, DT_FLOAT );
               __auto_type mnist_assign_accum_conv2_b  = Assign (scope , mnist_accum_conv2_b , ZerosLike (scope , mnist_conv2_b ));
               __auto_type mnist_fc1_w  = Variable (scope , { s1 , 512}, DT_FLOAT );
               (LOG (INFO ) <<  "mnist_fc1_w: " <<  (scope . status ()) );
-              __auto_type mnist_assign_fc1_w  = Assign (scope , mnist_fc1_w , random_value ({ s1 , 512}));
+              __auto_type mnist_assign_fc1_w  = Assign (scope , mnist_fc1_w , (random_value . routine )((&random_value ), { s1 , 512}));
               __auto_type mnist_accum_fc1_w  = Variable (scope , { s1 , 512}, DT_FLOAT );
               __auto_type mnist_assign_accum_fc1_w  = Assign (scope , mnist_accum_fc1_w , ZerosLike (scope , mnist_fc1_w ));
               __auto_type mnist_fc1_b  = Variable (scope , { 512}, DT_FLOAT );
               (LOG (INFO ) <<  "mnist_fc1_b: " <<  (scope . status ()) );
-              __auto_type mnist_assign_fc1_b  = Assign (scope , mnist_fc1_b , const_float ({ 512}));
+              __auto_type mnist_assign_fc1_b  = Assign (scope , mnist_fc1_b , (const_float . routine )((&const_float ), { 512}));
               __auto_type mnist_accum_fc1_b  = Variable (scope , { 512}, DT_FLOAT );
               __auto_type mnist_assign_accum_fc1_b  = Assign (scope , mnist_accum_fc1_b , ZerosLike (scope , mnist_fc1_b ));
               __auto_type mnist_fc2_w  = Variable (scope , { 512, NUM_LABELS }, DT_FLOAT );
               (LOG (INFO ) <<  "mnist_fc2_w: " <<  (scope . status ()) );
-              __auto_type mnist_assign_fc2_w  = Assign (scope , mnist_fc2_w , random_value ({ 512, NUM_LABELS }));
+              __auto_type mnist_assign_fc2_w  = Assign (scope , mnist_fc2_w , (random_value . routine )((&random_value ), { 512, NUM_LABELS }));
               __auto_type mnist_accum_fc2_w  = Variable (scope , { 512, NUM_LABELS }, DT_FLOAT );
               __auto_type mnist_assign_accum_fc2_w  = Assign (scope , mnist_accum_fc2_w , ZerosLike (scope , mnist_fc2_w ));
               __auto_type mnist_fc2_b  = Variable (scope , { NUM_LABELS }, DT_FLOAT );
               (LOG (INFO ) <<  "mnist_fc2_b: " <<  (scope . status ()) );
-              __auto_type mnist_assign_fc2_b  = Assign (scope , mnist_fc2_b , const_float ({ NUM_LABELS }));
+              __auto_type mnist_assign_fc2_b  = Assign (scope , mnist_fc2_b , (const_float . routine )((&const_float ), { NUM_LABELS }));
               __auto_type mnist_accum_fc2_b  = Variable (scope , { NUM_LABELS }, DT_FLOAT );
               __auto_type mnist_assign_accum_fc2_b  = Assign (scope , mnist_accum_fc2_b , ZerosLike (scope , mnist_fc2_b ));
               __auto_type mnist_labels_ph  = Placeholder (scope , DT_INT64 , Placeholder :: Shape ({ BATCH_SIZE }));
@@ -251,28 +251,28 @@ int main (int argc , char * argv []) {
               __auto_type mnist_apply_fc1_b  = ApplyMomentum (scope , mnist_fc1_b , mnist_accum_fc1_b , mnist_lr_ph , mnist_grad_outputs [5], Cast (scope , MOMENTUM , DT_FLOAT ));
               __auto_type mnist_apply_fc2_w  = ApplyMomentum (scope , mnist_fc2_w , mnist_accum_fc2_w , mnist_lr_ph , mnist_grad_outputs [6], Cast (scope , MOMENTUM , DT_FLOAT ));
               __auto_type mnist_apply_fc2_b  = ApplyMomentum (scope , mnist_fc2_b , mnist_accum_fc2_b , mnist_lr_ph , mnist_grad_outputs [7], Cast (scope , MOMENTUM , DT_FLOAT ));
-              ((struct __ciciliC_Context_249 ){ __ciciliC_Context_249_s___ciciliC_Routine_250 , { (&session ), mnist_inputs_ph , mnist_labels_ph , mnist_lr_ph , loss , mnist_apply_conv1_w , mnist_apply_conv1_b , mnist_apply_conv2_w , mnist_apply_conv2_b , mnist_apply_fc1_w , mnist_apply_fc1_b , mnist_apply_fc2_w , mnist_apply_fc2_b }});
+              ((struct __ciciliC_Context_263 ){ __ciciliC_Context_263_s___ciciliC_Routine_264 , { (&session ), mnist_inputs_ph , mnist_labels_ph , mnist_lr_ph , loss , mnist_apply_conv1_w , mnist_apply_conv1_b , mnist_apply_conv2_w , mnist_apply_conv2_b , mnist_apply_fc1_w , mnist_apply_fc1_b , mnist_apply_fc2_w , mnist_apply_fc2_b }});
             });;
-        { /* cicili#Let259 */
+        { /* cicili#Let273 */
           int global_step  = 0;
           for (int epoch  = 0; (epoch  <  NUM_EPOCHS  ); (epoch ++)) {
-            { /* cicili#Let263 */
+            { /* cicili#Let277 */
               float decayed_learning_rate  = (BASE_LEARNING_RATE  *  std :: pow (DECAY_RATE , epoch ) );
               __auto_type lr_tensor  = Tensor (decayed_learning_rate );
               for (int bidx  = 0; (bidx  <  BATCHES_PER_EPOCHS  ); (bidx ++)) {
-                { /* cicili#Let269 */
+                { /* cicili#Let283 */
                   Tensor x_tensor ;
                   CHECK ((x_tensor . CopyFrom ((inputs . Slice ((bidx  *  BATCH_SIZE  ), ((bidx  +  1 ) *  BATCH_SIZE  ))), TensorShape ({ BATCH_SIZE , IMAGE_SIZE , IMAGE_SIZE , NUM_CHANNELS }))));
-                  { /* cicili#Let271 */
+                  { /* cicili#Let285 */
                     Tensor y_tensor ;
                     CHECK ((y_tensor . CopyFrom ((labels . Slice ((bidx  *  BATCH_SIZE  ), ((bidx  +  1 ) *  BATCH_SIZE  ))), TensorShape ({ BATCH_SIZE }))));
-                    { /* cicili#Let273 */
+                    { /* cicili#Let287 */
                       vector < Tensor >  outputs ;
                       TF_CHECK_OK ((model . routine )((&model ), x_tensor , y_tensor , lr_tensor , outputs ));
                       if ((global_step  %  EVAL_FREQUENCY  ) ==  0 ) 
-                        { /* cicili#Block282 */
+                        { /* cicili#Block296 */
                           (LOG (INFO ) <<  "Print step: " <<  global_step  <<  ", decayed_learning_rate: " <<  decayed_learning_rate  <<  ", loss: " <<  (outputs [0]. DebugString ()) );
-                        } /* cicili#Block282 */
+                        } /* cicili#Block296 */
 
                     }
                   }
