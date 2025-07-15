@@ -27,7 +27,7 @@
       
       ((string= os "Linux") (list
                              ;; C
-                             'dumper   '("-Xclang" "-ast-list")
+                             'dumper   '("-Xclang" "-ast-dump")
                              'compiler `("libtool" "--tag=CC" "--mode=compile"
                                                    "clang" "-g" "-O" "-ferror-limit=1000" *verbose*)
                              'linker   `("libtool" "--tag=CC" "--mode=link" "clang" "-g" "-O" *verbose*)
@@ -39,7 +39,7 @@
       
       ((string= os "Darwin") (list
                               ;; C
-                              'dumper   '("-Xclang" "-ast-list")
+                              'dumper   '("-Xclang" "-ast-dump")
                               'compiler `("glibtool" "--tag=CC" "--mode=compile"
                                                      "clang" "-g" "-O" "-ferror-limit=1000" *verbose*)
                               'linker   `("glibtool" "--tag=CC" "--mode=link" "clang" "-g" "-O" *verbose*)
@@ -51,7 +51,7 @@
       
       (t (list
           ;; C
-          'dumper   '("-Xclang" "-ast-list")
+          'dumper   '("-Xclang" "-ast-dump")
           'compiler `("libtool" "--tag=CC" "--mode=compile" "clang" "-g" "-O" *verbose*)
           'linker   `("libtool" "--tag=CC" "--mode=link" "clang" "-g" "-O" *verbose*)
           ;; C++

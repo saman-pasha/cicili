@@ -79,6 +79,13 @@
    (1 . auto)
    (1 . size_t)
    (1 . namespace)
+   (1 . null)
+   (1 . byte)
+   (1 . ubyte)
+   (1 . timestamp)
+   (1 . string)
+   (1 . text)
+   (1 . vector)
    ))
 
 (defun cicili-add-keywords (face-name keyword-rules)

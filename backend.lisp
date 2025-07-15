@@ -2,7 +2,10 @@
 
 (defun compile-name (name lvl globals parent-spec)
   (if (symbolp name)
-      (set-ast-line (output (symbol-name name)))
+      (let ((sym-name (symbol-name name)))
+        (when (str:starts-with-p "/" sym-name)
+          (setq sym-name (str:substring 1 t sym-name)))
+        (set-ast-line (output sym-name)))
       (if (typep name 'sp)
           (cond ((key-eq '|@TYPEOF| (construct name))
                  (compile-typeof name lvl globals parent-spec))
@@ -185,7 +188,8 @@
       (unless (null ast)
         (let ((info (getf ast 'info)))
           (when info
-            (error (format nil "cicili: operator: ~S" (str:substring 0 340 info)))))))
+            (cond ((and info (str:containsp "use of undeclared identifier" info)) t)
+                  (t (error (format nil "cicili: operator: ~S" (str:substring 0 340 info)))))))))
     (dolist (frm seq)
       (compile-form frm (1+ lvl) globals spec)
       (output " "))
@@ -578,12 +582,14 @@
               do (progn
                    (compile-spec-type-value param lvl locals spec)
                    (when (< i lc) (output ", "))))
+        
         (let ((ast (prev-ast<)))
           (unless (null ast)
             (let ((info (getf ast 'info)))
               (when info
                 (error (format nil "cicili: function: ~S" (str:substring 0 340 info)))))))
         (set-ast-line (output ")"))
+        
         (if is-declare
             (unless as-type (output ";~%"))
             (progn
