@@ -34,7 +34,12 @@
 				                 :anonymous anonymous)))
     (setf (keys instance) (make-hash-table :test 'eql))
     
-    (cond ((eql construct '|@VAR|)
+    (cond ((eql construct '|@ATOM|)
+           (when (and *module-path* (eql typeof '|@SYMBOL|))
+             (setf (module instance) *module-path*)
+             (setf (unique instance) (free-name *module-path* name)))
+ 	       (setf (inners  instance)     (make-hash-table :test 'eql))) ; contains type inline struct
+          ((eql construct '|@VAR|)
            (when *module-path*
              (setf (module instance) *module-path*)
              (setf (unique instance) (free-name *module-path* name)))
@@ -192,7 +197,8 @@
   (let* ((str-name (symbol-name symbol))
          (count$ (str:count-substring "/" str-name)))
     (cond ((str:starts-with-p "/" str-name)
-           (intern (str:substring 1 t str-name)))
+           ;; (intern (str:substring 1 t str-name)))
+           (intern str-name))
           ((> count$ 0) (free-name (map 'list #'intern (str:split "/" str-name)) nil))
           (t symbol))))
 

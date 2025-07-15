@@ -67,12 +67,23 @@
          (ast      (prev-ast-by-key< (gethash 'key-sym (keys spec))))
          (info     (getf ast 'info))
          (spec-key (ast-key< line-n col-n))
-         (res      (gethash 'res-sym (keys spec))))
+         (res      (gethash 'res-sym (keys spec)))
+         (sym-name  (symbol-name symbol))
+         (has-slash (str:starts-with-p "/" sym-name)))
+    
+    ;; removes / form begining of global resolution
+    (when has-slash (setq symbol (intern (str:substring 1 t sym-name))))
+    
     (setf (gethash 'key-sym (keys spec)) spec-key)
     (when *debug-resolve*
       (display "resolving symbol:" line-n col-n "RES:" res "INFO:" info #\Newline))
     (if (null ast)
-	    (set-ast-line (output "~A " symbol))
+        (let ((m-name (unique spec)))
+          (if (and (null has-slash) (gethash m-name *globals*))
+              (progn
+                (set-ast-line (output "~A " m-name))
+                (setf (gethash 'res-sym (keys spec)) (format nil "~A " m-name)))
+              (set-ast-line (output "~A " symbol))))
         (if info
             (cond ((str:containsp "take the address with &" info)
                    (let ((resu (format nil "\&~A" symbol)))
@@ -100,9 +111,21 @@
                    (set-ast-line (output "~A " symbol))) ; ignore for arg
                   ((str:containsp "incompatible pointer types" info)
                    (set-ast-line (output "~A " symbol))) ; ignore for arg
+                  ((str:containsp "use of undeclared identifier" info)
+                   (let ((m-name (unique spec)))
+                     (if (gethash m-name *globals*)
+                         (progn
+                           (set-ast-line (output "~A " m-name))
+                           (setf (gethash 'res-sym (keys spec)) (format nil "~A " m-name)))
+                         (error (format nil "cicili: symbol: ~A. ~S~%~A" spec-key (str:substring 0 340 info) spec)))))
                   (t (error (format nil "cicili: atom: ~A. ~S~%~A" spec-key (str:substring 0 340 info) spec))))
             (if (null res)
-                (set-ast-line (output "~A " symbol))
+                (let ((m-name (unique spec)))
+                  (if (and (null has-slash) (gethash m-name *globals*))
+                      (progn
+                        (set-ast-line (output "~A " m-name))
+                        (setf (gethash 'res-sym (keys spec)) (format nil "~A " m-name)))
+                      (set-ast-line (output "~A " symbol))))
                 (set-ast-line (output res)))))))
 
 (defun compile-$ (spec lvl globals parent-spec)
