@@ -233,7 +233,8 @@
                      (setq result (if (listp expr)
                                       (specify-body (list expr))
                                       (specify-expr expr)))))
-               (setf *macroexpand* tmp-expantion)))
+               (setf *macroexpand* tmp-expantion)
+               result))
             (t (eval target))))))
 
 (defun compile-cicili-file (file-name)

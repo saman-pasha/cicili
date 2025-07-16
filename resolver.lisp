@@ -117,8 +117,8 @@
                          (progn
                            (set-ast-line (output "~A " m-name))
                            (setf (gethash 'res-sym (keys spec)) (format nil "~A " m-name)))
-                         (error (format nil "cicili: symbol: ~A. ~S~%~A" spec-key (str:substring 0 340 info) spec)))))
-                  (t (error (format nil "cicili: atom: ~A. ~S~%~A" spec-key (str:substring 0 340 info) spec))))
+                         (error (format nil "cicili: symbol: ~A. ~A~%~A" spec-key info spec)))))
+                  (t (error (format nil "cicili: atom: ~A. ~A~%~A" spec-key info spec))))
             (if (null res)
                 (let ((m-name (unique spec)))
                   (if (and (null has-slash) (gethash m-name *globals*))
@@ -170,7 +170,6 @@
                    (ast-key< (funcall *line-num* 0) (funcall *col-num* 0)))
              (output ")"))
             ((and (str:containsp "member reference type" ptr-info) (str:containsp "is a pointer" ptr-info))
-             (display "$$$$$" line-n col-n spec #\Newline)
              (let ((resu "->"))
                (setf *more-run* t)
                (setf (gethash 'res-$ (keys spec)) resu)
@@ -179,8 +178,8 @@
                (set-ast-line (output resu))
                (compile-form member (1+ lvl) globals spec)
                (output ")")))
-            (t (error (format nil "cicili\: unresolved member reference type ~A. ~S~%~A"
-                              spec-key (str:substring 0 340 (or mtd-info ptr-info begin-info)) spec)))))))
+            (t (error (format nil "cicili\: unresolved member reference type ~A. ~A~%~A"
+                              spec-key (or mtd-info ptr-info begin-info) spec)))))))
 
 (defun compile--> (spec lvl globals parent-spec)
   (with-slots ((receiver name) (method default) (args body)) spec
@@ -286,15 +285,15 @@
                          (setf *more-run* t)               
                          (setf (gethash 'res--> (keys spec)) resu))
                        (error (format nil "undefined function: ~A" spec)))
-                   (error (format nil "cicili\: nnn unresolved method reference type ~A. ~s~%~A"
-                                  spec-key (str:substring 0 340 (or mtd-info ptr-info begin-info)) spec)))
+                   (error (format nil "cicili\: nnn unresolved method reference type ~A. ~A~%~A"
+                                  spec-key (or mtd-info ptr-info begin-info) spec)))
                (set-ast-line (output "~A" resu))
                (output "(")
                (compile-form receiver lvl globals spec)
                (compile-args (default args) lvl globals spec t)
                (output ")")))
-            (t (error (format nil "cicili\: unresolved method reference type ~A. ~S~%~A"
-                              spec-key (str:substring 0 340 (or mtd-info ptr-info begin-info)) spec)))))))
+            (t (error (format nil "cicili\: unresolved method reference type ~A. ~A~%~A"
+                              spec-key (or mtd-info ptr-info begin-info) spec)))))))
 
 (defun compile-=> (spec lvl globals parent-spec)
   (with-slots ((receiver name) (member default) (args body)) spec
@@ -350,8 +349,8 @@
                (set-ast-line (output "("))
                (compile-args (default args) lvl globals spec nil)
                (output "))")))
-            (t (error (format nil "cicili\: unresolved member function type ~A. ~S~%~A"
-                              spec-key (str:substring 0 340 (or mtd-info ptr-info begin-info)) spec)))))))
+            (t (error (format nil "cicili\: unresolved member function type ~A. ~A~%~A"
+                              spec-key (or mtd-info ptr-info begin-info) spec)))))))
 
 (defun compile-args (args lvl globals parent-spec comma-first &key (no-comma nil))
   (when (and (null no-comma) comma-first (> (length args) 0)) (output ", "))

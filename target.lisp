@@ -44,7 +44,7 @@
 		             (add-inner (specify-guard    clause attributes t) target-specifier) (setq attributes '()))
                     ((key-eq construct '|module|)
 		             (add-inner (specify-module   clause attributes) target-specifier) (setq attributes '()))
-		            (t (add-inner (specify-expr   clause) target-specifier))))
+		            (t (add-inner (specify-expr   clause) target-specifier) (setq attributes '()))))
 	        (error (format nil "syntax error ~A" clause))))
       target-specifier)))
 

@@ -733,7 +733,7 @@
                               (let ((out-spec (specify-module      def attributes))) (setq attributes '()) out-spec))
 		                     ((key-eq func '|cicili|)
                               (let ((out-spec (compile-ast         (cdr def)))) (setq attributes '()) out-spec))
-                             (t (expand-macros-expr def))))
+                             (t (let ((out-spec (expand-macros-expr def))) (setq attributes '()) out-spec))))
                    (t (expand-macros-expr def)))))))
 
 ;; var clause only allowed as global vars but inside macros for complex situation
