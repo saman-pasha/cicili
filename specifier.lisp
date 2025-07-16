@@ -1069,12 +1069,13 @@
   (if (listp name) ; method or shared
       (let ((recv (car name))
             (mthd (cdr name)))
+
         (if (and (symbolp recv) (key-eq recv '<>))
             (specify-decl-name< (if (listp mthd) (apply '<> mthd) mthd))
             (progn
               (when (listp recv)
                 (if (key-eq (car recv) '<>)
-                    (setq recv (apply '<> recv))
+                    (setq recv (apply '<> (cdr recv)))
                     (error (format nil "generic names are produced by '<>', ~A" name))))
               (when (and (listp mthd) (key-eq (car mthd) '<>))
                 (setq mthd (apply '<> (cdr mthd))))
@@ -1144,23 +1145,26 @@
             (make-specifier (specify-decl-name< '|this|) '|@PARAM| nil
                             (if *module-path*
                                 (free-name *module-path* (car name))
-                                (car name)) '|*| nil nil nil '())
+                                (car name))
+                            '|*| nil nil nil '())
         function-specifier))
       (loop for param in params
             for i from 0 to (length params)
             do (let ((is-anonymous nil))
-	              (multiple-value-bind (const type modifier const-ptr variable array)
-	                  (specify-type< param)
-	                (cond ((or (null variable) (key-eq '_ variable))
-                           (setq variable (gensym (format nil "_ciciliParam_~D" i))))
-                          ((key-eq '$$$ variable)
-                           (setq variable '|...|)))
-	                  ; (setq is-anonymous t))
-                    (add-param
-                        (make-specifier
-                            (specify-decl-name< variable)
-                          '@|PARAM| const type modifier const-ptr array nil nil is-anonymous)
-                      function-specifier))))
+                 (unless (listp param) (error (format nil "parameter should be a list ~A for ~A" param def)))
+                 
+	             (multiple-value-bind (const type modifier const-ptr variable array)
+	                 (specify-type< param)
+	               (cond ((or (null variable) (key-eq '_ variable))
+                          (setq variable (gensym (format nil "_ciciliParam_~D" i))))
+                         ((key-eq '$$$ variable)
+                          (setq variable '|...|)))
+                   ;; (setq is-anonymous t))
+                   (add-param
+                       (make-specifier
+                           (specify-decl-name< variable)
+                         '@|PARAM| const type modifier const-ptr array nil nil is-anonymous)
+                     function-specifier))))
       (setf *function-spec* tmp-specifier)) ; end of guard, revert *function-spec*
     function-specifier))
 
@@ -1216,7 +1220,9 @@
   (when (and is-nested (> (length attrs) 0)) (error (format nil "wrong attributes ~A" attrs)))
   (let* ((is-static  nil)
 	     (is-declare nil)
-         (is-anonymous (or (= (length def) 1) (not (symbolp (nth 1 def)))))
+         (is-anonymous (or (= (length def) 1)
+                         (not (or (and (listp (nth 1 def)) (key-eq (car (nth 1 def)) '<>))
+                                (symbolp (nth 1 def))))))
 	     (name (specify-decl-name< (if is-anonymous
                                        (gensym "ciciliStruct")
                                        (if (and (listp (nth 1 def)) (key-eq (car (nth 1 def)) '<>))
