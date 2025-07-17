@@ -1285,7 +1285,8 @@ Setting `:cpp #t` for target args are required to use C++ configs defined in `co
 * `$$` clause for namespace resolution. `($$ std vector)`.
 * `t<>` clause for template definiton. `(t<> initializer_list int)`.
 * `using` with or without `namespace`: `(using std string)`, `(using namespace std)`.
-
+* `extern-c` should be used to create C libraries from C++ libraries then use in Cicili
+`(extern-c (func identity ((int id)) (out int) (return id)))`.
 Cicili is the bridge between vision and execution—where **ideas transform into structured reality**, and **code bends to your creativity**, unlocking limitless potential in software engineering. 🚀
 
 # Good Luck!

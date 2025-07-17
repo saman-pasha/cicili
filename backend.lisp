@@ -284,7 +284,7 @@
       ('|@TYPEOF| (compile-typeof     spec lvl globals spec))
       ('|@LET|    (compile-let        spec lvl globals spec))
       ('|@LETN|   (compile-let        spec lvl globals spec t nil))
-      ('|@BLOCK|  (compile-block      spec lvl globals spec t))
+      ('|@BLOCK|  (compile-block      spec lvl globals spec))
       ('|@PROGN|  (compile-progn      spec lvl globals spec :is-expr t))
       ('|@INCLUDE|(compile-include    spec 0   globals spec)) ; from inside macros 
       ('|@VAR|    (compile-variable   spec 0   globals spec))
