@@ -44,7 +44,8 @@
 
              ;; C compatibility
              (decl) (method (,name . deref)       () (out ,@(IF (LISTP element)
-                                                                (MULTIPLE-VALUE-BIND (const type modifier const-ptr variable array-def)
+                                                                (MULTIPLE-VALUE-BIND
+                                                                      (const type modifier const-ptr variable array-def)
                                                                     (CICILI:SPECIFY-TYPE< element)
                                                                   (IF modifier element (LIST element '*)))
                                                                 (LIST element '*))))

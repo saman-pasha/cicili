@@ -32,11 +32,3 @@
   `(ghost
        (code '{ extern ,(FORMAT NIL "~S" "C") })
      (block ,@body)))
-
-;; (DEFMACRO extern-c (&REST body)
-;;   `(ghost
-;;        (code '{ extern })
-;;      "C"
-;;      (code '{ #\{ #\Newline })
-;;      ,@body
-;;      (code '{ #\} #\Newline })))

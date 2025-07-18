@@ -111,6 +111,8 @@
 	             (dotimes (i (length args))
 	               (when (zerop (mod i 2))
 	                 (when (and (not *only-link*) (key-eq (nth i args) ':|compile|))
+                       (display (if *cpp* "compiler set for C++" "compiler set for C") #\Newline)
+                       
 		               (let* ((dumper    (if *cpp* (getf *configs* 'cpp-dumper) (getf *configs* 'dumper)))
                               (command   (if *cpp* (getf *configs* 'cpp-compiler) (getf *configs* 'compiler)))
 		                      (program   (car command))

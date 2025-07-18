@@ -60,9 +60,10 @@
 	       (setf (params  instance)     (make-hash-table :test 'eql))
  	       (setf (inners  instance)     (make-hash-table :test 'eql))) ; contains lambdas
 	      ((eql construct '|@METHOD|)
+           (when *module-path*
              (setf (module instance) *module-path*)
              (setf (unique instance)
-                   (intern (make-method-name (symbol-name (free-name *module-path* (car name))) (cdr name))))
+                   (intern (make-method-name (symbol-name (free-name *module-path* (car name))) (cdr name)))))
 	       (setf (params  instance)     (make-hash-table :test 'eql))
  	       (setf (inners  instance)     (make-hash-table :test 'eql))) ; contains lambdas
 	      ((eql construct '|@ENUM|)
@@ -654,7 +655,10 @@
         ((atom    def)        (specify-atom-expr def))
         (t (let* ((func (car def))
                   (attributes '()))
-	         (cond ((key-eq func '|code|)   (specify-code-expr def))
+
+	         (cond ((key-eq func 'QUASIQUOTE)
+                    (specify-expr (eval (car (macroexpand `(,(cadr def) ,@(cddr def)))))))
+                   ((key-eq func '|code|)   (specify-code-expr def))
                    ((key-eq func 'FUNCTION) (specify-expr      (cadr def)))
 		           ((key-eq func 'QUOTE)
                     (let ((quoted (cadr def)))
@@ -1104,6 +1108,7 @@
 		                  (if (key-eq name '|main|) '(|out| |int|) '(|out| |void|)))))
 	     (body (if has-out (nthcdr 4 def) (nthcdr 3 def)))
          (function-specifier nil))
+    
     (dolist (attr attrs)
       (let ((name (car attr)))
 	    (cond ((key-eq name '|static|)  (setq is-static  t))
@@ -1251,9 +1256,16 @@
       (dolist (clause clauses)
 	    (if (consp clause)
 	        (let ((construct (car clause)))
-	          (cond (is-inline
-                      (add-inner (specify-variable (append (list '|member|) clause) attributes) struct-specifier)
-		              (setq attributes '()))
+	          (cond (is-inline ; inline structs dont have any other inners types but type definitions
+                        (multiple-value-bind (const type modifier const-ptr variable array default)
+	                        (specify-type-value< clause)
+                          (let ((param-spec
+                                    (make-specifier
+                                        (specify-decl-name< variable)
+                                      '@|PARAM| const type modifier const-ptr array default attributes is-anonymous)))
+                            (setq attributes '())
+	                        (add-inner param-spec struct-specifier))))
+                    
                     ((find (char (symbol-name construct) 0) "@#")
 		             (add-inner (specify-preprocessor clause attributes) struct-specifier)
 		             (setq attributes '()))
@@ -1264,7 +1276,15 @@
 		            ((key-eq construct '|auto|)     (push clause attributes))
 		            ((key-eq construct '|extern|)   (push clause attributes))
 		            ((key-eq construct '|member|)
-		             (add-inner (specify-variable clause attributes) struct-specifier) (setq attributes '()))
+                     (multiple-value-bind (const type modifier const-ptr variable array default)
+	                     (specify-type-value< (cdr clause))
+                       (let ((param-spec
+                                 (make-specifier
+                                     (specify-decl-name< variable)
+                                   '@|PARAM| const type modifier const-ptr array default attributes is-anonymous)))
+                         (setq attributes '())
+	                     (add-inner param-spec struct-specifier))))
+                    
 		            ((key-eq construct '|enum|)
 		             (add-inner (specify-enum     clause attributes :nested t) struct-specifier) (setq attributes '()))
 		            ((key-eq construct '|struct|)

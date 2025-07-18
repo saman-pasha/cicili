@@ -118,6 +118,13 @@
                            (set-ast-line (output "~A " m-name))
                            (setf (gethash 'res-sym (keys spec)) (format nil "~A " m-name)))
                          (error (format nil "cicili: symbol: ~A. ~A~%~A" spec-key info spec)))))
+                  ((str:containsp "call to undeclared function" info)
+                   (let ((m-name (unique spec)))
+                     (if (gethash m-name *globals*)
+                         (progn
+                           (set-ast-line (output "~A " m-name))
+                           (setf (gethash 'res-sym (keys spec)) (format nil "~A " m-name)))
+                         (error (format nil "cicili: symbol: ~A. ~A~%~A" spec-key info spec)))))
                   (t (error (format nil "cicili: atom: ~A. ~A~%~A" spec-key info spec))))
             (if (null res)
                 (let ((m-name (unique spec)))
@@ -203,8 +210,12 @@
                  begin-info ptr-info mtd-info end-info #\Newline)) ; begin-dump #\Newline
       
       (cond (res
-             (if (str:starts-with-p (str:replace-first "\\(.*" "" (make-shared-name (name receiver) "") :regex t)
-                   res) ; was shared or method
+             (if (or (str:starts-with-p
+                         (str:replace-first "\\(.*" "" (make-shared-name (name receiver) "") :regex t)
+                       res)
+                   (str:starts-with-p
+                       (str:replace-first "\\(.*" "" (make-shared-name (unique receiver) "") :regex t)
+                     res)); was shared or method
                  (progn
                    (set-ast-line (output res))
                    (output "(")
@@ -239,13 +250,22 @@
              (let ((resu (make-shared-name (name receiver) (name method))))
                (if (gethash (intern resu) *globals*)
                    (progn
-                     (setf *more-run* t)               
+                     (setf *more-run* t)
                      (setf (gethash 'res--> (keys spec)) resu)
                      (set-ast-line (output "~A" resu))
                      (output "(")
                      (compile-args (default args) lvl globals spec nil)
                      (output ")"))
-                   (error (format nil "undefined function: ~A" spec)))))
+                   (let ((m-name (make-shared-name (unique receiver) (name method))))
+                     (if (gethash (intern m-name) *globals*)
+                         (progn
+                           (setf *more-run* t)
+                           (setf (gethash 'res--> (keys spec)) m-name)
+                           (set-ast-line (output "~A" m-name))
+                           (output "(")
+                           (compile-args (default args) lvl globals spec nil)
+                           (output ")"))
+                         (error (format nil "undefined function: ~A" spec)))))))
             ((and ptr-info (str:containsp "expected expression" ptr-info))
              (if (key-eq (construct receiver) '|@ATOM|) 
                  (let ((resu (make-method-name (name receiver) (name method))))
@@ -258,7 +278,17 @@
                          (compile-form receiver (1+ lvl) globals spec)
                          (compile-args (default args) lvl globals spec t)
                          (output ")"))
-                       (error (format nil "undefined function: ~A" spec))))
+                       (let ((m-name (make-method-name (unique receiver) (name method))))
+                         (if (gethash (intern m-name) *globals*)
+                             (progn
+                               (setf *more-run* t)               
+                               (setf (gethash 'res--> (keys spec)) m-name)
+                               (set-ast-line (output m-name))
+                               (output "(")
+                               (compile-form receiver (1+ lvl) globals spec)
+                               (compile-args (default args) lvl globals spec t)
+                               (output ")"))
+                             (error (format nil "undefined function: ~A" spec))))))
                  (progn
                    (set-ast-line (output "("))
                    (compile-form receiver (1+ lvl) globals spec)
@@ -273,7 +303,7 @@
                          (ast-key< (funcall *line-num* 0) (funcall *col-num* 0)))
                    (output ")"))))
             ((and end-info (str:containsp "too few arguments" end-info))
-             (error (format nil "cicili\: call: ~S" (str:substring 0 330 end-info))))
+             (error (format nil "cicili\: call: ~A" end-info)))
             ((and mtd-info (str:containsp "no member named" mtd-info))
              (let* ((matches     (ppcre:all-matches-as-strings "'(struct\\s+)?\\w+'" mtd-info))
                     (method      (car matches))
