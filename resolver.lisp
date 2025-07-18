@@ -117,8 +117,15 @@
                          (progn
                            (set-ast-line (output "~A " m-name))
                            (setf (gethash 'res-sym (keys spec)) (format nil "~A " m-name)))
-                         (error (format nil "cicili: symbol: ~A. ~S~%~A" spec-key (str:substring 0 340 info) spec)))))
-                  (t (error (format nil "cicili: atom: ~A. ~S~%~A" spec-key (str:substring 0 340 info) spec))))
+                         (error (format nil "cicili: symbol: ~A. ~A~%~A" spec-key info spec)))))
+                  ((str:containsp "call to undeclared function" info)
+                   (let ((m-name (unique spec)))
+                     (if (gethash m-name *globals*)
+                         (progn
+                           (set-ast-line (output "~A " m-name))
+                           (setf (gethash 'res-sym (keys spec)) (format nil "~A " m-name)))
+                         (error (format nil "cicili: symbol: ~A. ~A~%~A" spec-key info spec)))))
+                  (t (error (format nil "cicili: atom: ~A. ~A~%~A" spec-key info spec))))
             (if (null res)
                 (let ((m-name (unique spec)))
                   (if (and (null has-slash) (gethash m-name *globals*))
@@ -178,8 +185,8 @@
                (set-ast-line (output resu))
                (compile-form member (1+ lvl) globals spec)
                (output ")")))
-            (t (error (format nil "cicili\: unresolved member reference type ~A. ~S~%~A"
-                              spec-key (str:substring 0 340 (or mtd-info ptr-info begin-info)) spec)))))))
+            (t (error (format nil "cicili\: unresolved member reference type ~A. ~A~%~A"
+                              spec-key (or mtd-info ptr-info begin-info) spec)))))))
 
 (defun compile--> (spec lvl globals parent-spec)
   (with-slots ((receiver name) (method default) (args body)) spec
@@ -203,8 +210,12 @@
                  begin-info ptr-info mtd-info end-info #\Newline)) ; begin-dump #\Newline
       
       (cond (res
-             (if (str:starts-with-p (str:replace-first "\\(.*" "" (make-shared-name (name receiver) "") :regex t)
-                   res) ; was shared or method
+             (if (or (str:starts-with-p
+                         (str:replace-first "\\(.*" "" (make-shared-name (name receiver) "") :regex t)
+                       res)
+                   (str:starts-with-p
+                       (str:replace-first "\\(.*" "" (make-shared-name (unique receiver) "") :regex t)
+                     res)); was shared or method
                  (progn
                    (set-ast-line (output res))
                    (output "(")
@@ -239,13 +250,22 @@
              (let ((resu (make-shared-name (name receiver) (name method))))
                (if (gethash (intern resu) *globals*)
                    (progn
-                     (setf *more-run* t)               
+                     (setf *more-run* t)
                      (setf (gethash 'res--> (keys spec)) resu)
                      (set-ast-line (output "~A" resu))
                      (output "(")
                      (compile-args (default args) lvl globals spec nil)
                      (output ")"))
-                   (error (format nil "undefined function: ~A" spec)))))
+                   (let ((m-name (make-shared-name (unique receiver) (name method))))
+                     (if (gethash (intern m-name) *globals*)
+                         (progn
+                           (setf *more-run* t)
+                           (setf (gethash 'res--> (keys spec)) m-name)
+                           (set-ast-line (output "~A" m-name))
+                           (output "(")
+                           (compile-args (default args) lvl globals spec nil)
+                           (output ")"))
+                         (error (format nil "undefined function: ~A" spec)))))))
             ((and ptr-info (str:containsp "expected expression" ptr-info))
              (if (key-eq (construct receiver) '|@ATOM|) 
                  (let ((resu (make-method-name (name receiver) (name method))))
@@ -258,7 +278,17 @@
                          (compile-form receiver (1+ lvl) globals spec)
                          (compile-args (default args) lvl globals spec t)
                          (output ")"))
-                       (error (format nil "undefined function: ~A" spec))))
+                       (let ((m-name (make-method-name (unique receiver) (name method))))
+                         (if (gethash (intern m-name) *globals*)
+                             (progn
+                               (setf *more-run* t)               
+                               (setf (gethash 'res--> (keys spec)) m-name)
+                               (set-ast-line (output m-name))
+                               (output "(")
+                               (compile-form receiver (1+ lvl) globals spec)
+                               (compile-args (default args) lvl globals spec t)
+                               (output ")"))
+                             (error (format nil "undefined function: ~A" spec))))))
                  (progn
                    (set-ast-line (output "("))
                    (compile-form receiver (1+ lvl) globals spec)
@@ -273,7 +303,7 @@
                          (ast-key< (funcall *line-num* 0) (funcall *col-num* 0)))
                    (output ")"))))
             ((and end-info (str:containsp "too few arguments" end-info))
-             (error (format nil "cicili\: call: ~S" (str:substring 0 330 end-info))))
+             (error (format nil "cicili\: call: ~A" end-info)))
             ((and mtd-info (str:containsp "no member named" mtd-info))
              (let* ((matches     (ppcre:all-matches-as-strings "'(struct\\s+)?\\w+'" mtd-info))
                     (method      (car matches))
@@ -285,15 +315,15 @@
                          (setf *more-run* t)               
                          (setf (gethash 'res--> (keys spec)) resu))
                        (error (format nil "undefined function: ~A" spec)))
-                   (error (format nil "cicili\: nnn unresolved method reference type ~A. ~s~%~A"
-                                  spec-key (str:substring 0 340 (or mtd-info ptr-info begin-info)) spec)))
+                   (error (format nil "cicili\: nnn unresolved method reference type ~A. ~A~%~A"
+                                  spec-key (or mtd-info ptr-info begin-info) spec)))
                (set-ast-line (output "~A" resu))
                (output "(")
                (compile-form receiver lvl globals spec)
                (compile-args (default args) lvl globals spec t)
                (output ")")))
-            (t (error (format nil "cicili\: unresolved method reference type ~A. ~S~%~A"
-                              spec-key (str:substring 0 340 (or mtd-info ptr-info begin-info)) spec)))))))
+            (t (error (format nil "cicili\: unresolved method reference type ~A. ~A~%~A"
+                              spec-key (or mtd-info ptr-info begin-info) spec)))))))
 
 (defun compile-=> (spec lvl globals parent-spec)
   (with-slots ((receiver name) (member default) (args body)) spec
@@ -349,8 +379,8 @@
                (set-ast-line (output "("))
                (compile-args (default args) lvl globals spec nil)
                (output "))")))
-            (t (error (format nil "cicili\: unresolved member function type ~A. ~S~%~A"
-                              spec-key (str:substring 0 340 (or mtd-info ptr-info begin-info)) spec)))))))
+            (t (error (format nil "cicili\: unresolved member function type ~A. ~A~%~A"
+                              spec-key (or mtd-info ptr-info begin-info) spec)))))))
 
 (defun compile-args (args lvl globals parent-spec comma-first &key (no-comma nil))
   (when (and (null no-comma) comma-first (> (length args) 0)) (output ", "))
@@ -379,27 +409,31 @@
                      ((str:containsp "incompatible pointer types" info)
                       (let* ((result (multiple-value-list (ppcre:scan-to-strings *trait-regex* info)))
                              (matches (cadr result)))
-                        (let ((resu (make-shared-name (elt matches 0) (format nil "to~A" (elt matches 1)))))
-                          (if (gethash (intern resu) *globals*)
-                              (progn
-                                (setf (gethash 'res-arg (keys arg)) resu)
-                                (set-ast-line (output "~A" resu))
-                                (set-ast-line (output "("))
-                                (compile-form arg lvl globals parent-spec)
-                                (output ")"))
-                              (error (format nil "undefined trait: ~A" arg))))))
+                        (if matches
+                          (let ((resu (make-shared-name (elt matches 0) (format nil "to~A" (elt matches 1)))))
+                            (if (gethash (intern resu) *globals*)
+                                (progn
+                                  (setf (gethash 'res-arg (keys arg)) resu)
+                                  (set-ast-line (output "~A" resu))
+                                  (set-ast-line (output "("))
+                                  (compile-form arg lvl globals parent-spec)
+                                  (output ")"))
+                                (error (format nil "undefined trait: ~A" arg))))
+                          (compile-form arg lvl globals parent-spec))))
                      ((str:containsp "format specifies type" info)
                       (let* ((result (multiple-value-list (ppcre:scan-to-strings *trait-regex* info)))
                              (matches (cadr result)))
-                        (let ((resu (make-shared-name (elt matches 1) (format nil "to~A" (elt matches 0)))))
-                          (if (gethash (intern resu) *globals*)
-                              (progn                                
-                                (setf (gethash 'res-arg (keys arg)) resu)
-                                (set-ast-line (output "~A" resu))
-                                (set-ast-line (output "("))
-                                (compile-form arg lvl globals parent-spec)
-                                (output ")"))
-                              (error (format nil "undefined trait: ~A" arg))))))
+                        (if matches
+                          (let ((resu (make-shared-name (elt matches 1) (format nil "to~A" (elt matches 0)))))
+                            (if (gethash (intern resu) *globals*)
+                                (progn                                
+                                  (setf (gethash 'res-arg (keys arg)) resu)
+                                  (set-ast-line (output "~A" resu))
+                                  (set-ast-line (output "("))
+                                  (compile-form arg lvl globals parent-spec)
+                                  (output ")"))
+                                (error (format nil "undefined trait: ~A" arg))))
+                          (compile-form arg lvl globals parent-spec))))
                      ((str:containsp "member reference type" info)
                       (compile-form arg lvl globals parent-spec))
                      (t (compile-form arg lvl globals parent-spec))))

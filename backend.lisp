@@ -100,7 +100,8 @@
 	    (name      (name       spec))
 	    (array-def (array-def  spec))
 	    (default   (default    spec))
-	    (anonymous (anonymous  spec)))
+	    (anonymous (anonymous  spec))
+        (is-unique (unique spec)))
     (if (key-eq typeof '|func|)
         (progn
           (when const (set-ast-line (output "const ")))
@@ -144,7 +145,7 @@
 	      (set-ast-line (output "{ "))
           (let ((info (getf ast 'info)))
             (if info
-                (error (format nil "cicili: list: ~S" (str:substring 0 340 info)))
+                (error (format nil "cicili: list: ~A" info))
                 (set-ast-line (output "{ "))))))
     (let ((l (length items))
           (m-init nil))
@@ -171,7 +172,7 @@
       (unless (null ast)
         (let ((info (getf ast 'info)))
           (when info
-            (error (format nil "cicili: unary: ~S" (str:substring 0 340 info)))))))
+            (error (format nil "cicili: unary: ~A" info))))))
     (if is-postfix
         (progn
           (compile-form oprnd (1+ lvl) globals spec)
@@ -189,7 +190,7 @@
         (let ((info (getf ast 'info)))
           (when info
             (cond ((and info (str:containsp "use of undeclared identifier" info)) t)
-                  (t (error (format nil "cicili: operator: ~S" (str:substring 0 340 info)))))))))
+                  (t (error (format nil "cicili: operator: ~A" info))))))))
     (dolist (frm seq)
       (compile-form frm (1+ lvl) globals spec)
       (output " "))
@@ -236,7 +237,7 @@
     (unless (null ast)
       (let ((info (getf ast 'info)))
         (when info
-          (error (format nil "cicili: unary: ~S" (str:substring 0 340 info)))))))
+          (error (format nil "cicili: unary: ~A" info))))))
   (if (default spec)
       (compile-form (default spec) lvl globals spec)
       (compile-spec-type spec lvl globals spec))
@@ -257,9 +258,10 @@
       (if (null ast)
 	      (set-ast-line (output ")"))
           (let ((info (getf ast 'info)))
-            (if info
-                (error (format nil "cicili: call: ~S" (str:substring 0 340 info)))
-                (set-ast-line (output ")"))))))
+            (cond ((and info (str:containsp "expected expression" info))
+                   (set-ast-line (output ")")))
+                  (info (error (format nil "cicili: call: ~A" info)))
+                  (t (set-ast-line (output ")")))))))
     (unless is-expr (output ";~%"))))
 
 (defun compile-form (spec lvl globals parent-spec)
@@ -283,7 +285,7 @@
       ('|@TYPEOF| (compile-typeof     spec lvl globals spec))
       ('|@LET|    (compile-let        spec lvl globals spec))
       ('|@LETN|   (compile-let        spec lvl globals spec t nil))
-      ('|@BLOCK|  (compile-block      spec lvl globals spec t))
+      ('|@BLOCK|  (compile-block      spec lvl globals spec))
       ('|@PROGN|  (compile-progn      spec lvl globals spec :is-expr t))
       ('|@INCLUDE|(compile-include    spec 0   globals spec)) ; from inside macros 
       ('|@VAR|    (compile-variable   spec 0   globals spec))
@@ -300,13 +302,14 @@
       ('|@BODY|   (compile-body       spec lvl globals parent-spec))
       (t (error (format nil "expr syntax error ~A" spec))))))
 
-(defun compile-variable (spec lvl globals parent-spec &optional is-global &key ((:unique is-unique) nil))
+(defun compile-variable (spec lvl globals parent-spec &optional is-global)
   (let ((is-auto     nil)
 	    (is-register nil)
 	    (is-static   nil)
 	    (is-extern   nil)
         (is-alloc    nil)
-        (has-defer   nil))
+        (has-defer   nil)
+        (is-unique   (unique spec)))
     (dolist (attr (attrs spec))
       (case (car attr)
 	    ('|auto|     (setq is-auto     t))
@@ -317,15 +320,16 @@
         ('|defer|    (setq has-defer   (cdr attr)))
         (otherwise (error (format nil "unknown variable attribute ~A for ~A" attr spec)))))
 
-    (loop for los being the hash-value of (inners spec)
-          do (progn
-               (if (key-eq '|@STRUCT| (construct los)) ; default t means is multi-output
-                   (when (or (and (null is-static) *target-header*) (and is-static *target-source*))
-                     (compile-struct los lvl globals spec :unique is-unique :no-typedef t))
-                   (progn ; lambdas
-                     (push (cons '|static| t) (attrs los))
-                     (compile-function los lvl globals spec :unique is-unique)
-                     (pop (attrs los))))))
+    (when (key-eq (construct spec) '|@VAR|) ; '|@PARAM| for struct members
+      (loop for los being the hash-value of (inners spec)
+            do (progn
+                 (if (key-eq '|@STRUCT| (construct los)) ; default t means is multi-output
+                     (when (or (and (null is-static) *target-header*) (and is-static *target-source*))
+                       (compile-struct los lvl globals spec :no-typedef t))
+                     (progn ; lambdas
+                       (push (cons '|static| t) (attrs los))
+                       (compile-function los lvl globals spec)
+                       (pop (attrs los)))))))
 
     
     (output "~&~A" (indent lvl))
@@ -333,7 +337,7 @@
     (when is-static   (set-ast-line (output "static ")))
     (when is-register (set-ast-line (output "register ")))
     (when is-auto     (set-ast-line (output "auto ")))
-    (compile-spec-type-value spec lvl globals parent-spec has-defer :unique is-unique)
+    (compile-spec-type-value spec lvl globals parent-spec has-defer)
     (when is-global (output ";~%"))))
 
 (defvar *parent-exprs* (list '|@CALL| '|@LIST|))
@@ -516,13 +520,14 @@
                (set-ast-line (output " ~%"))
                (compile-body body lvl locals spec)))))
 
-(defun compile-function (spec lvl globals parent-spec &key ((:type as-type) nil) ((:unique is-unique) nil))
+(defun compile-function (spec lvl globals parent-spec &key ((:type as-type) nil))
   ;; resolve ?
   (let ((is-static  nil)
 	    (is-declare as-type)
 	    (is-inline  nil)
 	    (is-extern  nil)
-        (do-resolve nil))
+        (do-resolve nil)
+        (is-unique  (unique spec)))
     (dolist (attr (attrs spec))
       (case (car attr)
 	    ('|static|  (setq is-static  t))
@@ -538,10 +543,10 @@
             do (progn
                  (if (key-eq '|@STRUCT| (construct los)) ; inline structs
                      (when (or (and (null is-static) *target-header*) (and is-static *target-source*))
-                       (compile-struct los lvl globals spec :unique is-unique :no-typedef t))
+                       (compile-struct los lvl globals spec :no-typedef t))
                      (progn ; lambdas
                        (push (cons '|static| t) (attrs los))
-                       (compile-function los lvl globals spec :unique is-unique)
+                       (compile-function los lvl globals spec)
                        (pop (attrs los)))))))
 
     ;; compile function
@@ -565,6 +570,7 @@
         (format-type (const spec) (typeof spec) (modifier spec) nil (const-ptr spec) (array-def spec) nil
                      lvl locals parent-spec)
         (output " ")
+
         (set-ast-line (output "~A " (if is-unique (unique spec)
                                         (if (or is-method is-shared)
                                             (if as-type
@@ -587,7 +593,7 @@
           (unless (null ast)
             (let ((info (getf ast 'info)))
               (when info
-                (error (format nil "cicili: function: ~S" (str:substring 0 340 info)))))))
+                (error (format nil "cicili: function: ~A" info))))))
         (set-ast-line (output ")"))
         
         (if is-declare
@@ -625,12 +631,13 @@
   (compile-spec-type spec lvl globals parent-spec)
   (output ";~%"))
 
-(defun compile-enum (spec lvl globals parent-spec &key ((:nested is-nested) nil) ((:unique is-unique) nil))
+(defun compile-enum (spec lvl globals parent-spec &key ((:nested is-nested) nil))
   (let ((name         (name spec))
 	    (is-anonymous (anonymous spec))
 	    (counter      1)
 	    (count        (hash-table-count (inners spec)))
-	    (locals       (copy-specifiers globals)))
+	    (locals       (copy-specifiers globals))
+        (is-unique    (unique spec)))
     (maphash #'(lambda (in-name in-spec)
 		         (case (construct in-spec)
 		           ('|@VAR| (setf (gethash in-name locals) in-spec))
@@ -669,14 +676,14 @@
       (set-ast-line (output "~A" (if is-unique (unique spec) name))))
     (output ";~%")))
 
-(defun compile-struct (spec lvl globals parent-spec &key ((:nested is-nested) nil)
-                            ((:unique is-unique) nil) no-typedef)
+(defun compile-struct (spec lvl globals parent-spec &key ((:nested is-nested) nil) no-typedef)
   (let ((name         (name spec))
 	    (is-anonymous (anonymous spec))
 	    (is-static    nil)
 	    (is-declare   nil)
 	    (declares     (params spec))
-	    (locals       (copy-specifiers globals)))
+	    (locals       (copy-specifiers globals))
+        (is-unique    (unique spec)))
     (dolist (attr (attrs spec))
       (case (car attr)
 	    ('|static|  (setq is-static  t))
@@ -685,7 +692,7 @@
     (unless is-declare
       (maphash #'(lambda (in-name in-spec)
 		           (case (construct in-spec)
-		             ('|@VAR|  (setf (gethash in-name locals) in-spec))
+		             ('|@PARAM| (setf (gethash in-name locals) in-spec))
 		             ('|@FUNC| (setf (gethash in-name locals) in-spec))
 		             ('|@PREPROC|  t)
 		             ('|@ENUM|
@@ -697,7 +704,7 @@
 		             ('|@UNION|
 		              (setf (gethash in-name locals) in-spec)
 		              (maphash #'(lambda (k v) (setf (gethash k locals) v)) (params in-spec)))
-		             (otherwise (error (format nil "unknown clause ~A inside ~A" in-name in-spec)))))
+		             (otherwise (error (format nil "unknown clause ~A inside ~A" (construct in-spec) in-spec)))))
 	           (inners spec)))
     (output "~&~A" (indent lvl))
     (when is-static (set-ast-line (output "static ")))
@@ -717,12 +724,12 @@
           (output "{~%"))
       (maphash #'(lambda (in-name in-spec)
 		           (case (construct in-spec)
-		             ('|@VAR|      (compile-variable     in-spec (+ 1 lvl) locals spec t))
+		             ('|@PARAM|    (compile-variable     in-spec (+ 1 lvl) locals spec t))
 		             ('|@FUNC|     (compile-function     in-spec (+ 1 lvl) locals spec))
 		             ('|@PREPROC|  (compile-preprocessor in-spec (+ 1 lvl) locals spec))
-		             ('|@ENUM|     (compile-enum         in-spec (+ 1 lvl) locals spec :nested t :unique is-unique))
-		             ('|@STRUCT|   (compile-struct       in-spec (+ 1 lvl) locals spec :nested t :unique is-unique))
-		             ('|@UNION|    (compile-union        in-spec (+ 1 lvl) locals spec :nested t :unique is-unique))
+		             ('|@ENUM|     (compile-enum         in-spec (+ 1 lvl) locals spec :nested t))
+		             ('|@STRUCT|   (compile-struct       in-spec (+ 1 lvl) locals spec :nested t))
+		             ('|@UNION|    (compile-union        in-spec (+ 1 lvl) locals spec :nested t))
 		             (otherwise nil)))
 	           (inners spec))
       (output "~&~A" (indent lvl))
@@ -740,11 +747,12 @@
             (set-ast-line (output "~A" (if is-unique (unique spec) name))))))
     (output ";~%")))
 
-(defun compile-union (spec lvl globals parent-spec &key ((:nested is-nested) nil) ((:unique is-unique) nil))
+(defun compile-union (spec lvl globals parent-spec &key ((:nested is-nested) nil))
   (let ((name         (name spec))
 	    (is-anonymous (anonymous spec))
 	    (declares     (params spec))
-	    (locals       (copy-specifiers globals)))
+	    (locals       (copy-specifiers globals))
+        (is-unique    (unique spec)))
     (maphash #'(lambda (in-name in-spec)
 		         (case (construct in-spec)
 		           ('|@VAR| (setf (gethash in-name locals) in-spec))
@@ -771,8 +779,8 @@
 		         (case (construct in-spec)
 		           ('|@VAR|      (compile-variable     in-spec (+ 1 lvl) locals spec t))
 		           ('|@PREPROC|  (compile-preprocessor in-spec (+ 1 lvl) locals spec))
-		           ('|@STRUCT|   (compile-struct       in-spec (+ 1 lvl) locals spec :nested t :unique is-unique))
-		           ('|@UNION|    (compile-union        in-spec (+ 1 lvl) locals spec :nested t :unique is-unique))
+		           ('|@STRUCT|   (compile-struct       in-spec (+ 1 lvl) locals spec :nested t))
+		           ('|@UNION|    (compile-union        in-spec (+ 1 lvl) locals spec :nested t))
 		           (otherwise nil)))
 	         (inners spec))
     (output "~&~A" (indent lvl))

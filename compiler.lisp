@@ -46,6 +46,7 @@
                     (setf *target-header* (key-eq tname '|header|))
                     (setf *target-source* (key-eq tname '|source|))
 
+                    (setf *module-path* nil)
                     (unless *only-link* (setq ir (specify-target target)))
                     (setf *target-spec* ir)
                     (setf *target-file* (file-namestring (nth 1 target)))
@@ -233,7 +234,8 @@
                      (setq result (if (listp expr)
                                       (specify-body (list expr))
                                       (specify-expr expr)))))
-               (setf *macroexpand* tmp-expantion)))
+               (setf *macroexpand* tmp-expantion)
+               result))
             (t (eval target))))))
 
 (defun compile-cicili-file (file-name)

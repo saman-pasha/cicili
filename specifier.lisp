@@ -60,9 +60,10 @@
 	       (setf (params  instance)     (make-hash-table :test 'eql))
  	       (setf (inners  instance)     (make-hash-table :test 'eql))) ; contains lambdas
 	      ((eql construct '|@METHOD|)
+           (when *module-path*
              (setf (module instance) *module-path*)
              (setf (unique instance)
-                   (intern (make-method-name (symbol-name (free-name *module-path* (car name))) (cdr name))))
+                   (intern (make-method-name (symbol-name (free-name *module-path* (car name))) (cdr name)))))
 	       (setf (params  instance)     (make-hash-table :test 'eql))
  	       (setf (inners  instance)     (make-hash-table :test 'eql))) ; contains lambdas
 	      ((eql construct '|@ENUM|)
@@ -654,7 +655,10 @@
         ((atom    def)        (specify-atom-expr def))
         (t (let* ((func (car def))
                   (attributes '()))
-	         (cond ((key-eq func '|code|)   (specify-code-expr def))
+
+	         (cond ((key-eq func 'QUASIQUOTE)
+                    (specify-expr (eval (car (macroexpand `(,(cadr def) ,@(cddr def)))))))
+                   ((key-eq func '|code|)   (specify-code-expr def))
                    ((key-eq func 'FUNCTION) (specify-expr      (cadr def)))
 		           ((key-eq func 'QUOTE)
                     (let ((quoted (cadr def)))
@@ -733,7 +737,7 @@
                               (let ((out-spec (specify-module      def attributes))) (setq attributes '()) out-spec))
 		                     ((key-eq func '|cicili|)
                               (let ((out-spec (compile-ast         (cdr def)))) (setq attributes '()) out-spec))
-                             (t (expand-macros-expr def))))
+                             (t (let ((out-spec (expand-macros-expr def))) (setq attributes '()) out-spec))))
                    (t (expand-macros-expr def)))))))
 
 ;; var clause only allowed as global vars but inside macros for complex situation
@@ -1069,12 +1073,13 @@
   (if (listp name) ; method or shared
       (let ((recv (car name))
             (mthd (cdr name)))
+
         (if (and (symbolp recv) (key-eq recv '<>))
             (specify-decl-name< (if (listp mthd) (apply '<> mthd) mthd))
             (progn
               (when (listp recv)
                 (if (key-eq (car recv) '<>)
-                    (setq recv (apply '<> recv))
+                    (setq recv (apply '<> (cdr recv)))
                     (error (format nil "generic names are produced by '<>', ~A" name))))
               (when (and (listp mthd) (key-eq (car mthd) '<>))
                 (setq mthd (apply '<> (cdr mthd))))
@@ -1103,6 +1108,7 @@
 		                  (if (key-eq name '|main|) '(|out| |int|) '(|out| |void|)))))
 	     (body (if has-out (nthcdr 4 def) (nthcdr 3 def)))
          (function-specifier nil))
+    
     (dolist (attr attrs)
       (let ((name (car attr)))
 	    (cond ((key-eq name '|static|)  (setq is-static  t))
@@ -1144,23 +1150,26 @@
             (make-specifier (specify-decl-name< '|this|) '|@PARAM| nil
                             (if *module-path*
                                 (free-name *module-path* (car name))
-                                (car name)) '|*| nil nil nil '())
+                                (car name))
+                            '|*| nil nil nil '())
         function-specifier))
       (loop for param in params
             for i from 0 to (length params)
             do (let ((is-anonymous nil))
-	              (multiple-value-bind (const type modifier const-ptr variable array)
-	                  (specify-type< param)
-	                (cond ((or (null variable) (key-eq '_ variable))
-                           (setq variable (gensym (format nil "_ciciliParam_~D" i))))
-                          ((key-eq '$$$ variable)
-                           (setq variable '|...|)))
-	                  ; (setq is-anonymous t))
-                    (add-param
-                        (make-specifier
-                            (specify-decl-name< variable)
-                          '@|PARAM| const type modifier const-ptr array nil nil is-anonymous)
-                      function-specifier))))
+                 (unless (listp param) (error (format nil "parameter should be a list ~A for ~A" param def)))
+                 
+	             (multiple-value-bind (const type modifier const-ptr variable array)
+	                 (specify-type< param)
+	               (cond ((or (null variable) (key-eq '_ variable))
+                          (setq variable (gensym (format nil "_ciciliParam_~D" i))))
+                         ((key-eq '$$$ variable)
+                          (setq variable '|...|)))
+                   ;; (setq is-anonymous t))
+                   (add-param
+                       (make-specifier
+                           (specify-decl-name< variable)
+                         '@|PARAM| const type modifier const-ptr array nil nil is-anonymous)
+                     function-specifier))))
       (setf *function-spec* tmp-specifier)) ; end of guard, revert *function-spec*
     function-specifier))
 
@@ -1216,7 +1225,9 @@
   (when (and is-nested (> (length attrs) 0)) (error (format nil "wrong attributes ~A" attrs)))
   (let* ((is-static  nil)
 	     (is-declare nil)
-         (is-anonymous (or (= (length def) 1) (not (symbolp (nth 1 def)))))
+         (is-anonymous (or (= (length def) 1)
+                         (not (or (and (listp (nth 1 def)) (key-eq (car (nth 1 def)) '<>))
+                                (symbolp (nth 1 def))))))
 	     (name (specify-decl-name< (if is-anonymous
                                        (gensym "ciciliStruct")
                                        (if (and (listp (nth 1 def)) (key-eq (car (nth 1 def)) '<>))
@@ -1245,9 +1256,16 @@
       (dolist (clause clauses)
 	    (if (consp clause)
 	        (let ((construct (car clause)))
-	          (cond (is-inline
-                      (add-inner (specify-variable (append (list '|member|) clause) attributes) struct-specifier)
-		              (setq attributes '()))
+	          (cond (is-inline ; inline structs dont have any other inners types but type definitions
+                        (multiple-value-bind (const type modifier const-ptr variable array default)
+	                        (specify-type-value< clause)
+                          (let ((param-spec
+                                    (make-specifier
+                                        (specify-decl-name< variable)
+                                      '@|PARAM| const type modifier const-ptr array default attributes is-anonymous)))
+                            (setq attributes '())
+	                        (add-inner param-spec struct-specifier))))
+                    
                     ((find (char (symbol-name construct) 0) "@#")
 		             (add-inner (specify-preprocessor clause attributes) struct-specifier)
 		             (setq attributes '()))
@@ -1258,7 +1276,15 @@
 		            ((key-eq construct '|auto|)     (push clause attributes))
 		            ((key-eq construct '|extern|)   (push clause attributes))
 		            ((key-eq construct '|member|)
-		             (add-inner (specify-variable clause attributes) struct-specifier) (setq attributes '()))
+                     (multiple-value-bind (const type modifier const-ptr variable array default)
+	                     (specify-type-value< (cdr clause))
+                       (let ((param-spec
+                                 (make-specifier
+                                     (specify-decl-name< variable)
+                                   '@|PARAM| const type modifier const-ptr array default attributes is-anonymous)))
+                         (setq attributes '())
+	                     (add-inner param-spec struct-specifier))))
+                    
 		            ((key-eq construct '|enum|)
 		             (add-inner (specify-enum     clause attributes :nested t) struct-specifier) (setq attributes '()))
 		            ((key-eq construct '|struct|)

@@ -44,7 +44,7 @@
 		             (add-inner (specify-guard    clause attributes t) target-specifier) (setq attributes '()))
                     ((key-eq construct '|module|)
 		             (add-inner (specify-module   clause attributes) target-specifier) (setq attributes '()))
-		            (t (add-inner (specify-expr   clause) target-specifier))))
+		            (t (add-inner (specify-expr   clause) target-specifier) (setq attributes '()))))
 	        (error (format nil "syntax error ~A" clause))))
       target-specifier)))
 
@@ -111,6 +111,8 @@
 	             (dotimes (i (length args))
 	               (when (zerop (mod i 2))
 	                 (when (and (not *only-link*) (key-eq (nth i args) ':|compile|))
+                       (display (if *cpp* "compiler set for C++" "compiler set for C") #\Newline)
+                       
 		               (let* ((dumper    (if *cpp* (getf *configs* 'cpp-dumper) (getf *configs* 'dumper)))
                               (command   (if *cpp* (getf *configs* 'cpp-compiler) (getf *configs* 'compiler)))
 		                      (program   (car command))

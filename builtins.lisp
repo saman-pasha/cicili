@@ -15,7 +15,7 @@
      (LET ((types ',types)
            (body (COPY-LIST ',body)))
        (DOTIMES (i (LENGTH args))
-         (NSUBST (NTH i args) (NTH i types) body))
+         (SETQ body (SUBST (NTH i args) (NTH i types) body)))
        `(ghost ,@body))))
 
 (DEFMACRO shared-func-name (struct method)
