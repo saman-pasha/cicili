@@ -27,5 +27,5 @@ int main () {
     fprintf (stdout , "free varAAA: %ld, inside c: %ld\n", varAAA , cicilit5t267dV9_M5VoebnItVH5Vd1E8_ );
     fprintf (stdout , "free Circle: %d, inside b: %d\n", Circle , cicilirgFz6AGptwbGyXTCInOvs4BhwJQ_ );
     fprintf (stdout , "free Rectangle: %d, inside b: %d\n", Rectangle , ciciliT3IQlUe5ETuuOYxPJhvnM4mGpZU_ );
-  }
+  };
 }

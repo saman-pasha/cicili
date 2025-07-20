@@ -196,13 +196,11 @@
       (output " "))
     (output ")")))
 
-(defun compile-assignment (spec lvl globals parent-spec &key is-expr)
+(defun compile-assignment (spec lvl globals parent-spec)
   (with-slots ((opr name) (seq default)) spec
-    (unless is-expr (output "~&~A" (indent lvl)))
     (dolist (frm seq)
       (compile-form frm (1+ lvl) globals spec)
-      (output " "))
-    (unless is-expr (output ";~%"))))
+      (output " "))))
 
 (defun compile-nth (spec lvl globals parent-spec)
   (with-slots ((index name) (array default)) spec
@@ -248,9 +246,8 @@
   (compile-form (default spec) (1+ lvl) globals spec)
   (output ")"))
 
-(defun compile-call (spec lvl globals parent-spec &key is-expr)
+(defun compile-call (spec lvl globals parent-spec)
   (with-slots ((func name) (args default)) spec
-    (unless is-expr (output "~&~A" (indent lvl)))
     (compile-form func (1+ lvl) globals spec)
     (output "(")
     (unless (null args) (compile-args args lvl globals spec nil))
@@ -261,12 +258,10 @@
             (cond ((and info (str:containsp "expected expression" info))
                    (set-ast-line (output ")")))
                   (info (error (format nil "cicili: call: ~A" info)))
-                  (t (set-ast-line (output ")")))))))
-    (unless is-expr (output ";~%"))))
+                  (t (set-ast-line (output ")")))))))))
 
 (defun compile-form (spec lvl globals parent-spec)
   (with-slots (construct) spec
-    ;; (display "FORM" spec #\Newline "PARENT" parent-spec #\Newline)
     (case construct
       ('|@NIL|    t)
       ('|@SYMBOL| (compile-atom       spec lvl globals spec))
@@ -284,9 +279,9 @@
       ('|@SIZEOF| (compile-sizeof     spec lvl globals spec))
       ('|@TYPEOF| (compile-typeof     spec lvl globals spec))
       ('|@LET|    (compile-let        spec lvl globals spec))
-      ('|@LETN|   (compile-let        spec lvl globals spec t nil))
+      ('|@LETN|   (compile-let        spec lvl globals spec t))
       ('|@BLOCK|  (compile-block      spec lvl globals spec))
-      ('|@PROGN|  (compile-progn      spec lvl globals spec :is-expr t))
+      ('|@PROGN|  (compile-progn      spec lvl globals spec))
       ('|@INCLUDE|(compile-include    spec 0   globals spec)) ; from inside macros 
       ('|@VAR|    (compile-variable   spec 0   globals spec))
       ('|@FUNC|   (compile-function   spec 0   globals spec)) 
@@ -298,11 +293,11 @@
       ('|@GUARD|  (compile-guard      spec 0   globals spec)) 
       ('|@GHOST|  (compile-guard      spec 0   globals spec t)) 
       ('|@MODULE| (compile-module     spec 0   globals spec)) ; down here for inside macros 
-      ('|@CALL|   (compile-call       spec lvl globals spec :is-expr t))
+      ('|@CALL|   (compile-call       spec lvl globals spec))
       ('|@BODY|   (compile-body       spec lvl globals parent-spec))
       (t (error (format nil "expr syntax error ~A" spec))))))
 
-(defun compile-variable (spec lvl globals parent-spec &optional is-global)
+(defun compile-variable (spec lvl globals parent-spec)
   (let ((is-auto     nil)
 	    (is-register nil)
 	    (is-static   nil)
@@ -310,6 +305,7 @@
         (is-alloc    nil)
         (has-defer   nil)
         (is-unique   (unique spec)))
+    
     (dolist (attr (attrs spec))
       (case (car attr)
 	    ('|auto|     (setq is-auto     t))
@@ -320,43 +316,46 @@
         ('|defer|    (setq has-defer   (cdr attr)))
         (otherwise (error (format nil "unknown variable attribute ~A for ~A" attr spec)))))
 
-    (when (key-eq (construct spec) '|@VAR|) ; '|@PARAM| for struct members
+    (when (key-eq (construct spec) '|@VAR|) ; '|@PARAM| for struct members, function parameters
       (loop for los being the hash-value of (inners spec)
             do (progn
                  (if (key-eq '|@STRUCT| (construct los)) ; default t means is multi-output
                      (when (or (and (null is-static) *target-header*) (and is-static *target-source*))
-                       (compile-struct los lvl globals spec :no-typedef t))
+                       (compile-struct los 0 globals spec :no-typedef t))
                      (progn ; lambdas
                        (push (cons '|static| t) (attrs los))
                        (compile-function los lvl globals spec)
                        (pop (attrs los)))))))
-
     
     (output "~&~A" (indent lvl))
     (when is-extern   (set-ast-line (output "extern ")))
     (when is-static   (set-ast-line (output "static ")))
     (when is-register (set-ast-line (output "register ")))
     (when is-auto     (set-ast-line (output "auto ")))
-    (compile-spec-type-value spec lvl globals parent-spec has-defer)
-    (when is-global (output ";~%"))))
+    (compile-spec-type-value spec lvl globals parent-spec has-defer)))
 
-(defvar *parent-exprs* (list '|@CALL| '|@LIST|))
-(defvar *parent-bodies* (list '|@CICILI| '|@TARGET| '|@CALL| '|@=>| '|@RETURN| '|@VAR|))
+(defvar *parent-bodies* (list '|@CICILI| '|@TARGET| '|@FUNC| '|@METHOD| '|@LET| '|@LETN| '|@BLOCK| '|@PROGN| '|@STRUCT|
+                              '|@DO| '|@WHILE| '|@FOR| '|@IF| '|@COND| '|@SWITCH| '|@CASE| '|@DEFAULT| '|@GUARD| '|@GHOAT|))
 (defun compile-body (spec lvl globals parent-spec)
-  (let ((is-parent-expr (if (find (construct parent-spec) *parent-exprs* :test #'eql) t nil)))
+  (let ((is-parent-bodies (find (construct parent-spec) *parent-bodies* :test #'key-eq)))
+    (display "BODY" spec #\Newline "PARENT" is-parent-bodies parent-spec #\Newline)
+
     (loop for form in (body spec)
           do (progn
-               ;; (display "BODY" spec #\Newline "PARENT" parent-spec is-parent-expr #\Newline)
+               (display "FORM" form #\Newline "PARENT" parent-spec #\Newline)
+
+               (when is-parent-bodies (output "~&~A" (indent (1+ lvl))))
+               
                (case (construct form)
 		         ('|@PREPROC| (compile-preprocessor form (1+ lvl) globals parent-spec))
-                 ('|@ASSIGN|  (compile-assignment   form (1+ lvl) globals parent-spec :is-expr is-parent-expr))
-                 ('|@CALL|    (compile-call         form (1+ lvl) globals parent-spec :is-expr is-parent-expr))
-                 ('|@VAR|     (compile-variable     form (1+ lvl) globals parent-spec t))
+                 ('|@ASSIGN|  (compile-assignment   form (1+ lvl) globals parent-spec))
+                 ('|@CALL|    (compile-call         form (1+ lvl) globals parent-spec))
+                 ('|@VAR|     (compile-variable     form (1+ lvl) globals parent-spec))
                  ('|@LET|     (compile-let          form (1+ lvl) globals parent-spec))
-                 ('|@LETN|    (compile-let          form (1+ lvl) globals parent-spec t t))
+                 ('|@LETN|    (compile-let          form (1+ lvl) globals parent-spec t))
                  ('|@BLOCK|   (compile-block        form (1+ lvl) globals parent-spec))
-                 ('|@PROGN|   (compile-progn        form (1+ lvl) globals parent-spec :is-expr is-parent-expr))
-                 ('|@SET|     (compile-set          form (1+ lvl) globals parent-spec :is-expr is-parent-expr))
+                 ('|@PROGN|   (compile-progn        form (1+ lvl) globals parent-spec))
+                 ('|@SET|     (compile-set          form (1+ lvl) globals parent-spec))
                  ('|@RETURN|  (compile-return       form (1+ lvl) globals parent-spec))
                  ('|@IF|      (compile-if           form (1+ lvl) globals parent-spec))
                  ('|@SWITCH|  (compile-switch       form (1+ lvl) globals parent-spec))
@@ -365,54 +364,45 @@
                  ('|@COND|    (compile-cond         form (1+ lvl) globals parent-spec))
                  ('|@DO|      (compile-do           form (1+ lvl) globals parent-spec))
                  ('|@BODY|    (compile-body         form     lvl  globals parent-spec))
-                 (t (if (find (construct parent-spec) *parent-bodies* :test #'eql)
-                        (progn
-                          (compile-form form (1+ lvl) globals parent-spec))
-                        (progn
-                          (output "~&~A" (indent (1+ lvl)))
-                          (compile-form form (1+ lvl) globals parent-spec)
-                          (output ";~%")))))))))
+                 (t           (compile-form         form (1+ lvl) globals parent-spec)))
 
-(defun compile-let (spec lvl globals parent-spec &optional is-n inside-body) ; is-n means letn - > scope is statement
+               ;; (when (and is-parent-bodies
+               ;;         (not (find (construct spec) *parent-bodies* :test #'eql)))
+               (when is-parent-bodies (output ";~%"))))))
+
+(defun compile-let (spec lvl globals parent-spec &optional is-n) ; is-n means letn - > scope is statement
   (let ((dynamics    '())
 	    (locals      (copy-specifiers globals))
         (in-progn    (key-eq (construct parent-spec) '|@PROGN|)))
-    (unless is-n (output "~&~A" (indent lvl)))
     (when (or in-progn is-n) (output "("))
     (output "{ /* ~A */~%" (name spec))
     (loop for var being the hash-value of (params spec)
           do (progn
-               (compile-variable var (1+ lvl) locals var t)
+               (compile-variable var (1+ lvl) locals var)
+               (output ";~%")
                (when (find '|alloc| (attrs var) :test #'key-eq) (push (name var) dynamics))))
     (compile-body (body spec) lvl locals spec)
     (output "~&~A" (indent lvl))
-    (if (or in-progn is-n)
-        (if (and is-n inside-body) (output "})") (output "});~%"))
-        (output "}~%"))))
+    (output "}")
+    (when (or in-progn is-n) (output ")"))))
 
 (defun compile-block (spec lvl globals parent-spec)
   (let ((locals      (copy-specifiers globals)))
-    (output "~&~A" (indent lvl))
     (output "{ /* ~A */~%" (name spec))
     (compile-body (body spec) lvl locals spec)
     (output "~&~A" (indent lvl))
     (output "} /* ~A */~%" (name spec))))
 
-(defun compile-progn (spec lvl globals parent-spec &key is-expr)
+(defun compile-progn (spec lvl globals parent-spec)
   (let ((locals      (copy-specifiers globals)))
-    (unless is-expr (output "~&~A" (indent lvl)))
     (output "({ /* ~A */~%" (name spec))
     (compile-body (body spec) lvl locals spec)
     (output "~&~A" (indent lvl))
-    (if is-expr
-        (output "})" (name spec))
-        (output "});" (name spec)))))
+    (output "})" (name spec))))
 
 (defun compile-return (spec lvl globals parent-spec)
-  (output "~&~A" (indent lvl))
   (set-ast-line (output "return "))
-  (when (default spec) (compile-form (default spec) (1+ lvl) globals spec))
-  (output ";~%"))
+  (when (default spec) (compile-form (default spec) (1+ lvl) globals spec)))
 
 (defun compile-if (spec lvl globals parent-spec)
   (let ((locals (copy-specifiers globals)))
@@ -494,9 +484,9 @@
                  (case (construct form)
                    ('|@ATOM|   (compile-atom       form lvl locals spec))
                    ('|@UNARY|  (compile-unary      form lvl locals spec))
-                   ('|@ASSIGN| (compile-assignment form lvl locals spec :is-expr t))
-                   ('|@CALL|   (compile-call       form lvl locals spec :is-expr t))
-                   ('|@SET|    (compile-set        form lvl locals spec :is-expr t))
+                   ('|@ASSIGN| (compile-assignment form lvl locals spec))
+                   ('|@CALL|   (compile-call       form lvl locals spec))
+                   ('|@SET|    (compile-set        form lvl locals spec))
                    (t (error (format nil "unsupported form inside advance part of for loop ~A" spec))))
                  (when (< i lc) (output ", ")))))
     (set-ast-line (output ") {~%"))
@@ -543,7 +533,7 @@
             do (progn
                  (if (key-eq '|@STRUCT| (construct los)) ; inline structs
                      (when (or (and (null is-static) *target-header*) (and is-static *target-source*))
-                       (compile-struct los lvl globals spec :no-typedef t))
+                       (compile-struct los 0 globals spec :no-typedef t))
                      (progn ; lambdas
                        (push (cons '|static| t) (attrs los))
                        (compile-function los lvl globals spec)
@@ -571,16 +561,20 @@
                      lvl locals parent-spec)
         (output " ")
 
-        (set-ast-line (output "~A " (if is-unique (unique spec)
-                                        (if (or is-method is-shared)
-                                            (if as-type
-                                                (format nil "(*~A)" (if is-method
-                                                                        (make-method-name (car name) (cdr name))
-                                                                        (make-shared-name (car name) (cdr name))))
-                                                (if is-method
-                                                    (make-method-name (car name) (cdr name))
-                                                    (make-shared-name (car name) (cdr name))))
-                                            (if as-type (format nil "(*~A)" name) name)))))
+        (if (and as-type (key-eq name '_))
+            (set-ast-line (output "(*)"))
+            (set-ast-line (output "~A " (if is-unique
+                                            (unique spec)
+                                            (if (or is-method is-shared)
+                                                (if as-type
+                                                    (format nil "(*~A)" (if is-method
+                                                                            (make-method-name (car name) (cdr name))
+                                                                            (make-shared-name (car name) (cdr name))))
+                                                    (if is-method
+                                                        (make-method-name (car name) (cdr name))
+                                                        (make-shared-name (car name) (cdr name))))
+                                                (if as-type (format nil "(*~A)" name) name))))))
+        
         (output "(")
         (loop for param being the hash-value of params
               with lc = (1- (hash-table-count params))
@@ -706,6 +700,7 @@
 		              (maphash #'(lambda (k v) (setf (gethash k locals) v)) (params in-spec)))
 		             (otherwise (error (format nil "unknown clause ~A inside ~A" (construct in-spec) in-spec)))))
 	           (inners spec)))
+    
     (output "~&~A" (indent lvl))
     (when is-static (set-ast-line (output "static ")))
     (if (or is-anonymous no-typedef)
@@ -724,7 +719,7 @@
           (output "{~%"))
       (maphash #'(lambda (in-name in-spec)
 		           (case (construct in-spec)
-		             ('|@PARAM|    (compile-variable     in-spec (+ 1 lvl) locals spec t))
+		             ('|@PARAM|    (compile-variable     in-spec (+ 1 lvl) locals spec) (output ";~%"))
 		             ('|@FUNC|     (compile-function     in-spec (+ 1 lvl) locals spec))
 		             ('|@PREPROC|  (compile-preprocessor in-spec (+ 1 lvl) locals spec))
 		             ('|@ENUM|     (compile-enum         in-spec (+ 1 lvl) locals spec :nested t))
@@ -777,7 +772,7 @@
         (output "{~%"))
     (maphash #'(lambda (in-name in-spec)
 		         (case (construct in-spec)
-		           ('|@VAR|      (compile-variable     in-spec (+ 1 lvl) locals spec t))
+		           ('|@VAR|      (compile-variable     in-spec (+ 1 lvl) locals spec))
 		           ('|@PREPROC|  (compile-preprocessor in-spec (+ 1 lvl) locals spec))
 		           ('|@STRUCT|   (compile-struct       in-spec (+ 1 lvl) locals spec :nested t))
 		           ('|@UNION|    (compile-union        in-spec (+ 1 lvl) locals spec :nested t))
@@ -805,7 +800,7 @@
       (set-ast-line (output "~&#define ~A~%" name)))
     (maphash #'(lambda (in-name in-spec)
 		         (case (construct in-spec)
-		           ('|@VAR|      (compile-variable     in-spec lvl globals spec (if is-ghost nil t)))
+		           ('|@VAR|      (compile-variable     in-spec lvl globals spec) (output ";~%"))
 		           ('|@FUNC|     (compile-function     in-spec lvl globals spec))
 		           ('|@METHOD|   (compile-function     in-spec lvl globals spec))
 		           ('|@PREPROC|  (compile-preprocessor in-spec lvl globals spec))

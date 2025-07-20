@@ -44,5 +44,5 @@ struct cicili_NwqbkSJpZ2_ZmZ871CSc8l0pLI_ cicilidJukrVMFhxSxT_3zby0N3ff_uMM_ (in
   { /* cicili#Let125 */
     typeof(cicilidJukrVMFhxSxT_3zby0N3ff_uMM_ (x , y )) cicilifGgaJXzdRzBT5cgc_La3z5R7kv4_  = { x , y };
     return ((struct cicili_NwqbkSJpZ2_ZmZ871CSc8l0pLI_)cicilifGgaJXzdRzBT5cgc_La3z5R7kv4_ );
-  }
+  };
 }

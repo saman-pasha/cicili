@@ -93,7 +93,7 @@
 			                    ('|@PREPROC|  (compile-preprocessor in-spec 0 globals spec))
 			                    ('|@INCLUDE|  (compile-include      in-spec 0 globals spec))
 			                    ('|@TYPEDEF|  (compile-typedef      in-spec 0 globals spec))
-			                    ('|@VAR|      (compile-variable     in-spec 0 globals spec t))
+			                    ('|@VAR|      (compile-variable     in-spec 0 globals spec) (output ";~%"))
 			                    ('|@FUNC|     (compile-function     in-spec 0 globals spec))
 			                    ('|@METHOD|   (compile-function     in-spec 0 globals spec))
 			                    ('|@ENUM|     (compile-enum         in-spec 0 globals spec))
@@ -142,6 +142,8 @@
                                      (dump-args `(,program ,@arguments ,@dumper ,@custom)))
                                  (setq args      (replace-args< `(("{$CWD}" ,cwd)) args))
                                  (setq dump-args (replace-args< `(("{$CWD}" ,cwd)) dump-args))
+                                 (display "cicili compile:" (if dump dump-args args) #\Newline)
+
                                  (let ((exit-status
                                            (multiple-value-list
                                                (if dump
@@ -150,7 +152,7 @@
 		                                           (uiop:run-program args :ignore-error-status t
                                                                      :input nil :output stdout :error-output stderr)))))
                                    (when (and (not (equal (nth 2 exit-status) 0)) (> *ast-run* *ast-total-runs*))
-                                     (error (format nil "cicili exited with status: ~A" exit-status))))))
+                                     (display (format nil "cicili exited with status: ~A" exit-status) #\Newline)))))
                              (error (format nil "invalid :compile value, required a custom command or #t"))))
                        (setq is-compiled t))
 	                 (when (and (not dump) (not header) (key-eq (nth i args) ':|link|))
@@ -168,12 +170,14 @@
                                (let ((cwd       (uiop/os:getcwd))
                                      (args      `(,program ,@arguments ,@custom)))
                                  (setq args (replace-args< `(("{$CWD}" ,cwd)) args))
+                                 (display "cicili link:" args #\Newline)
+
 		                         (let ((exit-status
                                            (multiple-value-list
                                                (uiop:run-program args :ignore-error-status t
                                                                  :input nil :output stdout :error-output stderr))))
                                    (when (and (not (equal (nth 2 exit-status) 0)) (> *ast-run* *ast-total-runs*))
-                                     (error (format nil "cicili exited with status: ~A" exit-status)))))))
+                                     (display (format nil "cicili exited with status: ~A" exit-status) #\Newline))))))
                            (error (format nil ":link without :compile, compilation is required"))))))))
            (uiop/run-program:subprocess-error (e) (error (format nil "~A~%" e))))
       (unless *only-link*

@@ -651,7 +651,6 @@
 
 (defun specify-expr (def)
   (cond ((key-eq  def '|nil|) (specify-nil-expr))
-        ((key-eq  def '|NIL|) (specify-nil-expr))
         ((atom    def)        (specify-atom-expr def))
         (t (let* ((func (car def))
                   (attributes '()))
@@ -830,7 +829,6 @@
     (dolist (form def)
       (push
           (cond ((key-eq  form '|nil|) (specify-nil-expr))
-                ((key-eq  form '|NIL|) (specify-nil-expr))
                 ((atom    form)        (specify-atom-expr   form))
 	            (t (let ((func (car form)))
 	                 (cond ((and (symbolp func) (find (char (symbol-name func) 0) "@#"))
@@ -1281,7 +1279,7 @@
                        (let ((param-spec
                                  (make-specifier
                                      (specify-decl-name< variable)
-                                   '@|PARAM| const type modifier const-ptr array default attributes is-anonymous)))
+                                   '@|PARAM| const type modifier const-ptr array default attributes)))
                          (setq attributes '())
 	                     (add-inner param-spec struct-specifier))))
                     

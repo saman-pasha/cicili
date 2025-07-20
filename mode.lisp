@@ -162,6 +162,12 @@
    (1 . =>)
    (1 . t<>)
    (1 . closure)
+   (1 . go)
+   (1 . self)
+   (1 . detach)
+   (1 . join)
+   (1 . cancel)
+   (1 . exit)
    ))
 
 (defun cicili-add-attributes (face-name keyword-rules)

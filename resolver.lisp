@@ -439,10 +439,9 @@
                      (t (compile-form arg lvl globals parent-spec))))
              (when (and (null no-comma) (< i l)) (output ", ")))))
 
-(defun compile-set (spec lvl globals parent-spec &key is-expr)
+(defun compile-set (spec lvl globals parent-spec)
   (with-slots ((items default)) spec
     (dolist (item items)
-      (unless is-expr (output "~&~A" (indent lvl)))
       (compile-form (nth 0 item) (1+ lvl) globals spec)
       (output " ")
 
@@ -493,5 +492,4 @@
                          (output ")"))
                        (error (format nil "undefined trait: ~A" spec))))))
               (t (set-ast-line (output "= "))
-	             (compile-form (nth 1 item) (1+ lvl) globals spec))))
-      (unless is-expr (output ";~%")))))
+	             (compile-form (nth 1 item) (1+ lvl) globals spec)))))))
