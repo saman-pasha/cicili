@@ -60,7 +60,7 @@
         (progn ; in header file
           (maphash #'(lambda (in-name in-spec)
 		               (case (construct in-spec)
-		                 ('|@VAR|      (compile-variable     in-spec lvl globals spec t))
+		                 ('|@VAR|      (compile-variable     in-spec lvl globals spec) (output ";~%"))
 		                 ('|@FUNC|     (compile-function     in-spec lvl globals spec))
 		                 ('|@METHOD|   (compile-function     in-spec lvl globals spec))
 		                 ('|@PREPROC|  (compile-preprocessor in-spec lvl globals spec))
@@ -113,7 +113,7 @@
         (progn ; in source file
           (maphash #'(lambda (in-name in-spec)
 		               (case (construct in-spec)
-		                 ('|@VAR|      (compile-variable     in-spec lvl globals spec t))
+		                 ('|@VAR|      (compile-variable     in-spec lvl globals spec) (output ";~%"))
 		                 ('|@FUNC|     (compile-function     in-spec lvl globals spec))
 		                 ('|@METHOD|   (compile-function     in-spec lvl globals spec))
 		                 ('|@PREPROC|  (compile-preprocessor in-spec lvl globals spec))

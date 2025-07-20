@@ -193,3 +193,10 @@ test/lambda/.\#defer.lisp
 lib/std/types/tdb.c.run1.c
 lib/std/types/tdb.c.run2.c
 lib/std/types/tdb.c.run3.c
+test/lambda/main.dSYM/Contents/Info.plist
+test/lambda/main.dSYM/Contents/Resources/DWARF/main
+test/lambda/main.dSYM/Contents/Resources/Relocations/x86_64/main.yml
+test/lambda/thread.c.run1.c
+test/lambda/thread.c.run2.c
+test/lambda/thread.c.run3.c
+test/lambda/thread_main

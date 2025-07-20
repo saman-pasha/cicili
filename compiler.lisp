@@ -113,7 +113,7 @@
                                         (progn
                                           (setq info (concatenate 'string info '(#\NewLine) s)))))
                                   (setq info (concatenate 'string info '(#\NewLine) s)))
-                              (display "run err" *ast-run* ">" (replace-module-names s) #\NewLine)
+                              (display "run out" *ast-run* ">" (replace-module-names s) #\NewLine)
                               (setq has-error t)))
                           (setf (getf (gethash ast-key (nth 0 *ast-lines*)) 'info) info)
                         
@@ -213,6 +213,12 @@
 
 	                    (compile-target (nth 1 target) (nth 2 target) ir globals stdout stderr nil nil)
 
+                        (with-input-from-string (err-stream (get-output-stream-string stderr))
+                            (do ((s (read-line err-stream nil nil) (read-line err-stream nil nil)))
+                                ((eql s nil))
+                              (display (replace-module-names s) #\NewLine)
+                              ))
+                        
                         (with-input-from-string (out-stream (get-output-stream-string stdout))
                             (do ((s (read-line out-stream nil nil) (read-line out-stream nil nil)))
                                 ((eql s nil))
@@ -231,8 +237,8 @@
                      (setq result (specify-guard (LIST '|ghost|) () t)))
                    (let ((expr (if macro (macroexpand `(,macro ,@(cdr target))) (macroexpand target))))
                      (when *debug-macroexpand* (format t "~A ~A~%" id expr))
-                     (setq result (if (listp expr)
-                                      (specify-body (list expr))
+                     (setq result (if (and (listp expr) (listp (car expr))) 
+                                      (specify-body expr)
                                       (specify-expr expr)))))
                (setf *macroexpand* tmp-expantion)
                result))
