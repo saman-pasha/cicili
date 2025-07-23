@@ -48,7 +48,7 @@
 	        (error (format nil "syntax error ~A" clause))))
       target-specifier)))
 
-(defun compile-target (file args spec globals stdout stderr dump header)
+(defun compile-target (file args spec globals stdout stderr dump header &key from-body)
   (let ((args (if spec (attrs spec) args)))
     (if (stringp file)
         (progn
@@ -93,7 +93,8 @@
 			                    ('|@PREPROC|  (compile-preprocessor in-spec 0 globals spec))
 			                    ('|@INCLUDE|  (compile-include      in-spec 0 globals spec))
 			                    ('|@TYPEDEF|  (compile-typedef      in-spec 0 globals spec))
-			                    ('|@VAR|      (compile-variable     in-spec 0 globals spec) (output ";~%"))
+			                    ('|@VAR|      (compile-variable     in-spec 0 globals spec)
+                                              (unless from-body (output ";~%")))
 			                    ('|@FUNC|     (compile-function     in-spec 0 globals spec))
 			                    ('|@METHOD|   (compile-function     in-spec 0 globals spec))
 			                    ('|@ENUM|     (compile-enum         in-spec 0 globals spec))

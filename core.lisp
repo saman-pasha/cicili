@@ -7,6 +7,8 @@
 (defvar *trait-regex* "'(?:\\w+?\\s)?(\\w+?)(?:\\[\\d*\\]|\\s\\*)'.*'(?:\\w+?\\s)?(\\w+?)(?:\\[\\d*\\]|\\s\\*)'")
 (defvar *globals* (make-hash-table :test 'eql))
 
+(defvar *cicili-path* (uiop/os:getcwd))
+;; current output file
 (defvar *output* t)
 ;; current target spec during target specifying
 (defparameter *target-spec* nil)
@@ -46,6 +48,15 @@
 (defparameter *macroexpand* nil)
 ;; whether target uses :cpp key #t
 (defparameter *cpp* nil)
+
+;; relative files from target directory or cicili directory
+;; if begins with . (./ ../) from target path
+;;; or / (/usr/...) from unix path
+;;; or anything (lib/std/...) from cicili path
+(defun find-import-file (file-name)
+  (if (find (char file-name 0) "./")
+      file-name
+      (format nil "~A/~A" *cicili-path* file-name)))
 
 ;; adds a macro to macros list *macros*
 (defun add-macro (macro symbol)

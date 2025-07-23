@@ -192,6 +192,7 @@
    (1 . inline)
    (1 . extern)
    (1 . register)
+   (1 . volatile)
    (1 . auto)
    (1 . defer)
    (1 . defer*)

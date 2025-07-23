@@ -245,8 +245,9 @@
             (t (eval target))))))
 
 (defun compile-cicili-file (file-name)
-  (let ((file-path (make-pathname :directory (pathname-directory file-name)))
-        (rt (copy-readtable nil)))
+  (let* ((file-name (find-import-file file-name))
+         (file-path (make-pathname :directory (pathname-directory file-name)))
+         (rt (copy-readtable nil)))
     (ensure-directories-exist file-path)
     (uiop:with-current-directory (file-path)
       (multiple-value-bind (function non-terminating-p)
@@ -258,8 +259,9 @@
 ;;;; a file contains many cicili macro definitions will be loaded into CL-USER PACKAGE
 (defun load-macro-file (file-name &optional pack init-args)
   (when (key-eq pack '|nil|) (setq pack nil))
-  (let ((file-path (make-pathname :directory (pathname-directory file-name)))
-        (rt (copy-readtable nil)))
+  (let* ((file-name (find-import-file file-name))
+         (file-path (make-pathname :directory (pathname-directory file-name)))
+         (rt (copy-readtable nil)))
     (ensure-directories-exist file-path)
     (uiop:with-current-directory (file-path)
       (let ((targets (read-file (file-namestring file-name))))
