@@ -12,42 +12,66 @@ jmp_buf main_cmd2 ;
 jmp_buf cmd2_scan ;
 jmp_buf main_cmd3 ;
 jmp_buf cmd3_scan ;
-void command1 () {
-  { /* cicili#Let103 */
+typedef struct CoRoutine {
+    void (* volatile done_callback) (  volatile char payload [128]);
+    void (* volatile error_callback) (  volatile int status );
+} CoRoutine;
+void done_callback (volatile char payload [128]) {
+  printf ("the payload received: %s\n", payload );
+}
+void error_callback (volatile int status ) {
+  printf ("the routine error status: %d\n", status );
+}
+void command1 (volatile CoRoutine * coroutine ) {
+  { /* cicili#Let107 */
+      volatile __auto_type done_callback1  = (coroutine ->done_callback );
+      volatile __auto_type error_callback1  = (coroutine ->error_callback );
       char buffer [128];
       printf ("buffer1 is initialized once\n");
-              while (true ) {
+      printf ("init done: %p, error: %p\n", done_callback , error_callback );
+      printf ("init done: %p, error: %p\n", done_callback1 , error_callback1 );
+      while (true ) {
           if (!setjmp (cmd1_scan )) 
-              longjmp (main_cmd1 , -2);
+              longjmp (main_cmd1 , -1);
 
 
           printf ("polling for cmd1: ");
           if (scanf ("%s", buffer ) >  0 ) 
-              { /* cicili#Block108 */
+              { /* cicili#Block112 */
                 printf ("the cmd1: %s\n", buffer );
                 if (strcmp (buffer , "quit") ==  0 ) 
-                    longjmp (main_cmd1 , -1);
+                    { /* cicili#Block115 */
+                      done_callback (buffer );
+                      (coroutine ->done_callback )(buffer );
+                    } /* cicili#Block115 */
+
                   else 
                     if (strcmp (buffer , "error") ==  0 ) 
-                        longjmp (main_cmd1 , -3);
+                        { /* cicili#Block119 */
+                          error_callback (-3);
+                        } /* cicili#Block119 */
 
 
 
-              } /* cicili#Block108 */
+
+              } /* cicili#Block112 */
 
             else 
-              longjmp (main_cmd1 , -3);
+              { /* cicili#Block122 */
+                error_callback (-2);
+              } /* cicili#Block122 */
+
 
         } 
 
     }
 }
 void command2 () {
-  { /* cicili#Let115 */
+  { /* cicili#Let125 */
+      const int end  = 3;
       int counter  = 0;
-      int end  = 3;
       printf ("cmd2 counter initialized: %d\n", counter );
-              while (true ) {
+      while (true ) {
           if (!setjmp (cmd2_scan )) 
               longjmp (main_cmd2 , -2);
 
@@ -68,11 +92,11 @@ void command2 () {
     }
 }
 void command3 () {
-  { /* cicili#Let123 */
+  { /* cicili#Let133 */
+      const int end  = 5;
       int counter  = 0;
-      int end  = 5;
       printf ("cmd3 counter initialized: %d\n", counter );
-              while (true ) {
+      while (true ) {
           if (!setjmp (cmd3_scan )) 
               longjmp (main_cmd3 , -2);
 
@@ -93,28 +117,25 @@ void command3 () {
     }
 }
 int main () {
-  { /* cicili#Let132 */
+  { /* cicili#Let142 */
       volatile int status1  = 0;
       volatile int status2  = 0;
       volatile int status3  = 0;
-              while (true ) {
-          if (status1  ==  -2 ) 
-              { /* cicili#Block136 */
+      volatile CoRoutine coroutine  = { done_callback , error_callback };
+      while (true ) {
+          if (status1  ==  -1 ) 
+              { /* cicili#Block146 */
                 status1  = 0;
                 longjmp (cmd1_scan , -1);
-              } /* cicili#Block136 */
+              } /* cicili#Block146 */
 
             else 
-                              switch (setjmp (main_cmd1 )) {
+              switch (setjmp (main_cmd1 )) {
                 case 0:
-                    puts ("cmd1 before initialization");
-                    command1 ();
-                    longjmp (cmd1_scan , -1);
-                case -1:
-                    puts ("cmd1 succeed, again");
+                    command1 ((&coroutine ));
                     break ;
-                case -2:
-                    status1  = -2;
+                case -1:
+                    status1  = -1;
                     puts ("cmd1 suspends");
                     break ;
                 default:
@@ -124,13 +145,13 @@ int main () {
 
 
           if (status2  ==  -2 ) 
-              { /* cicili#Block144 */
+              { /* cicili#Block153 */
                 status2  = 0;
                 longjmp (cmd2_scan , -1);
-              } /* cicili#Block144 */
+              } /* cicili#Block153 */
 
             else 
-                              switch (setjmp (main_cmd2 )) {
+              switch (setjmp (main_cmd2 )) {
                 case 0:
                     puts ("cmd2 before initialization");
                     command2 ();
@@ -149,13 +170,13 @@ int main () {
 
 
           if (status3  ==  -2 ) 
-              { /* cicili#Block152 */
+              { /* cicili#Block161 */
                 status3  = 0;
                 longjmp (cmd3_scan , -1);
-              } /* cicili#Block152 */
+              } /* cicili#Block161 */
 
             else 
-                              switch (setjmp (main_cmd3 )) {
+              switch (setjmp (main_cmd3 )) {
                 case 0:
                     puts ("cmd3 before initialization");
                     command3 ();

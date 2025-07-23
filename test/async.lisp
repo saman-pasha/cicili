@@ -10,39 +10,66 @@
         (var jmp_buf main_cmd3)
         (var jmp_buf cmd3_scan)
 
-        (func command1 ()
-              (let ((char buffer [128]))                   ; init vars
+        (struct CoRoutine
+          (volatile) (member func done_callback ((char payload [128])))
+          (volatile) (member func error_callback ((int status))))
+        
+        (volatile)
+        (func done_callback ((char payload [128]))  ; done callback
+              (printf "the payload received: %s\n" payload))
+        
+        (volatile)
+        (func error_callback ((int status))         ; error callback
+              (printf "the routine error status: %d\n" status))
+
+        ;; non-local exits: done, yield, error
+        ;; done calls done_callback and returns from function
+        ;; yield calls done_callback without returning
+        ;; error calls error_callback and returns
+
+        ;; callbacks are called to finish the function execution
+        (volatile)
+        (func command1 ((CoRoutine * coroutine))
+              
+              (let ((volatile) (auto done_callback1 . #'(-> coroutine done_callback))
+                    (volatile) (auto error_callback1 . #'(-> coroutine error_callback))
+                    (char buffer [128]))                   ; init vars
                 (printf "buffer1 is initialized once\n")   ; init actions
+                (printf "init done: %p, error: %p\n" done_callback error_callback)
+                (printf "init done: %p, error: %p\n" done_callback1 error_callback1)
 
                 (while #t
                   (if (not (setjmp cmd1_scan))
-                      (longjmp main_cmd1 -2))
+                      (longjmp main_cmd1 -1))              ; suspend
                   
                   (printf "polling for cmd1: ")            ; poll
                   (if (> (scanf "%s" buffer) 0)
                       (block
                           (printf "the cmd1: %s\n" buffer)
                         (if (== (strcmp buffer "quit") 0)
-                            (longjmp main_cmd1 -1)         ; success done
+                            (block (done_callback buffer)
+                              ((-> coroutine done_callback) buffer))      ; success done
                             (if (== (strcmp buffer "error") 0)
-                                (longjmp main_cmd1 -3))))  ; error raised
-                      (longjmp main_cmd1 -3))              ; error raised
+                                (block (error_callback -3) ))))  ; error raised
+                      (block (error_callback -2) ))              ; error raised
 
                   )))
         
         (func command2 ()
-              (let ((int counter . 0)
-                    (int end . 3))
+              (let ((const int end . 3)
+                    (int counter . 0)) ; state constants or variables
+
+                ;; init ; processing once
                 (printf "cmd2 counter initialized: %d\n" counter)
 
                 (while #t
                   (if (not (setjmp cmd2_scan))        ; auto save
                       (longjmp main_cmd2 -2))         ; atuo suspend
                   
+                  ;; poll
                   (sleep 1)
                   (printf "cmd2 counter update: %d\n" (++ counter))
 
-                  ;; processing
                   (printf "command 2 saved state, processing\n")
                   (if (== counter end)        
                       (longjmp main_cmd2 -1)          ; done
@@ -51,8 +78,8 @@
                   )))
 
         (func command3 ()
-              (let ((int counter . 0)
-                    (int end . 5))
+              (let ((const int end . 5)
+                    (int counter . 0))
                 (printf "cmd3 counter initialized: %d\n" counter)
 
                 (while #t
@@ -74,24 +101,27 @@
             
             (let ((volatile) (int status1 . 0)
                   (volatile) (int status2 . 0)
-                  (volatile) (int status3 . 0))
-              
+                  (volatile) (int status3 . 0)
+                  ;; (volatile) (CoRoutine coroutine . '{
+                  ;;                       '(lambda ((char payload [128])) ; done callback
+                  ;;                         (printf "cmd1 payload received: %s\n" payload))
+                  ;;                       '(lambda ((int status))           ; error callback
+                  ;;                         (printf "cmd1 routine error status: %d\n" status))
+                  ;;                       }))
+                  (volatile) (CoRoutine coroutine . '{ done_callback error_callback }))
+
               (while #t
 
-                (if (== status1 -2)
+                (if (== status1 -1)
                     (block
                         (set status1 0)
                       (longjmp cmd1_scan -1))
                     (switch (setjmp main_cmd1)
                       (case 0
-                        (puts "cmd1 before initialization")
-                        (command1)
-                        (longjmp cmd1_scan -1))
-                      (case -1
-                        (puts "cmd1 succeed, again")
+                        (command1 (aof coroutine))
                         (break))
-                      (case -2
-                        (set status1 -2)
+                      (case -1
+                        (set status1 -1)
                         (puts "cmd1 suspends")
                         (break))
                       (default

@@ -708,8 +708,9 @@
 		                     ((key-eq func '|decl|)     (push def attributes))
 		                     ((key-eq func '|inline|)   (push def attributes))
 		                     ((key-eq func '|register|) (push def attributes))
-		                     ((key-eq func '|auto|)     (push def attributes))
+		                     ;; ((key-eq func '|auto|)     (push def attributes))
 		                     ((key-eq func '|extern|)   (push def attributes))
+		                     ((key-eq func '|volatile|) (push def attributes))
 		                     ((key-eq func '|resolve|)  (push def attributes))
 		                     ((key-eq func '|defer|)    (push def attributes))
 		                     ((key-eq func '|include|)
@@ -808,7 +809,8 @@
                                         ((key-eq '|**| modifier) '|***|)
                                         (t (error (format nil "not suitable for auto deferral"))))
                                      ,const-ptr ,variable ,array)))
-                                 (|free| (|cast| (|void| *) (|cof| ,variable)))))) attributes)))
+                                 (|free| (|cast| (|void| *) (|cof| ,variable))))))
+                    attributes)))
 		  (when (and has-defer (not (eq has-defer t)))
             (let ((ptr-name (intern (format nil "~A_ptr" variable))))
               (push (cons '|defer|
@@ -822,7 +824,8 @@
                                         ((key-eq '|**| modifier) '|***|)
                                         (t (error (format nil "not suitable for deferment"))))
                                      ,const-ptr ,ptr-name ,array)))
-                                 ,@has-defer))) attributes)))
+                                 ,@has-defer)))
+                    attributes)))
           (setf (attrs var-spec) attributes)
           (setf *variable-spec* tmp-variable-spec)
           var-spec)))))
@@ -919,7 +922,8 @@
                                                   ,const-ptr ,variable ,array)))
                                             ,(if has-atsign
                                                  `(|->| (|cof| ,variable) |free|)
-                                                 `(|free| (|cast| (|void| *) (|cof| ,variable))))))) attributes)))
+                                                 `(|free| (|cast| (|void| *) (|cof| ,variable)))))))
+                               attributes)))
 		             (when (and has-defer (not (eq has-defer t)))
                        (let ((ptr-name (intern (format nil "~A_ptr" variable))))
                          (push (cons '|defer|
@@ -935,7 +939,8 @@
                                                 ,const-ptr ,ptr-name ,array)))
                                             ,(remove nil `(|var| ,const ,typeof ,modifier ,const-ptr
                                                              ,variable ,array . #'(|cof| ,ptr-name)))
-                                            ,@has-defer))) attributes)))
+                                            ,@has-defer)))
+                               attributes)))
                      (add-param
                          (make-specifier (specify-decl-name< variable) '|@VAR| const typeof modifier const-ptr array
                                          (if (null value) nil (specify-expr value)) attributes)
@@ -1094,10 +1099,11 @@
 (defun specify-function (def attrs)
   (let* ((name (specify-function-name< (nth 1 def)))
          (is-static  (if (key-eq name '|main|) t nil))
-	     (is-declare nil)
-	     (is-inline  nil)
-	     (is-extern  nil)
-	     (do-resolve nil)
+	     (is-declare  nil)
+	     (is-inline   nil)
+	     (is-extern   nil)
+	     (is-volatile nil)
+	     (do-resolve  nil)
 	     (is-method (if (key-eq (car def) '|method|) t nil))
          (is-shared (and (listp name) (not is-method)))
 	     (params (nth 2 def))
@@ -1116,11 +1122,12 @@
     
     (dolist (attr attrs)
       (let ((name (car attr)))
-	    (cond ((key-eq name '|static|)  (setq is-static  t))
-	          ((key-eq name '|decl|)    (setq is-declare t))
-	          ((key-eq name '|inline|)  (setq is-inline  t))
-	          ((key-eq name '|extern|)  (setq is-extern  t))
-	          ((key-eq name '|resolve|) (setq do-resolve (cadr attr)))
+	    (cond ((key-eq name '|static|)   (setq is-static   t))
+	          ((key-eq name '|decl|)     (setq is-declare  t))
+	          ((key-eq name '|inline|)   (setq is-inline   t))
+	          ((key-eq name '|extern|)   (setq is-extern   t))
+	          ((key-eq name '|volatile|) (setq is-volatile t))
+	          ((key-eq name '|resolve|)  (setq do-resolve  (cadr attr)))
 	          (t (error (format nil "unknown function attribute ~A" attr))))))
     (when (and is-declare is-inline) (error (format nil "inline functions should be defined ~A" def)))
     (when (< (length def) 3) (error (format nil "wrong function definition ~A" def)))
@@ -1129,11 +1136,12 @@
     (let ((attributes    '())
           (tmp-specifier nil)
           (tmp-outp      nil))
-	  (when is-extern  (push (cons '|extern|  t) attributes))
-	  (when is-inline  (push (cons '|inline|  t) attributes))
-	  (when is-static  (push (cons '|static|  t) attributes))
-	  (when is-declare (push (cons '|decl|    t) attributes))
-	  (when do-resolve (push (cons '|resolve| do-resolve) attributes))
+	  (when is-extern   (push (cons '|extern|   t) attributes))
+	  (when is-volatile (push (cons '|volatile| t) attributes))
+	  (when is-inline   (push (cons '|inline|   t) attributes))
+	  (when is-static   (push (cons '|static|   t) attributes))
+	  (when is-declare  (push (cons '|decl|     t) attributes))
+	  (when do-resolve  (push (cons '|resolve|  do-resolve) attributes))
       ;; guard *function-spec* for inline structs and lambdas
       (setq function-specifier (make-specifier name (if is-method '|@METHOD| '|@FUNC|)
                                                nil nil nil nil nil nil attributes)) ;; for specify out
@@ -1170,10 +1178,17 @@
                          ((key-eq '$$$ variable)
                           (setq variable '|...|)))
                    ;; (setq is-anonymous t))
+                   ;; functoin pointer params become volatile too
+                   (when (and is-volatile (key-eq type '|func|))
+                     (setf (attrs (car array)) (push (cons '|volatile| t) (attrs (car array))))
+                     (loop for func-prm being the hash-value of (params (car array))
+                       do (setf (attrs func-prm) (push (cons '|volatile| t) (attrs func-prm)))))
+                   
                    (add-param
                        (make-specifier
                            (specify-decl-name< variable)
-                         '@|PARAM| const type modifier const-ptr array nil nil is-anonymous)
+                         '@|PARAM| const type modifier const-ptr array nil
+                         (if is-volatile (list (cons '|volatile| t)) nil) is-anonymous)
                      function-specifier))))
       (setf *function-spec* tmp-specifier)) ; end of guard, revert *function-spec*
     function-specifier))
@@ -1280,13 +1295,29 @@
 		            ((key-eq construct '|register|) (push clause attributes))
 		            ((key-eq construct '|auto|)     (push clause attributes))
 		            ((key-eq construct '|extern|)   (push clause attributes))
+		            ((key-eq construct '|volatile|) (push clause attributes))
+                    ;; members
 		            ((key-eq construct '|member|)
                      (multiple-value-bind (const type modifier const-ptr variable array default)
 	                     (specify-type-value< (cdr clause))
                        (let ((param-spec
                                  (make-specifier
                                      (specify-decl-name< variable)
-                                   '@|PARAM| const type modifier const-ptr array default attributes)))
+                                   '@|PARAM| const type modifier const-ptr array default nil))
+                             (attrs '()))
+
+                         (let ((is-volatile nil))
+                           (dolist (attr attributes)
+                             (when (key-eq (car attr) '|volatile|) (setq is-volatile t))
+                             (push (cons (car attr) t) attrs))
+                           (setf (attrs param-spec) attrs)
+                           
+                           ;; functoin pointer params become volatile too
+                           (when (and is-volatile (key-eq type '|func|))
+                             (setf (attrs (car array)) (push (cons '|volatile| t) (attrs (car array))))
+                             (loop for func-prm being the hash-value of (params (car array))
+                                   do (setf (attrs func-prm) (push (cons '|volatile| t) (attrs func-prm))))))
+                         
                          (setq attributes '())
 	                     (add-inner param-spec struct-specifier))))
                     
@@ -1365,6 +1396,7 @@
 		            ((key-eq construct '|register|) (push clause attributes))
 		            ((key-eq construct '|auto|)     (push clause attributes))
 		            ((key-eq construct '|extern|)   (push clause attributes))
+		            ((key-eq construct '|volatile|) (push clause attributes))
 		            ((key-eq construct '|resolve|)  (push clause attributes))
 		            ((key-eq construct '|defer|)    (push clause attributes))
 		            ((key-eq construct '|include|)

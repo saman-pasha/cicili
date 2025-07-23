@@ -20,6 +20,7 @@
 		            ((key-eq construct '|register|) (push clause attributes))
 		            ((key-eq construct '|auto|)     (push clause attributes))
 		            ((key-eq construct '|extern|)   (push clause attributes))
+		            ((key-eq construct '|volatile|) (push clause attributes))
 		            ((key-eq construct '|resolve|)  (push clause attributes))
 		            ((key-eq construct '|defer|)    (push clause attributes))
 		            ((key-eq construct '|include|)

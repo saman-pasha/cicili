@@ -22,6 +22,7 @@
 		            ((key-eq construct '|register|) (push clause attributes))
 		            ((key-eq construct '|auto|)     (push clause attributes))
 		            ((key-eq construct '|extern|)   (push clause attributes))
+		            ((key-eq construct '|volatile|) (push clause attributes))
 		            ((key-eq construct '|include|)  (setq attributes '()))
 		            ((key-eq construct '|var|)
 		             (add-inner (specify-variable clause attributes) module-specifier)
