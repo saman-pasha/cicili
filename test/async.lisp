@@ -29,14 +29,11 @@
 
         ;; callbacks are called to finish the function execution
         (volatile)
-        (func command1 ((CoRoutine * coroutine))
+        (func command1 ((func _dc ((char payload [128])))
+                        (func _ec ((int status))))
               
-              (let ((volatile) (auto done_callback1 . #'(-> coroutine done_callback))
-                    (volatile) (auto error_callback1 . #'(-> coroutine error_callback))
-                    (char buffer [128]))                   ; init vars
+              (let ((char buffer [128]))                   ; init vars
                 (printf "buffer1 is initialized once\n")   ; init actions
-                (printf "init done: %p, error: %p\n" done_callback error_callback)
-                (printf "init done: %p, error: %p\n" done_callback1 error_callback1)
 
                 (while #t
                   (if (not (setjmp cmd1_scan))
@@ -47,8 +44,7 @@
                       (block
                           (printf "the cmd1: %s\n" buffer)
                         (if (== (strcmp buffer "quit") 0)
-                            (block (done_callback buffer)
-                              ((-> coroutine done_callback) buffer))      ; success done
+                            (block (done_callback buffer))       ; success done
                             (if (== (strcmp buffer "error") 0)
                                 (block (error_callback -3) ))))  ; error raised
                       (block (error_callback -2) ))              ; error raised
@@ -101,15 +97,8 @@
             
             (let ((volatile) (int status1 . 0)
                   (volatile) (int status2 . 0)
-                  (volatile) (int status3 . 0)
-                  ;; (volatile) (CoRoutine coroutine . '{
-                  ;;                       '(lambda ((char payload [128])) ; done callback
-                  ;;                         (printf "cmd1 payload received: %s\n" payload))
-                  ;;                       '(lambda ((int status))           ; error callback
-                  ;;                         (printf "cmd1 routine error status: %d\n" status))
-                  ;;                       }))
-                  (volatile) (CoRoutine coroutine . '{ done_callback error_callback }))
-
+                  (volatile) (int status3 . 0))
+              
               (while #t
 
                 (if (== status1 -1)
@@ -118,7 +107,7 @@
                       (longjmp cmd1_scan -1))
                     (switch (setjmp main_cmd1)
                       (case 0
-                        (command1 (aof coroutine))
+                        (command1 done_callback error_callback)
                         (break))
                       (case -1
                         (set status1 -1)

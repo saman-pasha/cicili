@@ -298,9 +298,9 @@
       (t (error (format nil "expr syntax error ~A" spec))))))
 
 (defun compile-variable (spec lvl globals parent-spec)
-  (let ((is-auto     nil)
-	    (is-register nil)
+  (let ((is-register nil)
 	    (is-volatile nil)
+	    (is-thread-l nil)
 	    (is-static   nil)
 	    (is-extern   nil)
         (is-alloc    nil)
@@ -308,13 +308,13 @@
         (is-unique   (unique spec)))
     
     (dolist (attr (attrs spec))
-      (cond ((key-eq (car attr) '|auto|)     (setq is-auto     t))
-	        ((key-eq (car attr) '|register|) (setq is-register t))
-	        ((key-eq (car attr) '|volatile|) (setq is-volatile t))
-	        ((key-eq (car attr) '|static|)   (setq is-static   t))
-	        ((key-eq (car attr) '|extern|)   (setq is-extern   t))
-            ((key-eq (car attr) '|alloc|)    (setq is-alloc    t))
-            ((key-eq (car attr) '|defer|)    (setq has-defer   (cdr attr)))
+      (cond ((key-eq (car attr) '|register|)     (setq is-register t))
+	        ((key-eq (car attr) '|volatile|)     (setq is-volatile t))
+	        ((key-eq (car attr) '|thread-local|) (setq is-thread-l t))
+	        ((key-eq (car attr) '|static|)       (setq is-static   t))
+	        ((key-eq (car attr) '|extern|)       (setq is-extern   t))
+            ((key-eq (car attr) '|alloc|)        (setq is-alloc    t))
+            ((key-eq (car attr) '|defer|)        (setq has-defer   (cdr attr)))
             (t (error (format nil "unknown variable attribute ~A for ~A" attr spec)))))
 
     (when (key-eq (construct spec) '|@VAR|) ; '|@PARAM| for struct members, function parameters
@@ -333,7 +333,7 @@
     (when is-static   (set-ast-line (output "static ")))
     (when is-register (set-ast-line (output "register ")))
     (unless (key-eq (typeof spec) '|func|) (when is-volatile (set-ast-line (output "volatile "))))
-    (when is-auto     (set-ast-line (output "auto ")))
+    (when is-thread-l (set-ast-line (output "__Thread ")))
     (compile-spec-type-value spec lvl globals parent-spec has-defer)))
 
 (defvar *parent-bodies* (list '|@CICILI| '|@TARGET| '|@FUNC| '|@METHOD| '|@LET| '|@LETN| '|@BLOCK| '|@PROGN| '|@STRUCT|
@@ -560,7 +560,6 @@
 	             params)
         (output "~&~A" (indent lvl))
         (when is-extern   (set-ast-line (output "extern ")))
-        ;; (when is-volatile (set-ast-line (output "volatile ")))
         (when is-inline   (set-ast-line (output "__attribute__((weak)) ")))
         (when (and is-static (not (key-eq name '|main|))) (set-ast-line (output "static ")))
         (format-type (const spec) (typeof spec) (modifier spec) nil (const-ptr spec) (array-def spec) nil

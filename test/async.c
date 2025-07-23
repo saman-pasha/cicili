@@ -22,14 +22,10 @@ void done_callback (volatile char payload [128]) {
 void error_callback (volatile int status ) {
   printf ("the routine error status: %d\n", status );
 }
-void command1 (volatile CoRoutine * coroutine ) {
+void command1 (void (* volatile _dc) (volatile char payload [128]), void (* volatile _ec) (volatile int status )) {
   { /* cicili#Let107 */
-      volatile __auto_type done_callback1  = (coroutine ->done_callback );
-      volatile __auto_type error_callback1  = (coroutine ->error_callback );
       char buffer [128];
       printf ("buffer1 is initialized once\n");
-      printf ("init done: %p, error: %p\n", done_callback , error_callback );
-      printf ("init done: %p, error: %p\n", done_callback1 , error_callback1 );
       while (true ) {
           if (!setjmp (cmd1_scan )) 
               longjmp (main_cmd1 , -1);
@@ -42,7 +38,6 @@ void command1 (volatile CoRoutine * coroutine ) {
                 if (strcmp (buffer , "quit") ==  0 ) 
                     { /* cicili#Block115 */
                       done_callback (buffer );
-                      (coroutine ->done_callback )(buffer );
                     } /* cicili#Block115 */
 
                   else 
@@ -67,7 +62,7 @@ void command1 (volatile CoRoutine * coroutine ) {
     }
 }
 void command2 () {
-  { /* cicili#Let125 */
+  { /* cicili#Let127 */
       const int end  = 3;
       int counter  = 0;
       printf ("cmd2 counter initialized: %d\n", counter );
@@ -92,7 +87,7 @@ void command2 () {
     }
 }
 void command3 () {
-  { /* cicili#Let133 */
+  { /* cicili#Let135 */
       const int end  = 5;
       int counter  = 0;
       printf ("cmd3 counter initialized: %d\n", counter );
@@ -117,22 +112,21 @@ void command3 () {
     }
 }
 int main () {
-  { /* cicili#Let142 */
+  { /* cicili#Let144 */
       volatile int status1  = 0;
       volatile int status2  = 0;
       volatile int status3  = 0;
-      volatile CoRoutine coroutine  = { done_callback , error_callback };
       while (true ) {
           if (status1  ==  -1 ) 
-              { /* cicili#Block146 */
+              { /* cicili#Block148 */
                 status1  = 0;
                 longjmp (cmd1_scan , -1);
-              } /* cicili#Block146 */
+              } /* cicili#Block148 */
 
             else 
               switch (setjmp (main_cmd1 )) {
                 case 0:
-                    command1 ((&coroutine ));
+                    command1 (done_callback , error_callback );
                     break ;
                 case -1:
                     status1  = -1;
@@ -145,10 +139,10 @@ int main () {
 
 
           if (status2  ==  -2 ) 
-              { /* cicili#Block153 */
+              { /* cicili#Block155 */
                 status2  = 0;
                 longjmp (cmd2_scan , -1);
-              } /* cicili#Block153 */
+              } /* cicili#Block155 */
 
             else 
               switch (setjmp (main_cmd2 )) {
@@ -170,10 +164,10 @@ int main () {
 
 
           if (status3  ==  -2 ) 
-              { /* cicili#Block161 */
+              { /* cicili#Block163 */
                 status3  = 0;
                 longjmp (cmd3_scan , -1);
-              } /* cicili#Block161 */
+              } /* cicili#Block163 */
 
             else 
               switch (setjmp (main_cmd3 )) {
