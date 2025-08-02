@@ -86,6 +86,7 @@
               (set-ast-line (output "~A " symbol))))
         (if info
             (cond ((str:containsp "take the address with &" info)
+                   (setf *more-run* t)
                    (let ((resu (format nil "\&~A" symbol)))
                      (setf (gethash 'res-sym (keys spec)) resu)
                      (set-ast-line (output resu))))
@@ -111,6 +112,8 @@
                    (set-ast-line (output "~A " symbol))) ; ignore for arg
                   ((str:containsp "incompatible pointer types" info)
                    (set-ast-line (output "~A " symbol))) ; ignore for arg
+                  ((str:containsp "expected identifier" info)
+                   (set-ast-line (output "~A " symbol))) ; ignore for ->
                   ((str:containsp "use of undeclared identifier" info)
                    (let ((m-name (unique spec)))
                      (if (gethash m-name *globals*)
@@ -162,6 +165,7 @@
              (set-ast-line (output res))
              (compile-form member (1+ lvl) globals spec)
              (output ")"))
+
             ((or (null *resolve*) ; function without resolver (inline in header or attr resolve #f)
                (null begin-ast)  ; access member by instance default for first run
                (and (null begin-info) (null ptr-info) (null mtd-info) (null end-info)))
@@ -176,7 +180,8 @@
              (setf (getf (gethash (ast-key< line-n col-n) (nth 0 *ast-lines*)) 'end)
                    (ast-key< (funcall *line-num* 0) (funcall *col-num* 0)))
              (output ")"))
-            ((and (str:containsp "member reference type" ptr-info) (str:containsp "is a pointer" ptr-info))
+
+            ((and ptr-info (str:containsp "member reference type" ptr-info) (str:containsp "is a pointer" ptr-info))
              (let ((resu "->"))
                (setf *more-run* t)
                (setf (gethash 'res-$ (keys spec)) resu)
@@ -185,6 +190,11 @@
                (set-ast-line (output resu))
                (compile-form member (1+ lvl) globals spec)
                (output ")")))
+
+            ((and mtd-info (str:containsp "expected identifier" mtd-info))
+             (error (format nil "cicili\: bad member naming (c keywords are reserved, const, register, ...) ~A. ~A~%~A"
+                            spec-key (or mtd-info ptr-info begin-info) spec)))
+            
             (t (error (format nil "cicili\: unresolved member reference type ~A. ~A~%~A"
                               spec-key (or mtd-info ptr-info begin-info) spec)))))))
 
@@ -231,6 +241,7 @@
                    (setf (getf (gethash (ast-key< line-n col-n) (nth 0 *ast-lines*)) 'end)
                          (ast-key< (funcall *line-num* 0) (funcall *col-num* 0)))
                    (output ")"))))
+            
             ((or (null *resolve*) ; function without resolver (inline in header or attr resolve #f)
                (null begin-ast)  ; access member by pointer default for first run
                (and (null begin-info) (null ptr-info) (null mtd-info) (null end-info)))
@@ -238,14 +249,15 @@
              (compile-form receiver (1+ lvl) globals spec)
              (setf (getf (gethash (ast-key< line-n col-n) (nth 0 *ast-lines*)) 'ptr)
                    (ast-key< (funcall *line-num* 0) (funcall *col-num* 0)))
-             (set-ast-line (output "->"))
+             (set-ast-line (output "-> "))
              (setf (getf (gethash (ast-key< line-n col-n) (nth 0 *ast-lines*)) 'mtd)
                    (ast-key< (funcall *line-num* 0) (funcall *col-num* 0)))
              (compile-form method (1+ lvl) globals spec)
-             (compile-args (default args) lvl globals spec t)
+             (compile-args (default args) lvl globals spec t :sep "-> ")
              (setf (getf (gethash (ast-key< line-n col-n) (nth 0 *ast-lines*)) 'end)
                    (ast-key< (funcall *line-num* 0) (funcall *col-num* 0)))
              (output ")"))
+            
             ((and ptr-info (str:containsp "expected ')'" ptr-info))
              (let ((resu (make-shared-name (name receiver) (name method))))
                (if (gethash (intern resu) *globals*)
@@ -266,6 +278,22 @@
                            (compile-args (default args) lvl globals spec nil)
                            (output ")"))
                          (error (format nil "undefined function: ~A" spec)))))))
+            
+            ((and ptr-info (str:containsp "member reference type" ptr-info) (str:containsp "is not a pointer" ptr-info))
+             (setf *more-run* t)
+             (set-ast-line (output "("))
+             (compile-form receiver (1+ lvl) globals spec)
+             (setf (getf (gethash (ast-key< line-n col-n) (nth 0 *ast-lines*)) 'ptr)
+                   (ast-key< (funcall *line-num* 0) (funcall *col-num* 0)))
+             (set-ast-line (output "."))
+             (setf (getf (gethash (ast-key< line-n col-n) (nth 0 *ast-lines*)) 'mtd)
+                   (ast-key< (funcall *line-num* 0) (funcall *col-num* 0)))
+             (compile-form method (1+ lvl) globals spec)
+             (compile-args (default args) lvl globals spec t :sep ". ")
+             (setf (getf (gethash (ast-key< line-n col-n) (nth 0 *ast-lines*)) 'end)
+                   (ast-key< (funcall *line-num* 0) (funcall *col-num* 0)))
+             (output ")"))
+            
             ((and ptr-info (str:containsp "expected expression" ptr-info))
              (if (key-eq (construct receiver) '|@ATOM|) 
                  (let ((resu (make-method-name (name receiver) (name method))))
@@ -302,8 +330,10 @@
                    (setf (getf (gethash (ast-key< line-n col-n) (nth 0 *ast-lines*)) 'end)
                          (ast-key< (funcall *line-num* 0) (funcall *col-num* 0)))
                    (output ")"))))
+            
             ((and end-info (str:containsp "too few arguments" end-info))
              (error (format nil "cicili\: call: ~A" end-info)))
+            
             ((and mtd-info (str:containsp "no member named" mtd-info))
              (let* ((matches     (ppcre:all-matches-as-strings "'(struct\\s+)?\\w+'" mtd-info))
                     (method      (car matches))
@@ -322,6 +352,10 @@
                (compile-form receiver lvl globals spec)
                (compile-args (default args) lvl globals spec t)
                (output ")")))
+            
+            ((and mtd-info (str:containsp "expected identifier" mtd-info))
+             (error (format nil "cicili\: bad method naming (c keywords are reserved, const, register, ...) ~A. ~A~%~A"
+                            spec-key (or mtd-info ptr-info begin-info) spec)))
             (t (error (format nil "cicili\: unresolved method reference type ~A. ~A~%~A"
                               spec-key (or mtd-info ptr-info begin-info) spec)))))))
 
@@ -382,8 +416,8 @@
             (t (error (format nil "cicili\: unresolved member function type ~A. ~A~%~A"
                               spec-key (or mtd-info ptr-info begin-info) spec)))))))
 
-(defun compile-args (args lvl globals parent-spec comma-first &key (no-comma nil))
-  (when (and (null no-comma) comma-first (> (length args) 0)) (output ", "))
+(defun compile-args (args lvl globals parent-spec comma-first &key (no-comma nil) (sep ", "))
+  (when (and (null no-comma) comma-first (> (length args) 0)) (output sep))
   (loop for arg in args
         with l = (1- (length args))
         for i from 0 to l
@@ -437,7 +471,7 @@
                      ((str:containsp "member reference type" info)
                       (compile-form arg lvl globals parent-spec))
                      (t (compile-form arg lvl globals parent-spec))))
-             (when (and (null no-comma) (< i l)) (output ", ")))))
+             (when (and (null no-comma) (< i l)) (output sep)))))
 
 (defun compile-set (spec lvl globals parent-spec)
   (with-slots ((items default)) spec

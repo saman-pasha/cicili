@@ -168,6 +168,11 @@
    (1 . join)
    (1 . cancel)
    (1 . exit)
+   (1 . async)
+   (1 . yield)
+   (1 . done)
+   (1 . async-main)
+   (1 . async-main*)
    ))
 
 (defun cicili-add-attributes (face-name keyword-rules)
@@ -192,10 +197,12 @@
    (1 . inline)
    (1 . extern)
    (1 . register)
+   (1 . volatile)
    (1 . auto)
    (1 . defer)
    (1 . defer*)
    (1 . resolve)
+   (1 . thread-local)
    ))
 
 (font-lock-add-keywords

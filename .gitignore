@@ -200,3 +200,14 @@ test/lambda/thread.c.run1.c
 test/lambda/thread.c.run2.c
 test/lambda/thread.c.run3.c
 test/lambda/thread_main
+test/async.c.run1.c
+test/async.c.run2.c
+test/async.c.run3.c
+lib/std/coroutine/coordinator.c.run1.c
+lib/std/coroutine/coordinator.c.run2.c
+test/.\#async.lisp
+lib/std/coroutine/coordinator.c.run3.c
+test/async.c.run4.c
+test/async.c.run5.c
+test/async.c.run6.c
+test/async_main

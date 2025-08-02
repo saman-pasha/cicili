@@ -1,3 +1,4 @@
+(import "lib/std/pthread.lisp")
 
 (source "thread.c" (:std #t :compile #t :link "-L{$CWD} -lthread.o -lpthread -o thread_main")
         (include <unistd.h>)

@@ -18,14 +18,14 @@
          (SETQ body (SUBST (NTH i args) (NTH i types) body)))
        `(ghost ,@body))))
 
+(DEFMACRO <> (name &REST body)
+  (INTERN (FORMAT NIL "~A_~{~A~}" name body)))
+
 (DEFMACRO shared-func-name (struct method)
   (INTERN (FORMAT NIL "~A_s_~A" struct method)))
 
 (DEFMACRO method-func-name (struct method)
   (INTERN (FORMAT NIL "~A_m_~A" struct method)))
-
-(DEFMACRO <> (name &REST body)
-  (INTERN (FORMAT NIL "~A_~{~A~}" name body)))
 
 ;;; each struct which implements string can write itself to a FILE *
 ;;; notice inline methods won't be resolved and -> is point to, not method access
@@ -135,62 +135,61 @@
 (DEFMACRO exec (closure &REST args)
   `(($ ,closure routine) (aof ,closure) ,@args))
 
-;;; creates a new thread
-;;; closure style pthread functionalities
-;;; context has auto deferment
-(DEFMACRO go (var-list &REST body)
-  (LET* ((cls (GENSYM "cls"))
-         (tid (GENSYM "tid"))
-         (body body)
-         (out (IF (AND (LISTP (CAR body)) (EQL (CAAR body) 'out)) (LIST (CAR body)) (LIST))))
-    (SETQ body (IF (NULL out) body (CDR body)))
-    `(letn ((auto ,cls . #'(closure ,var-list '(lambda () ,@out
-                                                (defer* ((void * context))
-                                                  (free context))
-                                                ,@body)))
-            (void * data . #'(malloc (sizeof ,cls)))
-            (pthread_t ,tid))
-       (memcpy data (aof ,cls) (sizeof ,cls))
-       (pthread_create (aof ,tid) nil
-                       (cast (func _ ((void * _)) (out void *)) ($ ,cls routine))
-                       data)
-       ,tid)))
+;;; asycronous clauses
+;;; declare a handle in a header for global access or
+;;; define over main entry by async-main | async-main*
+(DEFMACRO async-handle-decl ()
+  `(ghost (static) (thread-local)
+     (var Coordinator __ciciliA_Coordinator_)))
 
-(DEFMACRO detach (var-list &REST body)
-  (LET* ((cls (GENSYM "cls"))
-         (tid (GENSYM "tid"))
-         (body body)
-         (out (IF (AND (LISTP (CAR body)) (EQL (CAAR body) 'out)) (LIST (CAR body)) (LIST))))
-    (SETQ body (IF (NULL out) body (CDR body)))
-    `(letn ((auto ,cls . #'(closure ,var-list '(lambda () ,@out
-                                                (defer* ((void * context))
-                                                  (free context))
-                                                ,@body)))
-            (void * data . #'(malloc (sizeof ,cls)))
-            (pthread_t ,tid))
-       (memcpy data (aof ,cls) (sizeof ,cls))
-       (pthread_create (aof ,tid) nil
-                       (cast (func _ ((void * _)) (out void *)) ($ ,cls routine))
-                       data)
-       (pthread_detach ,tid)
-       ,tid)))
+(DEFMACRO async-handle-def ()
+  `(ghost (static) (thread-local)
+     (var Coordinator __ciciliA_Coordinator_ . '{ nil nil #f })))
 
-(DEFMACRO self () `(pthread_self))
+(DEFMACRO async-main (&REST body)
+  `(ghost (async-handle-def)
+     (main ,@body
+       (-> __ciciliA_Coordinator_ loop))))
 
-(DEFMACRO join (id &OPTIONAL out-type)
-  (LET ((out out-type))
-    (IF (NULL out)
-        `(pthread_join ,id nil)
-        (MULTIPLE-VALUE-BIND (const type modifier const-ptr variable array)
-          (CICILI:SPECIFY-TYPE< out)
-          `((var ,@out)
-            (pthread_join ,id (cast (void **) (aof ,variable))))))))
+(DEFMACRO async-main* (&REST body)
+  `(ghost (async-handle-def)
+     (main* ,@body
+       (-> __ciciliA_Coordinator_ loop))))
 
-(DEFMACRO exit (ret-val)
-  `(pthread_exit ,ret-val))
+;;; non-local exits: done, yield, error
+;;; done calls done_callback and returns from function
+;;; yield calls done_callback without returning
+;;; error calls error_callback and returns
+(DEFMACRO async (var-list &REST body)
+  (LET ((cls  (GENSYM "cls"))
+        (name (GENSYM "task"))
+        (body body))
+    
+    `(macrolet ((yield (callback &REST args)
+                  `(block (,callback ,@args)
+                     (longjmp ($ __ciciliA_Coordinator_ main) -1)))
+                (done (callback &REST args)
+                  `(block (,callback ,@args)
+                     (return 0)))
+                (error (callback &REST args)
+                  `(block (,callback ,@args)
+                     (return 0)))
+                )
 
-(DEFMACRO cancel (id)
-  `(pthread_cancel ,id))
+       (letn ((Coroutine * ,name . #'(malloc (sizeof Coroutine)))
+              (auto ,cls . #'(closure ,var-list
+                               '(lambda ((Coroutine * __ciciliA_Context_)) (out int)
+                                 (defer* ((void * context))
+                                   (free context))
+                                 ,@body
+                                 (longjmp ($ __ciciliA_Coordinator_ main) -1))))
+              (void * data . #'(malloc (sizeof ,cls))))
+         (memcpy data (aof ,cls) (sizeof ,cls))
+         (set (-> ,name status)  0)
+         (set (-> ,name args)    data)
+         (set (-> ,name routine) (cast (func _ ((void * args) (Coroutine * coroutine)) (out int)) ($ ,cls routine)))
+         (set (-> ,name next)    nil)
+         (-> __ciciliA_Coordinator_ reg_task ,name)))))
 
 ;;; optional helper macro will auto defer all vars
 (DEFMACRO defer-let (var-list &REST body)
