@@ -8,10 +8,11 @@
          (body body)
          (out (IF (AND (LISTP (CAR body)) (EQL (CAAR body) 'out)) (LIST (CAR body)) (LIST))))
     (SETQ body (IF (NULL out) body (CDR body)))
-    `(letn ((auto ,cls . #'(closure ,var-list '(lambda () ,@out
-                                                (defer* ((void * context))
-                                                  (free context))
-                                                ,@body)))
+    `(letn ((auto ,cls . #'(closure ,var-list
+                             '(lambda () ,@out
+                               (defer* ((void * context))
+                                 (free context))
+                               ,@body)))
             (void * data . #'(malloc (sizeof ,cls)))
             (pthread_t ,tid))
        (memcpy data (aof ,cls) (sizeof ,cls))

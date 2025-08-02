@@ -58,6 +58,11 @@
       file-name
       (format nil "~A/~A" *cicili-path* file-name)))
 
+(defparameter *macro-counter*
+  (let ((count 100))
+    #'(lambda ()
+        (setq count (1+ count)))))
+
 ;; adds a macro to macros list *macros*
 (defun add-macro (macro symbol)
   (when *debug-macros* (format t "macro: ~A~%" macro))
@@ -69,7 +74,7 @@
          (macro (if (symbolp func) (gethash (symbol-name func) *macros*) nil)))
     (if (or macro (and (symbolp func) (macro-function func)))
         (let ((tmp-expantion *macroexpand*)
-              (id (gensym "me:"))
+              (id (format nil "me: ~D" (funcall *macro-counter*)))
               (result nil))
           (when *debug-macroexpand* (format t "~A ~A~%" id def))
           (setf *macroexpand* t)
@@ -78,9 +83,9 @@
                 (setq result (specify-guard (LIST '|ghost|) () t)))
               (let ((expr (if macro (macroexpand `(,macro ,@(cdr def))) (macroexpand def))))
                 (when *debug-macroexpand* (format t "~A ~A~%" id expr))
-                (setq result (if (and (listp expr) (listp (car expr))) 
-                                 (specify-body expr)
-                                 (specify-expr expr)))))
+                (setq result (if (or (atom expr) (and (listp expr) (atom (car expr))))
+                                 (specify-expr expr)
+                                 (specify-body expr)))))
           (setf *macroexpand* tmp-expantion)
           result)
         (specify-call-expr def))))
@@ -132,29 +137,31 @@
 (defmacro warning! (&rest rest)
   `(format t ,@rest))
 
-(defparameter *line-num* (let ((count 1)
-                               (actual-count 1))
-                           #'(lambda (step &key reset actual)
-                               (if reset
-                                   (if actual
-                                       (setf actual-count reset)
-                                       (setf count reset))
-                                   (progn
-                                     (setf count (+ count step))
-                                     (setf actual-count (+ actual-count step))))
-                               (if actual actual-count count))))
+(defparameter *line-num*
+  (let ((count 1)
+        (actual-count 1))
+    #'(lambda (step &key reset actual)
+        (if reset
+            (if actual
+                (setf actual-count reset)
+                (setf count reset))
+            (progn
+              (setf count (+ count step))
+              (setf actual-count (+ actual-count step))))
+        (if actual actual-count count))))
 
-(defparameter *col-num* (let ((count 1)
-                              (actual-count 1))
-                          #'(lambda (step &key reset actual)
-                              (if reset
-                                  (if actual
-                                      (setf actual-count reset)
-                                      (setf count reset))
-                                  (progn
-                                    (setf count (+ count step))
-                                    (setf actual-count (+ actual-count step))))
-                              (if actual actual-count count))))
+(defparameter *col-num*
+  (let ((count 1)
+        (actual-count 1))
+    #'(lambda (step &key reset actual)
+        (if reset
+            (if actual
+                (setf actual-count reset)
+                (setf count reset))
+            (progn
+              (setf count (+ count step))
+              (setf actual-count (+ actual-count step))))
+        (if actual actual-count count))))
 
 (defun ast-key< (line-n col-n &key (file *target-file*))
   (format nil "~A:~D:~D" file line-n col-n))

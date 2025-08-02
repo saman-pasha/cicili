@@ -14,15 +14,16 @@
 	          (cond ((find (char (symbol-name construct) 0) "@#")
 		             (add-inner (specify-preprocessor clause attributes) target-specifier)
 		             (setq attributes '()))
-		            ((key-eq construct '|static|)   (push clause attributes))
-		            ((key-eq construct '|decl|)     (push clause attributes))
-		            ((key-eq construct '|inline|)   (push clause attributes))
-		            ((key-eq construct '|register|) (push clause attributes))
-		            ((key-eq construct '|auto|)     (push clause attributes))
-		            ((key-eq construct '|extern|)   (push clause attributes))
-		            ((key-eq construct '|volatile|) (push clause attributes))
-		            ((key-eq construct '|resolve|)  (push clause attributes))
-		            ((key-eq construct '|defer|)    (push clause attributes))
+		            ((key-eq construct '|static|)       (push clause attributes))
+		            ((key-eq construct '|decl|)         (push clause attributes))
+		            ((key-eq construct '|inline|)       (push clause attributes))
+		            ((key-eq construct '|register|)     (push clause attributes))
+		            ((key-eq construct '|auto|)         (push clause attributes))
+		            ((key-eq construct '|extern|)       (push clause attributes))
+		            ((key-eq construct '|volatile|)     (push clause attributes))
+		            ((key-eq construct '|thread-local|) (push clause attributes))
+		            ((key-eq construct '|resolve|)      (push clause attributes))
+		            ((key-eq construct '|defer|)        (push clause attributes))
 		            ((key-eq construct '|include|)
 		             (add-inner (specify-include  clause attributes) target-specifier) (setq attributes '()))
 		            ((key-eq construct '|var|)
@@ -45,6 +46,8 @@
 		             (add-inner (specify-guard    clause attributes t) target-specifier) (setq attributes '()))
                     ((key-eq construct '|module|)
 		             (add-inner (specify-module   clause attributes) target-specifier) (setq attributes '()))
+                    ((or (key-eq construct '|defmacro|) (key-eq construct '|DEFMACRO|))
+                     (error (format nil "syntax error: DEFMACRO ~A inside target ~A" (cadr clause) name)))
 		            (t (add-inner (specify-expr   clause) target-specifier) (setq attributes '()))))
 	        (error (format nil "syntax error ~A" clause))))
       target-specifier)))
@@ -109,7 +112,8 @@
 		                  (inners spec))
 	             (close *output*))
                (when header (return-from compile-target t))
-               (let ((is-compiled (if *only-link* t nil)))
+               (let ((is-compiled (if *only-link* t nil))
+                     (exit-status nil))
 	             (dotimes (i (length args))
 	               (when (zerop (mod i 2))
 	                 (when (and (not *only-link*) (key-eq (nth i args) ':|compile|))
@@ -146,18 +150,18 @@
                                  (setq dump-args (replace-args< `(("{$CWD}" ,cwd)) dump-args))
                                  (display "cicili compile:" (if dump dump-args args) #\Newline)
 
-                                 (let ((exit-status
-                                           (multiple-value-list
-                                               (if dump
-                                                   (uiop:run-program dump-args :ignore-error-status t
-                                                                     :input nil :output stdout :error-output stderr)
-		                                           (uiop:run-program args :ignore-error-status t
-                                                                     :input nil :output stdout :error-output stderr)))))
-                                   (when (and (not (equal (nth 2 exit-status) 0)) (> *ast-run* *ast-total-runs*))
-                                     (display (format nil "cicili exited with status: ~A" exit-status) #\Newline)))))
+                                 (setq exit-status
+                                       (multiple-value-list
+                                           (if dump
+                                               (uiop:run-program dump-args :ignore-error-status t
+                                                                 :input nil :output stdout :error-output stderr)
+		                                       (uiop:run-program args :ignore-error-status t
+                                                                 :input nil :output stdout :error-output stderr))))
+                                 (when (and (not (equal (nth 2 exit-status) 0)) (> *ast-run* *ast-total-runs*))
+                                   (display (format nil "cicili exited with status: ~A" exit-status) #\Newline))))
                              (error (format nil "invalid :compile value, required a custom command or #t"))))
                        (setq is-compiled t))
-	                 (when (and (not dump) (not header) (key-eq (nth i args) ':|link|))
+	                 (when (and (equal (nth 2 exit-status) 0) (not dump) (not header) (key-eq (nth i args) ':|link|))
                        (if is-compiled
 		                   (let* ((command   (if *cpp* (getf *configs* 'cpp-linker) (getf *configs* 'linker)))
 		                          (program   (car command))
