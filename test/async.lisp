@@ -1,4 +1,4 @@
-;;;; asyncronous sample
+;;;; asynchronous sample
 (source "async.c" (:std #t :compile #t :link "-L{$CWD}../lib/std/coroutine -lasync.o -lcoordinator.o -o async_main")
         (include <stdio.h>)
         (include "../lib/std/coroutine/coordinator.h")

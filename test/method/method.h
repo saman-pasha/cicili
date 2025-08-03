@@ -10,7 +10,7 @@ void Sample_m_PrintAttrB (Sample * this );
 void Sample_m_SetAttrB (Sample * this , char * b );
 void Sample_m_PrintBoth (Sample * this );
 __attribute__((weak)) void Sample_m_WithoutResolver (Sample * this ) {
-  (this ->AttrA ) = 12;
+  (this -> AttrA ) = 12;
   ((*this ). AttrB ) = "Saman";
   Sample_m_PrintBoth (this );
 }

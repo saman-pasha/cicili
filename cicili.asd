@@ -12,5 +12,5 @@
 	           (:file "core"       :depends-on ("config"))
 	           (:file "config"     :depends-on ("package"))
 	           (:file "package"))
-  :description "Lisp C Compiler aka. 'Cicili' programming language, which compiles Lisp-like syntax to C code and more extra features like struct's method, lambda, deferal and asynchronous execution, generic type and function-like macro."
+  :description "Lisp C Compiler aka. 'Cicili' programming language, which compiles Lisp-like syntax to C code and more extra features like struct's method, lambda, deferral and asynchronous execution, generic type and function-like macro."
   :in-order-to ((test-op (test-op "test"))))

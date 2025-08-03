@@ -1,13 +1,18 @@
 #ifndef CICILI_INTVECTOR_H_
 #define CICILI_INTVECTOR_H_
 #include <stddef.h>
-#define INTVECTOR_GROWTH_STEP 256
+#define INTVECTOR_GROWTH_STEP 256 
 typedef int intvector_elem_t ;
 typedef struct IntVector {
   size_t len ;
   size_t cap ;
   intvector_elem_t arr [];
 } IntVector;
+struct __ciciliS_IntVector_m_calcCap_ {
+  size_t capLen ;
+  size_t size ;
+};
+struct __ciciliS_IntVector_m_calcCap_ IntVector_s_calcCap (size_t len );
 IntVector * IntVector_s_newEmpty (size_t len );
 IntVector * IntVector_s_newFromArray (const intvector_elem_t * arr , size_t len );
 IntVector * IntVector_s_newCopy (const IntVector * other );
@@ -39,4 +44,5 @@ size_t IntVector_m_indexOf (IntVector * this , intvector_elem_t val );
 size_t IntVector_m_lastIndexOf (IntVector * this , intvector_elem_t val );
 size_t IntVector_m_count (IntVector * this , intvector_elem_t val );
 #endif /* CICILI_INTVECTOR_H_ */ 
+;
 

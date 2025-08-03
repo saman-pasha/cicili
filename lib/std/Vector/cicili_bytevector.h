@@ -1,13 +1,18 @@
 #ifndef CICILI_BYTEVECTOR_H_
 #define CICILI_BYTEVECTOR_H_
 #include <stddef.h>
-#define BYTEVECTOR_GROWTH_STEP 256
+#define BYTEVECTOR_GROWTH_STEP 256 
 typedef unsigned char bytevector_elem_t ;
 typedef struct ByteVector {
   size_t len ;
   size_t cap ;
   bytevector_elem_t arr [];
 } ByteVector;
+struct __ciciliS_ByteVector_m_calcCap_ {
+  size_t capLen ;
+  size_t size ;
+};
+struct __ciciliS_ByteVector_m_calcCap_ ByteVector_s_calcCap (size_t len );
 ByteVector * ByteVector_s_newEmpty (size_t len );
 ByteVector * ByteVector_s_newFromArray (const bytevector_elem_t * arr , size_t len );
 ByteVector * ByteVector_s_newCopy (const ByteVector * other );
@@ -39,4 +44,5 @@ size_t ByteVector_m_indexOf (ByteVector * this , bytevector_elem_t val );
 size_t ByteVector_m_lastIndexOf (ByteVector * this , bytevector_elem_t val );
 size_t ByteVector_m_count (ByteVector * this , bytevector_elem_t val );
 #endif /* CICILI_BYTEVECTOR_H_ */ 
+;
 

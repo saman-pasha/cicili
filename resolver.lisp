@@ -69,7 +69,7 @@
          (spec-key (ast-key< line-n col-n))
          (res      (gethash 'res-sym (keys spec)))
          (sym-name  (symbol-name symbol))
-         (has-slash (str:starts-with-p "/" sym-name)))
+         (has-slash (and (> (length sym-name) 1) (str:starts-with-p "/" sym-name))))
     
     ;; removes / form begining of global resolution
     (when has-slash (setq symbol (intern (str:substring 1 t sym-name))))

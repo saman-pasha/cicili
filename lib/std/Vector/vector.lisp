@@ -1,4 +1,4 @@
-;;;; Cicili standard safe Vector struct macro (IN-PACKAGE :CL-USER)
+;;;; Cicili standard safe Vector struct macro
 
 ;;; Vector template macro
 ;;; name: Vector name
@@ -28,13 +28,15 @@
              ;; element type of the array
              (typedef ,@(IF (LISTP element) element (LIST element)) ,elem-type)
 
-             ;; Designed to be safe, fast and optimal with copy-on-write solution
+             ;; Designed to be safe, fast and optimal
              (struct ,name
                (member size_t len)
                (member size_t cap)
                (member ,elem-type arr [])
                ,@members-body)
 
+             (decl) (func (,name . calcCap) ((size_t len)) (out '{ (size_t capLen) (size_t size) }))
+             
              ;; Cicili struct constructors begin with new keyword and aren't methods
              ;; They don't get this pointer and their out type always is pointer of the struct
              ;; Vector constructors
@@ -70,7 +72,6 @@
       `(ghost
            (include <ctype.h> <stdarg.h>)
 
-         (static)
          (func (,name . calcCap) ((size_t len)) (out '{ (size_t capLen) (size_t size) })
                (let ((size_t capLen . #'(? (> (% len ,growth-step) 0)
                                            (+ (/ len ,growth-step) 1)

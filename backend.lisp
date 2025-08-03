@@ -290,9 +290,9 @@
       ('|@STRUCT| (compile-struct     spec 0   globals spec)) 
       ('|@UNION|  (compile-union      spec 0   globals spec)) 
       ('|@TYPEDEF|(compile-typedef    spec 0   globals spec)) 
-      ('|@GUARD|  (compile-guard      spec 0   globals spec   :from-body from-body)) 
-      ('|@GHOST|  (compile-guard      spec 0   globals spec t :from-body from-body)) 
-      ('|@MODULE| (compile-module     spec 0   globals spec   :from-body from-body)) ; down here for inside macros 
+      ('|@GUARD|  (compile-guard      spec 0   globals spec nil :from-body from-body)) 
+      ('|@GHOST|  (compile-guard      spec 0   globals spec t   :from-body from-body)) 
+      ('|@MODULE| (compile-module     spec 0   globals spec     :from-body from-body)) ; down here for inside macros 
       ('|@CALL|   (compile-call       spec lvl globals spec))
       ('|@BODY|   (compile-body       spec lvl globals parent-spec))
       (t (error (format nil "expr syntax error ~A" spec))))))

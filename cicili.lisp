@@ -16,8 +16,8 @@
 
 (asdf:load-system "cicili")
 
-(cicili:load-macro-file "builtins.lisp")
-(cicili:load-macro-file "cpp.lisp")
+(cicili:load-macro-file "builtins.lisp" nil () "CICILI")
+(cicili:load-macro-file "cpp.lisp"      nil () "CICILI")
 
 (let ((argv (uiop:command-line-arguments)))
   (if (> (length argv) 0)

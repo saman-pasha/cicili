@@ -56,7 +56,7 @@
 (defun find-import-file (file-name)
   (if (find (char file-name 0) "./")
       file-name
-      (format nil "~A/~A" *cicili-path* file-name)))
+      (format nil "~A~A" *cicili-path* file-name)))
 
 (defparameter *macro-counter*
   (let ((count 100))
@@ -83,9 +83,11 @@
                 (setq result (specify-guard (LIST '|ghost|) () t)))
               (let ((expr (if macro (macroexpand `(,macro ,@(cdr def))) (macroexpand def))))
                 (when *debug-macroexpand* (format t "~A ~A~%" id expr))
-                (setq result (if (or (atom expr) (and (listp expr) (atom (car expr))))
+                (setq result (if (atom expr)
                                  (specify-expr expr)
-                                 (specify-body expr)))))
+                                 (if (and (listp expr) (atom (car expr)))
+                                     (specify-body (list expr))
+                                     (specify-body expr))))))
           (setf *macroexpand* tmp-expantion)
           result)
         (specify-call-expr def))))

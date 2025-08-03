@@ -1,13 +1,18 @@
 #ifndef CICILI_BORROWABLEVECTOR_H_
 #define CICILI_BORROWABLEVECTOR_H_
 #include <stddef.h>
-#define BORROWABLEVECTOR_GROWTH_STEP 16
+#define BORROWABLEVECTOR_GROWTH_STEP 16 
 typedef void * borrowablevector_elem_t ;
 typedef struct BorrowableVector {
   size_t len ;
   size_t cap ;
   borrowablevector_elem_t arr [];
 } BorrowableVector;
+struct __ciciliS_BorrowableVector_m_calcCap_ {
+  size_t capLen ;
+  size_t size ;
+};
+struct __ciciliS_BorrowableVector_m_calcCap_ BorrowableVector_s_calcCap (size_t len );
 BorrowableVector * BorrowableVector_s_newEmpty (size_t len );
 BorrowableVector * BorrowableVector_s_newFromArray (const borrowablevector_elem_t * arr , size_t len );
 BorrowableVector * BorrowableVector_s_newCopy (const BorrowableVector * other );
@@ -39,4 +44,5 @@ size_t BorrowableVector_m_indexOf (BorrowableVector * this , borrowablevector_el
 size_t BorrowableVector_m_lastIndexOf (BorrowableVector * this , borrowablevector_elem_t val );
 size_t BorrowableVector_m_count (BorrowableVector * this , borrowablevector_elem_t val );
 #endif /* CICILI_BORROWABLEVECTOR_H_ */ 
+;
 

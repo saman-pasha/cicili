@@ -1,7 +1,7 @@
 ;;;; builtins includes many useful macros for cicili
 
 (DEFUN import (file-name &OPTIONAL pack init-args)
-  (CICILI:LOAD-MACRO-FILE file-name pack init-args))
+  (CICILI:LOAD-MACRO-FILE file-name pack init-args (OR *LOAD-TRUENAME* *COMPILE-FILE-TRUENAME*)))
 
 ;;; main simple forms
 (DEFMACRO main (&REST body)

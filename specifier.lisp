@@ -738,7 +738,8 @@
 		                     ((key-eq func '|module|)
                               (let ((out-spec (specify-module      def attributes))) (setq attributes '()) out-spec))
 		                     ((key-eq func '|cicili|)
-                              (let ((out-spec (compile-ast         (cdr def)))) (setq attributes '()) out-spec))
+                              (let ((out-spec (compile-ast         (cdr def) (OR *LOAD-TRUENAME* *COMPILE-FILE-TRUENAME*))))
+                                (setq attributes '()) out-spec))
                              (t (let ((out-spec (expand-macros-expr def))) (setq attributes '()) out-spec))))
                    (t (expand-macros-expr def)))))))
 
