@@ -115,9 +115,9 @@
                                         (progn
                                           (setq info (concatenate 'string info '(#\NewLine) s)))))
                                   (setq info (concatenate 'string info '(#\NewLine) s)))
-                              (display "run out" *ast-run* ">" (replace-module-names s) #\NewLine)
-                              (setq has-error t)))
-                          (setf (getf (gethash ast-key (nth 0 *ast-lines*)) 'info) info)
+                              (display "run err" *ast-run* ">" (replace-module-names s) #\NewLine)
+                              (setq has-error t)
+                              (setf (getf (gethash ast-key (nth 0 *ast-lines*)) 'info) info)))
                         
                         ;; extracts ast infos from dumped Translation Units
                         (let ((d-file  "TranslationUnitDecl")
@@ -236,7 +236,7 @@
                (setf *macroexpand* t)
                (if (key-eq tname '|generic|)
                    (let ((symb (eval (macroexpand target))))
-                     (setq result (specify-guard (LIST '|ghost|) () t)))
+                     (setq result (specify-nil-expr)))
                    (let ((expr (if macro (macroexpand `(,macro ,@(cdr target))) (macroexpand target))))
                      (when *debug-macroexpand* (format t "~A ~A~%" id expr))
                      (setq result (if (atom expr)
@@ -283,7 +283,6 @@
       
       (dolist (target targets)
         (let ((tname (car target)))
-                 (display "CCCC" tname (nth 1 target) (file-namestring file-name) #\Newline)
           
           (cond ((key-eq tname '|DEFUN|)
                  (when (key-eq (cadr target) '|init|)

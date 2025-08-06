@@ -29,6 +29,5 @@
         `(code '{ using 'namespace ,res ";" }))))
 
 (DEFMACRO extern-c (&REST body)
-  `(ghost
-       (code '{ extern ,(FORMAT NIL "~S" "C") })
-     (block ,@body)))
+  `((code '{ extern ,(FORMAT NIL "~S" "C") })
+    (block ,@body)))
