@@ -15,7 +15,7 @@
         (include <stdlib.h>)
         (include "lambda.h")
 
-        (method Shape->staticDraw ()
+        (method (Shape . staticDraw) ()
                 (printf "area from static draw method: %d\n" (* ($ this length) ($ this width))))
         
         (var func aFunc ((int x) (int y)) (out int))

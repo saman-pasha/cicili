@@ -56,7 +56,7 @@
 (defun find-import-file (file-name)
   (if (find (char file-name 0) "./")
       file-name
-      (format nil "~A/~A" *cicili-path* file-name)))
+      (format nil "~A~A" *cicili-path* file-name)))
 
 (defparameter *macro-counter*
   (let ((count 100))
@@ -67,45 +67,6 @@
 (defun add-macro (macro symbol)
   (when *debug-macros* (format t "macro: ~A~%" macro))
   (setf (gethash macro *macros*) symbol))
-
-;; expands all defined macros
-(defun expand-macros-expr (def)
-  (let* ((func (car def))
-         (macro (if (symbolp func) (gethash (symbol-name func) *macros*) nil)))
-    (if (or macro (and (symbolp func) (macro-function func)))
-        (let ((tmp-expantion *macroexpand*)
-              (id (format nil "me: ~D" (funcall *macro-counter*)))
-              (result nil))
-          (when *debug-macroexpand* (format t "~A ~A~%" id def))
-          (setf *macroexpand* t)
-          (if (key-eq func '|generic|)
-              (let ((symb (eval (macroexpand def))))
-                (setq result (specify-guard (LIST '|ghost|) () t)))
-              (let ((expr (if macro (macroexpand `(,macro ,@(cdr def))) (macroexpand def))))
-                (when *debug-macroexpand* (format t "~A ~A~%" id expr))
-                (setq result (if (or (atom expr) (and (listp expr) (atom (car expr))))
-                                 (specify-expr expr)
-                                 (specify-body expr)))))
-          (setf *macroexpand* tmp-expantion)
-          result)
-        (specify-call-expr def))))
-
-;; for type specification only
-(defun expand-macros (def)
-  (if (atom def) def
-      (let* ((func (car def))
-             (macro (if (symbolp func) (gethash (symbol-name func) *macros*) nil)))
-        (if (or macro (and (symbolp func) (macro-function func)))
-            (let ((tmp-expantion *macroexpand*)
-                  (id (gensym "me:"))
-                  (result nil))
-              (when *debug-macroexpand* (format t "~A ~A~%" id def))
-              (setf *macroexpand* t)
-              (setq result (if macro (macroexpand `(,macro ,@(cdr def))) (macroexpand def)))
-              (when *debug-macroexpand* (format t "~A ~A~%" id result))
-              (setf *macroexpand* tmp-expantion)
-              result)
-            def))))
 
 (defun reving (list result)
   (cond ((consp list) (reving (cdr list) (cons (car list) result)))
@@ -234,8 +195,6 @@
 (defvar *new-line* (format nil "~%"))
 
 (defun output (ctrl &rest rest)
-  ;; (when *generic* (setq ctrl (str:replace-all "~%" " \\~%" ctrl)))
-  ;; (when (and *specific* *generic*)
   (let ((result (apply 'format (append (list nil ctrl) rest))))
     (apply 'format (list *output* result))
     (let* ((index (search *new-line* result :from-end t))

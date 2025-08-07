@@ -1,7 +1,7 @@
 ;;;; builtins includes many useful macros for cicili
 
 (DEFUN import (file-name &OPTIONAL pack init-args)
-  (CICILI:LOAD-MACRO-FILE file-name pack init-args))
+  (CICILI:LOAD-MACRO-FILE file-name pack init-args (OR *LOAD-TRUENAME* *COMPILE-FILE-TRUENAME*)))
 
 ;;; main simple forms
 (DEFMACRO main (&REST body)
@@ -16,7 +16,7 @@
            (body (COPY-LIST ',body)))
        (DOTIMES (i (LENGTH args))
          (SETQ body (SUBST (NTH i args) (NTH i types) body)))
-       `(ghost ,@body))))
+       `(,@body))))
 
 (DEFMACRO <> (name &REST body)
   (INTERN (FORMAT NIL "~A_~{~A~}" name body)))
@@ -30,7 +30,7 @@
 ;;; each struct which implements string can write itself to a FILE *
 ;;; notice inline methods won't be resolved and -> is point to, not method access
 (DEFMACRO IString (struct)
-  `(ghost (decl) (method (,struct . toString) ((FILE * file)))))
+  `((decl) (method (,struct . toString) ((FILE * file)))))
 
 ;;; use format lisp clause insted of printf
 ;;; f  FILE *
@@ -82,20 +82,19 @@
 (DEFMACRO defer* (var-list &REST body)
   (LET* ((name (GENSYM "ciciliDefer"))
          (pname (INTERN (FORMAT NIL "~A_ptr" name))))
-    `(ghost
-         (defer ()
-           ,@(MAP 'LIST #'(LAMBDA (var)
-                            (MULTIPLE-VALUE-BIND (const type modifier const-ptr variable array-def)
-                                (CICILI:SPECIFY-TYPE< var)
-                              `(var ,@var . (FUNCTION (-> ,pname ,variable)))))
-                  var-list)
-           ,@body)
-       (var '(,@var-list) ,name . 
-            '(,@(MAP 'LIST #'(LAMBDA (var)
-                               (MULTIPLE-VALUE-BIND (const type modifier const-ptr variable array-def)
-                                   (CICILI:SPECIFY-TYPE< var)
-                                 variable))
-                     var-list))))))
+    `((defer ()
+        ,@(MAP 'LIST #'(LAMBDA (var)
+                         (MULTIPLE-VALUE-BIND (const type modifier const-ptr variable array-def)
+                             (CICILI:SPECIFY-TYPE< var)
+                           `(var ,@var . (FUNCTION (-> ,pname ,variable)))))
+               var-list)
+        ,@body)
+      (var '(,@var-list) ,name . 
+           '(,@(MAP 'LIST #'(LAMBDA (var)
+                              (MULTIPLE-VALUE-BIND (const type modifier const-ptr variable array-def)
+                                  (CICILI:SPECIFY-TYPE< var)
+                                variable))
+                    var-list))))))
 
 ;;; copies capture list to context, use pointer to keep access to context along the process
 ;;; don't free pointers copied into context if the closure is alive
@@ -133,28 +132,28 @@
 
 ;;; way to execute closure routine
 (DEFMACRO exec (closure &REST args)
-  `(($ ,closure routine) (aof ,closure) ,@args))
+  `((($ ,closure routine) (aof ,closure) ,@args)))
 
 ;;; asycronous clauses
 ;;; declare a handle in a header for global access or
 ;;; define over main entry by async-main | async-main*
 (DEFMACRO async-handle-decl ()
-  `(ghost (static) (thread-local)
-     (var Coordinator __ciciliA_Coordinator_)))
+  `((static) (thread-local)
+    (var Coordinator __ciciliA_Coordinator_)))
 
 (DEFMACRO async-handle-def ()
-  `(ghost (static) (thread-local)
-     (var Coordinator __ciciliA_Coordinator_ . '{ nil nil #f })))
+  `((static) (thread-local)
+    (var Coordinator __ciciliA_Coordinator_ . '{ nil nil #f })))
 
 (DEFMACRO async-main (&REST body)
-  `(ghost (async-handle-def)
-     (main ,@body
-       (-> __ciciliA_Coordinator_ loop))))
+  `((async-handle-def)
+    (main ,@body
+      (-> __ciciliA_Coordinator_ loop))))
 
 (DEFMACRO async-main* (&REST body)
-  `(ghost (async-handle-def)
-     (main* ,@body
-       (-> __ciciliA_Coordinator_ loop))))
+  `((async-handle-def)
+    (main* ,@body
+      (-> __ciciliA_Coordinator_ loop))))
 
 ;;; non-local exits: done, yield, error
 ;;; done calls done_callback and returns from function
@@ -194,7 +193,7 @@
 ;;; optional helper macro will auto defer all vars
 (DEFMACRO defer-let (var-list &REST body)
   `(block ,@(MAP 'LIST #'(LAMBDA (var)
-                            `(ghost (defer #t) (var ,@var)))
+                            `((defer #t) (var ,@var)))
                   var-list)
      ,@body))
 

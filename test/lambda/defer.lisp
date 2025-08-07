@@ -6,9 +6,7 @@
             (member int Id)
             (member char * Name))))
 
-(source "defer.c" (:std #f
-                        :compile #t
-                        :link "-o defer_main -L{$CWD} -ldefer.o")
+(source "defer.c" (:std #f :compile #t :link "-o defer_main -L{$CWD} -ldefer.o")
         (include <stdio.h> <stdlib.h> <string.h>)
         (include "defer.h")
 
@@ -30,9 +28,9 @@
                     (auto printInts . #'(closure ((FILE * file)
                                                   (char ** msgs . #'(cast (char * [])
                                                                       '{ msg_int msg_int_sqr }))) ; static captured values
-                                            '(lambda ((int x))                    ; dynamic parameters
-                                              (format file (nth 0 msgs) x)
-                                              (format file (nth 1 msgs) (* x x)))))
+                                          '(lambda ((int x))                    ; dynamic parameters
+                                            (format file (nth 0 msgs) x)
+                                            (format file (nth 1 msgs) (* x x)))))
                     
                     (auto make_closure . '(lambda ((int state)) (out auto)
                                            (return (closure ((int state))
@@ -40,7 +38,7 @@
                                                        (return (+ state dyn_var)))))))
                     (auto clo1 . #'(make_closure 10))
                     (auto clo2 . #'(make_closure 20)))
-               
+                
                 (format file "first line from main execution\n")
 
                 (format #t "clo1: %d\n" (exec clo1 5))

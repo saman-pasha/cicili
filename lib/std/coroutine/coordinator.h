@@ -6,7 +6,7 @@
 typedef struct Coroutine {
   int status ;
   void * args ;
-    int (*routine) (  void * args ,   struct Coroutine * coroutine );
+  int (*routine) (void * args , struct Coroutine * coroutine );
   struct Coroutine * next ;
 } Coroutine;
 typedef struct Coordinator {
