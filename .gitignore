@@ -224,3 +224,4 @@ lib/std/Vector/cicili_intvector.c.run1.c
 lib/std/Vector/cicili_intvector.c.run2.c
 lib/std/Vector/cicili_intvector.c.run3.c
 test/\#basic.h\#
+test/module/\#module.h\#

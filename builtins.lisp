@@ -132,7 +132,7 @@
 
 ;;; way to execute closure routine
 (DEFMACRO exec (closure &REST args)
-  `(($ ,closure routine) (aof ,closure) ,@args))
+  `((($ ,closure routine) (aof ,closure) ,@args)))
 
 ;;; asycronous clauses
 ;;; declare a handle in a header for global access or

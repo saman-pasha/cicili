@@ -6,6 +6,17 @@
                     (int y . 5)
                     (bool next . true)
                     (int digits [] . '{ 1 3 5 7 }))
+
+                (if (== y 3)
+                    (printf "y is 4\n")
+                    (if (== y 4)
+                        (block (printf "y is 4\n")
+                          (printf "multi form\n"))
+                        (if (== y 5)
+                            (printf "y is 5\n")
+                            (printf "y is ?\n"))))
+
+                (if (== y 6) (set y 12))
                 
                 (while (== #t next) ; condition
                   (printf "please enter a digit: ")
@@ -44,7 +55,11 @@
                        (case 4 (printf "digit Four\n")  break)
                        (case 5 (printf "digit Five\n")  break)
                        (default (printf "unknown digit\n"))))
-                
+
+                (cond ((== x 1) (format #t "x is 1\n"))
+                      ((== x 2) (format #t "x is 2\n"))
+                      ((== x 3) (format #t "x is 3\n"))
+                      (#t       (format #t "x is ?\n")))
                 )))
 
                 

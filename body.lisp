@@ -220,12 +220,11 @@
 (defvar *parent-bodies* (list '|@CICILI| '|@TARGET| '|@FUNC| '|@METHOD|
                               '|@LET| '|@LETN| '|@BLOCK| '|@PROGN| '|@STRUCT| '|@UNION|
                               '|@DO| '|@WHILE| '|@FOR| '|@IF| '|@COND| '|@SWITCH|
-                              '|@CASE| '|@DEFAULT| '|@GUARD|))
+                              '|@CASE| '|@DEFAULT| '|@GUARD| '|@MODULE|))
 
 (defun compile-body-list (body lvl globals parent-spec)
   (let ((is-parent-bodies (find (construct parent-spec) *parent-bodies* :test #'key-eq)))
     (loop for form in body
-          
           do (progn
                (when (and is-parent-bodies
                        (not (find (construct form)
@@ -234,15 +233,21 @@
                                   :test #'key-eq)))
                  (output "~&~A" (indent lvl)))
                
-               (compile-body-form form (if (key-eq '|@BODY| (construct form)) lvl (1+ lvl)) globals parent-spec)
+               (compile-body-form form
+                 (if (find (construct form) (list '|@BODY| '|@GUARD| '|@MODULE|) :test #'key-eq)
+                     lvl (1+ lvl))
+                 globals parent-spec)
                
                (unless (key-eq '|@BODY| (construct form))
                  (if (and is-parent-bodies
                        (not (find (construct form) (list '|@INCLUDE| '|@PREPROC|) :test #'key-eq))
-                       (or (find (construct form) (list '|@LETN| '|@PROGN|) :test #'key-eq)
+                       (or (find (construct form) (list '|@LETN| '|@PROGN|) :test #'key-eq) ; container with ;
                          (not (find (construct form) *parent-bodies* :test #'key-eq))))
                      (output ";~%")
-                     (output "~%")))))))
+                     (unless (find (construct form) (list '|@GUARD| '|@MODULE| '|@CALL| '|@CAST|)
+                                   :test #'key-eq) ; no ;~%
+                       (display "GGGGG" (construct form) (name form) (construct parent-spec) #\Newline)
+                       (output "~%"))))))))
 
 (defun compile-body (spec lvl globals parent-spec)
   (unless (key-eq '|@BODY| (construct spec)) (error (format nil "non-body for compile body ~A" spec)))
@@ -258,13 +263,19 @@
                                   :test #'key-eq)))
                    (output "~&~A" (indent lvl)))
                  
-                 (compile-body-form form (if (key-eq '|@BODY| (construct form)) lvl (1+ lvl)) globals parent-spec)
+                 (compile-body-form form
+                   (if (find (construct form) (list '|@BODY| '|@GUARD| '|@MODULE|) :test #'key-eq)
+                       lvl (1+ lvl))
+                   globals parent-spec)
 
                  (unless (key-eq '|@BODY| (construct form))
                    (if (and is-parent-bodies
                          (not (find (construct form) (list '|@INCLUDE| '|@PREPROC|) :test #'key-eq))
-                         (or (find (construct form) (list '|@LETN| '|@PROGN|) :test #'key-eq)
+                         (or (find (construct form) (list '|@LETN| '|@PROGN|) :test #'key-eq) ; container with ;
                            (not (find (construct form) *parent-bodies* :test #'key-eq))))
                        (output ";~%")
-                       (output "~%"))))
+                       (unless (find (construct form) (list '|@GUARD| '|@MODULE| '|@CALL| '|@CAST|)
+                                     :test #'key-eq) ; no ;~%
+                         (display "GGGGG" (construct form) (construct parent-spec) #\Newline)
+                         (output "~%")))))
 	         inners)))
