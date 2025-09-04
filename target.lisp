@@ -81,15 +81,17 @@
 		                 (when (key-eq custom '|true|)
                            (if *cpp*
                                (progn
+                                 (set-ast-line (output "~&#include ")) (set-ast-line (output "<string>~%"))
                                  (set-ast-line (output "~&#include ")) (set-ast-line (output "<iostream>~%"))
-                                 (set-ast-line (output "~&#include ")) (set-ast-line (output "<string>~%")))
+                                 )
                                (progn
                                  (set-ast-line (output "~&#include ")) (set-ast-line (output "<stdio.h>~%"))
                                  (set-ast-line (output "~&#include ")) (set-ast-line (output "<stddef.h>~%"))
                                  (set-ast-line (output "~&#include ")) (set-ast-line (output "<stdint.h>~%"))
                                  (set-ast-line (output "~&#include ")) (set-ast-line (output "<stdlib.h>~%"))
+                                 (set-ast-line (output "~&#include ")) (set-ast-line (output "<string.h>~%"))
                                  (set-ast-line (output "~&#include ")) (set-ast-line (output "<stdbool.h>~%"))
-                                 (set-ast-line (output "~&#include ")) (set-ast-line (output "<string.h>~%")))))))))
+                                 )))))))
                  (compile-body-map (inners spec) 0 globals spec)
 	             (close *output*))
                (when header (return-from compile-target t))

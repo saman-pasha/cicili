@@ -12,7 +12,7 @@
           (setf *macroexpand* t)
           (if (key-eq func '|generic|)
               (let ((symb (eval (macroexpand def))))
-                (setq result (specify-nil-expr)))
+                (setq result (specify-body ())))
               (let ((expr (if macro (macroexpand `(,macro ,@(cdr def))) (macroexpand def))))
                 (when *debug-macroexpand* (format t "~A ~A~%" id expr))
                 (setq result (if (atom expr)
@@ -246,7 +246,6 @@
                      (output ";~%")
                      (unless (find (construct form) (list '|@GUARD| '|@MODULE| '|@CALL| '|@CAST|)
                                    :test #'key-eq) ; no ;~%
-                       (display "GGGGG" (construct form) (name form) (construct parent-spec) #\Newline)
                        (output "~%"))))))))
 
 (defun compile-body (spec lvl globals parent-spec)
@@ -276,6 +275,5 @@
                        (output ";~%")
                        (unless (find (construct form) (list '|@GUARD| '|@MODULE| '|@CALL| '|@CAST|)
                                      :test #'key-eq) ; no ;~%
-                         (display "GGGGG" (construct form) (construct parent-spec) #\Newline)
                          (output "~%")))))
 	         inners)))

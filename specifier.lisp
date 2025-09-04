@@ -213,9 +213,10 @@
         (cond ((or (key-eq '|struct| ty) (key-eq '|union| ty))
                (list ty (specify-name-with-module< (cadr type))))
               ((key-eq '|typeof| ty) (specify-typeof-expr type))
-              ((key-eq '|t<>| ty) (specify-expr type))
-              ((key-eq '$$ ty) (specify-expr type))
-              ((key-eq '|code| ty) (specify-expr type))
+              ((key-eq '|<>| ty)     (specify-decl-name< (apply '<> (cdr type))))
+              ((key-eq '|t<>| ty)    (specify-expr type))
+              ((key-eq '$$ ty)       (specify-expr type))
+              ((key-eq '|code| ty)   (specify-expr type))
               ((and (null *function-spec*) *variable-spec* (key-eq 'QUOTE ty)) ; inline struct global var
                (let* ((sname (gensym "__ciciliS_"))
                       (struct-spec (specify-struct (append (list '|struct| sname) (cadr type)) '() :inline t)))
@@ -851,6 +852,7 @@
     (make-specifier nil '|@SET| nil nil nil nil nil items '())))
 
 (defun specify-return-expr (def)
+  (when (> (length def) 2) (error (format nil "wrong return form ~A" def)))
   (let ((output (nth 1 def)))
     (if (and *function-spec* (or (listp (typeof *function-spec*)) (and (listp output) (key-eq (car output) '|QUOTE|))))
         (make-specifier nil '|@RETURN| nil nil nil nil nil
