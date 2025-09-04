@@ -38,19 +38,20 @@
               ((str:containsp "incompatible pointer types" info)
                (let* ((result (multiple-value-list (ppcre:scan-to-strings *trait-regex* info)))
                       (matches (cadr result)))
-                 (let ((resu (make-shared-name (elt matches 1) (format nil "to~A" (elt matches 0)))))
-                   (if (gethash (intern resu) *globals*)
+                 (let ((resu (find-trait (elt matches 1) (elt matches 0))))
+                   (if resu
                        (progn
                          (setf (gethash 'res-def (keys default)) resu)
                          (set-ast-line (output "~A" resu))
                          (set-ast-line (output "("))
                          (compile-form default (1+ lvl) globals parent-spec)
                          (output ")"))
-                       (error (format nil "undefined trait: ~A" result))))))
+                       (error (format nil "undefined trait: ~A for ~A"
+                                      (format nil "to~A or to_~A" (elt matches 0) (elt matches 0)) result))))))
               ((str:containsp "format specifies type" info)
                (let* ((result (multiple-value-list (ppcre:scan-to-strings *trait-regex* info)))
                       (matches (cadr result)))
-                 (let ((resu (make-shared-name (elt matches 0) (format nil "to~A" (elt matches 1)))))
+                 (let ((resu (find-trait (elt matches 0) (elt matches 1))))
                    (if (gethash (intern resu) *globals*)
                        (progn
                          (setf (gethash 'res-def (keys default)) resu)
@@ -58,7 +59,8 @@
                          (set-ast-line (output "("))
                          (compile-form default (1+ lvl) globals)
                          (output ")"))
-                       (error (format nil "undefined trait: ~A" default))))))
+                       (error (format nil "undefined trait: ~A for ~A"
+                                      (format nil "to~A or to_~A" (elt matches 1) (elt matches 1)) default))))))
               (t (compile-form default (1+ lvl) globals parent-spec)))))))
 
 (defun compile-symbol (spec symbol)
@@ -279,20 +281,20 @@
                            (output ")"))
                          (error (format nil "undefined function: ~A" spec)))))))
             
-            ((and ptr-info (str:containsp "member reference type" ptr-info) (str:containsp "is not a pointer" ptr-info))
-             (setf *more-run* t)
-             (set-ast-line (output "("))
-             (compile-form receiver (1+ lvl) globals spec)
-             (setf (getf (gethash (ast-key< line-n col-n) (nth 0 *ast-lines*)) 'ptr)
-                   (ast-key< (funcall *line-num* 0) (funcall *col-num* 0)))
-             (set-ast-line (output "."))
-             (setf (getf (gethash (ast-key< line-n col-n) (nth 0 *ast-lines*)) 'mtd)
-                   (ast-key< (funcall *line-num* 0) (funcall *col-num* 0)))
-             (compile-form method (1+ lvl) globals spec)
-             (compile-args (default args) lvl globals spec t :sep ". ")
-             (setf (getf (gethash (ast-key< line-n col-n) (nth 0 *ast-lines*)) 'end)
-                   (ast-key< (funcall *line-num* 0) (funcall *col-num* 0)))
-             (output ")"))
+            ;; ((and ptr-info (str:containsp "member reference type" ptr-info) (str:containsp "is not a pointer" ptr-info))
+            ;;  (setf *more-run* t)
+            ;;  (set-ast-line (output "("))
+            ;;  (compile-form receiver (1+ lvl) globals spec)
+            ;;  (setf (getf (gethash (ast-key< line-n col-n) (nth 0 *ast-lines*)) 'ptr)
+            ;;        (ast-key< (funcall *line-num* 0) (funcall *col-num* 0)))
+            ;;  (set-ast-line (output ". "))
+            ;;  (setf (getf (gethash (ast-key< line-n col-n) (nth 0 *ast-lines*)) 'mtd)
+            ;;        (ast-key< (funcall *line-num* 0) (funcall *col-num* 0)))
+            ;;  (compile-form method (1+ lvl) globals spec)
+            ;;  (compile-args (default args) lvl globals spec t :sep ". ")
+            ;;  (setf (getf (gethash (ast-key< line-n col-n) (nth 0 *ast-lines*)) 'end)
+            ;;        (ast-key< (funcall *line-num* 0) (funcall *col-num* 0)))
+            ;;  (output ")"))
             
             ((and ptr-info (str:containsp "expected expression" ptr-info))
              (if (key-eq (construct receiver) '|@ATOM|) 
@@ -444,30 +446,32 @@
                       (let* ((result (multiple-value-list (ppcre:scan-to-strings *trait-regex* info)))
                              (matches (cadr result)))
                         (if matches
-                          (let ((resu (make-shared-name (elt matches 0) (format nil "to~A" (elt matches 1)))))
-                            (if (gethash (intern resu) *globals*)
-                                (progn
-                                  (setf (gethash 'res-arg (keys arg)) resu)
-                                  (set-ast-line (output "~A" resu))
-                                  (set-ast-line (output "("))
-                                  (compile-form arg lvl globals parent-spec)
-                                  (output ")"))
-                                (error (format nil "undefined trait: ~A" arg))))
-                          (compile-form arg lvl globals parent-spec))))
+                            (let ((resu (find-trait (elt matches 0) (elt matches 1))))
+                              (if resu
+                                  (progn
+                                    (setf (gethash 'res-arg (keys arg)) resu)
+                                    (set-ast-line (output "~A" resu))
+                                    (set-ast-line (output "("))
+                                    (compile-form arg lvl globals parent-spec)
+                                    (output ")"))
+                                  (error (format nil "undefined trait: ~A for ~A"
+                                                 (format nil "to~A or to_~A" (elt matches 1) (elt matches 1)) arg))))
+                            (compile-form arg lvl globals parent-spec))))
                      ((str:containsp "format specifies type" info)
                       (let* ((result (multiple-value-list (ppcre:scan-to-strings *trait-regex* info)))
                              (matches (cadr result)))
                         (if matches
-                          (let ((resu (make-shared-name (elt matches 1) (format nil "to~A" (elt matches 0)))))
-                            (if (gethash (intern resu) *globals*)
-                                (progn                                
-                                  (setf (gethash 'res-arg (keys arg)) resu)
-                                  (set-ast-line (output "~A" resu))
-                                  (set-ast-line (output "("))
-                                  (compile-form arg lvl globals parent-spec)
-                                  (output ")"))
-                                (error (format nil "undefined trait: ~A" arg))))
-                          (compile-form arg lvl globals parent-spec))))
+                            (let ((resu (find-trait (elt matches 1) (elt matches 0))))
+                              (if resu
+                                  (progn                                
+                                    (setf (gethash 'res-arg (keys arg)) resu)
+                                    (set-ast-line (output "~A" resu))
+                                    (set-ast-line (output "("))
+                                    (compile-form arg lvl globals parent-spec)
+                                    (output ")"))
+                                  (error (format nil "undefined trait: ~A for ~A"
+                                                 (format nil "to~A or to_~A" (elt matches 0) (elt matches 0)) arg))))
+                            (compile-form arg lvl globals parent-spec))))
                      ((str:containsp "member reference type" info)
                       (compile-form arg lvl globals parent-spec))
                      (t (compile-form arg lvl globals parent-spec))))
@@ -505,8 +509,8 @@
                        ((str:containsp "incompatible pointer types" info)
                         (let* ((result (multiple-value-list (ppcre:scan-to-strings *trait-regex* info)))
                                (matches (cadr result)))
-                          (let ((resu (make-shared-name (elt matches 1) (format nil "to~A" (elt matches 0)))))
-                            (if (gethash (intern resu) *globals*)
+                          (let ((resu (find-trait (elt matches 1) (elt matches 0))))
+                            (if resu
                                 (progn
                                   (setf (gethash 'res-set (keys (nth 1 item))) resu)
                                   (set-ast-line (output "= "))
@@ -514,12 +518,13 @@
                                   (set-ast-line (output "("))
                                   (compile-form (nth 1 item) (1+ lvl) globals spec)
                                   (output ")"))
-                                (error (format nil "undefined trait: ~A" spec))))))
+                                (error (format nil "undefined trait: ~A for ~A"
+                                               (format nil "to~A or to_~A" (elt matches 0) (elt matches 0)) spec))))))
                        ((str:containsp "format specifies type" info)
                         (let* ((result (multiple-value-list (ppcre:scan-to-strings *trait-regex* info)))
                                (matches (cadr result)))
-                          (let ((resu (make-shared-name (elt matches 0) (format nil "to~A" (elt matches 1)))))
-                            (if (gethash (intern resu) *globals*)
+                          (let ((resu (find-trait (elt matches 0) (elt matches 1))))
+                            (if resu
                                 (progn
                                   (setf (gethash 'res-set (keys (nth 1 item))) resu)
                                   (set-ast-line (output "= "))
@@ -527,10 +532,21 @@
                                   (set-ast-line (output "("))
                                   (compile-form (nth 1 item) (1+ lvl) globals spec)
                                   (output ")"))
-                                (error (format nil "undefined trait: ~A" spec))))))
+                                (error (format nil "undefined trait: ~A for ~A"
+                                               (format nil "to~A or to_~A" (elt matches 1) (elt matches 1)) spec))))))
                        (t (set-ast-line (output "= "))
 	                      (compile-form (nth 1 item) (1+ lvl) globals spec)))))
 
           (when (< i l)
             (output ";~%")
             (output "~&~A" (indent (- lvl 2)))))))
+
+(defun find-trait (from to)
+  (let ((resu (make-shared-name from (format nil "to~A" to))))
+    (if (gethash (intern resu) *globals*)
+        resu
+        (progn
+          (setq resu (make-shared-name from (format nil "to_~A" to)))
+          (if (gethash (intern resu) *globals*)
+              resu
+              nil)))))

@@ -4,7 +4,7 @@
 (defvar *operators* '(|+| |-| |*| |/| |%| |==| |!=| |>| |<| |>=| |<=| |^| |<<| |>>| |xor| |and| |or| |bitand| |bitor|))
 (defvar *assignments* '(|+=| |-=| |*=| |/=| |%=| |<<=| |>>=|))
 (defvar *modifiers* '(|&| |*| |**| |***|))
-(defvar *trait-regex* "'(?:\\w+?\\s)?(\\w+?)(?:\\[\\d*\\]|\\s\\*)'.*'(?:\\w+?\\s)?(\\w+?)(?:\\[\\d*\\]|\\s\\*)'")
+(defvar *trait-regex* "'(?:\\w+?\\s)?(\\w+?)(?:\\[\\d*\\]|\\s\\*)?'.*'(?:\\w+?\\s)?(\\w+?)(?:\\[\\d*\\]|\\s\\*)?'")
 (defvar *globals* (make-hash-table :test 'eql))
 
 (defvar *cicili-path* (uiop/os:getcwd))

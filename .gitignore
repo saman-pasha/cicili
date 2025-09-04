@@ -225,3 +225,7 @@ lib/std/Vector/cicili_intvector.c.run2.c
 lib/std/Vector/cicili_intvector.c.run3.c
 test/\#basic.h\#
 test/module/\#module.h\#
+test/haskell/main.dSYM/Contents/Info.plist
+test/haskell/main.dSYM/Contents/Resources/DWARF/main
+test/haskell/main.dSYM/Contents/Resources/Relocations/x86_64/main.yml
+test/haskell/main

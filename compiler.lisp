@@ -236,7 +236,7 @@
                (setf *macroexpand* t)
                (if (key-eq tname '|generic|)
                    (let ((symb (eval (macroexpand target))))
-                     (setq result (specify-nil-expr)))
+                     (setq result (specify-body ())))
                    (let ((expr (if macro (macroexpand `(,macro ,@(cdr target))) (macroexpand target))))
                      (when *debug-macroexpand* (format t "~A ~A~%" id expr))
                      (setq result (if (atom expr)
