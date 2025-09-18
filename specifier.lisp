@@ -239,7 +239,7 @@
                  (list '|struct| (if *module-path* (free-name *module-path* sname) sname))))
               (t (error (format nil "type syntax error ~A" type)))))))
 
-(defun specify-type< (def &optional noVar)
+(defun specify-type< (def)
   (let* ((desc (expand-macros def))
          (len (if (listp desc) (length desc) 1))
 	     (const nil)
@@ -443,7 +443,7 @@
               (key-eq modifier '**)
               (key-eq modifier '***))
       (setq status -5))
-    (when noVar (unless (null variable) (setq status -6)))
+    ;; (when noVar (unless (null variable) (setq status -6)))
     (if (key-eq type '|func|) ; func type
         (progn
           (when (null array) (setq status -7))
@@ -614,12 +614,13 @@
       '|@$| nil nil nil nil nil
       (specify-symbol-expr member) '())))
 
-(defun specify-->-expr (def)
-  (when (< (length def) 3) (error (format nil "wrong access method -> form ~A" def)))
-  ;; (unless (is-symbol (nth 2 def)) (error (format nil "wrong access method name ~A" def)))
-  (let ((method-var (make-specifier (specify-expr (nth 1 def)) '|@->| nil nil nil nil nil
-                                    ;; (specify-symbol-expr (nth 2 def)) '())))
-                                    (specify-expr (nth 2 def)) '())))
+(defun specify-->-expr (def no-call)
+  (if no-call ; -->
+      (unless (= (length def) 3) (error (format nil "wrong access method name --> form ~A" def)))
+      (when   (< (length def) 3) (error (format nil "wrong access method -> form ~A" def))))
+  (let ((method-var (make-specifier (specify-expr (expand-macros (nth 1 def)))
+                      (if no-call '|@-->| '|@->|) nil nil nil nil nil
+                      (specify-expr (expand-macros (nth 2 def))) '())))
     (setf (body method-var) (specify-list-expr (nthcdr 3 def)))
     method-var))
 
@@ -635,19 +636,30 @@
 (defun specify-sizeof-expr (def)
   (when (< (length def) 2) (error (format nil "sizeof syntax error ~A" def)))
   (if (listp (second def))
-      (make-specifier nil '|@SIZEOF| nil nil nil nil nil (specify-expr (second def)) '())
+      (make-specifier nil '|@SIZEOF| nil nil nil nil nil (specify-expr (expand-macros (second def))) '())
       (multiple-value-bind (const type modifier const-ptr variable array)
           (specify-type< (cdr def))
         (make-specifier (specify-decl-name< variable) '|@SIZEOF| const type modifier const-ptr array nil '()))))
 
 (defun specify-typeof-expr (def)
   (when (< (length def) 2) (error (format nil "typeof syntax error ~A" def)))
-  (make-specifier nil '|@TYPEOF| nil nil nil nil nil (specify-expr (cadr def)) '()))
+  (make-specifier nil '|@TYPEOF| nil nil nil nil nil (specify-expr (expand-macros (cadr def))) '()))
 
-(defun specify-call-expr (def)
-  (when (key-eq (car def) '|aof|) (error (format nil "address of aka 'aof' takes only one argument ~A" def)))
-  (make-specifier (specify-expr (nth 0 def)) '|@CALL| nil nil nil nil nil
-                  (if (> (length def) 1) (loop for item in (nthcdr 1 def) collect (specify-expr item)) nil) '()))
+(defun specify-call-expr (def) ; consumes all args whether output of func specification be another macro
+  (when (key-eq (car def) '|aof|) (error (format nil "'address of' aka 'aof' takes only one argument ~A" def)))
+  (let ((app (specify-expr (nth 0 def))))
+    (display "LLLE" app def #\Newline)
+    (if (symbolp app)
+        (if (nthcdr 1 def)
+            (specify-expr (append (list app) (nthcdr 1 def)))
+            app)
+        (progn
+          (display "CALLL" app #\Newline)
+          (make-specifier app '|@CALL| nil nil nil nil nil
+                          (if (> (length def) 1)
+                              (loop for item in (nthcdr 1 def) collect (specify-expr item))
+                              nil)
+                          '())))))
 
 ;; var clause only allowed as global vars but inside macros for complex situation
 ;; use let clause instead
@@ -1025,8 +1037,9 @@
       (setq tmp-outp      *function-outp*)
       (setf *function-spec* function-specifier)
       (setf *function-outp* t)
-	  (multiple-value-bind (const type modifier const-ptr variable array)
-	      (specify-type< (cdr returns) t)
+
+      (multiple-value-bind (const type modifier const-ptr variable array)
+	      (specify-type< (cdr returns))
         (setf *function-outp* tmp-outp)
         (setf (const function-specifier) const)
         (setf (typeof function-specifier) type)

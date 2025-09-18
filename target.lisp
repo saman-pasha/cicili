@@ -18,12 +18,12 @@
 		            ((key-eq construct '|decl|)         (push clause attributes))
 		            ((key-eq construct '|inline|)       (push clause attributes))
 		            ((key-eq construct '|register|)     (push clause attributes))
-		            ((key-eq construct '|auto|)         (push clause attributes))
 		            ((key-eq construct '|extern|)       (push clause attributes))
 		            ((key-eq construct '|volatile|)     (push clause attributes))
 		            ((key-eq construct '|thread-local|) (push clause attributes))
 		            ((key-eq construct '|resolve|)      (push clause attributes))
 		            ((key-eq construct '|defer|)        (push clause attributes))
+                    
 		            ((key-eq construct '|include|)
 		             (add-inner (specify-include  clause attributes) target-specifier) (setq attributes '()))
 		            ((key-eq construct '|var|)
@@ -46,7 +46,16 @@
 		             (add-inner (specify-module   clause attributes) target-specifier) (setq attributes '()))
                     ((or (key-eq construct '|defmacro|) (key-eq construct '|DEFMACRO|))
                      (error (format nil "syntax error: DEFMACRO ~A inside target ~A" (cadr clause) name)))
-		            (t (add-inner (specify-expr   clause) target-specifier) (setq attributes '()))))
+		            (t (let ((bd (expand-macros   clause))) ; any macro produce other macro
+                         (if (eq bd clause)
+                             (add-inner (specify-expr bd) target-specifier)
+                             (unless (symbolp bd)
+                               (add-inner
+                                   (if (and (listp bd) (key-eq (car bd) '$$$))
+                                       (specify-body (cdr bd))
+                                       (specify-expr bd))
+                                 target-specifier)))
+                         (setq attributes '())))))
 	        (error (format nil "syntax error ~A" clause))))
       target-specifier)))
 

@@ -173,6 +173,8 @@
    (1 . done)
    (1 . async-main)
    (1 . async-main*)
+   (1 . $$$)
+   (1 . function)
    ))
 
 (defun cicili-add-attributes (face-name keyword-rules)

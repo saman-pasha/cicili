@@ -95,7 +95,7 @@
 		  when pos do (write-string replacement out)
 		  while pos)))
 
-(defmacro warning! (&rest rest)
+(defmacro warn! (&rest rest)
   `(format t ,@rest))
 
 (defparameter *line-num*

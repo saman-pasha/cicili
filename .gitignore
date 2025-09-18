@@ -229,3 +229,6 @@ test/haskell/main.dSYM/Contents/Info.plist
 test/haskell/main.dSYM/Contents/Resources/DWARF/main
 test/haskell/main.dSYM/Contents/Resources/Relocations/x86_64/main.yml
 test/haskell/main
+test/haskell/basic.c.run1.c
+test/haskell/basic.c.run2.c
+test/haskell/basic.c.run3.c

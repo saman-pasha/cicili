@@ -63,19 +63,24 @@
          (set-ast-line (output "]")))
         (t (error (format nil "wrong array description, maybe #' missed for function initializer ~A" desc)))))
 
-(defun format-type (const typeof modifier const-ptr name array-def anonymous lvl globals parent-spec)
-  (when anonymous (setq name (format nil "/* ~A */" name)))
-  (when const     (set-ast-line (output "const ")))
-  (unless (null typeof) (compile-type-name typeof lvl globals parent-spec))
-  (when modifier  (output " ") (set-ast-line (output "~A" modifier)))
-  (when const-ptr (output " ") (set-ast-line (output "const" const-ptr)))
+(defun format-type (const typeof modifier const-ptr name array-def anonymous lvl globals parent-spec &key (func-out nil))
   (let ((line-n   -1)
         (col-n    -1))
-    (when name      (output " ")
-          (setq line-n   (funcall *line-num* 0))
-          (setq col-n    (funcall *col-num* 0))
-          (set-ast-line (output "~A "(if (str:starts-with-p "_ciciliParam_" (symbol-name name)) " " name))))
-    (compile-array array-def lvl globals parent-spec)
+    (if (key-eq typeof '|func|)
+        (progn
+          (when const (set-ast-line (output "const ")))
+          (compile-function (car array-def) lvl globals parent-spec :type t :func-out func-out))
+        (progn
+          (when anonymous (setq name (format nil "/* ~A */" name)))
+          (when const     (set-ast-line (output "const ")))
+          (unless (null typeof) (compile-type-name typeof lvl globals parent-spec))
+          (when modifier  (output " ") (set-ast-line (output "~A" modifier)))
+          (when const-ptr (output " ") (set-ast-line (output "const" const-ptr)))
+          (when name      (output " ")
+                (setq line-n   (funcall *line-num* 0))
+                (setq col-n    (funcall *col-num* 0))
+                (set-ast-line (output "~A "(if (str:starts-with-p "_ciciliParam_" (symbol-name name)) " " name))))
+          (compile-array array-def lvl globals parent-spec)))
     (values line-n col-n)))
 
 (defun compile-spec-type (spec lvl globals parent-spec)
@@ -352,7 +357,7 @@
         (set-ast-line (output "if ")))
 
     (let* ((cond-const (construct (name spec)))
-           (is-atom (find cond-const (list '|@ATOM| '|@SYMBOL| '|@CALL| '|@->| '|@=>|) :test #'key-eq)))
+           (is-atom (find cond-const (list '|@ATOM| '|@SYMBOL| '|@CALL| '|@-->| '|@->| '|@=>|) :test #'key-eq)))
       (when is-atom (output "("))
       (compile-form (name spec) lvl globals (name spec)) ; condition
       (when is-atom (output ")")))
@@ -456,7 +461,8 @@
                    (progn
                      (output "~&~A" (indent (- lvl 2)))
                      (set-ast-line (output "else if "))))
-               (let ((is-atom (find (construct condition) (list '|@ATOM| '|@SYMBOL| '|@CALL| '|@->| '|@=>|) :test #'key-eq)))
+               (let ((is-atom (find (construct condition) (list '|@ATOM| '|@SYMBOL| '|@CALL| '|@-->| '|@->| '|@=>|)
+                                    :test #'key-eq)))
                  (when is-atom (output "("))
                  (compile-form condition lvl globals spec) ; each condition
                  (when is-atom (output ")")))
@@ -467,7 +473,7 @@
                    (set-ast-line (output "}~%"))
                    (set-ast-line (output "}")))))))
 
-(defun compile-function (spec lvl globals parent-spec &key ((:type as-type) nil))
+(defun compile-function (spec lvl globals parent-spec &key ((:type as-type) nil) (func-out nil))
   ;; resolve ?
   (let ((is-static   nil)
 	    (is-declare  as-type)
@@ -520,32 +526,46 @@
         (when is-extern   (set-ast-line (output "extern ")))
         (when is-inline   (set-ast-line (output "__attribute__((weak)) ")))
         (when (and is-static (not (key-eq name '|main|))) (set-ast-line (output "static ")))
-        (format-type (const spec) (typeof spec) (modifier spec) nil (const-ptr spec) (array-def spec) nil
-                     lvl locals parent-spec)
+
+        ;; if a function returns another function
+        ;; the parameters of the function and returning one should be swapped
+        ;; remind to add and remove (struct * this) if the function is METHOD
+        (if (key-eq (typeof spec) '|func|)
+            (progn
+              (setf (construct (car (array-def spec))) (construct spec))
+              (setf (name (car (array-def spec))) name)
+              (format-type (const spec) (typeof spec) (modifier spec) (const-ptr spec) nil (array-def spec) nil
+                           lvl locals parent-spec :func-out t))
+            (format-type (const spec) (typeof spec) (modifier spec) (const-ptr spec) nil (array-def spec) nil
+                         lvl locals parent-spec :func-out nil))
+        
         (output " ")
 
-        (if (and as-type (key-eq name '_))
-            (if is-volatile (set-ast-line (output "(* volatile)")) (set-ast-line (output "(*)")))
-            (set-ast-line (output "~A " (if is-unique
-                                            (unique spec)
-                                            (if (or is-method is-shared)
-                                                (if as-type
-                                                    (if is-volatile
-                                                        (format nil "(* volatile ~A)"
-                                                                (if is-method
-                                                                    (make-method-name (car name) (cdr name))
-                                                                    (make-shared-name (car name) (cdr name))))
-                                                        (format nil "(*~A)" (if is-method
-                                                                                (make-method-name (car name) (cdr name))
-                                                                                (make-shared-name (car name) (cdr name)))))
-                                                    (if is-method
-                                                        (make-method-name (car name) (cdr name))
-                                                        (make-shared-name (car name) (cdr name))))
-                                                (if as-type
-                                                    (if is-volatile
-                                                        (format nil "(* volatile ~A)" name)
-                                                        (format nil "(*~A)" name))
-                                                    name))))))
+        (cond ((key-eq (typeof spec) '|func|) t)
+              ((and as-type (key-eq name '_))
+               (if is-volatile (set-ast-line (output "(* volatile)")) (set-ast-line (output "(*)"))))
+              (t (when func-out (output "(")) 
+                 (set-ast-line
+                     (output "~A " (if is-unique
+                                       (unique spec)
+                                       (if (or is-method is-shared)
+                                           (if as-type
+                                               (if is-volatile
+                                                   (format nil (if func-out "* volatile ~A" "(* volatile ~A)")
+                                                           (if is-method
+                                                               (make-method-name (car name) (cdr name))
+                                                               (make-shared-name (car name) (cdr name))))
+                                                   (format nil (if func-out "*~A" "(*~A)") (if is-method
+                                                                           (make-method-name (car name) (cdr name))
+                                                                           (make-shared-name (car name) (cdr name)))))
+                                               (if is-method
+                                                   (make-method-name (car name) (cdr name))
+                                                   (make-shared-name (car name) (cdr name))))
+                                           (if as-type
+                                               (if is-volatile
+                                                   (format nil (if func-out "* volatile ~A" "(* volatile ~A)") name)
+                                                   (format nil (if func-out "*~A" "(*~A)") name))
+                                               name)))))))
         
         (output "(")
         (loop for param being the hash-value of params
@@ -561,6 +581,7 @@
               (when info
                 (error (format nil "cicili: function: ~A" info))))))
         (set-ast-line (output ")"))
+        (when func-out (output ")"))
         
         (if is-declare
             (unless as-type (output ";"))

@@ -200,7 +200,7 @@
             (t (error (format nil "cicili\: unresolved member reference type ~A. ~A~%~A"
                               spec-key (or mtd-info ptr-info begin-info) spec)))))))
 
-(defun compile--> (spec lvl globals parent-spec)
+(defun compile--> (spec lvl globals parent-spec no-call)
   (with-slots ((receiver name) (method default) (args body)) spec
     (let* ((line-n     (funcall *line-num* 0))
            (col-n      (funcall *col-num* 0))
@@ -230,19 +230,21 @@
                      res)); was shared or method
                  (progn
                    (set-ast-line (output res))
-                   (output "(")
-                   (compile-args (default args) lvl globals spec nil)
-                   (setf (getf (gethash (ast-key< line-n col-n) (nth 0 *ast-lines*)) 'end)
-                         (ast-key< (funcall *line-num* 0) (funcall *col-num* 0)))
-                   (output ")"))
+                   (unless no-call
+                     (output "(")
+                     (compile-args (default args) lvl globals spec nil)
+                     (setf (getf (gethash (ast-key< line-n col-n) (nth 0 *ast-lines*)) 'end)
+                           (ast-key< (funcall *line-num* 0) (funcall *col-num* 0)))
+                     (output ")")))
                  (progn
                    (set-ast-line (output res))
-                   (output "(")
-                   (compile-form receiver (1+ lvl) globals spec)
-                   (compile-args (default args) lvl globals spec t)
-                   (setf (getf (gethash (ast-key< line-n col-n) (nth 0 *ast-lines*)) 'end)
-                         (ast-key< (funcall *line-num* 0) (funcall *col-num* 0)))
-                   (output ")"))))
+                   (unless no-call
+                     (output "(")
+                     (compile-form receiver (1+ lvl) globals spec)
+                     (compile-args (default args) lvl globals spec t)
+                     (setf (getf (gethash (ast-key< line-n col-n) (nth 0 *ast-lines*)) 'end)
+                           (ast-key< (funcall *line-num* 0) (funcall *col-num* 0)))
+                     (output ")")))))
             
             ((or (null *resolve*) ; function without resolver (inline in header or attr resolve #f)
                (null begin-ast)  ; access member by pointer default for first run
@@ -261,25 +263,50 @@
              (output ")"))
             
             ((and ptr-info (str:containsp "expected ')'" ptr-info))
+
              (let ((resu (make-shared-name (name receiver) (name method))))
                (if (gethash (intern resu) *globals*)
                    (progn
                      (setf *more-run* t)
                      (setf (gethash 'res--> (keys spec)) resu)
                      (set-ast-line (output "~A" resu))
-                     (output "(")
-                     (compile-args (default args) lvl globals spec nil)
-                     (output ")"))
-                   (let ((m-name (make-shared-name (unique receiver) (name method))))
-                     (if (gethash (intern m-name) *globals*)
-                         (progn
-                           (setf *more-run* t)
-                           (setf (gethash 'res--> (keys spec)) m-name)
-                           (set-ast-line (output "~A" m-name))
-                           (output "(")
-                           (compile-args (default args) lvl globals spec nil)
-                           (output ")"))
-                         (error (format nil "undefined function: ~A" spec)))))))
+                     (unless no-call
+                       (output "(")
+                       (compile-args (default args) lvl globals spec nil)
+                       (output ")")))
+                   (if (unique receiver)
+                       (let ((s-name (make-shared-name (unique receiver) (name method))))
+                         (if (gethash (intern s-name) *globals*)
+                             (progn
+                               (setf *more-run* t)
+                               (setf (gethash 'res--> (keys spec)) s-name)
+                               (set-ast-line (output "~A" s-name))
+                               (unless no-call
+                                 (output "(")
+                                 (compile-args (default args) lvl globals spec nil)
+                                 (output ")")))
+                             (let ((m-name (make-method-name (name receiver) (name method))))
+                               (if (gethash (intern m-name) *globals*)
+                                   (progn
+                                     (setf *more-run* t)
+                                     (setf (gethash 'res--> (keys spec)) m-name)
+                                     (set-ast-line (output "~A" m-name))
+                                     (unless no-call
+                                       (output "(")
+                                       (compile-args (default args) lvl globals spec nil)
+                                       (output ")")))
+                                   (error (format nil "undefined function 1: ~A ~A" m-name spec))))))
+                       (let ((m-name (make-method-name (name receiver) (name method))))
+                         (if (gethash (intern m-name) *globals*)
+                             (progn
+                               (setf *more-run* t)
+                               (setf (gethash 'res--> (keys spec)) m-name)
+                               (set-ast-line (output "~A" m-name))
+                               (unless no-call
+                                 (output "(")
+                                 (compile-args (default args) lvl globals spec nil)
+                                 (output ")")))
+                             (error (format nil "undefined function 1: ~A ~A" m-name spec))))))))
             
             ;; ((and ptr-info (str:containsp "member reference type" ptr-info) (str:containsp "is not a pointer" ptr-info))
             ;;  (setf *more-run* t)
@@ -304,21 +331,23 @@
                          (setf *more-run* t)               
                          (setf (gethash 'res--> (keys spec)) resu)
                          (set-ast-line (output resu))
-                         (output "(")
-                         (compile-form receiver (1+ lvl) globals spec)
-                         (compile-args (default args) lvl globals spec t)
-                         (output ")"))
+                         (unless no-call
+                           (output "(")
+                           (compile-form receiver (1+ lvl) globals spec)
+                           (compile-args (default args) lvl globals spec t)
+                           (output ")")))
                        (let ((m-name (make-method-name (unique receiver) (name method))))
                          (if (gethash (intern m-name) *globals*)
                              (progn
                                (setf *more-run* t)               
                                (setf (gethash 'res--> (keys spec)) m-name)
                                (set-ast-line (output m-name))
-                               (output "(")
-                               (compile-form receiver (1+ lvl) globals spec)
-                               (compile-args (default args) lvl globals spec t)
-                               (output ")"))
-                             (error (format nil "undefined function: ~A" spec))))))
+                               (unless no-call
+                                 (output "(")
+                                 (compile-form receiver (1+ lvl) globals spec)
+                                 (compile-args (default args) lvl globals spec t)
+                                 (output ")")))
+                             (error (format nil "undefined function 2: ~A ~A" m-name spec))))))
                  (progn
                    (set-ast-line (output "("))
                    (compile-form receiver (1+ lvl) globals spec)
@@ -346,14 +375,15 @@
                        (progn
                          (setf *more-run* t)               
                          (setf (gethash 'res--> (keys spec)) resu))
-                       (error (format nil "undefined function: ~A" spec)))
+                       (error (format nil "undefined function 3: ~A ~A" resu spec)))
                    (error (format nil "cicili\: nnn unresolved method reference type ~A. ~A~%~A"
                                   spec-key (or mtd-info ptr-info begin-info) spec)))
                (set-ast-line (output "~A" resu))
-               (output "(")
-               (compile-form receiver lvl globals spec)
-               (compile-args (default args) lvl globals spec t)
-               (output ")")))
+               (unless no-call
+                 (output "(")
+                 (compile-form receiver lvl globals spec)
+                 (compile-args (default args) lvl globals spec t)
+                 (output ")"))))
             
             ((and mtd-info (str:containsp "expected identifier" mtd-info))
              (error (format nil "cicili\: bad method naming (c keywords are reserved, const, register, ...) ~A. ~A~%~A"

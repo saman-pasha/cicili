@@ -13,10 +13,12 @@
 (DEFMACRO generic (macro types &REST body)
   `(DEFMACRO ,macro (&REST args)
      (LET ((types ',types)
-           (body (COPY-LIST ',body)))
-       (DOTIMES (i (LENGTH args))
+           (body ',body))
+       (UNLESS (= (LENGTH args) (LENGTH types))
+         (ERROR (FORMAT NIL "unmatch generic parameters and arguments: ~A ~A" (QUOTE ,macro) args)))
+       (DOTIMES (i (LENGTH types))
          (SETQ body (SUBST (NTH i args) (NTH i types) body)))
-       `(,@body))))
+       `($$$ ,@body)))) ; $$$ for replace extracted
 
 (DEFMACRO <> (name &REST body)
   (INTERN (FORMAT NIL "~A_~{~A~}" name body)))
