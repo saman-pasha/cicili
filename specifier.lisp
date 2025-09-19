@@ -648,13 +648,11 @@
 (defun specify-call-expr (def) ; consumes all args whether output of func specification be another macro
   (when (key-eq (car def) '|aof|) (error (format nil "'address of' aka 'aof' takes only one argument ~A" def)))
   (let ((app (specify-expr (nth 0 def))))
-    (display "LLLE" app def #\Newline)
     (if (symbolp app)
         (if (nthcdr 1 def)
             (specify-expr (append (list app) (nthcdr 1 def)))
             app)
         (progn
-          (display "CALLL" app #\Newline)
           (make-specifier app '|@CALL| nil nil nil nil nil
                           (if (> (length def) 1)
                               (loop for item in (nthcdr 1 def) collect (specify-expr item))

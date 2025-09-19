@@ -136,11 +136,12 @@
         ;; (id int)
 
         ;; \ lambda calculus
+        ;; outputs irreducible phrase
         (lambda l0 x
           (lambda l1 y
             (+ x y)))
 
-        (function fl0 x y
+        (function add x y
                   (+ x y))
 
         (lambda p0 x
@@ -159,6 +160,14 @@
 
         (function fadder f x y
                   ((f x) y))
+
+        (function mul x y
+                  (* x y))
+
+        (function mult1 n
+                  (where ((m 2)
+                          (f (\\ x y (* x y))))
+                    ((f m) n)))
         
         (main
             ;; Partials
@@ -172,25 +181,30 @@
             ;; (format #t "output of haskelus function: %d\n" (-> adder call_0 3))
             (format #t "output of haskelus function: %d\n" (-> (-> (-> (<> add3 int) call_0 2) call_1 3) call 4))
 
-          (format #t "output of lambda calculus: %d & %d\n" ((l0 2) 3) ((fl0 2) 3))
+          (format #t "output of lambda calculus: %d & %d\n" ((l0 2) 3) ((add 2) 3))
           (format #t "output of lambda calculus: %d\n" (((p0 2) 3) 4))
 
           (format #t "output of lambda closure: %d\n"  (((adder l0) 2) 3))
           (format #t "output of lambda closure: %d\n"  (((adder (p0 2)) 3) 4))
 
-          (format #t "output of function closure: %d\n"  (((fadder fl0) 2) 3))
+          (format #t "output of function closure: %d\n"  (((fadder add) 2) 3))
           (format #t "output of function closure: %d\n"  (((fadder (fp0 2)) 3) 4))
 
-          (format #t "output of let-in: %d\n"
-                  (let-in ((m 2)
-                           (n 3)
-                           (f (& x y (* x y))))
+          (format #t "output of inline where: %d\n"
+                  (where ((m 2)
+                          (n 3)
+                          (f (\\ x y (* x y))))
                     ((f m) n)))
-          (format #t "output of let-in closure: %d\n"
-                  ((let-in ((m 2)
-                            (f (& x y (* x y))))
+          (format #t "output of where/letin and closure: %d\n"
+                  ((letin ((m 2)
+                           (f (\\ x y (* x y))))
                      (f m))
                    3))
+          (format #t "output of function using where: %d\n" (mult1 3))
+
+          (format #t "output of function application: %d\n" ($> mul 3 4))
+          (format #t "output of function application: %d\n" ($> mul 3 $ add 2 2))
+          (format #t "output of function application: %d\n" ($> mul 3 $ add 2 $ (* 2 5)))
 
           ;; (var auto adder1 . #'(-> adder call 4))
           ;; (format #t "output of haskelus function: %d\n" (adder1 adder 5))

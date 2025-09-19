@@ -86,6 +86,7 @@
    (1 . string)
    (1 . text)
    (1 . vector)
+   (1 . $)
    ))
 
 (defun cicili-add-keywords (face-name keyword-rules)
@@ -175,6 +176,10 @@
    (1 . async-main*)
    (1 . $$$)
    (1 . function)
+   (1 . \\)
+   (1 . letin)
+   (1 . where)
+   (1 . $>)
    ))
 
 (defun cicili-add-attributes (face-name keyword-rules)

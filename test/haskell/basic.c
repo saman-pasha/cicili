@@ -64,6 +64,10 @@ int main () {
     fprintf (stdout , "output of lambda closure: %d\n", (2 +  3 +  4 ));
     fprintf (stdout , "output of function closure: %d\n", (2 +  3 ));
     fprintf (stdout , "output of function closure: %d\n", (2 +  3 +  4 ));
-    fprintf (stdout , "output of let-in: %d\n", (2 *  3 ));
-    fprintf (stdout , "output of let-in closure: %d\n", (2 *  3 ));
+    fprintf (stdout , "output of inline where: %d\n", (2 *  3 ));
+    fprintf (stdout , "output of where/letin and closure: %d\n", (2 *  3 ));
+    fprintf (stdout , "output of function using where: %d\n", (2 *  3 ));
+    fprintf (stdout , "output of function application: %d\n", (3 *  4 ));
+    fprintf (stdout , "output of function application: %d\n", (3 *  (2 +  2 ) ));
+    fprintf (stdout , "output of function application: %d\n", (3 *  (2 +  (2 *  5 ) ) ));
 }
