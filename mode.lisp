@@ -87,6 +87,7 @@
    (1 . text)
    (1 . vector)
    (1 . $)
+   (1 . =>)
    ))
 
 (defun cicili-add-keywords (face-name keyword-rules)
@@ -175,11 +176,13 @@
    (1 . async-main)
    (1 . async-main*)
    (1 . $$$)
-   (1 . function)
+   (1 . fn)
    (1 . \\)
    (1 . letin)
    (1 . where)
    (1 . $>)
+   (1 . data)
+   (1 . match)
    ))
 
 (defun cicili-add-attributes (face-name keyword-rules)
@@ -235,6 +238,11 @@
 (font-lock-add-keywords
  'lisp-mode
  '(("(method[ \t\n]+(\\(\\(\\sw\\|\\s_\\)+\\)[ \t\n]*"
+    (1 'font-lock-function-name-face))))
+
+(font-lock-add-keywords
+ 'lisp-mode
+ '(("(fn[ \t\n]+(?\\(\\(\\sw\\|\\s_\\)+\\)[ \t\n]*"
     (1 'font-lock-function-name-face))))
 
 (font-lock-add-keywords

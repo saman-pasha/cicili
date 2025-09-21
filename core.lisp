@@ -66,6 +66,7 @@
 ;; adds a macro to macros list *macros*
 (defun add-macro (macro symbol)
   (when *debug-macros* (format t "macro: ~A~%" macro))
+  (format t "macro: ~A~%" macro)
   (setf (gethash macro *macros*) symbol))
 
 (defun reving (list result)

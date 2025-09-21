@@ -4,6 +4,7 @@
 ;; single parameter
 ;; single irreducible clause
 ;; (f n)
+;; reducible
 (DEFMACRO lambda (macro param body)
   `(DEFMACRO ,macro (arg)
      (LET ((param ',param)
@@ -14,8 +15,11 @@
 ;; everything is a Lambda lalalalalalalalalalalalalalalalalalalalalala
 ;; a series of lambdas
 ;; ((f m) n)
-(DEFMACRO function (macro &REST body)
-  (LET ((body-p (CAR (LAST body)))
+;; reducible function
+(DEFMACRO fn (macro param &REST body)
+  (WHEN (NULL body) (ERROR (FORMAT NIL "fn without any parameter or body: (~A ~A)" macro param)))
+  (LET ((body (PUSH param body))
+        (body-p (CAR (LAST body)))
         (len (- (LENGTH body) 2)))
     (DOTIMES (i (1+ len))
       (SETQ body-p (LIST 'lambda
@@ -27,17 +31,17 @@
 
 ;; '\' haskel lambda sign equivalent
 (DEFMACRO \\ (&REST body)
-  `(function ,(GENSYM "__h_lambda") ,@body))
+  `(fn ,(GENSYM "__h_lambda") ,@body))
 
 ;; where and letin are the same
 (DEFMACRO letin (args body)
   `(,@(REDUCE #'LIST
-        (APPEND (LIST `(function ,(GENSYM "__h_letIn") ,@(MAPCAR #'CAR args) ,body))
+        (APPEND (LIST `(fn ,(GENSYM "__h_letIn") ,@(MAPCAR #'CAR args) ,body))
                 (MAPCAR #'CADR args)))))
 ;; where and letin are the same
 (DEFMACRO where (args body)
   `(,@(REDUCE #'LIST
-        (APPEND (LIST `(function ,(GENSYM "__h_where") ,@(MAPCAR #'CAR args) ,body))
+        (APPEND (LIST `(fn ,(GENSYM "__h_where") ,@(MAPCAR #'CAR args) ,body))
                 (MAPCAR #'CADR args)))))
 
 ;; https://www.reddit.com/user/ckriesbeck/
@@ -58,4 +62,70 @@
     (DOLIST (p parts)
       (SETQ result (PUSH (REDUCE #'LIST p) result)))
     `(,@(REDUCE #'LIST (REVERSE result) :FROM-END T))))
-  
+
+;; data helpers
+(DEFUN make-data-type-name (ct)
+  (INTERN (FORMAT NIL "__h_~A_t" ct)))
+
+(DEFUN make-data-ctor-name (ct)
+  (INTERN (FORMAT NIL "__h_~A_ctor" ct)))
+
+(DEFUN make-data-member-name (number)
+  (INTERN (FORMAT NIL "__h_~A_mem" number)))
+
+;; Data Constructor
+;; data Mood = Blah | Woot
+;; (data TestT NoArg (WithArg (type x) (type y)))
+(DEFMACRO data (name ctor &REST ctors)
+  (LET ((enum-name (INTERN (FORMAT NIL "__h_~A_ctor_t" name)))
+        (ctors (MAPCAR #'(LAMBDA (ct) (IF (SYMBOLP ct) (LIST ct) ct)) (PUSH ctor ctors))))
+    `($$$ (enum ,enum-name
+            ,@(MAPCAR #'(LAMBDA (ct) (LIST (make-data-type-name (CAR ct)))) ctors))
+       (struct ,name
+         (member ,enum-name __h_ctor)
+         (union 
+             ,@(MAPCAR #'(LAMBDA (ct)
+                           (LET ((mem-counter -1))
+                             `(struct
+                                  ,@(MAPCAR #'(LAMBDA (param)
+                                                (SETQ mem-counter (1+ mem-counter))
+                                                (MULTIPLE-VALUE-BIND (const type modifier const-ptr variable array-def)
+                                                    (CICILI:SPECIFY-TYPE< param)
+                                                  `(member ,@(REMOVE NIL (LIST const type modifier const-ptr
+                                                                               (make-data-member-name mem-counter)
+                                                                               array-def)))))
+                                            (CDR ct))
+                                (declare ,(CAR ct)))))
+                       ctors)
+           (declare __h_data)))
+       ,@(MAPCAR #'(LAMBDA (ct)
+                     (WHEN (EQUAL name (CAR ct)) (ERROR (FORMAT NIL "data type and ctor having same name: ~A" name)))
+                     (LET ((ct-name (CAR ct))
+                           (params (CDR ct)))
+                       (IF (NULL params)
+                           `(func ,ct-name ()
+                                  (out ,name)
+                                  (return (cast ,name '{ ,(make-data-type-name ct-name) })))
+                           (IF (> 1 (LENGTH params))
+                               `($$$ (func ,(make-data-ctor-name ct-name) ,params
+                                           (out ,name)
+                                           (return (cast ,name '{
+                                                         ,(make-data-type-name ct-name)
+                                                         ,(INTERN (FORMAT NIL "$__h_data$~A" ct-name))
+                                                         '{ ,@(MAPCAR #'CADR params) }
+                                                         })))
+                                  (fn ,ct-name ,@(MAPCAR #'CADR params)
+                                      (,(make-data-ctor-name ct-name))))
+                               `(func ,ct-name ,params
+                                      (out ,name)
+                                      (return (cast ,name '{
+                                                    ,(make-data-type-name ct-name)
+                                                    ,(INTERN (FORMAT NIL "$__h_data$~A" ct-name))
+                                                    '{ ,@(MAPCAR #'CADR params) }
+                                                    })))))))
+                 ctors))))
+
+;; pattern matching
+;; data type and arguments expansion
+;; => for additional condition
+(DEFMACRO match (data))

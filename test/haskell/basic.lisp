@@ -12,6 +12,7 @@
 
 
 (source "basic.c" (:std #t :compile #t :link #t)
+        (include "math.h")
         
         ;; data DataType :: DataType
         ;; data DataType =
@@ -54,17 +55,8 @@
                            (return (/ (+ (-> this next) (- rval 1)) rval)))))
         
         ;; Int data type
-        (DataType Int int)
-        (Num Int int)
-        
-        ;; data Maybe =
-        ;;     Nothing
-        ;;   | Just a
-        (generic Maybe (a)
-                 (struct Nothing)
-
-                 (struct (<> Just a)
-                   (member a arg_0)))
+        (DataType IntT int)
+        (Num IntT int)
         
         ;; general function add with two parameters
         ;; :: a -> a -> a
@@ -141,16 +133,16 @@
           (lambda l1 y
             (+ x y)))
 
-        (function add x y
-                  (+ x y))
+        (fn add x y
+            (+ x y))
 
         (lambda p0 x
           (lambda p1 y
             (lambda p2 z
               (+ x y z))))
 
-        (function fp0 x y z
-                  (+ x y z))
+        (fn fp0 x y z
+            (+ x y z))
 
         ;; (a -> a -> a) -> a -> a -> a
         (lambda adder f
@@ -158,16 +150,59 @@
             (lambda adder_1 y
               ((f x) y))))
 
-        (function fadder f x y
-                  ((f x) y))
+        (fn fadder f x y
+            ((f x) y))
 
-        (function mul x y
-                  (* x y))
+        (fn mul x y
+            (* x y))
 
-        (function mult1 n
-                  (where ((m 2)
-                          (f (\\ x y (* x y))))
-                    ((f m) n)))
+        (fn mult1 n
+            (where ((m 2)
+                    (f (\\ x y (* x y))))
+              ((f m) n)))
+
+        (generic specialise_power (a)
+                 (func (<> power_irreducible a) ((a x) (a y))
+                       (out a)
+                       (return (cast a (pow (cast double x) (cast double y)))))
+                 
+                 (fn power0 x y
+                     ((<> power_irreducible a) x y))
+
+                 (fn power1 x y
+                     (cast a (pow (cast double x) (cast double y))))
+
+                 (fn power2 xp yp
+                     ('(lambda ((a x) (a y))
+                        (out a)
+                        (return (cast a (pow (cast double x) (cast double y)))))
+                       xp yp)))
+        (specialise_power int)
+
+        (data Bool False True)
+        
+        (data Integer
+              (Byte  (char  c))
+              (Short (short s))
+              (Int   (int   x)))
+
+        (method (Integer . show) ((Integer self))
+              (match self
+                     (Byte  c  (format #t "Integer is Byte: %d\n" c))
+                     (Short sh (format #t "Integer is Short: %d\n" sh))
+                     (Int   i  => (< i 1000) (format #t "Integer is Int below 1000: %d\n" i))
+                     (Int   i  => (and (>= i 1000) (< i 10000))
+                            (format #t "Integer is Int below 1000: %d\n" i))
+                     (_     (format #t "Integer is N/A\n"))))
+
+        ;; data Maybe =
+        ;;     Nothing
+        ;;   | Just a
+        (generic specialise_Maybe (a)
+                 (data Maybe
+                       Nothing
+                       (Just (a value))))
+        (specialise_Maybe int)
         
         (main
             ;; Partials
@@ -205,6 +240,17 @@
           (format #t "output of function application: %d\n" ($> mul 3 4))
           (format #t "output of function application: %d\n" ($> mul 3 $ add 2 2))
           (format #t "output of function application: %d\n" ($> mul 3 $ add 2 $ (* 2 5)))
+
+          (format #t "output of reducible function: %d\n" ($> power0 2 16))
+          (format #t "output of reducible function: %d\n" ($> power1 2 16))
+          (format #t "output of reducible function: %d\n" ($> power2 2 16))
+          (format #t "output of reducible function: %d\n"
+                  ($> (\\ xp yp
+                          ('(lambda ((int x) (int y))
+                             (out int)
+                             (return (cast int (pow (cast double x) (cast double y)))))
+                            xp yp))
+                    2 16))
 
           ;; (var auto adder1 . #'(-> adder call 4))
           ;; (format #t "output of haskelus function: %d\n" (adder1 adder 5))
