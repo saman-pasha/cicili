@@ -242,11 +242,6 @@
 
 (font-lock-add-keywords
  'lisp-mode
- '(("(fn[ \t\n]+(?\\(\\(\\sw\\|\\s_\\)+\\)[ \t\n]*"
-    (1 'font-lock-function-name-face))))
-
-(font-lock-add-keywords
- 'lisp-mode
  '(("(member[ \t\n]+\\(\\(\\sw\\|\\s_\\)+\\)[ \t\n]*"
     (1 'font-lock-function-name-face))))
 
@@ -264,3 +259,13 @@
  'lisp-mode
  '(("(union[ \t\n]+\\(\\(\\sw\\|\\s_\\)+\\)[ \t\n]*"
     (1 'font-lock-type-face))))
+
+(font-lock-add-keywords
+ 'lisp-mode
+ '(("(fn[ \t\n]+(?\\(\\(\\sw\\|\\s_\\)+\\)[ \t\n]*"
+    (1 'font-lock-function-name-face))))
+
+(font-lock-add-keywords
+ 'lisp-mode
+ '(("(data[ \t\n]+(?\\(\\(\\sw\\|\\s_\\)+\\)[ \t\n]*"
+    (1 'font-lock-function-name-face))))

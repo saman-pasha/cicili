@@ -35,14 +35,19 @@
 
 ;; where and letin are the same
 (DEFMACRO letin (args body)
-  `(,@(REDUCE #'LIST
-        (APPEND (LIST `(fn ,(GENSYM "__h_letIn") ,@(MAPCAR #'CAR args) ,body))
-                (MAPCAR #'CADR args)))))
+  (IF args
+      `(,@(REDUCE #'LIST
+            (APPEND (LIST `(fn ,(GENSYM "__h_letIn") ,@(MAPCAR #'CAR args) ,body))
+                    (MAPCAR #'CADR args))))
+      body))
+
 ;; where and letin are the same
 (DEFMACRO where (args body)
-  `(,@(REDUCE #'LIST
-        (APPEND (LIST `(fn ,(GENSYM "__h_where") ,@(MAPCAR #'CAR args) ,body))
-                (MAPCAR #'CADR args)))))
+  (IF args
+      `(,@(REDUCE #'LIST
+            (APPEND (LIST `(fn ,(GENSYM "__h_where") ,@(MAPCAR #'CAR args) ,body))
+                    (MAPCAR #'CADR args))))
+      body))
 
 ;; https://www.reddit.com/user/ckriesbeck/
 ;; https://www.reddit.com/r/lisp/comments/m5grm5/split_list_into_sublists/
@@ -128,4 +133,21 @@
 ;; pattern matching
 ;; data type and arguments expansion
 ;; => for additional condition
-(DEFMACRO match (data))
+(DEFMACRO match (data &REST cases)
+  `(cond ,@(MAPCAR #'(LAMBDA (case)
+                       (LET ((args ())
+                             (=>found NIL))
+                         (DOTIMES (i (1- (LENGTH (CDR case))))
+                           (LET ((arg (NTH (1+ i) case)))
+                             (IF (EQUAL arg '=>)
+                                 (SETQ =>found (NTH (+ i 2) case))
+                                 (PUSH (LIST arg (LIST '$ data '__h_data (CAR case) (make-data-member-name i))) args))))
+                         `(,(IF (EQUAL (CAR case) '_)
+                                'true
+                                `(letin (,@(REVERSE args))
+                                   ,(IF =>found
+                                        `(and (== ($ ,data __h_ctor) ,(make-data-type-name (CAR case))) ,=>found)
+                                        `(== ($ ,data __h_ctor) ,(make-data-type-name (CAR case))))))
+                            (letin (,@(REVERSE args))
+                              ,(CAR (LAST case))))))
+                   cases)))

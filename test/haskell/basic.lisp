@@ -186,18 +186,16 @@
               (Short (short s))
               (Int   (int   x)))
 
-        (method (Integer . show) ((Integer self))
+        (func (Integer . show) ((Integer self))
               (match self
                      (Byte  c  (format #t "Integer is Byte: %d\n" c))
                      (Short sh (format #t "Integer is Short: %d\n" sh))
                      (Int   i  => (< i 1000) (format #t "Integer is Int below 1000: %d\n" i))
                      (Int   i  => (and (>= i 1000) (< i 10000))
-                            (format #t "Integer is Int below 1000: %d\n" i))
+                            (format #t "Integer is Int between 1000 and 10000: %d\n" i))
                      (_     (format #t "Integer is N/A\n"))))
 
-        ;; data Maybe =
-        ;;     Nothing
-        ;;   | Just a
+        ;; data Maybe = Nothing | Just a
         (generic specialise_Maybe (a)
                  (data Maybe
                        Nothing
@@ -252,6 +250,23 @@
                             xp yp))
                     2 16))
 
+          ;; (letin ((i0 (Byte  10))
+          ;;         (i1 (Short 20))
+          ;;         (i2 (Int   30))
+          ;;         (i3 (Int   2000))
+          ;;         (i4 (Int   20000)))
+          ;;   (-> Integer show i0)
+          ;;   (-> Integer show i1)
+          ;;   (-> Integer show i2)
+          ;;   (-> Integer show i3)
+          ;;   (-> Integer show i4))
+
+          (-> Integer show (Byte  10))
+          (-> Integer show (Short 20))
+          (-> Integer show (Int   30))
+          (-> Integer show (Int   2000))
+          (-> Integer show (Int   20000))
+          
           ;; (var auto adder1 . #'(-> adder call 4))
           ;; (format #t "output of haskelus function: %d\n" (adder1 adder 5))
 

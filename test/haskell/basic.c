@@ -107,16 +107,33 @@ Integer Short (short s ) {
 Integer Int (int x ) {
     return ((Integer){ __h_Int_t , .__h_data.Int = { x }});
 }
+void Integer_s_show (Integer self ) {
+    if ((self . __h_ctor ) ==  __h_Byte_t  ) {
+        fprintf (stdout , "Integer is Byte: %d\n", (((self . __h_data ). Byte ). __h_0_mem ));
+    }
+    else if ((self . __h_ctor ) ==  __h_Short_t  ) {
+        fprintf (stdout , "Integer is Short: %d\n", (((self . __h_data ). Short ). __h_0_mem ));
+    }
+    else if (((self . __h_ctor ) ==  __h_Int_t  ) &&  ((((self . __h_data ). Int ). __h_0_mem ) <  1000 ) ) {
+        fprintf (stdout , "Integer is Int below 1000: %d\n", (((self . __h_data ). Int ). __h_0_mem ));
+    }
+    else if (((self . __h_ctor ) ==  __h_Int_t  ) &&  (((((self . __h_data ). Int ). __h_0_mem ) >=  1000 ) &&  ((((self . __h_data ). Int ). __h_0_mem ) <  10000 ) ) ) {
+        fprintf (stdout , "Integer is Int between 1000 and 10000: %d\n", (((self . __h_data ). Int ). __h_0_mem ));
+    }
+    else if (true ) {
+        fprintf (stdout , "Integer is N/A\n");
+    }
+}
 typedef enum __h_Maybe_ctor_t {
   __h_Nothing_t,
   __h_Just_t
 } __h_Maybe_ctor_t;
 typedef struct Maybe {
   __h_Maybe_ctor_t __h_ctor ;
-  union { /* ciciliUnion168 */
-    struct { /* ciciliStruct169 */
+  union { /* ciciliUnion212 */
+    struct { /* ciciliStruct213 */
     } Nothing ;
-    struct { /* ciciliStruct170 */
+    struct { /* ciciliStruct214 */
       int __h_0_mem ;
     } Just ;
   } __h_data ;
@@ -127,10 +144,10 @@ Maybe Nothing () {
 Maybe Just (int value ) {
     return ((Maybe){ __h_Just_t , .__h_data.Just = { value }});
 }
-static int __ciciliL_272 (int x , int y ) {
+static int __ciciliL_316 (int x , int y ) {
     return ((int)pow (((double)x ), ((double)y )));
 }
-static int __ciciliL_280 (int x , int y ) {
+static int __ciciliL_324 (int x , int y ) {
     return ((int)pow (((double)x ), ((double)y )));
 }
 int main () {
@@ -149,6 +166,11 @@ int main () {
     fprintf (stdout , "output of function application: %d\n", (3 *  (2 +  (2 *  5 ) ) ));
     fprintf (stdout , "output of reducible function: %d\n", power_irreducible_int (2, 16));
     fprintf (stdout , "output of reducible function: %d\n", ((int)pow (((double)2), ((double)16))));
-    fprintf (stdout , "output of reducible function: %d\n", __ciciliL_272 (2, 16));
-    fprintf (stdout , "output of reducible function: %d\n", __ciciliL_280 (2, 16));
+    fprintf (stdout , "output of reducible function: %d\n", __ciciliL_316 (2, 16));
+    fprintf (stdout , "output of reducible function: %d\n", __ciciliL_324 (2, 16));
+    Integer_s_show(Byte (10));
+    Integer_s_show(Short (20));
+    Integer_s_show(Int (30));
+    Integer_s_show(Int (2000));
+    Integer_s_show(Int (20000));
 }
