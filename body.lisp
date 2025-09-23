@@ -123,11 +123,13 @@
                         (compile-ast (cdr def) (or *load-truename* *compile-file-truename*)))
                        (t (let ((bd (expand-macros def)))
                             (if (eq bd def)
-                                (if (symbolp bd) bd
+                                (if (symbolp bd)
+                                    bd
                                     (if (and (listp bd) (key-eq (car bd) '$$$))
                                         (specify-body (cdr bd))
                                         (specify-call-expr bd)))
-                                (if (symbolp bd) bd
+                                (if (symbolp bd)
+                                    bd
                                     (if (and (listp bd) (key-eq (car bd) '$$$))
                                         (specify-body (cdr bd))
                                         (specify-expr bd)))))))

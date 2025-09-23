@@ -111,7 +111,7 @@
                            `(func ,ct-name ()
                                   (out ,name)
                                   (return (cast ,name '{ ,(make-data-type-name ct-name) })))
-                           (IF (> 1 (LENGTH params))
+                           (IF (> (LENGTH params) 1)
                                `($$$ (func ,(make-data-ctor-name ct-name) ,params
                                            (out ,name)
                                            (return (cast ,name '{
@@ -120,7 +120,7 @@
                                                          '{ ,@(MAPCAR #'CADR params) }
                                                          })))
                                   (fn ,ct-name ,@(MAPCAR #'CADR params)
-                                      (,(make-data-ctor-name ct-name))))
+                                      (,(make-data-ctor-name ct-name) ,@(MAPCAR #'CADR params))))
                                `(func ,ct-name ,params
                                       (out ,name)
                                       (return (cast ,name '{
@@ -137,17 +137,57 @@
   `(cond ,@(MAPCAR #'(LAMBDA (case)
                        (LET ((args ())
                              (=>found NIL))
-                         (DOTIMES (i (1- (LENGTH (CDR case))))
-                           (LET ((arg (NTH (1+ i) case)))
-                             (IF (EQUAL arg '=>)
-                                 (SETQ =>found (NTH (+ i 2) case))
-                                 (PUSH (LIST arg (LIST '$ data '__h_data (CAR case) (make-data-member-name i))) args))))
+                         (IF (ATOM (CAR case))
+                             (DOTIMES (i (1- (LENGTH (CDR case)))) ; data type
+                               (LET ((arg (NTH (1+ i) case)))
+                                 (UNLESS =>found
+                                   (IF (EQUAL arg '=>)
+                                       (SETQ =>found (NTH (+ i 2) case))
+                                       (UNLESS (EQUAL arg '_)
+                                         (PUSH (LIST arg (LIST '$ data '__h_data (CAR case) (make-data-member-name i)))
+                                               args))))))
+                             (PROGN
+                               (DOTIMES (i (LENGTH (CAR case))) ; tuple
+                                 (LET ((arg (NTH i (CAR case))))
+                                   (UNLESS (EQUAL arg '_)
+                                     (PUSH (LIST arg (LIST '$ data (make-data-member-name i)))
+                                           args))))
+                               (WHEN (EQUAL (CADR case) '=>)
+                                 (SETQ =>found (NTH 2 case)))))
+
+                         (WHEN (OR (AND =>found (LISTP (CAR case)) (/= (LENGTH case) 4))
+                                 (AND =>found (ATOM (CAR case)) (< (LENGTH case) 4))
+                                 (AND (NULL =>found) (LISTP (CAR case)) (/= (LENGTH case) 2))
+                                 (AND (NULL =>found) (ATOM (CAR case)) (< (LENGTH case) 2)))
+                           (ERROR (FORMAT NIL "match case wrong definition: ~A" case)))
+                         
                          `(,(IF (EQUAL (CAR case) '_)
-                                'true
+                                `(== true true)
                                 `(letin (,@(REVERSE args))
-                                   ,(IF =>found
-                                        `(and (== ($ ,data __h_ctor) ,(make-data-type-name (CAR case))) ,=>found)
-                                        `(== ($ ,data __h_ctor) ,(make-data-type-name (CAR case))))))
+                                   ,(IF (ATOM (CAR case))
+                                        (IF =>found
+                                            `(and (== ($ ,data __h_ctor) ,(make-data-type-name (CAR case))) ,=>found)
+                                            `(== ($ ,data __h_ctor) ,(make-data-type-name (CAR case))))
+                                        (IF =>found
+                                            =>found
+                                            `(== true true)))))
                             (letin (,@(REVERSE args))
                               ,(CAR (LAST case))))))
                    cases)))
+
+;; tuple
+;; (a, b, c)
+;; use as variable type
+;; (var (tuple int char) tu . '{ 2 #\c })
+(DEFMACRO tuple (&REST elements)
+  (LET ((members ()))
+    (DOTIMES (i (LENGTH elements))
+      (PUSH (LIST (NTH i elements) (make-data-member-name i)) members))
+  `'{ ,@(REVERSE members) }))
+
+;; helper for tuple passing by value
+(DEFMACRO cast-tuple (type value)
+  `(cast ,type (cof (cast (,type *) (aof ,value)))))
+
+
+;; CURRY UNCURRY the Legend

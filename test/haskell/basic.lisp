@@ -1,16 +1,4 @@
 
-;; (DEFMACRO fn (macro types &REST body)
-;;   `(generic ,macro ,types
-;;      ,@body))
-
-;; ;; a -> a -> a
-;; (fn addP (lhs rhs)
-;;     (+ lhs rhs))
-;; ;; (a -> a) -> a -> a
-;; (fn addZ (adder rhs)
-;;     (adder rhs))
-
-
 (source "basic.c" (:std #t :compile #t :link #t)
         (include "math.h")
         
@@ -113,13 +101,6 @@
         ;; ;; instace for int
         (add3 (<> add3 a) int)
 
-        ;; ;; a -> a -> a
-        ;; (generic addP (lhs rhs)
-        ;;          (+ lhs rhs))
-        ;; ;; (a -> a) -> a -> a
-        ;; (generic addZ (adder rhs)
-        ;;          (adder rhs))
-
         ;; a -> a
         ;; (generic id (a)
         ;;          (func (<> id a) ((const a c)) (out const a)
@@ -186,6 +167,7 @@
               (Short (short s))
               (Int   (int   x)))
 
+        ;; shared function for haskell data type
         (func (Integer . show) ((Integer self))
               (match self
                      (Byte  c  (format #t "Integer is Byte: %d\n" c))
@@ -194,6 +176,10 @@
                      (Int   i  => (and (>= i 1000) (< i 10000))
                             (format #t "Integer is Int between 1000 and 10000: %d\n" i))
                      (_     (format #t "Integer is N/A\n"))))
+        
+        ;; method for accessing that shared function from instance
+        (method (Integer . show) ()
+          (-> Integer show (cof this)))
 
         ;; data Maybe = Nothing | Just a
         (generic specialise_Maybe (a)
@@ -201,17 +187,16 @@
                        Nothing
                        (Just (a value))))
         (specialise_Maybe int)
+
+        (data TupleT (Tuple (int x) (char c)))
+
+        (typedef (tuple int char short) aTuple)
+        (func print_tuple ((aTuple tup))
+              (match tup
+                     ((i c s) => (> s 10) (format #t "tuple s > 10: int, char, short = (%d, %c, %d)\n" i c s))
+                     ((i c s) (format #t "tuple: int, char, short = (%d, %c, %d)\n" i c s))))
         
         (main
-            ;; Partials
-            ;; (var (<> add_2 Int) f2)
-            ;; (-> f2 call (cast Int '{ 0 2 }) (cast Int '{ 0 3 }))        ; :: a -> a -> a
-
-            ;; (var (<> add_2 Int) f20)
-            ;; (-> f20 call (cast Int '{ 0 4 }) (cast Int '{ 1 ($ f2 }))        ; :: a -> a -> a
-            
-            ;; (var auto adder . #'(-> (<> add int) call 2))
-            ;; (format #t "output of haskelus function: %d\n" (-> adder call_0 3))
             (format #t "output of haskelus function: %d\n" (-> (-> (-> (<> add3 int) call_0 2) call_1 3) call 4))
 
           (format #t "output of lambda calculus: %d & %d\n" ((l0 2) 3) ((add 2) 3))
@@ -266,17 +251,20 @@
           (-> Integer show (Int   30))
           (-> Integer show (Int   2000))
           (-> Integer show (Int   20000))
-          
-          ;; (var auto adder1 . #'(-> adder call 4))
-          ;; (format #t "output of haskelus function: %d\n" (adder1 adder 5))
 
-          ;; (var (<> add_0 int) f0)
-          ;; (set ($ f0 arg_0) 2     ; :: a -> (a -> a) 
-          ;;      ($ f0 arg_1) 3)    ; :: a -> a
-          ;; (-> f0 call)            ; :: a
-
-          ;; Laziness
-          
-          ;; (format #t "addP: %d\n" (addP (identity 2) (addP (identity 3) (identity 4))))
-          ;; (format #t "addZ: %d\n" (addZ (addP (identity 1)) (identity 2)))
+          (let ((auto integer . #'(Int 3000))
+                (auto tuple . #'((Tuple 12) #\S))
+                ('{ (int dd) } ss . '{ 2 })
+                (aTuple tup0 . '{ 4400 #\A 33 })
+                ((tuple int char short) tup1 . '{ 4401 #\B 34 })
+                (auto tup2 . #'(cast (tuple int char short) '{ 4402 #\C 35 })))
+            (-> integer show)
+            (match tuple (Tuple i c (format #t "Tuple: int, char = (%d, %c)\n" i c)))
+            (print_tuple tup0)
+            (print_tuple (cast-tuple aTuple tup1)) ; use pointer or cast-tuple
+            ($> (\\ tup
+                    (match tup
+                           ((i c s) => (> s 10) (format #t "tuple s > 10: int, char, short = (%d, %c, %d)\n" i c s))
+                           ((i c s) (format #t "tuple: int, char, short = (%d, %c, %d)\n" i c s))))
+              tup2))
           ))

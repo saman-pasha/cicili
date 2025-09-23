@@ -24,6 +24,8 @@
 (defparameter *module-path* nil)
 ;; all object names inside modules
 (defvar *module-names* (make-hash-table :test 'equal))
+;; current typedef spec during type inline struct compiling
+(defparameter *typedef-spec* nil)
 ;; current variable spec during type inline struct compiling
 (defparameter *variable-spec* nil)
 ;; current function spec during function compiling

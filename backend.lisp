@@ -290,16 +290,17 @@
     (when (key-eq (construct spec) '|@VAR|) ; '|@PARAM| for struct members, function parameters
       (loop for los being the hash-value of (inners spec)
             do (progn
-                 (if (key-eq '|@STRUCT| (construct los)) ; default t means is multi-output
-                     (when (or (and (null is-static) *target-header*) (and is-static *target-source*))
-                       (compile-struct los lvl globals spec :no-typedef t)
-                       (output "~%"))
-                     (progn ; lambdas
-                       (push (cons '|static| t) (attrs los))
-                       (compile-function los lvl globals spec)
-                       (output "~%")
-                       (pop (attrs los)))))))
-
+                 (cond ((key-eq '|@STRUCT| (construct los)) ; default t means is multi-output
+                        (when (or (and (null is-static) *target-header*) (and is-static *target-source*))
+                          (compile-struct los lvl globals spec :no-typedef t)
+                          (output "~%")))
+                       ((key-eq '|@FUNC| (construct los)) ; lambdas
+                        (push (cons '|static| t) (attrs los))
+                        (compile-function los lvl globals spec)
+                        (output "~%")
+                        (pop (attrs los)))
+                       (t (compile-expr los))))))
+    
     (when is-extern   (set-ast-line (output "extern ")))
     (when is-static   (set-ast-line (output "static ")))
     (when is-register (set-ast-line (output "register ")))
@@ -496,17 +497,18 @@
     (unless as-type
       (loop for los being the hash-value of (inners spec)
             do (progn
-                 (if (key-eq '|@STRUCT| (construct los)) ; inline structs
-                     (when (or (null (default los))
-                             (and (null is-static) *target-header*)
-                             (and is-static *target-source*))
-                       (compile-struct los lvl globals spec :no-typedef t)
-                       (output "~%"))
-                     (progn ; lambdas
-                       (push (cons '|static| t) (attrs los))
-                       (compile-function los lvl globals spec)
-                       (output "~%")
-                       (pop (attrs los)))))))
+                 (cond ((key-eq '|@STRUCT| (construct los)) ; inline structs
+                        (when (or (null (default los))
+                                (and (null is-static) *target-header*)
+                                (and is-static *target-source*))
+                          (compile-struct los lvl globals spec :no-typedef t)
+                          (output "~%")))
+                       ((key-eq '|@FUNC| (construct los)) ; lambdas
+                        (push (cons '|static| t) (attrs los))
+                        (compile-function los lvl globals spec)
+                        (output "~%")
+                        (pop (attrs los)))
+                       (t (compile-expr los))))))
 
     ;; compile function
     (let* ((name       (name   spec))
@@ -617,6 +619,18 @@
 	             (t (error "wrong inclusion")))))
 
 (defun compile-typedef (spec lvl globals parent-spec)
+  (loop for los being the hash-value of (inners spec)
+        do (progn
+             (cond ((key-eq '|@STRUCT| (construct los)) ; default t means is multi-output
+                    (compile-struct los lvl globals spec :no-typedef t)
+                    (output "~%"))
+                   ((key-eq '|@FUNC| (construct los)) ; lambdas
+                    (push (cons '|static| t) (attrs los))
+                    (compile-function los lvl globals spec)
+                    (output "~%")
+                    (pop (attrs los)))
+                   (t (compile-expr los)))))
+
   (set-ast-line (output "~&typedef "))
   (compile-spec-type spec lvl globals parent-spec))
 

@@ -39,6 +39,8 @@
              (setf (module instance) *module-path*)
              (setf (unique instance) (free-name *module-path* name)))
  	       (setf (inners  instance)     (make-hash-table :test 'eql))) ; contains type inline struct
+          ((eql construct '|@TYPEDEF|)
+           (setf (inners  instance)     (make-hash-table :test 'eql))) ; contains type inline struct
           ((eql construct '|@VAR|)
            (when *module-path*
              (setf (module instance) *module-path*)
@@ -217,6 +219,11 @@
               ((key-eq '|t<>| ty)    (specify-expr type))
               ((key-eq '$$ ty)       (specify-expr type))
               ((key-eq '|code| ty)   (specify-expr type))
+              ((and (null *function-spec*) *typedef-spec* (key-eq 'QUOTE ty)) ; inline struct global typedef
+               (let* ((sname (gensym "__ciciliS_"))
+                      (struct-spec (specify-struct (append (list '|struct| sname) (cadr type)) '() :inline t)))
+                 (add-inner struct-spec *typedef-spec*)
+                 (list '|struct| (if *module-path* (free-name *module-path* sname) sname))))
               ((and (null *function-spec*) *variable-spec* (key-eq 'QUOTE ty)) ; inline struct global var
                (let* ((sname (gensym "__ciciliS_"))
                       (struct-spec (specify-struct (append (list '|struct| sname) (cadr type)) '() :inline t)))
@@ -237,7 +244,12 @@
                       (struct-spec (specify-struct (append (list '|struct| sname) (cadr type)) '() :inline t)))
                  (add-inner struct-spec *function-spec*)
                  (list '|struct| (if *module-path* (free-name *module-path* sname) sname))))
-              (t (error (format nil "type syntax error ~A" type)))))))
+              (t (let ((bd (expand-macros type)))
+                   (if (eq bd type)
+                       ;; (error (format nil "type syntax error ~A" type))
+                       type
+                       (specify-typeof< bd))))
+              ))))
 
 (defun specify-type< (def)
   (let* ((desc (expand-macros def))
@@ -598,7 +610,8 @@
   (unless (= (length def) 3) (error (format nil "wrong cast form ~A" def)))
   (let ((ty (nth 1 def)))
     (multiple-value-bind (const type modifier const-ptr variable array)
-	    (specify-type< (if (and (listp ty) (key-eq '|typeof| (car ty))) (list ty) ty))
+	    (specify-type<
+            (specify-typeof< (if (and (listp ty) (key-eq '|typeof| (car ty))) (list ty) ty)))
       (make-specifier
           (specify-decl-name< variable)
         '|@CAST| const type modifier const-ptr array (specify-expr (nth 2 def)) '()))))
@@ -1105,10 +1118,21 @@
 (defun specify-typedef (def attrs)
   (when (> (length attrs) 0) (error (format nil "wrong attributes ~A" attrs)))
   (when (< (length def) 3) (error (format nil "syntax error ~A" def)))
-  (multiple-value-bind (const type modifier const-ptr variable array)
-      (specify-type< (nthcdr 1 def))
-	(when (null variable) (error (format nil "syntax error ~A" def)))
-    (make-specifier (specify-decl-name< variable) '|@TYPEDEF| const type modifier const-ptr array nil nil)))
+  (let ((tmp-typedef-spec *typedef-spec*)
+        (typedef-spec (make-specifier nil '|@TYPEDEF| nil nil nil nil nil nil nil)))
+    (setf *typedef-spec* typedef-spec)
+    (multiple-value-bind (const type modifier const-ptr variable array)
+        (specify-type< (nthcdr 1 def))
+	  (when (null variable) (error (format nil "syntax error ~A" def)))
+      (setf (name typedef-spec) (specify-decl-name< variable))
+      (if *module-path* (setf (unique typedef-spec) (free-name *module-path* (name typedef-spec))))
+      (setf (const typedef-spec) const)
+      (setf (typeof typedef-spec) type)
+      (setf (modifier typedef-spec) modifier)
+      (setf (const-ptr typedef-spec) const-ptr)
+      (setf (array-def typedef-spec) array)
+      (setf *typedef-spec* tmp-typedef-spec)
+      typedef-spec)))
 
 (defun specify-enum (def attrs &key ((:nested is-nested) nil))
   (when (> (length attrs) 0) (error (format nil "wrong attributes ~A" attrs)))

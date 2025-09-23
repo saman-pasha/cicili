@@ -183,6 +183,8 @@
    (1 . $>)
    (1 . data)
    (1 . match)
+   (1 . tuple)
+   (1 . cast-tuple)
    ))
 
 (defun cicili-add-attributes (face-name keyword-rules)
