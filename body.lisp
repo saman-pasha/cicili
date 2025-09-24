@@ -50,7 +50,7 @@
 	             (cond ((key-eq func 'QUASIQUOTE)
                         (specify-expr (eval (car (macroexpand `(,(cadr def) ,@(cddr def)))))))
                        ((key-eq func '|code|)   (specify-code-expr def))
-                       ((key-eq func 'FUNCTION) (specify-expr      (cadr def)))
+                       ((key-eq func 'FUNCTION) (specify-call-expr (cadr def)))
 		               ((key-eq func 'QUOTE)
                         (let ((quoted (cadr def)))
                           (cond ((key-eq (car quoted) '|lambda|) ; lambda

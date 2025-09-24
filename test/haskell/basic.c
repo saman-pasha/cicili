@@ -42,7 +42,7 @@ typedef struct add3_int {
   int arg_1 ;
 } add3_int;
 add3_int * add3_int_s_call_0 (int fst ) {
-    { /* cicili#Let123 */
+    { /* cicili#Let124 */
         add3_int * this  = malloc (sizeof(add3_int ));
         // ----------
         (this -> arg_0 ) = fst ;
@@ -66,10 +66,10 @@ typedef enum __h_Bool_ctor_t {
 } __h_Bool_ctor_t;
 typedef struct Bool {
   __h_Bool_ctor_t __h_ctor ;
-  union { /* ciciliUnion149 */
-    struct { /* ciciliStruct150 */
+  union { /* ciciliUnion153 */
+    struct { /* ciciliStruct154 */
     } False ;
-    struct { /* ciciliStruct151 */
+    struct { /* ciciliStruct155 */
     } True ;
   } __h_data ;
 } Bool;
@@ -86,14 +86,14 @@ typedef enum __h_Integer_ctor_t {
 } __h_Integer_ctor_t;
 typedef struct Integer {
   __h_Integer_ctor_t __h_ctor ;
-  union { /* ciciliUnion156 */
-    struct { /* ciciliStruct157 */
+  union { /* ciciliUnion160 */
+    struct { /* ciciliStruct161 */
       char __h_0_mem ;
     } Byte ;
-    struct { /* ciciliStruct158 */
+    struct { /* ciciliStruct162 */
       short __h_0_mem ;
     } Short ;
-    struct { /* ciciliStruct159 */
+    struct { /* ciciliStruct163 */
       int __h_0_mem ;
     } Int ;
   } __h_data ;
@@ -108,52 +108,122 @@ Integer Int (int x ) {
     return ((Integer){ __h_Int_t , .__h_data.Int = { x }});
 }
 void Integer_s_show (Integer self ) {
-    if ((self . __h_ctor ) ==  __h_Byte_t  ) {
-        fprintf (stdout , "Integer is Byte: %d\n", (((self . __h_data ). Byte ). __h_0_mem ));
-    }
-    else if ((self . __h_ctor ) ==  __h_Short_t  ) {
-        fprintf (stdout , "Integer is Short: %d\n", (((self . __h_data ). Short ). __h_0_mem ));
-    }
-    else if (((self . __h_ctor ) ==  __h_Int_t  ) &&  ((((self . __h_data ). Int ). __h_0_mem ) <  1000 ) ) {
-        fprintf (stdout , "Integer is Int below 1000: %d\n", (((self . __h_data ). Int ). __h_0_mem ));
-    }
-    else if (((self . __h_ctor ) ==  __h_Int_t  ) &&  (((((self . __h_data ). Int ). __h_0_mem ) >=  1000 ) &&  ((((self . __h_data ). Int ). __h_0_mem ) <  10000 ) ) ) {
-        fprintf (stdout , "Integer is Int between 1000 and 10000: %d\n", (((self . __h_data ). Int ). __h_0_mem ));
-    }
-    else if (true  ==  true  ) {
-        fprintf (stdout , "Integer is N/A\n");
+    { /* cicili#Let170 */
+        __auto_type __h_match169_0_arg  = (((self . __h_data ). Byte ). __h_0_mem );
+        // ----------
+        if ((self . __h_ctor ) ==  __h_Byte_t  )
+            fprintf (stdout , "Integer is Byte: %d\n", __h_match169_0_arg );
+        else
+            { /* cicili#Let181 */
+                __auto_type __h_match180_0_arg  = (((self . __h_data ). Short ). __h_0_mem );
+                // ----------
+                if ((self . __h_ctor ) ==  __h_Short_t  )
+                    fprintf (stdout , "Integer is Short: %d\n", __h_match180_0_arg );
+                else
+                    { /* cicili#Let192 */
+                        __auto_type __h_match191_0_arg  = (((self . __h_data ). Int ). __h_0_mem );
+                        // ----------
+                        if (((self . __h_ctor ) ==  __h_Int_t  ) &&  (__h_match191_0_arg  <  1000 ) )
+                            fprintf (stdout , "Integer is Int below 1000: %d\n", __h_match191_0_arg );
+                        else
+                            { /* cicili#Let203 */
+                                __auto_type __h_match202_0_arg  = (((self . __h_data ). Int ). __h_0_mem );
+                                // ----------
+                                if (((self . __h_ctor ) ==  __h_Int_t  ) &&  ((__h_match202_0_arg  >=  1000 ) &&  (__h_match202_0_arg  <  10000 ) ) )
+                                    fprintf (stdout , "Integer is Int between 1000 and 10000: %d\n", __h_match202_0_arg );
+                                else
+                                    { /* cicili#Let214 */
+                                        // ----------
+                                        fprintf (stdout , "Integer is N/A\n");
+                                    }
+
+                            }
+
+                    }
+
+            }
+
     }
 }
 void Integer_m_show (Integer * this ) {
     Integer_s_show((*this ));
 }
-typedef enum __h_Maybe_ctor_t {
-  __h_Nothing_t,
-  __h_Just_t
-} __h_Maybe_ctor_t;
-typedef struct Maybe {
-  __h_Maybe_ctor_t __h_ctor ;
-  union { /* ciciliUnion209 */
-    struct { /* ciciliStruct210 */
-    } Nothing ;
-    struct { /* ciciliStruct211 */
-      int __h_0_mem ;
-    } Just ;
+typedef enum __h_Maybe_char_ctor_t {
+  __h_Nothing_char_t,
+  __h_Just_char_t
+} __h_Maybe_char_ctor_t;
+typedef struct Maybe_char {
+  __h_Maybe_char_ctor_t __h_ctor ;
+  union { /* ciciliUnion223 */
+    struct { /* ciciliStruct224 */
+    } Nothing_char ;
+    struct { /* ciciliStruct225 */
+      char __h_0_mem ;
+    } Just_char ;
   } __h_data ;
-} Maybe;
-Maybe Nothing () {
-    return ((Maybe){ __h_Nothing_t });
+} Maybe_char;
+Maybe_char Nothing_char () {
+    return ((Maybe_char){ __h_Nothing_char_t });
 }
-Maybe Just (int value ) {
-    return ((Maybe){ __h_Just_t , .__h_data.Just = { value }});
+Maybe_char Just_char (char value ) {
+    return ((Maybe_char){ __h_Just_char_t , .__h_data.Just_char = { value }});
+}
+typedef enum __h_Maybe_Maybe_char_ctor_t {
+  __h_Nothing_Maybe_char_t,
+  __h_Just_Maybe_char_t
+} __h_Maybe_Maybe_char_ctor_t;
+typedef struct Maybe_Maybe_char {
+  __h_Maybe_Maybe_char_ctor_t __h_ctor ;
+  union { /* ciciliUnion233 */
+    struct { /* ciciliStruct234 */
+    } Nothing_Maybe_char ;
+    struct { /* ciciliStruct235 */
+      Maybe_char __h_0_mem ;
+    } Just_Maybe_char ;
+  } __h_data ;
+} Maybe_Maybe_char;
+Maybe_Maybe_char Nothing_Maybe_char () {
+    return ((Maybe_Maybe_char){ __h_Nothing_Maybe_char_t });
+}
+Maybe_Maybe_char Just_Maybe_char (Maybe_char value ) {
+    return ((Maybe_Maybe_char){ __h_Just_Maybe_char_t , .__h_data.Just_Maybe_char = { value }});
+}
+void print_inside_maybe (Maybe_Maybe_char mb ) {
+    { /* cicili#Let242 */
+        // ----------
+        if ((mb . __h_ctor ) ==  __h_Nothing_Maybe_char_t  )
+            fprintf (stdout , "wrapper Nothing Maybe char: Nothing\n");
+        else
+            { /* cicili#Let250 */
+                __auto_type __h_match249_0_arg  = (((mb . __h_data ). Just_Maybe_char ). __h_0_mem );
+                // ----------
+                if ((mb . __h_ctor ) ==  __h_Just_Maybe_char_t  )
+                    { /* cicili#Let259 */
+                        // ----------
+                        if ((__h_match249_0_arg . __h_ctor ) ==  __h_Nothing_char_t  )
+                            fprintf (stdout , "wrapper Nothing char: Nothing\n");
+                        else
+                            { /* cicili#Let267 */
+                                __auto_type __h_match266_0_arg  = (((__h_match249_0_arg . __h_data ). Just_char ). __h_0_mem );
+                                // ----------
+                                if ((__h_match249_0_arg . __h_ctor ) ==  __h_Just_char_t  )
+                                    fprintf (stdout , "wrapper Just Maybe char: Just %c\n", __h_match266_0_arg );
+
+                            }
+
+                    }
+
+            }
+
+    }
 }
 typedef enum __h_TupleT_ctor_t {
   __h_Tuple_t
 } __h_TupleT_ctor_t;
 typedef struct TupleT {
   __h_TupleT_ctor_t __h_ctor ;
-  union { /* ciciliUnion216 */
-    struct { /* ciciliStruct217 */
+  union { /* ciciliUnion278 */
+    struct { /* ciciliStruct279 */
       int __h_0_mem ;
       char __h_1_mem ;
     } Tuple ;
@@ -162,35 +232,53 @@ typedef struct TupleT {
 TupleT __h_Tuple_ctor (int x , char c ) {
     return ((TupleT){ __h_Tuple_t , .__h_data.Tuple = { x , c }});
 }
-struct __ciciliS_222 {
+struct __ciciliS_284 {
   int __h_0_mem ;
   char __h_1_mem ;
   short __h_2_mem ;
 };
-typedef struct __ciciliS_222 aTuple ;
+typedef struct __ciciliS_284 aTuple ;
 void print_tuple (aTuple tup ) {
-    if ((tup . __h_2_mem ) >  10 ) {
-        fprintf (stdout , "tuple s > 10: int, char, short = (%d, %c, %d)\n", (tup . __h_0_mem ), (tup . __h_1_mem ), (tup . __h_2_mem ));
-    }
-    else if (true  ==  true  ) {
-        fprintf (stdout , "tuple: int, char, short = (%d, %c, %d)\n", (tup . __h_0_mem ), (tup . __h_1_mem ), (tup . __h_2_mem ));
+    { /* cicili#Let288 */
+        __auto_type __h_match287_2_arg  = (tup . __h_2_mem );
+        __auto_type __h_match287_1_arg  = (tup . __h_1_mem );
+        __auto_type __h_match287_0_arg  = (tup . __h_0_mem );
+        // ----------
+        if (__h_match287_2_arg  >  10 )
+            fprintf (stdout , "tuple s > 10: int, char, short = (%d, %c, %d)\n", __h_match287_0_arg , __h_match287_1_arg , __h_match287_2_arg );
+        else
+            { /* cicili#Let301 */
+                __auto_type __h_match300_2_arg  = (tup . __h_2_mem );
+                __auto_type __h_match300_1_arg  = (tup . __h_1_mem );
+                __auto_type __h_match300_0_arg  = (tup . __h_0_mem );
+                // ----------
+                if (true  ==  true  )
+                    fprintf (stdout , "tuple: int, char, short = (%d, %c, %d)\n", __h_match300_0_arg , __h_match300_1_arg , __h_match300_2_arg );
+
+            }
+
     }
 }
-static int __ciciliL_350 (int x , int y ) {
+static int __ciciliL_410 (int x , int y ) {
     return ((int)pow (((double)x ), ((double)y )));
 }
-static int __ciciliL_358 (int x , int y ) {
+static int __ciciliL_418 (int x , int y ) {
     return ((int)pow (((double)x ), ((double)y )));
 }
-struct __ciciliS_363 {
+struct __ciciliS_425 {
   int dd ;
 };
-struct __ciciliS_365 {
+struct __ciciliS_427 {
   int __h_0_mem ;
   char __h_1_mem ;
   short __h_2_mem ;
 };
-struct __ciciliS_367 {
+struct __ciciliS_429 {
+  int __h_0_mem ;
+  char __h_1_mem ;
+  short __h_2_mem ;
+};
+struct __ciciliS_431 {
   int __h_0_mem ;
   char __h_1_mem ;
   short __h_2_mem ;
@@ -211,32 +299,59 @@ int main () {
     fprintf (stdout , "output of function application: %d\n", (3 *  (2 +  (2 *  5 ) ) ));
     fprintf (stdout , "output of reducible function: %d\n", power_irreducible_int (2, 16));
     fprintf (stdout , "output of reducible function: %d\n", ((int)pow (((double)2), ((double)16))));
-    fprintf (stdout , "output of reducible function: %d\n", __ciciliL_350 (2, 16));
-    fprintf (stdout , "output of reducible function: %d\n", __ciciliL_358 (2, 16));
+    fprintf (stdout , "output of reducible function: %d\n", __ciciliL_410 (2, 16));
+    fprintf (stdout , "output of reducible function: %d\n", __ciciliL_418 (2, 16));
     Integer_s_show(Byte (10));
     Integer_s_show(Short (20));
     Integer_s_show(Int (30));
     Integer_s_show(Int (2000));
     Integer_s_show(Int (20000));
-    { /* cicili#Let360 */
+    { /* cicili#Let420 */
         __auto_type integer  = Int (3000);
         __auto_type tuple  = __h_Tuple_ctor (12, 'S');
-        struct __ciciliS_363 ss  = { 2};
+        struct __ciciliS_425 ss  = { 2};
         aTuple tup0  = { 4400, 'A', 33};
-        struct __ciciliS_365 tup1  = { 4401, 'B', 34};
-        __auto_type tup2  = ((struct __ciciliS_367 ){ 4402, 'C', 35});
+        struct __ciciliS_427 tup1  = { 4401, 'B', 34};
+        __auto_type tup2  = ((struct __ciciliS_431 ){ 4402, 'C', 35});
         // ----------
         Integer_m_show(&integer);
-        if ((tuple . __h_ctor ) ==  __h_Tuple_t  ) {
-            fprintf (stdout , "Tuple: int, char = (%d, %c)\n", (((tuple . __h_data ). Tuple ). __h_0_mem ), (((tuple . __h_data ). Tuple ). __h_1_mem ));
+        { /* cicili#Let435 */
+            __auto_type __h_match434_1_arg  = (((tuple . __h_data ). Tuple ). __h_1_mem );
+            __auto_type __h_match434_0_arg  = (((tuple . __h_data ). Tuple ). __h_0_mem );
+            // ----------
+            if ((tuple . __h_ctor ) ==  __h_Tuple_t  )
+                fprintf (stdout , "Tuple: int, char = (%d, %c)\n", __h_match434_0_arg , __h_match434_1_arg );
+
         }
         print_tuple (tup0 );
         print_tuple (((aTuple)(*((aTuple *)(&tup1 )))));
-        if ((tup2 . __h_2_mem ) >  10 ) {
-            fprintf (stdout , "tuple s > 10: int, char, short = (%d, %c, %d)\n", (tup2 . __h_0_mem ), (tup2 . __h_1_mem ), (tup2 . __h_2_mem ));
+        { /* cicili#Let450 */
+            __auto_type __h_match449_2_arg  = (tup2 . __h_2_mem );
+            __auto_type __h_match449_1_arg  = (tup2 . __h_1_mem );
+            __auto_type __h_match449_0_arg  = (tup2 . __h_0_mem );
+            // ----------
+            if (__h_match449_2_arg  >  10 )
+                fprintf (stdout , "tuple s > 10: int, char, short = (%d, %c, %d)\n", __h_match449_0_arg , __h_match449_1_arg , __h_match449_2_arg );
+            else
+                { /* cicili#Let463 */
+                    __auto_type __h_match462_2_arg  = (tup2 . __h_2_mem );
+                    __auto_type __h_match462_1_arg  = (tup2 . __h_1_mem );
+                    __auto_type __h_match462_0_arg  = (tup2 . __h_0_mem );
+                    // ----------
+                    if (true  ==  true  )
+                        fprintf (stdout , "tuple: int, char, short = (%d, %c, %d)\n", __h_match462_0_arg , __h_match462_1_arg , __h_match462_2_arg );
+
+                }
+
         }
-        else if (true  ==  true  ) {
-            fprintf (stdout , "tuple: int, char, short = (%d, %c, %d)\n", (tup2 . __h_0_mem ), (tup2 . __h_1_mem ), (tup2 . __h_2_mem ));
-        }
+    }
+    { /* cicili#Let473 */
+        __auto_type m1  = Nothing_Maybe_char ();
+        __auto_type m2  = Just_Maybe_char (Nothing_char ());
+        __auto_type m3  = Just_Maybe_char (Just_char ('H'));
+        // ----------
+        print_inside_maybe (m1 );
+        print_inside_maybe (m2 );
+        print_inside_maybe (m3 );
     }
 }

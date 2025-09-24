@@ -456,15 +456,32 @@
           with l = (- (length nodes) 1)
           for i from 0 to (length nodes)
           do (let ((condition (car node))
+                   (vars-cond (car node))
                    (body (cadr node)))
+               
+               (when (listp condition) ; has variable definition
+                 (setq condition (car (last condition))))
+                 
                (if (= i 0)
                    (set-ast-line (output "if "))
                    (progn
                      (output "~&~A" (indent (- lvl 2)))
                      (set-ast-line (output "else if "))))
-               (let ((is-atom (find (construct condition) (list '|@ATOM| '|@SYMBOL| '|@CALL| '|@-->| '|@->| '|@=>|)
-                                    :test #'key-eq)))
+               (let ((is-atom (or (listp vars-cond)
+                                (find (construct condition) (list '|@ATOM| '|@SYMBOL| '|@CALL| '|@-->| '|@->| '|@=>|)
+                                    :test #'key-eq))))
                  (when is-atom (output "("))
+
+                 (when (listp vars-cond) ; has variable definition
+                   (dotimes (i (length vars-cond))
+                     (let ((vari (nth i vars-cond)))
+                       (if (eql vari condition)
+                           (output "; ")
+                           (progn
+                             (compile-form vari lvl globals spec)
+                             (when (< i (- (length vars-cond) 2)) (output ", ")))))))
+                 
+                 
                  (compile-form condition lvl globals spec) ; each condition
                  (when is-atom (output ")")))
                (set-ast-line (output " {~%"))

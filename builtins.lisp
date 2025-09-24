@@ -21,7 +21,12 @@
        `($$$ ,@body)))) ; $$$ for replace extracted
 
 (DEFMACRO <> (name &REST body)
-  (INTERN (FORMAT NIL "~A_~{~A~}" name body)))
+  (INTERN (FORMAT NIL "~A_~{~A~^_~}" name
+                  (MAPCAR #'(LAMBDA (reso)
+                              (IF (SYMBOLP reso)
+                                  reso
+                                  (MACROEXPAND reso)))
+                          body))))
 
 (DEFMACRO shared-func-name (struct method)
   (INTERN (FORMAT NIL "~A_s_~A" struct method)))

@@ -13,7 +13,7 @@
       (compile-form defer (1+ lvl) globals parent-spec)
       (set-ast-line (output ")))")))
     
-    (when (and (not (null default)) (not (key-eq (construct default) '|@NIL|)))
+    (when (and default (not (key-eq (construct default) '|@NIL|)))
       (output " ")
       (set-ast-line (output "= "))
 

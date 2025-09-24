@@ -183,11 +183,21 @@
 
         ;; data Maybe = Nothing | Just a
         (generic specialise_Maybe (a)
-                 (data Maybe
-                       Nothing
-                       (Just (a value))))
-        (specialise_Maybe int)
+                 (data (<> Maybe a)
+                       (<> Nothing a)
+                       ((<> Just a) (a value))))
+        ;; (specialise_Maybe int)
+        (specialise_Maybe char)
+        (specialise_Maybe (<> Maybe char))
 
+        (func print_inside_maybe (((<> Maybe (<> Maybe char)) mb))
+              (match mb
+                     ((<> Nothing (<> Maybe char)) (format #t "wrapper Nothing Maybe char: Nothing\n"))
+                     ((<> Just (<> Maybe char)) mc
+                      (match mc
+                             ((<> Nothing char) (format #t "wrapper Nothing char: Nothing\n"))
+                             ((<> Just char) c (format #t "wrapper Just Maybe char: Just %c\n" c))))))
+        
         (data TupleT (Tuple (int x) (char c)))
 
         (typedef (tuple int char short) aTuple)
@@ -259,6 +269,7 @@
                 ((tuple int char short) tup1 . '{ 4401 #\B 34 })
                 (auto tup2 . #'(cast (tuple int char short) '{ 4402 #\C 35 })))
             (-> integer show)
+
             (match tuple (Tuple i c (format #t "Tuple: int, char = (%d, %c)\n" i c)))
             (print_tuple tup0)
             (print_tuple (cast-tuple aTuple tup1)) ; use pointer or cast-tuple
@@ -267,4 +278,11 @@
                            ((i c s) => (> s 10) (format #t "tuple s > 10: int, char, short = (%d, %c, %d)\n" i c s))
                            ((i c s) (format #t "tuple: int, char, short = (%d, %c, %d)\n" i c s))))
               tup2))
+
+          (let ((auto m1 . #'((<> Nothing (<> Maybe char))))
+                (auto m2 . #'((<> Just (<> Maybe char)) ((<> Nothing char))))
+                (auto m3 . #'((<> Just (<> Maybe char)) ((<> Just char) #\H))))
+            (print_inside_maybe m1)
+            (print_inside_maybe m2)
+            (print_inside_maybe m3))
           ))

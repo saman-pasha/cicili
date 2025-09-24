@@ -215,7 +215,7 @@
         (cond ((or (key-eq '|struct| ty) (key-eq '|union| ty))
                (list ty (specify-name-with-module< (cadr type))))
               ((key-eq '|typeof| ty) (specify-typeof-expr type))
-              ((key-eq '|<>| ty)     (specify-decl-name< (apply '<> (cdr type))))
+              ;; ((key-eq '|<>| ty)     (specify-decl-name< (apply '<> (cdr type))))
               ((key-eq '|t<>| ty)    (specify-expr type))
               ((key-eq '$$ ty)       (specify-expr type))
               ((key-eq '|code| ty)   (specify-expr type))
@@ -441,6 +441,7 @@
 		               (setq variable (nth 4 desc))
 		               (setq array (nth 5 desc))))
 	      (t (setq status -1)))
+
     (setq type (specify-typeof< type))
     (unless (or (null const)     (key-eq const '|const|)) (setq status -2))
     (unless (or (null modifier)
@@ -658,6 +659,14 @@
   (when (< (length def) 2) (error (format nil "typeof syntax error ~A" def)))
   (make-specifier nil '|@TYPEOF| nil nil nil nil nil (specify-expr (expand-macros (cadr def))) '()))
 
+(defun specify-call-expand (def)
+  (let ((app (specify-expr (nth 0 def))))
+    (if (symbolp app)
+        (if (nthcdr 1 def)
+            (specify-expr (append (list app) (nthcdr 1 def)))
+            app)
+        app)))
+
 (defun specify-call-expr (def) ; consumes all args whether output of func specification be another macro
   (when (key-eq (car def) '|aof|) (error (format nil "'address of' aka 'aof' takes only one argument ~A" def)))
   (let ((app (specify-expr (nth 0 def))))
@@ -668,7 +677,11 @@
         (progn
           (make-specifier app '|@CALL| nil nil nil nil nil
                           (if (> (length def) 1)
-                              (loop for item in (nthcdr 1 def) collect (specify-expr item))
+                              (loop for item in (nthcdr 1 def)
+                                    collect (let ((app (specify-expr item)))
+                                              (if (symbolp app)
+                                                  (specify-call-expr (list app))
+                                                  app)))
                               nil)
                           '())))))
 
@@ -723,7 +736,13 @@
 					            (list '|malloc| (nth 1 value))))
 		      (setq value (list '|cast| (remove nil (list const typeof modifier const-ptr))
 				                (list '|calloc| (nth 1 value) (nth 2 value))))))
-        (setf (default var-spec) (if (null value) nil (specify-expr value)))
+        (setf (default var-spec) (if (null value)
+                                     nil
+                                     (let ((app (specify-expr value)))
+                                       (if (symbolp app)
+                                           (specify-call-expr (list app))
+                                           app))))
+
 	    (let ((attributes '()))
 	      (when is-extern   (push (cons '|extern|       t) attributes))
 		  (when is-static   (push (cons '|static|       t) attributes))
@@ -842,9 +861,16 @@
                                                              ,variable ,array . #'(|cof| ,ptr-name)))
                                             ,@has-defer)))
                                attributes)))
+                             (display "F-----------------FFFF" value (specify-expr value) #\Newline)
                      (add-param
                          (make-specifier (specify-decl-name< variable) '|@VAR| const typeof modifier const-ptr array
-                                         (if (null value) nil (specify-expr value)) attributes)
+                                         (if (null value)
+                                             nil
+                                             (let ((app (specify-expr value)))
+                                               (if (symbolp app)
+                                                   (specify-call-expr (list app))
+                                                   app)))
+                                             attributes)
                        let-var))
                    (setq is-static   nil)
                    (setq is-register nil)
@@ -896,7 +922,7 @@
 
 (defun specify-if (def)
   (when (or (< (length def) 3) (> (length def) 4)) (error (format nil "wrong if form ~A" def)))
-  (let* ((condition (specify-expr (nth 1 def)))
+  (let* ((condition (specify-if-condition (nth 1 def)))
          (if-var (make-specifier condition '|@IF| nil nil nil nil nil nil '())))
     (setf (default if-var) (specify-body (list (nth 2 def))))
     (when (> (length def) 3)
@@ -959,11 +985,21 @@
     (setf (body for-var) (specify-body (nthcdr 4 def)))
     for-var))
 
+(defun specify-if-condition (cond)
+    (if (atom cond)
+        (specify-expr cond)
+        (if (atom (car cond))
+            (specify-expr cond)
+            (loop for c in cond
+                  collect (if (key-eq (car cond) '|var|)
+                              (specify-expr (cdr c) '())
+                              (specify-expr c))))))
+
 (defun specify-cond (def)
   (when (< (length def) 2) (error (format nil "wrong cond form ~A" def)))
   (let ((cond-var (make-specifier nil '|@COND| nil nil nil nil nil nil '()))
         (nodes (loop for node in (cdr def)
-                     collect (list (specify-expr (car node)) (specify-body (cdr node))))))
+                     collect (list (specify-if-condition (car node)) (specify-body (cdr node))))))
     (setf (body cond-var) nodes)
     cond-var))
 
@@ -1071,7 +1107,7 @@
             for i from 0 to (length params)
             do (let ((is-anonymous nil))
                  (unless (listp param) (error (format nil "parameter should be a list ~A for ~A" param def)))
-                 
+
 	             (multiple-value-bind (const type modifier const-ptr variable array)
 	                 (specify-type< param)
 	               (cond ((or (null variable) (key-eq '_ variable))

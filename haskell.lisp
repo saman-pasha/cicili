@@ -78,14 +78,24 @@
 (DEFUN make-data-member-name (number)
   (INTERN (FORMAT NIL "__h_~A_mem" number)))
 
+(DEFUN make-match-arg-name (id number)
+  (INTERN (FORMAT NIL "__h_~A_~A_arg" id number)))
+
 ;; Data Constructor
 ;; data Mood = Blah | Woot
 ;; (data TestT NoArg (WithArg (type x) (type y)))
 (DEFMACRO data (name ctor &REST ctors)
-  (LET ((enum-name (INTERN (FORMAT NIL "__h_~A_ctor_t" name)))
-        (ctors (MAPCAR #'(LAMBDA (ct) (IF (SYMBOLP ct) (LIST ct) ct)) (PUSH ctor ctors))))
+  (LET* ((name (MACROEXPAND name))
+         (enum-name (INTERN (FORMAT NIL "__h_~A_ctor_t" name)))
+         (ctors (MAPCAR #'(LAMBDA (ct)
+                            (LET ((ct (MACROEXPAND ct)))
+                              (IF (SYMBOLP ct) (LIST ct) ct)))
+                        (PUSH ctor ctors))))
     `($$$ (enum ,enum-name
-            ,@(MAPCAR #'(LAMBDA (ct) (LIST (make-data-type-name (CAR ct)))) ctors))
+            ,@(MAPCAR #'(LAMBDA (ct)
+                          (LET ((ct (MACROEXPAND ct)))                            
+                            (LIST (make-data-type-name (MACROEXPAND (CAR ct))))))
+                      ctors))
        (struct ,name
          (member ,enum-name __h_ctor)
          (union 
@@ -100,12 +110,12 @@
                                                                                (make-data-member-name mem-counter)
                                                                                array-def)))))
                                             (CDR ct))
-                                (declare ,(CAR ct)))))
+                                (declare ,(MACROEXPAND (CAR ct))))))
                        ctors)
            (declare __h_data)))
        ,@(MAPCAR #'(LAMBDA (ct)
                      (WHEN (EQUAL name (CAR ct)) (ERROR (FORMAT NIL "data type and ctor having same name: ~A" name)))
-                     (LET ((ct-name (CAR ct))
+                     (LET ((ct-name (MACROEXPAND (CAR ct)))
                            (params (CDR ct)))
                        (IF (NULL params)
                            `(func ,ct-name ()
@@ -133,47 +143,69 @@
 ;; pattern matching
 ;; data type and arguments expansion
 ;; => for additional condition
-(DEFMACRO match (data &REST cases)
-  `(cond ,@(MAPCAR #'(LAMBDA (case)
-                       (LET ((args ())
-                             (=>found NIL))
-                         (IF (ATOM (CAR case))
-                             (DOTIMES (i (1- (LENGTH (CDR case)))) ; data type
-                               (LET ((arg (NTH (1+ i) case)))
-                                 (UNLESS =>found
-                                   (IF (EQUAL arg '=>)
-                                       (SETQ =>found (NTH (+ i 2) case))
-                                       (UNLESS (EQUAL arg '_)
-                                         (PUSH (LIST arg (LIST '$ data '__h_data (CAR case) (make-data-member-name i)))
-                                               args))))))
-                             (PROGN
-                               (DOTIMES (i (LENGTH (CAR case))) ; tuple
-                                 (LET ((arg (NTH i (CAR case))))
-                                   (UNLESS (EQUAL arg '_)
-                                     (PUSH (LIST arg (LIST '$ data (make-data-member-name i)))
-                                           args))))
-                               (WHEN (EQUAL (CADR case) '=>)
-                                 (SETQ =>found (NTH 2 case)))))
+(DEFMACRO match* (data cases tail)
+  (IF (NULL cases)
+      `($$$)
+      (LET* ((match-id (GENSYM "match"))
+             (case (CAR cases))
+             (symb (MACROEXPAND (CAR case)))
+             (defs ())
+             (args ())
+             (=>found NIL))
+        (IF (ATOM symb)
+            (DOTIMES (i (1- (LENGTH (CDR case)))) ; data type
+              (LET ((arg (MACROEXPAND (NTH (1+ i) case))))
+                (UNLESS =>found
+                  (IF (EQUAL arg '=>)
+                      (SETQ =>found (NTH (+ i 2) case))
+                      (UNLESS (EQUAL arg '_)
+                        (LET ((arg-name (make-match-arg-name match-id i))
+                              (mem-name (LIST '$ data '__h_data symb (make-data-member-name i))))
+                          (PUSH `(auto ,arg-name . (FUNCTION ,mem-name)) defs)
+                          (PUSH (LIST arg arg-name) args)
+                          ;; (IF (ATOM arg)
+                          ;;     (PUSH (LIST arg arg-name) args)
+                          ;;    (match ,data ,@(CDR cases)))
+                          ))))))
+            (PROGN
+              (DOTIMES (i (LENGTH symb)) ; tuple
+                (LET ((arg (MACROEXPAND (NTH i symb))))
+                  (UNLESS (EQUAL arg '_)
+                    (LET ((arg-name (make-match-arg-name match-id i))
+                          (mem-name (LIST '$ data (make-data-member-name i))))
+                      (PUSH `(auto ,arg-name . (FUNCTION ,mem-name)) defs)
+                      (PUSH (LIST arg arg-name) args)))))
+              (WHEN (EQUAL (CADR case) '=>)
+                (SETQ =>found (NTH 2 case)))))
 
-                         (WHEN (OR (AND =>found (LISTP (CAR case)) (/= (LENGTH case) 4))
-                                 (AND =>found (ATOM (CAR case)) (< (LENGTH case) 4))
-                                 (AND (NULL =>found) (LISTP (CAR case)) (/= (LENGTH case) 2))
-                                 (AND (NULL =>found) (ATOM (CAR case)) (< (LENGTH case) 2)))
-                           (ERROR (FORMAT NIL "match case wrong definition: ~A" case)))
-                         
-                         `(,(IF (EQUAL (CAR case) '_)
-                                `(== true true)
-                                `(letin (,@(REVERSE args))
-                                   ,(IF (ATOM (CAR case))
-                                        (IF =>found
-                                            `(and (== ($ ,data __h_ctor) ,(make-data-type-name (CAR case))) ,=>found)
-                                            `(== ($ ,data __h_ctor) ,(make-data-type-name (CAR case))))
-                                        (IF =>found
-                                            =>found
-                                            `(== true true)))))
-                            (letin (,@(REVERSE args))
-                              ,(CAR (LAST case))))))
-                   cases)))
+        (WHEN (OR (AND =>found (LISTP symb) (/= (LENGTH case) 4))
+                (AND =>found (ATOM symb) (< (LENGTH case) 4))
+                (AND (NULL =>found) (LISTP symb) (/= (LENGTH case) 2))
+                (AND (NULL =>found) (ATOM symb) (< (LENGTH case) 2)))
+          (ERROR (FORMAT NIL "match case wrong definition: ~A" case)))
+        
+        `(let ,defs
+           (letin ,args
+             ,(APPEND
+               (IF (EQUAL symb '_)
+                   (CAR (LAST case))
+                   (IF (ATOM symb)
+                       (IF =>found
+                           `(if (and (== ($ ,data __h_ctor) ,(make-data-type-name symb)) ,=>found)
+                                ,(CAR (LAST case)))
+                           `(if (== ($ ,data __h_ctor) ,(make-data-type-name symb))
+                                ,(CAR (LAST case))))
+                       (IF =>found
+                           `(if ,=>found
+                                ,(CAR (LAST case)))
+                           `(if (== true true)
+                                ,(CAR (LAST case))))))
+               (IF (CDR cases)
+                   `((match* ,data ,(CDR cases) ,(+ tail 1)))
+                   '())))))))
+
+(DEFMACRO match (data &REST cases)
+  `(match* ,data ,cases 0))
 
 ;; tuple
 ;; (a, b, c)
