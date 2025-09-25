@@ -193,18 +193,26 @@
         (func print_inside_maybe (((<> Maybe (<> Maybe char)) mb))
               (match mb
                      ((<> Nothing (<> Maybe char)) (format #t "wrapper Nothing Maybe char: Nothing\n"))
-                     ((<> Just (<> Maybe char)) mc
+                     ((<> Just    (<> Maybe char)) mc
                       (match mc
-                             ((<> Nothing char) (format #t "wrapper Nothing char: Nothing\n"))
-                             ((<> Just char) c (format #t "wrapper Just Maybe char: Just %c\n" c))))))
-        
+                             ((<> Nothing char) (format #t "wrapper Just Nothing char: Nothing\n"))
+                             ((<> Just char) c  (format #t "wrapper Just Just char: Just %c\n" c))))))
+
+        (func print_inner_maybe (((<> Maybe (<> Maybe char)) imb))
+              (match imb
+                     ((<> Nothing (<> Maybe char)) (format #t "inner Nothing Maybe char: Nothing\n"))
+                     ((<> Just    (<> Maybe char)) ((<> Nothing char)) (format #t "inner Just Nothing char: Nothing\n"))
+                     ((<> Just    (<> Maybe char)) ((<> Just char) c)  (format #t "inner Just Just char: Just %c\n" c))))
+
         (data TupleT (Tuple (int x) (char c)))
 
         (typedef (tuple int char short) aTuple)
         (func print_tuple ((aTuple tup))
               (match tup
-                     ((i c s) => (> s 10) (format #t "tuple s > 10: int, char, short = (%d, %c, %d)\n" i c s))
-                     ((i c s) (format #t "tuple: int, char, short = (%d, %c, %d)\n" i c s))))
+                     ((\, i c s) => (> s 10) (format #t "tuple s > 10: int, char, short = (%d, %c, %d)\n" i c s))
+                     ((\, i c s) (format #t "tuple: int, char, short = (%d, %c, %d)\n" i c s))))
+
+        (specialise_Maybe aTuple)
         
         (main
             (format #t "output of haskelus function: %d\n" (-> (-> (-> (<> add3 int) call_0 2) call_1 3) call 4))
@@ -275,14 +283,33 @@
             (print_tuple (cast-tuple aTuple tup1)) ; use pointer or cast-tuple
             ($> (\\ tup
                     (match tup
-                           ((i c s) => (> s 10) (format #t "tuple s > 10: int, char, short = (%d, %c, %d)\n" i c s))
-                           ((i c s) (format #t "tuple: int, char, short = (%d, %c, %d)\n" i c s))))
+                           ((\, i c s) => (> s 10) (format #t "tuple s > 10: int, char, short = (%d, %c, %d)\n" i c s))
+                           ((\, i c s) (format #t "tuple: int, char, short = (%d, %c, %d)\n" i c s))))
               tup2))
 
           (let ((auto m1 . #'((<> Nothing (<> Maybe char))))
                 (auto m2 . #'((<> Just (<> Maybe char)) ((<> Nothing char))))
-                (auto m3 . #'((<> Just (<> Maybe char)) ((<> Just char) #\H))))
+                (auto m3 . #'((<> Just (<> Maybe char)) ((<> Just char) #\G)))
+                (auto m4 . #'((<> Just (<> Maybe char)) ((<> Just char) #\H))))
             (print_inside_maybe m1)
             (print_inside_maybe m2)
-            (print_inside_maybe m3))
+            (print_inside_maybe m3)
+            (print_inner_maybe  m4))
+
+          (match ((<> Just aTuple) (cast aTuple '{ 55 #\D 93 }))
+                 ((<> Nothing aTuple) (format #t "tuple inside maybe: Nothing"))
+                 ((<> Just aTuple) (= t (\, i c s))
+                  (match t ((\, ii cc ss)
+                            (progn
+                              (format #t "tuple inside maybe: Just tuple: int, char, short = (%d, %c, %d)\n" i c s)
+                              (format #t "tuple inside maybe: Just tuple: int, char, short = (%d, %c, %d)\n" ii cc ss))))))
+
+          (match (cast (tuple int (<> Maybe char)) '{ 5060 ((<> Just char) #\M) })
+                 ((\, _ ((<> Nothing char))) (format #t "maybe inside tuple: Nothing\n"))
+                 ((\, i ((<> Just char) c => (> c #\L)))
+                  (format #t "maybe inside tuple: (c > L) int, Just char: = (%d, %c)\n" i c))
+                 (= t (\, _ ((<> Just char) c => (< c #\L)))
+                    (match t ((\, i ((<> Just char) _))
+                              (format #t "maybe inside tuple: (c < L) int, Just char: = (%d, %c)\n" i c)))))
           ))
+

@@ -16,8 +16,7 @@
                 (let ((symb (eval expr)))
                   (setq result symb))
                 (progn
-                  (setq result (if as-body (specify-body (list expr)) (specify-expr expr)))
-                  (display "BOOO" (body result) #\Newline))))
+                  (setq result (if as-body (specify-body (list expr)) (specify-expr expr))))))
           (setf *macroexpand* tmp-expantion)
           result)
         (specify-call-expr def))))

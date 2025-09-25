@@ -861,7 +861,7 @@
                                                              ,variable ,array . #'(|cof| ,ptr-name)))
                                             ,@has-defer)))
                                attributes)))
-                             (display "F-----------------FFFF" value (specify-expr value) #\Newline)
+
                      (add-param
                          (make-specifier (specify-decl-name< variable) '|@VAR| const typeof modifier const-ptr array
                                          (if (null value)
