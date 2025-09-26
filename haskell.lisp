@@ -80,9 +80,25 @@
 (DEFUN make-match-arg-name (id number)
   (INTERN (FORMAT NIL "__h_~A_~A_arg" id number)))
 
+;; Tuple
+;; (a, b, c)
+;; use as variable type
+;; (var (Tuple int char) tu . '{ 2 #\c })
+(DEFMACRO Tuple (&REST elements)
+  (LET ((members ()))
+    (DOTIMES (i (LENGTH elements))
+      (PUSH (LIST (NTH i elements) (make-data-member-name i)) members))
+  `'{ ,@(REVERSE members) }))
+
+;; helper for tuple passing by value
+(DEFMACRO cast-tuple (type value)
+  `(cast ,type (cof (cast (,type *) (aof ,value)))))
+
 ;; Data Constructor
 ;; data Mood = Blah | Woot
 ;; (data TestT NoArg (WithArg (type x) (type y)))
+;; for value type and copy on assignment types
+;; suggestion: no member pointer and no self member reference
 (DEFMACRO data (name ctor &REST ctors)
   (LET* ((name (MACROEXPAND name))
          (enum-name (INTERN (FORMAT NIL "__h_~A_ctor_t" name)))
@@ -139,6 +155,104 @@
                                                     })))))))
                  ctors))))
 
+;; data Maybe = Nothing | Just a
+(generic specialise_Maybe (a)
+         (data (<> Maybe a)
+               (<> Nothing a)
+               ((<> Just a) (a value))))
+
+;; Data Constructor
+;; data Mood = Blah | Woot
+;; (data TestT NoArg (WithArg (type x) (type y)))
+;; for pointer type and copy reference on assignment types
+;; suggestion: some member pointer or self member reference
+;; auto Maybe type
+(DEFMACRO class (name ctor &REST ctors)
+  (LET* ((name (MACROEXPAND name))
+         (enum-name (INTERN (FORMAT NIL "__h_~A_ctor_t" name)))
+         (ctors (MAPCAR #'(LAMBDA (ct)
+                            (LET ((ct (MACROEXPAND ct)))
+                              (IF (SYMBOLP ct) (LIST ct) ct)))
+                        (PUSH ctor ctors))))
+    `($$$ (enum ,enum-name
+            ,@(MAPCAR #'(LAMBDA (ct)
+                          (LET ((ct (MACROEXPAND ct)))                            
+                            (LIST (make-data-type-name (MACROEXPAND (CAR ct))))))
+                      ctors))
+       (decl) (struct (<> ,name class_t))
+       (typedef (<> ,name class_t) * ,name)
+       (specialise_Maybe ,name)
+       (struct (<> ,name class_t)
+         (member ,enum-name __h_ctor)
+         (union 
+             ,@(MAPCAR #'(LAMBDA (ct)
+                           (LET ((mem-counter -1))
+                             `(struct
+                                  ,@(MAPCAR #'(LAMBDA (param)
+                                                (SETQ mem-counter (1+ mem-counter))
+                                                (MULTIPLE-VALUE-BIND (const type modifier const-ptr variable array-def)
+                                                    (CICILI:SPECIFY-TYPE< param)
+                                                  `(member ,@(REMOVE NIL (LIST const type modifier const-ptr
+                                                                               (make-data-member-name mem-counter)
+                                                                               array-def)))))
+                                            (CDR ct))
+                                (declare ,(MACROEXPAND (CAR ct))))))
+                       ctors)
+           (declare __h_data)))
+       ,@(MAPCAR #'(LAMBDA (ct)
+                     (WHEN (EQUAL name (CAR ct)) (ERROR (FORMAT NIL "data type and ctor having same name: ~A" name)))
+                     (LET ((ct-name (MACROEXPAND (CAR ct)))
+                           (params (CDR ct)))
+                       (IF (NULL params)
+                           `(func ,ct-name ()
+                                  (out ,name)
+                                  (return (cast ,name '{ ,(make-data-type-name ct-name) })))
+                           (IF (> (LENGTH params) 1)
+                               `($$$ (func ,(make-data-ctor-name ct-name) ,params
+                                           (out ,name)
+                                           (var ,name this . #'(malloc (sizeof (<> ,name class_t))))
+                                           (set (cof this)
+                                             (cast (<> ,name class_t) '{
+                                                   ,(make-data-type-name ct-name)
+                                                   ,(INTERN (FORMAT NIL "$__h_data$~A" ct-name))
+                                                   '{ ,@(MAPCAR #'CADR params) }
+                                                   }))
+                                           (return this))
+                                  (fn ,ct-name ,@(MAPCAR #'CADR params)
+                                      (,(make-data-ctor-name ct-name) ,@(MAPCAR #'CADR params))))
+                               `(func ,ct-name ,params
+                                      (out ,name)
+                                      (var ,name this . #'(malloc (sizeof ,name)))
+                                      (set (cof this)
+                                        (cast (<> ,name class_t) '{
+                                              ,(make-data-type-name ct-name)
+                                              ,(INTERN (FORMAT NIL "$__h_data$~A" ct-name))
+                                              '{ ,@(MAPCAR #'CADR params) }
+                                              }))
+                                      (return this))))))
+                 ctors))))
+
+;; List must be defined by this generic
+(generic specialise_List (type a)
+         (class type ((<> Cons a) (a head) ((<> Maybe type) tail)))
+         
+         (func (<> new type) ((const a * buf))
+               (out (<> Maybe type))
+               (if (null buf)
+                   (return ((<> Nothing type)))
+                   (let ((a item . #'(cof buf)))
+                     (if (== item #\Null)
+                         (return ((<> Nothing type)))
+                         (return ($> (<> Just type) $ (<> Cons a) item $ (<> new type) (++ buf)))))))
+
+         (func (<> show type) (((<> Maybe type) list))
+               (match list
+                      ((<> Just type) (* (<> Cons a) head tail)
+                       (block (putchar head) ((<> show type) tail)))
+                      ;; ((<> Just String) ((\: head tail)) (format #t "a char: %c\n" head))
+                      (_ nil)))
+         )
+
 ;; pattern matching
 ;; data type and arguments expansion
 ;; => for additional condition
@@ -151,8 +265,15 @@
          (defs ())
          (args ())
          (conds ())
-         (=>found NIL))
+         (=>found NIL)
+         (is-ptr NIL))
 
+    (WHEN (AND (ATOM symb) (EQUAL symb '*))
+      (SETQ is-ptr T)
+      (SETQ case (CDR case))
+      (SETQ symb (MACROEXPAND (CAR case)))
+      (SETQ tail (CDR case)))
+         
     (WHEN (OR has-alias (NOT (EQL data data-name)))
       (PUSH `(const auto ,data-name . ,(IF (LISTP data) `(FUNCTION ,data) data)) defs))
     
@@ -191,7 +312,10 @@
                          (SETQ conds (IF conds `(and ,conds ,(NTH (+ i 2) case)) (NTH (+ i 2) case))))
                        (UNLESS (EQUAL arg '_)
                          (LET ((arg-name (make-match-arg-name match-id i))
-                               (mem-name (LIST '$ data-name '__h_data symb (make-data-member-name i))))
+                               (mem-name (LIST '$
+                                               (LIST (IF is-ptr '-> '$) data-name '__h_data)
+                                               symb
+                                               (make-data-member-name i))))
                            (IF (ATOM arg)
                                (PROGN
                                  (PUSH `(const auto ,arg . (FUNCTION ,mem-name)) defs))
@@ -218,8 +342,8 @@
         (UNLESS conds (SETQ conds `(== true true)))
         (IF (ATOM symb)
             (SETQ conds (IF conds
-                            `(and (== ($ ,data-name __h_ctor) ,(make-data-type-name symb)) ,conds)
-                            `(== ($ ,data-name __h_ctor) ,(make-data-type-name symb))))
+                            `(and (== (,(IF is-ptr '-> '$) ,data-name __h_ctor) ,(make-data-type-name symb)) ,conds)
+                            `(== (,(IF is-ptr '-> '$) ,data-name __h_ctor) ,(make-data-type-name symb))))
             (UNLESS conds (SETQ conds `(== true true)))))
 
     (VALUES data-name symb tail defs args conds)))
@@ -243,21 +367,6 @@
 
 (DEFMACRO match (data &REST cases)
   `(match* ,data ,cases 0))
-
-;; tuple
-;; (a, b, c)
-;; use as variable type
-;; (var (tuple int char) tu . '{ 2 #\c })
-(DEFMACRO tuple (&REST elements)
-  (LET ((members ()))
-    (DOTIMES (i (LENGTH elements))
-      (PUSH (LIST (NTH i elements) (make-data-member-name i)) members))
-  `'{ ,@(REVERSE members) }))
-
-;; helper for tuple passing by value
-(DEFMACRO cast-tuple (type value)
-  `(cast ,type (cof (cast (,type *) (aof ,value)))))
-
 
 ;; CURRY UNCURRY the Legend
 ;; (: head tail) for list

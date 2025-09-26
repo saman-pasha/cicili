@@ -185,6 +185,9 @@
    (1 . match)
    (1 . tuple)
    (1 . cast-tuple)
+   (1 . \,)
+   (1 . \:)
+   (1 . class)
    ))
 
 (defun cicili-add-attributes (face-name keyword-rules)

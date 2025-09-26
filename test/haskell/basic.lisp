@@ -181,11 +181,6 @@
         (method (Integer . show) ()
           (-> Integer show (cof this)))
 
-        ;; data Maybe = Nothing | Just a
-        (generic specialise_Maybe (a)
-                 (data (<> Maybe a)
-                       (<> Nothing a)
-                       ((<> Just a) (a value))))
         ;; (specialise_Maybe int)
         (specialise_Maybe char)
         (specialise_Maybe (<> Maybe char))
@@ -204,15 +199,15 @@
                      ((<> Just    (<> Maybe char)) ((<> Nothing char)) (format #t "inner Just Nothing char: Nothing\n"))
                      ((<> Just    (<> Maybe char)) ((<> Just char) c)  (format #t "inner Just Just char: Just %c\n" c))))
 
-        (data TupleT (Tuple (int x) (char c)))
-
-        (typedef (tuple int char short) aTuple)
+        (typedef (Tuple int char short) aTuple)
         (func print_tuple ((aTuple tup))
               (match tup
                      ((\, i c s) => (> s 10) (format #t "tuple s > 10: int, char, short = (%d, %c, %d)\n" i c s))
                      ((\, i c s) (format #t "tuple: int, char, short = (%d, %c, %d)\n" i c s))))
 
         (specialise_Maybe aTuple)
+
+        (specialise_List String char)
         
         (main
             (format #t "output of haskelus function: %d\n" (-> (-> (-> (<> add3 int) call_0 2) call_1 3) call 4))
@@ -271,14 +266,12 @@
           (-> Integer show (Int   20000))
 
           (let ((auto integer . #'(Int 3000))
-                (auto tuple . #'((Tuple 12) #\S))
                 ('{ (int dd) } ss . '{ 2 })
                 (aTuple tup0 . '{ 4400 #\A 33 })
-                ((tuple int char short) tup1 . '{ 4401 #\B 34 })
-                (auto tup2 . #'(cast (tuple int char short) '{ 4402 #\C 35 })))
+                ((Tuple int char short) tup1 . '{ 4401 #\B 34 })
+                (auto tup2 . #'(cast (Tuple int char short) '{ 4402 #\C 35 })))
             (-> integer show)
 
-            (match tuple (Tuple i c (format #t "Tuple: int, char = (%d, %c)\n" i c)))
             (print_tuple tup0)
             (print_tuple (cast-tuple aTuple tup1)) ; use pointer or cast-tuple
             ($> (\\ tup
@@ -304,12 +297,18 @@
                               (format #t "tuple inside maybe: Just tuple: int, char, short = (%d, %c, %d)\n" i c s)
                               (format #t "tuple inside maybe: Just tuple: int, char, short = (%d, %c, %d)\n" ii cc ss))))))
 
-          (match (cast (tuple int (<> Maybe char)) '{ 5060 ((<> Just char) #\M) })
+          (match (cast (Tuple int (<> Maybe char)) '{ 5060 ((<> Just char) #\M) })
                  ((\, _ ((<> Nothing char))) (format #t "maybe inside tuple: Nothing\n"))
                  ((\, i ((<> Just char) c => (> c #\L)))
                   (format #t "maybe inside tuple: (c > L) int, Just char: = (%d, %c)\n" i c))
                  (= t (\, _ ((<> Just char) c => (< c #\L)))
                     (match t ((\, i ((<> Just char) _))
                               (format #t "maybe inside tuple: (c < L) int, Just char: = (%d, %c)\n" i c)))))
+          
+          ((<> show String) ((<> new String) "Haskell List\n"))
+          (match ((<> new String) "Haskell List\n")
+                 ((<> Just String) (= str * (<> Cons char) head tail) (format #t "a char: %c\n" head))
+                 ;; ((<> Just String) ((\: head tail)) (format #t "a char: %c\n" head))
+                 (_ (format #t "Nothing String\n")))
           ))
 

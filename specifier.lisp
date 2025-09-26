@@ -902,7 +902,8 @@
 
 (defun specify-return-expr (def)
   (when (> (length def) 2) (error (format nil "wrong return form ~A" def)))
-  (let ((output (nth 1 def)))
+  (let ((output (expand-macros (nth 1 def))))
+    (display "OOOOOO" output #\Newline)
     (if (and *function-spec* (or (listp (typeof *function-spec*)) (and (listp output) (key-eq (car output) '|QUOTE|))))
         (make-specifier nil '|@RETURN| nil nil nil nil nil
                         (specify-cast-expr (list '|cast|
@@ -913,7 +914,11 @@
                                                               (const-ptr *function-spec*)
                                                               (array-def *function-spec*)))
                                                  output)) '())
-        (let ((out (if (null output) nil (specify-expr output))))
+        (let* ((out-tmp (if (null output) nil (specify-expr output)))
+               (out (if (symbolp out-tmp)
+                        (specify-call-expr (list out-tmp))
+                        out-tmp)))
+          (display "OOOOOO---" out #\Newline)
           (when (and (listp output)
                   (key-eq (car output) '|closure|)
                   *function-spec* (key-eq (typeof *function-spec*) '|auto|))
@@ -1160,7 +1165,7 @@
     (multiple-value-bind (const type modifier const-ptr variable array)
         (specify-type< (nthcdr 1 def))
 	  (when (null variable) (error (format nil "syntax error ~A" def)))
-      (setf (name typedef-spec) (specify-decl-name< variable))
+      (setf (name typedef-spec) (specify-decl-name< (EXPAND-MACROS variable)))
       (if *module-path* (setf (unique typedef-spec) (free-name *module-path* (name typedef-spec))))
       (setf (const typedef-spec) const)
       (setf (typeof typedef-spec) type)
