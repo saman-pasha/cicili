@@ -157,12 +157,14 @@
   (maphash #'(lambda (k v) (print-specifier v lvl)) table))
 
 (defun specify-decl-name< (name)
-  (if (is-decl-name name) name
-      (error (format nil "wrong name ~S" name))))
+  (let ((name (intern (substitute #\_ #\^ (symbol-name name)))))
+    (if (is-decl-name name) name
+        (error (format nil "wrong name ~S" name)))))
 
 (defun specify-name< (name)
-  (if (is-name name) (specify-typeof< name)
-      (error (format nil "wrong name ~S" name))))
+  (let ((name (intern (substitute #\_ #\^ (symbol-name name)))))
+    (if (is-name name) (specify-typeof< name)
+        (error (format nil "wrong name ~S" name)))))
 
 (defun specify-receiver< (name)
   (let ((parts (str:split "->" (string name))))
@@ -198,7 +200,6 @@
   (let* ((str-name (symbol-name symbol))
          (count$ (str:count-substring "/" str-name)))
     (cond ((str:starts-with-p "/" str-name)
-           ;; (intern (str:substring 1 t str-name)))
            (intern str-name))
           ((> count$ 0) (free-name (map 'list #'intern (str:split "/" str-name)) nil))
           (t symbol))))
@@ -215,7 +216,6 @@
         (cond ((or (key-eq '|struct| ty) (key-eq '|union| ty))
                (list ty (specify-name-with-module< (cadr type))))
               ((key-eq '|typeof| ty) (specify-typeof-expr type))
-              ;; ((key-eq '|<>| ty)     (specify-decl-name< (apply '<> (cdr type))))
               ((key-eq '|t<>| ty)    (specify-expr type))
               ((key-eq '$$ ty)       (specify-expr type))
               ((key-eq '|code| ty)   (specify-expr type))
@@ -246,7 +246,6 @@
                  (list '|struct| (if *module-path* (free-name *module-path* sname) sname))))
               (t (let ((bd (expand-macros type)))
                    (if (eq bd type)
-                       ;; (error (format nil "type syntax error ~A" type))
                        type
                        (specify-typeof< bd))))
               ))))
@@ -466,7 +465,8 @@
             (when (= (length array) 3)
               (setq array (list (specify-expr (nth 1 array)))))))
     (when   (< status 0) (error (format nil "wrong type descriptor ~D ~A" status desc)))
-    (values const type modifier const-ptr variable array)))
+    (values const (when type (specify-name< type))
+            modifier const-ptr (when variable (specify-name< variable)) array)))
 
 (defun specify-type-value< (desc)
   (let ((l (cdr (last desc)))
@@ -659,31 +659,56 @@
   (when (< (length def) 2) (error (format nil "typeof syntax error ~A" def)))
   (make-specifier nil '|@TYPEOF| nil nil nil nil nil (specify-expr (expand-macros (cadr def))) '()))
 
-(defun specify-call-expand (def)
-  (let ((app (specify-expr (nth 0 def))))
-    (if (symbolp app)
-        (if (nthcdr 1 def)
-            (specify-expr (append (list app) (nthcdr 1 def)))
-            app)
-        app)))
+;; (((<> a b) 1) 2)
+;; ((<> a b) 1)
+;; (<> a b)
+;; a_b
+;; (a_b 1)
+;; if returns a_b_0
+;; then       (a_b_0 2) ; curry lambda call form
+;; else       (a_b 1 2)
 
-(defun specify-call-expr (def) ; consumes all args whether output of func specification be another macro
+;; (((p0 2) 3) 4)
+;; ((p0 2) 3)
+;; (p0 2)
+;; p1
+(defun specify-call-expand (def)
+  (let ((def (expand-macros def)))
+    (if (symbolp def)
+        def
+        (let ((expr
+                  (let ((symb (nth 0 def)))
+                    (if (symbolp symb)
+                        (if (> (length def) 1)
+                            (let ((app (expand-macros (list symb (nth 1 def)))))
+                              (if (symbolp app)
+                                  (if (> (length def) 2)
+                                      (specify-call-expand (append (list app) (nthcdr 2 def))))
+                                  app)
+                              def))
+                        def)
+                    (let ((app (specify-call-expand symb)))
+                      (if (eql app symb)
+                          def
+                          (specify-call-expand (append (list app) (nthcdr 1 def))))))))
+          (let ((result (expand-macros expr)))
+            (if (eql expr result)
+                result
+                (specify-call-expand result)))))))
+        
+(defun specify-call-expr (def) ; consumes all args whether output of a lambda or a fn specification be another macro
   (when (key-eq (car def) '|aof|) (error (format nil "'address of' aka 'aof' takes only one argument ~A" def)))
-  (let ((app (specify-expr (nth 0 def))))
-    (if (symbolp app)
-        (if (nthcdr 1 def)
-            (specify-expr (append (list app) (nthcdr 1 def)))
-            app)
-        (progn
-          (make-specifier app '|@CALL| nil nil nil nil nil
-                          (if (> (length def) 1)
-                              (loop for item in (nthcdr 1 def)
-                                    collect (let ((app (specify-expr item)))
-                                              (if (symbolp app)
-                                                  (specify-call-expr (list app))
-                                                  app)))
-                              nil)
-                          '())))))
+  (let ((app (specify-call-expand def)))
+    (if (eql app def)
+        (if (symbolp app)
+            (error (format nil "invalid call ~A from ~A" app def))
+            (make-specifier (specify-expr (nth 0 app)) '|@CALL| nil nil nil nil nil
+                            (if (> (length app) 1)
+                                (loop for item in (nthcdr 1 app)
+                                      collect (specify-expr item))
+                                nil)
+                            '()))
+        (specify-expr app))))
 
 ;; var clause only allowed as global vars but inside macros for complex situation
 ;; use let clause instead
@@ -903,7 +928,6 @@
 (defun specify-return-expr (def)
   (when (> (length def) 2) (error (format nil "wrong return form ~A" def)))
   (let ((output (expand-macros (nth 1 def))))
-    (display "OOOOOO" output #\Newline)
     (if (and *function-spec* (or (listp (typeof *function-spec*)) (and (listp output) (key-eq (car output) '|QUOTE|))))
         (make-specifier nil '|@RETURN| nil nil nil nil nil
                         (specify-cast-expr (list '|cast|
@@ -918,7 +942,6 @@
                (out (if (symbolp out-tmp)
                         (specify-call-expr (list out-tmp))
                         out-tmp)))
-          (display "OOOOOO---" out #\Newline)
           (when (and (listp output)
                   (key-eq (car output) '|closure|)
                   *function-spec* (key-eq (typeof *function-spec*) '|auto|))
@@ -1332,7 +1355,7 @@
 
 (defun specify-guard (def attrs)
   (when (> (length attrs) 0) (error (format nil "wrong attributes ~A" attrs)))
-  (let* ((name (specify-decl-name< (nth 1 def)))
+  (let* ((name (specify-decl-name< (expand-macros (nth 1 def))))
 	     (clauses (nthcdr 2 def))
 	     (guard-specifier (make-specifier name '|@GUARD| nil nil nil nil nil nil nil)))
     (let ((attributes '()))

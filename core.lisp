@@ -254,7 +254,7 @@
     (cond ((string= name "const") nil)
 	      (t (progn
 	           (dotimes (i (length name))
-		         (unless (find (char name i) "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_1234567890_")
+		         (unless (find (char name i) "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_1234567890_^")
 		           (return-from is-symbol nil)))
 	           t)))))
 
