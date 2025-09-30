@@ -296,7 +296,7 @@
                        (or (find (construct form) (list '|@LETN| '|@PROGN|) :test #'key-eq) ; container with ;
                          (not (find (construct form) *parent-bodies* :test #'key-eq))))
                      (output ";~%")
-                     (unless (find (construct form) (list '|@GUARD| '|@MODULE| '|@CALL| '|@CAST|)
+                     (unless (find (construct form) (list '|@IF| '|@GUARD| '|@MODULE| '|@CALL| '|@CAST|)
                                    :test #'key-eq) ; no ;~%
                        (output "~%"))))))))
 
@@ -325,7 +325,7 @@
                          (or (find (construct form) (list '|@LETN| '|@PROGN|) :test #'key-eq) ; container with ;
                            (not (find (construct form) *parent-bodies* :test #'key-eq))))
                        (output ";~%")
-                       (unless (find (construct form) (list '|@GUARD| '|@MODULE| '|@CALL| '|@CAST|)
+                       (unless (find (construct form) (list '|@IF| '|@GUARD| '|@MODULE| '|@CALL| '|@CAST|)
                                      :test #'key-eq) ; no ;~%
                          (output "~%")))))
 	         inners)))

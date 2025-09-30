@@ -159,12 +159,23 @@
 (defun specify-decl-name< (name)
   (let ((name (intern (substitute #\_ #\^ (symbol-name name)))))
     (if (is-decl-name name) name
-        (error (format nil "wrong name ~S" name)))))
+        (error (format nil "wrong declaration name ~S" name)))))
 
 (defun specify-name< (name)
-  (let ((name (intern (substitute #\_ #\^ (symbol-name name)))))
-    (if (is-name name) (specify-typeof< name)
-        (error (format nil "wrong name ~S" name)))))
+  ;; for incomplete type error, field of its own type
+  (let ((name (expand-macros name)))
+    (if (listp name)
+        (if (or (key-eq '|struct| (car name)) (key-eq '|union| (car name)))
+            (let* ((ty (expand-macros (cadr name)))
+                   (name (intern (substitute #\_ #\^ (symbol-name ty)))))
+              (if (is-name name)
+                  (specify-typeof< name)
+                  (error (format nil "wrong name ~S" name))))
+            (specify-typeof< name)) ; use for typeof
+        (let ((name (intern (substitute #\_ #\^ (symbol-name name)))))
+          (if (is-name name)
+              (specify-typeof< name)
+              (error (format nil "wrong name ~S" name)))))))
 
 (defun specify-receiver< (name)
   (let ((parts (str:split "->" (string name))))
@@ -213,8 +224,8 @@
             type)
           (specify-name-with-module< type))
       (let ((ty (car type)))
-        (cond ((or (key-eq '|struct| ty) (key-eq '|union| ty))
-               (list ty (specify-name-with-module< (cadr type))))
+        (cond ((or (key-eq '|struct| ty) (key-eq '|union| ty)) ; for incomplete type error, field of its own type
+               (list ty (specify-name-with-module< (expand-macros (cadr type)))))
               ((key-eq '|typeof| ty) (specify-typeof-expr type))
               ((key-eq '|t<>| ty)    (specify-expr type))
               ((key-eq '$$ ty)       (specify-expr type))
@@ -465,7 +476,7 @@
             (when (= (length array) 3)
               (setq array (list (specify-expr (nth 1 array)))))))
     (when   (< status 0) (error (format nil "wrong type descriptor ~D ~A" status desc)))
-    (values const (when type (specify-name< type))
+    (values const (if type (if (typep type 'sp) type (specify-name< type)) type)
             modifier const-ptr (when variable (specify-name< variable)) array)))
 
 (defun specify-type-value< (desc)
@@ -782,8 +793,9 @@
                           (specify-expr
                               `'(|lambda|
                                  (,(remove nil
-                                   `(,const ,typeof
+                                   `(,const ,(if (key-eq '|auto| typeof) `(|typeof| ,value) typeof)
                                      ,(cond
+                                        ((key-eq '|auto| typeof) '|*|)
                                         ((key-eq '|*|  modifier) '|**|)
                                         ((key-eq '|**| modifier) '|***|)
                                         (t (error (format nil "not suitable for auto deferral"))))
@@ -796,9 +808,10 @@
                           (specify-expr
                               `'(|lambda|
                                  (,(remove nil
-                                   `(,const ,typeof
+                                   `(,const ,(if (key-eq '|auto| typeof) `(|typeof| ,value) typeof)
                                      ,(cond
                                         ((null  modifier) '|*|)
+                                        ((key-eq '|auto| typeof) '|*|)
                                         ((key-eq '|*|  modifier) '|**|)
                                         ((key-eq '|**| modifier) '|***|)
                                         (t (error (format nil "not suitable for deferment"))))
@@ -859,14 +872,17 @@
                                      (specify-expr
                                          `'(|lambda|
                                             (,(remove nil
-                                              `(,const ,typeof
+                                              `(,const ,(if (key-eq '|auto| typeof) `(|typeof| ,value) typeof)
                                                   ,(cond
+                                                     ((key-eq '|auto| typeof) '|*|)
                                                      ((key-eq '|*|  modifier) '|**|)
                                                      ((key-eq '|**| modifier) '|***|)
                                                      (t (error (format nil "not suitable for auto deferral"))))
                                                   ,const-ptr ,variable ,array)))
                                             ,(if has-atsign
-                                                 `(|->| (|cof| ,variable) |free|)
+                                                 (if (key-eq '|auto| typeof)
+                                                     `(|->|        ,variable  |free|)
+                                                     `(|->| (|cof| ,variable) |free|))
                                                  `(|free| (|cast| (|void| *) (|cof| ,variable)))))))
                                attributes)))
 		             (when (and has-defer (not (eq has-defer t)))
@@ -875,9 +891,10 @@
                                      (specify-expr
                                          `'(|lambda|
                                             (,(remove nil
-                                              `(,const ,typeof
+                                              `(,const ,(if (key-eq '|auto| typeof) `(|typeof| ,value) typeof)
                                                 ,(cond
                                                    ((null  modifier) '|*|)
+                                                   ((key-eq '|auto| typeof) '|*|)
                                                    ((key-eq '|*|  modifier) '|**|)
                                                    ((key-eq '|**| modifier) '|***|)
                                                    (t (error (format nil "not suitable for deferment"))))
@@ -1048,14 +1065,14 @@
             (mthd (cdr name)))
 
         (if (and (symbolp recv) (key-eq recv '<>))
-            (specify-decl-name< (if (listp mthd) (apply '<> mthd) mthd))
+            (specify-decl-name< (if (listp mthd) (expand-macros (append (list '<>) mthd)) mthd))
             (progn
               (when (listp recv)
                 (if (key-eq (car recv) '<>)
-                    (setq recv (apply '<> (cdr recv)))
+                    (setq recv (expand-macros recv))
                     (error (format nil "generic names are produced by '<>', ~A" name))))
               (when (and (listp mthd) (key-eq (car mthd) '<>))
-                (setq mthd (apply '<> (cdr mthd))))
+                (setq mthd (expand-macros mthd)))
               (cons (specify-decl-name< recv) (specify-decl-name< mthd)))))
       (specify-decl-name< name)))
 
@@ -1188,7 +1205,7 @@
     (multiple-value-bind (const type modifier const-ptr variable array)
         (specify-type< (nthcdr 1 def))
 	  (when (null variable) (error (format nil "syntax error ~A" def)))
-      (setf (name typedef-spec) (specify-decl-name< (EXPAND-MACROS variable)))
+      (setf (name typedef-spec) (specify-decl-name< (expand-macros variable)))
       (if *module-path* (setf (unique typedef-spec) (free-name *module-path* (name typedef-spec))))
       (setf (const typedef-spec) const)
       (setf (typeof typedef-spec) type)
@@ -1227,7 +1244,8 @@
 	     (name (specify-decl-name< (if is-anonymous
                                        (gensym "ciciliStruct")
                                        (if (and (listp (nth 1 def)) (key-eq (car (nth 1 def)) '<>))
-                                           (apply '<> (cdr (nth 1 def)))
+                                           ;; (apply '<> (cdr (nth 1 def)))
+                                           (expand-macros (nth 1 def))
                                            (nth 1 def)))))
 	     (clauses (if is-anonymous (nthcdr 1 def) (nthcdr 2 def)))
 	     (struct-specifier (make-specifier name '|@STRUCT| nil nil nil nil nil nil nil)))

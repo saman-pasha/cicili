@@ -33,12 +33,12 @@
   `(fn ,(GENSYM "__h_lambda") ,@body))
 
 ;; where and letin are the same
-(DEFMACRO letin (args body)
-  (IF args
-      `(,@(REDUCE #'LIST
-            (APPEND (LIST `(fn ,(GENSYM "__h_letIn") ,@(MAPCAR #'CAR args) ,body))
-                    (MAPCAR #'CADR args))))
-      body))
+;; (DEFMACRO letin (args body)
+;;   (IF args
+;;       `(,@(REDUCE #'LIST
+;;             (APPEND (LIST `(fn ,(GENSYM "__h_letIn") ,@(MAPCAR #'CAR args) ,body))
+;;                     (MAPCAR #'CADR args))))
+;;       body))
 
 ;; where and letin are the same
 (DEFMACRO where (args body)
@@ -130,6 +130,7 @@
            (declare __h_data)))
        ,@(MAPCAR #'(LAMBDA (ct)
                      (WHEN (EQUAL name (CAR ct)) (ERROR (FORMAT NIL "data type and ctor having same name: ~A" name)))
+
                      (LET ((ct-name (MACROEXPAND (CAR ct)))
                            (params (CDR ct)))
                        (IF (NULL params)
@@ -167,21 +168,33 @@
 ;; for pointer type and copy reference on assignment types
 ;; suggestion: some member pointer or self member reference
 ;; auto Maybe type
-(DEFMACRO class (name ctor &REST ctors)
+(DEFMACRO class (name ctor &REST rest-ctors)
   (LET* ((name (MACROEXPAND name))
          (enum-name (INTERN (FORMAT NIL "__h_~A_ctor_t" name)))
          (ctors (MAPCAR #'(LAMBDA (ct)
                             (LET ((ct (MACROEXPAND ct)))
                               (IF (SYMBOLP ct) (LIST ct) ct)))
-                        (PUSH ctor ctors))))
+                        (APPEND (LIST ctor) rest-ctors))))
     `($$$ (enum ,enum-name
             ,@(MAPCAR #'(LAMBDA (ct)
                           (LET ((ct (MACROEXPAND ct)))                            
                             (LIST (make-data-type-name (MACROEXPAND (CAR ct))))))
                       ctors))
+
+       ;; struct
        (decl) (struct (<> ,name class_t))
        (typedef (<> ,name class_t) * ,name)
+       ;; Maybe
+       (decl) (struct (<> Maybe ,name))
        (specialise_Maybe ,name)
+       
+       ;; letin clause will call this free function at destruction of Maybe
+       ;; and also Maybe instances call free function of wrrapped instance
+       (decl) (func (<> free ,name) (((<> Maybe ,name) _)))
+       (method ((<> Maybe ,name) . free) ()
+               ((<> free ,name) (cof this)))
+       
+       ;; actual type
        (struct (<> ,name class_t)
          (member ,enum-name __h_ctor)
          (union 
@@ -199,8 +212,11 @@
                                 (declare ,(MACROEXPAND (CAR ct))))))
                        ctors)
            (declare __h_data)))
+       
+       ;; constructors
        ,@(MAPCAR #'(LAMBDA (ct)
                      (WHEN (EQUAL name (CAR ct)) (ERROR (FORMAT NIL "data type and ctor having same name: ~A" name)))
+                     
                      (LET ((ct-name (MACROEXPAND (CAR ct)))
                            (params (CDR ct)))
                        (IF (NULL params)
@@ -374,16 +390,14 @@
           (FORMAT T "EEE0------ ~A ~A~% ~A~% ~A~% ~A~% ~A~%" data-name symb tail defs args conds)
 
           `(,(IF is-io 'let 'letn) ,(REVERSE defs)
-             (letin ,(REVERSE args)
+             (where ,(REVERSE args)
                ,(IF conds
                     (APPEND
                      `(,(IF is-io 'if '?) ,conds ,(CAR (LAST case)))
                      (IF (CDR cases)
                          `((match* ,data-name ,(CDR cases) ,is-io))
                          '()))
-                    (PROGN
-                      (FORMAT T "????????? ~A" (CAR (LAST case)))
-                      (CAR (LAST case))))))))))
+                    (CAR (LAST case)))))))))
 
 ;; match with required default value or void
 (DEFMACRO match (data &REST cases)
@@ -399,7 +413,7 @@
            (specialise_Maybe a))
          
          (class type ((<> Cons a) (a head) ((<> Maybe type) tail)))
-         
+
          (func (<> new type) ((const a * buf))
                (out (<> Maybe type))
                (if (null buf)
@@ -408,23 +422,45 @@
                      (if (== item #\Null)
                          (return ((<> Nothing type)))
                          (return ($> (<> Just type) $ (<> Cons a) item $ (<> new type) (++ buf)))))))
-
+         
+         (func (<> free type) (((<> Maybe type) list))
+               (io list
+                 (Just ^ type (= ls * Cons ^ a _ tail)
+                       (progn
+                         ((<> free type) tail)
+                         (free ls)))))
+         
          (func (<> show type) (((<> Maybe type) list))
                (io list
-                 ((<> Just type) (* (<> Cons a) head tail)
-                  (progn
-                    (putchar head)
-                    ((<> show type) tail)))))
+                 (Just ^ type (* Cons ^ a head tail)
+                       (progn
+                         (putchar head)
+                         ((<> show type) tail)))))
 
          (func (<> nth type) (((<> Maybe type) list) (int index))
                (out (<> Maybe a))
                (return (match list
-                         ((<> Just type) (* (<> Cons a) head tail)
-                          (? (== index 0)
-                            ((<> Just a) head)
-                            ((<> nth type) tail (-- index))))
+                         (Just ^ type (* Cons ^ a head tail)
+                               (? (== index 0)
+                                 ((<> Just a) head)
+                                 ((<> nth type) tail (-- index))))
                          (default ((<> Nothing a))))))
+
+         (func (<> len type) (((<> Maybe type) list))
+               (out int)
+               (return (match list
+                         (Just ^ type (* Cons ^ a head tail)
+                               (+ 1 ((<> len type) tail)))
+                         (default 0))))
          )
+
+;;; helper macro will auto defer all vars
+(DEFMACRO letin (var-list &REST body)
+  `(letn ,(MAP 'LIST #'(LAMBDA (var)
+                         (WHEN (/= (LENGTH var) 2) (ERROR (FORMAT NIL "wrong letin variable definition: ~A" var)))
+                         `(@auto ,(CAR var) . (FUNCTION ,(CADR var))))
+               var-list)
+     ,@body))
 
 ;; CURRY UNCURRY the Legend
 ;; (: head tail) for list

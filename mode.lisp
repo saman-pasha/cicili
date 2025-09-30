@@ -199,6 +199,7 @@
    (1 . Nothing)
    (1 . Just)
    (1 . Cons)
+   (1 . len)
    ))
 
 (defun cicili-add-attributes (face-name keyword-rules)

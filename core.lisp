@@ -225,8 +225,8 @@
 (defun indent (lvl)
   (make-string (* lvl 2) :initial-element #\Space))
 
-(defun <> (name &rest body)
-  (intern (format nil "~A_~{~A~}" name body)))
+;; (defun <> (name &rest body)
+;;   (intern (format nil "~{~A~^_~}" name body)))
 
 (defun make-generic-name (name generic)
   (format nil "~A ## _ ~A" name generic))

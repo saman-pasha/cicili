@@ -300,21 +300,30 @@
           
           (show^String (new^String "Haskell List\n"))
 
-          (match (nth^String (new^String "Haskell List\n") 3)
+          (match (nth^String (new^String "Haskell List") 3)
             (Just ^ char c (format #t "the 4th element is: %c\n" c))
             (default (format #t "4th element not found\n")))
 
-          (io (new^String "Haskell List\n")
-            ;; access by path mode
-            (Just ^ String (= str * Cons ^ char head tail) (format #t "a char: %c\n" head)))
-
+          ;; FFFFFRRRRREEEEEEE and LEEEENNNN method for classes
+          (letin ((txt (new^String "Haskell List")))
+            (io txt
+              ;; access by path mode
+              ;; * means Cons char ctor returns a pointer beacause Lists are classes
+              ;; = str at first of any case makes an alias for whole object
+              ;; ^ opr only inside cases can be used separated,
+              ;; note in other cicili clauses ^ must be mixed whithout any space
+              (Just ^ String (= str * Cons ^ char head tail)
+                    (format #t "first char is: %c, and length of tail is: %d\n"
+                            head (len^String tail)))))
+          
           ;; (io (new.String "Haskell List\n")
           ;;   ;; desired access case by path mode
           ;;   (Just (= str * Cons) head tail) (format #t "a char: %c\n" head))
 
-          (match (new^String "Haskell List\n")
+          (match (new^String "Haskell List")
             ;; simplified list element access
-            ;; (Just ^ String ((\: fst snd tail)) (format #t "first and second char from String: %c %c\n" fst snd))
+            ;; (Just ^ String ((\: char fst snd tail))
+            ;;       (format #t "first and second char from String: %c %c\n" fst snd))
             (default (format #t "Nothing String\n")))
 
         ))
