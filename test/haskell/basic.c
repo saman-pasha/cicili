@@ -54,14 +54,10 @@ Maybe_String Nothing_String () {
 Maybe_String Just_String (String value ) {
     return ((Maybe_String){ __h_Just_String_t , .__h_data.Just_String = { value }});
 }
-void free_String (Maybe_String   );
-void Maybe_String_m_free (Maybe_String * this ) {
-    free_String ((*this ));
-}
 typedef struct String_class_t {
   __h_String_ctor_t __h_ctor ;
-  union { /* ciciliUnion136 */
-    struct { /* ciciliStruct137 */
+  union { /* ciciliUnion129 */
+    struct { /* ciciliStruct130 */
       char __h_0_mem ;
       Maybe_String __h_1_mem ;
     } Cons_char ;
@@ -76,7 +72,7 @@ Maybe_String new_String (const char * buf ) {
     if (buf  ==  NULL  )
         return Nothing_String ();
     else
-        { /* cicili#Let151 */
+        { /* cicili#Let144 */
           char item  = (*buf );
           // ----------
           if (item  ==  '\0' )
@@ -85,121 +81,166 @@ Maybe_String new_String (const char * buf ) {
               return Just_String (__h_Cons_char_ctor (item , new_String ((++buf ))));
         }
 }
-void free_String (Maybe_String list ) {
-    { /* cicili#Let167 */
-      const __auto_type __h_match165_0_arg  = (((list . __h_data ). Just_String ). __h_0_mem );
-      const __auto_type ls  = __h_match165_0_arg ;
+void drop_String (Maybe_String list ) {
+    { /* cicili#Let160 */
+      const __auto_type __h_match158_0_arg  = (((list . __h_data ). Just_String ). __h_0_mem );
+      const __auto_type ls  = __h_match158_0_arg ;
       const __auto_type tail  = (((ls -> __h_data ). Cons_char ). __h_1_mem );
       // ----------
       if (((list . __h_ctor ) ==  __h_Just_String_t  ) &&  ((ls -> __h_ctor ) ==  __h_Cons_char_t  ) )
-          ({ /* cicili#Progn171 */
-            free_String (tail );
+          ({ /* cicili#Progn164 */
+            drop_String (tail );
             free (ls );
           });
     }
 }
+void free_String (Maybe_String * list ) {
+    drop_String ((*list ));
+}
 void show_String (Maybe_String list ) {
-    { /* cicili#Let180 */
-      const __auto_type __h_match178_0_arg  = (((list . __h_data ). Just_String ). __h_0_mem );
-      const __auto_type head  = (((__h_match178_0_arg -> __h_data ). Cons_char ). __h_0_mem );
-      const __auto_type tail  = (((__h_match178_0_arg -> __h_data ). Cons_char ). __h_1_mem );
+    { /* cicili#Let177 */
+      const __auto_type __h_match175_0_arg  = (((list . __h_data ). Just_String ). __h_0_mem );
+      const __auto_type head  = (((__h_match175_0_arg -> __h_data ). Cons_char ). __h_0_mem );
+      const __auto_type tail  = (((__h_match175_0_arg -> __h_data ). Cons_char ). __h_1_mem );
       // ----------
-      if (((list . __h_ctor ) ==  __h_Just_String_t  ) &&  ((__h_match178_0_arg -> __h_ctor ) ==  __h_Cons_char_t  ) )
-          ({ /* cicili#Progn184 */
+      if (((list . __h_ctor ) ==  __h_Just_String_t  ) &&  ((__h_match175_0_arg -> __h_ctor ) ==  __h_Cons_char_t  ) )
+          ({ /* cicili#Progn181 */
             putchar (head );
             show_String (tail );
           });
     }
 }
 Maybe_char nth_String (Maybe_String list , int index ) {
-    return ({ /* cicili#Let194 */
-        const __auto_type __h_match192_0_arg  = (((list . __h_data ). Just_String ). __h_0_mem );
-        const __auto_type head  = (((__h_match192_0_arg -> __h_data ). Cons_char ). __h_0_mem );
-        const __auto_type tail  = (((__h_match192_0_arg -> __h_data ). Cons_char ). __h_1_mem );
+    return ({ /* cicili#Let191 */
+        const __auto_type __h_match189_0_arg  = (((list . __h_data ). Just_String ). __h_0_mem );
+        const __auto_type head  = (((__h_match189_0_arg -> __h_data ). Cons_char ). __h_0_mem );
+        const __auto_type tail  = (((__h_match189_0_arg -> __h_data ). Cons_char ). __h_1_mem );
         // ----------
-        (((((list . __h_ctor ) ==  __h_Just_String_t  ) &&  ((__h_match192_0_arg -> __h_ctor ) ==  __h_Cons_char_t  ) )) ? (((index  ==  0 )) ? Just_char (head ) : nth_String (tail , (--index ))) : ({ /* cicili#Let201 */
+        (((((list . __h_ctor ) ==  __h_Just_String_t  ) &&  ((__h_match189_0_arg -> __h_ctor ) ==  __h_Cons_char_t  ) )) ? (((index  ==  0 )) ? Just_char (head ) : nth_String (tail , (--index ))) : ({ /* cicili#Let198 */
           // ----------
           Nothing_char ();
         }));
       });
 }
 int len_String (Maybe_String list ) {
-    return ({ /* cicili#Let211 */
-        const __auto_type __h_match209_0_arg  = (((list . __h_data ). Just_String ). __h_0_mem );
-        const __auto_type head  = (((__h_match209_0_arg -> __h_data ). Cons_char ). __h_0_mem );
-        const __auto_type tail  = (((__h_match209_0_arg -> __h_data ). Cons_char ). __h_1_mem );
+    return ({ /* cicili#Let208 */
+        const __auto_type __h_match206_0_arg  = (((list . __h_data ). Just_String ). __h_0_mem );
+        const __auto_type head  = (((__h_match206_0_arg -> __h_data ). Cons_char ). __h_0_mem );
+        const __auto_type tail  = (((__h_match206_0_arg -> __h_data ). Cons_char ). __h_1_mem );
         // ----------
-        (((((list . __h_ctor ) ==  __h_Just_String_t  ) &&  ((__h_match209_0_arg -> __h_ctor ) ==  __h_Cons_char_t  ) )) ? (1 +  len_String (tail ) ) : ({ /* cicili#Let217 */
+        (((((list . __h_ctor ) ==  __h_Just_String_t  ) &&  ((__h_match206_0_arg -> __h_ctor ) ==  __h_Cons_char_t  ) )) ? (1 +  len_String (tail ) ) : ({ /* cicili#Let214 */
           // ----------
           0;
         }));
       });
 }
-struct __ciciliS_229 {
-  int __h_0_mem ;
-  Maybe_char __h_1_mem ;
-};
-static void __ciciliL_273 (typeof(new_String ("Haskell List")) * txt ) {
-    Maybe_String_m_free(txt );
-}
 int main () {
-    { /* cicili#Let227 */
-      const __auto_type __h_data225  = ((struct __ciciliS_229 ){ 5060, Just_char ('M')});
-      const __auto_type __h_match224_1_arg  = (__h_data225 . __h_1_mem );
+    ({ /* cicili#Let221 */
+      __auto_type hello  __attribute__((__cleanup__(free_String ))) = new_String ("Hello Haskell\n");
+      __auto_type txt  __attribute__((__cleanup__(free_String ))) = new_String ("Haskell List");
       // ----------
-      if ((__h_match224_1_arg . __h_ctor ) ==  __h_Nothing_char_t  )
-          fprintf (stdout , "maybe inside tuple: Nothing\n");
-      else
-          { /* cicili#Let238 */
-            const __auto_type i  = (__h_data225 . __h_0_mem );
-            const __auto_type __h_match236_1_arg  = (__h_data225 . __h_1_mem );
-            const __auto_type c  = (((__h_match236_1_arg . __h_data ). Just_char ). __h_0_mem );
-            // ----------
-            if (((__h_match236_1_arg . __h_ctor ) ==  __h_Just_char_t  ) &&  (c  >  'L' ) )
-                fprintf (stdout , "maybe inside tuple: (c > L) int, Just char: = (%d, %c)\n", i , c );
-            else
-                { /* cicili#Let247 */
-                  const __auto_type t  = __h_data225 ;
-                  const __auto_type __h_match245_1_arg  = (t . __h_1_mem );
-                  const __auto_type c  = (((__h_match245_1_arg . __h_data ). Just_char ). __h_0_mem );
-                  // ----------
-                  if (((__h_match245_1_arg . __h_ctor ) ==  __h_Just_char_t  ) &&  (c  <  'L' ) )
-                      { /* cicili#Let254 */
-                        const __auto_type i  = (t . __h_0_mem );
-                        const __auto_type __h_match252_1_arg  = (t . __h_1_mem );
-                        // ----------
-                        if ((__h_match252_1_arg . __h_ctor ) ==  __h_Just_char_t  )
-                            fprintf (stdout , "maybe inside tuple: (c < L) int, Just char: = (%d, %c)\n", i , c );
-                      }
-                }
-          }
-    }
-    show_String (new_String ("Haskell List\n"));
-    ({ /* cicili#Let262 */
-      const __auto_type __h_data261  = nth_String (new_String ("Haskell List"), 3);
-      const __auto_type c  = (((__h_data261 . __h_data ). Just_char ). __h_0_mem );
-      // ----------
-      ((((__h_data261 . __h_ctor ) ==  __h_Just_char_t  )) ? fprintf (stdout , "the 4th element is: %c\n", c ) : ({ /* cicili#Let268 */
+      show_String (hello );
+      fprintf (stdout , "output of printf match: %d\n", ({ /* cicili#Let227 */
+        const __auto_type __h_data226  = nth_String (txt , 3);
+        const __auto_type c  = (((__h_data226 . __h_data ). Just_char ). __h_0_mem );
         // ----------
-        fprintf (stdout , "4th element not found\n");
+        ((((__h_data226 . __h_ctor ) ==  __h_Just_char_t  )) ? fprintf (stdout , "the 4th element is: %c\n", c ) : ({ /* cicili#Let233 */
+          // ----------
+          fprintf (stdout , "4th element not found\n");
+        }));
       }));
-    });
-    ({ /* cicili#Let272 */
-      __auto_type txt  __attribute__((__cleanup__(__ciciliL_273 ))) = new_String ("Haskell List");
-      // ----------
-      { /* cicili#Let279 */
-        const __auto_type __h_match277_0_arg  = (((txt . __h_data ). Just_String ). __h_0_mem );
-        const __auto_type str  = __h_match277_0_arg ;
+      ({ /* cicili#Progn242 */
+        ({ /* cicili#Let251 */
+          const __auto_type __h_data250  = nth_String (txt , 4);
+          const __auto_type c  = (((__h_data250 . __h_data ). Just_char ). __h_0_mem );
+          // ----------
+          ((((__h_data250 . __h_ctor ) ==  __h_Just_char_t  )) ? fprintf (stdout , "the %dth element is: %c\n", 4, c ) : ({ /* cicili#Let260 */
+            // ----------
+            fprintf (stdout , "%dth element not found\n", 4);
+          }));
+        });
+        ({ /* cicili#Let270 */
+          const __auto_type __h_data269  = nth_String (txt , 5);
+          const __auto_type c  = (((__h_data269 . __h_data ). Just_char ). __h_0_mem );
+          // ----------
+          ((((__h_data269 . __h_ctor ) ==  __h_Just_char_t  )) ? fprintf (stdout , "the %dth element is: %c\n", 5, c ) : ({ /* cicili#Let279 */
+            // ----------
+            fprintf (stdout , "%dth element not found\n", 5);
+          }));
+        });
+        ({ /* cicili#Let289 */
+          const __auto_type __h_data288  = nth_String (txt , 6);
+          const __auto_type c  = (((__h_data288 . __h_data ). Just_char ). __h_0_mem );
+          // ----------
+          ((((__h_data288 . __h_ctor ) ==  __h_Just_char_t  )) ? fprintf (stdout , "the %dth element is: %c\n", 6, c ) : ({ /* cicili#Let298 */
+            // ----------
+            fprintf (stdout , "%dth element not found\n", 6);
+          }));
+        });
+        ({ /* cicili#Let308 */
+          const __auto_type __h_data307  = nth_String (txt , len_String (txt ));
+          const __auto_type c  = (((__h_data307 . __h_data ). Just_char ). __h_0_mem );
+          // ----------
+          ((((__h_data307 . __h_ctor ) ==  __h_Just_char_t  )) ? fprintf (stdout , "the %dth element is: %c\n", len_String (txt ), c ) : ({ /* cicili#Let317 */
+            // ----------
+            fprintf (stdout , "%dth element not found\n", len_String (txt ));
+          }));
+        });
+      });
+      ({ /* cicili#Let321 */
+        __auto_type llen  = len_String (txt );
+        // ----------
+        ({ /* cicili#Progn328 */
+          ({ /* cicili#Let337 */
+            const __auto_type __h_data336  = nth_String (txt , 4);
+            const __auto_type c  = (((__h_data336 . __h_data ). Just_char ). __h_0_mem );
+            // ----------
+            ((((__h_data336 . __h_ctor ) ==  __h_Just_char_t  )) ? fprintf (stdout , "the %dth element is: %c\n", 4, c ) : ({ /* cicili#Let346 */
+              // ----------
+              fprintf (stdout , "%dth element not found\n", 4);
+            }));
+          });
+          ({ /* cicili#Let356 */
+            const __auto_type __h_data355  = nth_String (txt , 5);
+            const __auto_type c  = (((__h_data355 . __h_data ). Just_char ). __h_0_mem );
+            // ----------
+            ((((__h_data355 . __h_ctor ) ==  __h_Just_char_t  )) ? fprintf (stdout , "the %dth element is: %c\n", 5, c ) : ({ /* cicili#Let365 */
+              // ----------
+              fprintf (stdout , "%dth element not found\n", 5);
+            }));
+          });
+          ({ /* cicili#Let375 */
+            const __auto_type __h_data374  = nth_String (txt , 6);
+            const __auto_type c  = (((__h_data374 . __h_data ). Just_char ). __h_0_mem );
+            // ----------
+            ((((__h_data374 . __h_ctor ) ==  __h_Just_char_t  )) ? fprintf (stdout , "the %dth element is: %c\n", 6, c ) : ({ /* cicili#Let384 */
+              // ----------
+              fprintf (stdout , "%dth element not found\n", 6);
+            }));
+          });
+          ({ /* cicili#Let394 */
+            const __auto_type __h_data393  = nth_String (txt , llen );
+            const __auto_type c  = (((__h_data393 . __h_data ). Just_char ). __h_0_mem );
+            // ----------
+            ((((__h_data393 . __h_ctor ) ==  __h_Just_char_t  )) ? fprintf (stdout , "the %dth element is: %c\n", llen , c ) : ({ /* cicili#Let403 */
+              // ----------
+              fprintf (stdout , "%dth element not found\n", llen );
+            }));
+          });
+        });
+      });
+      { /* cicili#Let409 */
+        const __auto_type __h_match407_0_arg  = (((txt . __h_data ). Just_String ). __h_0_mem );
+        const __auto_type str  = __h_match407_0_arg ;
         const __auto_type head  = (((str -> __h_data ). Cons_char ). __h_0_mem );
         const __auto_type tail  = (((str -> __h_data ). Cons_char ). __h_1_mem );
         // ----------
         if (((txt . __h_ctor ) ==  __h_Just_String_t  ) &&  ((str -> __h_ctor ) ==  __h_Cons_char_t  ) )
             fprintf (stdout , "first char is: %c, and length of tail is: %d\n", head , len_String (tail ));
       }
-    });
-    ({ /* cicili#Let287 */
-      const __auto_type __h_data286  = new_String ("Haskell List");
-      // ----------
-      fprintf (stdout , "Nothing String\n");
+      { /* cicili#Let416 */
+        // ----------
+        fprintf (stdout , "Nothing String\n");
+      }
     });
 }

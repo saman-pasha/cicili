@@ -885,24 +885,27 @@
                                                      `(|->| (|cof| ,variable) |free|))
                                                  `(|free| (|cast| (|void| *) (|cof| ,variable)))))))
                                attributes)))
-		             (when (and has-defer (not (eq has-defer t)))
-                       (let ((ptr-name (intern (format nil "~A_ptr" variable))))
-                         (push (cons '|defer|
-                                     (specify-expr
-                                         `'(|lambda|
-                                            (,(remove nil
-                                              `(,const ,(if (key-eq '|auto| typeof) `(|typeof| ,value) typeof)
-                                                ,(cond
-                                                   ((null  modifier) '|*|)
-                                                   ((key-eq '|auto| typeof) '|*|)
-                                                   ((key-eq '|*|  modifier) '|**|)
-                                                   ((key-eq '|**| modifier) '|***|)
-                                                   (t (error (format nil "not suitable for deferment"))))
-                                                ,const-ptr ,ptr-name ,array)))
-                                            ,(remove nil `(|var| ,const ,typeof ,modifier ,const-ptr
-                                                             ,variable ,array . #'(|cof| ,ptr-name)))
-                                            ,@has-defer)))
-                               attributes)))
+		             (when has-defer
+                       (let ((symb (expand-macros (car has-defer))))
+                         (if (symbolp symb)
+                             (push (cons '|defer| (specify-expr symb)) attributes)
+                             (let ((ptr-name (intern (format nil "~A_ptr" variable))))
+                               (push (cons '|defer|
+                                           (specify-expr
+                                               `'(|lambda|
+                                                  (,(remove nil
+                                                            `(,const ,(if (key-eq '|auto| typeof) `(|typeof| ,value) typeof)
+                                                               ,(cond
+                                                                  ((null  modifier) '|*|)
+                                                                  ((key-eq '|auto| typeof) '|*|)
+                                                                  ((key-eq '|*|  modifier) '|**|)
+                                                                  ((key-eq '|**| modifier) '|***|)
+                                                                  (t (error (format nil "not suitable for deferment"))))
+                                                               ,const-ptr ,ptr-name ,array)))
+                                                  ,(remove nil `(|var| ,const ,typeof ,modifier ,const-ptr
+                                                                       ,variable ,array . #'(|cof| ,ptr-name)))
+                                                  ,@has-defer)))
+                                     attributes)))))
 
                      (add-param
                          (make-specifier (specify-decl-name< variable) '|@VAR| const typeof modifier const-ptr array

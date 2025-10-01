@@ -18,29 +18,23 @@
 ;; reducible function
 (DEFMACRO fn (macro param &REST body)
   (WHEN (NULL body) (ERROR (FORMAT NIL "fn without any parameter or body: (~A ~A)" macro param)))
-  (LET ((body (PUSH param body))
-        (body-p (CAR (LAST body)))
-        (len (- (LENGTH body) 2)))
-    (DOTIMES (i (1+ len))
-      (SETQ body-p (LIST 'lambda
-                         (IF (= (- len i) 0) macro (INTERN (FORMAT NIL "~A_aa~D" macro (- len i))))
-                         (INTERN (FORMAT NIL "~A" (NTH (- len i) body)))
-                         body-p)))
-    `(,@body-p)))
+  (LET* ((params (REVERSE (CDR (REVERSE (APPEND (LIST param) body)))))
+         (body (CAR (LAST body)))
+         (len (LENGTH params)))
+    (DOTIMES (i len)
+      (SETQ body
+            (LIST 'lambda
+                  (IF (> (- len i) 1) (INTERN (FORMAT NIL "~A_aa~D" macro (1- (- len i)))) macro)
+                  (INTERN (FORMAT NIL "~A" (NTH (1- (- len i)) params)))
+                  body)))
+    `(,@body)))
 
 ;; '\' haskel lambda sign equivalent
 (DEFMACRO \\ (&REST body)
   `(fn ,(GENSYM "__h_lambda") ,@body))
 
 ;; where and letin are the same
-;; (DEFMACRO letin (args body)
-;;   (IF args
-;;       `(,@(REDUCE #'LIST
-;;             (APPEND (LIST `(fn ,(GENSYM "__h_letIn") ,@(MAPCAR #'CAR args) ,body))
-;;                     (MAPCAR #'CADR args))))
-;;       body))
-
-;; where and letin are the same
+;; where puts exactly the value of each var in place of it, and makes C functions Curry
 (DEFMACRO where (args body)
   (IF args
       `(,@(REDUCE #'LIST
@@ -187,13 +181,7 @@
        ;; Maybe
        (decl) (struct (<> Maybe ,name))
        (specialise_Maybe ,name)
-       
-       ;; letin clause will call this free function at destruction of Maybe
-       ;; and also Maybe instances call free function of wrrapped instance
-       (decl) (func (<> free ,name) (((<> Maybe ,name) _)))
-       (method ((<> Maybe ,name) . free) ()
-               ((<> free ,name) (cof this)))
-       
+              
        ;; actual type
        (struct (<> ,name class_t)
          (member ,enum-name __h_ctor)
@@ -297,8 +285,6 @@
                            (PUSH `(const auto ,arg-name . (FUNCTION ,mem-name)) defs)
                            (MULTIPLE-VALUE-BIND (in-data-name in-symb in-tail in-defs in-args in-conds) ; inner case
                                (match-case-details match-id arg-name (APPEND arg (LIST NIL)))
-                             (FORMAT T "EEE2---- ~A ~A~% ~A~% ~A~% ~A~% ~A~%"
-                                     in-data-name in-symb in-tail in-defs in-args in-conds)
                              (SETQ defs (APPEND in-defs defs))
                              (SETQ args (APPEND in-args args))
                              (WHEN in-conds
@@ -356,8 +342,6 @@
                                    (PUSH `(const auto ,arg-name . (FUNCTION ,mem-name)) defs)
                                    (MULTIPLE-VALUE-BIND (in-data-name in-symb in-tail in-defs in-args in-conds) ; inner case
                                        (match-case-details match-id arg-name (APPEND arg (LIST NIL)))
-                                     (FORMAT T "EEE1---- ~A ~A~% ~A~% ~A~% ~A~% ~A~%"
-                                             in-data-name in-symb in-tail in-defs in-args in-conds)
                                      (SETQ defs (APPEND in-defs defs))
                                      (SETQ args (APPEND in-args args))
                                      (WHEN in-conds
@@ -387,7 +371,7 @@
              (case (CAR cases)))
         (MULTIPLE-VALUE-BIND (data-name symb tail defs args conds)
             (match-case-details match-id data case)
-          (FORMAT T "EEE0------ ~A ~A~% ~A~% ~A~% ~A~% ~A~%" data-name symb tail defs args conds)
+          ;; (FORMAT T "EEE0------ ~A ~A~% ~A~% ~A~% ~A~% ~A~%" data-name symb tail defs args conds)
 
           `(,(IF is-io 'let 'letn) ,(REVERSE defs)
              (where ,(REVERSE args)
@@ -423,12 +407,15 @@
                          (return ((<> Nothing type)))
                          (return ($> (<> Just type) $ (<> Cons a) item $ (<> new type) (++ buf)))))))
          
-         (func (<> free type) (((<> Maybe type) list))
+         (func (<> drop type) (((<> Maybe type) list))
                (io list
                  (Just ^ type (= ls * Cons ^ a _ tail)
                        (progn
-                         ((<> free type) tail)
+                         ((<> drop type) tail)
                          (free ls)))))
+         
+         (func (<> free type) (((<> Maybe type) * list)) ; specified for letin
+               ((<> drop type) (cof list)))
          
          (func (<> show type) (((<> Maybe type) list))
                (io list
@@ -456,10 +443,14 @@
 
 ;;; helper macro will auto defer all vars
 (DEFMACRO letin (var-list &REST body)
-  `(letn ,(MAP 'LIST #'(LAMBDA (var)
-                         (WHEN (/= (LENGTH var) 2) (ERROR (FORMAT NIL "wrong letin variable definition: ~A" var)))
-                         `(@auto ,(CAR var) . (FUNCTION ,(CADR var))))
-               var-list)
+  `(letn ,(APPLY 'APPEND
+           (MAP 'LIST #'(LAMBDA (var)
+                          (WHEN (OR (< (LENGTH var) 2) (> (LENGTH var) 3))
+                            (ERROR (FORMAT NIL "wrong letin variable definition: ~A" var)))
+                          (IF (= (LENGTH var) 2)
+                              `((auto ,(CAR var) . (FUNCTION ,(CADR var))))
+                              `((defer () ,(CADDR var)) (auto ,(CAR var) . (FUNCTION ,(CADR var))))))
+                var-list))
      ,@body))
 
 ;; CURRY UNCURRY the Legend
