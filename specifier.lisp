@@ -225,7 +225,10 @@
           (specify-name-with-module< type))
       (let ((ty (car type)))
         (cond ((or (key-eq '|struct| ty) (key-eq '|union| ty)) ; for incomplete type error, field of its own type
-               (list ty (specify-name-with-module< (expand-macros (cadr type)))))
+               (let ((xpnd (expand-macros (cadr type))))
+                 (if (listp xpnd)
+                     (specify-typeof< (cadr type))
+                     (list ty (specify-name-with-module< xpnd)))))
               ((key-eq '|typeof| ty) (specify-typeof-expr type))
               ((key-eq '|t<>| ty)    (specify-expr type))
               ((key-eq '$$ ty)       (specify-expr type))
@@ -234,7 +237,7 @@
                (let* ((sname (gensym "__ciciliS_"))
                       (struct-spec (specify-struct (append (list '|struct| sname) (cadr type)) '() :inline t)))
                  (add-inner struct-spec *typedef-spec*)
-                 (list '|struct| (if *module-path* (free-name *module-path* sname) sname))))
+                 (if *module-path* (free-name *module-path* sname) sname)))
               ((and (null *function-spec*) *variable-spec* (key-eq 'QUOTE ty)) ; inline struct global var
                (let* ((sname (gensym "__ciciliS_"))
                       (struct-spec (specify-struct (append (list '|struct| sname) (cadr type)) '() :inline t)))

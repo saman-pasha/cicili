@@ -272,10 +272,6 @@
       (WHEN (OR has-alias (NOT (EQL data data-name)))
         (PUSH `(auto ,data-name . ,(IF (LISTP data) `(FUNCTION ,data) data)) defs))
 
-      ;; (WHEN (OR has-alias (NOT (EQL data data-name)))
-      ;;   (PUSH `((typeof ,data) ,data-name) defs)
-      ;;   (PUSH `(set ,data-name ,data) assigns))
-
       (COND ((AND (LISTP symb) (EQUAL (CAR symb) '\,)) ; tuple \,
              (DOTIMES (i (1- (LENGTH symb))) 
                (LET ((arg (MACROEXPAND (NTH (1+ i) symb))))
@@ -284,12 +280,10 @@
                          (mem-name (LIST '$ data-name (make-data-member-name i))))
                      (IF (ATOM arg)
                          (PROGN
-                           (PUSH `((typeof ,mem-name) ,arg) defs)
-                           (PUSH `(set ,arg ,mem-name) assigns)
+                           (PUSH `(const auto ,arg . (FUNCTION ,mem-name)) defs)
                            (SETF (GETF args arg) (INTERN (FORMAT NIL "PREV_CASE_~A" arg))))
                          (LET ((match-id (GENSYM "match")))
-                           (PUSH `((typeof ,mem-name) ,arg-name) defs)
-                           (PUSH `(set ,arg-name ,mem-name) assigns)
+                           (PUSH `(auto ,arg-name . (FUNCTION ,mem-name)) defs)
                            (MULTIPLE-VALUE-BIND (in-data-name in-symb in-tail in-defs in-assigns in-args in-conds)
                                (match-case-details match-id arg-name (APPEND arg (LIST NIL)))
                              (SETQ defs (APPEND in-defs defs))
@@ -328,7 +322,7 @@
                              (MULTIPLE-VALUE-BIND (in-data-name in-symb in-tail in-defs in-assigns in-args in-conds)
                                  (match-case-details match-id arg-name (APPEND arg (LIST NIL)))
                                (SETQ defs (APPEND in-defs defs))
-                               (SETQ assings (APPEND in-assigns assigns))
+                               (SETQ assigns (APPEND in-assigns assigns))
                                (SETQ args (APPEND in-args args))
                                (WHEN in-conds (SETQ conds (IF conds `(and ,conds ,in-conds) in-conds))))))))))
                (IF (EQUAL (CAR tail) '=>)
@@ -390,29 +384,29 @@
         (MULTIPLE-VALUE-BIND (data-name symb tail defs assigns args conds)
             (match-case-details match-id data case)
 
-          (LET ((filtered-prev-args ()))
-            (DOTIMES (i (LENGTH args))
-              (WHEN (= 0 (REM i 2)) (REMF prev-args (NTH i args))))
-            (DOTIMES (i (LENGTH prev-args))
-              (WHEN (= 0 (REM i 2))
-                (PUSH (LIST (NTH i prev-args) (GETF prev-args (NTH i prev-args))) filtered-prev-args)))
+          ;; (LET ((filtered-prev-args ()))
+          ;;   (DOTIMES (i (LENGTH args))
+          ;;     (WHEN (= 0 (REM i 2)) (REMF prev-args (NTH i args))))
+          ;;   (DOTIMES (i (LENGTH prev-args))
+          ;;     (WHEN (= 0 (REM i 2))
+          ;;       (PUSH (LIST (NTH i prev-args) (GETF prev-args (NTH i prev-args))) filtered-prev-args)))
             
-            `(,(IF is-io 'let 'letn) ,(REVERSE defs)
-               ,(IF conds
-                    (LET ((ctor-cond (CAR conds)))
-                      (IF (AND (SYMBOLP ctor-cond) (EQUAL ctor-cond 'and))
-                          `(if ,(CADR conds) (block ,@(REVERSE assigns)))
-                          `(if ,conds (block ,@(REVERSE assigns)))))
-                    `(block ,@(REVERSE assigns)))
-               (where ,(REVERSE filtered-prev-args)
-                 ,(IF conds
-                      `(letn ((bool __h_case_result . (FUNCTION ,conds)))
-                         ,(APPEND
-                           `(,(IF is-io 'if '?) __h_case_result ,(CAR (LAST case)))
-                           (IF (CDR cases)
-                               `((match* ,data-name ,(CDR cases) ,is-io ,args))
-                               '())))
-                      (CAR (LAST case))))))))))
+          `(,(IF is-io 'let 'letn) ,(REVERSE defs)
+             ,(IF (AND assigns conds)
+                  (LET ((ctor-cond (CAR conds)))
+                    (IF (AND (SYMBOLP ctor-cond) (EQUAL ctor-cond 'and))
+                        `(if ,(CADR conds) (block ,@(REVERSE assigns)))
+                        `(if ,conds (block ,@(REVERSE assigns)))))
+                  `(block ,@(REVERSE assigns)))
+             ;; (where ,(REVERSE filtered-prev-args)
+             ,(IF conds
+                  `(letn ((bool __h_case_result . (FUNCTION ,conds)))
+                     ,(APPEND
+                       `(,(IF is-io 'if '?) __h_case_result ,(CAR (LAST case)))
+                       (IF (CDR cases)
+                           `((match* ,data-name ,(CDR cases) ,is-io ,args))
+                           '())))
+                  (CAR (LAST case))))))))
 
 ;; match with required default value or void
 (DEFMACRO match (data &REST cases)
@@ -532,6 +526,4 @@
                 var-list))
      ,@body))
 
-;; CURRY UNCURRY the Legend
-;; (: head tail) for list
-;; (, item0 item1) for tuple
+        

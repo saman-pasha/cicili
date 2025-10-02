@@ -292,7 +292,7 @@
             do (progn
                  (cond ((key-eq '|@STRUCT| (construct los)) ; default t means is multi-output
                         (when (or (and (null is-static) *target-header*) (and is-static *target-source*))
-                          (compile-struct los lvl globals spec :no-typedef t)
+                          (compile-struct los lvl globals spec) ; :no-typedef t
                           (output "~%")))
                        ((key-eq '|@FUNC| (construct los)) ; lambdas
                         (push (cons '|static| t) (attrs los))
@@ -519,7 +519,7 @@
                         (when (or (null (default los))
                                 (and (null is-static) *target-header*)
                                 (and is-static *target-source*))
-                          (compile-struct los lvl globals spec :no-typedef t)
+                          (compile-struct los lvl globals spec) ; :no-typedef t
                           (output "~%")))
                        ((key-eq '|@FUNC| (construct los)) ; lambdas
                         (push (cons '|static| t) (attrs los))
@@ -640,7 +640,7 @@
   (loop for los being the hash-value of (inners spec)
         do (progn
              (cond ((key-eq '|@STRUCT| (construct los)) ; default t means is multi-output
-                    (compile-struct los lvl globals spec :no-typedef t)
+                    (compile-struct los lvl globals spec) ; :no-typedef t
                     (output "~%"))
                    ((key-eq '|@FUNC| (construct los)) ; lambdas
                     (push (cons '|static| t) (attrs los))
