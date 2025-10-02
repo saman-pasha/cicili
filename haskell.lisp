@@ -257,6 +257,7 @@
            (symb (MACROEXPAND (CAR case)))
            (tail (CDR case))
            (defs ())
+           (assigns ())
            (args ())
            (conds ())
            (=>found NIL)
@@ -269,9 +270,13 @@
         (SETQ tail (CDR case)))
       
       (WHEN (OR has-alias (NOT (EQL data data-name)))
-        (PUSH `(const auto ,data-name . ,(IF (LISTP data) `(FUNCTION ,data) data)) defs))
-      
-      (COND ((AND (LISTP symb) (EQUAL (CAR symb) '\,)) ; tuple
+        (PUSH `(auto ,data-name . ,(IF (LISTP data) `(FUNCTION ,data) data)) defs))
+
+      ;; (WHEN (OR has-alias (NOT (EQL data data-name)))
+      ;;   (PUSH `((typeof ,data) ,data-name) defs)
+      ;;   (PUSH `(set ,data-name ,data) assigns))
+
+      (COND ((AND (LISTP symb) (EQUAL (CAR symb) '\,)) ; tuple \,
              (DOTIMES (i (1- (LENGTH symb))) 
                (LET ((arg (MACROEXPAND (NTH (1+ i) symb))))
                  (UNLESS (EQUAL arg '_)
@@ -279,47 +284,58 @@
                          (mem-name (LIST '$ data-name (make-data-member-name i))))
                      (IF (ATOM arg)
                          (PROGN
-                           (PUSH `(const auto ,arg . (FUNCTION ,mem-name)) defs))
-                         ;; (PUSH (LIST arg arg-name) args))
+                           (PUSH `((typeof ,mem-name) ,arg) defs)
+                           (PUSH `(set ,arg ,mem-name) assigns)
+                           (SETF (GETF args arg) (INTERN (FORMAT NIL "PREV_CASE_~A" arg))))
                          (LET ((match-id (GENSYM "match")))
-                           (PUSH `(const auto ,arg-name . (FUNCTION ,mem-name)) defs)
-                           (MULTIPLE-VALUE-BIND (in-data-name in-symb in-tail in-defs in-args in-conds) ; inner case
+                           (PUSH `((typeof ,mem-name) ,arg-name) defs)
+                           (PUSH `(set ,arg-name ,mem-name) assigns)
+                           (MULTIPLE-VALUE-BIND (in-data-name in-symb in-tail in-defs in-assigns in-args in-conds)
                                (match-case-details match-id arg-name (APPEND arg (LIST NIL)))
                              (SETQ defs (APPEND in-defs defs))
+                             (SETQ assigns (APPEND in-assigns assigns))
                              (SETQ args (APPEND in-args args))
-                             (WHEN in-conds
-                               (SETQ conds (IF conds `(and ,conds ,in-conds) in-conds))))))))))
+                             (WHEN in-conds (SETQ conds (IF conds `(and ,conds ,in-conds) in-conds))))))))))
              (IF (EQUAL (CAR tail) '=>)
                  (PROGN
                    (SETQ =>found T)
                    (SETQ conds (IF conds `(and ,conds ,(NTH 1 tail)) (NTH 1 tail))))
                  (SETQ conds (IF conds conds 'true))))
 
-            ((AND (LISTP symb) (EQUAL (CAR symb) '\:)) ; list
-             (DOTIMES (i (1- (LENGTH symb))) 
-               (LET ((arg (MACROEXPAND (NTH (1+ i) symb))))
-                 (UNLESS (EQUAL arg '_)
-                   (LET ((arg-name (make-match-arg-name match-id i))
-                         (mem-name (LIST '-> data-name (make-data-member-name i))))
-                     (IF (ATOM arg)
-                         (PROGN
-                           (PUSH `(const auto ,arg . (FUNCTION ,mem-name)) defs))
-                         ;; (PUSH (LIST arg arg-name) args))
-                         (LET ((match-id (GENSYM "match")))
-                           (PUSH `(const auto ,arg-name . (FUNCTION ,mem-name)) defs)
-                           (MULTIPLE-VALUE-BIND (in-data-name in-symb in-tail in-defs in-args in-conds) ; inner case
-                               (match-case-details match-id arg-name (APPEND arg (LIST NIL)))
-                             (FORMAT T "EEE3---- ~A ~A~% ~A~% ~A~% ~A~% ~A~%"
-                                     in-data-name in-symb in-tail in-defs in-args in-conds)
-                             (SETQ defs (APPEND in-defs defs))
-                             (SETQ args (APPEND in-args args))
-                             (WHEN in-conds
-                               (SETQ conds (IF conds `(and ,conds ,in-conds) in-conds))))))))))
-             (IF (EQUAL (CAR tail) '=>)
-                 (PROGN
-                   (SETQ =>found T)
-                   (SETQ conds (IF conds `(and ,conds ,(NTH 1 tail)) (NTH 1 tail))))
-                 (SETQ conds (IF conds conds 'true))))
+            ((AND (LISTP symb) (EQUAL (CAR symb) '\:)) ; list \:
+             (LET ((el-type (CADR symb)))
+               (PUSH `((typeof ((<> has len Cons ,el-type) ,data-name ,(1- (LENGTH (CDDR symb))))) __h_has_len) defs)
+               (PUSH `(set __h_has_len ((<> has len Cons ,el-type) ,data-name ,(1- (LENGTH (CDDR symb))))) assigns)
+               (SETQ conds `(== __h_has_len ,(- (LENGTH symb) 3)))
+               (DOTIMES (i (- (LENGTH symb) 2))
+                 (LET ((arg (MACROEXPAND (NTH (+ i 2) symb))))
+                   (UNLESS (EQUAL arg '_)
+                     (LET ((arg-name (make-match-arg-name match-id i))
+                           (mem-name (IF (< i (- (LENGTH symb) 3))
+                                         (LIST '$ `((<> nth Cons ,el-type) ,data-name ,i)
+                                               '__h_data
+                                               `(<> Just ,el-type)
+                                               (make-data-member-name 0))
+                                         `((<> nthcdr Cons ,el-type) ,data-name ,i))))
+                       (IF (ATOM arg)
+                           (PROGN
+                             (PUSH `((typeof ,mem-name) ,arg) defs)
+                             (PUSH `(set ,arg ,mem-name) assigns)
+                             (SETF (GETF args arg) (INTERN (FORMAT NIL "PREV_CASE_~A" arg))))
+                           (LET ((match-id (GENSYM "match")))
+                             (PUSH `((typeof ,mem-name) ,arg-name) defs)
+                             (PUSH `(set ,arg-name ,mem-name) assigns)
+                             (MULTIPLE-VALUE-BIND (in-data-name in-symb in-tail in-defs in-assigns in-args in-conds)
+                                 (match-case-details match-id arg-name (APPEND arg (LIST NIL)))
+                               (SETQ defs (APPEND in-defs defs))
+                               (SETQ assings (APPEND in-assigns assigns))
+                               (SETQ args (APPEND in-args args))
+                               (WHEN in-conds (SETQ conds (IF conds `(and ,conds ,in-conds) in-conds))))))))))
+               (IF (EQUAL (CAR tail) '=>)
+                   (PROGN
+                     (SETQ =>found T)
+                     (SETQ conds (IF conds `(and ,conds ,(NTH 1 tail)) (NTH 1 tail))))
+                   (SETQ conds (IF conds conds 'true)))))
 
             (T (DOTIMES (i (1- (LENGTH tail))) ; data type
                  (LET ((arg (MACROEXPAND (NTH (1+ i) case))))
@@ -336,16 +352,18 @@
                                                  (make-data-member-name i))))
                              (IF (ATOM arg)
                                  (PROGN
-                                   (PUSH `(const auto ,arg . (FUNCTION ,mem-name)) defs))
-                                 ;; (PUSH (LIST arg arg-name) args))
+                                   (PUSH `((typeof ,mem-name) ,arg) defs)
+                                   (PUSH `(set ,arg ,mem-name) assigns)
+                                   (SETF (GETF args arg) (INTERN (FORMAT NIL "PREV_CASE_~A" arg))))
                                  (LET ((match-id (GENSYM "match")))
-                                   (PUSH `(const auto ,arg-name . (FUNCTION ,mem-name)) defs)
-                                   (MULTIPLE-VALUE-BIND (in-data-name in-symb in-tail in-defs in-args in-conds) ; inner case
+                                   (PUSH `((typeof ,mem-name) ,arg-name) defs)
+                                   (PUSH `(set ,arg-name ,mem-name) assigns)
+                                   (MULTIPLE-VALUE-BIND (in-data-name in-symb in-tail in-defs in-assigns in-args in-conds)
                                        (match-case-details match-id arg-name (APPEND arg (LIST NIL)))
                                      (SETQ defs (APPEND in-defs defs))
+                                     (SETQ assigns (APPEND in-assigns assigns))
                                      (SETQ args (APPEND in-args args))
-                                     (WHEN in-conds
-                                       (SETQ conds (IF conds `(and ,conds ,in-conds) in-conds))))))
+                                     (WHEN in-conds (SETQ conds (IF conds `(and ,conds ,in-conds) in-conds))))))
                              ))))))))
       
       (WHEN (OR (AND =>found (LISTP symb) (/= (LENGTH case) 4))
@@ -362,34 +380,47 @@
                               `(and (== (,(IF is-ptr '-> '$) ,data-name __h_ctor) ,(make-data-type-name symb)) ,conds)
                               `(== (,(IF is-ptr '-> '$) ,data-name __h_ctor) ,(make-data-type-name symb)))))))
 
-      (VALUES data-name symb tail defs args conds))))
+      (VALUES data-name symb tail defs assigns args conds))))
 
-(DEFMACRO match* (data cases is-io)
+(DEFMACRO match* (data cases is-io prev-args)
   (IF (NULL cases)
       `($$$)
       (LET* ((match-id (GENSYM "match"))
              (case (CAR cases)))
-        (MULTIPLE-VALUE-BIND (data-name symb tail defs args conds)
+        (MULTIPLE-VALUE-BIND (data-name symb tail defs assigns args conds)
             (match-case-details match-id data case)
-          ;; (FORMAT T "EEE0------ ~A ~A~% ~A~% ~A~% ~A~% ~A~%" data-name symb tail defs args conds)
 
-          `(,(IF is-io 'let 'letn) ,(REVERSE defs)
-             (where ,(REVERSE args)
+          (LET ((filtered-prev-args ()))
+            (DOTIMES (i (LENGTH args))
+              (WHEN (= 0 (REM i 2)) (REMF prev-args (NTH i args))))
+            (DOTIMES (i (LENGTH prev-args))
+              (WHEN (= 0 (REM i 2))
+                (PUSH (LIST (NTH i prev-args) (GETF prev-args (NTH i prev-args))) filtered-prev-args)))
+            
+            `(,(IF is-io 'let 'letn) ,(REVERSE defs)
                ,(IF conds
-                    (APPEND
-                     `(,(IF is-io 'if '?) ,conds ,(CAR (LAST case)))
-                     (IF (CDR cases)
-                         `((match* ,data-name ,(CDR cases) ,is-io))
-                         '()))
-                    (CAR (LAST case)))))))))
+                    (LET ((ctor-cond (CAR conds)))
+                      (IF (AND (SYMBOLP ctor-cond) (EQUAL ctor-cond 'and))
+                          `(if ,(CADR conds) (block ,@(REVERSE assigns)))
+                          `(if ,conds (block ,@(REVERSE assigns)))))
+                    `(block ,@(REVERSE assigns)))
+               (where ,(REVERSE filtered-prev-args)
+                 ,(IF conds
+                      `(letn ((bool __h_case_result . (FUNCTION ,conds)))
+                         ,(APPEND
+                           `(,(IF is-io 'if '?) __h_case_result ,(CAR (LAST case)))
+                           (IF (CDR cases)
+                               `((match* ,data-name ,(CDR cases) ,is-io ,args))
+                               '())))
+                      (CAR (LAST case))))))))))
 
 ;; match with required default value or void
 (DEFMACRO match (data &REST cases)
-  `(match* ,data ,cases NIL))
+  `(match* ,data ,cases NIL NIL))
 
 ;; match with optional default case
 (DEFMACRO io (data &REST cases)
-  `(match* ,data ,cases T))
+  `(match* ,data ,cases T NIL))
 
 ;; List must be defined by this generic
 (generic specialise_List (type a)
@@ -433,11 +464,59 @@
                                  ((<> nth type) tail (-- index))))
                          (default ((<> Nothing a))))))
 
+         (func (<> nthcdr type) (((<> Maybe type) list) (int index))
+               (out (<> Maybe type))
+               (return (? (== index 0)
+                         list
+                         (match list
+                           (Just ^ type (* Cons ^ a _ tail)
+                                 ((<> nthcdr type) tail (-- index)))
+                         (default ((<> Nothing type)))))))
+
          (func (<> len type) (((<> Maybe type) list))
                (out int)
                (return (match list
-                         (Just ^ type (* Cons ^ a head tail)
+                         (Just ^ type (* Cons ^ a _ tail)
                                (+ 1 ((<> len type) tail)))
+                         (default 0))))
+
+         (func (<> has len type) (((<> Maybe type) list) (int desired))
+               (out int)
+               (return (match list
+                         (Just ^ type (* Cons ^ a _ tail)
+                               (? (== desired 1) 1 (+ 1 ((<> has len type) tail (-- desired)))))
+                         (default 0))))
+
+         (func (<> nth Cons a) ((type cons) (int index))
+               (out (<> Maybe a))
+               (return (match cons
+                         (* Cons ^ a head tail
+                            (? (== index 0)
+                              ((<> Just a) head)
+                              ((<> nth type) tail (-- index))))
+                         (default ((<> Nothing a))))))
+
+         (func (<> nthcdr Cons a) ((type cons) (int index))
+               (out (<> Maybe type))
+               (return (? (== index 0)
+                         ((<> Just type) cons)
+                         (match cons
+                           (* Cons ^ a _ tail
+                              ((<> nthcdr type) tail (-- index)))
+                           (default ((<> Nothing type)))))))
+
+         (func (<> len Cons a) ((type cons))
+               (out int)
+               (return (match cons
+                         (* Cons ^ a _ tail
+                            (+ 1 ((<> len type) tail)))
+                         (default 0))))
+
+         (func (<> has len Cons a) ((type cons) (int desired))
+               (out int)
+               (return (match cons
+                         (* Cons ^ a _ tail
+                            (+ 1 ((<> has len type) tail (-- desired))))
                          (default 0))))
          )
 

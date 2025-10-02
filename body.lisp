@@ -1,27 +1,6 @@
 (in-package :cicili)
 
 ;; expands all defined macros
-(defun expand-macros-expr-1 (def as-body)
-  (let* ((func (car def))
-         (macro (if (symbolp func) (gethash (symbol-name func) *macros*) nil)))
-    (if (or macro (and (symbolp func) (macro-function func)))
-        (let ((tmp-expantion *macroexpand*)
-              (id (format nil "ME: ~D" (funcall *macro-counter*)))
-              (result nil))
-          (when *debug-macroexpand* (format t "~A ~A~%" id def))
-          (setf *macroexpand* t)
-          (let ((expr (if macro (macroexpand `(,macro ,@(cdr def))) (macroexpand def))))
-            (when *debug-macroexpand* (format t "~A macro: ~A~%result: ~A~%" id macro expr))
-            (if (and (listp expr) (listp (cadr expr)) (key-eq (caadr expr) 'EVAL-WHEN)) ; outputs macro
-                (let ((symb (eval expr)))
-                  (setq result symb))
-                (progn
-                  (setq result (if as-body (specify-body (list expr)) (specify-expr expr))))))
-          (setf *macroexpand* tmp-expantion)
-          result)
-        (specify-call-expr def))))
-
-;; expands all defined macros
 ;; for type specification only
 (defun expand-macros (def)
   (if (atom def) def

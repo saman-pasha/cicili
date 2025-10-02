@@ -328,22 +328,24 @@
     (when (or in-progn is-n) (output ")"))))
 
 (defun compile-block (spec lvl globals parent-spec)
-  (let ((locals      (copy-specifiers globals)))
-    (output "{ /* ~A */~%" (name spec))
-    (compile-body (body spec) (- lvl 1) locals spec)
-    (output "~&~A" (indent (- lvl 2)))
-    (output "} /* ~A */" (name spec))))
+  (if (> (length (body (body spec))) 0)
+    (let ((locals      (copy-specifiers globals)))
+      (output "{ /* ~A */~%" (name spec))
+      (compile-body (body spec) lvl locals spec)
+      (output "~&~A" (indent (- lvl 1)))
+      (output "}"))
+    (output "/* ~A */" (name spec))))
 
 (defun compile-progn (spec lvl globals parent-spec)
   (let ((locals      (copy-specifiers globals)))
     (output "({ /* ~A */~%" (name spec))
     (compile-body (body spec) (- lvl 1) locals spec)
     (output "~&~A" (indent (- lvl 2)))
-    (output "})" (name spec))))
+    (output "})")))
 
 (defun compile-return (spec lvl globals parent-spec)
   (set-ast-line (output "return "))
-  (when (default spec) (compile-form (default spec) (1+ lvl) globals spec)))
+  (when (default spec) (compile-form (default spec) lvl globals spec)))
 
 (defun compile-if (spec lvl globals parent-spec)
   (let ((locals (copy-specifiers globals))
@@ -362,7 +364,7 @@
       (compile-form (name spec) lvl globals (name spec)) ; condition
       (when is-atom (output ")")))
     (set-ast-line (output "~%"))
-    (compile-body (default spec) lvl locals spec)
+    (compile-body (default spec) (- lvl 1) locals spec)
     
     (let ((else-body (body spec))
           (locals (copy-specifiers globals)))
@@ -375,7 +377,7 @@
           (progn
             (output "~&~A" (indent (- lvl 2)))
             (set-ast-line (output "else~%"))
-            (compile-body else-body lvl locals spec)
+            (compile-body else-body (- lvl 1) locals spec)
             (when add-braces
               (output "~&~A" (indent (- lvl 2)))
               (set-ast-line (output "}"))))))))
@@ -608,7 +610,7 @@
               (output "{~%")))
         (unless is-declare
           (progn
-	        (compile-body body (1+ lvl) locals spec)
+	        (compile-body body lvl locals spec)
             (output "}"))))))
   (setq *resolve* t))
 

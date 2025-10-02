@@ -327,18 +327,19 @@
                 ($> show nthf $ 6)
                 ($> show nthf $ llen))) ; n appears 3 times in show lambda so len^String will be called 3 times, bad way
 
-            ;; use letin to prevent repeatition calls
-            (letin ((llen (len^String txt))) ; letin won't accept values from previous defined ones like txt
-              (where
-                  ((nthf (\\ n (nth^String txt n)))
-                   (show (\\ f n (match (f n)
-                                   (Just ^ char c (format #t "the %dth element is: %c\n" n c))
-                                   (default (format #t "%dth element not found\n" n))))))
-                (progn
-                  ($> show nthf $ 4)
-                  ($> show nthf $ 5)
-                  ($> show nthf $ 6)
-                  ($> show nthf $ llen))))
+            (format #t "output of letin: %d\n"
+                    ;; use letin to prevent repeatition calls for every llen 
+                    (letin ((llen (len^String txt)))
+                      (where
+                          ((nthf (\\ n (nth^String txt n))) ; lambdas to C function to use Curry style
+                           (show (\\ f n (match (f n)
+                                           (Just ^ char c (format #t "the %dth element is: %c\n" n c))
+                                           (default (format #t "%dth element not found\n" n))))))
+                        (progn
+                          ($> show nthf $ 4)
+                          ($> show nthf $ 5)
+                          ($> show nthf $ 6)
+                          ($> show nthf $ llen)))))
             
             (io txt
               ;; access by path mode
@@ -354,13 +355,23 @@
             ;;   ;; desired access case by path mode
             ;;   (Just (= str * Cons) head tail) (format #t "a char: %c\n" head))
 
+            (letin ((str5 (new^String "Cicili") free^String))
+              (format #t "has 'Cicili' desired length 5: %d\n" (has^len^String str5 5))
+              (format #t "has 'Cicili' desired length 6: %d\n" (has^len^String str5 6))
+              (format #t "has 'Cicili' desired length 7: %d\n" (has^len^String str5 7)))
+
             ;; match should have default case
             ;; io can have default case like match
             ;; but io returns void therefor default case is optional
-            (io txt
+            (io (nthcdr^String txt 12)
               ;; simplified list element access
-              ;; (Just ^ String ((\: char fst snd tail))
-              ;;       (format #t "first and second char from String: %c %c\n" fst snd))
-              (default (format #t "Nothing String\n"))))
+              ;; (Nothing ^ String (format #t "Nothing String\n"))
+              (Just ^ String ((\: char fst snd trd tail))
+                    (format #t "first, second and third char from String: %c %c %c\n" fst snd trd))
+              (Just ^ String ((\: char fst snd tail))
+                    (format #t "first and second char from String: %c %c\n" fst snd))
+              (Just ^ String ((\: char fst tail))
+                    (format #t "first char from String: %c\n" fst))
+              (default (format #t "default case String\n"))))
 
-        ))
+          ))
