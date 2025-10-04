@@ -71,7 +71,14 @@
         (result ()))
     (DOLIST (p parts)
       (LET ((pres (replace-h-operator (CONS '! '!>) p)))
-        (PUSH (IF (= 1 (LENGTH pres)) (CAR pres) pres) result)))
+        (PUSH (IF (= 1 (LENGTH pres))
+                  (CAR pres)
+                  (IF (> (LENGTH pres) 2)
+                      (IF (EQUAL (CAR pres) (CDR (CONS '! '!>)))
+                          pres
+                          (REDUCE #'LIST pres))
+                      pres))
+              result)))
     `(,@(REDUCE #'LIST (REVERSE result) :FROM-END T))))
 
 ;; . function composition
