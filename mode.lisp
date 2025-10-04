@@ -92,6 +92,7 @@
    (1 . Nothing)
    (1 . Just)
    (1 . Cons)
+   (1 . otherwise)
    ))
 
 (defun cicili-add-keywords (face-name keyword-rules)
@@ -200,6 +201,7 @@
    (1 . Just)
    (1 . Cons)
    (1 . len)
+   (1 . !>)
    ))
 
 (defun cicili-add-attributes (face-name keyword-rules)
