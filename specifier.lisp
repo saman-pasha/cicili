@@ -854,6 +854,7 @@
                          (error (format nil "wrong defer definition ~A, #t means pure free" type-desc))))))
               (t (multiple-value-bind (const typeof modifier const-ptr variable array value)
 		             (specify-type-value< type-desc)
+                   (setq value (expand-macros value))
                    (when (key-eq typeof '|var|) (error (format nil "var keyword as a type ~A" type-desc)))
 
 		           (let ((attributes '())

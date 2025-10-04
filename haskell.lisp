@@ -17,17 +17,19 @@
 ;; ((f m) n)
 ;; reducible function
 (DEFMACRO fn (macro param &REST body)
-  (WHEN (NULL body) (ERROR (FORMAT NIL "fn without any parameter or body: (~A ~A)" macro param)))
-  (LET* ((params (REVERSE (CDR (REVERSE (APPEND (LIST param) body)))))
-         (body (CAR (LAST body)))
-         (len (LENGTH params)))
-    (DOTIMES (i len)
-      (SETQ body
-            (LIST 'lambda
-                  (IF (> (- len i) 1) (INTERN (FORMAT NIL "~A_aa~D" macro (1- (- len i)))) macro)
-                  (INTERN (FORMAT NIL "~A" (NTH (1- (- len i)) params)))
-                  body)))
-    `(,@body)))
+  (LET ((macro (MACROEXPAND macro)))
+    ;; (SETF (MACRO-FUNCTION (INTERN (SUBSTITUTE #\^ #\_ (SYMBOL-NAME ,macro)))) (MACRO-FUNCTION ,macro)) ; alias ^ _
+    (WHEN (NULL body) (ERROR (FORMAT NIL "fn without any parameter or body: (~A ~A)" macro param)))
+    (LET* ((params (REVERSE (CDR (REVERSE (APPEND (LIST param) body)))))
+           (body (CAR (LAST body)))
+           (len (LENGTH params)))
+      (DOTIMES (i len)
+        (SETQ body
+              (LIST 'lambda
+                    (IF (> (- len i) 1) (INTERN (FORMAT NIL "~A_aa~D" macro (1- (- len i)))) macro)
+                    (INTERN (FORMAT NIL "~A" (NTH (1- (- len i)) params)))
+                    body)))
+      `(,@body))))
 
 ;; '\' haskel lambda sign equivalent
 (DEFMACRO \\ (&REST body)
@@ -104,10 +106,10 @@
 
 ;; data helpers
 (DEFUN make-data-h-type-name (ct)
-  (INTERN (FORMAT NIL "__h_~A_t" ct)))
+  (INTERN (FORMAT NIL "__h_~A_t" (MACROEXPAND ct))))
 
 (DEFUN make-data-h-ctor-name (ct)
-  (INTERN (FORMAT NIL "__h_~A_ctor" ct)))
+  (INTERN (FORMAT NIL "__h_~A_ctor" (MACROEXPAND ct))))
 
 (DEFUN make-data-h-member-name (number)
   (INTERN (FORMAT NIL "__h_~A_mem" number)))
@@ -287,7 +289,7 @@
          (result (REDUCE #'(LAMBDA (x y)
                              (APPEND
                               (REVERSE (CDR (REVERSE x)))
-                              (LIST (INTERN (FORMAT NIL "~A_~A" (CAR (LAST x)) (CAR y))))
+                              (LIST (MACROEXPAND `(<> ,(CAR (LAST x)) ,(CAR y))))
                               (CDR y)))
                    parts))) ;; to mix names separated with ^
     (SETQ case result)
@@ -309,7 +311,7 @@
         (SETQ case (CDR case))
         (SETQ symb (MACROEXPAND (CAR case)))
         (SETQ tail (CDR case)))
-      
+
       (WHEN (OR has-alias (NOT (EQL data data-name)))
         (PUSH `(auto ,data-name . ,(IF (LISTP data) `(FUNCTION ,data) data)) defs))
 
@@ -464,14 +466,21 @@
          
          (class type ((<> Cons a) (a head) ((<> Maybe type) tail)))
 
-         (func (<> new type) ((const a * buf))
+         (func (<> new type Pure) ((const a * buf))
                (out (<> Maybe type))
                (if (null buf)
                    (return ((<> Nothing type)))
                    (let ((a item . #'(cof buf)))
                      (if (== item #\Null)
                          (return ((<> Nothing type)))
-                         (return ($> (<> Just type) $ (<> Cons a) item $ (<> new type) (++ buf)))))))
+                         (return ($> (<> Just type) $ (<> Cons a) item $ (<> new type Pure) (++ buf)))))))
+
+         ;; proxy new^List^int^Pure ctor
+         (fn (<> new type) buf
+             (QUASIQUOTE ; QUASIQUOTE for compile time conditions, use QUOTE for evaluation
+                 (IF (STRINGP 'buf)
+                     '((<> new type Pure) buf)
+                     '((<> new type Pure) (cast (const a []) buf)))))
          
          (func (<> drop type) (((<> Maybe type) list))
                (io list
@@ -483,13 +492,6 @@
          (func (<> free type) (((<> Maybe type) * list)) ; specified for letin
                ((<> drop type) (cof list)))
          
-         (func (<> show type) (((<> Maybe type) list))
-               (io list
-                 (Just ^ type (* Cons ^ a head tail)
-                       (progn
-                         (putchar head)
-                         ((<> show type) tail)))))
-
          (func (<> nth type) (((<> Maybe type) list) (int index))
                (out (<> Maybe a))
                (return (match list
@@ -521,6 +523,29 @@
                                      otherwise      (+ 1 ((<> has len type) tail (-- desired)))))
                          (default 0))))
 
+         (fn (<> push type) head tail
+             ($> (<> Just type) ! (<> Cons a) head $ tail))
+
+         (fn (<> \: type) head tail
+             ($> (<> Just type) ! (<> Cons a) head $ tail))
+
+         (fn (<> head type) list
+             ((<> nth type) list 0))
+
+         (fn (<> tail type) list
+             ((<> nthcdr type) list 0))
+
+         (func (<> append type) (((<> Maybe type) llist) ((<> Maybe type) rlist))
+               (out (<> Maybe type))
+               (return (match llist
+                         (Just ^ type (* Cons ^ a head tail)
+                               ($> (<> push type) head $ ((<> append type) tail rlist)))
+                         (default rlist))))
+
+         (fn (<> ++ type) llist rlist
+             ((<> append type) llist rlist))
+
+         ;; Cons a
          (func (<> nth Cons a) ((type cons) (int index))
                (out (<> Maybe a))
                (return (match cons
@@ -550,6 +575,7 @@
                          (* Cons ^ a _ tail
                             (+ 1 ((<> has len type) tail (-- desired))))
                          (default 0))))
+
          )
 
 ;;; helper macro will auto defer all vars

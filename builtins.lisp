@@ -20,8 +20,8 @@
          (SETQ body (SUBST (NTH i args) (NTH i types) body)))
        `($$$ ,@body)))) ; $$$ for replace extracted
 
-(DEFMACRO <> (name &REST body)
-  (INTERN (FORMAT NIL "~A_~{~A~^_~}" name
+(DEFMACRO <> (&REST body)
+  (INTERN (FORMAT NIL "~{~A~^^~}"
                   (MAPCAR #'(LAMBDA (reso)
                               (IF (SYMBOLP reso)
                                   reso
