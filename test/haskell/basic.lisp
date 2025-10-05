@@ -104,13 +104,36 @@
 
         ;; (specialise_List String char)
 
-        ;; (func (<> show String) (((<> Maybe String) list))
-        ;;        (io list
-        ;;          (Just ^ String (* Cons ^ char head tail)
-        ;;                (progn
-        ;;                  (putchar head)
-        ;;                  ((<> show String) tail)))))
+        ;; (generic specialize_String (ctor type a)
+        ;;          (func (<> new type Const) ((const a * buf))
+        ;;                (out (<> Maybe type))
+        ;;                (if (null buf)
+        ;;                    (return ((<> Nothing type)))
+        ;;                    (let ((a item . #'(cof buf)))
+        ;;                      (if (== item #\Null)
+        ;;                          (return ((<> Nothing type)))
+        ;;                          (return ($> (<> Just type) ! (<> Cons a) item $
+        ;;                                      ((<> new type Const) (++ buf))))))))
+                 
+        ;;          (DEFMACRO ctor (buf &OPTIONAL len)
+        ;;            (IF len
+        ;;                `((<> new type Pure) ,buf ,len)
+        ;;                (IF (AND (LISTP buf) (EQUAL (CAR buf) 'QUOTE))
+        ;;                    `((<> new type Pure) (cast (const a []) ,buf) ,(LENGTH (CADR buf)))
+        ;;                    (IF (STRINGP buf)
+        ;;                        `((<> new type Const) ,buf)
+        ;;                        (ERROR (FORMAT NIL "new^List^int len required for dynamic array input: ~A" buf))))))
 
+        ;;          (func (<> show type) (((<> Maybe type) list))
+        ;;                (io list
+        ;;                  (Just ^ type (* Cons ^ a head tail)
+        ;;                        (progn
+        ;;                          (putchar head)
+        ;;                          ((<> show type) tail)))))
+        ;;          )
+
+        ;; (specialize_String new^String String char)
+        
         ;; (fn fun-with-guard x ; 3 different paths
         ;;     (case (== x 1)  (format #t "output of function guard1: %d\n" x)
         ;;           (== x 2)  (format #t "output of function guard2: %d\n" x)
@@ -123,14 +146,30 @@
         ;;       (return (case (== n 1)  1
         ;;                     otherwise (* n (factorial (- n 1))))))
 
-        (specialise_List (<> List int) int)
+        ;; (specialise_List (<> List int) int)
 
-        (func (<> show List int) (((<> Maybe List int) list))
-               (io list
-                 (Just ^ List ^ int (* Cons ^ int head tail)
-                       (progn
-                         (printf "%d, " head)
-                         ((<> show List int) tail)))))
+        ;; (generic specialize_List_Num (ctor type a)
+        ;;          (DEFMACRO ctor (buf &OPTIONAL len)
+        ;;            (IF len
+        ;;                `((<> new type Pure) ,buf ,len)
+        ;;                (IF (AND (LISTP buf) (EQUAL (CAR buf) 'QUOTE))
+        ;;                    `((<> new type Pure) (cast (const a []) ,buf) ,(LENGTH (CADR buf)))
+        ;;                    (ERROR (FORMAT NIL "new^List^int len required for dynamic array input: ~A" buf)))))
+                 
+        ;;          (func (<> show type) (((<> Maybe type) list))
+        ;;                (io list
+        ;;                  (Just ^ type (* Cons ^ a head tail)
+        ;;                        (block
+        ;;                            (io tail
+        ;;                              (Just ^ type
+        ;;                                    (printf "%d, " head))
+        ;;                              (default (printf "%d " head)))
+        ;;                          ((<> show type) tail)))))
+        ;;          )
+
+        ;; (specialize_List_Num new^List^int (<> List int) int)
+
+        (specialize_Range (<> Range int) int)
         
         (main
 
@@ -233,9 +272,9 @@
           ;;        ((\, i (Just ^ char _))
           ;;         (format #t "maybe inside tuple: (c < L) int, Just char: = (%d, %c)\n" i c)))))
           
-          ;; ;; List
-          ;; ;; letin evalutes each var once
-          ;; ;; var, value, deferer optional, deferer must be a function where accepts pointer of type value
+          ;; List
+          ;; letin evalutes each var once
+          ;; var, value, deferer optional, deferer must be a function where accepts pointer of type value
           ;; (letin ((hello (new^String "Hello Haskell\n") free^String)
           ;;         (txt   (new^String "Haskell List")    free^String))
 
@@ -304,17 +343,26 @@
           ;;           (format #t "first char from String: %c\n" fst))
           ;;     (default (format #t "default case String\n"))))
 
-          (letin ((ilist0 (new^List^int '{ 1 2 3 4 #\Null }) free^List^int)  ; null termination required
-                  (ilist1 ($> \:^List^int 5 ilist0)          free^List^int)  ; \: 'push' is push^List^int to list function
-                  (ilist2 ($> ++^List^int ilist1 ilist0)     free^List^int)) ; ++ 'append' is append^List^int
-            (format #t "first elem of int list0: %d\n" (match (head^List^int ilist0) (Just ^ int i i) (default -1)))
-            (format #t "first elem of int list1: %d\n" (match (head^List^int ilist1) (Just ^ int i i) (default -1)))
-            (format #t "list1 ++ list0:\n")
-            (show^List^int ilist0)
-            (format #t "\nlist1 ++ list1:\n")
-            (show^List^int ilist1)
-            (format #t "\nlist1 ++ list2:\n")
-            (show^List^int ilist2))
             
+          ;; (letin ((ilist0 (new^List^int '{ 1 2 3 4 })    free^List^int)  ; null termination required
+          ;;         (ilist1 ($> \:^List^int 5 ilist0)      free^List^int)  ; \: 'push' is push^List^int to list function
+          ;;         (ilist2 ($> ++^List^int ilist1 ilist0) free^List^int)  ; ++ 'append' is append^List^int
+          ;;         (intarr (cast (const int []) '{ 4 3 2 }))
+          ;;         (ilist3 (new^List^int intarr 3)        free^List^int))
+          ;;   (format #t "first elem of int list0: %d\n" (match (head^List^int ilist0) (Just ^ int i i) (default -1)))
+          ;;   (format #t "first elem of int list1: %d\n" (match (head^List^int ilist1) (Just ^ int i i) (default -1)))
+          ;;   (format #t "list0:\n")
+          ;;   (show^List^int ilist0)
+          ;;   (format #t "\nlist1:\n")
+          ;;   (show^List^int ilist1)
+          ;;   (format #t "\nlist2:\n")
+          ;;   (show^List^int ilist2)
+          ;;   (format #t "\nlist3:\n")
+          ;;   (show^List^int ilist3))
+            
+          (letin ((ra0 (new^Range^int 1 20 3) free^Range^int))
+            (show^Range^int ra0))
 
+          ;; TAKE DROP takewhile dropwile splitAt map fmap
+          
           ))

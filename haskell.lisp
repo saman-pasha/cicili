@@ -313,7 +313,8 @@
         (SETQ tail (CDR case)))
 
       (WHEN (OR has-alias (NOT (EQL data data-name)))
-        (PUSH `(auto ,data-name . ,(IF (LISTP data) `(FUNCTION ,data) data)) defs))
+        (PUSH `((typeof ,data) ,data-name) defs)
+        (PUSH `(set ,data-name ,data) assigns))
 
       (COND ((AND (LISTP symb) (EQUAL (CAR symb) '\,)) ; tuple \,
              (DOTIMES (i (1- (LENGTH symb))) 
@@ -466,27 +467,21 @@
          
          (class type ((<> Cons a) (a head) ((<> Maybe type) tail)))
 
-         (func (<> new type Pure) ((const a * buf))
+         (func (<> new type Pure) ((const a * buf) (int len))
                (out (<> Maybe type))
                (if (null buf)
                    (return ((<> Nothing type)))
                    (let ((a item . #'(cof buf)))
-                     (if (== item #\Null)
+                     (if (== len 0)
                          (return ((<> Nothing type)))
-                         (return ($> (<> Just type) $ (<> Cons a) item $ (<> new type Pure) (++ buf)))))))
+                         (return ($> (<> Just type) ! (<> Cons a) item $
+                                     ((<> new type Pure) (++ buf) (-- len))))))))
 
-         ;; proxy new^List^int^Pure ctor
-         (fn (<> new type) buf
-             (QUASIQUOTE ; QUASIQUOTE for compile time conditions, use QUOTE for evaluation
-                 (IF (STRINGP 'buf)
-                     '((<> new type Pure) buf)
-                     '((<> new type Pure) (cast (const a []) buf)))))
-         
          (func (<> drop type) (((<> Maybe type) list))
                (io list
                  (Just ^ type (= ls * Cons ^ a _ tail)
-                       (progn
-                         ((<> drop type) tail)
+                       (block
+                           ((<> drop type) tail)
                          (free ls)))))
          
          (func (<> free type) (((<> Maybe type) * list)) ; specified for letin
@@ -558,9 +553,9 @@
                (out (<> Maybe type))
                (return (case (== index 0) ((<> Just type) cons)
                              otherwise    (match cons
-                                          (* Cons ^ a _ tail
-                                             ((<> nthcdr type) tail (-- index)))
-                                          (default ((<> Nothing type)))))))
+                                            (* Cons ^ a _ tail
+                                               ((<> nthcdr type) tail (-- index)))
+                                            (default ((<> Nothing type)))))))
 
          (func (<> len Cons a) ((type cons))
                (out int)
@@ -576,6 +571,41 @@
                             (+ 1 ((<> has len type) tail (-- desired))))
                          (default 0))))
 
+         )
+
+(generic specialize_Range (type a)
+         (class type ((<> Cons Range a) (a from) ((<> Maybe type) tail) (a to) (a step)))
+
+         (func (<> new type) ((a from) (a to) (a step))
+               (out (<> Maybe type))
+               (return (case (<= from to) ($> (<> Just type) $ (<> Cons Range a) from ((<> Nothing type)) to step)
+                             otherwise    ((<> Nothing type)))))
+         
+         (func (<> drop type) (((<> Maybe type) list))
+               (io list
+                 (Just ^ type (= ls * Cons ^ Range ^ a from tail to step)
+                       (block
+                         ((<> drop type) tail)
+                         (free ls)))))
+         
+         (func (<> free type) (((<> Maybe type) * list)) ; specified for letin
+               ((<> drop type) (cof list)))
+
+         (func (<> next type) (((<> Maybe type) list))
+               (out (<> Maybe type))
+               (return (match list
+                         (Just ^ type (= ls * Cons ^ Range ^ a from _ to step) => (<= (+ from step) to)
+                               ($> (<> Just type) $ (<> Cons Range a) (+ from step) ((<> Nothing type)) to step))
+                         (default ((<> Nothing type))))))
+         
+         (func (<> show type) (((<> Maybe type) list))
+               (io list
+                 (Just ^ type (* Cons ^ Range ^ a head)
+                       (letin ((ne ((<> next type) list) (<> free type)))
+                           (io ne
+                             (Just ^ type (printf "%d, " head))
+                             (default     (printf "%d "  head)))
+                         ((<> show type) ne)))))
          )
 
 ;;; helper macro will auto defer all vars

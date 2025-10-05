@@ -45,7 +45,8 @@
                     ((key-eq construct '|module|)
 		             (add-inner (specify-module   clause attributes) target-specifier) (setq attributes '()))
                     ((or (key-eq construct '|defmacro|) (key-eq construct '|DEFMACRO|))
-                     (error (format nil "syntax error: DEFMACRO ~A inside target ~A" (cadr clause) name)))
+                     (let ((symb (eval clause)))
+                       (add-macro (symbol-name symb) symb)))
 		            (t (let ((bd (expand-macros   clause))) ; any macro produce other macro
                          (if (eq bd clause)
                              (add-inner (specify-expr bd) target-specifier)
