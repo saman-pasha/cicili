@@ -148,9 +148,9 @@
             ,@(MAPCAR #'(LAMBDA (ct)
                           (LET ((ct (MACROEXPAND ct)))                            
                             (LIST (make-data-h-type-name (MACROEXPAND (CAR ct))))))
-                      ctors))
+                      (IF (> (LENGTH ctors) 1) ctors (LIST (LIST enum-name)))))
        (struct ,name
-         (member ,enum-name __h_ctor)
+         (member ,(IF (> (LENGTH ctors) 1) enum-name 'DefaultCtor) __h_ctor)
          (union 
              ,@(MAPCAR #'(LAMBDA (ct)
                            (LET* ((mem-counter -1)
@@ -164,7 +164,7 @@
                                                   (CDR ct))))
                              `(struct
                                   ,@(MAPCAR #'(LAMBDA (param) `(member ,@param)) params)
-                                (declare ,(MACROEXPAND (CAR ct))))))
+                                (declare ,(IF (= 1 (LENGTH ctors)) '_ (MACROEXPAND (CAR ct)))))))
                        ctors)
            (declare __h_data)))
        ,@(MAPCAR #'(LAMBDA (ct)
@@ -183,31 +183,57 @@
                        (IF (NULL params)
                            `(func ,ct-name ()
                                   (out ,name)
-                                  (return (cast ,name '{ ,(make-data-h-type-name ct-name) })))
-                             (IF (> (LENGTH params) 1)
-                                 `($$$ (func ,(make-data-h-ctor-name ct-name) ,params
-                                             (out ,name)
-                                             (return (cast ,name '{
-                                                           ,(make-data-h-type-name ct-name)
-                                                           ,(INTERN (FORMAT NIL "$__h_data$~A" ct-name))
-                                                           '{ ,@(MAPCAR #'CADR params) }
-                                                           })))
-                                    (fn ,ct-name ,@(MAPCAR #'CADR params)
-                                        (,(make-data-h-ctor-name ct-name) ,@(MAPCAR #'CADR params))))
-                                 `(func ,ct-name ,params
-                                        (out ,name)
-                                        (return (cast ,name '{
-                                                      ,(make-data-h-type-name ct-name)
-                                                      ,(INTERN (FORMAT NIL "$__h_data$~A" ct-name))
-                                                      '{ ,@(MAPCAR #'CADR params) }
-                                                      })))))))
+                                  (return (cast ,name '{ ,(make-data-h-type-name (IF (= 1 (LENGTH ctors)) '_ ct-name)) })))
+                           (IF (> (LENGTH params) 1)
+                               `($$$ (func ,(make-data-h-ctor-name ct-name) ,params
+                                           (out ,name)
+                                           (return (cast ,name '{
+                                                         ,(make-data-h-type-name (IF (= 1 (LENGTH ctors)) '_ ct-name))
+                                                         ,(INTERN (FORMAT NIL "$__h_data$~A"
+                                                                          (IF (= 1 (LENGTH ctors)) '_ ct-name)))
+                                                         '{ ,@(MAPCAR #'CADR params) }
+                                                         })))
+                                  (fn ,ct-name ,@(MAPCAR #'CADR params)
+                                      (,(make-data-h-ctor-name ct-name) ,@(MAPCAR #'CADR params))))
+                               `(func ,ct-name ,params
+                                      (out ,name)
+                                      (return (cast ,name '{
+                                                    ,(make-data-h-type-name (IF (= 1 (LENGTH ctors)) '_ ct-name))
+                                                    ,(INTERN (FORMAT NIL "$__h_data$~A"
+                                                                     (IF (= 1 (LENGTH ctors)) '_ ct-name)))
+                                                    '{ ,@(MAPCAR #'CADR params) }
+                                                    })))))))
                  ctors))))
 
+;; prelude
+;; (enum DefaultCtor
+;;   (_))
+        
+;; (enum Bool
+;;   (False)
+;;   (True))
+
 ;; data Maybe = Nothing | Just a
+;; (enum Maybe
+;;   (Nothing)
+;;   (Just))
+
 (generic specialise_Maybe (a)
-         (data (<> Maybe a)
-           (<> Nothing a)
-           ((<> Just a) (a value))))
+         (struct (<> Maybe a)
+           (member Maybe __h_ctor)
+           (union
+               (struct (declare Nothing))
+             (struct (member a __h_0_mem) (declare Just))
+             (declare __h_data)))
+
+         (func (<> Nothing a) ()
+               (out (<> Maybe a))
+               (return (cast (<> Maybe a) '{ $__h_ctor __h_Nothing_t $__h_data$Nothing '{ } })))
+
+         (func (<> Just a) ((a value))
+               (out (<> Maybe a))
+               (return (cast (<> Maybe a) '{ $__h_ctor __h_Just_t $__h_data$Just '{ $__h_0_mem value } })))
+         )
 
 ;; Data Constructor
 ;; data Mood = Blah | Woot
@@ -227,7 +253,7 @@
             ,@(MAPCAR #'(LAMBDA (ct)
                           (LET ((ct (MACROEXPAND ct)))                            
                             (LIST (make-data-h-type-name (MACROEXPAND (CAR ct))))))
-                      ctors))
+                      (IF (> (LENGTH ctors) 1) ctors (IF (> (LENGTH ctors) 1) ctors (LIST (LIST enum-name))))))
 
        ;; struct
        (decl) (struct (<> ,name class_t))
@@ -238,7 +264,7 @@
        
        ;; actual type
        (struct (<> ,name class_t)
-         (member ,enum-name __h_ctor)
+         (member ,(IF (> (LENGTH ctors) 1) enum-name 'DefaultCtor)  __h_ctor)
          (union 
              ,@(MAPCAR #'(LAMBDA (ct)
                            (LET* ((mem-counter -1)
@@ -252,7 +278,7 @@
                                                   (CDR ct))))
                              `(struct
                                   ,@(MAPCAR #'(LAMBDA (param) `(member ,@param)) params)
-                                (declare ,(MACROEXPAND (CAR ct))))))
+                                (declare ,(IF (= 1 (LENGTH ctors)) '_ (MACROEXPAND (CAR ct)))))))
                        ctors)
            (declare __h_data)))
        
@@ -273,15 +299,15 @@
                        (IF (NULL params)
                            `(func ,ct-name ()
                                   (out ,name)
-                                  (return (cast ,name '{ ,(make-data-h-type-name ct-name) })))
+                                  (return (cast ,name '{ ,(make-data-h-type-name (IF (= 1 (LENGTH ctors)) '_ ct-name)) })))
                            (IF (> (LENGTH params) 1)
                                `($$$ (func ,(make-data-h-ctor-name ct-name) ,params
                                            (out ,name)
                                            (var ,name this . #'(malloc (sizeof (<> ,name class_t))))
                                            (set (cof this)
                                              (cast (<> ,name class_t) '{
-                                                   ,(make-data-h-type-name ct-name)
-                                                   ,(INTERN (FORMAT NIL "$__h_data$~A" ct-name))
+                                                   ,(make-data-h-type-name (IF (= 1 (LENGTH ctors)) '_ ct-name))
+                                                   ,(INTERN (FORMAT NIL "$__h_data$~A" (IF (= 1 (LENGTH ctors)) '_ ct-name)))
                                                    '{ ,@(MAPCAR #'CADR params) }
                                                    }))
                                            (return this))
@@ -292,8 +318,8 @@
                                       (var ,name this . #'(malloc (sizeof ,name)))
                                       (set (cof this)
                                         (cast (<> ,name class_t) '{
-                                              ,(make-data-h-type-name ct-name)
-                                              ,(INTERN (FORMAT NIL "$__h_data$~A" ct-name))
+                                              ,(make-data-h-type-name (IF (= 1 (LENGTH ctors)) '_ ct-name))
+                                              ,(INTERN (FORMAT NIL "$__h_data$~A" (IF (= 1 (LENGTH ctors)) '_ ct-name)))
                                               '{ ,@(MAPCAR #'CADR params) }
                                               }))
                                       (return this))))))
@@ -304,6 +330,12 @@
 ;; needs default case as default return value
 ;; all cases after default case will be ignored
 ;; each match can has a guard with => a condition
+;; access by path mode
+;; * means Cons char ctor returns a pointer beacause Lists are classes
+;; = str at first of any case makes an alias for whole object
+;; ^ opr only inside cases can be used separated,
+;; note in other cicili clauses ^ must be mixed whithout any space
+;; _ for types with only one ctor
 (DEFUN match-case-h-details (match-id data case)
   (LET* ((parts (partition-h-data case '^))
          (result (REDUCE #'(LAMBDA (x y)
@@ -335,7 +367,7 @@
       (COND ((AND (LISTP symb) (EQUAL (CAR symb) '\,)) ; tuple \,
              (WHEN (OR has-alias (NOT (EQL data data-name)))
                (PUSH `(auto ,data-name . ,(IF (LISTP data) `(FUNCTION ,data) data)) defs))
-               ;; (PUSH `(set ,data-name ,data) assigns))
+             ;; (PUSH `(set ,data-name ,data) assigns))
              
              (DOTIMES (i (1- (LENGTH symb))) 
                (LET ((arg (MACROEXPAND (NTH (1+ i) symb))))
@@ -363,9 +395,9 @@
             ((AND (LISTP symb) (EQUAL (CAR symb) '\:)) ; list \:
              (WHEN (OR has-alias (NOT (EQL data data-name)))
                (PUSH `(auto ,data-name . ,(IF (LISTP data) `(FUNCTION ,data) data)) defs))
-               ;;  (PUSH `(set ,data-name ,data) assigns))
-               ;; (PUSH `((typeof ,data) ,data-name) defs)
-               ;; (PUSH `(set ,data-name ,data) assigns))
+             ;;  (PUSH `(set ,data-name ,data) assigns))
+             ;; (PUSH `((typeof ,data) ,data-name) defs)
+             ;; (PUSH `(set ,data-name ,data) assigns))
 
              (LET ((el-type (CADR symb)))
                (PUSH `((typeof ((<> has len Cons ,el-type) ,data-name ,(1- (LENGTH (CDDR symb))))) __h_has_len) defs)
@@ -378,7 +410,7 @@
                            (mem-name (IF (< i (- (LENGTH symb) 3))
                                          (LIST '$ `((<> nth Cons ,el-type) ,i ,data-name)
                                                '__h_data
-                                               `(<> Just ,el-type)
+                                               'Just
                                                (make-data-h-member-name 0))
                                          `((<> drop Cons ,el-type) ,i ,data-name))))
                        (IF (ATOM arg)
@@ -403,7 +435,7 @@
 
             (T (WHEN (OR has-alias (NOT (EQL data data-name)))
                  (PUSH `(auto ,data-name . ,(IF (LISTP data) `(FUNCTION ,data) data)) defs))
-                 ;; (PUSH `(set ,data-name ,data) assigns))
+               ;; (PUSH `(set ,data-name ,data) assigns))
 
                (DOTIMES (i (1- (LENGTH tail))) ; data type
                  (LET ((arg (MACROEXPAND (NTH (1+ i) case))))
@@ -513,20 +545,26 @@
 
          (func (<> release type) (((<> Maybe type) list))
                (io list
-                 (Just ^ type (= ls * Cons ^ a _ tail)
-                       (block
-                           ((<> release type) tail)
-                         (free ls)))))
+                 (Just (= ls * _ _ tail)
+                   (block
+                       ((<> release type) tail)
+                     (free ls)))))
          
          (func (<> free type) (((<> Maybe type) * list)) ; specified for letin
                ((<> release type) (cof list)))
+
+         (func (<> next type) (((<> Maybe type) list))
+               (out (<> Maybe type))
+               (return (match list
+                         (Just (= ls * _ _ tail) tail)
+                         (default ((<> Nothing type))))))
          
          (func (<> nth type) ((int index) ((<> Maybe type) list))
                (out (<> Maybe a))
                (return (match list
-                         (Just ^ type (* Cons ^ a head tail)
-                               (case (== index 0) ((<> Just a) head)
-                                     otherwise    ((<> nth type) (-- index) tail)))
+                         (Just (* _ head tail)
+                           (case (== index 0) ((<> Just a) head)
+                                 otherwise    ((<> nth type) (-- index) tail)))
                          (default ((<> Nothing a))))))
 
          (fn (<> !! type) index list
@@ -536,23 +574,23 @@
                (out (<> Maybe type))
                (return (case (== index 0) list
                              otherwise    (match list
-                                            (Just ^ type (* Cons ^ a _ tail)
-                                                  ((<> drop type) (-- index) tail))
+                                            (Just (* _ _ tail)
+                                              ((<> drop type) (-- index) tail))
                                             (default ((<> Nothing type)))))))
          
          (func (<> len type) (((<> Maybe type) list))
                (out int)
                (return (match list
-                         (Just ^ type (* Cons ^ a _ tail)
-                               (+ 1 ((<> len type) tail)))
+                         (Just (* _ _ tail)
+                           (+ 1 ((<> len type) tail)))
                          (default 0))))
 
          (func (<> has len type) (((<> Maybe type) list) (int desired))
                (out int)
                (return (match list
-                         (Just ^ type (* Cons ^ a _ tail)
-                               (case (== desired 1) 1
-                                     otherwise      (+ 1 ((<> has len type) tail (-- desired)))))
+                         (Just (* _ _ tail)
+                           (case (== desired 1) 1
+                                 otherwise      (+ 1 ((<> has len type) tail (-- desired)))))
                          (default 0))))
 
          (fn (<> push type) head tail
@@ -564,7 +602,7 @@
          (func (<> take type) ((int len) ((<> Maybe type) list))
                (out (<> Maybe type))
                (return (match list
-                         (Just ^ type (* Cons ^ a head tail) => (> len 0)
+                         (Just (* _ head tail) => (> len 0)
                                ($> (<> push type) head $ ((<> take type) (-- len) tail)))
                          (default ((<> Nothing type))))))
 
@@ -577,8 +615,8 @@
          (func (<> append type) (((<> Maybe type) llist) ((<> Maybe type) rlist))
                (out (<> Maybe type))
                (return (match llist
-                         (Just ^ type (* Cons ^ a head tail)
-                               ($> (<> push type) head $ ((<> append type) tail rlist)))
+                         (Just (* _ head tail)
+                           ($> (<> push type) head $ ((<> append type) tail rlist)))
                          (default rlist))))
 
          (fn (<> ++ type) llist rlist
@@ -588,7 +626,7 @@
          (func (<> nth Cons a) ((int index) (type cons))
                (out (<> Maybe a))
                (return (match cons
-                         (* Cons ^ a head tail
+                         (* _ head tail
                             (case (== index 0) ((<> Just a) head)
                                   otherwise    ((<> nth type) (-- index) tail)))
                          (default ((<> Nothing a))))))
@@ -597,21 +635,21 @@
                (out (<> Maybe type))
                (return (case (== index 0) ((<> Just type) cons)
                              otherwise    (match cons
-                                            (* Cons ^ a _ tail
+                                            (* _ _ tail
                                                ((<> drop type) (-- index) tail))
                                             (default ((<> Nothing type)))))))
 
          (func (<> len Cons a) ((type cons))
                (out int)
                (return (match cons
-                         (* Cons ^ a _ tail
+                         (* _ _ tail
                             (+ 1 ((<> len type) tail)))
                          (default 0))))
 
          (func (<> has len Cons a) ((type cons) (int desired))
                (out int)
                (return (match cons
-                         (* Cons ^ a _ tail
+                         (* _ _ tail
                             (+ 1 ((<> has len type) tail (-- desired))))
                          (default 0))))
 
@@ -627,10 +665,10 @@
          
          (func (<> release type) (((<> Maybe type) list))
                (io list
-                 (Just ^ type (= ls * Cons ^ Range ^ a from tail to step)
-                       (block
-                           ((<> release type) tail)
-                         (free ls)))))
+                 (Just (= ls * _ from tail to step)
+                   (block
+                       ((<> release type) tail)
+                     (free ls)))))
          
          (func (<> free type) (((<> Maybe type) * list)) ; specified for letin
                ((<> release type) (cof list)))
@@ -638,7 +676,7 @@
          (func (<> next type) (((<> Maybe type) list))
                (out (<> Maybe type))
                (return (match list
-                         (Just ^ type (= ls * Cons ^ Range ^ a from _ to step) => (<= (+ from step) to)
+                         (Just (= ls * _ from _ to step) => (<= (+ from step) to)
                                ($> (<> Just type) $ (<> Cons Range a) (+ from step) ((<> Nothing type)) to step))
                          (default ((<> Nothing type))))))
          
@@ -651,29 +689,26 @@
          (func (<> take type) ((int len) ((<> Maybe type) list))
                (out (<> Maybe type))
                (return (match list
-                         (Just ^ type (* Cons ^ Range ^ a from _ to step) => (> len 0)
+                         (Just (* _ from _ to step) => (> len 0)
                                (letin ((ne ((<> next type) list) (<> free type)))
                                  (match ne
-                                   (Just ^ type => (> len 0)
-                                         ($> (<> push type) from ((<> take type) (-- len) ne) from step))
-                                   (default ((<> Nothing type))))))
+                                   (Just ($> (<> push type) from ((<> take type) (-- len) ne) to step))
+                                   (default ($> (<> push type) from ne to step)))))
                          (default ((<> Nothing type))))))
-
+         
          (func (<> show type) (((<> Maybe type) list))
                (io list
-                 (Just ^ type (* Cons ^ Range ^ a head tail)
-                       (io tail
-                         (Just ^ type
-                               (block
-                                   (printf "%d, " head)
-                                 ((<> show type) tail)))
-                         (default
-                             (letin ((ne ((<> next type) list) (<> free type)))
-                               (io ne
-                                 (Just ^ type (printf "%d, " head))
-                                 (default     (printf "%d "  head)))
-                               ((<> show type) ne)))))))
+                 (Just (* _ head tail)
+                   (io tail
+                     (Just (block
+                               (printf "%d, " head)
+                             ((<> show type) tail)))
+                     (default (printf "%d "  head))))))
          )
+
+;; helper for tuple passing by value
+(DEFMACRO cast-list (type value)
+  `(cast ,type (cof (cast (,type *) (aof ,value)))))
 
 ;;; helper macro will auto defer all vars
 (DEFMACRO letin (var-list &REST body)

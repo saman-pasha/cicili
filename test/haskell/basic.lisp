@@ -55,7 +55,17 @@
         (specialise_power int)
 
         ;; prelude
-        (data Bool False True)
+        (enum DefaultCtor
+          (__h___t))
+        
+        (enum Bool
+          (False)
+          (True))
+
+        ;; data Maybe = Nothing | Just a
+        (enum Maybe
+          (__h_Nothing_t)
+          (__h_Just_t))
 
         (data Ordering LT EQ GT)
 
@@ -81,17 +91,16 @@
 
         (func print_inside_maybe (((<> Maybe (<> Maybe char)) mb))
               (io mb
-                ((<> Nothing (<> Maybe char)) (format #t "wrapper Nothing Maybe char: Nothing\n"))
-                ((<> Just    (<> Maybe char)) mc
-                 (io mc
-                   ((<> Nothing char) (format #t "wrapper Just Nothing char: Nothing\n"))
-                   ((<> Just char) c  (format #t "wrapper Just Just char: Just %c\n" c))))))
+                (Nothing (format #t "wrapper Nothing Maybe char: Nothing\n"))
+                (Just mc (io mc
+                           (Nothing (format #t "wrapper Just Nothing char: Nothing\n"))
+                           (Just c  (format #t "wrapper Just Just char: Just %c\n" c))))))
 
         (func print_inner_maybe (((<> Maybe (<> Maybe char)) imb))
               (io imb
-                ((<> Nothing (<> Maybe char)) (format #t "inner Nothing Maybe char: Nothing\n"))
-                ((<> Just    (<> Maybe char)) ((<> Nothing char)) (format #t "inner Just Nothing char: Nothing\n"))
-                ((<> Just    (<> Maybe char)) ((<> Just char) c)  (format #t "inner Just Just char: Just %c\n" c))))
+                (Nothing          (format #t "inner Nothing Maybe char: Nothing\n"))
+                (Just    Nothing  (format #t "inner Just Nothing char: Nothing\n"))
+                (Just    (Just c) (format #t "inner Just Just char: Just %c\n" c))))
 
         (typedef (Tuple int char short) aTuple)
         
@@ -126,7 +135,7 @@
 
                  (func (<> show type) (((<> Maybe type) list))
                        (io list
-                         (Just ^ type (* Cons ^ a head tail)
+                         (Just (* _ head tail)
                                (progn
                                  (putchar head)
                                  ((<> show type) tail)))))
@@ -158,12 +167,10 @@
                  
                  (func (<> show type) (((<> Maybe type) list))
                        (io list
-                         (Just ^ type (* Cons ^ a head tail)
-                               (block
-                                   (io tail
-                                     (Just ^ type
-                                           (printf "%d, " head))
-                                     (default (printf "%d " head)))
+                         (Just (* _ head tail)
+                               (block (io tail
+                                        (Just (printf "%d, " head))
+                                        (default (printf "%d " head)))
                                  ((<> show type) tail)))))
                  )
 
@@ -255,21 +262,21 @@
             (print_inner_maybe  m4))
 
           (io ((<> Just aTuple) (cast aTuple '{ 55 #\D 93 }))
-            ((<> Nothing aTuple) (format #t "tuple inside maybe: Nothing"))
-            ((<> Just aTuple) (= t (\, i c s))
-             (io t
-               ((\, ii cc ss)
-                (progn
-                  (format #t "tuple inside maybe: Just tuple: int, char, short = (%d, %c, %d)\n" i c s)
-                  (format #t "tuple inside maybe: Just tuple: int, char, short = (%d, %c, %d)\n" ii cc ss))))))
+            (Nothing (format #t "tuple inside maybe: Nothing"))
+            (Just    (= t (\, i c s))
+              (io t
+                ((\, ii cc ss)
+                 (progn
+                   (format #t "tuple inside maybe: Just tuple: int, char, short = (%d, %c, %d)\n" i c s)
+                   (format #t "tuple inside maybe: Just tuple: int, char, short = (%d, %c, %d)\n" ii cc ss))))))
           
           (io (cast (Tuple int Maybe^char) '{ 5060 (Just^char #\M) })
-            ((\, _ (Nothing ^ char)) (format #t "maybe inside tuple: Nothing\n"))
-            ((\, i (Just ^ char c => (> c #\L)))
+            ((\, _ Nothing) (format #t "maybe inside tuple: Nothing\n"))
+            ((\, i (Just c => (> c #\L)))
              (format #t "maybe inside tuple: (c > L) int, Just char: = (%d, %c)\n" i c))
-            (= t (\, _ (Just ^ char c => (< c #\L)))
+            (= t (\, _ (Just c => (< c #\L)))
                (io t
-                 ((\, i (Just ^ char _))
+                 ((\, i (Just _))
                   (format #t "maybe inside tuple: (c < L) int, Just char: = (%d, %c)\n" i c)))))
           
           ;; List
@@ -283,14 +290,14 @@
             (format #t "output of printf match: %d\n"
                     ;; match returns a value and all values returned from each case must be the same type
                     (match (nth^String 3 txt)
-                      (Just ^ char c (format #t "the 4th element is: %c\n" c))
+                      (Just c  (format #t "the 4th element is: %c\n" c))
                       (default (format #t "4th element not found\n"))))
 
             (where ; where puts exactly the value of each var in place of it, and makes C functions Curry
                 ((llen (len^String txt))
                  (nthf (\\ n (nth^String n txt))) ; nth function is reserved for access nth element of an array
                  (show (\\ f n (match (f n) ; lambda in place of declared show function
-                                 (Just ^ char c (format #t "the %dth element is: %c\n" n c))
+                                 (Just c  (format #t "the %dth element is: %c\n" n c))
                                  (default (format #t "%dth element not found\n" n))))))
               ;; where accepts only one clause not like letin
               (progn
@@ -305,7 +312,7 @@
                       (where
                           ((nthf (\\ n ($> !!^String n txt))) ; !! nth lambdas to C function to use Curry style
                            (show (\\ f n (match (f n)
-                                           (Just ^ char c (format #t "the %dth element is: %c\n" n c))
+                                           (Just c  (format #t "the %dth element is: %c\n" n c))
                                            (default (format #t "%dth element not found\n" n))))))
                         (progn
                           ($> show nthf $ 4)
@@ -319,7 +326,8 @@
               ;; = str at first of any case makes an alias for whole object
               ;; ^ opr only inside cases can be used separated,
               ;; note in other cicili clauses ^ must be mixed whithout any space
-              (Just ^ String (= str * Cons ^ char head tail)
+              ;; _ for types with only one ctor
+              (Just (= str * _ head tail)
                     (format #t "first char is: %c, and length of tail is: %d\n"
                             head (len^String tail))))
             
@@ -335,11 +343,11 @@
             (io (drop^String 12 txt)
               ;; simplified list element access
               ;; (Nothing ^ String (format #t "Nothing String\n"))
-              (Just ^ String ((\: char fst snd trd tail))
+              (Just ((\: char fst snd trd tail))
                     (format #t "first, second and third char from String: %c %c %c\n" fst snd trd))
-              (Just ^ String ((\: char fst snd tail))
+              (Just ((\: char fst snd tail))
                     (format #t "first and second char from String: %c %c\n" fst snd))
-              (Just ^ String ((\: char fst tail))
+              (Just ((\: char fst tail))
                     (format #t "first char from String: %c\n" fst))
               (default (format #t "default case String\n"))))
 
@@ -350,8 +358,8 @@
                   (intarr (cast (const int []) '{ 4 3 2 }))
                   (ilist3 (new^List^int intarr 3)        free^List^int)
                   (ilist4 (take^List^int 2 ilist2)       free^List^int))
-            (format #t "first elem of int list0: %d\n" (match (head^List^int ilist0) (Just ^ int i i) (default -1)))
-            (format #t "first elem of int list1: %d\n" (match (head^List^int ilist1) (Just ^ int i i) (default -1)))
+            (format #t "first elem of int list0: %d\n" (match (head^List^int ilist0) (Just i i) (default -1)))
+            (format #t "first elem of int list1: %d\n" (match (head^List^int ilist1) (Just i i) (default -1)))
             (format #t "list0:\n")
             (show^List^int ilist0)
             (format #t "\nlist1:\n")
@@ -364,13 +372,24 @@
             (show^List^int ilist4)
             (putchar #\Newline))
             
-          (letin ((ra0 (new^Range^int 1 20 3) free^Range^int)
-                  (ra1 (take^Range^int 3 ra0) free^Range^int))
+          (letin ((ra0 (new^Range^int 1 20 3)  free^Range^int)
+                  (ra1 (take^Range^int 3  ra0) free^Range^int)
+                  (ra2 (take^Range^int 4  ra0) free^Range^int)
+                  (ra3 (take^Range^int 10 ra0) free^Range^int))
             (format #t "range 1 20 3:\n")
             (show^Range^int ra0)
-            (format #t "\ntake 3 of range 1 20 3:\n")
-            (show^Range^int ra1))
+            ;; range shows only first of range
+            ;; needs to take enough from it
+            (format #t "\ntake 3  of range 1 20 3:\n")
+            (show^Range^int ra1)
+            (format #t "\ntake 4  of range 1 20 3:\n")
+            (show^Range^int ra2)
+            (format #t "\ntake 10 of range 1 20 3:\n")
+            ;; because List and Range have same two members structure
+            (show^List^int (cast-list Maybe^List^int ra3))
+            )
 
+          ;; _ destructure opr
           ;; TAKE DROP takewhile dropwile splitAt map fmap
           
           ))

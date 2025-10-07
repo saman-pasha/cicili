@@ -94,6 +94,7 @@
    (1 . otherwise)
    (1 . String)
    (1 . List)
+   (1 . Range)
    ))
 
 (defun cicili-add-keywords (face-name keyword-rules)
@@ -209,6 +210,9 @@
    (1 . tail)
    (1 . append)
    (1 . ++)
+   (1 . take)
+   (1 . drop)
+   (1 . !!)
    ))
 
 (defun cicili-add-attributes (face-name keyword-rules)
