@@ -167,9 +167,9 @@
     (if (listp name)
         (if (or (key-eq '|struct| (car name)) (key-eq '|union| (car name)))
             (let* ((ty (expand-macros (cadr name)))
-                   (name (intern (substitute #\_ #\^ (symbol-name ty)))))
-              (if (is-name name)
-                  (specify-typeof< name)
+                   (na (intern (substitute #\_ #\^ (symbol-name ty)))))
+              (if (is-name na)
+                  (list (car name) na)
                   (error (format nil "wrong name ~S" name))))
             (specify-typeof< name)) ; use for typeof
         (let ((name (intern (substitute #\_ #\^ (symbol-name name)))))
@@ -227,7 +227,7 @@
         (cond ((or (key-eq '|struct| ty) (key-eq '|union| ty)) ; for incomplete type error, field of its own type
                (let ((xpnd (expand-macros (cadr type))))
                  (if (listp xpnd)
-                     (specify-typeof< (cadr type))
+                     (list ty (specify-typeof< xpnd))
                      (list ty (specify-name-with-module< xpnd)))))
               ((key-eq '|typeof| ty) (specify-typeof-expr type))
               ((key-eq '|t<>| ty)    (specify-expr type))
@@ -456,6 +456,7 @@
 	      (t (setq status -1)))
 
     (setq type (specify-typeof< type))
+    
     (unless (or (null const)     (key-eq const '|const|)) (setq status -2))
     (unless (or (null modifier)
               (key-eq modifier '&)
@@ -1304,6 +1305,7 @@
 		            ((key-eq construct '|member|)
                      (multiple-value-bind (const type modifier const-ptr variable array default)
 	                     (specify-type-value< (cdr clause))
+
                        (let ((param-spec
                                  (make-specifier
                                      (specify-decl-name< variable)

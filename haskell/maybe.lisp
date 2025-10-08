@@ -4,8 +4,8 @@
          ;; uses this definition in c header
          ;; data Maybe = Nothing | Just a
          ;; (enum Maybe
-         ;;   (Nothing)
-         ;;   (Just))
+         ;;   (__h_Nothing_t)
+         ;;   (__h_Just_t))
          
          (guard (<> __H Maybe a)
            (struct (<> Maybe a)
@@ -17,7 +17,7 @@
            
            (decl) (func (<> Nothing a) () (out (<> Maybe a)))
            (decl) (func (<> Just a) ((a value)) (out (<> Maybe a)))
-         ))
+           ))
 
 (generic define-Maybe (a)
 
