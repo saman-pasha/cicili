@@ -1,5 +1,5 @@
 
-(generic specialize-Maybe-header (a)
+(generic decl-Maybe (a)
 
          ;; uses this definition in c header
          ;; data Maybe = Nothing | Just a
@@ -19,7 +19,7 @@
            (decl) (func (<> Just a) ((a value)) (out (<> Maybe a)))
          ))
 
-(generic specialize-Maybe-source (a)
+(generic define-Maybe (a)
 
          (func (<> Nothing a) ()
                (out (<> Maybe a))

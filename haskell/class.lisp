@@ -5,7 +5,7 @@
 ;; for pointer type and copy reference on assignment types
 ;; suggestion: some member pointer or self member reference
 ;; auto Maybe type
-(DEFMACRO class-header (name ctor &REST rest-ctors)
+(DEFMACRO decl-class (name ctor &REST rest-ctors)
   (LET* ((name (MACROEXPAND name))
          (enum-name (INTERN (FORMAT NIL "__h_~A_ctor_t" name)))
          (ctors (MAPCAR #'(LAMBDA (ct)
@@ -24,7 +24,7 @@
        (typedef (<> ,name class_t) * ,name)
        ;; Maybe
        (decl) (struct (<> Maybe ,name))
-       (specialize-Maybe-header ,name)
+       (decl-Maybe ,name)
        
        ;; actual type
        (struct (<> ,name class_t)
@@ -69,14 +69,14 @@
                                `($$$ (decl) (func ,ct-name ,params (out ,name)))))))
                  ctors))))
 
-(DEFMACRO class-source (name ctor &REST rest-ctors)
+(DEFMACRO define-class (name ctor &REST rest-ctors)
   (LET* ((name (MACROEXPAND name))
          (ctors (MAPCAR #'(LAMBDA (ct)
                             (LET ((ct (MACROEXPAND ct)))
                               (IF (SYMBOLP ct) (LIST ct) ct)))
                         (APPEND (LIST ctor) rest-ctors))))
     
-    `($$$ (specialize-Maybe-source ,name)
+    `($$$ (define-Maybe ,name)
        
        ;; constructors
        ,@(MAPCAR #'(LAMBDA (ct)
@@ -119,7 +119,7 @@
                                       (return this))))))
                  ctors))))
 
-(DEFMACRO class-import (name ctor &REST rest-ctors)
+(DEFMACRO import-class (name ctor &REST rest-ctors)
   (LET* ((name (MACROEXPAND name))
          (ctors (MAPCAR #'(LAMBDA (ct)
                             (LET ((ct (MACROEXPAND ct)))

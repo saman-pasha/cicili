@@ -1,7 +1,7 @@
 
-(generic specialize-Range-header (type a)
+(generic decl-Range (type a)
          
-         (class-header type ((<> Cons Range a) (a from) ((<> Maybe type) tail) (a to) (a step)))
+         (decl-class type ((<> Cons Range a) (a from) ((<> Maybe type) tail) (a to) (a step)))
 
          (decl) (func (<> new type) ((a from) (a to) (a step)) (out (<> Maybe type)))
          (decl) (func (<> release type) (((<> Maybe type) list)))
@@ -14,9 +14,9 @@
          (decl) (func (<> show type) (((<> Maybe type) list)))
          )
 
-(generic specialize-Range-source (type a fmt)
+(generic define-Range (type a fmt)
          
-         (class-source type ((<> Cons Range a) (a from) ((<> Maybe type) tail) (a to) (a step)))
+         (define-class type ((<> Cons Range a) (a from) ((<> Maybe type) tail) (a to) (a step)))
 
          (func (<> new type) ((a from) (a to) (a step))
                (out (<> Maybe type))
@@ -58,7 +58,7 @@
                      (default (printf fmt  head))))))
          )
 
-(generic specialize-Range-import (type a)
+(generic import-Range (type a)
 
-         (class-import type ((<> Cons a) (a head) ((<> Maybe type) tail)))
+         (import-class type ((<> Cons a) (a head) ((<> Maybe type) tail)))
          )

@@ -1,15 +1,15 @@
 
-(generic specialize-String-header (type a)
+(generic decl-String (type a)
 
-         (specialize-List-header type a)
+         (decl-List type a)
          
          (decl) (func (<> new type Const) ((const a * buf)) (out (<> Maybe type)))
          (decl) (func (<> show type) (((<> Maybe type) list)))
          )
 
-(generic specialize-String-source (type a fmt)
+(generic define-String (type a fmt)
 
-         (specialize-List-source type a)
+         (define-List type a)
          
          (func (<> new type Const) ((const a * buf))
                (out (<> Maybe type))
@@ -29,9 +29,9 @@
                      ((<> show type) tail)))))
          )
 
-(generic specialize-String-import (ctor type a)
+(generic import-String (ctor type a)
 
-         (specialize-List-import ctor type a)
+         (import-List ctor type a)
          
          (DEFMACRO ctor (buf &OPTIONAL len)
            (IF len

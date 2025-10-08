@@ -1,13 +1,6 @@
 
 (header "../haskell.h" (:std #t)
         
-        ;; (enum DefaultCtor
-        ;;   (_))
-        
-        ;; (enum Bool
-        ;;   (False)
-        ;;   (True))
-        
         (enum DefaultCtor
           (__h___t))
         
@@ -16,6 +9,7 @@
           (True))
 
         ;; data Maybe = Nothing | Just a
+        ;; refer maybe.lisp
         (enum Maybe
           (__h_Nothing_t)
           (__h_Just_t))
@@ -24,23 +18,18 @@
           (LT)
           (EQ)
           (GT))
-        
-        ;; data Maybe = Nothing | Just a
-        ;; (enum Maybe
-        ;;   (Nothing)
-        ;;   (Just))
 
-        (specialize-String-header String char)
-        (specialize-List-header List^int int)
-        (specialize-Range-header Range^int int)
+        (decl-String String char)
+        (decl-List   List^int int)
+        (decl-Range  Range^int int)
         
         ) ; haskell.h
 
 (source "haskell.c" (:std #t :compile "-c haskell.c -o ../haskell.o" :link #f)
         (include "../haskell.h")
         
-        (specialize-String-source String char "%c")
-        (specialize-List-source List^int int)
-        (specialize-List-show List^int int "%d")
-        (specialize-Range-source Range^int int "%d")
+        (define-String    String char "%c")
+        (define-List      List^int int)
+        (define-List-show List^int int "%d")
+        (define-Range     Range^int int "%d")
         )

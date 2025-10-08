@@ -1,10 +1,10 @@
 
 ;; List must be defined by this generic
-(generic specialize-List-header (type a)
+(generic decl-List (type a)
 
-         (specialize-Maybe-header a)
+         (decl-Maybe a)
          
-         (class-header type ((<> Cons a) (a head) ((<> Maybe type) tail)))
+         (decl-class type ((<> Cons a) (a head) ((<> Maybe type) tail)))
 
          (decl) (func (<> new type Pure) ((const a * buf) (int len)) (out (<> Maybe type)))
          (decl) (func (<> release type) (((<> Maybe type) list)))
@@ -47,11 +47,11 @@
              ((<> append type) llist rlist))
          )
 
-(generic specialize-List-source (type a)
+(generic define-List (type a)
 
-         (specialize-Maybe-source a)
+         (define-Maybe a)
          
-         (class-source type ((<> Cons a) (a head) ((<> Maybe type) tail)))
+         (define-class type ((<> Cons a) (a head) ((<> Maybe type) tail)))
 
          (func (<> new type Pure) ((const a * buf) (int len))
                (out (<> Maybe type))
@@ -153,7 +153,7 @@
                          (default 0))))
          )
 
-(generic specialize-List-show (type a fmt)
+(generic define-List-show (type a fmt)
          
          (func (<> show type) (((<> Maybe type) list))
                (io list
@@ -166,9 +166,9 @@
                      ((<> show type) tail)))))
          )
 
-(generic specialize-List-import (ctor type a)
+(generic import-List (ctor type a)
 
-         (class-import type ((<> Cons a) (a head) ((<> Maybe type) tail)))
+         (import-class type ((<> Cons a) (a head) ((<> Maybe type) tail)))
 
          (DEFMACRO ctor (buf &OPTIONAL len)
            (IF len

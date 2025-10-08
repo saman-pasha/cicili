@@ -243,6 +243,7 @@
    (1 . defer*)
    (1 . resolve)
    (1 . thread-local)
+   (1 . define)
    ))
 
 (font-lock-add-keywords

@@ -4,7 +4,7 @@
 ;; (data TestT NoArg (WithArg (type x) (type y)))
 ;; for value type and copy on assignment types
 ;; suggestion: no member pointer and no self member reference
-(DEFMACRO data-header (name ctor &REST ctors)
+(DEFMACRO decl-data (name ctor &REST ctors)
   (LET* ((name (MACROEXPAND name))
          (enum-name (INTERN (FORMAT NIL "__h_~A_ctor_t" name)))
          (ctors (MAPCAR #'(LAMBDA (ct)
@@ -57,7 +57,7 @@
                                `($$$ (decl) (func ,ct-name ,params (out ,name)))))))
                  ctors))))
 
-(DEFMACRO data-source (name ctor &REST ctors)
+(DEFMACRO define-data (name ctor &REST ctors)
   (LET* ((name (MACROEXPAND name))
          (ctors (MAPCAR #'(LAMBDA (ct)
                             (LET ((ct (MACROEXPAND ct)))
@@ -101,7 +101,7 @@
                                                       })))))))
                    ctors))))
 
-(DEFMACRO data-import (name ctor &REST ctors)
+(DEFMACRO import-data (name ctor &REST ctors)
   (LET* ((name (MACROEXPAND name))
          (ctors (MAPCAR #'(LAMBDA (ct)
                             (LET ((ct (MACROEXPAND ct)))

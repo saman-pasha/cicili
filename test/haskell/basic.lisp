@@ -55,11 +55,11 @@
                        xp yp)))
         (specialize-power int)
 
-        (data-header Integer
+        (decl-data Integer
           (Byte  (char  c))
           (Short (short s))
           (Int   (int   x)))
-        (data-source Integer
+        (define-data Integer
           (Byte  (char  c))
           (Short (short s))
           (Int   (int   x)))
@@ -74,8 +74,8 @@
                        (format #t "Integer is Int between 1000 and 10000: %d\n" i))
                 (default  (format #t "Integer is N/A\n"))))
         
-        (specialize-Maybe-header (<> Maybe char))
-        (specialize-Maybe-source (<> Maybe char))
+        (decl-Maybe (<> Maybe char))
+        (define-Maybe (<> Maybe char))
 
         (func print_inside_maybe (((<> Maybe (<> Maybe char)) mb))
               (io mb
@@ -97,8 +97,8 @@
                 ((\, i c s) => (> s 10) (format #t "tuple s > 10: int, char, short = (%d, %c, %d)\n" i c s))
                 ((\, i c s) (format #t "tuple: int, char, short = (%d, %c, %d)\n" i c s))))
 
-        (specialize-Maybe-header aTuple)
-        (specialize-Maybe-source aTuple)
+        (decl-Maybe aTuple)
+        (define-Maybe aTuple)
 
         (fn fun-with-guard x ; 3 different paths
             (case (== x 1)  (format #t "output of function guard1: %d\n" x)
@@ -112,9 +112,9 @@
               (return (case (== n 1)  1
                             otherwise (* n (factorial (- n 1))))))
 
-        (specialize-String-import new^String String char)
-        (specialize-List-import new^List^int List^int int)
-        (specialize-Range-import Range^int int)
+        (import-String new^String String char)
+        (import-List   new^List^int List^int int)
+        (import-Range  Range^int int)
         
         (main
 
