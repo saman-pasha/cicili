@@ -18,7 +18,7 @@
 
 (cicili:load-macro-file "builtins.lisp" nil () "CICILI")
 (cicili:load-macro-file "cpp.lisp"      nil () "CICILI")
-(cicili:load-macro-file "haskell.lisp"  nil () "CICILI")
+(cicili:load-macro-file "haskell/prelude.lisp"  nil () "CICILI")
 
 (let ((argv (uiop:command-line-arguments)))
   (if (> (length argv) 0)

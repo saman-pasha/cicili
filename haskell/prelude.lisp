@@ -1,0 +1,16 @@
+(import "./core.lisp")
+(import "./tuple.lisp")
+(import "./maybe.lisp")
+(import "./data.lisp")
+(import "./class.lisp")
+(import "./match.lisp")
+(import "./list.lisp")
+(import "./string.lisp")
+(import "./range.lisp")
+(import "./haskell.lisp")
+
+(DEFMACRO init-macro ()
+  `($$$
+       (specialize-String-import new^String String char)
+     (specialize-List-import new^List^int List^int int)
+     (specialize-Range-import Range^int int)))

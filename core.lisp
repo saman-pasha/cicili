@@ -60,6 +60,26 @@
       file-name
       (format nil "~A~A" *cicili-path* file-name)))
 
+;; expands all defined macros
+;; for type specification only
+(defun expand-macros (def)
+  (if (atom def) def
+      (let* ((func (car def))
+             (macro (if (symbolp func) (gethash (symbol-name func) *macros*) nil)))
+        (if (or macro (and (symbolp func) (macro-function func)))
+            (let ((tmp-expantion *macroexpand*)
+                  (id (gensym "ME:"))
+                  (result nil))
+              (when *debug-macroexpand* (format t "~A ~A~%" id def))
+              (setf *macroexpand* t)
+              (setq result (if macro (macroexpand `(,macro ,@(cdr def))) (macroexpand def)))
+              (when (and (listp result) (listp (cadr result)) (key-eq (caadr result) 'EVAL-WHEN)) ; outputs macro
+                (setq result (eval result)))
+              (when *debug-macroexpand* (format t "~A macro: ~A result: ~A~%" id macro result))
+              (setf *macroexpand* tmp-expantion)
+              result)
+            def))))
+
 (defparameter *macro-counter*
   (let ((count 100))
     #'(lambda ()
@@ -265,23 +285,24 @@
 
 (defun replace-args< (name-values args)
   (dolist (nv name-values)
-    (return-from replace-args<
-      (loop for arg in args
-            when (or (symbolp arg) (> (length arg) 0))
-            collect (str:replace-all
-                        "[^/]+?/\\.\\./" "" 
-                        (str:replace-all
+    (setq args
+          (loop for arg in args
+                when (or (symbolp arg) (> (length arg) 0))
+                collect (str:replace-all
                             "[^/]+?/\\.\\./" "" 
                             (str:replace-all
                                 "[^/]+?/\\.\\./" "" 
                                 (str:replace-all
                                     "[^/]+?/\\.\\./" "" 
-                                    (str:replace-all (car nv) (uiop:native-namestring (cadr nv))
-                                                     (if (symbolp arg) (symbol-value arg) arg))
+                                    (str:replace-all
+                                        "[^/]+?/\\.\\./" "" 
+                                        (str:replace-all (car nv) (uiop:native-namestring (cadr nv))
+                                                         (if (symbolp arg) (symbol-value arg) arg))
+                                        :regex t)
                                     :regex t)
                                 :regex t)
-                            :regex t)
-                        :regex t)))))
+                            :regex t))))
+  args)
 
 (defun free-name (path name)
   (let* ((r-name (format nil "~{~A~^/~}"

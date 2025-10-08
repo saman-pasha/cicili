@@ -231,11 +231,16 @@
             ((or macro (and (symbolp tname) (macro-function tname)))
              (let ((bd (expand-macros target)))
                (if (eq bd target)
-                   (specify-expr bd)
-                   (unless (symbolp bd)
-                     (if (and (listp bd) (key-eq (car bd) '$$$))
-                         (specify-body (cdr bd))
-                         (specify-expr bd))))))
+                   (if (symbolp bd)
+                       bd
+                       (if (and (listp bd) (key-eq (car bd) '$$$))
+                           (specify-body (cdr bd))
+                           (specify-call-expr bd)))
+                   (if (symbolp bd)
+                       bd
+                       (if (and (listp bd) (key-eq (car bd) '$$$))
+                           (specify-body (cdr bd))
+                           (specify-expr bd))))))
             (t (eval target))))))
 
 (defun compile-cicili-file (file-name)
@@ -254,51 +259,56 @@
 (defun load-macro-file (file-name pack init-args ast-file-name)
   (when (key-eq pack '|nil|) (setq pack nil))
   (let* ((file-name (find-import-file file-name))
+         (file-path (make-pathname :directory (pathname-directory file-name)))
          (rt (copy-readtable nil)))
-    (let ((targets (read-file (file-namestring file-name))))
-      (format t "macro file: ~A imported inside: '~A' package, from file: ~A, with init args: ~A~%"
-              file-name pack ast-file-name init-args)
+    (uiop:with-current-directory (file-path)
+      (let ((targets (read-file (file-namestring file-name))))
+        (format t "macro file: ~A imported inside: '~A' package, from file: ~A, with init args: ~A~%"
+                file-name pack ast-file-name init-args)
+        
+        (let ((package *package*))
+          (unless (find-package pack) (make-package pack))
+          (use-package pack)
+          (multiple-value-bind (function non-terminating-p)
+              (get-macro-character #\| rt)
+            (set-macro-character #\| nil nil)
+            (let ((*readtable* (copy-readtable)))
+	          (setf (readtable-case *readtable*) :preserve)
+              (CL:LOAD FILE-NAME))
+            (set-macro-character #\| function non-terminating-p))
+          (use-package package))
+        
+        (dolist (target targets)
+          (let ((tname (car target)))
+            
+            (cond ((key-eq tname '|DEFUN|)
+                   (when (key-eq (cadr target) '|init|)
+                     (funcall (if (null pack)
+                                  (cadr target)
+                                  (intern (symbol-name (cadr target)) pack))
+                              init-args)))
+                  
+                  ((key-eq tname '|DEFMACRO|)
+                   (let* ((s-name (nth 1 target))
+                          (m-name (if (null pack)
+                                      (symbol-name s-name)
+                                      (format nil "~A.~A" pack (symbol-name s-name)))))
+                     (if (key-eq s-name '|init-macro|) ; init macro should return $$$
+                         (specify-body (macroexpand (LIST (eval (macroexpand target)))))
+                         (progn
+                           (setf (nth 1 target) (intern m-name))
+                           (let ((symb (eval (macroexpand target))))
+                             (add-macro (symbol-name symb) symb))))))
+                  
+                  ((key-eq tname '|cicili|)
+                   (compile-ast (cdr target) (file-namestring file-name)))
 
-      (let ((package *package*))
-        (unless (find-package pack) (make-package pack))
-        (use-package pack)
-        (multiple-value-bind (function non-terminating-p)
-            (get-macro-character #\| rt)
-          (set-macro-character #\| nil nil)
-          (let ((*readtable* (copy-readtable)))
-	        (setf (readtable-case *readtable*) :preserve)
-            (CL:LOAD FILE-NAME))
-          (set-macro-character #\| function non-terminating-p))
-        (use-package package))
-      
-      (dolist (target targets)
-        (let ((tname (car target)))
-          
-          (cond ((key-eq tname '|DEFUN|)
-                 (when (key-eq (cadr target) '|init|)
-                   (funcall (if (null pack)
-                                (cadr target)
-                                (intern (symbol-name (cadr target)) pack))
-                            init-args)))
-                
-                ((key-eq tname '|DEFMACRO|)
-                 (let* ((s-name (nth 1 target))
-                        (m-name (if (null pack)
-                                    (symbol-name s-name)
-                                    (format nil "~A.~A" pack (symbol-name s-name)))))
-                   (setf (nth 1 target) (intern m-name))
-                   (let ((symb (eval (macroexpand target))))
-                     (add-macro (symbol-name symb) symb))))
-                
-                ((key-eq tname '|cicili|)
-                 (compile-ast (cdr target) (file-namestring file-name)))
+                  ((key-eq tname '|import|) t)
+                  ;; (load-macro-file (cadr target) (caddr target) (cadddr target) (file-namestring file-name)))
+                  
+                  ((key-eq tname '|generic|) t)
 
-                ((key-eq tname '|import|) t)
-                 ;; (load-macro-file (cadr target) (caddr target) (cadddr target) (file-namestring file-name)))
-                
-                ((key-eq tname '|generic|) t)
-
-                (t (error (format nil "unknown form ~A" tname)))))))))
+                  (t (error (format nil "unknown form ~A" tname))))))))))
 
 (set-dispatch-macro-character
     #\# #\t #'(lambda (stream char1 char2)

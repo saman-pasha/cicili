@@ -136,11 +136,12 @@
                                            (unless (and found cset)
                                              (error
                                               (format nil "custom compilation missed -c or --compile flag: ~A" custom))))))
-                               (let ((cwd       (uiop/os:getcwd))
+                               (let ((ccl       *cicili-path*)
+                                     (cwd       (uiop/os:getcwd))
                                      (args      `(,program ,@arguments ,@custom))
                                      (dump-args `(,program ,@arguments ,@dumper ,@custom)))
-                                 (setq args      (replace-args< `(("{$CWD}" ,cwd)) args))
-                                 (setq dump-args (replace-args< `(("{$CWD}" ,cwd)) dump-args))
+                                 (setq args      (replace-args< `(("{$CCL}" ,ccl) ("{$CWD}" ,cwd)) args))
+                                 (setq dump-args (replace-args< `(("{$CCL}" ,ccl) ("{$CWD}" ,cwd)) dump-args))
                                  (display "cicili compile:" (if dump dump-args args) #\Newline)
 
                                  (setq exit-status
@@ -166,9 +167,10 @@
                                    (setq custom (list file "-o" "main"))
                                    (when (stringp custom)
                                      (setq custom (str:split " " custom))))
-                               (let ((cwd       (uiop/os:getcwd))
+                               (let ((ccl       *cicili-path*)
+                                     (cwd       (uiop/os:getcwd))
                                      (args      `(,program ,@arguments ,@custom)))
-                                 (setq args (replace-args< `(("{$CWD}" ,cwd)) args))
+                                 (setq args (replace-args< `(("{$CCL}" ,ccl) ("{$CWD}" ,cwd)) args))
                                  (display "cicili link:" args #\Newline)
 
 		                         (let ((exit-status

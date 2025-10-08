@@ -232,3 +232,7 @@ test/haskell/main
 test/haskell/basic.c.run1.c
 test/haskell/basic.c.run2.c
 test/haskell/basic.c.run3.c
+haskell/haskell.c.run1.c
+test/haskell/.\#basic.lisp
+haskell/haskell.c.run2.c
+haskell/haskell.c.run3.c

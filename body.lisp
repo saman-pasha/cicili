@@ -1,25 +1,5 @@
 (in-package :cicili)
 
-;; expands all defined macros
-;; for type specification only
-(defun expand-macros (def)
-  (if (atom def) def
-      (let* ((func (car def))
-             (macro (if (symbolp func) (gethash (symbol-name func) *macros*) nil)))
-        (if (or macro (and (symbolp func) (macro-function func)))
-            (let ((tmp-expantion *macroexpand*)
-                  (id (gensym "ME:"))
-                  (result nil))
-              (when *debug-macroexpand* (format t "~A ~A~%" id def))
-              (setf *macroexpand* t)
-              (setq result (if macro (macroexpand `(,macro ,@(cdr def))) (macroexpand def)))
-              (when (and (listp result) (listp (cadr result)) (key-eq (caadr result) 'EVAL-WHEN)) ; outputs macro
-                (setq result (eval result)))
-              (when *debug-macroexpand* (format t "~A macro: ~A result: ~A~%" id macro result))
-              (setf *macroexpand* tmp-expantion)
-              result)
-            def))))
-
 (defun specify-expr (def)
   (cond ((key-eq  def '|nil|) (specify-nil-expr))
         ((atom    def)        (specify-atom-expr def))

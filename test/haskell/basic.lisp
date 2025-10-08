@@ -1,5 +1,6 @@
 
-(source "basic.c" (:std #t :compile #t :link #t)
+(source "basic.c" (:std #t :compile #t :link "-L{$CCL} -lhaskell.o -L{$CWD} basic.o -o main")
+        (include "../../haskell.h")
         (include "math.h")
         
         ;; \ lambda calculus
@@ -36,7 +37,7 @@
                     (f (\\ x y (* x y))))
               ((f m) n)))
 
-        (generic specialise_power (a)
+        (generic specialize-power (a)
                  (func (<> power_irreducible a) ((a x) (a y))
                        (out a)
                        (return (cast a (pow (cast double x) (cast double y)))))
@@ -52,24 +53,13 @@
                         (out a)
                         (return (cast a (pow (cast double x) (cast double y)))))
                        xp yp)))
-        (specialise_power int)
+        (specialize-power int)
 
-        ;; prelude
-        (enum DefaultCtor
-          (__h___t))
-        
-        (enum Bool
-          (False)
-          (True))
-
-        ;; data Maybe = Nothing | Just a
-        (enum Maybe
-          (__h_Nothing_t)
-          (__h_Just_t))
-
-        (data Ordering LT EQ GT)
-
-        (data Integer
+        (data-header Integer
+          (Byte  (char  c))
+          (Short (short s))
+          (Int   (int   x)))
+        (data-source Integer
           (Byte  (char  c))
           (Short (short s))
           (Int   (int   x)))
@@ -84,10 +74,8 @@
                        (format #t "Integer is Int between 1000 and 10000: %d\n" i))
                 (default  (format #t "Integer is N/A\n"))))
         
-        ;; (specialise_Maybe int)
-        (guard (<> _H Maybe char)
-          (specialise_Maybe char))
-        (specialise_Maybe (<> Maybe char))
+        (specialize-Maybe-header (<> Maybe char))
+        (specialize-Maybe-source (<> Maybe char))
 
         (func print_inside_maybe (((<> Maybe (<> Maybe char)) mb))
               (io mb
@@ -109,40 +97,9 @@
                 ((\, i c s) => (> s 10) (format #t "tuple s > 10: int, char, short = (%d, %c, %d)\n" i c s))
                 ((\, i c s) (format #t "tuple: int, char, short = (%d, %c, %d)\n" i c s))))
 
-        (specialise_Maybe aTuple)
+        (specialize-Maybe-header aTuple)
+        (specialize-Maybe-source aTuple)
 
-        (specialise_List String char)
-
-        (generic specialize_String (ctor type a)
-                 (func (<> new type Const) ((const a * buf))
-                       (out (<> Maybe type))
-                       (if (null buf)
-                           (return ((<> Nothing type)))
-                           (let ((a item . #'(cof buf)))
-                             (if (== item #\Null)
-                                 (return ((<> Nothing type)))
-                                 (return ($> (<> Just type) ! (<> Cons a) item $
-                                             ((<> new type Const) (++ buf))))))))
-                 
-                 (DEFMACRO ctor (buf &OPTIONAL len)
-                   (IF len
-                       `((<> new type Pure) ,buf ,len)
-                       (IF (AND (LISTP buf) (EQUAL (CAR buf) 'QUOTE))
-                           `((<> new type Pure) (cast (const a []) ,buf) ,(LENGTH (CADR buf)))
-                           (IF (STRINGP buf)
-                               `((<> new type Const) ,buf)
-                               (ERROR (FORMAT NIL "new^List^int len required for dynamic array input: ~A" buf))))))
-
-                 (func (<> show type) (((<> Maybe type) list))
-                       (io list
-                         (Just (* _ head tail)
-                               (progn
-                                 (putchar head)
-                                 ((<> show type) tail)))))
-                 )
-
-        (specialize_String new^String String char)
-        
         (fn fun-with-guard x ; 3 different paths
             (case (== x 1)  (format #t "output of function guard1: %d\n" x)
                   (== x 2)  (format #t "output of function guard2: %d\n" x)
@@ -155,28 +112,9 @@
               (return (case (== n 1)  1
                             otherwise (* n (factorial (- n 1))))))
 
-        (specialise_List (<> List int) int)
-
-        (generic specialize_List_Num (ctor type a)
-                 (DEFMACRO ctor (buf &OPTIONAL len)
-                   (IF len
-                       `((<> new type Pure) ,buf ,len)
-                       (IF (AND (LISTP buf) (EQUAL (CAR buf) 'QUOTE))
-                           `((<> new type Pure) (cast (const a []) ,buf) ,(LENGTH (CADR buf)))
-                           (ERROR (FORMAT NIL "new^List^int len required for dynamic array input: ~A" buf)))))
-                 
-                 (func (<> show type) (((<> Maybe type) list))
-                       (io list
-                         (Just (* _ head tail)
-                               (block (io tail
-                                        (Just (printf "%d, " head))
-                                        (default (printf "%d " head)))
-                                 ((<> show type) tail)))))
-                 )
-
-        (specialize_List_Num new^List^int (<> List int) int)
-
-        (specialize_Range (<> Range int) int)
+        (specialize-String-import new^String String char)
+        (specialize-List-import new^List^int List^int int)
+        (specialize-Range-import Range^int int)
         
         (main
 
@@ -375,7 +313,9 @@
           (letin ((ra0 (new^Range^int 1 20 3)  free^Range^int)
                   (ra1 (take^Range^int 3  ra0) free^Range^int)
                   (ra2 (take^Range^int 4  ra0) free^Range^int)
-                  (ra3 (take^Range^int 10 ra0) free^Range^int))
+                  (ra3 (take^Range^int 10 ra0) free^Range^int)
+                  (str0 (new^String "Hello World!") free^String)
+                  (str1 (new^List^int '{ 72 101 108 108 111 32 87 111 114 108 100 33 }) free^List^int))
             (format #t "range 1 20 3:\n")
             (show^Range^int ra0)
             ;; range shows only first of range
@@ -387,6 +327,11 @@
             (format #t "\ntake 10 of range 1 20 3:\n")
             ;; because List and Range have same two members structure
             (show^List^int (cast-list Maybe^List^int ra3))
+            (format #t "\nString to List^int:\n")
+            (show^List^int (cast-list Maybe^List^int str0))
+            (format #t "\nList^int to String:\n")
+            (show^String (cast-list Maybe^String str1))
+            (putchar #\Newline)
             )
 
           ;; _ destructure opr
