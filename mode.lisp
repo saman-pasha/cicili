@@ -90,6 +90,7 @@
    (1 . Maybe)
    (1 . Nothing)
    (1 . Just)
+   (1 . Empty)
    (1 . Cons)
    (1 . otherwise)
    (1 . String)

@@ -52,6 +52,12 @@
         (data data (CDR tail)))
        ((NULL data) (REVERSE lsts))))
 
+;; https://stackoverflow.com/users/34771/vatine
+;; https://stackoverflow.com/questions/13937520/pythons-range-analog-in-common-lisp
+(DEFUN range-h (max &KEY (min 0) (step 1))
+   (LOOP FOR n FROM min BELOW max BY step
+         COLLECT n))
+
 ;; both function application and function compsition
 ;; '$ for function application and '! for function composition
 ;; pointfree style using $> for both haskell '$ and '. 

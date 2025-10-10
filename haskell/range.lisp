@@ -1,64 +1,105 @@
 
-(generic decl-Range (type a)
-         
-         (decl-class type ((<> Cons Range a) (a from) ((<> Maybe type) tail) (a to) (a step)))
+(generic decl-Range (a)
 
-         (decl) (func (<> new type) ((a from) (a to) (a step)) (out (<> Maybe type)))
-         (decl) (func (<> release type) (((<> Maybe type) list)))
-         
-         (inline) (func (<> free type) (((<> Maybe type) * list)) ; specified for letin
-                        ((<> release type) (cof list)))
+         (generic decl-Range-with-type (type)
+                  
+                  (decl-class (List type)
+                    (= Empty (<> Empty type))
+                    (= Cons  (<> Cons type)
+                       (a from)
+                       ((struct type) * tail)
+                       (a to)
+                       (a step)))
 
-         (decl) (func (<> next type) (((<> Maybe type) list)) (out (<> Maybe type)))
-         (decl) (func (<> take type) ((int len) ((<> Maybe type) list)) (out (<> Maybe type)))
-         (decl) (func (<> show type) (((<> Maybe type) list)))
-         )
+                  (decl) (func (<> new type) ((a from) (a to) (a step)) (out type *))
+                  (decl) (func (<> release type) ((type * list)))
+                  
+                  (inline) (func (<> free type) ((type ** list)) ; specified for letin
+                                 ((<> release type) (cof list)))
 
-(generic define-Range (type a fmt)
-         
-         (define-class type ((<> Cons Range a) (a from) ((<> Maybe type) tail) (a to) (a step)))
+                  (decl) (func (<> next type) ((type * list)) (out type *))
+                  (decl) (func (<> take type) ((int len) (type * list)) (out type *))
+                  (decl) (func (<> show type) ((type * list)))
 
-         (func (<> new type) ((a from) (a to) (a step))
-               (out (<> Maybe type))
-               (return (case (<= from to) ($> (<> Just type) $ (<> Cons Range a) from ((<> Nothing type)) to step)
-                             otherwise    ((<> Nothing type)))))
-         
-         (func (<> release type) (((<> Maybe type) list))
-               (io list
-                 (Just (= ls * _ from tail to step)
-                   (block
-                       ((<> release type) tail)
-                     (free ls)))))
-         
-         (func (<> next type) (((<> Maybe type) list))
-               (out (<> Maybe type))
-               (return (match list
-                         (Just (= ls * _ from _ to step) => (<= (+ from step) to)
-                               ($> (<> Just type) $ (<> Cons Range a) (+ from step) ((<> Nothing type)) to step))
-                         (default ((<> Nothing type))))))
-         
-         (func (<> take type) ((int len) ((<> Maybe type) list))
-               (out (<> Maybe type))
-               (return (match list
-                         (Just (* _ from _ to step) => (> len 0)
-                               (letin ((ne ((<> next type) list) (<> free type)))
-                                 (match ne
-                                   (Just ($> (<> Just type) $ (<> Cons Range a) from ((<> take type) (-- len) ne) to step))
-                                   (default ($> (<> Just type) $ (<> Cons Range a) from ne to step)))))
-                         (default ((<> Nothing type))))))
-         
-         (func (<> show type) (((<> Maybe type) list))
-               (io list
-                 (Just (* _ head tail)
-                   (io tail
-                     (Just (block
-                               (printf fmt head)
-                             (putchar #\Space)
-                             ((<> show type) tail)))
-                     (default (printf fmt  head))))))
-         )
+                  ); decl-Range-with-type
 
-(generic import-Range (type a)
+         (decl-Range-with-type (<> Range a))
+         
+         ) ; decl-Range
 
-         (import-class type ((<> Cons a) (a head) ((<> Maybe type) tail)))
-         )
+(generic define-Range (a fmt)
+
+         (generic define-Range-with-type (type)
+                  
+                  (define-class (List type)
+                    (= Empty (<> Empty type))
+                    (= Cons  (<> Cons type)
+                       (a from)
+                       ((struct type) * tail)
+                       (a to)
+                       (a step)))
+
+                  (func (<> new type) ((a from) (a to) (a step))
+                        (out type *)
+                        (return (case (<= from to) ($> (<> Cons type) from ((<> Empty type)) to step)
+                                      otherwise    ((<> Empty type)))))
+                  
+                  (func (<> release type) ((type * list))
+                        (io list
+                          (* Cons from tail to step
+                             (block
+                                 ((<> release type) tail)
+                               (free list)))))
+                  
+                  (func (<> next type) ((type * list))
+                        (out type *)
+                        (return (match list
+                                  (* Cons from _ to step => (<= (+ from step) to)
+                                     ($> (<> Cons type) (+ from step) ((<> Empty type)) to step))
+                                  (default ((<> Empty type))))))
+                  
+                  (func (<> take type) ((int len) (type * list))
+                        (out type *)
+                        (return (match list
+                                  (* Cons from _ to step => (> len 0)
+                                     (letin ((ne ((<> next type) list) (<> free type)))
+                                       (match ne
+                                         (* Cons
+                                            ($> (<> Cons type) from ((<> take type) (-- len) ne) to step))
+                                         (default ($> (<> Cons type) from ne to step)))))
+                                  (default ((<> Empty type))))))
+                  
+                  (func (<> show type) ((type * list))
+                        (io list
+                          (* Cons head tail
+                             (io tail
+                               (* Cons
+                                  (block
+                                      (printf fmt head)
+                                    (putchar #\Space)
+                                    ((<> show type) tail)))
+                               (default (printf fmt head))))))
+
+                  ) ; define-Range-with-type
+
+         (define-Range-with-type (<> Range a))
+         
+         ) ; define-Range
+
+(generic import-Range (a)
+
+         (generic import-Range-with-type (type)
+                  
+                  (import-class (List type)
+                    (= Empty (<> Empty type))
+                    (= Cons  (<> Cons type)
+                       (a from)
+                       ((struct type) * tail)
+                       (a to)
+                       (a step)))
+
+                  ) ; import-Range-with-type
+
+         (import-Range-with-type (<> Range a))
+                  
+         ) ; import-Range

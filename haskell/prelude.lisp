@@ -1,7 +1,7 @@
 (import "./core.lisp")
 (import "./tuple.lisp")
-(import "./maybe.lisp")
 (import "./data.lisp")
+(import "./maybe.lisp")
 (import "./class.lisp")
 (import "./match.lisp")
 (import "./list.lisp")
@@ -11,6 +11,6 @@
 
 (DEFMACRO init-macro ()
   `($$$
-     (import-String new^String String char)
-     (import-List   new^List^int List^int int)
-     (import-Range  Range^int int)))
+     (import-List   new^List^int int)
+     (import-String new^String char)
+     (import-Range  int)))

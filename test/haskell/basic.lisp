@@ -112,9 +112,9 @@
               (return (case (== n 1)  1
                             otherwise (* n (factorial (- n 1))))))
 
-        (import-String new^String String char)
-        (import-List   new^List^int List^int int)
-        (import-Range  Range^int int)
+        (import-String new^String char)
+        (import-List   new^List^int int)
+        (import-Range  int)
         
         (main
 
@@ -227,13 +227,13 @@
 
             (format #t "output of printf match: %d\n"
                     ;; match returns a value and all values returned from each case must be the same type
-                    (match (nth^String 3 txt)
+                    (match (nth^List^char 3 txt)
                       (Just c  (format #t "the 4th element is: %c\n" c))
                       (default (format #t "4th element not found\n"))))
 
             (where ; where puts exactly the value of each var in place of it, and makes C functions Curry
-                ((llen (len^String txt))
-                 (nthf (\\ n (nth^String n txt))) ; nth function is reserved for access nth element of an array
+                ((llen (len^List^char txt))
+                 (nthf (\\ n (nth^List^char n txt))) ; nth function is reserved for access nth element of an array
                  (show (\\ f n (match (f n) ; lambda in place of declared show function
                                  (Just c  (format #t "the %dth element is: %c\n" n c))
                                  (default (format #t "%dth element not found\n" n))))))
@@ -246,9 +246,9 @@
 
             (format #t "output of letin: %d\n"
                     ;; use letin to prevent repeatition calls for every llen 
-                    (letin ((llen (len^String txt)))
+                    (letin ((llen (len^List^char txt)))
                       (where
-                          ((nthf (\\ n ($> !!^String n txt))) ; !! nth lambdas to C function to use Curry style
+                          ((nthf (\\ n ($> !!^List^char n txt))) ; !! nth lambdas to C function to use Curry style
                            (show (\\ f n (match (f n)
                                            (Just c  (format #t "the %dth element is: %c\n" n c))
                                            (default (format #t "%dth element not found\n" n))))))
@@ -265,28 +265,28 @@
               ;; ^ opr only inside cases can be used separated,
               ;; note in other cicili clauses ^ must be mixed whithout any space
               ;; _ for types with only one ctor
-              (Just (= str * _ head tail)
-                    (format #t "first char is: %c, and length of tail is: %d\n"
-                            head (len^String tail))))
+              (* Cons head tail
+                 (format #t "first char is: %c, and length of tail is: %d\n"
+                            head (len^List^char tail))))
             
             ;; using list literal constructor
             (letin ((str5 (new^String '{ #\C #\i #\c #\i #\l #\i #\Null }) free^String)) ; null termination required
-              (format #t "has 'Cicili' desired length 5: %d\n" (has^len^String str5 5))
-              (format #t "has 'Cicili' desired length 6: %d\n" (has^len^String str5 6))
-              (format #t "has 'Cicili' desired length 7: %d\n" (has^len^String str5 7)))
+              (format #t "has 'Cicili' desired length 5: %d\n" (has^len^List^char str5 5))
+              (format #t "has 'Cicili' desired length 6: %d\n" (has^len^List^char str5 6))
+              (format #t "has 'Cicili' desired length 7: %d\n" (has^len^List^char str5 7)))
 
             ;; match should have default case
             ;; io can have default case like match
             ;; but io returns void therefor default case is optional
-            (io (drop^String 12 txt)
+            (io (drop^List^char 12 txt)
               ;; simplified list element access
               ;; (Nothing ^ String (format #t "Nothing String\n"))
-              (Just ((\: char fst snd trd tail))
-                    (format #t "first, second and third char from String: %c %c %c\n" fst snd trd))
-              (Just ((\: char fst snd tail))
-                    (format #t "first and second char from String: %c %c\n" fst snd))
-              (Just ((\: char fst tail))
-                    (format #t "first char from String: %c\n" fst))
+              ((\: char fst snd trd tail)
+                 (format #t "first, second and third char from String: %c %c %c\n" fst snd trd))
+              ((\: char fst snd tail)
+                 (format #t "first and second char from String: %c %c\n" fst snd))
+              ((\: char fst tail)
+                 (format #t "first char from String: %c\n" fst))
               (default (format #t "default case String\n"))))
 
             
@@ -326,11 +326,11 @@
             (show^Range^int ra2)
             (format #t "\ntake 10 of range 1 20 3:\n")
             ;; because List and Range have same two members structure
-            (show^List^int (cast-list Maybe^List^int ra3))
+            (show^List^int (cast (List^int *) ra3))
             (format #t "\nString to List^int:\n")
-            (show^List^int (cast-list Maybe^List^int str0))
+            (show^List^int (cast (List^int *) str0))
             (format #t "\nList^int to String:\n")
-            (show^String (cast-list Maybe^String str1))
+            (show^String (cast (List^char *) str1))
             (putchar #\Newline)
             )
 

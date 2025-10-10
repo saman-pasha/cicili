@@ -74,19 +74,22 @@
              ;; (PUSH `(set ,data-name ,data) assigns))
 
              (LET ((el-type (CADR symb)))
-               (PUSH `((typeof ((<> has len Cons ,el-type) ,data-name ,(1- (LENGTH (CDDR symb))))) __h_has_len) defs)
-               (PUSH `(set __h_has_len ((<> has len Cons ,el-type) ,data-name ,(1- (LENGTH (CDDR symb))))) assigns)
+               (PUSH `(auto __h_has_len .
+                            (FUNCTION ((<> has len List ,el-type) ,data-name ,(1- (LENGTH (CDDR symb))))))
+                 defs)
+               ;; (PUSH `((typeof ((<> has len List ,el-type) ,data-name ,(1- (LENGTH (CDDR symb))))) __h_has_len) defs)
+               ;; (PUSH `(set __h_has_len ((<> has len List ,el-type) ,data-name ,(1- (LENGTH (CDDR symb))))) assigns)
                (SETQ conds `(== __h_has_len ,(- (LENGTH symb) 3)))
                (DOTIMES (i (- (LENGTH symb) 2))
                  (LET ((arg (MACROEXPAND (NTH (+ i 2) symb))))
                    (UNLESS (EQUAL arg '_)
                      (LET ((arg-name (make-match-h-arg-name match-id i))
                            (mem-name (IF (< i (- (LENGTH symb) 3))
-                                         (LIST '$ `((<> nth Cons ,el-type) ,i ,data-name)
+                                         (LIST '$ `((<> nth List ,el-type) ,i ,data-name)
                                                '__h_data
                                                'Just
                                                (make-data-h-member-name 0))
-                                         `((<> drop Cons ,el-type) ,i ,data-name))))
+                                         `((<> drop List ,el-type) ,i ,data-name))))
                        (IF (ATOM arg)
                            (PROGN
                              (PUSH `((typeof ,mem-name) ,arg) defs)
