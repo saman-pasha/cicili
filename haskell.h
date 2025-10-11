@@ -58,10 +58,10 @@ typedef enum __h_Maybe_ctor_t {
 #endif /* __H___h_Maybe_ctor_t__ */ 
 typedef struct Maybe_int {
   __h_Maybe_ctor_t __h_ctor ;
-  union { /* ciciliUnion134 */
-    struct { /* ciciliStruct135 */
+  union { /* ciciliUnion131 */
+    struct { /* ciciliStruct132 */
     } Nothing ;
-    struct { /* ciciliStruct136 */
+    struct { /* ciciliStruct133 */
       int __h_0_mem ;
     } Just ;
   } __h_data ;
@@ -78,10 +78,10 @@ typedef enum __h_List_ctor_t {
 #endif /* __H___h_List_ctor_t__ */ 
 typedef struct List_int {
   __h_List_ctor_t __h_ctor ;
-  union { /* ciciliUnion147 */
-    struct { /* ciciliStruct148 */
+  union { /* ciciliUnion143 */
+    struct { /* ciciliStruct144 */
     } Empty ;
-    struct { /* ciciliStruct149 */
+    struct { /* ciciliStruct145 */
       int __h_0_mem ;
       struct List_int * __h_1_mem ;
     } Cons ;
@@ -113,10 +113,10 @@ typedef enum __h_Maybe_ctor_t {
 #endif /* __H___h_Maybe_ctor_t__ */ 
 typedef struct Maybe_char {
   __h_Maybe_ctor_t __h_ctor ;
-  union { /* ciciliUnion215 */
-    struct { /* ciciliStruct216 */
+  union { /* ciciliUnion192 */
+    struct { /* ciciliStruct193 */
     } Nothing ;
-    struct { /* ciciliStruct217 */
+    struct { /* ciciliStruct194 */
       char __h_0_mem ;
     } Just ;
   } __h_data ;
@@ -133,10 +133,10 @@ typedef enum __h_List_ctor_t {
 #endif /* __H___h_List_ctor_t__ */ 
 typedef struct List_char {
   __h_List_ctor_t __h_ctor ;
-  union { /* ciciliUnion228 */
-    struct { /* ciciliStruct229 */
+  union { /* ciciliUnion204 */
+    struct { /* ciciliStruct205 */
     } Empty ;
-    struct { /* ciciliStruct230 */
+    struct { /* ciciliStruct206 */
       char __h_0_mem ;
       struct List_char * __h_1_mem ;
     } Cons ;
@@ -157,10 +157,32 @@ int has_len_List_char (List_char * list , int desired );
 List_char * take_List_char (int len , List_char * list );
 List_char * append_List_char (List_char * llist , List_char * rlist );
 void show_List_char (List_char * list );
+typedef List_char String ;
+__attribute__((weak)) List_char * next_String (List_char * list ) {
+  return next_List_char (list );
+}
+__attribute__((weak)) Maybe_char nth_String (int index , List_char * list ) {
+  return nth_List_char (index , list );
+}
+__attribute__((weak)) List_char * drop_String (int index , List_char * list ) {
+  return drop_List_char (index , list );
+}
+__attribute__((weak)) int len_String (List_char * list ) {
+  return len_List_char (list );
+}
+__attribute__((weak)) int has_len_String (List_char * list , int desired ) {
+  return has_len_List_char (list , desired );
+}
+__attribute__((weak)) List_char * take_String (int len , List_char * list ) {
+  return take_List_char (len , list );
+}
+__attribute__((weak)) List_char * append_String (List_char * llist , List_char * rlist ) {
+  return append_List_char (llist , rlist );
+}
 List_char * new_String_Const (const char * buf );
 void show_String (List_char * list );
 __attribute__((weak)) void free_String (List_char ** list ) {
-  free_List_char (list );
+  release_List_char ((*list ));
 }
 #ifndef __H___h_List_ctor_t__
 #define __H___h_List_ctor_t__
@@ -171,10 +193,10 @@ typedef enum __h_List_ctor_t {
 #endif /* __H___h_List_ctor_t__ */ 
 typedef struct Range_int {
   __h_List_ctor_t __h_ctor ;
-  union { /* ciciliUnion305 */
-    struct { /* ciciliStruct306 */
+  union { /* ciciliUnion283 */
+    struct { /* ciciliStruct284 */
     } Empty ;
-    struct { /* ciciliStruct307 */
+    struct { /* ciciliStruct285 */
       int __h_0_mem ;
       struct Range_int * __h_1_mem ;
       int __h_2_mem ;
@@ -192,3 +214,48 @@ __attribute__((weak)) void free_Range_int (Range_int ** list ) {
 Range_int * next_Range_int (Range_int * list );
 Range_int * take_Range_int (int len , Range_int * list );
 void show_Range_int (Range_int * list );
+int foldr_int (int (*folder) (int lhs , int rhs ), int neutral , List_int * foldable );
+typedef int (*Monoid_Sum_int_mappend) (int lhs , int rhs );
+typedef int (*Monoid_Sum_int_mconcat) (List_int * l );
+#ifndef __H___h_Monoid_Sum_int_ctor_t__
+#define __H___h_Monoid_Sum_int_ctor_t__
+typedef enum __h_Monoid_Sum_int_ctor_t {
+  __h___h_Monoid_Sum_int_ctor_t_t
+} __h_Monoid_Sum_int_ctor_t;
+#endif /* __H___h_Monoid_Sum_int_ctor_t__ */ 
+typedef struct Monoid_Sum_int {
+  DefaultCtor __h_ctor ;
+  union { /* ciciliUnion325 */
+    struct { /* ciciliStruct326 */
+      int __h_0_mem ;
+      Monoid_Sum_int_mappend __h_1_mem ;
+      Monoid_Sum_int_mconcat __h_2_mem ;
+    } _ ;
+  } __h_data ;
+} Monoid_Sum_int;
+Monoid_Sum_int __h_m_Sum_int_ctor (int __h_0_mem , Monoid_Sum_int_mappend __h_1_mem , Monoid_Sum_int_mconcat __h_2_mem );
+int Monoid_Sum_int_mappend_int_s (int x , int y );
+int Monoid_Sum_int_mconcat_int_s (List_int * l );
+Monoid_Sum_int get_Monoid_Sum_int ();
+typedef int (*Monoid_Product_int_mappend) (int lhs , int rhs );
+typedef int (*Monoid_Product_int_mconcat) (List_int * l );
+#ifndef __H___h_Monoid_Product_int_ctor_t__
+#define __H___h_Monoid_Product_int_ctor_t__
+typedef enum __h_Monoid_Product_int_ctor_t {
+  __h___h_Monoid_Product_int_ctor_t_t
+} __h_Monoid_Product_int_ctor_t;
+#endif /* __H___h_Monoid_Product_int_ctor_t__ */ 
+typedef struct Monoid_Product_int {
+  DefaultCtor __h_ctor ;
+  union { /* ciciliUnion352 */
+    struct { /* ciciliStruct353 */
+      int __h_0_mem ;
+      Monoid_Product_int_mappend __h_1_mem ;
+      Monoid_Product_int_mconcat __h_2_mem ;
+    } _ ;
+  } __h_data ;
+} Monoid_Product_int;
+Monoid_Product_int __h_m_Product_int_ctor (int __h_0_mem , Monoid_Product_int_mappend __h_1_mem , Monoid_Product_int_mconcat __h_2_mem );
+int Monoid_Product_int_mappend_int_s (int x , int y );
+int Monoid_Product_int_mconcat_int_s (List_int * l );
+Monoid_Product_int get_Monoid_Product_int ();

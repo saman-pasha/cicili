@@ -10,10 +10,15 @@
         ;; data Ordering = LT EQ GT
         (decl-data Ordering LT EQ GT)
 
-        (decl-List   int)
-        (decl-String char)
-        (decl-Range  int)
+        (decl-List   List^int int)
+        (decl-String List^char char)
+        (decl-Range  Range^int int)
+
+        (decl-folds int)
         
+        (decl-Monoid (<> Sum int) int 0 +)
+        (decl-Monoid (<> Product int) int 1 *)
+
         ) ; haskell.h
 
 (source "haskell.c" (:std #t :compile "-c haskell.c -o ../haskell.o" :link #f)
@@ -23,8 +28,13 @@
 
         (define-data Ordering LT EQ GT)
         
-        (define-List   int "%d")
-        (define-String char "%c")
-        (define-Range  int "%d")
+        (define-List   List^int int "%d")
+        (define-String List^char char "%c")
+        (define-Range  Range^int int "%d")
+
+        (define-folds int)
+        
+        (define-Monoid (<> Sum int) int 0 +)
+        (define-Monoid (<> Product int) int 1 *)
 
         ) ; haskell.c

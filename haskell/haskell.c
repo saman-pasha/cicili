@@ -27,7 +27,7 @@ Maybe_int Just_int (int value ) {
   return ((Maybe_int){ __h_Just_t , .__h_data.Just = { value }});
 }
 List_int * Empty_int () {
-  { /* cicili#Let363 */
+  { /* cicili#Let389 */
     List_int * instance  = malloc (sizeof(List_int));
     // ----------
     (*instance ) = ((List_int){ __h_Empty_t });
@@ -35,7 +35,7 @@ List_int * Empty_int () {
   }
 }
 List_int * __h_Cons_int_ctor (int head , struct List_int * tail ) {
-  { /* cicili#Let366 */
+  { /* cicili#Let392 */
     List_int * instance  = malloc (sizeof(List_int));
     // ----------
     (*instance ) = ((List_int){ __h_Cons_t , .__h_data.Cons = { head , tail }});
@@ -46,7 +46,7 @@ List_int * new_List_int_Pure (const int * buf , int len ) {
   if (buf  ==  NULL  )
     return Empty_int ();
   else
-    { /* cicili#Let375 */
+    { /* cicili#Let400 */
       int item  = (*buf );
       // ----------
       if (len  ==  0 )
@@ -56,15 +56,15 @@ List_int * new_List_int_Pure (const int * buf , int len ) {
     }
 }
 void release_List_int (List_int * list ) {
-  { /* cicili#Let389 */
+  { /* cicili#Let414 */
     __auto_type tail  = (((list -> __h_data ). Cons ). __h_1_mem );
     // ----------
-    /* cicili#Block391 */
-    ({ /* cicili#Let393 */
+    /* cicili#Block416 */
+    ({ /* cicili#Let418 */
       bool __h_case_result  = ((list -> __h_ctor ) ==  __h_Cons_t  );
       // ----------
       if (__h_case_result )
-        { /* cicili#Block396 */
+        { /* cicili#Block421 */
           release_List_int (tail );
           free (list );
         }
@@ -72,79 +72,63 @@ void release_List_int (List_int * list ) {
   }
 }
 List_int * next_List_int (List_int * list ) {
-  return ({ /* cicili#Let405 */
+  return ({ /* cicili#Let428 */
     __auto_type tail  = (((list -> __h_data ). Cons ). __h_1_mem );
     // ----------
-    /* cicili#Block407 */
-    ({ /* cicili#Let409 */
+    /* cicili#Block430 */
+    ({ /* cicili#Let432 */
       bool __h_case_result  = ((list -> __h_ctor ) ==  __h_Cons_t  );
       // ----------
-      ((__h_case_result ) ? tail  : ({ /* cicili#Let413 */
+      ((__h_case_result ) ? tail  : ({ /* cicili#Let436 */
         // ----------
-        /* cicili#Block415 */
+        /* cicili#Block438 */
         Empty_int ();
       }));
     });
   });
 }
 Maybe_int nth_List_int (int index , List_int * list ) {
-  return ({ /* cicili#Let424 */
+  return ({ /* cicili#Let446 */
     __auto_type head  = (((list -> __h_data ). Cons ). __h_0_mem );
     __auto_type tail  = (((list -> __h_data ). Cons ). __h_1_mem );
     // ----------
-    /* cicili#Block426 */
-    ({ /* cicili#Let428 */
+    /* cicili#Block448 */
+    ({ /* cicili#Let450 */
       bool __h_case_result  = ((list -> __h_ctor ) ==  __h_Cons_t  );
       // ----------
-      ((__h_case_result ) ? (((index  ==  0 )) ? Just_int (head ) : nth_List_int ((--index ), tail )) : ({ /* cicili#Let435 */
+      ((__h_case_result ) ? (((index  ==  0 )) ? Just_int (head ) : nth_List_int ((--index ), tail )) : ({ /* cicili#Let457 */
         // ----------
-        /* cicili#Block437 */
+        /* cicili#Block459 */
         Nothing_int ();
       }));
     });
   });
 }
 List_int * drop_List_int (int index , List_int * list ) {
-  return (((index  ==  0 )) ? list  : ({ /* cicili#Let447 */
+  return (((index  ==  0 )) ? list  : ({ /* cicili#Let467 */
       __auto_type tail  = (((list -> __h_data ). Cons ). __h_1_mem );
       // ----------
-      /* cicili#Block449 */
-      ({ /* cicili#Let451 */
+      /* cicili#Block469 */
+      ({ /* cicili#Let471 */
         bool __h_case_result  = ((list -> __h_ctor ) ==  __h_Cons_t  );
         // ----------
-        ((__h_case_result ) ? drop_List_int ((--index ), tail ) : ({ /* cicili#Let456 */
+        ((__h_case_result ) ? drop_List_int ((--index ), tail ) : ({ /* cicili#Let476 */
           // ----------
-          /* cicili#Block458 */
+          /* cicili#Block478 */
           Empty_int ();
         }));
       });
     }));
 }
 int len_List_int (List_int * list ) {
-  return ({ /* cicili#Let466 */
+  return ({ /* cicili#Let485 */
     __auto_type tail  = (((list -> __h_data ). Cons ). __h_1_mem );
     // ----------
-    /* cicili#Block468 */
-    ({ /* cicili#Let470 */
+    /* cicili#Block487 */
+    ({ /* cicili#Let489 */
       bool __h_case_result  = ((list -> __h_ctor ) ==  __h_Cons_t  );
       // ----------
-      ((__h_case_result ) ? (1 +  len_List_int (tail ) ) : ({ /* cicili#Let475 */
-        // ----------
-        /* cicili#Block477 */
-        0;
-      }));
-    });
-  });
-}
-int has_len_List_int (List_int * list , int desired ) {
-  return ({ /* cicili#Let484 */
-    __auto_type tail  = (((list -> __h_data ). Cons ). __h_1_mem );
-    // ----------
-    /* cicili#Block486 */
-    ({ /* cicili#Let488 */
-      bool __h_case_result  = ((list -> __h_ctor ) ==  __h_Cons_t  );
-      // ----------
-      ((__h_case_result ) ? (((desired  ==  1 )) ? 1 : (1 +  has_len_List_int (tail , (--desired )) )) : ({ /* cicili#Let494 */
+      ((__h_case_result ) ? (1 +  len_List_int (tail ) ) : ({ /* cicili#Let494 */
         // ----------
         /* cicili#Block496 */
         0;
@@ -152,66 +136,82 @@ int has_len_List_int (List_int * list , int desired ) {
     });
   });
 }
+int has_len_List_int (List_int * list , int desired ) {
+  return ({ /* cicili#Let502 */
+    __auto_type tail  = (((list -> __h_data ). Cons ). __h_1_mem );
+    // ----------
+    /* cicili#Block504 */
+    ({ /* cicili#Let506 */
+      bool __h_case_result  = ((list -> __h_ctor ) ==  __h_Cons_t  );
+      // ----------
+      ((__h_case_result ) ? (((desired  ==  1 )) ? 1 : (1 +  has_len_List_int (tail , (--desired )) )) : ({ /* cicili#Let512 */
+        // ----------
+        /* cicili#Block514 */
+        0;
+      }));
+    });
+  });
+}
 List_int * take_List_int (int len , List_int * list ) {
-  return ({ /* cicili#Let504 */
+  return ({ /* cicili#Let520 */
     __auto_type head  = (((list -> __h_data ). Cons ). __h_0_mem );
     __auto_type tail  = (((list -> __h_data ). Cons ). __h_1_mem );
     // ----------
-    /* cicili#Block506 */
-    ({ /* cicili#Let508 */
+    /* cicili#Block522 */
+    ({ /* cicili#Let524 */
       bool __h_case_result  = (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  (len  >  0 ) );
       // ----------
-      ((__h_case_result ) ? __h_Cons_int_ctor (head , take_List_int ((--len ), tail )) : ({ /* cicili#Let520 */
+      ((__h_case_result ) ? __h_Cons_int_ctor (head , take_List_int ((--len ), tail )) : ({ /* cicili#Let536 */
         // ----------
-        /* cicili#Block522 */
+        /* cicili#Block538 */
         Empty_int ();
       }));
     });
   });
 }
 List_int * append_List_int (List_int * llist , List_int * rlist ) {
-  return ({ /* cicili#Let531 */
+  return ({ /* cicili#Let545 */
     __auto_type head  = (((llist -> __h_data ). Cons ). __h_0_mem );
     __auto_type tail  = (((llist -> __h_data ). Cons ). __h_1_mem );
     // ----------
-    /* cicili#Block533 */
-    ({ /* cicili#Let535 */
+    /* cicili#Block547 */
+    ({ /* cicili#Let549 */
       bool __h_case_result  = ((llist -> __h_ctor ) ==  __h_Cons_t  );
       // ----------
-      ((__h_case_result ) ? __h_Cons_int_ctor (head , append_List_int (tail , rlist )) : ({ /* cicili#Let547 */
+      ((__h_case_result ) ? __h_Cons_int_ctor (head , append_List_int (tail , rlist )) : ({ /* cicili#Let561 */
         // ----------
-        /* cicili#Block549 */
+        /* cicili#Block563 */
         rlist ;
       }));
     });
   });
 }
 void show_List_int (List_int * list ) {
-  { /* cicili#Let557 */
+  { /* cicili#Let569 */
     __auto_type head  = (((list -> __h_data ). Cons ). __h_0_mem );
     __auto_type tail  = (((list -> __h_data ). Cons ). __h_1_mem );
     // ----------
-    /* cicili#Block559 */
-    ({ /* cicili#Let561 */
+    /* cicili#Block571 */
+    ({ /* cicili#Let573 */
       bool __h_case_result  = ((list -> __h_ctor ) ==  __h_Cons_t  );
       // ----------
       if (__h_case_result )
-        { /* cicili#Block564 */
-          { /* cicili#Let568 */
+        { /* cicili#Block576 */
+          { /* cicili#Let580 */
             // ----------
-            /* cicili#Block570 */
-            ({ /* cicili#Let572 */
+            /* cicili#Block582 */
+            ({ /* cicili#Let584 */
               bool __h_case_result  = ((tail -> __h_ctor ) ==  __h_Cons_t  );
               // ----------
               if (__h_case_result )
-                { /* cicili#Block575 */
+                { /* cicili#Block587 */
                   printf ("%d", head );
                   putchar (' ');
                 }
               else
-                { /* cicili#Let580 */
+                { /* cicili#Let592 */
                   // ----------
-                  /* cicili#Block582 */
+                  /* cicili#Block594 */
                   printf ("%d", head );
                 }
             });
@@ -228,7 +228,7 @@ Maybe_char Just_char (char value ) {
   return ((Maybe_char){ __h_Just_t , .__h_data.Just = { value }});
 }
 List_char * Empty_char () {
-  { /* cicili#Let606 */
+  { /* cicili#Let613 */
     List_char * instance  = malloc (sizeof(List_char));
     // ----------
     (*instance ) = ((List_char){ __h_Empty_t });
@@ -236,7 +236,7 @@ List_char * Empty_char () {
   }
 }
 List_char * __h_Cons_char_ctor (char head , struct List_char * tail ) {
-  { /* cicili#Let609 */
+  { /* cicili#Let616 */
     List_char * instance  = malloc (sizeof(List_char));
     // ----------
     (*instance ) = ((List_char){ __h_Cons_t , .__h_data.Cons = { head , tail }});
@@ -247,7 +247,7 @@ List_char * new_List_char_Pure (const char * buf , int len ) {
   if (buf  ==  NULL  )
     return Empty_char ();
   else
-    { /* cicili#Let618 */
+    { /* cicili#Let624 */
       char item  = (*buf );
       // ----------
       if (len  ==  0 )
@@ -257,15 +257,15 @@ List_char * new_List_char_Pure (const char * buf , int len ) {
     }
 }
 void release_List_char (List_char * list ) {
-  { /* cicili#Let632 */
+  { /* cicili#Let638 */
     __auto_type tail  = (((list -> __h_data ). Cons ). __h_1_mem );
     // ----------
-    /* cicili#Block634 */
-    ({ /* cicili#Let636 */
+    /* cicili#Block640 */
+    ({ /* cicili#Let642 */
       bool __h_case_result  = ((list -> __h_ctor ) ==  __h_Cons_t  );
       // ----------
       if (__h_case_result )
-        { /* cicili#Block639 */
+        { /* cicili#Block645 */
           release_List_char (tail );
           free (list );
         }
@@ -273,49 +273,49 @@ void release_List_char (List_char * list ) {
   }
 }
 List_char * next_List_char (List_char * list ) {
-  return ({ /* cicili#Let648 */
+  return ({ /* cicili#Let652 */
     __auto_type tail  = (((list -> __h_data ). Cons ). __h_1_mem );
     // ----------
-    /* cicili#Block650 */
-    ({ /* cicili#Let652 */
+    /* cicili#Block654 */
+    ({ /* cicili#Let656 */
       bool __h_case_result  = ((list -> __h_ctor ) ==  __h_Cons_t  );
       // ----------
-      ((__h_case_result ) ? tail  : ({ /* cicili#Let656 */
+      ((__h_case_result ) ? tail  : ({ /* cicili#Let660 */
         // ----------
-        /* cicili#Block658 */
+        /* cicili#Block662 */
         Empty_char ();
       }));
     });
   });
 }
 Maybe_char nth_List_char (int index , List_char * list ) {
-  return ({ /* cicili#Let667 */
+  return ({ /* cicili#Let670 */
     __auto_type head  = (((list -> __h_data ). Cons ). __h_0_mem );
     __auto_type tail  = (((list -> __h_data ). Cons ). __h_1_mem );
     // ----------
-    /* cicili#Block669 */
-    ({ /* cicili#Let671 */
+    /* cicili#Block672 */
+    ({ /* cicili#Let674 */
       bool __h_case_result  = ((list -> __h_ctor ) ==  __h_Cons_t  );
       // ----------
-      ((__h_case_result ) ? (((index  ==  0 )) ? Just_char (head ) : nth_List_char ((--index ), tail )) : ({ /* cicili#Let678 */
+      ((__h_case_result ) ? (((index  ==  0 )) ? Just_char (head ) : nth_List_char ((--index ), tail )) : ({ /* cicili#Let681 */
         // ----------
-        /* cicili#Block680 */
+        /* cicili#Block683 */
         Nothing_char ();
       }));
     });
   });
 }
 List_char * drop_List_char (int index , List_char * list ) {
-  return (((index  ==  0 )) ? list  : ({ /* cicili#Let690 */
+  return (((index  ==  0 )) ? list  : ({ /* cicili#Let691 */
       __auto_type tail  = (((list -> __h_data ). Cons ). __h_1_mem );
       // ----------
-      /* cicili#Block692 */
-      ({ /* cicili#Let694 */
+      /* cicili#Block693 */
+      ({ /* cicili#Let695 */
         bool __h_case_result  = ((list -> __h_ctor ) ==  __h_Cons_t  );
         // ----------
-        ((__h_case_result ) ? drop_List_char ((--index ), tail ) : ({ /* cicili#Let699 */
+        ((__h_case_result ) ? drop_List_char ((--index ), tail ) : ({ /* cicili#Let700 */
           // ----------
-          /* cicili#Block701 */
+          /* cicili#Block702 */
           Empty_char ();
         }));
       });
@@ -338,81 +338,81 @@ int len_List_char (List_char * list ) {
   });
 }
 int has_len_List_char (List_char * list , int desired ) {
-  return ({ /* cicili#Let727 */
+  return ({ /* cicili#Let726 */
     __auto_type tail  = (((list -> __h_data ). Cons ). __h_1_mem );
     // ----------
-    /* cicili#Block729 */
-    ({ /* cicili#Let731 */
+    /* cicili#Block728 */
+    ({ /* cicili#Let730 */
       bool __h_case_result  = ((list -> __h_ctor ) ==  __h_Cons_t  );
       // ----------
-      ((__h_case_result ) ? (((desired  ==  1 )) ? 1 : (1 +  has_len_List_char (tail , (--desired )) )) : ({ /* cicili#Let737 */
+      ((__h_case_result ) ? (((desired  ==  1 )) ? 1 : (1 +  has_len_List_char (tail , (--desired )) )) : ({ /* cicili#Let736 */
         // ----------
-        /* cicili#Block739 */
+        /* cicili#Block738 */
         0;
       }));
     });
   });
 }
 List_char * take_List_char (int len , List_char * list ) {
-  return ({ /* cicili#Let747 */
+  return ({ /* cicili#Let744 */
     __auto_type head  = (((list -> __h_data ). Cons ). __h_0_mem );
     __auto_type tail  = (((list -> __h_data ). Cons ). __h_1_mem );
     // ----------
-    /* cicili#Block749 */
-    ({ /* cicili#Let751 */
+    /* cicili#Block746 */
+    ({ /* cicili#Let748 */
       bool __h_case_result  = (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  (len  >  0 ) );
       // ----------
-      ((__h_case_result ) ? __h_Cons_char_ctor (head , take_List_char ((--len ), tail )) : ({ /* cicili#Let763 */
+      ((__h_case_result ) ? __h_Cons_char_ctor (head , take_List_char ((--len ), tail )) : ({ /* cicili#Let760 */
         // ----------
-        /* cicili#Block765 */
+        /* cicili#Block762 */
         Empty_char ();
       }));
     });
   });
 }
 List_char * append_List_char (List_char * llist , List_char * rlist ) {
-  return ({ /* cicili#Let774 */
+  return ({ /* cicili#Let769 */
     __auto_type head  = (((llist -> __h_data ). Cons ). __h_0_mem );
     __auto_type tail  = (((llist -> __h_data ). Cons ). __h_1_mem );
     // ----------
-    /* cicili#Block776 */
-    ({ /* cicili#Let778 */
+    /* cicili#Block771 */
+    ({ /* cicili#Let773 */
       bool __h_case_result  = ((llist -> __h_ctor ) ==  __h_Cons_t  );
       // ----------
-      ((__h_case_result ) ? __h_Cons_char_ctor (head , append_List_char (tail , rlist )) : ({ /* cicili#Let790 */
+      ((__h_case_result ) ? __h_Cons_char_ctor (head , append_List_char (tail , rlist )) : ({ /* cicili#Let785 */
         // ----------
-        /* cicili#Block792 */
+        /* cicili#Block787 */
         rlist ;
       }));
     });
   });
 }
 void show_List_char (List_char * list ) {
-  { /* cicili#Let800 */
+  { /* cicili#Let793 */
     __auto_type head  = (((list -> __h_data ). Cons ). __h_0_mem );
     __auto_type tail  = (((list -> __h_data ). Cons ). __h_1_mem );
     // ----------
-    /* cicili#Block802 */
-    ({ /* cicili#Let804 */
+    /* cicili#Block795 */
+    ({ /* cicili#Let797 */
       bool __h_case_result  = ((list -> __h_ctor ) ==  __h_Cons_t  );
       // ----------
       if (__h_case_result )
-        { /* cicili#Block807 */
-          { /* cicili#Let811 */
+        { /* cicili#Block800 */
+          { /* cicili#Let804 */
             // ----------
-            /* cicili#Block813 */
-            ({ /* cicili#Let815 */
+            /* cicili#Block806 */
+            ({ /* cicili#Let808 */
               bool __h_case_result  = ((tail -> __h_ctor ) ==  __h_Cons_t  );
               // ----------
               if (__h_case_result )
-                { /* cicili#Block818 */
+                { /* cicili#Block811 */
                   printf ("%c", head );
                   putchar (' ');
                 }
               else
-                { /* cicili#Let823 */
+                { /* cicili#Let816 */
                   // ----------
-                  /* cicili#Block825 */
+                  /* cicili#Block818 */
                   printf ("%c", head );
                 }
             });
@@ -426,7 +426,7 @@ List_char * new_String_Const (const char * buf ) {
   if (buf  ==  NULL  )
     return Empty_char ();
   else
-    { /* cicili#Let839 */
+    { /* cicili#Let827 */
       char item  = (*buf );
       // ----------
       if (item  ==  '\0' )
@@ -436,16 +436,16 @@ List_char * new_String_Const (const char * buf ) {
     }
 }
 void show_String (List_char * list ) {
-  { /* cicili#Let853 */
+  { /* cicili#Let841 */
     __auto_type head  = (((list -> __h_data ). Cons ). __h_0_mem );
     __auto_type tail  = (((list -> __h_data ). Cons ). __h_1_mem );
     // ----------
-    /* cicili#Block855 */
-    ({ /* cicili#Let857 */
+    /* cicili#Block843 */
+    ({ /* cicili#Let845 */
       bool __h_case_result  = ((list -> __h_ctor ) ==  __h_Cons_t  );
       // ----------
       if (__h_case_result )
-        ({ /* cicili#Progn860 */
+        ({ /* cicili#Progn848 */
           printf ("%c", head );
           show_String (tail );
         });
@@ -453,7 +453,7 @@ void show_String (List_char * list ) {
   }
 }
 Range_int * Empty_Range_int () {
-  { /* cicili#Let874 */
+  { /* cicili#Let857 */
     Range_int * instance  = malloc (sizeof(Range_int));
     // ----------
     (*instance ) = ((Range_int){ __h_Empty_t });
@@ -461,7 +461,7 @@ Range_int * Empty_Range_int () {
   }
 }
 Range_int * __h_Cons_Range_int_ctor (int from , struct Range_int * tail , int to , int step ) {
-  { /* cicili#Let877 */
+  { /* cicili#Let860 */
     Range_int * instance  = malloc (sizeof(Range_int));
     // ----------
     (*instance ) = ((Range_int){ __h_Cons_t , .__h_data.Cons = { from , tail , to , step }});
@@ -472,18 +472,18 @@ Range_int * new_Range_int (int from , int to , int step ) {
   return (((from  <=  to  )) ? __h_Cons_Range_int_ctor (from , Empty_Range_int (), to , step ) : Empty_Range_int ());
 }
 void release_Range_int (Range_int * list ) {
-  { /* cicili#Let895 */
+  { /* cicili#Let877 */
     __auto_type from  = (((list -> __h_data ). Cons ). __h_0_mem );
     __auto_type tail  = (((list -> __h_data ). Cons ). __h_1_mem );
     __auto_type to  = (((list -> __h_data ). Cons ). __h_2_mem );
     __auto_type step  = (((list -> __h_data ). Cons ). __h_3_mem );
     // ----------
-    /* cicili#Block897 */
-    ({ /* cicili#Let899 */
+    /* cicili#Block879 */
+    ({ /* cicili#Let881 */
       bool __h_case_result  = ((list -> __h_ctor ) ==  __h_Cons_t  );
       // ----------
       if (__h_case_result )
-        { /* cicili#Block902 */
+        { /* cicili#Block884 */
           release_Range_int (tail );
           free (list );
         }
@@ -491,87 +491,128 @@ void release_Range_int (Range_int * list ) {
   }
 }
 Range_int * next_Range_int (Range_int * list ) {
-  return ({ /* cicili#Let911 */
+  return ({ /* cicili#Let891 */
     __auto_type from  = (((list -> __h_data ). Cons ). __h_0_mem );
     __auto_type to  = (((list -> __h_data ). Cons ). __h_2_mem );
     __auto_type step  = (((list -> __h_data ). Cons ). __h_3_mem );
     // ----------
-    /* cicili#Block913 */
-    ({ /* cicili#Let915 */
+    /* cicili#Block893 */
+    ({ /* cicili#Let895 */
       bool __h_case_result  = (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  ((from  +  step  ) <=  to  ) );
       // ----------
-      ((__h_case_result ) ? __h_Cons_Range_int_ctor ((from  +  step  ), Empty_Range_int (), to , step ) : ({ /* cicili#Let926 */
+      ((__h_case_result ) ? __h_Cons_Range_int_ctor ((from  +  step  ), Empty_Range_int (), to , step ) : ({ /* cicili#Let906 */
         // ----------
-        /* cicili#Block928 */
+        /* cicili#Block908 */
         Empty_Range_int ();
       }));
     });
   });
 }
 Range_int * take_Range_int (int len , Range_int * list ) {
-  return ({ /* cicili#Let937 */
+  return ({ /* cicili#Let915 */
     __auto_type from  = (((list -> __h_data ). Cons ). __h_0_mem );
     __auto_type to  = (((list -> __h_data ). Cons ). __h_2_mem );
     __auto_type step  = (((list -> __h_data ). Cons ). __h_3_mem );
     // ----------
-    /* cicili#Block939 */
-    ({ /* cicili#Let941 */
+    /* cicili#Block917 */
+    ({ /* cicili#Let919 */
       bool __h_case_result  = (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  (len  >  0 ) );
       // ----------
-      ((__h_case_result ) ? ({ /* cicili#Let944 */
+      ((__h_case_result ) ? ({ /* cicili#Let922 */
         __auto_type ne  __attribute__((__cleanup__(free_Range_int ))) = next_Range_int (list );
         // ----------
-        ({ /* cicili#Let950 */
+        ({ /* cicili#Let928 */
           // ----------
-          /* cicili#Block952 */
-          ({ /* cicili#Let954 */
+          /* cicili#Block930 */
+          ({ /* cicili#Let932 */
             bool __h_case_result  = ((ne -> __h_ctor ) ==  __h_Cons_t  );
             // ----------
-            ((__h_case_result ) ? __h_Cons_Range_int_ctor (from , take_Range_int ((--len ), ne ), to , step ) : ({ /* cicili#Let965 */
+            ((__h_case_result ) ? __h_Cons_Range_int_ctor (from , take_Range_int ((--len ), ne ), to , step ) : ({ /* cicili#Let943 */
               // ----------
-              /* cicili#Block967 */
+              /* cicili#Block945 */
               __h_Cons_Range_int_ctor (from , ne , to , step );
             }));
           });
         });
-      }) : ({ /* cicili#Let977 */
+      }) : ({ /* cicili#Let955 */
         // ----------
-        /* cicili#Block979 */
+        /* cicili#Block957 */
         Empty_Range_int ();
       }));
     });
   });
 }
 void show_Range_int (Range_int * list ) {
-  { /* cicili#Let987 */
+  { /* cicili#Let964 */
     __auto_type head  = (((list -> __h_data ). Cons ). __h_0_mem );
     __auto_type tail  = (((list -> __h_data ). Cons ). __h_1_mem );
     // ----------
-    /* cicili#Block989 */
-    ({ /* cicili#Let991 */
+    /* cicili#Block966 */
+    ({ /* cicili#Let968 */
       bool __h_case_result  = ((list -> __h_ctor ) ==  __h_Cons_t  );
       // ----------
       if (__h_case_result )
-        { /* cicili#Let996 */
+        { /* cicili#Let973 */
           // ----------
-          /* cicili#Block998 */
-          ({ /* cicili#Let1000 */
+          /* cicili#Block975 */
+          ({ /* cicili#Let977 */
             bool __h_case_result  = ((tail -> __h_ctor ) ==  __h_Cons_t  );
             // ----------
             if (__h_case_result )
-              { /* cicili#Block1003 */
+              { /* cicili#Block980 */
                 printf ("%d", head );
                 putchar (' ');
                 show_Range_int (tail );
               }
             else
-              { /* cicili#Let1009 */
+              { /* cicili#Let986 */
                 // ----------
-                /* cicili#Block1011 */
+                /* cicili#Block988 */
                 printf ("%d", head );
               }
           });
         }
     });
   }
+}
+int foldr_int (int (*folder) (int lhs , int rhs ), int neutral , List_int * foldable ) {
+  return ({ /* cicili#Let996 */
+    __auto_type head  = (((foldable -> __h_data ). Cons ). __h_0_mem );
+    __auto_type tail  = (((foldable -> __h_data ). Cons ). __h_1_mem );
+    // ----------
+    /* cicili#Block998 */
+    ({ /* cicili#Let1000 */
+      bool __h_case_result  = ((foldable -> __h_ctor ) ==  __h_Cons_t  );
+      // ----------
+      ((__h_case_result ) ? foldr_int (folder , folder (neutral , head ), tail ) : ({ /* cicili#Let1005 */
+        // ----------
+        /* cicili#Block1007 */
+        neutral ;
+      }));
+    });
+  });
+}
+Monoid_Sum_int __h_m_Sum_int_ctor (int mempty , Monoid_Sum_int_mappend mappend , Monoid_Sum_int_mconcat mconcat ) {
+  return ((Monoid_Sum_int){ __h___t , .__h_data._ = { mempty , mappend , mconcat }});
+}
+int Monoid_Sum_int_mappend_int_s (int x , int y ) {
+  return (x  +  y  );
+}
+int Monoid_Sum_int_mconcat_int_s (List_int * l ) {
+  return foldr_int (Monoid_Sum_int_mappend_int_s , 0, l );
+}
+Monoid_Sum_int get_Monoid_Sum_int () {
+  return __h_m_Sum_int_ctor (0, Monoid_Sum_int_mappend_int_s , Monoid_Sum_int_mconcat_int_s );
+}
+Monoid_Product_int __h_m_Product_int_ctor (int mempty , Monoid_Product_int_mappend mappend , Monoid_Product_int_mconcat mconcat ) {
+  return ((Monoid_Product_int){ __h___t , .__h_data._ = { mempty , mappend , mconcat }});
+}
+int Monoid_Product_int_mappend_int_s (int x , int y ) {
+  return (x  *  y  );
+}
+int Monoid_Product_int_mconcat_int_s (List_int * l ) {
+  return foldr_int (Monoid_Product_int_mappend_int_s , 1, l );
+}
+Monoid_Product_int get_Monoid_Product_int () {
+  return __h_m_Product_int_ctor (1, Monoid_Product_int_mappend_int_s , Monoid_Product_int_mconcat_int_s );
 }

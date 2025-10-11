@@ -262,29 +262,26 @@ Maybe_aTuple Just_aTuple (aTuple value ) {
 int factorial (int n ) {
   return (((n  ==  1 )) ? 1 : (n  *  factorial ((n  -  1 )) ));
 }
-;
-;
-;
-static int __ciciliL_478 (int x , int y ) {
+static int __ciciliL_431 (int x , int y ) {
   return ((int)pow (((double)x ), ((double)y )));
 }
-static int __ciciliL_486 (int x , int y ) {
+static int __ciciliL_439 (int x , int y ) {
   return ((int)pow (((double)x ), ((double)y )));
 }
-typedef struct __ciciliS_563 {
+typedef struct __ciciliS_516 {
   int __h_0_mem ;
   char __h_1_mem ;
   short __h_2_mem ;
-} __ciciliS_563;
-typedef struct __ciciliS_565 {
+} __ciciliS_516;
+typedef struct __ciciliS_518 {
   int __h_0_mem ;
   char __h_1_mem ;
   short __h_2_mem ;
-} __ciciliS_565;
-typedef struct __ciciliS_646 {
+} __ciciliS_518;
+typedef struct __ciciliS_599 {
   int __h_0_mem ;
   Maybe_char __h_1_mem ;
-} __ciciliS_646;
+} __ciciliS_599;
 int main () {
   fprintf (stdout , "output of lambda calculus: %d & %d\n", (2 +  3 ), (2 +  3 ));
   fprintf (stdout , "output of lambda calculus: %d\n", (2 +  3 +  4 ));
@@ -300,10 +297,10 @@ int main () {
   fprintf (stdout , "output of function application: %d\n", (3 *  (2 +  (2 *  5 ) ) ));
   fprintf (stdout , "output of reducible function: %d\n", power_irreducible_int (2, 16));
   fprintf (stdout , "output of reducible function: %d\n", ((int)pow (((double)2), ((double)16))));
-  fprintf (stdout , "output of reducible function: %d\n", __ciciliL_478 (2, 16));
-  fprintf (stdout , "output of reducible function: %d\n", __ciciliL_486 (2, 16));
+  fprintf (stdout , "output of reducible function: %d\n", __ciciliL_431 (2, 16));
+  fprintf (stdout , "output of reducible function: %d\n", __ciciliL_439 (2, 16));
   fprintf (stdout , "output of function closure with $>: %d\n", (2 +  3 ));
-  { /* cicili#Block500 */
+  { /* cicili#Block453 */
     fprintf (stdout , "output of function composition1: %d\n", (3 *  (2 +  5 ) ));
     fprintf (stdout , "output of function composition2: %d\n", (3 *  (2 +  5 ) ));
     fprintf (stdout , "output of function composition3: %d\n", (3 *  (2 +  5 ) ));
@@ -318,34 +315,34 @@ int main () {
   show_Integer (Int (30));
   show_Integer (Int (2000));
   show_Integer (Int (20000));
-  { /* cicili#Let561 */
+  { /* cicili#Let514 */
     aTuple tup0  = { 4400, 'A', 33};
-    struct __ciciliS_563 tup1  = { 4401, 'B', 34};
-    __auto_type tup2  = ((struct __ciciliS_565 ){ 4402, 'C', 35});
+    struct __ciciliS_516 tup1  = { 4401, 'B', 34};
+    __auto_type tup2  = ((struct __ciciliS_518 ){ 4402, 'C', 35});
     // ----------
     print_tuple (tup0 );
     print_tuple (((aTuple)(*((aTuple *)(&tup1 )))));
-    ({ /* cicili#Let573 */
+    ({ /* cicili#Let526 */
       const __auto_type i  = (tup2 . __h_0_mem );
       const __auto_type c  = (tup2 . __h_1_mem );
       const __auto_type s  = (tup2 . __h_2_mem );
       // ----------
-      /* cicili#Block575 */
-      ({ /* cicili#Let577 */
+      /* cicili#Block528 */
+      ({ /* cicili#Let530 */
         bool __h_case_result  = (s  >  10 );
         // ----------
-        ((__h_case_result ) ? fprintf (stdout , "tuple s > 10: int, char, short = (%d, %c, %d)\n", i , c , s ) : ({ /* cicili#Let582 */
+        ((__h_case_result ) ? fprintf (stdout , "tuple s > 10: int, char, short = (%d, %c, %d)\n", i , c , s ) : ({ /* cicili#Let535 */
           const __auto_type i  = (tup2 . __h_0_mem );
           const __auto_type c  = (tup2 . __h_1_mem );
           const __auto_type s  = (tup2 . __h_2_mem );
           // ----------
-          /* cicili#Block584 */
-          ({ /* cicili#Let586 */
+          /* cicili#Block537 */
+          ({ /* cicili#Let539 */
             bool __h_case_result  = true ;
             // ----------
-            ((__h_case_result ) ? fprintf (stdout , "tuple: int, char, short = (%d, %c, %d)\n", i , c , s ) : ({ /* cicili#Let591 */
+            ((__h_case_result ) ? fprintf (stdout , "tuple: int, char, short = (%d, %c, %d)\n", i , c , s ) : ({ /* cicili#Let544 */
               // ----------
-              /* cicili#Block593 */
+              /* cicili#Block546 */
               fprintf (stdout , "No Tuple?!");
             }));
           });
@@ -353,7 +350,7 @@ int main () {
       });
     });
   }
-  { /* cicili#Let596 */
+  { /* cicili#Let549 */
     __auto_type m1  = Nothing_Maybe_char ();
     __auto_type m2  = Just_Maybe_char (Nothing_char ());
     __auto_type m3  = Just_Maybe_char (Just_char ('G'));
@@ -364,39 +361,39 @@ int main () {
     print_inside_maybe (m3 );
     print_inner_maybe (m4 );
   }
-  { /* cicili#Let608 */
-    __auto_type __h_data607  = Just_aTuple (((aTuple){ 55, 'D', 93}));
+  { /* cicili#Let561 */
+    __auto_type __h_data560  = Just_aTuple (((aTuple){ 55, 'D', 93}));
     // ----------
-    /* cicili#Block611 */
-    ({ /* cicili#Let613 */
-      bool __h_case_result  = ((__h_data607 . __h_ctor ) ==  __h_Nothing_t  );
+    /* cicili#Block564 */
+    ({ /* cicili#Let566 */
+      bool __h_case_result  = ((__h_data560 . __h_ctor ) ==  __h_Nothing_t  );
       // ----------
       if (__h_case_result )
         fprintf (stdout , "tuple inside maybe: Nothing");
       else
-        { /* cicili#Let621 */
-          __auto_type __h_match619_0_arg  = (((__h_data607 . __h_data ). Just ). __h_0_mem );
-          __auto_type t  = __h_match619_0_arg ;
+        { /* cicili#Let574 */
+          __auto_type __h_match572_0_arg  = (((__h_data560 . __h_data ). Just ). __h_0_mem );
+          __auto_type t  = __h_match572_0_arg ;
           const __auto_type i  = (t . __h_0_mem );
           const __auto_type c  = (t . __h_1_mem );
           const __auto_type s  = (t . __h_2_mem );
           // ----------
-          /* cicili#Block623 */
-          ({ /* cicili#Let625 */
-            bool __h_case_result  = ((__h_data607 . __h_ctor ) ==  __h_Just_t  );
+          /* cicili#Block576 */
+          ({ /* cicili#Let578 */
+            bool __h_case_result  = ((__h_data560 . __h_ctor ) ==  __h_Just_t  );
             // ----------
             if (__h_case_result )
-              { /* cicili#Let630 */
+              { /* cicili#Let583 */
                 const __auto_type ii  = (t . __h_0_mem );
                 const __auto_type cc  = (t . __h_1_mem );
                 const __auto_type ss  = (t . __h_2_mem );
                 // ----------
-                /* cicili#Block632 */
-                ({ /* cicili#Let634 */
+                /* cicili#Block585 */
+                ({ /* cicili#Let587 */
                   bool __h_case_result  = true ;
                   // ----------
                   if (__h_case_result )
-                    ({ /* cicili#Progn637 */
+                    ({ /* cicili#Progn590 */
                       fprintf (stdout , "tuple inside maybe: Just tuple: int, char, short = (%d, %c, %d)\n", i , c , s );
                       fprintf (stdout , "tuple inside maybe: Just tuple: int, char, short = (%d, %c, %d)\n", ii , cc , ss );
                     });
@@ -406,46 +403,46 @@ int main () {
         }
     });
   }
-  { /* cicili#Let644 */
-    __auto_type __h_data643  = ((struct __ciciliS_646 ){ 5060, Just_char ('M')});
-    const __auto_type Nothing  = (__h_data643 . __h_1_mem );
+  { /* cicili#Let597 */
+    __auto_type __h_data596  = ((struct __ciciliS_599 ){ 5060, Just_char ('M')});
+    const __auto_type Nothing  = (__h_data596 . __h_1_mem );
     // ----------
-    /* cicili#Block648 */
-    ({ /* cicili#Let650 */
+    /* cicili#Block601 */
+    ({ /* cicili#Let603 */
       bool __h_case_result  = true ;
       // ----------
       if (__h_case_result )
         fprintf (stdout , "maybe inside tuple: Nothing\n");
       else
-        { /* cicili#Let658 */
-          const __auto_type i  = (__h_data643 . __h_0_mem );
-          __auto_type __h_match656_1_arg  = (__h_data643 . __h_1_mem );
-          __auto_type c  = (((__h_match656_1_arg . __h_data ). Just ). __h_0_mem );
+        { /* cicili#Let611 */
+          const __auto_type i  = (__h_data596 . __h_0_mem );
+          __auto_type __h_match609_1_arg  = (__h_data596 . __h_1_mem );
+          __auto_type c  = (((__h_match609_1_arg . __h_data ). Just ). __h_0_mem );
           // ----------
-          /* cicili#Block660 */
-          ({ /* cicili#Let662 */
-            bool __h_case_result  = (((__h_match656_1_arg . __h_ctor ) ==  __h_Just_t  ) &&  (c  >  'L' ) );
+          /* cicili#Block613 */
+          ({ /* cicili#Let615 */
+            bool __h_case_result  = (((__h_match609_1_arg . __h_ctor ) ==  __h_Just_t  ) &&  (c  >  'L' ) );
             // ----------
             if (__h_case_result )
               fprintf (stdout , "maybe inside tuple: (c > L) int, Just char: = (%d, %c)\n", i , c );
             else
-              { /* cicili#Let670 */
-                __auto_type t  = __h_data643 ;
-                __auto_type __h_match668_1_arg  = (t . __h_1_mem );
-                __auto_type c  = (((__h_match668_1_arg . __h_data ). Just ). __h_0_mem );
+              { /* cicili#Let623 */
+                __auto_type t  = __h_data596 ;
+                __auto_type __h_match621_1_arg  = (t . __h_1_mem );
+                __auto_type c  = (((__h_match621_1_arg . __h_data ). Just ). __h_0_mem );
                 // ----------
-                /* cicili#Block672 */
-                ({ /* cicili#Let674 */
-                  bool __h_case_result  = (((__h_match668_1_arg . __h_ctor ) ==  __h_Just_t  ) &&  (c  <  'L' ) );
+                /* cicili#Block625 */
+                ({ /* cicili#Let627 */
+                  bool __h_case_result  = (((__h_match621_1_arg . __h_ctor ) ==  __h_Just_t  ) &&  (c  <  'L' ) );
                   // ----------
                   if (__h_case_result )
-                    { /* cicili#Let680 */
+                    { /* cicili#Let633 */
                       const __auto_type i  = (t . __h_0_mem );
-                      __auto_type __h_match678_1_arg  = (t . __h_1_mem );
+                      __auto_type __h_match631_1_arg  = (t . __h_1_mem );
                       // ----------
-                      /* cicili#Block682 */
-                      ({ /* cicili#Let684 */
-                        bool __h_case_result  = ((__h_match678_1_arg . __h_ctor ) ==  __h_Just_t  );
+                      /* cicili#Block635 */
+                      ({ /* cicili#Let637 */
+                        bool __h_case_result  = ((__h_match631_1_arg . __h_ctor ) ==  __h_Just_t  );
                         // ----------
                         if (__h_case_result )
                           fprintf (stdout , "maybe inside tuple: (c < L) int, Just char: = (%d, %c)\n", i , c );
@@ -457,231 +454,231 @@ int main () {
         }
     });
   }
-  ({ /* cicili#Let689 */
+  ({ /* cicili#Let642 */
     __auto_type hello  __attribute__((__cleanup__(free_String ))) = new_String_Const ("Hello Haskell\n");
     __auto_type txt  __attribute__((__cleanup__(free_String ))) = new_String_Const ("Haskell List");
     // ----------
     show_String (hello );
-    fprintf (stdout , "output of printf match: %d\n", ({ /* cicili#Let699 */
-      __auto_type __h_data698  = nth_List_char (3, txt );
-      __auto_type c  = (((__h_data698 . __h_data ). Just ). __h_0_mem );
+    fprintf (stdout , "output of printf match: %d\n", ({ /* cicili#Let652 */
+      __auto_type __h_data651  = nth_String (3, txt );
+      __auto_type c  = (((__h_data651 . __h_data ). Just ). __h_0_mem );
       // ----------
-      /* cicili#Block701 */
-      ({ /* cicili#Let703 */
-        bool __h_case_result  = ((__h_data698 . __h_ctor ) ==  __h_Just_t  );
+      /* cicili#Block654 */
+      ({ /* cicili#Let656 */
+        bool __h_case_result  = ((__h_data651 . __h_ctor ) ==  __h_Just_t  );
         // ----------
-        ((__h_case_result ) ? fprintf (stdout , "the 4th element is: %c\n", c ) : ({ /* cicili#Let708 */
+        ((__h_case_result ) ? fprintf (stdout , "the 4th element is: %c\n", c ) : ({ /* cicili#Let661 */
           // ----------
-          /* cicili#Block710 */
+          /* cicili#Block663 */
           fprintf (stdout , "4th element not found\n");
         }));
       });
     }));
-    ({ /* cicili#Progn719 */
-      ({ /* cicili#Let728 */
-        __auto_type __h_data727  = nth_List_char (4, txt );
-        __auto_type c  = (((__h_data727 . __h_data ). Just ). __h_0_mem );
+    ({ /* cicili#Progn672 */
+      ({ /* cicili#Let681 */
+        __auto_type __h_data680  = nth_String (4, txt );
+        __auto_type c  = (((__h_data680 . __h_data ). Just ). __h_0_mem );
         // ----------
-        /* cicili#Block733 */
-        ({ /* cicili#Let735 */
-          bool __h_case_result  = ((__h_data727 . __h_ctor ) ==  __h_Just_t  );
+        /* cicili#Block686 */
+        ({ /* cicili#Let688 */
+          bool __h_case_result  = ((__h_data680 . __h_ctor ) ==  __h_Just_t  );
           // ----------
-          ((__h_case_result ) ? fprintf (stdout , "the %dth element is: %c\n", 4, c ) : ({ /* cicili#Let740 */
+          ((__h_case_result ) ? fprintf (stdout , "the %dth element is: %c\n", 4, c ) : ({ /* cicili#Let693 */
             // ----------
-            /* cicili#Block742 */
+            /* cicili#Block695 */
             fprintf (stdout , "%dth element not found\n", 4);
           }));
         });
       });
-      ({ /* cicili#Let752 */
-        __auto_type __h_data751  = nth_List_char (5, txt );
-        __auto_type c  = (((__h_data751 . __h_data ). Just ). __h_0_mem );
+      ({ /* cicili#Let705 */
+        __auto_type __h_data704  = nth_String (5, txt );
+        __auto_type c  = (((__h_data704 . __h_data ). Just ). __h_0_mem );
         // ----------
-        /* cicili#Block757 */
-        ({ /* cicili#Let759 */
-          bool __h_case_result  = ((__h_data751 . __h_ctor ) ==  __h_Just_t  );
+        /* cicili#Block710 */
+        ({ /* cicili#Let712 */
+          bool __h_case_result  = ((__h_data704 . __h_ctor ) ==  __h_Just_t  );
           // ----------
-          ((__h_case_result ) ? fprintf (stdout , "the %dth element is: %c\n", 5, c ) : ({ /* cicili#Let764 */
+          ((__h_case_result ) ? fprintf (stdout , "the %dth element is: %c\n", 5, c ) : ({ /* cicili#Let717 */
             // ----------
-            /* cicili#Block766 */
+            /* cicili#Block719 */
             fprintf (stdout , "%dth element not found\n", 5);
           }));
         });
       });
-      ({ /* cicili#Let776 */
-        __auto_type __h_data775  = nth_List_char (6, txt );
-        __auto_type c  = (((__h_data775 . __h_data ). Just ). __h_0_mem );
+      ({ /* cicili#Let729 */
+        __auto_type __h_data728  = nth_String (6, txt );
+        __auto_type c  = (((__h_data728 . __h_data ). Just ). __h_0_mem );
         // ----------
-        /* cicili#Block781 */
-        ({ /* cicili#Let783 */
-          bool __h_case_result  = ((__h_data775 . __h_ctor ) ==  __h_Just_t  );
+        /* cicili#Block734 */
+        ({ /* cicili#Let736 */
+          bool __h_case_result  = ((__h_data728 . __h_ctor ) ==  __h_Just_t  );
           // ----------
-          ((__h_case_result ) ? fprintf (stdout , "the %dth element is: %c\n", 6, c ) : ({ /* cicili#Let788 */
+          ((__h_case_result ) ? fprintf (stdout , "the %dth element is: %c\n", 6, c ) : ({ /* cicili#Let741 */
             // ----------
-            /* cicili#Block790 */
+            /* cicili#Block743 */
             fprintf (stdout , "%dth element not found\n", 6);
           }));
         });
       });
-      ({ /* cicili#Let800 */
-        __auto_type __h_data799  = nth_List_char (len_List_char (txt ), txt );
-        __auto_type c  = (((__h_data799 . __h_data ). Just ). __h_0_mem );
+      ({ /* cicili#Let753 */
+        __auto_type __h_data752  = nth_String (len_String (txt ), txt );
+        __auto_type c  = (((__h_data752 . __h_data ). Just ). __h_0_mem );
         // ----------
-        /* cicili#Block805 */
-        ({ /* cicili#Let807 */
-          bool __h_case_result  = ((__h_data799 . __h_ctor ) ==  __h_Just_t  );
+        /* cicili#Block758 */
+        ({ /* cicili#Let760 */
+          bool __h_case_result  = ((__h_data752 . __h_ctor ) ==  __h_Just_t  );
           // ----------
-          ((__h_case_result ) ? fprintf (stdout , "the %dth element is: %c\n", len_List_char (txt ), c ) : ({ /* cicili#Let812 */
+          ((__h_case_result ) ? fprintf (stdout , "the %dth element is: %c\n", len_String (txt ), c ) : ({ /* cicili#Let765 */
             // ----------
-            /* cicili#Block814 */
-            fprintf (stdout , "%dth element not found\n", len_List_char (txt ));
+            /* cicili#Block767 */
+            fprintf (stdout , "%dth element not found\n", len_String (txt ));
           }));
         });
       });
     });
-    fprintf (stdout , "output of letin: %d\n", ({ /* cicili#Let819 */
-      __auto_type llen  = len_List_char (txt );
+    fprintf (stdout , "output of letin: %d\n", ({ /* cicili#Let772 */
+      __auto_type llen  = len_String (txt );
       // ----------
-      ({ /* cicili#Progn826 */
-        ({ /* cicili#Let835 */
-          __auto_type __h_data834  = nth_List_char (4, txt );
-          __auto_type c  = (((__h_data834 . __h_data ). Just ). __h_0_mem );
+      ({ /* cicili#Progn779 */
+        ({ /* cicili#Let788 */
+          __auto_type __h_data787  = nth_List_char (4, txt );
+          __auto_type c  = (((__h_data787 . __h_data ). Just ). __h_0_mem );
           // ----------
-          /* cicili#Block843 */
-          ({ /* cicili#Let845 */
-            bool __h_case_result  = ((__h_data834 . __h_ctor ) ==  __h_Just_t  );
+          /* cicili#Block796 */
+          ({ /* cicili#Let798 */
+            bool __h_case_result  = ((__h_data787 . __h_ctor ) ==  __h_Just_t  );
             // ----------
-            ((__h_case_result ) ? fprintf (stdout , "the %dth element is: %c\n", 4, c ) : ({ /* cicili#Let850 */
+            ((__h_case_result ) ? fprintf (stdout , "the %dth element is: %c\n", 4, c ) : ({ /* cicili#Let803 */
               // ----------
-              /* cicili#Block852 */
+              /* cicili#Block805 */
               fprintf (stdout , "%dth element not found\n", 4);
             }));
           });
         });
-        ({ /* cicili#Let862 */
-          __auto_type __h_data861  = nth_List_char (5, txt );
-          __auto_type c  = (((__h_data861 . __h_data ). Just ). __h_0_mem );
+        ({ /* cicili#Let815 */
+          __auto_type __h_data814  = nth_List_char (5, txt );
+          __auto_type c  = (((__h_data814 . __h_data ). Just ). __h_0_mem );
           // ----------
-          /* cicili#Block870 */
-          ({ /* cicili#Let872 */
-            bool __h_case_result  = ((__h_data861 . __h_ctor ) ==  __h_Just_t  );
+          /* cicili#Block823 */
+          ({ /* cicili#Let825 */
+            bool __h_case_result  = ((__h_data814 . __h_ctor ) ==  __h_Just_t  );
             // ----------
-            ((__h_case_result ) ? fprintf (stdout , "the %dth element is: %c\n", 5, c ) : ({ /* cicili#Let877 */
+            ((__h_case_result ) ? fprintf (stdout , "the %dth element is: %c\n", 5, c ) : ({ /* cicili#Let830 */
               // ----------
-              /* cicili#Block879 */
+              /* cicili#Block832 */
               fprintf (stdout , "%dth element not found\n", 5);
             }));
           });
         });
-        ({ /* cicili#Let889 */
-          __auto_type __h_data888  = nth_List_char (6, txt );
-          __auto_type c  = (((__h_data888 . __h_data ). Just ). __h_0_mem );
+        ({ /* cicili#Let842 */
+          __auto_type __h_data841  = nth_List_char (6, txt );
+          __auto_type c  = (((__h_data841 . __h_data ). Just ). __h_0_mem );
           // ----------
-          /* cicili#Block897 */
-          ({ /* cicili#Let899 */
-            bool __h_case_result  = ((__h_data888 . __h_ctor ) ==  __h_Just_t  );
+          /* cicili#Block850 */
+          ({ /* cicili#Let852 */
+            bool __h_case_result  = ((__h_data841 . __h_ctor ) ==  __h_Just_t  );
             // ----------
-            ((__h_case_result ) ? fprintf (stdout , "the %dth element is: %c\n", 6, c ) : ({ /* cicili#Let904 */
+            ((__h_case_result ) ? fprintf (stdout , "the %dth element is: %c\n", 6, c ) : ({ /* cicili#Let857 */
               // ----------
-              /* cicili#Block906 */
+              /* cicili#Block859 */
               fprintf (stdout , "%dth element not found\n", 6);
             }));
           });
         });
-        ({ /* cicili#Let916 */
-          __auto_type __h_data915  = nth_List_char (llen , txt );
-          __auto_type c  = (((__h_data915 . __h_data ). Just ). __h_0_mem );
+        ({ /* cicili#Let869 */
+          __auto_type __h_data868  = nth_List_char (llen , txt );
+          __auto_type c  = (((__h_data868 . __h_data ). Just ). __h_0_mem );
           // ----------
-          /* cicili#Block924 */
-          ({ /* cicili#Let926 */
-            bool __h_case_result  = ((__h_data915 . __h_ctor ) ==  __h_Just_t  );
+          /* cicili#Block877 */
+          ({ /* cicili#Let879 */
+            bool __h_case_result  = ((__h_data868 . __h_ctor ) ==  __h_Just_t  );
             // ----------
-            ((__h_case_result ) ? fprintf (stdout , "the %dth element is: %c\n", llen , c ) : ({ /* cicili#Let931 */
+            ((__h_case_result ) ? fprintf (stdout , "the %dth element is: %c\n", llen , c ) : ({ /* cicili#Let884 */
               // ----------
-              /* cicili#Block933 */
+              /* cicili#Block886 */
               fprintf (stdout , "%dth element not found\n", llen );
             }));
           });
         });
       });
     }));
-    { /* cicili#Let938 */
+    { /* cicili#Let891 */
       __auto_type head  = (((txt -> __h_data ). Cons ). __h_0_mem );
       __auto_type tail  = (((txt -> __h_data ). Cons ). __h_1_mem );
       // ----------
-      /* cicili#Block940 */
-      ({ /* cicili#Let942 */
+      /* cicili#Block893 */
+      ({ /* cicili#Let895 */
         bool __h_case_result  = ((txt -> __h_ctor ) ==  __h_Cons_t  );
         // ----------
         if (__h_case_result )
-          fprintf (stdout , "first char is: %c, and length of tail is: %d\n", head , len_List_char (tail ));
+          fprintf (stdout , "first char is: %c, and length of tail is: %d\n", head , len_String (tail ));
       });
     }
-    ({ /* cicili#Let947 */
+    ({ /* cicili#Let900 */
       __auto_type str5  __attribute__((__cleanup__(free_String ))) = new_List_char_Pure (((const char[]){ 'C', 'i', 'c', 'i', 'l', 'i', '\0'}), 7);
       // ----------
-      fprintf (stdout , "has 'Cicili' desired length 5: %d\n", has_len_List_char (str5 , 5));
-      fprintf (stdout , "has 'Cicili' desired length 6: %d\n", has_len_List_char (str5 , 6));
-      fprintf (stdout , "has 'Cicili' desired length 7: %d\n", has_len_List_char (str5 , 7));
+      fprintf (stdout , "has 'Cicili' desired length 5: %d\n", has_len_String (str5 , 5));
+      fprintf (stdout , "has 'Cicili' desired length 6: %d\n", has_len_String (str5 , 6));
+      fprintf (stdout , "has 'Cicili' desired length 7: %d\n", has_len_String (str5 , 7));
     });
-    { /* cicili#Let957 */
-      __auto_type __h_data956  = drop_List_char (12, txt );
-      __auto_type __h_has_len  = has_len_List_char (__h_data956 , 3);
-      typeof((((nth_List_char (0, __h_data956 ). __h_data ). Just ). __h_0_mem )) fst ;
-      typeof((((nth_List_char (1, __h_data956 ). __h_data ). Just ). __h_0_mem )) snd ;
-      typeof((((nth_List_char (2, __h_data956 ). __h_data ). Just ). __h_0_mem )) trd ;
-      typeof(drop_List_char (3, __h_data956 )) tail ;
+    { /* cicili#Let910 */
+      __auto_type __h_data909  = drop_String (12, txt );
+      __auto_type __h_has_len  = has_len_List_char (__h_data909 , 3);
+      typeof((((nth_List_char (0, __h_data909 ). __h_data ). Just ). __h_0_mem )) fst ;
+      typeof((((nth_List_char (1, __h_data909 ). __h_data ). Just ). __h_0_mem )) snd ;
+      typeof((((nth_List_char (2, __h_data909 ). __h_data ). Just ). __h_0_mem )) trd ;
+      typeof(drop_List_char (3, __h_data909 )) tail ;
       // ----------
       if (__h_has_len  ==  3 )
-        { /* cicili#Block965 */
-          fst  = (((nth_List_char (0, __h_data956 ). __h_data ). Just ). __h_0_mem );
-          snd  = (((nth_List_char (1, __h_data956 ). __h_data ). Just ). __h_0_mem );
-          trd  = (((nth_List_char (2, __h_data956 ). __h_data ). Just ). __h_0_mem );
-          tail  = drop_List_char (3, __h_data956 );
+        { /* cicili#Block918 */
+          fst  = (((nth_List_char (0, __h_data909 ). __h_data ). Just ). __h_0_mem );
+          snd  = (((nth_List_char (1, __h_data909 ). __h_data ). Just ). __h_0_mem );
+          trd  = (((nth_List_char (2, __h_data909 ). __h_data ). Just ). __h_0_mem );
+          tail  = drop_List_char (3, __h_data909 );
         }
-      ({ /* cicili#Let971 */
+      ({ /* cicili#Let924 */
         bool __h_case_result  = (__h_has_len  ==  3 );
         // ----------
         if (__h_case_result )
           fprintf (stdout , "first, second and third char from String: %c %c %c\n", fst , snd , trd );
         else
-          { /* cicili#Let978 */
-            __auto_type __h_has_len  = has_len_List_char (__h_data956 , 2);
-            typeof((((nth_List_char (0, __h_data956 ). __h_data ). Just ). __h_0_mem )) fst ;
-            typeof((((nth_List_char (1, __h_data956 ). __h_data ). Just ). __h_0_mem )) snd ;
-            typeof(drop_List_char (2, __h_data956 )) tail ;
+          { /* cicili#Let931 */
+            __auto_type __h_has_len  = has_len_List_char (__h_data909 , 2);
+            typeof((((nth_List_char (0, __h_data909 ). __h_data ). Just ). __h_0_mem )) fst ;
+            typeof((((nth_List_char (1, __h_data909 ). __h_data ). Just ). __h_0_mem )) snd ;
+            typeof(drop_List_char (2, __h_data909 )) tail ;
             // ----------
             if (__h_has_len  ==  2 )
-              { /* cicili#Block985 */
-                fst  = (((nth_List_char (0, __h_data956 ). __h_data ). Just ). __h_0_mem );
-                snd  = (((nth_List_char (1, __h_data956 ). __h_data ). Just ). __h_0_mem );
-                tail  = drop_List_char (2, __h_data956 );
+              { /* cicili#Block938 */
+                fst  = (((nth_List_char (0, __h_data909 ). __h_data ). Just ). __h_0_mem );
+                snd  = (((nth_List_char (1, __h_data909 ). __h_data ). Just ). __h_0_mem );
+                tail  = drop_List_char (2, __h_data909 );
               }
-            ({ /* cicili#Let990 */
+            ({ /* cicili#Let943 */
               bool __h_case_result  = (__h_has_len  ==  2 );
               // ----------
               if (__h_case_result )
                 fprintf (stdout , "first and second char from String: %c %c\n", fst , snd );
               else
-                { /* cicili#Let997 */
-                  __auto_type __h_has_len  = has_len_List_char (__h_data956 , 1);
-                  typeof((((nth_List_char (0, __h_data956 ). __h_data ). Just ). __h_0_mem )) fst ;
-                  typeof(drop_List_char (1, __h_data956 )) tail ;
+                { /* cicili#Let950 */
+                  __auto_type __h_has_len  = has_len_List_char (__h_data909 , 1);
+                  typeof((((nth_List_char (0, __h_data909 ). __h_data ). Just ). __h_0_mem )) fst ;
+                  typeof(drop_List_char (1, __h_data909 )) tail ;
                   // ----------
                   if (__h_has_len  ==  1 )
-                    { /* cicili#Block1003 */
-                      fst  = (((nth_List_char (0, __h_data956 ). __h_data ). Just ). __h_0_mem );
-                      tail  = drop_List_char (1, __h_data956 );
+                    { /* cicili#Block956 */
+                      fst  = (((nth_List_char (0, __h_data909 ). __h_data ). Just ). __h_0_mem );
+                      tail  = drop_List_char (1, __h_data909 );
                     }
-                  ({ /* cicili#Let1007 */
+                  ({ /* cicili#Let960 */
                     bool __h_case_result  = (__h_has_len  ==  1 );
                     // ----------
                     if (__h_case_result )
                       fprintf (stdout , "first char from String: %c\n", fst );
                     else
-                      { /* cicili#Let1014 */
+                      { /* cicili#Let967 */
                         // ----------
-                        /* cicili#Block1016 */
+                        /* cicili#Block969 */
                         fprintf (stdout , "default case String\n");
                       }
                   });
@@ -691,7 +688,7 @@ int main () {
       });
     }
   });
-  ({ /* cicili#Let1020 */
+  ({ /* cicili#Let973 */
     __auto_type ilist0  __attribute__((__cleanup__(free_List_int ))) = new_List_int_Pure (((const int[]){ 1, 2, 3, 4}), 4);
     __auto_type ilist1  __attribute__((__cleanup__(free_List_int ))) = __h_Cons_int_ctor (5, ilist0 );
     __auto_type ilist2  __attribute__((__cleanup__(free_List_int ))) = append_List_int (ilist1 , ilist0 );
@@ -699,32 +696,32 @@ int main () {
     __auto_type ilist3  __attribute__((__cleanup__(free_List_int ))) = new_List_int_Pure (intarr , 3);
     __auto_type ilist4  __attribute__((__cleanup__(free_List_int ))) = take_List_int (2, ilist2 );
     // ----------
-    fprintf (stdout , "first elem of int list0: %d\n", ({ /* cicili#Let1040 */
-      __auto_type __h_data1039  = nth_List_int (0, ilist0 );
-      __auto_type i  = (((__h_data1039 . __h_data ). Just ). __h_0_mem );
+    fprintf (stdout , "first elem of int list0: %d\n", ({ /* cicili#Let993 */
+      __auto_type __h_data992  = nth_List_int (0, ilist0 );
+      __auto_type i  = (((__h_data992 . __h_data ). Just ). __h_0_mem );
       // ----------
-      /* cicili#Block1044 */
-      ({ /* cicili#Let1046 */
-        bool __h_case_result  = ((__h_data1039 . __h_ctor ) ==  __h_Just_t  );
+      /* cicili#Block997 */
+      ({ /* cicili#Let999 */
+        bool __h_case_result  = ((__h_data992 . __h_ctor ) ==  __h_Just_t  );
         // ----------
-        ((__h_case_result ) ? i  : ({ /* cicili#Let1050 */
+        ((__h_case_result ) ? i  : ({ /* cicili#Let1003 */
           // ----------
-          /* cicili#Block1052 */
+          /* cicili#Block1005 */
           -1;
         }));
       });
     }));
-    fprintf (stdout , "first elem of int list1: %d\n", ({ /* cicili#Let1058 */
-      __auto_type __h_data1057  = nth_List_int (0, ilist1 );
-      __auto_type i  = (((__h_data1057 . __h_data ). Just ). __h_0_mem );
+    fprintf (stdout , "first elem of int list1: %d\n", ({ /* cicili#Let1011 */
+      __auto_type __h_data1010  = nth_List_int (0, ilist1 );
+      __auto_type i  = (((__h_data1010 . __h_data ). Just ). __h_0_mem );
       // ----------
-      /* cicili#Block1062 */
-      ({ /* cicili#Let1064 */
-        bool __h_case_result  = ((__h_data1057 . __h_ctor ) ==  __h_Just_t  );
+      /* cicili#Block1015 */
+      ({ /* cicili#Let1017 */
+        bool __h_case_result  = ((__h_data1010 . __h_ctor ) ==  __h_Just_t  );
         // ----------
-        ((__h_case_result ) ? i  : ({ /* cicili#Let1068 */
+        ((__h_case_result ) ? i  : ({ /* cicili#Let1021 */
           // ----------
-          /* cicili#Block1070 */
+          /* cicili#Block1023 */
           -1;
         }));
       });
@@ -741,7 +738,7 @@ int main () {
     show_List_int (ilist4 );
     putchar ('\n');
   });
-  ({ /* cicili#Let1078 */
+  ({ /* cicili#Let1031 */
     __auto_type ra0  __attribute__((__cleanup__(free_Range_int ))) = new_Range_int (1, 20, 3);
     __auto_type ra1  __attribute__((__cleanup__(free_Range_int ))) = take_Range_int (3, ra0 );
     __auto_type ra2  __attribute__((__cleanup__(free_Range_int ))) = take_Range_int (4, ra0 );
@@ -760,7 +757,7 @@ int main () {
     fprintf (stdout , "\nString to List^int:\n");
     show_List_int (((List_int *)str0 ));
     fprintf (stdout , "\nList^int to String:\n");
-    show_String (((List_char *)str1 ));
+    show_String (((String *)str1 ));
     putchar ('\n');
   });
 }

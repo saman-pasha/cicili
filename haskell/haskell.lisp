@@ -10,4 +10,3 @@
                                     `((defer () ,(CADDR var)) (auto ,(CAR var) . (FUNCTION ,(CADR var))))))
                       var-list))
      ,@body))
-

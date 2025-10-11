@@ -7,10 +7,12 @@
 (import "./list.lisp")
 (import "./string.lisp")
 (import "./range.lisp")
+(import "./monoid.lisp")
+
 (import "./haskell.lisp")
 
 (DEFMACRO init-macro ()
   `($$$
-     (import-List   new^List^int int)
-     (import-String new^String char)
-     (import-Range  int)))
+     (import-List   new^List^int List^int int)
+     (import-String new^String List^char char)
+     (import-Range  Range^int int)))

@@ -1,67 +1,107 @@
 
-(generic decl-String (a)
+(generic decl-String (type a)
 
-         (decl-List a)
-
-         (generic decl-String-with-type (org-type type)
-                  
-                  (decl) (func (<> new type Const) ((const a * buf)) (out org-type *))
-                  (decl) (func (<> show type) ((org-type * list)))
-
-                  (inline) (func (<> free type) ((org-type ** list))
-                             ((<> free org-type) list))
-                  
-                  ) ; decl-String-with-type
-
-         (decl-String-with-type (<> List a) String)
+         (decl-List type a)
+         (typedef type String)
          
+         (inline) (func (<> next String) ((type * list)) (out type *)
+                        (return ((<> next type) list)))
+         
+         (inline) (func (<> nth String) ((int index) (type * list)) (out (<> Maybe a))
+                        (return ((<> nth type) index list)))
+         
+         (inline) (func (<> drop String) ((int index) (type * list)) (out type *)
+                        (return ((<> drop type) index list)))
+         
+         (inline) (func (<> len String) ((type * list)) (out int)
+                        (return ((<> len type) list)))
+         
+         (inline) (func (<> has len String) ((type * list) (int desired)) (out int)
+                        (return ((<> has len type) list desired)))
+         
+         (inline) (func (<> take String) ((int len) (type * list)) (out type *)
+                        (return ((<> take type) len list)))
+         
+         (inline) (func (<> append String) ((type * llist) (type * rlist)) (out type *)
+                        (return ((<> append type) llist rlist)))
+
+         (fn (<> !! String) index list
+             ((<> nth type) index list))
+
+         (fn (<> push String) head tail
+             ($> (<> Cons a) head tail))
+
+         (fn (<> \: String) head tail
+             ($> (<> Cons a) head tail))
+
+         (fn (<> head String) list
+             ((<> nth type) 0 list))
+
+         (fn (<> tail String) list
+             ((<> drop type) 0 list))
+
+         (fn (<> ++ String) llist rlist
+             ((<> append type) llist rlist))
+
+         (decl) (func (<> new String Const) ((const a * buf)) (out type *))
+         (decl) (func (<> show String) ((type * list)))
+
+         (inline) (func (<> free String) ((type ** list))
+                        ((<> release type) (cof list)))
+
          ) ; decl-String
 
-(generic define-String (a fmt)
+(generic define-String (type a fmt)
 
-         (define-List a fmt)
+         (define-List type a fmt)
 
-         (generic define-String-with-type (org-type type)
-                  
-                  (func (<> new type Const) ((const a * buf))
-                        (out org-type *)
-                        (if (null buf)
-                            (return ((<> Empty a)))
-                            (let ((a item . #'(cof buf)))
-                              (if (== item #\Null)
-                                  (return ((<> Empty a)))
-                                  (return ($> (<> Cons a) item $ ((<> new type Const) (++ buf))))))))
-                  
-                  (func (<> show type) ((org-type * list))
-                        (io list
-                          (* Cons head tail
-                            (progn
-                              (printf fmt head)
-                              ((<> show type) tail)))))
+         (func (<> new String Const) ((const a * buf))
+               (out type *)
+               (if (null buf)
+                   (return ((<> Empty a)))
+                   (let ((a item . #'(cof buf)))
+                     (if (== item #\Null)
+                         (return ((<> Empty a)))
+                         (return ($> (<> Cons a) item $ ((<> new String Const) (++ buf))))))))
 
-                  ) ; define-String-with-type
+         (func (<> show String) ((type * list))
+               (io list
+                 (* Cons head tail
+                    (progn
+                      (printf fmt head)
+                      ((<> show String) tail)))))
 
-         (define-String-with-type (<> List a) String)
-         
          ) ; define-String
 
-(generic import-String (ctor a)
+(generic import-String (ctor type a)
 
-         (import-List ctor a)
+         (import-List ctor type a)
 
-         (generic import-String-with-type (org-type type)
-                  
-                  (DEFMACRO ctor (buf &OPTIONAL len)
-                    (IF len
-                        `((<> new org-type Pure) ,buf ,len)
-                        (IF (AND (LISTP buf) (EQUAL (CAR buf) 'QUOTE))
-                            `((<> new org-type Pure) (cast (const a []) ,buf) ,(LENGTH (CADR buf)))
-                            (IF (STRINGP buf)
-                                `((<> new type Const) ,buf)
-                                (ERROR (FORMAT NIL "new^String len required for dynamic array input: ~A" buf))))))
+         (DEFMACRO ctor (buf &OPTIONAL len)
+           (IF len
+               `((<> new type Pure) ,buf ,len)
+               (IF (AND (LISTP buf) (EQUAL (CAR buf) 'QUOTE))
+                   `((<> new type Pure) (cast (const a []) ,buf) ,(LENGTH (CADR buf)))
+                   (IF (STRINGP buf)
+                       `((<> new String Const) ,buf)
+                       (ERROR (FORMAT NIL "new^String len required for dynamic array input: ~A" buf))))))
 
-                  ) ; import-String-with-type
+         (fn (<> !! String) index list
+             ((<> nth type) index list))
 
-         (import-String-with-type (<> List a) String)
-         
+         (fn (<> push String) head tail
+             ($> (<> Cons a) head tail))
+
+         (fn (<> \: String) head tail
+             ($> (<> Cons a) head tail))
+
+         (fn (<> head String) list
+             ((<> nth type) 0 list))
+
+         (fn (<> tail String) list
+             ((<> drop type) 0 list))
+
+         (fn (<> ++ String) llist rlist
+             ((<> append type) llist rlist))
+
          ) ; import-String

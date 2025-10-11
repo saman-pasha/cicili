@@ -720,7 +720,7 @@
             (make-specifier (specify-expr (nth 0 app)) '|@CALL| nil nil nil nil nil
                             (if (> (length app) 1)
                                 (loop for item in (nthcdr 1 app)
-                                      collect (specify-expr item))
+                                      collect (specify-expr (expand-macros item)))
                                 nil)
                             '()))
         (specify-expr app))))
