@@ -5,7 +5,7 @@
 #include <string.h>
 #include <stdbool.h>
 #include "../../haskell.h"
-void reduce_List_char (List_char * list ) {
+void reduce_List_char (List_char list ) {
   { /* cicili#Let110 */
     __auto_type head1  = (((list -> __h_data ). Cons ). __h_0_mem );
     __auto_type __h_match107_1_arg  = (((list -> __h_data ). Cons ). __h_1_mem );
@@ -62,35 +62,30 @@ void reduce_List_char (List_char * list ) {
     });
   }
 }
-void List_char_m_show (List_char * this ) {
-  show_List_char (this );
-}
 int main () {
-  ({ /* cicili#Let154 */
+  ({ /* cicili#Let151 */
     __auto_type chrlst  __attribute__((__cleanup__(free_List_char ))) = new_List_char_Pure ("Hello List!", 11);
     __auto_type m0  = nth_List_char (3, chrlst );
     __auto_type m1  = nth_List_char (15, chrlst );
     // ----------
     show_String (chrlst );
     putchar ('\n');
-    List_char_m_show(chrlst );
-    putchar ('\n');
     reduce_List_char (chrlst );
     putchar ('\n');
-    { /* cicili#Let160 */
+    { /* cicili#Let157 */
       __auto_type ch  = (((m0 . __h_data ). Just ). __h_0_mem );
       // ----------
-      /* cicili#Block162 */
-      ({ /* cicili#Let164 */
+      /* cicili#Block159 */
+      ({ /* cicili#Let161 */
         bool __h_case_result  = ((m0 . __h_ctor ) ==  __h_Just_t  );
         // ----------
         if (__h_case_result )
           fprintf (stdout , "4th element is: %c\n", ch );
         else
-          { /* cicili#Let171 */
+          { /* cicili#Let168 */
             // ----------
-            /* cicili#Block173 */
-            ({ /* cicili#Let175 */
+            /* cicili#Block170 */
+            ({ /* cicili#Let172 */
               bool __h_case_result  = ((m0 . __h_ctor ) ==  __h_Nothing_t  );
               // ----------
               if (__h_case_result )
@@ -99,20 +94,20 @@ int main () {
           }
       });
     }
-    { /* cicili#Let181 */
+    { /* cicili#Let178 */
       __auto_type ch  = (((m1 . __h_data ). Just ). __h_0_mem );
       // ----------
-      /* cicili#Block183 */
-      ({ /* cicili#Let185 */
+      /* cicili#Block180 */
+      ({ /* cicili#Let182 */
         bool __h_case_result  = ((m1 . __h_ctor ) ==  __h_Just_t  );
         // ----------
         if (__h_case_result )
           fprintf (stdout , "16th element is: %c\n", ch );
         else
-          { /* cicili#Let192 */
+          { /* cicili#Let189 */
             // ----------
-            /* cicili#Block194 */
-            ({ /* cicili#Let196 */
+            /* cicili#Block191 */
+            ({ /* cicili#Let193 */
               bool __h_case_result  = ((m1 . __h_ctor ) ==  __h_Nothing_t  );
               // ----------
               if (__h_case_result )
@@ -122,54 +117,72 @@ int main () {
       });
     }
   });
-  fprintf (stdout , "Sum of List (mconcat) of '{ 1 3 5 7 } is: %d\n", ({ /* cicili#Let204 */
-    __auto_type __h_data203  = get_Monoid_Sum_int ();
-    __auto_type mempty  = (((__h_data203 . __h_data ). _ ). __h_0_mem );
-    __auto_type mappend  = (((__h_data203 . __h_data ). _ ). __h_1_mem );
-    __auto_type mconcat  = (((__h_data203 . __h_data ). _ ). __h_2_mem );
+  fprintf (stdout , "Sum of List (mconcat) of '{ 1 3 5 7 } is: %d\n", ({ /* cicili#Let201 */
+    __auto_type __h_data200  = get_Monoid_Sum_int ();
+    __auto_type mappend  = (((__h_data200 . __h_data ). _ ). __h_0_mem );
+    __auto_type mconcat  = (((__h_data200 . __h_data ). _ ). __h_1_mem );
+    __auto_type mempty  = (((__h_data200 . __h_data ). _ ). __h_2_mem );
     // ----------
-    /* cicili#Block206 */
-    ({ /* cicili#Let208 */
-      bool __h_case_result  = ((__h_data203 . __h_ctor ) ==  __h___t  );
+    /* cicili#Block203 */
+    ({ /* cicili#Let205 */
+      bool __h_case_result  = ((__h_data200 . __h_ctor ) ==  __h___t  );
       // ----------
-      ((__h_case_result ) ? ({ /* cicili#Let211 */
-        __auto_type l  = new_List_int_Pure (((const int[]){ 1, 3, 5, 7}), 4);
+      ((__h_case_result ) ? ({ /* cicili#Let208 */
+        __auto_type l  __attribute__((__cleanup__(free_List_int ))) = new_List_int_Pure (((const int[]){ 1, 3, 5, 7}), 4);
         // ----------
         fprintf (stdout , "mempty is: %d\n", mempty );
         fprintf (stdout , "left identity (%d 12) is: %d\n", mempty , mappend (mempty , 12));
         fprintf (stdout , "right identity (12 %d) is: %d\n", mempty , mappend (12, mempty ));
         fprintf (stdout , "associativity: (5 (7 12)) is: %d and ((5 7) 12)) is: %d\n", mappend (5, mappend (7, 12)), mappend (mappend (5, 7), 12));
         mconcat (l );
-      }) : ({ /* cicili#Let222 */
+      }) : ({ /* cicili#Let219 */
         // ----------
-        /* cicili#Block224 */
+        /* cicili#Block221 */
         -1;
       }));
     });
   }));
-  fprintf (stdout , "Product of List (mconcat) of '{ 1 3 5 7 } is: %d\n", ({ /* cicili#Let230 */
-    __auto_type __h_data229  = get_Monoid_Product_int ();
-    __auto_type mempty  = (((__h_data229 . __h_data ). _ ). __h_0_mem );
-    __auto_type mappend  = (((__h_data229 . __h_data ). _ ). __h_1_mem );
-    __auto_type mconcat  = (((__h_data229 . __h_data ). _ ). __h_2_mem );
+  fprintf (stdout , "Product of List (mconcat) of '{ 1 3 5 7 } is: %d\n", ({ /* cicili#Let227 */
+    __auto_type __h_data226  = get_Monoid_Product_int ();
+    __auto_type mappend  = (((__h_data226 . __h_data ). _ ). __h_0_mem );
+    __auto_type mconcat  = (((__h_data226 . __h_data ). _ ). __h_1_mem );
+    __auto_type mempty  = (((__h_data226 . __h_data ). _ ). __h_2_mem );
     // ----------
-    /* cicili#Block232 */
-    ({ /* cicili#Let234 */
-      bool __h_case_result  = ((__h_data229 . __h_ctor ) ==  __h___t  );
+    /* cicili#Block229 */
+    ({ /* cicili#Let231 */
+      bool __h_case_result  = ((__h_data226 . __h_ctor ) ==  __h___t  );
       // ----------
-      ((__h_case_result ) ? ({ /* cicili#Let237 */
-        __auto_type l  = new_List_int_Pure (((const int[]){ 1, 3, 5, 7}), 4);
+      ((__h_case_result ) ? ({ /* cicili#Let234 */
+        __auto_type l  __attribute__((__cleanup__(free_List_int ))) = new_List_int_Pure (((const int[]){ 1, 3, 5, 7}), 4);
         // ----------
         fprintf (stdout , "mempty is: %d\n", mempty );
         fprintf (stdout , "left identity (%d 12) is: %d\n", mempty , mappend (mempty , 12));
         fprintf (stdout , "right identity (12 %d) is: %d\n", mempty , mappend (12, mempty ));
         fprintf (stdout , "associativity: (5 (7 12)) is: %d and ((5 7) 12)) is: %d\n", mappend (5, mappend (7, 12)), mappend (mappend (5, 7), 12));
         mconcat (l );
-      }) : ({ /* cicili#Let248 */
+      }) : ({ /* cicili#Let245 */
         // ----------
-        /* cicili#Block250 */
+        /* cicili#Block247 */
         -1;
       }));
     });
   }));
+  { /* cicili#Let252 */
+    __auto_type __h_data251  = get_Semigroup_Concat_List_int ();
+    __auto_type mappend  = (((__h_data251 . __h_data ). _ ). __h_0_mem );
+    // ----------
+    /* cicili#Block254 */
+    ({ /* cicili#Let256 */
+      bool __h_case_result  = ((__h_data251 . __h_ctor ) ==  __h___t  );
+      // ----------
+      if (__h_case_result )
+        ({ /* cicili#Let260 */
+          __auto_type l1  __attribute__((__cleanup__(free_List_int ))) = new_List_int_Pure (((const int[]){ 1, 3, 5, 7}), 4);
+          __auto_type l2  __attribute__((__cleanup__(free_List_int ))) = new_List_int_Pure (((const int[]){ 2, 4, 6, 8}), 4);
+          // ----------
+          fprintf (stdout , "Concat of Lists (mappend Semigroup) of '{ 1 3 5 7 } and '{ 2 4 6 8 } is:\n");
+          show_List_int (mappend (l1 , l2 ));
+        });
+    });
+  }
 }

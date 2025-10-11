@@ -38,8 +38,12 @@
            (enum ,enum-name
              ,@(MAPCAR #'(LAMBDA (ct) (LIST (make-data-h-type-name (CAAR ct))))
                        (IF (> (LENGTH ctors) 1) ctors (LIST (LIST (LIST enum-name)))))))
+
+       (decl) (struct ,(make-class-h-base-name name))
+
+       (typedef ,(make-class-h-base-name name) * ,name)
        
-       (struct ,name
+       (struct ,(make-class-h-base-name name)
          (member ,(IF (> (LENGTH ctors) 1) enum-name 'DefaultCtor) __h_ctor)
          (union 
              ,@(MAPCAR #'(LAMBDA (ct)
@@ -62,13 +66,13 @@
                        (WHEN (EQUAL name ct-name) (ERROR (FORMAT NIL "data type and ctor having same name: ~A" name)))
                        
                        (IF (NULL params)
-                           `($$$ (decl) (func ,ct-name () (out ,name *)))
+                           `($$$ (decl) (func ,ct-name () (out ,name)))
                            (IF (> (LENGTH params) 1)
-                               `($$$ (decl) (func ,(make-data-h-ctor-name ct-name) ,params (out ,name *))
+                               `($$$ (decl) (func ,(make-data-h-ctor-name ct-name) ,params (out ,name))
                                      (fn ,ct-name ,@(MAPCAR #'(LAMBDA (param) (NTH 4 param)) params)
                                          (,(make-data-h-ctor-name ct-name)
                                            ,@(MAPCAR #'(LAMBDA (param) (NTH 4 param)) params))))
-                               `($$$ (decl) (func ,ct-name ,params (out ,name *)))))))
+                               `($$$ (decl) (func ,ct-name ,params (out ,name)))))))
                  ctors))))
 
 (DEFMACRO define-class (name ctor &REST ctors)
@@ -106,18 +110,19 @@
                          
                          (IF (NULL params)
                              `(func ,ct-name ()
-                                    (out ,name *)
-                                    (let ((,name * instance . #'(malloc (sizeof ,name))))
+                                    (out ,name)
+                                    (let ((,name instance . #'(malloc (sizeof ,(make-class-h-base-name name)))))
                                       (set (cof instance)
-                                        (cast ,name '{ ,(make-data-h-type-name (IF (= 1 (LENGTH ctors)) '_ (CAAR ct))) }))
+                                        (cast ,(make-class-h-base-name name)
+                                          '{ ,(make-data-h-type-name (IF (= 1 (LENGTH ctors)) '_ (CAAR ct))) }))
                                       (return instance)))
                              (IF (> (LENGTH params) 1)
                                  `(func ,(make-data-h-ctor-name ct-name)
                                     ,(MAPCAR #'(LAMBDA (param) (REMOVE NIL param)) params)
-                                    (out ,name *)
-                                    (let ((,name * instance . #'(malloc (sizeof ,name))))
+                                    (out ,name)
+                                    (let ((,name instance . #'(malloc (sizeof ,(make-class-h-base-name name)))))
                                       (set (cof instance)
-                                        (cast ,name '{
+                                        (cast ,(make-class-h-base-name name) '{
                                               ,(make-data-h-type-name (IF (= 1 (LENGTH ctors)) '_ (CAAR ct)))
                                               ,(INTERN (FORMAT NIL "$__h_data$~A"
                                                                (IF (= 1 (LENGTH ctors)) '_ (CAAR ct))))
@@ -125,10 +130,10 @@
                                               }))
                                       (return instance)))
                                  `(func ,ct-name ,(MAPCAR #'(LAMBDA (param) (REMOVE NIL param)) params)
-                                        (out ,name *)
-                                        (let ((,name * instance . #'(malloc (sizeof ,name))))
+                                        (out ,name)
+                                        (let ((,name instance . #'(malloc (sizeof ,(make-class-h-base-name name)))))
                                           (set (cof instance)
-                                            (cast ,name '{
+                                            (cast ,(make-class-h-base-name name) '{
                                                   ,(make-data-h-type-name (IF (= 1 (LENGTH ctors)) '_ (CAAR ct)))
                                                   ,(INTERN (FORMAT NIL "$__h_data$~A"
                                                                    (IF (= 1 (LENGTH ctors)) '_ (CAAR ct))))

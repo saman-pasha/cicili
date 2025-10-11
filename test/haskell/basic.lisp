@@ -322,11 +322,11 @@
             (show^Range^int ra2)
             (format #t "\ntake 10 of range 1 20 3:\n")
             ;; because List and Range have same two members structure
-            (show^List^int (cast (List^int *) ra3))
+            (show^List^int (cast (List^int) ra3))
             (format #t "\nString to List^int:\n")
-            (show^List^int (cast (List^int *) str0))
+            (show^List^int (cast (List^int) str0))
             (format #t "\nList^int to String:\n")
-            (show^String (cast (String *) str1))
+            (show^String (cast (String) str1))
             (putchar #\Newline)
             )
 

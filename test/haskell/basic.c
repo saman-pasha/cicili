@@ -753,11 +753,11 @@ int main () {
     fprintf (stdout , "\ntake 4  of range 1 20 3:\n");
     show_Range_int (ra2 );
     fprintf (stdout , "\ntake 10 of range 1 20 3:\n");
-    show_List_int (((List_int *)ra3 ));
+    show_List_int (((List_int)ra3 ));
     fprintf (stdout , "\nString to List^int:\n");
-    show_List_int (((List_int *)str0 ));
+    show_List_int (((List_int)str0 ));
     fprintf (stdout , "\nList^int to String:\n");
-    show_String (((String *)str1 ));
+    show_String (((String)str1 ));
     putchar ('\n');
   });
 }

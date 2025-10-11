@@ -122,3 +122,6 @@
 
 (DEFUN make-match-h-arg-name (id number)
   (INTERN (FORMAT NIL "__h_~A_~A_arg" id number)))
+
+(DEFUN make-class-h-base-name (ct)
+  (INTERN (FORMAT NIL "__h_~A_class_t" (MACROEXPAND ct))))

@@ -4,25 +4,25 @@
          (decl-List type a)
          (typedef type String)
          
-         (inline) (func (<> next String) ((type * list)) (out type *)
+         (inline) (func (<> next String) ((type list)) (out type)
                         (return ((<> next type) list)))
          
-         (inline) (func (<> nth String) ((int index) (type * list)) (out (<> Maybe a))
+         (inline) (func (<> nth String) ((int index) (type list)) (out (<> Maybe a))
                         (return ((<> nth type) index list)))
          
-         (inline) (func (<> drop String) ((int index) (type * list)) (out type *)
+         (inline) (func (<> drop String) ((int index) (type list)) (out type)
                         (return ((<> drop type) index list)))
          
-         (inline) (func (<> len String) ((type * list)) (out int)
+         (inline) (func (<> len String) ((type list)) (out int)
                         (return ((<> len type) list)))
          
-         (inline) (func (<> has len String) ((type * list) (int desired)) (out int)
+         (inline) (func (<> has len String) ((type list) (int desired)) (out int)
                         (return ((<> has len type) list desired)))
          
-         (inline) (func (<> take String) ((int len) (type * list)) (out type *)
+         (inline) (func (<> take String) ((int len) (type list)) (out type)
                         (return ((<> take type) len list)))
          
-         (inline) (func (<> append String) ((type * llist) (type * rlist)) (out type *)
+         (inline) (func (<> append String) ((type llist) (type rlist)) (out type)
                         (return ((<> append type) llist rlist)))
 
          (fn (<> !! String) index list
@@ -43,10 +43,10 @@
          (fn (<> ++ String) llist rlist
              ((<> append type) llist rlist))
 
-         (decl) (func (<> new String Const) ((const a * buf)) (out type *))
-         (decl) (func (<> show String) ((type * list)))
+         (decl) (func (<> new String Const) ((const a * buf)) (out type))
+         (decl) (func (<> show String) ((type list)))
 
-         (inline) (func (<> free String) ((type ** list))
+         (inline) (func (<> free String) ((type * list))
                         ((<> release type) (cof list)))
 
          ) ; decl-String
@@ -56,7 +56,7 @@
          (define-List type a fmt)
 
          (func (<> new String Const) ((const a * buf))
-               (out type *)
+               (out type)
                (if (null buf)
                    (return ((<> Empty a)))
                    (let ((a item . #'(cof buf)))
@@ -64,7 +64,7 @@
                          (return ((<> Empty a)))
                          (return ($> (<> Cons a) item $ ((<> new String Const) (++ buf))))))))
 
-         (func (<> show String) ((type * list))
+         (func (<> show String) ((type list))
                (io list
                  (* Cons head tail
                     (progn

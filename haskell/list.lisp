@@ -8,23 +8,23 @@
            (= Empty (<> Empty a))
            (= Cons  (<> Cons a)
               (a head)
-              ((struct type) * tail)))
+              (type tail)))
 
-         (decl) (func (<> new type Pure) ((const a * buf) (int len)) (out type *))
-         (decl) (func (<> release type) ((type * list)))
+         (decl) (func (<> new type Pure) ((const a * buf) (int len)) (out type))
+         (decl) (func (<> release type) ((type list)))
          
-         (inline) (func (<> free type) ((type ** list)) ; specified for letin
+         (inline) (func (<> free type) ((type * list)) ; specified for letin
                         ((<> release type) (cof list)))
          
-         (decl) (func (<> next type) ((type * list)) (out type *))
-         (decl) (func (<> nth type) ((int index) (type * list)) (out (<> Maybe a)))
-         (decl) (func (<> drop type) ((int index) (type * list)) (out type *))
-         (decl) (func (<> len type) ((type * list)) (out int))
-         (decl) (func (<> has len type) ((type * list) (int desired)) (out int))
-         (decl) (func (<> take type) ((int len) (type * list)) (out type *))
-         (decl) (func (<> append type) ((type * llist) (type * rlist)) (out type *))
+         (decl) (func (<> next type) ((type list)) (out type))
+         (decl) (func (<> nth type) ((int index) (type list)) (out (<> Maybe a)))
+         (decl) (func (<> drop type) ((int index) (type list)) (out type))
+         (decl) (func (<> len type) ((type list)) (out int))
+         (decl) (func (<> has len type) ((type list) (int desired)) (out int))
+         (decl) (func (<> take type) ((int len) (type list)) (out type))
+         (decl) (func (<> append type) ((type llist) (type rlist)) (out type))
 
-         (decl) (func (<> show type) ((type * list)))
+         (decl) (func (<> show type) ((type list)))
 
          (fn (<> !! type) index list
              ((<> nth type) index list))
@@ -54,10 +54,10 @@
            (= Empty (<> Empty a))
            (= Cons  (<> Cons a)
               (a head)
-              ((struct type) * tail)))
+              (type tail)))
 
          (func (<> new type Pure) ((const a * buf) (int len))
-               (out type *)
+               (out type)
                (if (null buf)
                    (return ((<> Empty a)))
                    (let ((a item . #'(cof buf)))
@@ -65,21 +65,21 @@
                          (return ((<> Empty a)))
                          (return ($> (<> Cons a) item ((<> new type Pure) (++ buf) (-- len))))))))
 
-         (func (<> release type) ((type * list))
+         (func (<> release type) ((type list))
                (io list
                  (* Cons _ tail
                     (block
                         ((<> release type) tail)
                       (free list)))))
          
-         (func (<> next type) ((type * list))
-               (out type *)
+         (func (<> next type) ((type list))
+               (out type)
                (return
                  (match list
                    (* Cons _ tail tail)
                    (default ((<> Empty a))))))
          
-         (func (<> nth type) ((int index) (type * list))
+         (func (<> nth type) ((int index) (type list))
                (out (<> Maybe a))
                (return
                  (match list
@@ -88,21 +88,21 @@
                             otherwise    ((<> nth type) (-- index) tail)))
                    (default ((<> Nothing a))))))
 
-         (func (<> drop type) ((int index) (type * list))
-               (out type *)
+         (func (<> drop type) ((int index) (type list))
+               (out type)
                (return
                  (case (== index 0) list
                        otherwise    (match list
                                       (* Cons _ tail ((<> drop type) (-- index) tail))
                                       (default ((<> Empty a)))))))
          
-         (func (<> len type) ((type * list))
+         (func (<> len type) ((type list))
                (out int)
                (return (match list
                          (* Cons _ tail (+ 1 ((<> len type) tail)))
                          (default 0))))
 
-         (func (<> has len type) ((type * list) (int desired))
+         (func (<> has len type) ((type list) (int desired))
                (out int)
                (return (match list
                          (* Cons _ tail
@@ -110,21 +110,21 @@
                                   otherwise      (+ 1 ((<> has len type) tail (-- desired)))))
                          (default 0))))
 
-         (func (<> take type) ((int len) (type * list))
-               (out type *)
+         (func (<> take type) ((int len) (type list))
+               (out type)
                (return (match list
                          (* Cons head tail => (> len 0)
                             ($> (<> push type) head $ ((<> take type) (-- len) tail)))
                          (default ((<> Empty a))))))
 
-         (func (<> append type) ((type * llist) (type * rlist))
-               (out type *)
+         (func (<> append type) ((type llist) (type rlist))
+               (out type)
                (return (match llist
                          (* Cons head tail
                             ($> (<> push type) head $ ((<> append type) tail rlist)))
                          (default rlist))))
 
-         (func (<> show type) ((type * list))
+         (func (<> show type) ((type list))
                (io list
                  (* Cons head tail
                     (block
@@ -144,7 +144,7 @@
            (= Empty (<> Empty a))
            (= Cons  (<> Cons a)
               (a head)
-              ((struct type) * tail)))
+              (type tail)))
          
          (DEFMACRO ctor (buf &OPTIONAL len)
            (IF len
