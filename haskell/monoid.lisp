@@ -31,7 +31,7 @@
 ;;   mempty  :: m
 ;;   mappend :: m -> m -> m
 ;;   mconcat :: [m] -> m
-(generic decl-Monoid (type a neutral op)
+(generic decl-Monoid (type a)
 
          (typedef func (<> Monoid type mappend) ((a lhs) (a rhs)) (out a))
          (typedef func (<> Monoid type mconcat) (((<> List a) l)) (out a))
@@ -39,8 +39,8 @@
          (decl-data (<> Monoid type)
            ((<> m type)
             ((<> Monoid type mappend) mappend)
-            ((<> Monoid type mconcat) mconcat)
-            (a mempty)))
+            (a mempty)
+            ((<> Monoid type mconcat) mconcat)))
 
          (decl-data (<> Semigroup type)
            ((<> sg type)
@@ -59,8 +59,8 @@
          (define-data (<> Monoid type)
            ((<> m type)
             ((<> Monoid type mappend) mappend)
-            ((<> Monoid type mconcat) mconcat)
-            (a mempty)))
+            (a mempty)
+            ((<> Monoid type mconcat) mconcat)))
 
          (define-data (<> Semigroup type)
            ((<> sg type)
@@ -78,8 +78,8 @@
                (out (<> Monoid type))
                (return ($> (<> m type)
                          (<> Monoid type mappend a s)
-                         (<> Monoid type mconcat a s)
-                         neutral)))
+                         neutral
+                         (<> Monoid type mconcat a s))))
          
          (func (<> get Semigroup type) ()
                (out (<> Semigroup type))
@@ -92,8 +92,8 @@
          (import-data (<> Monoid type)
            ((<> m type)
             ((<> Monoid type mappend) mappend)
-            ((<> Monoid type mconcat) mconcat)
-            (a mempty)))
+            (a mempty)
+            ((<> Monoid type mconcat) mconcat)))
 
          (import-data (<> Semigroup type)
            ((<> sg type)
@@ -108,7 +108,7 @@
 ;; binary associative operation
 ;; class Semigroup m where
 ;;   mappend :: m -> m -> m
-(generic decl-Semigroup (type a op)
+(generic decl-Semigroup (type a)
 
          (typedef func (<> Semigroup type mappend) ((a lhs) (a rhs)) (out a))
 
@@ -138,7 +138,7 @@
 
 ) ; define-String
 
-(generic import-Semigroup (type a)
+(generic import-Semigroup (type)
 
          (import-data (<> Semigroup type)
            ((<> sg type)

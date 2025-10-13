@@ -131,9 +131,9 @@
                         (io tail
                           (* Cons
                              (block
-                                 (printf fmt head)
+                                 (fmt head)
                                (putchar #\Space)))
-                          (default (printf fmt head)))
+                          (default (fmt head)))
                       ((<> show type) tail)))))
 
          ) ; define-List

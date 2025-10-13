@@ -67,10 +67,10 @@
                     (io tail
                       (* Cons
                          (block
-                             (printf fmt head)
+                             (fmt head)
                            (putchar #\Space)
                            ((<> show type) tail)))
-                      (default (printf fmt head))))))
+                      (default (fmt head))))))
 
          ) ; define-Range
 

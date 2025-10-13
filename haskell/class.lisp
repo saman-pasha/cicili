@@ -36,17 +36,18 @@
     `($$$
          (guard (<> __H ,enum-name _)
            (enum ,enum-name
-             ,@(MAPCAR #'(LAMBDA (ct) (LIST (make-data-h-type-name (CAAR ct))))
-                       (IF (> (LENGTH ctors) 1) ctors (LIST (LIST (LIST enum-name)))))))
+             (,(make-data-h-type-name (CAAR (CAR (REVERSE ctors)))) . 0)
+             ,@(MAPCAR #'(LAMBDA (i ct) (CONS (make-data-h-type-name (CAAR ct)) (+ i 1)))
+                       (range-h (LENGTH ctors)) (CDR (REVERSE ctors)))))
 
        (decl) (struct ,(make-class-h-base-name name))
 
        (typedef ,(make-class-h-base-name name) * ,name)
        
        (struct ,(make-class-h-base-name name)
-         (member ,(IF (> (LENGTH ctors) 1) enum-name 'DefaultCtor) __h_ctor)
+         (member char __h_ctor)
          (union 
-             ,@(MAPCAR #'(LAMBDA (ct)
+             ,@(MAPCAR #'(LAMBDA (i ct)
                            (LET ((ct-name (CAAR ct))
                                  (params (CADR ct))
                                  (mem-counter -1))
@@ -54,9 +55,13 @@
                                   ,@(MAPCAR #'(LAMBDA (param)
                                                 (SETQ mem-counter (1+ mem-counter))
                                                 (SETF (NTH 4 param) (make-data-h-member-name mem-counter))
-                                                `(member ,@(REMOVE NIL param))) params)
-                                (declare ,(IF (= 1 (LENGTH ctors)) '_ ct-name)))))
-                       ctors)
+                                                `(member ,@(REMOVE NIL param)))
+                                            params)
+                                (declare ,ct-name)
+                                ,(LIST 'declare (IF (= i (1- (LENGTH ctors)))
+                                                    '_
+                                                    (INTERN (FORMAT NIL "_~A" i)))))))
+                       (range-h (LENGTH ctors)) ctors)
            (declare __h_data)))
        
        ,@(MAPCAR #'(LAMBDA (ct)
@@ -102,7 +107,7 @@
                        (PUSH ctor ctors))))
     
     `($$$ ;; constructors
-         ,@(MAPCAR #'(LAMBDA (ct)
+         ,@(MAPCAR #'(LAMBDA (i ct)
                        (LET ((ct-name (CADAR ct))
                              (params (CADR ct)))
 
@@ -114,7 +119,7 @@
                                     (let ((,name instance . #'(malloc (sizeof ,(make-class-h-base-name name)))))
                                       (set (cof instance)
                                         (cast ,(make-class-h-base-name name)
-                                          '{ ,(make-data-h-type-name (IF (= 1 (LENGTH ctors)) '_ (CAAR ct))) }))
+                                          '{ ,(make-data-h-type-name (IF (= i (1- (LENGTH ctors))) '_ (CAAR ct))) }))
                                       (return instance)))
                              (IF (> (LENGTH params) 1)
                                  `(func ,(make-data-h-ctor-name ct-name)
@@ -123,9 +128,9 @@
                                     (let ((,name instance . #'(malloc (sizeof ,(make-class-h-base-name name)))))
                                       (set (cof instance)
                                         (cast ,(make-class-h-base-name name) '{
-                                              ,(make-data-h-type-name (IF (= 1 (LENGTH ctors)) '_ (CAAR ct)))
+                                              ,(make-data-h-type-name (IF (= i (1- (LENGTH ctors))) '_ (CAAR ct)))
                                               ,(INTERN (FORMAT NIL "$__h_data$~A"
-                                                               (IF (= 1 (LENGTH ctors)) '_ (CAAR ct))))
+                                                               (IF (= i (1- (LENGTH ctors))) '_ (CAAR ct))))
                                               '{ ,@(MAPCAR #'(LAMBDA (param) (NTH 4 param)) params) }
                                               }))
                                       (return instance)))
@@ -134,13 +139,13 @@
                                         (let ((,name instance . #'(malloc (sizeof ,(make-class-h-base-name name)))))
                                           (set (cof instance)
                                             (cast ,(make-class-h-base-name name) '{
-                                                  ,(make-data-h-type-name (IF (= 1 (LENGTH ctors)) '_ (CAAR ct)))
+                                                  ,(make-data-h-type-name (IF (= i (1- (LENGTH ctors))) '_ (CAAR ct)))
                                                   ,(INTERN (FORMAT NIL "$__h_data$~A"
-                                                                   (IF (= 1 (LENGTH ctors)) '_ (CAAR ct))))
+                                                                   (IF (= i (1- (LENGTH ctors))) '_ (CAAR ct))))
                                                   '{ ,@(MAPCAR #'(LAMBDA (param) (NTH 4 param)) params) }
                                                   })
                                             (return instance))))))))
-                   ctors))))
+                   (range-h (LENGTH ctors)) ctors))))
 
 (DEFMACRO import-class (name ctor &REST ctors)
   (SETQ name (MACROEXPAND name))

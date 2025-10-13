@@ -12,23 +12,23 @@ int power_irreducible_int (int x , int y ) {
 #ifndef __H___h_Integer_ctor_t__
 #define __H___h_Integer_ctor_t__
 typedef enum __h_Integer_ctor_t {
-  __h_Byte_t,
-  __h_Short_t,
-  __h_Int_t
+  __h_Int_t = 0,
+  __h_Short_t = 1,
+  __h_Byte_t = 2
 } __h_Integer_ctor_t;
 #endif /* __H___h_Integer_ctor_t__ */ 
 typedef struct Integer {
-  __h_Integer_ctor_t __h_ctor ;
+  char __h_ctor ;
   union { /* ciciliUnion121 */
     struct { /* ciciliStruct122 */
       char __h_0_mem ;
-    } Byte ;
+    } Byte , _0 ;
     struct { /* ciciliStruct123 */
       short __h_0_mem ;
-    } Short ;
+    } Short , _1 ;
     struct { /* ciciliStruct124 */
       int __h_0_mem ;
-    } Int ;
+    } Int , _ ;
   } __h_data ;
 } Integer;
 Integer Byte (char __h_0_mem );
@@ -41,7 +41,7 @@ Integer Short (short s ) {
   return ((Integer){ __h_Short_t , .__h_data.Short = { s }});
 }
 Integer Int (int x ) {
-  return ((Integer){ __h_Int_t , .__h_data.Int = { x }});
+  return ((Integer){ __h___t , .__h_data._ = { x }});
 }
 void show_Integer (Integer self ) {
   ({ /* cicili#Let140 */
@@ -91,18 +91,18 @@ void show_Integer (Integer self ) {
 #ifndef __H___h_Maybe_ctor_t__
 #define __H___h_Maybe_ctor_t__
 typedef enum __h_Maybe_ctor_t {
-  __h_Nothing_t,
-  __h_Just_t
+  __h_Just_t = 0,
+  __h_Nothing_t = 1
 } __h_Maybe_ctor_t;
 #endif /* __H___h_Maybe_ctor_t__ */ 
 typedef struct Maybe_Maybe_char {
-  __h_Maybe_ctor_t __h_ctor ;
+  char __h_ctor ;
   union { /* ciciliUnion188 */
     struct { /* ciciliStruct189 */
-    } Nothing ;
+    } Nothing , _0 ;
     struct { /* ciciliStruct190 */
       Maybe_char __h_0_mem ;
-    } Just ;
+    } Just , _ ;
   } __h_data ;
 } Maybe_Maybe_char;
 Maybe_Maybe_char Nothing_Maybe_char ();
@@ -112,7 +112,7 @@ Maybe_Maybe_char Nothing_Maybe_char () {
   return ((Maybe_Maybe_char){ __h_Nothing_t });
 }
 Maybe_Maybe_char Just_Maybe_char (Maybe_char value ) {
-  return ((Maybe_Maybe_char){ __h_Just_t , .__h_data.Just = { value }});
+  return ((Maybe_Maybe_char){ __h___t , .__h_data._ = { value }});
 }
 void print_inside_maybe (Maybe_Maybe_char mb ) {
   { /* cicili#Let209 */
@@ -236,18 +236,18 @@ void print_tuple (aTuple tup ) {
 #ifndef __H___h_Maybe_ctor_t__
 #define __H___h_Maybe_ctor_t__
 typedef enum __h_Maybe_ctor_t {
-  __h_Nothing_t,
-  __h_Just_t
+  __h_Just_t = 0,
+  __h_Nothing_t = 1
 } __h_Maybe_ctor_t;
 #endif /* __H___h_Maybe_ctor_t__ */ 
 typedef struct Maybe_aTuple {
-  __h_Maybe_ctor_t __h_ctor ;
+  char __h_ctor ;
   union { /* ciciliUnion314 */
     struct { /* ciciliStruct315 */
-    } Nothing ;
+    } Nothing , _0 ;
     struct { /* ciciliStruct316 */
       aTuple __h_0_mem ;
-    } Just ;
+    } Just , _ ;
   } __h_data ;
 } Maybe_aTuple;
 Maybe_aTuple Nothing_aTuple ();
@@ -257,7 +257,7 @@ Maybe_aTuple Nothing_aTuple () {
   return ((Maybe_aTuple){ __h_Nothing_t });
 }
 Maybe_aTuple Just_aTuple (aTuple value ) {
-  return ((Maybe_aTuple){ __h_Just_t , .__h_data.Just = { value }});
+  return ((Maybe_aTuple){ __h___t , .__h_data._ = { value }});
 }
 int factorial (int n ) {
   return (((n  ==  1 )) ? 1 : (n  *  factorial ((n  -  1 )) ));

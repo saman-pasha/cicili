@@ -68,7 +68,7 @@
                (io list
                  (* Cons head tail
                     (progn
-                      (printf fmt head)
+                      (fmt head)
                       ((<> show String) tail)))))
 
          ) ; define-String
