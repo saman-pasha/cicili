@@ -641,7 +641,7 @@ List_char Monoid_Concat_String_char_mappend_List_char_s (List_char x , List_char
 List_char Monoid_Concat_String_char_mconcat_List_char_s (List_List_char l );
 Monoid_Concat_String_char get_Monoid_Concat_String_char ();
 Semigroup_Concat_String_char get_Semigroup_Concat_String_char ();
-List_int fmap_List_int_List_int (int (*atob) (int value ), List_int input );
-List_Bool fmap_List_int_List_Bool (Bool (*atob) (int value ), List_int input );
-List_char fmap_List_char_List_char (char (*atob) (char value ), List_char input );
-List_Bool fmap_List_char_List_Bool (Bool (*atob) (char value ), List_char input );
+List_int fmap_List_int_List_int_Pure (int (*atob) (int value ), List_int input );
+List_Bool fmap_List_int_List_Bool_Pure (Bool (*atob) (int value ), List_int input );
+List_char fmap_List_char_List_char_Pure (char (*atob) (char value ), List_char input );
+List_Bool fmap_List_char_List_Bool_Pure (Bool (*atob) (char value ), List_char input );

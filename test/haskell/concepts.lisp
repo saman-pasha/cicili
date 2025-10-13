@@ -23,6 +23,9 @@
 
         (define-reduce char)
 
+        (import-Functor-List int int)
+        (import-Functor-List int Bool)
+        
         (main
             ;; String is a List^char
             (letin ((chrlst (new^String "Hello List!" 11) free^List^char)
@@ -85,31 +88,30 @@
                  (show^String (mappend s1 s2))
                  (putchar #\Newline))))
 
-          (letin ((l1 ((<> new List int) '{ 1 2 3 4 5 6 }) free^List^int)
+          (where ((fmap-mul-2 ((<> fmap (<> List int) (<> List int)) (* input 2)))
+                  (fmap-mod-3 ((<> fmap (<> List int) (<> List Bool))
+                               (case (% input 3) (False)
+                                     otherwise   (True))))) ; returns a Bool
+            (letin ((l1 ((<> new List int) '{ 1 2 3 4 5 6 }) free^List^int)
 
-                  ;; (int -> int) -> [int] -> [int]
-                  (r1 ((<> fmap (<> List int) (<> List int))
-                       '(lambda ((int v))
-                         (out int)
-                         (return (* v 3)))
-                       l1)
-                    free^List^int)
-                  
-                  ;; (int -> Bool) -> [int] -> [Bool]
-                  (r2 ((<> fmap (<> List int) (<> List Bool))
-                       '(lambda ((int v))
-                         (out Bool)
-                         (return
-                           (case (% v 2)   (False)
-                                 otherwise (True))))
-                       r1)
-                    free^List^Bool))
-            
-            (format #t "fmap (*3) of { 1 2 3 4 5 6 } is:\n")
-            (show^List^int r1)
-            (putchar #\Newline)
-            (format #t "fmap (%%2) . fmap (*3) of { 1 2 3 4 5 6 } is:\n")
-            (show^List^Bool r2)
-            (putchar #\Newline))
+                    ;; (int -> int) -> [int] -> [int]
+                    (r1 (fmap-mul-2 l1) free^List^int)
+                    
+                    ;; (int -> Bool) -> [int] -> [Bool]
+                    (r2 (fmap-mod-3 l1) free^List^Bool)
+
+                    ;; bad practice! the middle result won't be freed
+                    (r3 ($> fmap-mod-3 ! fmap-mul-2 $ l1) free^List^Bool))
+              
+              (format #t "fmap (*2) of { 1 2 3 4 5 6 } is:\n")
+              (show^List^int r1)
+              (putchar #\Newline)
+              (format #t "fmap (%%3) of { 1 2 3 4 5 6 } is:\n")
+              (show^List^Bool r2)
+              (putchar #\Newline)
+              (format #t "fmap (%%3) ! fmap (*2) of { 1 2 3 4 5 6 } is:\n")
+              (show^List^Bool r3)
+              (putchar #\Newline)
+              ))
 
             ))
