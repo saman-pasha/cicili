@@ -23,26 +23,6 @@
 
         (define-reduce char)
 
-        ;; (int -> int) -> [int] -> [int]
-        (decl-Functor (<> List int) (<> List int) int int)
-        (define-Functor (<> List int) (<> List int) int int
-                        (match input
-                          (* _ head tail
-                             ($> (<> Cons int)
-                               (atob head)
-                               ((<> fmap (<> List int) (<> List int)) atob tail)))
-                          (default ((<> Empty int)))))
-        
-        ;; (int -> Bool) -> [int] -> [Bool]
-        (decl-Functor (<> List int) (<> List Bool) int Bool)
-        (define-Functor (<> List int) (<> List Bool) int Bool
-                        (match input
-                          (* _ head tail
-                             ($> (<> Cons Bool)
-                               (atob head)
-                               ((<> fmap (<> List int) (<> List Bool)) atob tail)))
-                          (default ((<> Empty Bool)))))
-        
         (main
             ;; String is a List^char
             (letin ((chrlst (new^String "Hello List!" 11) free^List^char)
@@ -107,6 +87,7 @@
 
           (letin ((l1 ((<> new List int) '{ 1 2 3 4 5 6 }) free^List^int)
 
+                  ;; (int -> int) -> [int] -> [int]
                   (r1 ((<> fmap (<> List int) (<> List int))
                        '(lambda ((int v))
                          (out int)
@@ -114,6 +95,7 @@
                        l1)
                     free^List^int)
                   
+                  ;; (int -> Bool) -> [int] -> [Bool]
                   (r2 ((<> fmap (<> List int) (<> List Bool))
                        '(lambda ((int v))
                          (out Bool)

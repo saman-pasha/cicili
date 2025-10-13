@@ -22,15 +22,20 @@
 
         (decl-folds int)
         
-        (decl-Monoid (<> Sum int)     int)
+        (decl-Monoid (<> Sum     int) int)
         (decl-Monoid (<> Product int) int)
 
         (decl-folds (<> List int))
         (decl-folds (<> List char))
 
-        (decl-Monoid (<> Concat List int)    (<> List int))
-        (decl-Monoid (<> Concat List char)   (<> List char))
+        (decl-Monoid (<> Concat List    int) (<> List int))
+        (decl-Monoid (<> Concat List   char) (<> List char))
         (decl-Monoid (<> Concat String char) (<> List char))
+
+        (decl-Functor-List int  int)
+        (decl-Functor-List int  Bool)
+        (decl-Functor-List char char)
+        (decl-Functor-List char Bool)
 
         ) ; haskell.h
 
@@ -71,5 +76,10 @@
           (<> List char)
           ((<> Empty char))
           (<> append String))
+
+        (define-Functor-List int  int)
+        (define-Functor-List int  Bool)
+        (define-Functor-List char char)
+        (define-Functor-List char Bool)
 
         ) ; haskell.c
