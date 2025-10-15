@@ -1,7 +1,16 @@
 
 (header "../haskell.h" (:std #t)
+
+        (@define (code "__h_ISPOINTER(x) ((((uintptr_t)(x)) & ~~0xffff) != 0)"))
         
-        (enum DefaultCtor
+        ;; FreeRouter for all 'data' and 'class'es
+        (struct __h_FreeRouter
+          (member func free ((void * this))))
+        
+        (decl) (func __h_free_data_router ((void ** instance)))
+        (decl) (func __h_free_class_router ((void *** instance)))
+        
+        (enum __h_DefaultCtor
           (__h___t))
 
         ;; data Bool = False True
@@ -41,6 +50,12 @@
 
 (source "haskell.c" (:std #t :compile "-c haskell.c -o ../haskell.o" :link #f)
         (include "../haskell.h")
+        
+        (func __h_free_data_router ((void ** instance))
+              ((cast (func _ ((void * this))) (cof instance)) instance))
+        
+        (func __h_free_class_router ((void *** instance))
+              ((cast (func _ ((void * this))) (cof (cof instance))) (cof (cof instance))))
         
         (define-data Bool False True)
 

@@ -566,7 +566,8 @@
           (t (error (format nil "wrong code form ~A" def))))))
 
 (defun specify-list-expr (def)
-  (make-specifier nil '|@LIST| nil nil nil nil nil (loop for item in def collect (specify-expr item)) '()))
+  (make-specifier nil '|@LIST| nil nil nil nil nil
+                  (loop for item in def collect (specify-expr (expand-macros item))) '()))
 
 (defun specify-unary-expr (def)
   (unless (= (length def) 2) (error (format nil "wrong unary form ~A" def)))

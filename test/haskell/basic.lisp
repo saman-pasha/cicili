@@ -62,8 +62,12 @@
         (define-data Integer
           (Byte  (char  c))
           (Short (short s))
-          (Int   (int   x)))
-
+          (Int   (int   x))
+          (free  (io this ; default destructor, a body without arguments but 'this' instance pointer
+                   (* Byte  c  (format #t "Integer was Byte:  %d\n" c))
+                   (* Short s  (format #t "Integer was Short: %d\n" s))
+                   (* Int   i  (format #t "Integer was Int:   %d\n" i)))))
+        
         ;; shared function for haskell data type
         (func (<> show Integer) ((Integer self))
               (match self
@@ -172,6 +176,12 @@
           ((<> show Integer) (Int   2000))
           ((<> show Integer) (Int   20000))
 
+          ;; letin will calls 'free' destructor automatically
+          (letin ((b (Byte  11))
+                  (s (Short 21))
+                  (i (Int   31)))
+            (printf "test destructure of Integer\n"))
+
           (let ((aTuple tup0 . '{ 4400 #\A 33 }) ; aTuple define by typedef 
                 ((Tuple int char short) tup1 . '{ 4401 #\B 34 })
                 (auto tup2 . #'(cast (Tuple int char short) '{ 4402 #\C 35 })))
@@ -216,8 +226,8 @@
           ;; List
           ;; letin evalutes each var once
           ;; var, value, deferer optional, deferer must be a function where accepts pointer of type value
-          (letin ((hello (new^String "Hello Haskell\n") free^String)
-                  (txt   (new^String "Haskell List")    free^String))
+          (letin ((* hello (new^String "Hello Haskell\n"))
+                  (* txt   (new^String "Haskell List")))
 
             (show^String hello)
 
@@ -242,7 +252,7 @@
 
             (format #t "output of letin: %d\n"
                     ;; use letin to prevent repeatition calls for every llen 
-                    (letin ((llen (len^String txt)))
+                    (letn ((auto llen . #'(len^String txt)))
                       (where
                           ((nthf (\\ n ($> !!^String n txt))) ; !! nth lambdas to C function to use Curry style
                            (show (\\ f n (match (f n)
@@ -266,7 +276,7 @@
                             head (len^String tail))))
             
             ;; using list literal constructor
-            (letin ((str5 (new^String '{ #\C #\i #\c #\i #\l #\i #\Null }) free^String)) ; null termination required
+            (letin ((* str5 (new^String '{ #\C #\i #\c #\i #\l #\i })))
               (format #t "has 'Cicili' desired length 5: %d\n" (has^len^String str5 5))
               (format #t "has 'Cicili' desired length 6: %d\n" (has^len^String str5 6))
               (format #t "has 'Cicili' desired length 7: %d\n" (has^len^String str5 7)))
@@ -284,34 +294,34 @@
               ((\: char fst tail)
                  (format #t "first char from String: %c\n" fst))
               (default (format #t "default case String\n"))))
-
+          
+          ;; letin is only for data or class instantiation  
+          (let ((auto intarr . #'(cast (const int []) '{ 4 3 2 })))
+            (letin ((* ilist0 (new^List^int '{ 1 2 3 4 }))     ; null termination required
+                    (* ilist1 ($> \:^List^int 5 ilist0))       ; \: 'push' is push^List^int to list function
+                    (* ilist2 ($> ++^List^int ilist1 ilist0))  ; ++ 'append' is append^List^int
+                    (* ilist3 (new^List^int intarr 3))
+                    (* ilist4 (take^List^int 2 ilist2)))
+              (format #t "first elem of int list0: %d\n" (match (head^List^int ilist0) (Just i i) (default -1)))
+              (format #t "first elem of int list1: %d\n" (match (head^List^int ilist1) (Just i i) (default -1)))
+              (format #t "list0:\n")
+              (show^List^int ilist0)
+              (format #t "\nlist1:\n")
+              (show^List^int ilist1)
+              (format #t "\nlist2:\n")
+              (show^List^int ilist2)
+              (format #t "\nlist3:\n")
+              (show^List^int ilist3)
+              (format #t "\nlist4: take 2 of list2:\n")
+              (show^List^int ilist4)
+              (putchar #\Newline)))
             
-          (letin ((ilist0 (new^List^int '{ 1 2 3 4 })    free^List^int)  ; null termination required
-                  (ilist1 ($> \:^List^int 5 ilist0)      free^List^int)  ; \: 'push' is push^List^int to list function
-                  (ilist2 ($> ++^List^int ilist1 ilist0) free^List^int)  ; ++ 'append' is append^List^int
-                  (intarr (cast (const int []) '{ 4 3 2 }))
-                  (ilist3 (new^List^int intarr 3)        free^List^int)
-                  (ilist4 (take^List^int 2 ilist2)       free^List^int))
-            (format #t "first elem of int list0: %d\n" (match (head^List^int ilist0) (Just i i) (default -1)))
-            (format #t "first elem of int list1: %d\n" (match (head^List^int ilist1) (Just i i) (default -1)))
-            (format #t "list0:\n")
-            (show^List^int ilist0)
-            (format #t "\nlist1:\n")
-            (show^List^int ilist1)
-            (format #t "\nlist2:\n")
-            (show^List^int ilist2)
-            (format #t "\nlist3:\n")
-            (show^List^int ilist3)
-            (format #t "\nlist4: take 2 of list2:\n")
-            (show^List^int ilist4)
-            (putchar #\Newline))
-            
-          (letin ((ra0 (new^Range^int 1 20 3)  free^Range^int)
-                  (ra1 (take^Range^int 3  ra0) free^Range^int)
-                  (ra2 (take^Range^int 4  ra0) free^Range^int)
-                  (ra3 (take^Range^int 10 ra0) free^Range^int)
-                  (str0 (new^String "Hello World!") free^String)
-                  (str1 (new^List^int '{ 72 101 108 108 111 32 87 111 114 108 100 33 }) free^List^int))
+          (letin ((* ra0  (new^Range^int 1 20 3))
+                  (* ra1  (take^Range^int 3  ra0))
+                  (* ra2  (take^Range^int 4  ra0))
+                  (* ra3  (take^Range^int 10 ra0))
+                  (* str0 (new^String "Hello World!"))
+                  (* str1 (new^List^int '{ 72 101 108 108 111 32 87 111 114 108 100 33 })))
             (format #t "range 1 20 3:\n")
             (show^Range^int ra0)
             ;; range shows only first of range
@@ -329,8 +339,5 @@
             (show^String (cast (String) str1))
             (putchar #\Newline)
             )
-
-          ;; _ destructure opr
-          ;; TAKE DROP takewhile dropwile splitAt map fmap
           
           ))

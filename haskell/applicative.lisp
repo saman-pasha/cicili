@@ -6,7 +6,7 @@
                                     ((<> List a) foldable))
                       (out a))
 
-         ) ; decl-folds
+         ) ; decl-String
 
 (generic define-folds (a)
 
@@ -20,27 +20,26 @@
                       ((<> foldr a) folder (folder neutral head) tail))
                    (default neutral))))
          
-         ) ; define-folds
+         ) ; define-String
 
 
 
 
 
-;; binary associative identity operation
-;; class Monoid m where
-;;   mempty  :: m
-;;   mappend :: m -> m -> m
-;;   mconcat :: [m] -> m
-(generic decl-Monoid (type a)
+;; Monoidal Functor
+;; class Functor f => Applicative f where
+;;   pure :: a -> f a
+;;   <*>  :: f (a -> b) -> f a -> f b
+(generic decl-Applicative (f a b)
 
-         (typedef func (<> Monoid type mappend) ((a lhs) (a rhs)) (out a))
-         (typedef func (<> Monoid type mconcat) (((<> List a) l)) (out a))
+         (typedef func (<> f func a b) ((a value)) (out b))
+         (typedef func (<> App f a b pure) ((a value)) (out (<> f b)))
+         (typedef func (<> App f a b ap) (((<> f func a b) atob) ((<> f a) value)) (out (<> f b)))
 
-         (decl-data (<> Monoid type)
-           ((<> m type)
-            ((<> Monoid type mappend) mappend)
-            (a mempty)
-            ((<> Monoid type mconcat) mconcat)))
+         (decl-data (<> Applicative f a b)
+           ((<> App f a b)
+            ((<> App f a b pure) pure)
+            ((<> App f a b ap) ap)))
 
          (decl-data (<> Semigroup type)
            ((<> sg type)
@@ -52,7 +51,7 @@
          (decl) (func (<> get Monoid type) () (out (<> Monoid type)))
          (decl) (func (<> get Semigroup type) () (out (<> Semigroup type)))
          
-         ) ; decl-Monoid
+         ) ; decl-String
 
 (generic define-Monoid (type a neutral op)
 
@@ -85,7 +84,7 @@
                (out (<> Semigroup type))
                (return ($> (<> sg type) (<> Monoid type mappend a s))))
 
-         ) ; define-Monoid
+) ; define-String
 
 (generic import-Monoid (type a)
 
@@ -99,7 +98,7 @@
            ((<> sg type)
             ((<> Monoid type mappend) mappend)))
 
-         ) ; import-Monoid
+         ) ; import-String
 
 
 
@@ -120,7 +119,7 @@
 
          (decl) (func (<> get Semigroup type) () (out (<> Semigroup type)))
          
-         ) ; decl-Semigroup
+         ) ; decl-String
 
 (generic define-Semigroup (type a op)
 
@@ -136,7 +135,7 @@
                (out (<> Semigroup type))
                (return ($> (<> sg type) (<> Semigroup type mappend a s))))
 
-         ) ; define-Semigroup
+) ; define-String
 
 (generic import-Semigroup (type)
 
@@ -144,4 +143,4 @@
            ((<> sg type)
             ((<> Semigroup type mappend) mappend)))
 
-         ) ; import-Semigroup
+         ) ; import-String

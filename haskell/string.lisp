@@ -46,9 +46,6 @@
          (decl) (func (<> new String Const) ((const a * buf)) (out type))
          (decl) (func (<> show String) ((type list)))
 
-         (inline) (func (<> free String) ((type * list))
-                        ((<> release type) (cof list)))
-
          ) ; decl-String
 
 (generic define-String (type a fmt)

@@ -11,10 +11,6 @@
               (type tail)))
 
          (decl) (func (<> new type Pure) ((const a * buf) (int len)) (out type))
-         (decl) (func (<> release type) ((type list)))
-         
-         (inline) (func (<> free type) ((type * list)) ; specified for letin
-                        ((<> release type) (cof list)))
          
          (decl) (func (<> next type) ((type list)) (out type))
          (decl) (func (<> nth type) ((int index) (type list)) (out (<> Maybe a)))
@@ -54,7 +50,12 @@
            (= Empty (<> Empty a))
            (= Cons  (<> Cons a)
               (a head)
-              (type tail)))
+              (type tail))
+           (free    (io this
+                      (* Cons head tail
+                         (block (fmt head)
+                             ((<> free type) tail)
+                           (free this))))))
 
          (func (<> new type Pure) ((const a * buf) (int len))
                (out type)
@@ -65,13 +66,6 @@
                          (return ((<> Empty a)))
                          (return ($> (<> Cons a) item ((<> new type Pure) (++ buf) (-- len))))))))
 
-         (func (<> release type) ((type list))
-               (io list
-                 (* Cons _ tail
-                    (block
-                        ((<> release type) tail)
-                      (free list)))))
-         
          (func (<> next type) ((type list))
                (out type)
                (return

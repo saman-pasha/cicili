@@ -21,9 +21,13 @@
                             (LET ((ct (MACROEXPAND ct)))
                               (SETQ ct (IF (SYMBOLP ct)
                                            (LIST ct ct)
-                                           (IF (EQUAL (CAR ct) '=)
-                                               (SETQ ct (CDR ct))
-                                               (SETQ ct (CONS (CAR ct) ct)))))
+                                            (IF (EQUAL (CAR ct) '=)
+                                                (SETQ ct (CDR ct))
+                                                (SETQ ct (CONS (CAR ct) ct)))))
+                              
+                              (WHEN (OR (EQUAL (CAR ct) 'free) (EQUAL (CADR ct) 'free))
+                                (ERROR (FORMAT NIL "use 'free' destructor only inside definition: ~A" ct)))
+                              
                               (LIST
                                ct
                                (MAPCAR #'(LAMBDA (param)
@@ -32,15 +36,20 @@
                                              (LIST const type modifier const-ptr variable array-def)))
                                        (CDDR ct)))))
                         (PUSH ctor ctors))))
-
-    `($$$
+  
+    `($$$ 
          (guard (<> __H ,enum-name _)
            (enum ,enum-name
              (,(make-data-h-type-name (CAAR (CAR (REVERSE ctors)))) . 0)
              ,@(MAPCAR #'(LAMBDA (i ct) (CONS (make-data-h-type-name (CAAR ct)) (+ i 1)))
                        (range-h (LENGTH ctors)) (CDR (REVERSE ctors)))))
-       
+
+       (decl) (struct ,name)
+
+       (typedef func (<> free ,name t) ((,name * this)))  
+
        (struct ,name
+         (member (<> free ,name t) __h_free)
          (member char __h_ctor)
          (union 
              ,@(MAPCAR #'(LAMBDA (i ct)
@@ -84,56 +93,77 @@
                      name
                      (ERROR (FORMAT NIL "only match alias and name allowed in data name: ~A" name)))))
   
-  (LET ((alias (MACROEXPAND (CAR name)))
-        (name (MACROEXPAND (CADR name)))
-        (ctors (MAPCAR #'(LAMBDA (ct)
-                           (LET ((ct (MACROEXPAND ct)))
-                             (SETQ ct (IF (SYMBOLP ct)
-                                          (LIST ct ct)
-                                          (IF (EQUAL (CAR ct) '=)
-                                              (SETQ ct (CDR ct))
-                                              (SETQ ct (CONS (CAR ct) ct)))))
-                             (LIST
-                              ct
-                              (MAPCAR #'(LAMBDA (param)
-                                          (MULTIPLE-VALUE-BIND (const type modifier const-ptr variable array-def)
-                                              (CICILI:SPECIFY-TYPE< param)
-                                            (LIST const type modifier const-ptr variable array-def)))
-                                      (CDDR ct)))))
-                       (PUSH ctor ctors))))
-    
-    `($$$ ;; constructors
-         ,@(MAPCAR #'(LAMBDA (i ct)
-                       (LET ((ct-name (CADAR ct))
-                             (params (CADR ct)))
+  (LET* ((alias (MACROEXPAND (CAR name)))
+         (name (MACROEXPAND (CADR name)))
+         (free-def NIL)
+         (ctors (REMOVE
+                 NIL 
+                 (MAPCAR #'(LAMBDA (i ct)
+                             (LET ((ct (MACROEXPAND ct)))
+                               (SETQ ct (IF (SYMBOLP ct)
+                                            (LIST ct ct)
+                                            (IF (EQUAL (CAR ct) '=)
+                                                (SETQ ct (CDR ct))
+                                                (SETQ ct (CONS (CAR ct) ct)))))
+                               
+                               (WHEN (OR (EQUAL (CAR ct) 'free) (EQUAL (CADR ct) 'free))
+                                 (IF free-def
+                                     (ERROR (FORMAT NIL "'free' is defined twice: ~A" ct))
+                                     (SETQ free-def ct)))
 
-                         (WHEN (EQUAL name ct-name) (ERROR (FORMAT NIL "data type and ctor having same name: ~A" name)))
-                         
-                         (IF (NULL params)
-                             `(func ,ct-name ()
-                                    (out ,name)
-                                    (return (cast ,name
-                                              '{ ,(make-data-h-type-name
-                                                      (IF (= i (1- (LENGTH ctors))) '_ (CAAR ct)))})))
-                             (IF (> (LENGTH params) 1)
-                                 `(func ,(make-data-h-ctor-name ct-name)
-                                    ,(MAPCAR #'(LAMBDA (param) (REMOVE NIL param)) params)
-                                    (out ,name)
-                                    (return (cast ,name '{
-                                                  ,(make-data-h-type-name (IF (= i (1- (LENGTH ctors))) '_ (CAAR ct)))
-                                                  ,(INTERN (FORMAT NIL "$__h_data$~A"
-                                                                   (IF (= i (1- (LENGTH ctors))) '_ (CAAR ct))))
-                                                  '{ ,@(MAPCAR #'(LAMBDA (param) (NTH 4 param)) params) }
-                                                  })))
-                                 `(func ,ct-name ,(MAPCAR #'(LAMBDA (param) (REMOVE NIL param)) params)
-                                        (out ,name)
-                                        (return (cast ,name '{
-                                                      ,(make-data-h-type-name (IF (= i (1- (LENGTH ctors))) '_ (CAAR ct)))
-                                                      ,(INTERN (FORMAT NIL "$__h_data$~A"
-                                                                       (IF (= i (1- (LENGTH ctors))) '_ (CAAR ct))))
-                                                      '{ ,@(MAPCAR #'(LAMBDA (param) (NTH 4 param)) params) }
-                                                      })))))))
-                   (range-h (LENGTH ctors)) ctors))))
+                               (WHEN (AND free-def (< i (1- (LENGTH ctors))))
+                                 (ERROR (FORMAT NIL "'free' should be last case: ~A" ct)))
+                               
+                               (IF free-def
+                                   NIL
+                                   (LIST
+                                    ct
+                                    (MAPCAR #'(LAMBDA (param)
+                                                (MULTIPLE-VALUE-BIND (const type modifier const-ptr variable array-def)
+                                                    (CICILI:SPECIFY-TYPE< param)
+                                                  (LIST const type modifier const-ptr variable array-def)))
+                                            (CDDR ct))))))
+                         (range-h (1+ (LENGTH ctors))) (PUSH ctor ctors)))))
+
+    `($$$ ;; constructors
+         (func (<> free ,name) ((,name * this))
+               ,@(CDDR free-def))
+       
+       ,@(MAPCAR #'(LAMBDA (i ct)
+                     (LET ((ct-name (CADAR ct))
+                           (params (CADR ct)))
+
+                       (WHEN (EQUAL name ct-name) (ERROR (FORMAT NIL "data type and ctor having same name: ~A" name)))
+
+                       (IF (NULL params)
+                           `(func ,ct-name ()
+                                  (out ,name)
+                                  (return (cast ,name '{
+                                                (<> free ,name)
+                                                ,(make-data-h-type-name
+                                                     (IF (= i (1- (LENGTH ctors))) '_ (CAAR ct)))
+                                                })))
+                           (IF (> (LENGTH params) 1)
+                               `(func ,(make-data-h-ctor-name ct-name)
+                                  ,(MAPCAR #'(LAMBDA (param) (REMOVE NIL param)) params)
+                                  (out ,name)
+                                  (return (cast ,name '{
+                                                (<> free ,name)
+                                                ,(make-data-h-type-name (IF (= i (1- (LENGTH ctors))) '_ (CAAR ct)))
+                                                ,(INTERN (FORMAT NIL "$__h_data$~A"
+                                                                 (IF (= i (1- (LENGTH ctors))) '_ (CAAR ct))))
+                                                '{ ,@(MAPCAR #'(LAMBDA (param) (NTH 4 param)) params) }
+                                                })))
+                               `(func ,ct-name ,(MAPCAR #'(LAMBDA (param) (REMOVE NIL param)) params)
+                                      (out ,name)
+                                      (return (cast ,name '{
+                                                    (<> free ,name)
+                                                    ,(make-data-h-type-name (IF (= i (1- (LENGTH ctors))) '_ (CAAR ct)))
+                                                    ,(INTERN (FORMAT NIL "$__h_data$~A"
+                                                                     (IF (= i (1- (LENGTH ctors))) '_ (CAAR ct))))
+                                                    '{ ,@(MAPCAR #'(LAMBDA (param) (NTH 4 param)) params) }
+                                                    })))))))
+                 (range-h (LENGTH ctors)) ctors))))
 
 (DEFMACRO import-data (name ctor &REST ctors)
   (SETQ name (MACROEXPAND name))
@@ -152,6 +182,10 @@
                                           (IF (EQUAL (CAR ct) '=)
                                               (SETQ ct (CDR ct))
                                               (SETQ ct (CONS (CAR ct) ct)))))
+
+                             (WHEN (OR (EQUAL (CAR ct) 'free) (EQUAL (CADR ct) 'free))
+                               (ERROR (FORMAT NIL "use 'free' destructor only inside definition: ~A" ct)))
+
                              (LIST
                               ct
                               (MAPCAR #'(LAMBDA (param)

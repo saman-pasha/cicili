@@ -12,9 +12,6 @@
          (decl) (func (<> new type) ((a from) (a to) (a step)) (out type))
          (decl) (func (<> release type) ((type list)))
          
-         (inline) (func (<> free type) ((type * list)) ; specified for letin
-                        ((<> release type) (cof list)))
-
          (decl) (func (<> next type) ((type list)) (out type))
          (decl) (func (<> take type) ((int len) (type list)) (out type))
          (decl) (func (<> show type) ((type list)))
@@ -29,19 +26,17 @@
               (a from)
               (type tail)
               (a to)
-              (a step)))
+              (a step))
+           (free    (io this
+                      (* Cons from tail to step
+                         (block
+                             ((<> free type) tail)
+                           (free this))))))
 
          (func (<> new type) ((a from) (a to) (a step))
                (out type)
                (return (case (<= from to) ($> (<> Cons type) from ((<> Empty type)) to step)
                              otherwise    ((<> Empty type)))))
-         
-         (func (<> release type) ((type list))
-               (io list
-                 (* Cons from tail to step
-                    (block
-                        ((<> release type) tail)
-                      (free list)))))
          
          (func (<> next type) ((type list))
                (out type)
@@ -54,7 +49,7 @@
                (out type)
                (return (match list
                          (* Cons from _ to step => (> len 0)
-                            (letin ((ne ((<> next type) list) (<> free type)))
+                            (letn ((auto ne . #'((<> next type) list)))
                               (match ne
                                 (* Cons
                                    ($> (<> Cons type) from ((<> take type) (-- len) ne) to step))

@@ -1,4 +1,6 @@
 
+(import "haskell/rc.lisp")
+
 (source "concepts.c" (:std #t :compile #t :link "-L{$CCL} -lhaskell.o -L{$CWD} concepts.o -o main")
         (include "../../haskell.h")
 
@@ -25,6 +27,8 @@
 
         (import-Functor-List int int)
         (import-Functor-List int Bool)
+
+        (decl-Rc List^int)
         
         (main
             ;; String is a List^char
@@ -88,6 +92,7 @@
                  (show^String (mappend s1 s2))
                  (putchar #\Newline))))
 
+          ;; imported above
           (where ((fmap-mul-2 ((<> fmap (<> List int) (<> List int)) (* input 2)))
                   (fmap-mod-3 ((<> fmap (<> List int) (<> List Bool))
                                (case (% input 3) (False)

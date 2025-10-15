@@ -3,6 +3,9 @@
 ;; ga to datatype
 ;; a type inside fa
 ;; b type inside ga
+;; class Functor f where
+;;   fmap :: (a -> b) -> f a -> f b
+;;   <$>  :: (a -> b) -> f a -> f b
 (generic decl-Functor (fa gb a b)
 
          (decl) (func (<> fmap fa gb Pure) ((func atob ((a value)) (out b)) (fa input)) (out gb))
