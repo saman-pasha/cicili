@@ -6,6 +6,7 @@
 ;; suggestion: no member pointer and no self member reference
 ;; (match alias, data type name) designed for generic types
 ;; the data type name and each ctor can have an alias for ease of use in matches
+;; shared alias for generic data types lets them to cast to each other
 (DEFMACRO decl-data (name ctor &REST ctors)
   (SETQ name (MACROEXPAND name))
   (SETQ name (IF (SYMBOLP name)

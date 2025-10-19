@@ -1,5 +1,5 @@
 
-;; (import "haskell/rc.lisp")
+;; (import "haskell/either.lisp")
 
 (source "concepts.c" (:std #t :compile #t :link "-L{$CCL} -lhaskell.o -L{$CWD} concepts.o -o main")
         (include "../../haskell.h")
@@ -27,6 +27,15 @@
 
         (import-Functor-List int int)
         (import-Functor-List int Bool)
+
+        (decl-Either String int)
+        (define-Either String int)
+
+        (func divideByZero ((int x) (int y))
+              (out (<> Either String int))
+              (if (== y 0)
+                  (return ((<> Left String int) (new^String "zero division")))
+                  (return ((<> Right String int) (/ x y)))))
         
         (main
             ;; test Rc
@@ -38,7 +47,7 @@
               (letin* ((rc1 (clone^Rc^List^int rc0) free^Rc^List^int)) ; has authority
                 
                 ;; (let ((auto rc2 . rc1)) ; pointer copy access same rc
-                ;;   ((<> free Rc List int) rc2))
+                ;;   ((<> free Rc List int) (aof rc2)))
                 
                 (format #t "list0:\n")
                 (io (deref^Rc^List^int rc0) (_ list0 (show^List^int list0)))
@@ -47,7 +56,26 @@
                 (format #t "list1:\n")
                 (io (deref^Rc^List^int rc1) (_ list1 (show^List^int list1)))
                 (putchar #\Newline)))
-         
+
+          ;; test Either
+          ;; error case
+          (io (divideByZero 34 0)
+            (Left e (progn
+                      (printf "error raised: ")
+                      (show^String e)
+                      (putchar #\Newline)
+                      (free^String (aof e))))
+            (Right a (printf "division result: %d\n" a)))
+
+          ;; true case
+          (io (divideByZero 34 2)
+            (Left e (progn
+                      (printf "error raised: ")
+                      (show^String e)
+                      (putchar #\Newline)
+                      (free^String (aof e))))
+            (Right a (printf "division result: %d\n" a)))
+
           ;; ;; String is a List^char
           ;; (letin* ((chrlst (new^String "Hello List!" 11) free^List^char)
           ;;          (m0     (nth^List^char 3  chrlst))

@@ -2,6 +2,7 @@
 (import "./tuple.lisp")
 (import "./data.lisp")
 (import "./maybe.lisp")
+(import "./either.lisp")
 (import "./class.lisp")
 (import "./match.lisp")
 (import "./list.lisp")
