@@ -181,10 +181,10 @@
       ('|@=>|      (compile-=>           spec lvl globals spec))
       ('|@SIZEOF|  (compile-sizeof       spec lvl globals spec))
       ('|@TYPEOF|  (compile-typeof       spec lvl globals spec))
-      ('|@LET|     (compile-let          spec lvl globals spec))
-      ('|@LETN|    (compile-let          spec lvl globals spec t))
-      ('|@BLOCK|   (compile-block        spec lvl globals spec))
-      ('|@PROGN|   (compile-progn        spec lvl globals spec))
+      ;; ('|@LET|     (compile-let          spec lvl globals spec))
+      ('|@LETN|    (compile-let          spec (1+ lvl) globals spec t))
+      ;; ('|@BLOCK|   (compile-block        spec lvl globals spec))
+      ('|@PROGN|   (compile-progn        spec (1+ lvl) globals spec))
       
       ('|@PREPROC| (compile-preprocessor spec lvl globals spec)) ; from inside macros 
 	  ('|@INCLUDE| (compile-include      spec lvl globals spec))

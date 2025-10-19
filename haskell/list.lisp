@@ -2,8 +2,6 @@
 ;; List must be defined by this generic
 (generic decl-List (type a)
          
-         (decl-Maybe a)
-
          (decl-class (List type)
            (= Empty (<> Empty a))
            (= Cons  (<> Cons a)
@@ -44,8 +42,6 @@
 
 (generic define-List (type a fmt)
 
-         (define-Maybe a)
-
          (define-class (List type)
            (= Empty (<> Empty a))
            (= Cons  (<> Cons a)
@@ -53,8 +49,8 @@
               (type tail))
            (free    (io this
                       (* Cons head tail
-                         (block (fmt head)
-                             ((<> free type) tail)
+                         (block (printf "destructuring List: %p\n" this)
+                             ((<> free type) (aof tail))
                            (free this))))))
 
          (func (<> new type Pure) ((const a * buf) (int len))

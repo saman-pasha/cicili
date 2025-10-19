@@ -96,6 +96,9 @@
    (1 . String)
    (1 . List)
    (1 . Range)
+   (1 . Either)
+   (1 . Left)
+   (1 . Right)
    ))
 
 (defun cicili-add-keywords (face-name keyword-rules)
@@ -214,6 +217,9 @@
    (1 . take)
    (1 . drop)
    (1 . !!)
+   (1 . Either)
+   (1 . Left)
+   (1 . Right)
    ))
 
 (defun cicili-add-attributes (face-name keyword-rules)

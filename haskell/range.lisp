@@ -30,7 +30,7 @@
            (free    (io this
                       (* Cons from tail to step
                          (block
-                             ((<> free type) tail)
+                             ((<> free type) (aof tail))
                            (free this))))))
 
          (func (<> new type) ((a from) (a to) (a step))

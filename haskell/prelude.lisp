@@ -7,6 +7,7 @@
 (import "./list.lisp")
 (import "./string.lisp")
 (import "./range.lisp")
+(import "./rc.lisp")
 (import "./monoid.lisp")
 (import "./functor.lisp")
 

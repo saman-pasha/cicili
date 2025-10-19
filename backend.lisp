@@ -322,9 +322,9 @@
 
 (defun compile-let (spec lvl globals parent-spec &optional is-n) ; is-n means letn - > scope is statement
   (let ((dynamics    '())
-	    (locals      (copy-specifiers globals))
-        (in-progn    (key-eq (construct parent-spec) '|@PROGN|)))
-    (when (or in-progn is-n) (output "("))
+	    (locals      (copy-specifiers globals)))
+
+    (when is-n (output "("))
     (output "{ /* ~A */~%" (name spec))
     (loop for var being the hash-value of (params spec)
           do (progn
@@ -337,7 +337,7 @@
     (compile-body (body spec) (- lvl 1) locals spec)
     (output "~&~A" (indent (- lvl 2)))
     (output "}")
-    (when (or in-progn is-n) (output ")"))))
+    (when is-n (output ")"))))
 
 (defun compile-block (spec lvl globals parent-spec)
   (if (> (length (body (body spec))) 0)
