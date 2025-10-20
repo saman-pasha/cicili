@@ -776,54 +776,49 @@ int main () {
   ({ /* cicili#Let1053 */
     __auto_type ilist0  = new_List_int_Pure (((const int[]){ 1, 2, 3, 4}), 4);
     __auto_type ilist1  = __h_Cons_int_ctor (5, ilist0 );
-    __auto_type intarr  = ((const int[]){ 4, 3, 2});
+    __auto_type intarr  = ((const int[]){ 8, 7, 6});
+    __auto_type ilist2  = new_List_int_Pure (intarr , 3);
     // ----------
-    ({ /* cicili#Let1064 */
-      __auto_type ilist2  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let1066 */
-        __auto_type tmp_obj  = append_List_int (ilist1 , ilist0 );
+    ({ /* cicili#Let1066 */
+      __auto_type ilist3  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let1068 */
+        __auto_type tmp_obj  = append_List_int (ilist2 , ilist1 );
         // ----------
         ((void)(tmp_obj -> __h_free_class ));
         tmp_obj ;
       });
-      __auto_type ilist3  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let1073 */
-        __auto_type tmp_obj  = new_List_int_Pure (intarr , 3);
-        // ----------
-        ((void)(tmp_obj -> __h_free_class ));
-        tmp_obj ;
-      });
-      __auto_type ilist4  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let1078 */
-        __auto_type tmp_obj  = take_List_int (2, ilist2 );
+      __auto_type ilist4  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let1075 */
+        __auto_type tmp_obj  = take_List_int (5, ilist3 );
         // ----------
         ((void)(tmp_obj -> __h_free_class ));
         tmp_obj ;
       });
       // ----------
-      fprintf (stdout , "first elem of int list0: %d\n", ({ /* cicili#Let1085 */
-          __auto_type __h_data1084  = nth_List_int (0, ilist0 );
-          __auto_type i  = (((__h_data1084 . __h_data ). Just ). __h_0_mem );
+      fprintf (stdout , "first elem of int list0: %d\n", ({ /* cicili#Let1082 */
+          __auto_type __h_data1081  = nth_List_int (0, ilist0 );
+          __auto_type i  = (((__h_data1081 . __h_data ). Just ). __h_0_mem );
           // ----------
-          /* cicili#Block1089 */
-          ({ /* cicili#Let1091 */
-            bool __h_case_result  = ((__h_data1084 . __h_ctor ) ==  __h_Just_t  );
+          /* cicili#Block1086 */
+          ({ /* cicili#Let1088 */
+            bool __h_case_result  = ((__h_data1081 . __h_ctor ) ==  __h_Just_t  );
             // ----------
-            ((__h_case_result ) ? i  : ({ /* cicili#Let1095 */
+            ((__h_case_result ) ? i  : ({ /* cicili#Let1092 */
                 // ----------
-                /* cicili#Block1097 */
+                /* cicili#Block1094 */
                 -1;
               }));
           });
         }));
-      fprintf (stdout , "first elem of int list1: %d\n", ({ /* cicili#Let1103 */
-          __auto_type __h_data1102  = nth_List_int (0, ilist1 );
-          __auto_type i  = (((__h_data1102 . __h_data ). Just ). __h_0_mem );
+      fprintf (stdout , "first elem of int list1: %d\n", ({ /* cicili#Let1100 */
+          __auto_type __h_data1099  = nth_List_int (0, ilist1 );
+          __auto_type i  = (((__h_data1099 . __h_data ). Just ). __h_0_mem );
           // ----------
-          /* cicili#Block1107 */
-          ({ /* cicili#Let1109 */
-            bool __h_case_result  = ((__h_data1102 . __h_ctor ) ==  __h_Just_t  );
+          /* cicili#Block1104 */
+          ({ /* cicili#Let1106 */
+            bool __h_case_result  = ((__h_data1099 . __h_ctor ) ==  __h_Just_t  );
             // ----------
-            ((__h_case_result ) ? i  : ({ /* cicili#Let1113 */
+            ((__h_case_result ) ? i  : ({ /* cicili#Let1110 */
                 // ----------
-                /* cicili#Block1115 */
+                /* cicili#Block1112 */
                 -1;
               }));
           });
@@ -836,43 +831,43 @@ int main () {
       show_List_int (ilist2 );
       fprintf (stdout , "\nlist3:\n");
       show_List_int (ilist3 );
-      fprintf (stdout , "\nlist4: take 2 of list2:\n");
+      fprintf (stdout , "\nlist4: take 5 of list3:\n");
       show_List_int (ilist4 );
       putchar ('\n');
     });
   });
-  ({ /* cicili#Let1123 */
-    __auto_type ra0  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let1125 */
+  ({ /* cicili#Let1120 */
+    __auto_type ra0  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let1122 */
       __auto_type tmp_obj  = new_Range_int (1, 20, 3);
       // ----------
       ((void)(tmp_obj -> __h_free_class ));
       tmp_obj ;
     });
-    __auto_type ra1  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let1128 */
+    __auto_type ra1  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let1125 */
       __auto_type tmp_obj  = take_Range_int (3, ra0 );
       // ----------
       ((void)(tmp_obj -> __h_free_class ));
       tmp_obj ;
     });
-    __auto_type ra2  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let1131 */
+    __auto_type ra2  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let1128 */
       __auto_type tmp_obj  = take_Range_int (4, ra0 );
       // ----------
       ((void)(tmp_obj -> __h_free_class ));
       tmp_obj ;
     });
-    __auto_type ra3  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let1134 */
+    __auto_type ra3  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let1131 */
       __auto_type tmp_obj  = take_Range_int (10, ra0 );
       // ----------
       ((void)(tmp_obj -> __h_free_class ));
       tmp_obj ;
     });
-    __auto_type str0  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let1137 */
+    __auto_type str0  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let1134 */
       __auto_type tmp_obj  = new_String_Const ("Hello World!");
       // ----------
       ((void)(tmp_obj -> __h_free_class ));
       tmp_obj ;
     });
-    __auto_type str1  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let1142 */
+    __auto_type str1  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let1139 */
       __auto_type tmp_obj  = new_List_int_Pure (((const int[]){ 72, 101, 108, 108, 111, 32, 87, 111, 114, 108, 100, 33}), 12);
       // ----------
       ((void)(tmp_obj -> __h_free_class ));

@@ -16,6 +16,7 @@
          (decl) (func (<> len type) ((type list)) (out int))
          (decl) (func (<> has len type) ((type list) (int desired)) (out int))
          (decl) (func (<> take type) ((int len) (type list)) (out type))
+         (decl) (func (<> last type) ((type list)) (out type))
          (decl) (func (<> append type) ((type llist) (type rlist)) (out type))
 
          (decl) (func (<> show type) ((type list)))
@@ -49,9 +50,12 @@
               (type tail))
            (free    (io this
                       (* Cons head tail
-                         (block (printf "destructuring List: %p\n" this)
+                         (block (printf "destructuring List: %p, " this)
+                           (fmt head)
+                           (putchar #\Newline)
                              ((<> free type) (aof tail))
-                           (free this))))))
+                             (free this)))
+                      (default (free this))))) ; Empty is pointer too
 
          (func (<> new type Pure) ((const a * buf) (int len))
                (out type)
@@ -107,12 +111,28 @@
                             ($> (<> push type) head $ ((<> take type) (-- len) tail)))
                          (default ((<> Empty a))))))
 
+         
+         (func (<> last type) ((type list))
+               (out type)
+               (return (match list
+                         (* Cons _ tail
+                            (match tail
+                              (* Empty list)
+                              (default ((<> last type) tail))))
+                         (default list))))
+
+         ;; appends second list at the end of first list and returns the first list
+         ;; no copy
          (func (<> append type) ((type llist) (type rlist))
                (out type)
-               (return (match llist
-                         (* Cons head tail
-                            ($> (<> push type) head $ ((<> append type) tail rlist)))
-                         (default rlist))))
+               (return (letin* ((last ((<> last type) llist)))
+                         (match last
+                           (* Cons _ tail
+                              (progn
+                                ((<> free type) (aof tail))
+                                (set ($ (-> last __h_data) Cons __h_1_mem) rlist)
+                                llist))
+                           (default rlist)))))
 
          (func (<> show type) ((type list))
                (io list

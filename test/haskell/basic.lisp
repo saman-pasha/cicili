@@ -298,10 +298,10 @@
           ;; letin is only for data or class instantiation  
           (letin* ((ilist0 (new^List^int '{ 1 2 3 4 }))        ; will be freed by ilist2, Notice: use Rc
                    (ilist1 ($> \:^List^int 5 ilist0))          ; \: 'push' is push^List^int to list function
-                   (intarr (cast (const int []) '{ 4 3 2 })))  ; pure c object could not be defined by normal letin
-            (letin ((* ilist2 ($> ++^List^int ilist1 ilist0))  ; ++ 'append' is append^List^int
-                    (* ilist3 (new^List^int intarr 3))         ; * tells compiler the defined variable is a pointer
-                    (* ilist4 (take^List^int 2 ilist2)))       ; produced by 'class' ctors
+                   (intarr (cast (const int []) '{ 8 7 6 }))   ; pure c object could not be defined by normal letin
+                   (ilist2 (new^List^int intarr 3)))           ; * tells compiler the defined variable is a pointer
+            (letin ((* ilist3 ($> ++^List^int ilist2 ilist1))  ; ++ 'append' is append^List^int
+                    (* ilist4 (take^List^int 5 ilist3)))       ; take creates a new list by copy of specified's elements
               (format #t "first elem of int list0: %d\n" (match (head^List^int ilist0) (Just i i) (default -1)))
               (format #t "first elem of int list1: %d\n" (match (head^List^int ilist1) (Just i i) (default -1)))
               (format #t "list0:\n")
@@ -312,7 +312,7 @@
               (show^List^int ilist2)
               (format #t "\nlist3:\n")
               (show^List^int ilist3)
-              (format #t "\nlist4: take 2 of list2:\n")
+              (format #t "\nlist4: take 5 of list3:\n")
               (show^List^int ilist4)
               (putchar #\Newline)))
         

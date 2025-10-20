@@ -25,7 +25,6 @@
 
 
 
-
 ;; binary associative identity operation
 ;; class Monoid m where
 ;;   mempty  :: m
@@ -100,7 +99,6 @@
             ((<> Monoid type mappend) mappend)))
 
          ) ; import-Monoid
-
 
 
 

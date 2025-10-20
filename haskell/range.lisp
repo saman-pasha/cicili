@@ -31,7 +31,8 @@
                       (* Cons from tail to step
                          (block
                              ((<> free type) (aof tail))
-                           (free this))))))
+                           (free this)))
+                      (default (free this)))))
 
          (func (<> new type) ((a from) (a to) (a step))
                (out type)

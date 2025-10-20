@@ -167,6 +167,7 @@ List_Bool drop_List_Bool (int index , List_Bool list );
 int len_List_Bool (List_Bool list );
 int has_len_List_Bool (List_Bool list , int desired );
 List_Bool take_List_Bool (int len , List_Bool list );
+List_Bool last_List_Bool (List_Bool list );
 List_Bool append_List_Bool (List_Bool llist , List_Bool rlist );
 void show_List_Bool (List_Bool list );
 #ifndef __H___h_List_ctor_t__
@@ -182,10 +183,10 @@ typedef void (*free_List_int_t) (List_int * this_ptr );
 typedef struct __h_List_int_class_t {
   free_List_int_t __h_free_class ;
   char __h_ctor ;
-  union { /* ciciliUnion254 */
-    struct { /* ciciliStruct255 */
+  union { /* ciciliUnion256 */
+    struct { /* ciciliStruct257 */
     } Empty , _0 ;
-    struct { /* ciciliStruct256 */
+    struct { /* ciciliStruct258 */
       int __h_0_mem ;
       List_int __h_1_mem ;
     } Cons , _ ;
@@ -201,6 +202,7 @@ List_int drop_List_int (int index , List_int list );
 int len_List_int (List_int list );
 int has_len_List_int (List_int list , int desired );
 List_int take_List_int (int len , List_int list );
+List_int last_List_int (List_int list );
 List_int append_List_int (List_int llist , List_int rlist );
 void show_List_int (List_int list );
 #ifndef __H___h_List_ctor_t__
@@ -216,10 +218,10 @@ typedef void (*free_List_char_t) (List_char * this_ptr );
 typedef struct __h_List_char_class_t {
   free_List_char_t __h_free_class ;
   char __h_ctor ;
-  union { /* ciciliUnion301 */
-    struct { /* ciciliStruct302 */
+  union { /* ciciliUnion305 */
+    struct { /* ciciliStruct306 */
     } Empty , _0 ;
-    struct { /* ciciliStruct303 */
+    struct { /* ciciliStruct307 */
       char __h_0_mem ;
       List_char __h_1_mem ;
     } Cons , _ ;
@@ -235,6 +237,7 @@ List_char drop_List_char (int index , List_char list );
 int len_List_char (List_char list );
 int has_len_List_char (List_char list , int desired );
 List_char take_List_char (int len , List_char list );
+List_char last_List_char (List_char list );
 List_char append_List_char (List_char llist , List_char rlist );
 void show_List_char (List_char list );
 typedef List_char String ;
@@ -277,10 +280,10 @@ typedef void (*free_Range_int_t) (Range_int * this_ptr );
 typedef struct __h_Range_int_class_t {
   free_Range_int_t __h_free_class ;
   char __h_ctor ;
-  union { /* ciciliUnion381 */
-    struct { /* ciciliStruct382 */
+  union { /* ciciliUnion387 */
+    struct { /* ciciliStruct388 */
     } Empty , _0 ;
-    struct { /* ciciliStruct383 */
+    struct { /* ciciliStruct389 */
       int __h_0_mem ;
       Range_int __h_1_mem ;
       int __h_2_mem ;
@@ -310,10 +313,10 @@ typedef void (*free_Maybe_List_Bool_t) (Maybe_List_Bool * this );
 typedef struct Maybe_List_Bool {
   free_Maybe_List_Bool_t __h_free_data ;
   char __h_ctor ;
-  union { /* ciciliUnion412 */
-    struct { /* ciciliStruct413 */
+  union { /* ciciliUnion418 */
+    struct { /* ciciliStruct419 */
     } Nothing , _0 ;
-    struct { /* ciciliStruct414 */
+    struct { /* ciciliStruct420 */
       List_Bool __h_0_mem ;
     } Just , _ ;
   } __h_data ;
@@ -336,10 +339,10 @@ typedef void (*free_Maybe_List_int_t) (Maybe_List_int * this );
 typedef struct Maybe_List_int {
   free_Maybe_List_int_t __h_free_data ;
   char __h_ctor ;
-  union { /* ciciliUnion433 */
-    struct { /* ciciliStruct434 */
+  union { /* ciciliUnion439 */
+    struct { /* ciciliStruct440 */
     } Nothing , _0 ;
-    struct { /* ciciliStruct435 */
+    struct { /* ciciliStruct441 */
       List_int __h_0_mem ;
     } Just , _ ;
   } __h_data ;
@@ -362,10 +365,10 @@ typedef void (*free_Maybe_List_char_t) (Maybe_List_char * this );
 typedef struct Maybe_List_char {
   free_Maybe_List_char_t __h_free_data ;
   char __h_ctor ;
-  union { /* ciciliUnion454 */
-    struct { /* ciciliStruct455 */
+  union { /* ciciliUnion460 */
+    struct { /* ciciliStruct461 */
     } Nothing , _0 ;
-    struct { /* ciciliStruct456 */
+    struct { /* ciciliStruct462 */
       List_char __h_0_mem ;
     } Just , _ ;
   } __h_data ;
@@ -388,10 +391,10 @@ typedef void (*free_Maybe_String_t) (Maybe_String * this );
 typedef struct Maybe_String {
   free_Maybe_String_t __h_free_data ;
   char __h_ctor ;
-  union { /* ciciliUnion475 */
-    struct { /* ciciliStruct476 */
+  union { /* ciciliUnion481 */
+    struct { /* ciciliStruct482 */
     } Nothing , _0 ;
-    struct { /* ciciliStruct477 */
+    struct { /* ciciliStruct483 */
       String __h_0_mem ;
     } Just , _ ;
   } __h_data ;
@@ -413,10 +416,10 @@ typedef void (*free_List_List_int_t) (List_List_int * this_ptr );
 typedef struct __h_List_List_int_class_t {
   free_List_List_int_t __h_free_class ;
   char __h_ctor ;
-  union { /* ciciliUnion495 */
-    struct { /* ciciliStruct496 */
+  union { /* ciciliUnion501 */
+    struct { /* ciciliStruct502 */
     } Empty , _0 ;
-    struct { /* ciciliStruct497 */
+    struct { /* ciciliStruct503 */
       List_int __h_0_mem ;
       List_List_int __h_1_mem ;
     } Cons , _ ;
@@ -432,6 +435,7 @@ List_List_int drop_List_List_int (int index , List_List_int list );
 int len_List_List_int (List_List_int list );
 int has_len_List_List_int (List_List_int list , int desired );
 List_List_int take_List_List_int (int len , List_List_int list );
+List_List_int last_List_List_int (List_List_int list );
 List_List_int append_List_List_int (List_List_int llist , List_List_int rlist );
 void show_List_List_int (List_List_int list );
 #ifndef __H___h_List_ctor_t__
@@ -447,10 +451,10 @@ typedef void (*free_List_List_char_t) (List_List_char * this_ptr );
 typedef struct __h_List_List_char_class_t {
   free_List_List_char_t __h_free_class ;
   char __h_ctor ;
-  union { /* ciciliUnion540 */
-    struct { /* ciciliStruct541 */
+  union { /* ciciliUnion548 */
+    struct { /* ciciliStruct549 */
     } Empty , _0 ;
-    struct { /* ciciliStruct542 */
+    struct { /* ciciliStruct550 */
       List_char __h_0_mem ;
       List_List_char __h_1_mem ;
     } Cons , _ ;
@@ -466,6 +470,7 @@ List_List_char drop_List_List_char (int index , List_List_char list );
 int len_List_List_char (List_List_char list );
 int has_len_List_List_char (List_List_char list , int desired );
 List_List_char take_List_List_char (int len , List_List_char list );
+List_List_char last_List_List_char (List_List_char list );
 List_List_char append_List_List_char (List_List_char llist , List_List_char rlist );
 void show_List_List_char (List_List_char list );
 #ifndef __H___h_List_ctor_t__
@@ -481,10 +486,10 @@ typedef void (*free_List_String_t) (List_String * this_ptr );
 typedef struct __h_List_String_class_t {
   free_List_String_t __h_free_class ;
   char __h_ctor ;
-  union { /* ciciliUnion585 */
-    struct { /* ciciliStruct586 */
+  union { /* ciciliUnion595 */
+    struct { /* ciciliStruct596 */
     } Empty , _0 ;
-    struct { /* ciciliStruct587 */
+    struct { /* ciciliStruct597 */
       String __h_0_mem ;
       List_String __h_1_mem ;
     } Cons , _ ;
@@ -500,6 +505,7 @@ List_String drop_List_String (int index , List_String list );
 int len_List_String (List_String list );
 int has_len_List_String (List_String list , int desired );
 List_String take_List_String (int len , List_String list );
+List_String last_List_String (List_String list );
 List_String append_List_String (List_String llist , List_String rlist );
 void show_List_String (List_String list );
 typedef struct __h_Rc_List_Bool_class_t __h_Rc_List_Bool_class_t ;
@@ -540,8 +546,8 @@ typedef void (*free_Monoid_Sum_int_t) (Monoid_Sum_int * this );
 typedef struct Monoid_Sum_int {
   free_Monoid_Sum_int_t __h_free_data ;
   char __h_ctor ;
-  union { /* ciciliUnion721 */
-    struct { /* ciciliStruct722 */
+  union { /* ciciliUnion733 */
+    struct { /* ciciliStruct734 */
       Monoid_Sum_int_mappend __h_0_mem ;
       int __h_1_mem ;
       Monoid_Sum_int_mconcat __h_2_mem ;
@@ -561,8 +567,8 @@ typedef void (*free_Semigroup_Sum_int_t) (Semigroup_Sum_int * this );
 typedef struct Semigroup_Sum_int {
   free_Semigroup_Sum_int_t __h_free_data ;
   char __h_ctor ;
-  union { /* ciciliUnion739 */
-    struct { /* ciciliStruct740 */
+  union { /* ciciliUnion751 */
+    struct { /* ciciliStruct752 */
       Monoid_Sum_int_mappend __h_0_mem ;
     } sg_Sum_int , _ ;
   } __h_data ;
@@ -586,8 +592,8 @@ typedef void (*free_Monoid_Product_int_t) (Monoid_Product_int * this );
 typedef struct Monoid_Product_int {
   free_Monoid_Product_int_t __h_free_data ;
   char __h_ctor ;
-  union { /* ciciliUnion777 */
-    struct { /* ciciliStruct778 */
+  union { /* ciciliUnion789 */
+    struct { /* ciciliStruct790 */
       Monoid_Product_int_mappend __h_0_mem ;
       int __h_1_mem ;
       Monoid_Product_int_mconcat __h_2_mem ;
@@ -607,8 +613,8 @@ typedef void (*free_Semigroup_Product_int_t) (Semigroup_Product_int * this );
 typedef struct Semigroup_Product_int {
   free_Semigroup_Product_int_t __h_free_data ;
   char __h_ctor ;
-  union { /* ciciliUnion795 */
-    struct { /* ciciliStruct796 */
+  union { /* ciciliUnion807 */
+    struct { /* ciciliStruct808 */
       Monoid_Product_int_mappend __h_0_mem ;
     } sg_Product_int , _ ;
   } __h_data ;
@@ -634,8 +640,8 @@ typedef void (*free_Monoid_Concat_List_int_t) (Monoid_Concat_List_int * this );
 typedef struct Monoid_Concat_List_int {
   free_Monoid_Concat_List_int_t __h_free_data ;
   char __h_ctor ;
-  union { /* ciciliUnion860 */
-    struct { /* ciciliStruct861 */
+  union { /* ciciliUnion872 */
+    struct { /* ciciliStruct873 */
       Monoid_Concat_List_int_mappend __h_0_mem ;
       List_int __h_1_mem ;
       Monoid_Concat_List_int_mconcat __h_2_mem ;
@@ -655,8 +661,8 @@ typedef void (*free_Semigroup_Concat_List_int_t) (Semigroup_Concat_List_int * th
 typedef struct Semigroup_Concat_List_int {
   free_Semigroup_Concat_List_int_t __h_free_data ;
   char __h_ctor ;
-  union { /* ciciliUnion879 */
-    struct { /* ciciliStruct880 */
+  union { /* ciciliUnion891 */
+    struct { /* ciciliStruct892 */
       Monoid_Concat_List_int_mappend __h_0_mem ;
     } sg_Concat_List_int , _ ;
   } __h_data ;
@@ -680,8 +686,8 @@ typedef void (*free_Monoid_Concat_List_char_t) (Monoid_Concat_List_char * this )
 typedef struct Monoid_Concat_List_char {
   free_Monoid_Concat_List_char_t __h_free_data ;
   char __h_ctor ;
-  union { /* ciciliUnion926 */
-    struct { /* ciciliStruct927 */
+  union { /* ciciliUnion938 */
+    struct { /* ciciliStruct939 */
       Monoid_Concat_List_char_mappend __h_0_mem ;
       List_char __h_1_mem ;
       Monoid_Concat_List_char_mconcat __h_2_mem ;
@@ -701,8 +707,8 @@ typedef void (*free_Semigroup_Concat_List_char_t) (Semigroup_Concat_List_char * 
 typedef struct Semigroup_Concat_List_char {
   free_Semigroup_Concat_List_char_t __h_free_data ;
   char __h_ctor ;
-  union { /* ciciliUnion945 */
-    struct { /* ciciliStruct946 */
+  union { /* ciciliUnion957 */
+    struct { /* ciciliStruct958 */
       Monoid_Concat_List_char_mappend __h_0_mem ;
     } sg_Concat_List_char , _ ;
   } __h_data ;
@@ -726,8 +732,8 @@ typedef void (*free_Monoid_Concat_String_char_t) (Monoid_Concat_String_char * th
 typedef struct Monoid_Concat_String_char {
   free_Monoid_Concat_String_char_t __h_free_data ;
   char __h_ctor ;
-  union { /* ciciliUnion992 */
-    struct { /* ciciliStruct993 */
+  union { /* ciciliUnion1004 */
+    struct { /* ciciliStruct1005 */
       Monoid_Concat_String_char_mappend __h_0_mem ;
       List_char __h_1_mem ;
       Monoid_Concat_String_char_mconcat __h_2_mem ;
@@ -747,8 +753,8 @@ typedef void (*free_Semigroup_Concat_String_char_t) (Semigroup_Concat_String_cha
 typedef struct Semigroup_Concat_String_char {
   free_Semigroup_Concat_String_char_t __h_free_data ;
   char __h_ctor ;
-  union { /* ciciliUnion1011 */
-    struct { /* ciciliStruct1012 */
+  union { /* ciciliUnion1023 */
+    struct { /* ciciliStruct1024 */
       Monoid_Concat_String_char_mappend __h_0_mem ;
     } sg_Concat_String_char , _ ;
   } __h_data ;

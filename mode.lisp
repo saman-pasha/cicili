@@ -99,6 +99,7 @@
    (1 . Either)
    (1 . Left)
    (1 . Right)
+   (1 . Rc)
    ))
 
 (defun cicili-add-keywords (face-name keyword-rules)
@@ -220,6 +221,7 @@
    (1 . Either)
    (1 . Left)
    (1 . Right)
+   (1 . rc)
    ))
 
 (defun cicili-add-attributes (face-name keyword-rules)

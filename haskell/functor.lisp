@@ -1,6 +1,6 @@
 
 ;; fa from datatype
-;; ga to datatype
+;; gb to datatype
 ;; a type inside fa
 ;; b type inside ga
 ;; class Functor f where
@@ -14,7 +14,7 @@
              ((<> fmap fa gb Pure)
               '(lambda ((a input))
                 (out b)
-                (return atob))
+                (return ($> atob $ input)))
               list))
          
          ) ; decl-Functor
@@ -29,6 +29,20 @@
 
          ) ; define-Functor
 
+(generic import-Functor (fa gb a b)
+
+         (fn (<> fmap fa gb) atob list
+             ((<> fmap fa gb Pure)
+              '(lambda ((a input))
+                (out b)
+                (return ($> atob $ input)))
+              list))
+
+         ) ; import-Functor
+
+
+
+;; List Functor
 (generic decl-Functor-List (a b)
 
          (decl-Functor (<> List a) (<> List b) a b)
@@ -43,22 +57,11 @@
                          (match input
                            (* _ head tail
                               ($> (<> Cons b)
-                                (atob head)
+                                ($> atob $ head)
                                 ((<> fmap (<> List a) (<> List b) Pure) atob tail)))
                            (default ((<> Empty b)))))
 
          ) ; define-Functor-List
-
-(generic import-Functor (fa gb a b)
-
-         (fn (<> fmap fa gb) atob list
-             ((<> fmap fa gb Pure)
-              '(lambda ((a input))
-                (out b)
-                (return atob))
-              list)) 
-
-         ) ; import-Functor
 
 (generic import-Functor-List (a b)
 
