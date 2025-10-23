@@ -100,6 +100,11 @@
    (1 . Left)
    (1 . Right)
    (1 . Rc)
+   (1 . show)
+   (1 . Monoid)
+   (1 . Functor)
+   (1 . Applicative)
+   (1 . Monad)
    ))
 
 (defun cicili-add-keywords (face-name keyword-rules)

@@ -1,5 +1,5 @@
 
-;; (import "haskell/either.lisp")
+(import "haskell/applicative.lisp")
 
 (source "concepts.c" (:std #t :compile #t :link "-L{$CCL} -lhaskell.o -L{$CWD} concepts.o -o main")
         (include "../../haskell.h")
@@ -25,9 +25,6 @@
 
         (define-reduce char)
 
-        (import-Functor-List int int)
-        (import-Functor-List int Bool)
-
         (decl-Either String int)
         (define-Either String int)
 
@@ -36,6 +33,18 @@
               (if (== y 0)
                   (return ((<> Left String int) (new^String "zero division")))
                   (return ((<> Right String int) (/ x y)))))
+
+        ;; (int -> int) -> Maybe int -> Maybe int
+        (decl-Functor-Maybe Maybe^int^int int int)
+        (define-Functor-Maybe Maybe^int^int int int)
+        
+        ;; Maybe (Functor (Maybe int) -> (Maybe int))
+        (decl-Maybe Functor^Maybe^int^int)
+        (define-Maybe Functor^Maybe^int^int)
+
+        ;; Maybe (int -> int) -> Maybe int -> Maybe int
+        (decl-Applicative-Maybe Maybe^int^int int int)
+        (define-Applicative-Maybe Maybe^int^int int int)
         
         (main
             ;; test Rc
@@ -133,41 +142,66 @@
           (io (get^Semigroup^Concat^String^char)
             (_ mappend
                (letin* ((s1 ((<> new String) "Hello "))
-                        (s2 ((<> new String) "Cicili")))
+                        (s2 ((<> new String) "Cicili!")))
                  (letin ((* result (mappend s1 s2))) ; frees all at once because of using append they are chained together
                    (format #t "Concat of Strings (mappend Semigroup) of 'Hello ' and 'Cicili' is:\n")
                    (show^String result)
                    (putchar #\Newline)))))
 
-          ;; imported above
-          (where ((fmap-mul-2 ((<> fmap (<> List int) (<> List int))
-                               (\\ in (* in 2)))) ; reducible function 
-                  (fmap-mod-3 ((<> fmap (<> List int) (<> List Bool)) ; returns a Bool
-                               (\\ in (case (% in 3)  (False)
-                                            otherwise (True))))))
+          ;; using Functor datatype or fmap directly
+          ;; apply irreducible function over list
+          (letin* ((ftor_mul_5 (get^Functor^List^int^int  '(lambda ((int value)) (out int) (return (* 5 value)))))
+                   (ftor_mod_3 (get^Functor^List^int^Bool '(lambda ((int value))
+                                                            (out Bool)
+                                                            (return (case (% value 3) (False)
+                                                                          otherwise   (True)))))))
             
-            (letin ((* l1 ((<> new List int) '{ 1 2 3 4 5 6 }))
-                    ;; (int -> int) -> [int] -> [int]
-                    (* r1 (fmap-mul-2 l1))
-                    ;; (int -> Bool) -> [int] -> [Bool]
-                    (* r2 (fmap-mod-3 l1))
-                    ;; bad practice! the middle result won't be freed
-                    ;; (* r3 ($> fmap-mod-3 ! fmap-mul-2 $ l1))
-                    ;; right way is using curry lambda
-                    (* r3 ($> (\\ inp
-                                  (letin* ((strict_in inp free^List^int)) ; could be defined in where clause instead
-                                    (fmap-mod-3 strict_in))) ; a lambda for composition to free middle pointer
-                            ! fmap-mul-2 $ l1)))
+            (where ((fmap-mul-5 (\\ l (match ftor_mul_5 (_ fmap a_b (fmap a_b l)) (default (Empty^int)))))
+                    (fmap-mod-3 (\\ l (match ftor_mod_3 (_ fmap a_b (fmap a_b l)) (default (Empty^Bool))))))
               
-              (format #t "fmap (*2) of { 1 2 3 4 5 6 } is:\n")
-              (show^List^int r1)
-              (putchar #\Newline)
-              (format #t "fmap (%%3) of { 1 2 3 4 5 6 } is:\n")
-              (show^List^Bool r2)
-              (putchar #\Newline)
-              (format #t "fmap (%%3) ! fmap (*2) of { 1 2 3 4 5 6 } is:\n")
-              (show^List^Bool r3)
-              (putchar #\Newline)
-              ))
+              (letin ((* l1 ((<> new List int) '{ 1 2 3 4 5 6 }))
+                      ;; (int -> int) -> [int] -> [int]
+                      (* r1 (fmap-mul-5 l1))
+                      ;; (int -> Bool) -> [int] -> [Bool]
+                      (* r2 (fmap-mod-3 r1))
+                      ;; bad practice! the middle result won't be freed
+                      ;; (* r3 ($> fmap-mod-3 ! fmap-mul-5 $ l1))
+                      ;; right way is using curry lambda
+                      (* r3 ($> (\\ inp (letin* ((strict_in inp free^List^int)) ; could be defined in where clause instead
+                                          (fmap-mod-3 strict_in))) ; a lambda for composition to free middle pointer
+                              ! fmap-mul-5 $ l1)))
+                
+                (format #t "fmap (*5) of { 1 2 3 4 5 6 } is:\n")
+                (show^List^int r1)
+                (putchar #\Newline)
+                (format #t "fmap (%%3) of { 1 2 3 4 5 6 } is:\n")
+                (show^List^Bool r2)
+                (putchar #\Newline)
+                (format #t "fmap (%%3) ! fmap (*5) of { 1 2 3 4 5 6 } is:\n")
+                (show^List^Bool r3)
+                (putchar #\Newline)
+
+                (io (get^Monoid^All^Bool)
+                  (_ _ _ mconcat 
+                     (progn
+                       (format #t "the result of 'All' monoid is: ")
+                       (show^Bool (mconcat r3))
+                       (putchar #\Newline))))
+
+                (io (get^Monoid^Any^Bool)
+                  (_ _ _ mconcat
+                     (progn
+                       (format #t "the result of 'Any' monoid is: ")
+                       (show^Bool (mconcat r3))
+                       (putchar #\Newline))))
+
+                )))
+
+          (letin* ((ftor_mul_15 (get^Functor^Maybe^int^int  '(lambda ((int value)) (out int) (return (* 15 value))))))
+            (io (get^Applicative^Maybe^int^int)
+              (_ pure ap
+                 (io (ap (pure ftor_mul_15) (Just^int 12))
+                   (Just output (format #t "the result of 'Applicative for Maybe (*15)' is: Just %d\n" output))
+                   (default (format #t "the result of 'Applicative for Maybe (*15)' is: Nothing\n"))))))
 
           ))

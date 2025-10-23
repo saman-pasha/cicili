@@ -1,146 +1,88 @@
 
-(generic decl-folds (a)
+;;; Monoidal Functor
 
-         (decl) (func (<> foldr a) ((func folder ((a lhs) (a rhs)) (out a))
-                                    (a neutral)
-                                    ((<> List a) foldable))
-                      (out a))
-
-         ) ; decl-String
-
-(generic define-folds (a)
-
-         (func (<> foldr a) ((func folder ((a lhs) (a rhs)) (out a))
-                             (a neutral)
-                             ((<> List a) foldable))
-               (out a)
-               (return
-                 (match foldable
-                   (* Cons head tail
-                      ((<> foldr a) folder (folder neutral head) tail))
-                   (default neutral))))
-         
-         ) ; define-String
-
-
-
-
-
-;; Monoidal Functor
+;; factor  f
+;; monoid  [ ] a -> [ ] a -> [ ] a
+;; functor f (a -> b) -> f a -> f b
+;; how smash f (a -> b) and f a to produce f b untouched
 ;; class Functor f => Applicative f where
 ;;   pure :: a -> f a
+;;   ap   :: f (a -> b) -> f a -> f b      -- or tie-fighter
 ;;   <*>  :: f (a -> b) -> f a -> f b
-(generic decl-Applicative (f a b)
+(generic decl-Applicative (type f a b)
 
-         (typedef func (<> f func a b) ((a value)) (out b))
-         (typedef func (<> App f a b pure) ((a value)) (out (<> f b)))
-         (typedef func (<> App f a b ap) (((<> f func a b) atob) ((<> f a) value)) (out (<> f b)))
+         ;; known constructor
+         (typedef func (<> Applicative type pure t) (((<> Functor type) ftor)) (out (<> f (<> Functor type))))
+         ;; takes a functorial structure to ap over a structure
+         (typedef func (<> Applicative type ap t) (((<> f (<> Functor type)) functor) ((<> f a) input)) (out (<> f b)))
 
-         (decl-data (<> Applicative f a b)
-           ((<> App f a b)
-            ((<> App f a b pure) pure)
-            ((<> App f a b ap) ap)))
+         (decl-data (Applicative (<> Applicative type))
+           (= Applicative (<> Applicative type ctor)
+              ((<> Applicative type pure t) pure)
+              ((<> Applicative type ap t) ap)))
 
-         (decl-data (<> Semigroup type)
-           ((<> sg type)
-            ((<> Monoid type mappend) mappend)))
+         (decl) (func (<> Applicative type pure) (((<> Functor type) ftor)) (out (<> f (<> Functor type))))
+         (decl) (func (<> Applicative type ap) (((<> f (<> Functor type)) functor) ((<> f a) input)) (out (<> f b)))
 
-         (decl) (func (<> Monoid type mappend a s) ((a x) (a y)) (out a))
-         (decl) (func (<> Monoid type mconcat a s) (((<> List a) l)) (out a))
-
-         (decl) (func (<> get Monoid type) () (out (<> Monoid type)))
-         (decl) (func (<> get Semigroup type) () (out (<> Semigroup type)))
+         (decl) (func (<> get Applicative type) () (out (<> Applicative type)))
          
-         ) ; decl-String
+         ) ; decl-Applicative
 
-(generic define-Monoid (type a neutral op)
+;; ctor could be every thing where accept an argument of type 'a'
+;; mat has access to 'functor' and 'input' variables inside 'ap' function
+(generic define-Applicative (type f a b wrap mat)
 
-         (define-data (<> Monoid type)
-           ((<> m type)
-            ((<> Monoid type mappend) mappend)
-            (a mempty)
-            ((<> Monoid type mconcat) mconcat)))
+         (define-data (Applicative (<> Applicative type))
+           (= Applicative (<> Applicative type ctor)
+              ((<> Applicative type pure t) pure)
+              ((<> Applicative type ap t) ap)))
 
-         (define-data (<> Semigroup type)
-           ((<> sg type)
-            ((<> Monoid type mappend) mappend)))
+         (func (<> Applicative type pure) (((<> Functor type) ftor))
+               (out (<> f (<> Functor type)))
+               (return (wrap ftor)))
 
-         (func (<> Monoid type mappend a s) ((a x) (a y))
-               (out a)
-               (return (op x y)))
+         (func (<> Applicative type ap) (((<> f (<> Functor type)) functor) ((<> f a) input))
+               (out (<> f b))
+               (return mat))
 
-         (func (<> Monoid type mconcat a s) (((<> List a) l))
-               (out a)
-               (return ((<> foldr a) (<> Monoid type mappend a s) neutral l)))
+         (func (<> get Applicative type) ()
+               (out (<> Applicative type))
+               (return ($> (<> Applicative type ctor)
+                         (<> Applicative type pure)
+                         (<> Applicative type ap))))
 
-         (func (<> get Monoid type) ()
-               (out (<> Monoid type))
-               (return ($> (<> m type)
-                         (<> Monoid type mappend a s)
-                         neutral
-                         (<> Monoid type mconcat a s))))
+         ) ; define-Applicative
+
+(generic import-Applicative (type f a b)
+
+         (import-data (Applicative (<> Applicative type))
+           (= Applicative (<> Applicative type)
+              ((<> Applicative type pure t) pure)
+              ((<> Applicative type ap t) ap)))
+
+         ) ; import-Applicative
+
+
+
+
+(generic decl-Applicative-Maybe (type a b)
+
+         (decl-Applicative type Maybe a b)
          
-         (func (<> get Semigroup type) ()
-               (out (<> Semigroup type))
-               (return ($> (<> sg type) (<> Monoid type mappend a s))))
+         ) ; decl-Applicative-Maybe
 
-) ; define-String
+(generic define-Applicative-Maybe (type a b)
 
-(generic import-Monoid (type a)
-
-         (import-data (<> Monoid type)
-           ((<> m type)
-            ((<> Monoid type mappend) mappend)
-            (a mempty)
-            ((<> Monoid type mconcat) mconcat)))
-
-         (import-data (<> Semigroup type)
-           ((<> sg type)
-            ((<> Monoid type mappend) mappend)))
-
-         ) ; import-String
-
-
-
-
-
-;; binary associative operation
-;; class Semigroup m where
-;;   mappend :: m -> m -> m
-(generic decl-Semigroup (type a)
-
-         (typedef func (<> Semigroup type mappend) ((a lhs) (a rhs)) (out a))
-
-         (decl-data (<> Semigroup type)
-           ((<> sg type)
-            ((<> Semigroup type mappend) mappend)))
-
-         (decl) (func (<> Semigroup type mappend a s) ((a x) (a y)) (out a))
-
-         (decl) (func (<> get Semigroup type) () (out (<> Semigroup type)))
+         (define-Applicative type Maybe a b
+                             (<> Just (<> Functor type))
+                             (match functor
+                               (Just (_ fmap a_b) (fmap a_b input))
+                               (default ((<> Nothing b)))))
          
-         ) ; decl-String
+         ) ; define-Applicative-Maybe
 
-(generic define-Semigroup (type a op)
+(generic import-Applicative-Maybe (type a b)
 
-         (define-data (<> Semigroup type)
-           ((<> sg type)
-            ((<> Monoid type mappend) mappend)))
-
-         (func (<> Semigroup type mappend a s) ((a x) (a y))
-               (out a)
-               (return (op x y)))
+         (import-Applicative type Maybe a b)
          
-         (func (<> get Semigroup type) ()
-               (out (<> Semigroup type))
-               (return ($> (<> sg type) (<> Semigroup type mappend a s))))
-
-) ; define-String
-
-(generic import-Semigroup (type)
-
-         (import-data (<> Semigroup type)
-           ((<> sg type)
-            ((<> Semigroup type mappend) mappend)))
-
-         ) ; import-String
+         ) ; import-Applicative-Maybe

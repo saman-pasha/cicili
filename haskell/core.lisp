@@ -1,10 +1,10 @@
 ;;;; Haskell Thinking Model Implementation for Cicili
 
 ;; lambda calculus
-;; single parameter
-;; single irreducible clause
-;; (f n)
 ;; reducible
+;; single parameter
+;; outputs single irreducible clause
+;; (f n)
 (DEFMACRO lambda (macro param body)
   `(DEFMACRO ,macro (arg)
      (LET ((param ',param)
@@ -18,7 +18,6 @@
 ;; reducible function
 (DEFMACRO fn (macro param &REST body)
   (LET ((macro (MACROEXPAND macro)))
-    ;; (SETF (MACRO-FUNCTION (INTERN (SUBSTITUTE #\^ #\_ (SYMBOL-NAME ,macro)))) (MACRO-FUNCTION ,macro)) ; alias ^ _
     (WHEN (NULL body) (ERROR (FORMAT NIL "fn without any parameter or body: (~A ~A)" macro param)))
     (LET* ((params (REVERSE (CDR (REVERSE (APPEND (LIST param) body)))))
            (body (CAR (LAST body)))
