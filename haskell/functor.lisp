@@ -28,7 +28,7 @@
                                              (out b)
                                              (return ($> a->b __h_value))))
                (_ fmap a_b (fmap a_b f~a))
-               (default ((<> mempty (<> List b)))))) ; uses monoid                     
+               (default ((<> mempty (<> f b)))))) ; uses monoid                     
 
          ) ; decl-Functor
 
@@ -59,7 +59,7 @@
                                              (out b)
                                              (return ($> a->b value))))
                (_ fmap a_b (fmap a_b f~a))
-               (default ((<> mempty (<> List b)))))) ; uses monoid
+               (default ((<> mempty (<> f b)))))) ; uses monoid
 
          ) ; import-Functor
 
