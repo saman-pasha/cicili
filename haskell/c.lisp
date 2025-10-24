@@ -31,6 +31,7 @@
         (decl-Maybe List^char)
         (decl-Maybe String)
 
+        (decl-List List^List^Bool List^Bool)
         (decl-List List^List^int  List^int)
         (decl-List List^List^char List^char)
         (decl-List List^String    String)
@@ -42,18 +43,21 @@
         
         (decl-folds Bool)
         (decl-folds int)
+        (decl-folds char)
         
         (decl-Monoid (<> All     Bool) Bool)
         (decl-Monoid (<> Any     Bool) Bool)
         (decl-Monoid (<> Sum     int)  int)
         (decl-Monoid (<> Product int)  int)
 
+        (decl-folds (<> List Bool))
         (decl-folds (<> List int))
         (decl-folds (<> List char))
 
-        (decl-Monoid (<> Concat List   int)  (<> List int))
-        (decl-Monoid (<> Concat List   char) (<> List char))
-        (decl-Monoid (<> Concat String char) (<> List char))
+        (decl-Monoid (<> List   Bool) (<> List Bool))
+        (decl-Monoid (<> List   int)  (<> List int))
+        (decl-Monoid (<> List   char) (<> List char))
+        (decl-Monoid (<> String char) (<> List char))
 
         (decl-Functor-List List^int^int   int  int)
         (decl-Functor-List List^int^Bool  int  Bool)
@@ -113,6 +117,7 @@
         (define-Maybe List^char)
         (define-Maybe String)
 
+        (define-List List^List^Bool List^Bool (\\ v ((<> show List^Bool) v)))
         (define-List List^List^int  List^int  (\\ v ((<> show List^int)  v)))
         (define-List List^List^char List^char (\\ v ((<> show List^char) v)))
         (define-List List^String    String    (\\ v ((<> show List^char) v)))
@@ -124,24 +129,30 @@
         
         (define-folds Bool)
         (define-folds int)
+        (define-folds char)
         
         (define-Monoid (<> All     Bool) Bool (True)  Bool_and)
         (define-Monoid (<> Any     Bool) Bool (False) Bool_or)
         (define-Monoid (<> Sum     int)  int  0       +)
         (define-Monoid (<> Product int)  int  1       *)
         
+        (define-folds (<> List Bool))
         (define-folds (<> List int))
         (define-folds (<> List char))
 
-        (define-Monoid (<> Concat List int)
+        (define-Monoid (<> List Bool)
+          (<> List Bool)
+          ((<> Empty Bool))
+          (<> append List Bool))
+        (define-Monoid (<> List int)
           (<> List int)
           ((<> Empty int))
           (<> append List int))
-        (define-Monoid (<> Concat List char)
+        (define-Monoid (<> List char)
           (<> List char)
           ((<> Empty char))
           (<> append List char))
-        (define-Monoid (<> Concat String char)
+        (define-Monoid (<> String char)
           (<> List char)
           ((<> Empty char))
           (<> append String))

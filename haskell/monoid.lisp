@@ -48,15 +48,23 @@
            (= Semigroup (<> Semigroup type ctor)
             ((<> Monoid type mappend t) mappend)))
 
-         (decl) (func (<> Monoid type mappend) ((a x) (a y)) (out a))
-         (decl) (func (<> Monoid type mconcat) (((<> List a) l)) (out a))
+         (decl) (func (<> Monoid type mappend) ((a lhs) (a rhs)) (out a))
+         (decl) (func (<> Monoid type mconcat) (((<> List a) list)) (out a))
 
          (decl) (func (<> get Monoid type) () (out (<> Monoid type)))
          (decl) (func (<> get Semigroup type) () (out (<> Semigroup type)))
-         
+
+         (decl) (func (<> mempty type) () (out a))
+
+         (fn (<> mappend type) lhs rhs
+             ((<> Monoid type mappend) lhs rhs))
+
+         (fn (<> mconcat type) list
+             ((<> Monoid type mconcat) ((<> new List type) list)))
+
          ) ; decl-Monoid
 
-;; op is a irreducible function which accepts a and b
+;; op is a strict irreducible function which accepts a and b
 (generic define-Monoid (type a neutral op)
 
          (define-data (Monoid (<> Monoid type))
@@ -69,13 +77,13 @@
            (= Semigroup (<> Semigroup type ctor)
             ((<> Monoid type mappend t) mappend)))
 
-         (func (<> Monoid type mappend) ((a x) (a y))
+         (func (<> Monoid type mappend) ((a lhs) (a rhs))
                (out a)
-               (return (op x y)))
+               (return (op lhs rhs)))
 
-         (func (<> Monoid type mconcat) (((<> List a) l))
+         (func (<> Monoid type mconcat) (((<> List a) list))
                (out a)
-               (return ((<> foldr a) (<> Monoid type mappend) neutral l)))
+               (return ((<> foldr a) (<> Monoid type mappend) neutral list)))
 
          (func (<> get Monoid type) ()
                (out (<> Monoid type))
@@ -87,6 +95,9 @@
          (func (<> get Semigroup type) ()
                (out (<> Semigroup type))
                (return ($> (<> Semigroup type ctor) (<> Monoid type mappend))))
+
+         (func (<> mempty type) () (out a)
+               (return neutral))
 
          ) ; define-Monoid
 
@@ -102,6 +113,12 @@
            (= Semigroup (<> Semigroup type ctor)
             ((<> Monoid type mappend t) mappend)))
 
+         (fn (<> mappend type) lhs rhs
+             ((<> Monoid type mappend) lhs rhs))
+
+         (fn (<> mconcat type) list
+             ((<> Monoid type mconcat) ((<> new List type) list)))
+         
          ) ; import-Monoid
 
 
@@ -122,6 +139,9 @@
 
          (decl) (func (<> get Semigroup type) () (out (<> Semigroup type)))
          
+         (fn (<> mappend type) lhs rhs
+             ((<> Semigroup type mappend) lhs rhs))
+
          ) ; decl-Semigroup
 
 (generic define-Semigroup (type a op)
@@ -145,5 +165,8 @@
          (import-data (<> Semigroup type)
            (= Semigroup (<> Semigroup type ctor)
             ((<> Semigroup type mappend t) mappend)))
+
+         (fn (<> mappend type) lhs rhs
+             ((<> Semigroup type mappend) lhs rhs))
 
          ) ; import-Semigroup

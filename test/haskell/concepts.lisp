@@ -129,17 +129,16 @@
                          (mconcat l)))
                     (default -1)))
 
-          (io (get^Monoid^Concat^List^int)
-            (_ _ _ mconcat
-               (letin* ((l1 ((<> new List int) '{ 1 3 5 }))
-                        (l2 ((<> new List int) '{ 2 4 6 }))
-                        (l3 ((<> new List int) '{ 7 8 9 })))
-                 (letin ((* result (mconcat (new^List^List^int '{ l1 l2 l3 })))) ; mconcat uses appand function
-                   (format #t "Concat of Lists (mconcat Monoid) of '{ 1 3 5 } and '{ 2 4 6 } and '{ 7 8 9 } is:\n")
-                   (show^List^int result)
-                   (putchar #\Newline)))))
+          ;; use mempty, mappend, mconcat without get datatype
+          (letin* ((l1 ((<> new List int) '{ 1 3 5 }))
+                   (l2 ((<> new List int) '{ 2 4 6 }))
+                   (l3 ((<> new List int) '{ 7 8 9 })))
+            (letin ((* result (mconcat^List^int '{ l1 l2 l3 }))) ; mconcat uses appand function
+              (format #t "Concat of Lists (mconcat Monoid) of '{ 1 3 5 } and '{ 2 4 6 } and '{ 7 8 9 } is:\n")
+              (show^List^int result)
+              (putchar #\Newline)))
 
-          (io (get^Semigroup^Concat^String^char)
+          (io (get^Semigroup^String^char)
             (_ mappend
                (letin* ((s1 ((<> new String) "Hello "))
                         (s2 ((<> new String) "Cicili!")))
@@ -157,7 +156,11 @@
                                                                           otherwise   (True)))))))
             
             (where ((fmap-mul-5 (\\ l (match ftor_mul_5 (_ fmap a_b (fmap a_b l)) (default (Empty^int)))))
-                    (fmap-mod-3 (\\ l (match ftor_mod_3 (_ fmap a_b (fmap a_b l)) (default (Empty^Bool))))))
+                    (fmap-mod-3 (\\ l (match ftor_mod_3 (_ fmap a_b (fmap a_b l)) (default (Empty^Bool)))))
+                    ;; use instance directly
+                    (fmap-mul-5P (fmap^List^int^int  (\\ value (* 5 value))))
+                    (fmap-mod-3P (fmap^List^int^Bool (\\ value (case (% value 3) (False)
+                                                                     otherwise   (True))))))
               
               (letin ((* l1 ((<> new List int) '{ 1 2 3 4 5 6 }))
                       ;; (int -> int) -> [int] -> [int]
@@ -168,8 +171,8 @@
                       ;; (* r3 ($> fmap-mod-3 ! fmap-mul-5 $ l1))
                       ;; right way is using curry lambda
                       (* r3 ($> (\\ inp (letin* ((strict_in inp free^List^int)) ; could be defined in where clause instead
-                                          (fmap-mod-3 strict_in))) ; a lambda for composition to free middle pointer
-                              ! fmap-mul-5 $ l1)))
+                                          (fmap-mod-3P strict_in))) ; a lambda for composition to free middle pointer
+                              ! fmap-mul-5P $ l1)))
                 
                 (format #t "fmap (*5) of { 1 2 3 4 5 6 } is:\n")
                 (show^List^int r1)
@@ -202,6 +205,10 @@
               (_ pure ap
                  (io (ap (pure ftor_mul_15) (Just^int 12))
                    (Just output (format #t "the result of 'Applicative for Maybe (*15)' is: Just %d\n" output))
-                   (default (format #t "the result of 'Applicative for Maybe (*15)' is: Nothing\n"))))))
+                   (default (format #t "the result of 'Applicative for Maybe (*15)' is: Nothing\n")))))
+            ;; easy access to ap 'tie-fighter'
+            (io ($> ap^Maybe^int^int (pure^Maybe^int^int ftor_mul_15) (Just^int 12))
+              (Just output (format #t "the result of easy 'Applicative for Maybe (*15)' is: Just %d\n" output))
+              (default (format #t "the result of easy 'Applicative for Maybe (*15)' is: Nothing\n"))))
 
           ))

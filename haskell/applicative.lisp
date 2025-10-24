@@ -25,6 +25,12 @@
          (decl) (func (<> Applicative type ap) (((<> f (<> Functor type)) functor) ((<> f a) input)) (out (<> f b)))
 
          (decl) (func (<> get Applicative type) () (out (<> Applicative type)))
+
+         (fn (<> pure type) ftor
+             ((<> Applicative type pure) ftor))
+
+         (fn (<> ap type) functor input
+             ((<> Applicative type ap) functor input))
          
          ) ; decl-Applicative
 
@@ -60,10 +66,16 @@
               ((<> Applicative type pure t) pure)
               ((<> Applicative type ap t) ap)))
 
+         (fn (<> pure type) ftor
+             ((<> Applicative type pure) ftor))
+
+         (fn (<> ap type) functor input
+             ((<> Applicative type ap) functor input))
+         
          ) ; import-Applicative
 
 
-
+;; todo: List Applicative using Monoid
 
 (generic decl-Applicative-Maybe (type a b)
 

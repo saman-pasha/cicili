@@ -22,6 +22,14 @@
 
          (decl) (func (<> get Functor type) (((<> Functor type a_b t) a_b)) (out (<> Functor type)))
 
+         ;; returns f~b
+         (fn (<> fmap type) a->b f~a
+             (match ((<> get Functor type) '(lambda ((a __h_value))
+                                             (out b)
+                                             (return ($> a->b __h_value))))
+               (_ fmap a_b (fmap a_b f~a))
+               (default ((<> mempty (<> List b)))))) ; uses monoid                     
+
          ) ; decl-Functor
 
 ;; mat (match) at end only access to 'a_b' function pointer and 'input'
@@ -44,6 +52,14 @@
          ) ; define-Functor
 
 (generic import-Functor (type f a b)
+
+         ;; returns f~b
+         (fn (<> fmap type) a->b f~a
+             (match ((<> get Functor type) '(lambda ((a value))
+                                             (out b)
+                                             (return ($> a->b value))))
+               (_ fmap a_b (fmap a_b f~a))
+               (default ((<> mempty (<> List b)))))) ; uses monoid
 
          ) ; import-Functor
 

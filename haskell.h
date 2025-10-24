@@ -440,16 +440,51 @@ typedef enum __h_List_ctor_t {
   __h_Empty_t = 1
 } __h_List_ctor_t;
 #endif /* __H___h_List_ctor_t__ */ 
+typedef struct __h_List_List_Bool_class_t __h_List_List_Bool_class_t ;
+typedef __h_List_List_Bool_class_t * List_List_Bool ;
+typedef void (*free_List_List_Bool_t) (List_List_Bool * this_ptr );
+typedef struct __h_List_List_Bool_class_t {
+  free_List_List_Bool_t __h_free_class ;
+  char __h_ctor ;
+  union { /* ciciliUnion533 */
+    struct { /* ciciliStruct534 */
+    } Empty , _0 ;
+    struct { /* ciciliStruct535 */
+      List_Bool __h_0_mem ;
+      List_List_Bool __h_1_mem ;
+    } Cons , _ ;
+  } __h_data ;
+} __h_List_List_Bool_class_t;
+List_List_Bool Empty_List_Bool ();
+List_List_Bool __h_Cons_List_Bool_ctor (List_Bool head , List_List_Bool tail );
+void free_List_List_Bool (List_List_Bool * this_ptr );
+List_List_Bool new_List_List_Bool_Pure (const List_Bool * buf , int len );
+List_List_Bool next_List_List_Bool (List_List_Bool list );
+Maybe_List_Bool nth_List_List_Bool (int index , List_List_Bool list );
+List_List_Bool drop_List_List_Bool (int index , List_List_Bool list );
+int len_List_List_Bool (List_List_Bool list );
+int has_len_List_List_Bool (List_List_Bool list , int desired );
+List_List_Bool take_List_List_Bool (int len , List_List_Bool list );
+List_List_Bool last_List_List_Bool (List_List_Bool list );
+List_List_Bool append_List_List_Bool (List_List_Bool llist , List_List_Bool rlist );
+void show_List_List_Bool (List_List_Bool list );
+#ifndef __H___h_List_ctor_t__
+#define __H___h_List_ctor_t__
+typedef enum __h_List_ctor_t {
+  __h_Cons_t = 0,
+  __h_Empty_t = 1
+} __h_List_ctor_t;
+#endif /* __H___h_List_ctor_t__ */ 
 typedef struct __h_List_List_int_class_t __h_List_List_int_class_t ;
 typedef __h_List_List_int_class_t * List_List_int ;
 typedef void (*free_List_List_int_t) (List_List_int * this_ptr );
 typedef struct __h_List_List_int_class_t {
   free_List_List_int_t __h_free_class ;
   char __h_ctor ;
-  union { /* ciciliUnion533 */
-    struct { /* ciciliStruct534 */
+  union { /* ciciliUnion581 */
+    struct { /* ciciliStruct582 */
     } Empty , _0 ;
-    struct { /* ciciliStruct535 */
+    struct { /* ciciliStruct583 */
       List_int __h_0_mem ;
       List_List_int __h_1_mem ;
     } Cons , _ ;
@@ -481,10 +516,10 @@ typedef void (*free_List_List_char_t) (List_List_char * this_ptr );
 typedef struct __h_List_List_char_class_t {
   free_List_List_char_t __h_free_class ;
   char __h_ctor ;
-  union { /* ciciliUnion581 */
-    struct { /* ciciliStruct582 */
+  union { /* ciciliUnion629 */
+    struct { /* ciciliStruct630 */
     } Empty , _0 ;
-    struct { /* ciciliStruct583 */
+    struct { /* ciciliStruct631 */
       List_char __h_0_mem ;
       List_List_char __h_1_mem ;
     } Cons , _ ;
@@ -516,10 +551,10 @@ typedef void (*free_List_String_t) (List_String * this_ptr );
 typedef struct __h_List_String_class_t {
   free_List_String_t __h_free_class ;
   char __h_ctor ;
-  union { /* ciciliUnion629 */
-    struct { /* ciciliStruct630 */
+  union { /* ciciliUnion677 */
+    struct { /* ciciliStruct678 */
     } Empty , _0 ;
-    struct { /* ciciliStruct631 */
+    struct { /* ciciliStruct679 */
       String __h_0_mem ;
       List_String __h_1_mem ;
     } Cons , _ ;
@@ -564,6 +599,7 @@ Rc_String clone_Rc_String (Rc_String rc );
 Rc_String new_Rc_String_Pure (String pointer );
 Bool foldr_Bool (Bool (*folder) (Bool lhs , Bool rhs ), Bool neutral , List_Bool foldable );
 int foldr_int (int (*folder) (int lhs , int rhs ), int neutral , List_int foldable );
+char foldr_char (char (*folder) (char lhs , char rhs ), char neutral , List_char foldable );
 typedef Bool (*Monoid_All_Bool_mappend_t) (Bool lhs , Bool rhs );
 typedef Bool (*Monoid_All_Bool_mconcat_t) (List_Bool l );
 #ifndef __H___h_Monoid_ctor_t__
@@ -577,8 +613,8 @@ typedef void (*free_Monoid_All_Bool_t) (Monoid_All_Bool * this );
 typedef struct Monoid_All_Bool {
   free_Monoid_All_Bool_t __h_free_data ;
   char __h_ctor ;
-  union { /* ciciliUnion774 */
-    struct { /* ciciliStruct775 */
+  union { /* ciciliUnion828 */
+    struct { /* ciciliStruct829 */
       Monoid_All_Bool_mappend_t __h_0_mem ;
       Bool __h_1_mem ;
       Monoid_All_Bool_mconcat_t __h_2_mem ;
@@ -598,8 +634,8 @@ typedef void (*free_Semigroup_All_Bool_t) (Semigroup_All_Bool * this );
 typedef struct Semigroup_All_Bool {
   free_Semigroup_All_Bool_t __h_free_data ;
   char __h_ctor ;
-  union { /* ciciliUnion792 */
-    struct { /* ciciliStruct793 */
+  union { /* ciciliUnion846 */
+    struct { /* ciciliStruct847 */
       Monoid_All_Bool_mappend_t __h_0_mem ;
     } Semigroup , _ ;
   } __h_data ;
@@ -609,10 +645,11 @@ __attribute__((weak)) Semigroup_All_Bool Default_Semigroup_All_Bool (Monoid_All_
   return Semigroup_All_Bool_ctor (mappend );
 }
 void free_Semigroup_All_Bool (Semigroup_All_Bool * this );
-Bool Monoid_All_Bool_mappend (Bool x , Bool y );
-Bool Monoid_All_Bool_mconcat (List_Bool l );
+Bool Monoid_All_Bool_mappend (Bool lhs , Bool rhs );
+Bool Monoid_All_Bool_mconcat (List_Bool list );
 Monoid_All_Bool get_Monoid_All_Bool ();
 Semigroup_All_Bool get_Semigroup_All_Bool ();
+Bool mempty_All_Bool ();
 typedef Bool (*Monoid_Any_Bool_mappend_t) (Bool lhs , Bool rhs );
 typedef Bool (*Monoid_Any_Bool_mconcat_t) (List_Bool l );
 #ifndef __H___h_Monoid_ctor_t__
@@ -626,8 +663,8 @@ typedef void (*free_Monoid_Any_Bool_t) (Monoid_Any_Bool * this );
 typedef struct Monoid_Any_Bool {
   free_Monoid_Any_Bool_t __h_free_data ;
   char __h_ctor ;
-  union { /* ciciliUnion833 */
-    struct { /* ciciliStruct834 */
+  union { /* ciciliUnion891 */
+    struct { /* ciciliStruct892 */
       Monoid_Any_Bool_mappend_t __h_0_mem ;
       Bool __h_1_mem ;
       Monoid_Any_Bool_mconcat_t __h_2_mem ;
@@ -647,8 +684,8 @@ typedef void (*free_Semigroup_Any_Bool_t) (Semigroup_Any_Bool * this );
 typedef struct Semigroup_Any_Bool {
   free_Semigroup_Any_Bool_t __h_free_data ;
   char __h_ctor ;
-  union { /* ciciliUnion851 */
-    struct { /* ciciliStruct852 */
+  union { /* ciciliUnion909 */
+    struct { /* ciciliStruct910 */
       Monoid_Any_Bool_mappend_t __h_0_mem ;
     } Semigroup , _ ;
   } __h_data ;
@@ -658,10 +695,11 @@ __attribute__((weak)) Semigroup_Any_Bool Default_Semigroup_Any_Bool (Monoid_Any_
   return Semigroup_Any_Bool_ctor (mappend );
 }
 void free_Semigroup_Any_Bool (Semigroup_Any_Bool * this );
-Bool Monoid_Any_Bool_mappend (Bool x , Bool y );
-Bool Monoid_Any_Bool_mconcat (List_Bool l );
+Bool Monoid_Any_Bool_mappend (Bool lhs , Bool rhs );
+Bool Monoid_Any_Bool_mconcat (List_Bool list );
 Monoid_Any_Bool get_Monoid_Any_Bool ();
 Semigroup_Any_Bool get_Semigroup_Any_Bool ();
+Bool mempty_Any_Bool ();
 typedef int (*Monoid_Sum_int_mappend_t) (int lhs , int rhs );
 typedef int (*Monoid_Sum_int_mconcat_t) (List_int l );
 #ifndef __H___h_Monoid_ctor_t__
@@ -675,8 +713,8 @@ typedef void (*free_Monoid_Sum_int_t) (Monoid_Sum_int * this );
 typedef struct Monoid_Sum_int {
   free_Monoid_Sum_int_t __h_free_data ;
   char __h_ctor ;
-  union { /* ciciliUnion892 */
-    struct { /* ciciliStruct893 */
+  union { /* ciciliUnion954 */
+    struct { /* ciciliStruct955 */
       Monoid_Sum_int_mappend_t __h_0_mem ;
       int __h_1_mem ;
       Monoid_Sum_int_mconcat_t __h_2_mem ;
@@ -696,8 +734,8 @@ typedef void (*free_Semigroup_Sum_int_t) (Semigroup_Sum_int * this );
 typedef struct Semigroup_Sum_int {
   free_Semigroup_Sum_int_t __h_free_data ;
   char __h_ctor ;
-  union { /* ciciliUnion910 */
-    struct { /* ciciliStruct911 */
+  union { /* ciciliUnion972 */
+    struct { /* ciciliStruct973 */
       Monoid_Sum_int_mappend_t __h_0_mem ;
     } Semigroup , _ ;
   } __h_data ;
@@ -707,10 +745,11 @@ __attribute__((weak)) Semigroup_Sum_int Default_Semigroup_Sum_int (Monoid_Sum_in
   return Semigroup_Sum_int_ctor (mappend );
 }
 void free_Semigroup_Sum_int (Semigroup_Sum_int * this );
-int Monoid_Sum_int_mappend (int x , int y );
-int Monoid_Sum_int_mconcat (List_int l );
+int Monoid_Sum_int_mappend (int lhs , int rhs );
+int Monoid_Sum_int_mconcat (List_int list );
 Monoid_Sum_int get_Monoid_Sum_int ();
 Semigroup_Sum_int get_Semigroup_Sum_int ();
+int mempty_Sum_int ();
 typedef int (*Monoid_Product_int_mappend_t) (int lhs , int rhs );
 typedef int (*Monoid_Product_int_mconcat_t) (List_int l );
 #ifndef __H___h_Monoid_ctor_t__
@@ -724,8 +763,8 @@ typedef void (*free_Monoid_Product_int_t) (Monoid_Product_int * this );
 typedef struct Monoid_Product_int {
   free_Monoid_Product_int_t __h_free_data ;
   char __h_ctor ;
-  union { /* ciciliUnion951 */
-    struct { /* ciciliStruct952 */
+  union { /* ciciliUnion1017 */
+    struct { /* ciciliStruct1018 */
       Monoid_Product_int_mappend_t __h_0_mem ;
       int __h_1_mem ;
       Monoid_Product_int_mconcat_t __h_2_mem ;
@@ -745,8 +784,8 @@ typedef void (*free_Semigroup_Product_int_t) (Semigroup_Product_int * this );
 typedef struct Semigroup_Product_int {
   free_Semigroup_Product_int_t __h_free_data ;
   char __h_ctor ;
-  union { /* ciciliUnion969 */
-    struct { /* ciciliStruct970 */
+  union { /* ciciliUnion1035 */
+    struct { /* ciciliStruct1036 */
       Monoid_Product_int_mappend_t __h_0_mem ;
     } Semigroup , _ ;
   } __h_data ;
@@ -756,159 +795,214 @@ __attribute__((weak)) Semigroup_Product_int Default_Semigroup_Product_int (Monoi
   return Semigroup_Product_int_ctor (mappend );
 }
 void free_Semigroup_Product_int (Semigroup_Product_int * this );
-int Monoid_Product_int_mappend (int x , int y );
-int Monoid_Product_int_mconcat (List_int l );
+int Monoid_Product_int_mappend (int lhs , int rhs );
+int Monoid_Product_int_mconcat (List_int list );
 Monoid_Product_int get_Monoid_Product_int ();
 Semigroup_Product_int get_Semigroup_Product_int ();
+int mempty_Product_int ();
+List_Bool foldr_List_Bool (List_Bool (*folder) (List_Bool lhs , List_Bool rhs ), List_Bool neutral , List_List_Bool foldable );
 List_int foldr_List_int (List_int (*folder) (List_int lhs , List_int rhs ), List_int neutral , List_List_int foldable );
 List_char foldr_List_char (List_char (*folder) (List_char lhs , List_char rhs ), List_char neutral , List_List_char foldable );
-typedef List_int (*Monoid_Concat_List_int_mappend_t) (List_int lhs , List_int rhs );
-typedef List_int (*Monoid_Concat_List_int_mconcat_t) (List_List_int l );
+typedef List_Bool (*Monoid_List_Bool_mappend_t) (List_Bool lhs , List_Bool rhs );
+typedef List_Bool (*Monoid_List_Bool_mconcat_t) (List_List_Bool l );
 #ifndef __H___h_Monoid_ctor_t__
 #define __H___h_Monoid_ctor_t__
 typedef enum __h_Monoid_ctor_t {
   __h_Monoid_t = 0
 } __h_Monoid_ctor_t;
 #endif /* __H___h_Monoid_ctor_t__ */ 
-typedef struct Monoid_Concat_List_int Monoid_Concat_List_int ;
-typedef void (*free_Monoid_Concat_List_int_t) (Monoid_Concat_List_int * this );
-typedef struct Monoid_Concat_List_int {
-  free_Monoid_Concat_List_int_t __h_free_data ;
+typedef struct Monoid_List_Bool Monoid_List_Bool ;
+typedef void (*free_Monoid_List_Bool_t) (Monoid_List_Bool * this );
+typedef struct Monoid_List_Bool {
+  free_Monoid_List_Bool_t __h_free_data ;
   char __h_ctor ;
-  union { /* ciciliUnion1037 */
-    struct { /* ciciliStruct1038 */
-      Monoid_Concat_List_int_mappend_t __h_0_mem ;
+  union { /* ciciliUnion1118 */
+    struct { /* ciciliStruct1119 */
+      Monoid_List_Bool_mappend_t __h_0_mem ;
+      List_Bool __h_1_mem ;
+      Monoid_List_Bool_mconcat_t __h_2_mem ;
+    } Monoid , _ ;
+  } __h_data ;
+} Monoid_List_Bool;
+Monoid_List_Bool __h_Monoid_List_Bool_ctor_ctor (Monoid_List_Bool_mappend_t mappend , List_Bool mempty , Monoid_List_Bool_mconcat_t mconcat );
+void free_Monoid_List_Bool (Monoid_List_Bool * this );
+#ifndef __H___h_Semigroup_ctor_t__
+#define __H___h_Semigroup_ctor_t__
+typedef enum __h_Semigroup_ctor_t {
+  __h_Semigroup_t = 0
+} __h_Semigroup_ctor_t;
+#endif /* __H___h_Semigroup_ctor_t__ */ 
+typedef struct Semigroup_List_Bool Semigroup_List_Bool ;
+typedef void (*free_Semigroup_List_Bool_t) (Semigroup_List_Bool * this );
+typedef struct Semigroup_List_Bool {
+  free_Semigroup_List_Bool_t __h_free_data ;
+  char __h_ctor ;
+  union { /* ciciliUnion1137 */
+    struct { /* ciciliStruct1138 */
+      Monoid_List_Bool_mappend_t __h_0_mem ;
+    } Semigroup , _ ;
+  } __h_data ;
+} Semigroup_List_Bool;
+Semigroup_List_Bool Semigroup_List_Bool_ctor (Monoid_List_Bool_mappend_t mappend );
+__attribute__((weak)) Semigroup_List_Bool Default_Semigroup_List_Bool (Monoid_List_Bool_mappend_t mappend ) {
+  return Semigroup_List_Bool_ctor (mappend );
+}
+void free_Semigroup_List_Bool (Semigroup_List_Bool * this );
+List_Bool Monoid_List_Bool_mappend (List_Bool lhs , List_Bool rhs );
+List_Bool Monoid_List_Bool_mconcat (List_List_Bool list );
+Monoid_List_Bool get_Monoid_List_Bool ();
+Semigroup_List_Bool get_Semigroup_List_Bool ();
+List_Bool mempty_List_Bool ();
+typedef List_int (*Monoid_List_int_mappend_t) (List_int lhs , List_int rhs );
+typedef List_int (*Monoid_List_int_mconcat_t) (List_List_int l );
+#ifndef __H___h_Monoid_ctor_t__
+#define __H___h_Monoid_ctor_t__
+typedef enum __h_Monoid_ctor_t {
+  __h_Monoid_t = 0
+} __h_Monoid_ctor_t;
+#endif /* __H___h_Monoid_ctor_t__ */ 
+typedef struct Monoid_List_int Monoid_List_int ;
+typedef void (*free_Monoid_List_int_t) (Monoid_List_int * this );
+typedef struct Monoid_List_int {
+  free_Monoid_List_int_t __h_free_data ;
+  char __h_ctor ;
+  union { /* ciciliUnion1192 */
+    struct { /* ciciliStruct1193 */
+      Monoid_List_int_mappend_t __h_0_mem ;
       List_int __h_1_mem ;
-      Monoid_Concat_List_int_mconcat_t __h_2_mem ;
+      Monoid_List_int_mconcat_t __h_2_mem ;
     } Monoid , _ ;
   } __h_data ;
-} Monoid_Concat_List_int;
-Monoid_Concat_List_int __h_Monoid_Concat_List_int_ctor_ctor (Monoid_Concat_List_int_mappend_t mappend , List_int mempty , Monoid_Concat_List_int_mconcat_t mconcat );
-void free_Monoid_Concat_List_int (Monoid_Concat_List_int * this );
+} Monoid_List_int;
+Monoid_List_int __h_Monoid_List_int_ctor_ctor (Monoid_List_int_mappend_t mappend , List_int mempty , Monoid_List_int_mconcat_t mconcat );
+void free_Monoid_List_int (Monoid_List_int * this );
 #ifndef __H___h_Semigroup_ctor_t__
 #define __H___h_Semigroup_ctor_t__
 typedef enum __h_Semigroup_ctor_t {
   __h_Semigroup_t = 0
 } __h_Semigroup_ctor_t;
 #endif /* __H___h_Semigroup_ctor_t__ */ 
-typedef struct Semigroup_Concat_List_int Semigroup_Concat_List_int ;
-typedef void (*free_Semigroup_Concat_List_int_t) (Semigroup_Concat_List_int * this );
-typedef struct Semigroup_Concat_List_int {
-  free_Semigroup_Concat_List_int_t __h_free_data ;
+typedef struct Semigroup_List_int Semigroup_List_int ;
+typedef void (*free_Semigroup_List_int_t) (Semigroup_List_int * this );
+typedef struct Semigroup_List_int {
+  free_Semigroup_List_int_t __h_free_data ;
   char __h_ctor ;
-  union { /* ciciliUnion1056 */
-    struct { /* ciciliStruct1057 */
-      Monoid_Concat_List_int_mappend_t __h_0_mem ;
+  union { /* ciciliUnion1211 */
+    struct { /* ciciliStruct1212 */
+      Monoid_List_int_mappend_t __h_0_mem ;
     } Semigroup , _ ;
   } __h_data ;
-} Semigroup_Concat_List_int;
-Semigroup_Concat_List_int Semigroup_Concat_List_int_ctor (Monoid_Concat_List_int_mappend_t mappend );
-__attribute__((weak)) Semigroup_Concat_List_int Default_Semigroup_Concat_List_int (Monoid_Concat_List_int_mappend_t mappend ) {
-  return Semigroup_Concat_List_int_ctor (mappend );
+} Semigroup_List_int;
+Semigroup_List_int Semigroup_List_int_ctor (Monoid_List_int_mappend_t mappend );
+__attribute__((weak)) Semigroup_List_int Default_Semigroup_List_int (Monoid_List_int_mappend_t mappend ) {
+  return Semigroup_List_int_ctor (mappend );
 }
-void free_Semigroup_Concat_List_int (Semigroup_Concat_List_int * this );
-List_int Monoid_Concat_List_int_mappend (List_int x , List_int y );
-List_int Monoid_Concat_List_int_mconcat (List_List_int l );
-Monoid_Concat_List_int get_Monoid_Concat_List_int ();
-Semigroup_Concat_List_int get_Semigroup_Concat_List_int ();
-typedef List_char (*Monoid_Concat_List_char_mappend_t) (List_char lhs , List_char rhs );
-typedef List_char (*Monoid_Concat_List_char_mconcat_t) (List_List_char l );
+void free_Semigroup_List_int (Semigroup_List_int * this );
+List_int Monoid_List_int_mappend (List_int lhs , List_int rhs );
+List_int Monoid_List_int_mconcat (List_List_int list );
+Monoid_List_int get_Monoid_List_int ();
+Semigroup_List_int get_Semigroup_List_int ();
+List_int mempty_List_int ();
+typedef List_char (*Monoid_List_char_mappend_t) (List_char lhs , List_char rhs );
+typedef List_char (*Monoid_List_char_mconcat_t) (List_List_char l );
 #ifndef __H___h_Monoid_ctor_t__
 #define __H___h_Monoid_ctor_t__
 typedef enum __h_Monoid_ctor_t {
   __h_Monoid_t = 0
 } __h_Monoid_ctor_t;
 #endif /* __H___h_Monoid_ctor_t__ */ 
-typedef struct Monoid_Concat_List_char Monoid_Concat_List_char ;
-typedef void (*free_Monoid_Concat_List_char_t) (Monoid_Concat_List_char * this );
-typedef struct Monoid_Concat_List_char {
-  free_Monoid_Concat_List_char_t __h_free_data ;
+typedef struct Monoid_List_char Monoid_List_char ;
+typedef void (*free_Monoid_List_char_t) (Monoid_List_char * this );
+typedef struct Monoid_List_char {
+  free_Monoid_List_char_t __h_free_data ;
   char __h_ctor ;
-  union { /* ciciliUnion1106 */
-    struct { /* ciciliStruct1107 */
-      Monoid_Concat_List_char_mappend_t __h_0_mem ;
+  union { /* ciciliUnion1266 */
+    struct { /* ciciliStruct1267 */
+      Monoid_List_char_mappend_t __h_0_mem ;
       List_char __h_1_mem ;
-      Monoid_Concat_List_char_mconcat_t __h_2_mem ;
+      Monoid_List_char_mconcat_t __h_2_mem ;
     } Monoid , _ ;
   } __h_data ;
-} Monoid_Concat_List_char;
-Monoid_Concat_List_char __h_Monoid_Concat_List_char_ctor_ctor (Monoid_Concat_List_char_mappend_t mappend , List_char mempty , Monoid_Concat_List_char_mconcat_t mconcat );
-void free_Monoid_Concat_List_char (Monoid_Concat_List_char * this );
+} Monoid_List_char;
+Monoid_List_char __h_Monoid_List_char_ctor_ctor (Monoid_List_char_mappend_t mappend , List_char mempty , Monoid_List_char_mconcat_t mconcat );
+void free_Monoid_List_char (Monoid_List_char * this );
 #ifndef __H___h_Semigroup_ctor_t__
 #define __H___h_Semigroup_ctor_t__
 typedef enum __h_Semigroup_ctor_t {
   __h_Semigroup_t = 0
 } __h_Semigroup_ctor_t;
 #endif /* __H___h_Semigroup_ctor_t__ */ 
-typedef struct Semigroup_Concat_List_char Semigroup_Concat_List_char ;
-typedef void (*free_Semigroup_Concat_List_char_t) (Semigroup_Concat_List_char * this );
-typedef struct Semigroup_Concat_List_char {
-  free_Semigroup_Concat_List_char_t __h_free_data ;
+typedef struct Semigroup_List_char Semigroup_List_char ;
+typedef void (*free_Semigroup_List_char_t) (Semigroup_List_char * this );
+typedef struct Semigroup_List_char {
+  free_Semigroup_List_char_t __h_free_data ;
   char __h_ctor ;
-  union { /* ciciliUnion1125 */
-    struct { /* ciciliStruct1126 */
-      Monoid_Concat_List_char_mappend_t __h_0_mem ;
+  union { /* ciciliUnion1285 */
+    struct { /* ciciliStruct1286 */
+      Monoid_List_char_mappend_t __h_0_mem ;
     } Semigroup , _ ;
   } __h_data ;
-} Semigroup_Concat_List_char;
-Semigroup_Concat_List_char Semigroup_Concat_List_char_ctor (Monoid_Concat_List_char_mappend_t mappend );
-__attribute__((weak)) Semigroup_Concat_List_char Default_Semigroup_Concat_List_char (Monoid_Concat_List_char_mappend_t mappend ) {
-  return Semigroup_Concat_List_char_ctor (mappend );
+} Semigroup_List_char;
+Semigroup_List_char Semigroup_List_char_ctor (Monoid_List_char_mappend_t mappend );
+__attribute__((weak)) Semigroup_List_char Default_Semigroup_List_char (Monoid_List_char_mappend_t mappend ) {
+  return Semigroup_List_char_ctor (mappend );
 }
-void free_Semigroup_Concat_List_char (Semigroup_Concat_List_char * this );
-List_char Monoid_Concat_List_char_mappend (List_char x , List_char y );
-List_char Monoid_Concat_List_char_mconcat (List_List_char l );
-Monoid_Concat_List_char get_Monoid_Concat_List_char ();
-Semigroup_Concat_List_char get_Semigroup_Concat_List_char ();
-typedef List_char (*Monoid_Concat_String_char_mappend_t) (List_char lhs , List_char rhs );
-typedef List_char (*Monoid_Concat_String_char_mconcat_t) (List_List_char l );
+void free_Semigroup_List_char (Semigroup_List_char * this );
+List_char Monoid_List_char_mappend (List_char lhs , List_char rhs );
+List_char Monoid_List_char_mconcat (List_List_char list );
+Monoid_List_char get_Monoid_List_char ();
+Semigroup_List_char get_Semigroup_List_char ();
+List_char mempty_List_char ();
+typedef List_char (*Monoid_String_char_mappend_t) (List_char lhs , List_char rhs );
+typedef List_char (*Monoid_String_char_mconcat_t) (List_List_char l );
 #ifndef __H___h_Monoid_ctor_t__
 #define __H___h_Monoid_ctor_t__
 typedef enum __h_Monoid_ctor_t {
   __h_Monoid_t = 0
 } __h_Monoid_ctor_t;
 #endif /* __H___h_Monoid_ctor_t__ */ 
-typedef struct Monoid_Concat_String_char Monoid_Concat_String_char ;
-typedef void (*free_Monoid_Concat_String_char_t) (Monoid_Concat_String_char * this );
-typedef struct Monoid_Concat_String_char {
-  free_Monoid_Concat_String_char_t __h_free_data ;
+typedef struct Monoid_String_char Monoid_String_char ;
+typedef void (*free_Monoid_String_char_t) (Monoid_String_char * this );
+typedef struct Monoid_String_char {
+  free_Monoid_String_char_t __h_free_data ;
   char __h_ctor ;
-  union { /* ciciliUnion1175 */
-    struct { /* ciciliStruct1176 */
-      Monoid_Concat_String_char_mappend_t __h_0_mem ;
+  union { /* ciciliUnion1340 */
+    struct { /* ciciliStruct1341 */
+      Monoid_String_char_mappend_t __h_0_mem ;
       List_char __h_1_mem ;
-      Monoid_Concat_String_char_mconcat_t __h_2_mem ;
+      Monoid_String_char_mconcat_t __h_2_mem ;
     } Monoid , _ ;
   } __h_data ;
-} Monoid_Concat_String_char;
-Monoid_Concat_String_char __h_Monoid_Concat_String_char_ctor_ctor (Monoid_Concat_String_char_mappend_t mappend , List_char mempty , Monoid_Concat_String_char_mconcat_t mconcat );
-void free_Monoid_Concat_String_char (Monoid_Concat_String_char * this );
+} Monoid_String_char;
+Monoid_String_char __h_Monoid_String_char_ctor_ctor (Monoid_String_char_mappend_t mappend , List_char mempty , Monoid_String_char_mconcat_t mconcat );
+void free_Monoid_String_char (Monoid_String_char * this );
 #ifndef __H___h_Semigroup_ctor_t__
 #define __H___h_Semigroup_ctor_t__
 typedef enum __h_Semigroup_ctor_t {
   __h_Semigroup_t = 0
 } __h_Semigroup_ctor_t;
 #endif /* __H___h_Semigroup_ctor_t__ */ 
-typedef struct Semigroup_Concat_String_char Semigroup_Concat_String_char ;
-typedef void (*free_Semigroup_Concat_String_char_t) (Semigroup_Concat_String_char * this );
-typedef struct Semigroup_Concat_String_char {
-  free_Semigroup_Concat_String_char_t __h_free_data ;
+typedef struct Semigroup_String_char Semigroup_String_char ;
+typedef void (*free_Semigroup_String_char_t) (Semigroup_String_char * this );
+typedef struct Semigroup_String_char {
+  free_Semigroup_String_char_t __h_free_data ;
   char __h_ctor ;
-  union { /* ciciliUnion1194 */
-    struct { /* ciciliStruct1195 */
-      Monoid_Concat_String_char_mappend_t __h_0_mem ;
+  union { /* ciciliUnion1359 */
+    struct { /* ciciliStruct1360 */
+      Monoid_String_char_mappend_t __h_0_mem ;
     } Semigroup , _ ;
   } __h_data ;
-} Semigroup_Concat_String_char;
-Semigroup_Concat_String_char Semigroup_Concat_String_char_ctor (Monoid_Concat_String_char_mappend_t mappend );
-__attribute__((weak)) Semigroup_Concat_String_char Default_Semigroup_Concat_String_char (Monoid_Concat_String_char_mappend_t mappend ) {
-  return Semigroup_Concat_String_char_ctor (mappend );
+} Semigroup_String_char;
+Semigroup_String_char Semigroup_String_char_ctor (Monoid_String_char_mappend_t mappend );
+__attribute__((weak)) Semigroup_String_char Default_Semigroup_String_char (Monoid_String_char_mappend_t mappend ) {
+  return Semigroup_String_char_ctor (mappend );
 }
-void free_Semigroup_Concat_String_char (Semigroup_Concat_String_char * this );
-List_char Monoid_Concat_String_char_mappend (List_char x , List_char y );
-List_char Monoid_Concat_String_char_mconcat (List_List_char l );
-Monoid_Concat_String_char get_Monoid_Concat_String_char ();
-Semigroup_Concat_String_char get_Semigroup_Concat_String_char ();
+void free_Semigroup_String_char (Semigroup_String_char * this );
+List_char Monoid_String_char_mappend (List_char lhs , List_char rhs );
+List_char Monoid_String_char_mconcat (List_List_char list );
+Monoid_String_char get_Monoid_String_char ();
+Semigroup_String_char get_Semigroup_String_char ();
+List_char mempty_String_char ();
 typedef int (*Functor_List_int_int_a_b_t) (int value );
 typedef List_int (*Functor_List_int_int_fmap_t) (Functor_List_int_int_a_b_t a_b , List_int input );
 #ifndef __H___h_Functor_ctor_t__
@@ -922,8 +1016,8 @@ typedef void (*free_Functor_List_int_int_t) (Functor_List_int_int * this );
 typedef struct Functor_List_int_int {
   free_Functor_List_int_int_t __h_free_data ;
   char __h_ctor ;
-  union { /* ciciliUnion1243 */
-    struct { /* ciciliStruct1244 */
+  union { /* ciciliUnion1413 */
+    struct { /* ciciliStruct1414 */
       Functor_List_int_int_fmap_t __h_0_mem ;
       Functor_List_int_int_a_b_t __h_1_mem ;
     } Functor , _ ;
@@ -946,8 +1040,8 @@ typedef void (*free_Functor_List_int_Bool_t) (Functor_List_int_Bool * this );
 typedef struct Functor_List_int_Bool {
   free_Functor_List_int_Bool_t __h_free_data ;
   char __h_ctor ;
-  union { /* ciciliUnion1284 */
-    struct { /* ciciliStruct1285 */
+  union { /* ciciliUnion1455 */
+    struct { /* ciciliStruct1456 */
       Functor_List_int_Bool_fmap_t __h_0_mem ;
       Functor_List_int_Bool_a_b_t __h_1_mem ;
     } Functor , _ ;
@@ -970,8 +1064,8 @@ typedef void (*free_Functor_List_char_char_t) (Functor_List_char_char * this );
 typedef struct Functor_List_char_char {
   free_Functor_List_char_char_t __h_free_data ;
   char __h_ctor ;
-  union { /* ciciliUnion1325 */
-    struct { /* ciciliStruct1326 */
+  union { /* ciciliUnion1497 */
+    struct { /* ciciliStruct1498 */
       Functor_List_char_char_fmap_t __h_0_mem ;
       Functor_List_char_char_a_b_t __h_1_mem ;
     } Functor , _ ;
@@ -994,8 +1088,8 @@ typedef void (*free_Functor_List_char_Bool_t) (Functor_List_char_Bool * this );
 typedef struct Functor_List_char_Bool {
   free_Functor_List_char_Bool_t __h_free_data ;
   char __h_ctor ;
-  union { /* ciciliUnion1366 */
-    struct { /* ciciliStruct1367 */
+  union { /* ciciliUnion1539 */
+    struct { /* ciciliStruct1540 */
       Functor_List_char_Bool_fmap_t __h_0_mem ;
       Functor_List_char_Bool_a_b_t __h_1_mem ;
     } Functor , _ ;
@@ -1018,8 +1112,8 @@ typedef void (*free_Functor_String_char_t) (Functor_String_char * this );
 typedef struct Functor_String_char {
   free_Functor_String_char_t __h_free_data ;
   char __h_ctor ;
-  union { /* ciciliUnion1407 */
-    struct { /* ciciliStruct1408 */
+  union { /* ciciliUnion1581 */
+    struct { /* ciciliStruct1582 */
       Functor_String_char_fmap_t __h_0_mem ;
       Functor_String_char_a_b_t __h_1_mem ;
     } Functor , _ ;
@@ -1042,8 +1136,8 @@ typedef void (*free_Functor_String_Bool_t) (Functor_String_Bool * this );
 typedef struct Functor_String_Bool {
   free_Functor_String_Bool_t __h_free_data ;
   char __h_ctor ;
-  union { /* ciciliUnion1448 */
-    struct { /* ciciliStruct1449 */
+  union { /* ciciliUnion1623 */
+    struct { /* ciciliStruct1624 */
       Functor_String_Bool_fmap_t __h_0_mem ;
       Functor_String_Bool_a_b_t __h_1_mem ;
     } Functor , _ ;
