@@ -254,7 +254,7 @@ static int __ciciliL_736 (int value ) {
 static Bool __ciciliL_761 (int value ) {
   return (((value  %  3 )) ? False () : True ());
 }
-static int __ciciliL_812 (int value ) {
+static int __ciciliL_802 (int value ) {
   return (15 *  value  );
 }
 int main () {
@@ -490,10 +490,11 @@ int main () {
     __auto_type l1  = new_List_int_Pure (((const int[]){ 1, 3, 5}), 3);
     __auto_type l2  = new_List_int_Pure (((const int[]){ 2, 4, 6}), 3);
     __auto_type l3  = new_List_int_Pure (((const int[]){ 7, 8, 9}), 3);
+    __auto_type l4  = new_List_List_int_Pure (((const List_int[]){ l1 , l2 , l3 }), 3);
     // ----------
-    ({ /* cicili#Let622 */
-      __auto_type result  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let624 */
-        __auto_type tmp_obj  = Monoid_List_int_mconcat (new_List_List_int_Pure (((const List_int[]){ l1 , l2 , l3 }), 3));
+    ({ /* cicili#Let625 */
+      __auto_type result  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let627 */
+        __auto_type tmp_obj  = Monoid_List_int_mconcat (l4 );
         // ----------
         ((void)(tmp_obj -> __h_free_class ));
         tmp_obj ;
@@ -649,74 +650,83 @@ int main () {
             });
         });
       }
-      { /* cicili#Let800 */
-        __auto_type __h_data799  = get_Monoid_Any_Bool ();
-        __auto_type mconcat  = (((__h_data799 . __h_data ). _ ). __h_2_mem );
-        // ----------
-        /* cicili#Block802 */
-        ({ /* cicili#Let804 */
-          bool __h_case_result  = ((__h_data799 . __h_ctor ) ==  __h___t  );
-          // ----------
-          if (__h_case_result )
-            ({ /* cicili#Progn807 */
-              fprintf (stdout , "the result of 'Any' monoid is: ");
-              show_Bool (mconcat (r3 ));
-              putchar ('\n');
-            });
-        });
-      }
+      fprintf (stdout , "the result of 'Any' monoid is: ");
+      show_Bool (Monoid_Any_Bool_mconcat (r3 ));
+      putchar ('\n');
     });
   });
-  ({ /* cicili#Let811 */
-    __auto_type ftor_mul_15  = get_Functor_Maybe_int_int (__ciciliL_812 );
+  ({ /* cicili#Let801 */
+    __auto_type ftor_mul_15  = get_Functor_Maybe_int_int (__ciciliL_802 );
     // ----------
-    { /* cicili#Let818 */
-      __auto_type __h_data817  = get_Applicative_Maybe_int_int ();
-      __auto_type pure  = (((__h_data817 . __h_data ). _ ). __h_0_mem );
-      __auto_type ap  = (((__h_data817 . __h_data ). _ ). __h_1_mem );
+    { /* cicili#Let808 */
+      __auto_type __h_data807  = get_Applicative_Maybe_int_int ();
+      __auto_type pure  = (((__h_data807 . __h_data ). _ ). __h_0_mem );
+      __auto_type ap  = (((__h_data807 . __h_data ). _ ). __h_1_mem );
       // ----------
-      /* cicili#Block820 */
-      ({ /* cicili#Let822 */
-        bool __h_case_result  = ((__h_data817 . __h_ctor ) ==  __h___t  );
+      /* cicili#Block810 */
+      ({ /* cicili#Let812 */
+        bool __h_case_result  = ((__h_data807 . __h_ctor ) ==  __h___t  );
         // ----------
         if (__h_case_result )
-          { /* cicili#Let828 */
-            __auto_type __h_data827  = ap (pure (ftor_mul_15 ), Just_int (12));
-            __auto_type output  = (((__h_data827 . __h_data ). Just ). __h_0_mem );
+          { /* cicili#Let818 */
+            __auto_type __h_data817  = ap (pure (ftor_mul_15 ), Just_int (12));
+            __auto_type output  = (((__h_data817 . __h_data ). Just ). __h_0_mem );
             // ----------
-            /* cicili#Block830 */
-            ({ /* cicili#Let832 */
-              bool __h_case_result  = ((__h_data827 . __h_ctor ) ==  __h_Just_t  );
+            /* cicili#Block820 */
+            ({ /* cicili#Let822 */
+              bool __h_case_result  = ((__h_data817 . __h_ctor ) ==  __h_Just_t  );
               // ----------
               if (__h_case_result )
-                fprintf (stdout , "the result of 'Applicative for Maybe (*15)' is: Just %d\n", output );
+                fprintf (stdout , "the result of 'Applicative for Maybe (*15) (Just 12)' is: Just %d\n", output );
               else
-                { /* cicili#Let839 */
+                { /* cicili#Let829 */
                   // ----------
-                  /* cicili#Block841 */
-                  fprintf (stdout , "the result of 'Applicative for Maybe (*15)' is: Nothing\n");
+                  /* cicili#Block831 */
+                  fprintf (stdout , "the result of 'Applicative for Maybe (*15) (Just 12)' is: Nothing\n");
                 }
             });
           }
       });
     }
-    { /* cicili#Let847 */
-      __auto_type __h_data846  = Applicative_Maybe_int_int_ap (Applicative_Maybe_int_int_pure (ftor_mul_15 ), Just_int (12));
-      __auto_type output  = (((__h_data846 . __h_data ). Just ). __h_0_mem );
+    ({ /* cicili#Let835 */
+      __auto_type wrapped  = Applicative_Maybe_int_int_pure (ftor_mul_15 );
       // ----------
-      /* cicili#Block855 */
-      ({ /* cicili#Let857 */
-        bool __h_case_result  = ((__h_data846 . __h_ctor ) ==  __h_Just_t  );
+      { /* cicili#Let842 */
+        __auto_type __h_data841  = Applicative_Maybe_int_int_ap (wrapped , Just_int (12));
+        __auto_type output  = (((__h_data841 . __h_data ). Just ). __h_0_mem );
         // ----------
-        if (__h_case_result )
-          fprintf (stdout , "the result of easy 'Applicative for Maybe (*15)' is: Just %d\n", output );
-        else
-          { /* cicili#Let864 */
-            // ----------
-            /* cicili#Block866 */
-            fprintf (stdout , "the result of easy 'Applicative for Maybe (*15)' is: Nothing\n");
-          }
-      });
-    }
+        /* cicili#Block848 */
+        ({ /* cicili#Let850 */
+          bool __h_case_result  = ((__h_data841 . __h_ctor ) ==  __h_Just_t  );
+          // ----------
+          if (__h_case_result )
+            fprintf (stdout , "the result of easy 'Applicative for Maybe (*15) (Just 12)' is: Just %d\n", output );
+          else
+            { /* cicili#Let857 */
+              // ----------
+              /* cicili#Block859 */
+              fprintf (stdout , "the result of easy 'Applicative for Maybe (*15) (Just 12)' is: Nothing\n");
+            }
+        });
+      }
+      { /* cicili#Let865 */
+        __auto_type __h_data864  = Applicative_Maybe_int_int_ap (wrapped , Nothing_int ());
+        __auto_type output  = (((__h_data864 . __h_data ). Just ). __h_0_mem );
+        // ----------
+        /* cicili#Block871 */
+        ({ /* cicili#Let873 */
+          bool __h_case_result  = ((__h_data864 . __h_ctor ) ==  __h_Just_t  );
+          // ----------
+          if (__h_case_result )
+            fprintf (stdout , "the result of easy 'Applicative for Maybe (*15) Nothing' is: Just %d\n", output );
+          else
+            { /* cicili#Let880 */
+              // ----------
+              /* cicili#Block882 */
+              fprintf (stdout , "the result of easy 'Applicative for Maybe (*15) Nothing' is: Nothing\n");
+            }
+        });
+      }
+    });
   });
 }

@@ -19,7 +19,7 @@ Bool False () {
 Bool True () {
   return ((Bool){ free_Bool , __h___t });
 }
-Bool Bool_and (Bool lhs , Bool rhs ) {
+Bool and_Bool (Bool lhs , Bool rhs ) {
   return ({ /* cicili#Let1659 */
       // ----------
       /* cicili#Block1661 */
@@ -46,7 +46,7 @@ Bool Bool_and (Bool lhs , Bool rhs ) {
       });
     });
 }
-Bool Bool_or (Bool lhs , Bool rhs ) {
+Bool or_Bool (Bool lhs , Bool rhs ) {
   return ({ /* cicili#Let1688 */
       // ----------
       /* cicili#Block1690 */
@@ -2735,7 +2735,7 @@ Semigroup_All_Bool Semigroup_All_Bool_ctor (Monoid_All_Bool_mappend_t mappend ) 
   return ((Semigroup_All_Bool){ free_Semigroup_All_Bool , __h___t , .__h_data._ = { mappend }});
 }
 Bool Monoid_All_Bool_mappend (Bool lhs , Bool rhs ) {
-  return Bool_and (lhs , rhs );
+  return and_Bool (lhs , rhs );
 }
 Bool Monoid_All_Bool_mconcat (List_Bool list ) {
   return foldr_Bool (Monoid_All_Bool_mappend , True (), list );
@@ -2760,7 +2760,7 @@ Semigroup_Any_Bool Semigroup_Any_Bool_ctor (Monoid_Any_Bool_mappend_t mappend ) 
   return ((Semigroup_Any_Bool){ free_Semigroup_Any_Bool , __h___t , .__h_data._ = { mappend }});
 }
 Bool Monoid_Any_Bool_mappend (Bool lhs , Bool rhs ) {
-  return Bool_or (lhs , rhs );
+  return or_Bool (lhs , rhs );
 }
 Bool Monoid_Any_Bool_mconcat (List_Bool list ) {
   return foldr_Bool (Monoid_Any_Bool_mappend , False (), list );

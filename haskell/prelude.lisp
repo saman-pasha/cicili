@@ -11,6 +11,7 @@
 (import "./rc.lisp")
 (import "./monoid.lisp")
 (import "./functor.lisp")
+(import "./applicative.lisp")
 
 (import "./haskell.lisp")
 

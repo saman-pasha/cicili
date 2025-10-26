@@ -34,8 +34,8 @@ __attribute__((weak)) Bool Default_Bool () {
   return True ();
 }
 void free_Bool (Bool * this );
-Bool Bool_and (Bool lhs , Bool rhs );
-Bool Bool_or (Bool lhs , Bool rhs );
+Bool and_Bool (Bool lhs , Bool rhs );
+Bool or_Bool (Bool lhs , Bool rhs );
 void show_Bool (Bool value );
 #ifndef __H___h_Ordering_ctor_t__
 #define __H___h_Ordering_ctor_t__

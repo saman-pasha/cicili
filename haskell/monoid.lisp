@@ -60,7 +60,7 @@
              ((<> Monoid type mappend) lhs rhs))
 
          (fn (<> mconcat type) list
-             ((<> Monoid type mconcat) ((<> new List type) list)))
+             ((<> Monoid type mconcat) list))
 
          ) ; decl-Monoid
 
@@ -117,7 +117,7 @@
              ((<> Monoid type mappend) lhs rhs))
 
          (fn (<> mconcat type) list
-             ((<> Monoid type mconcat) ((<> new List type) list)))
+             ((<> Monoid type mconcat) list))
          
          ) ; import-Monoid
 

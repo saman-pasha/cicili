@@ -9,8 +9,8 @@
 
         ;; data Bool = False True
         (decl-data Bool False True)
-        (decl) (func Bool_and ((Bool lhs) (Bool rhs)) (out Bool))
-        (decl) (func Bool_or  ((Bool lhs) (Bool rhs)) (out Bool))
+        (decl) (func and_Bool  ((Bool lhs) (Bool rhs)) (out Bool))
+        (decl) (func or_Bool   ((Bool lhs) (Bool rhs)) (out Bool))
         (decl) (func show_Bool ((Bool value)))
         
         ;; data Ordering = LT EQ GT
@@ -79,7 +79,7 @@
         
         (define-data Bool False True)
         
-        (func Bool_and ((Bool lhs) (Bool rhs))
+        (func and_Bool ((Bool lhs) (Bool rhs))
               (out Bool)
               (return (match lhs
                         (False   (False))
@@ -87,7 +87,7 @@
                                    (False   (False))
                                    (default (True)))))))
         
-        (func Bool_or  ((Bool lhs) (Bool rhs))
+        (func or_Bool  ((Bool lhs) (Bool rhs))
               (out Bool)
               (return (match lhs
                         (True    (True))
@@ -131,8 +131,8 @@
         (define-folds int)
         (define-folds char)
         
-        (define-Monoid (<> All     Bool) Bool (True)  Bool_and)
-        (define-Monoid (<> Any     Bool) Bool (False) Bool_or)
+        (define-Monoid (<> All     Bool) Bool (True)  and_Bool)
+        (define-Monoid (<> Any     Bool) Bool (False) or_Bool)
         (define-Monoid (<> Sum     int)  int  0       +)
         (define-Monoid (<> Product int)  int  1       *)
         

@@ -1,5 +1,5 @@
 
-(import "haskell/applicative.lisp")
+(import "haskell/monad.lisp")
 
 (source "concepts.c" (:std #t :compile #t :link "-L{$CCL} -lhaskell.o -L{$CWD} concepts.o -o main")
         (include "../../haskell.h")
@@ -132,8 +132,9 @@
           ;; use mempty, mappend, mconcat without get datatype
           (letin* ((l1 ((<> new List int) '{ 1 3 5 }))
                    (l2 ((<> new List int) '{ 2 4 6 }))
-                   (l3 ((<> new List int) '{ 7 8 9 })))
-            (letin ((* result (mconcat^List^int '{ l1 l2 l3 }))) ; mconcat uses appand function
+                   (l3 ((<> new List int) '{ 7 8 9 }))
+                   (l4 ((<> new List List int) '{ l1 l2 l3 })))
+            (letin ((* result (mconcat^List^int l4))) ; mconcat uses appand function
               (format #t "Concat of Lists (mconcat Monoid) of '{ 1 3 5 } and '{ 2 4 6 } and '{ 7 8 9 } is:\n")
               (show^List^int result)
               (putchar #\Newline)))
@@ -190,13 +191,10 @@
                        (format #t "the result of 'All' monoid is: ")
                        (show^Bool (mconcat r3))
                        (putchar #\Newline))))
-
-                (io (get^Monoid^Any^Bool)
-                  (_ _ _ mconcat
-                     (progn
-                       (format #t "the result of 'Any' monoid is: ")
-                       (show^Bool (mconcat r3))
-                       (putchar #\Newline))))
+                ;; other way access to mconcat for a type
+                (format #t "the result of 'Any' monoid is: ")
+                (show^Bool (mconcat^Any^Bool r3))
+                (putchar #\Newline)
 
                 )))
 
@@ -204,11 +202,15 @@
             (io (get^Applicative^Maybe^int^int)
               (_ pure ap
                  (io (ap (pure ftor_mul_15) (Just^int 12))
-                   (Just output (format #t "the result of 'Applicative for Maybe (*15)' is: Just %d\n" output))
-                   (default (format #t "the result of 'Applicative for Maybe (*15)' is: Nothing\n")))))
+                   (Just output (format #t "the result of 'Applicative for Maybe (*15) (Just 12)' is: Just %d\n" output))
+                   (default (format #t "the result of 'Applicative for Maybe (*15) (Just 12)' is: Nothing\n")))))
             ;; easy access to ap 'tie-fighter'
-            (io ($> ap^Maybe^int^int (pure^Maybe^int^int ftor_mul_15) (Just^int 12))
-              (Just output (format #t "the result of easy 'Applicative for Maybe (*15)' is: Just %d\n" output))
-              (default (format #t "the result of easy 'Applicative for Maybe (*15)' is: Nothing\n"))))
+            (letin* ((wrapped (pure^Maybe^int^int ftor_mul_15)))
+              (io ($> ap^Maybe^int^int wrapped (Just^int 12))
+                (Just output (format #t "the result of easy 'Applicative for Maybe (*15) (Just 12)' is: Just %d\n" output))
+                (default (format #t "the result of easy 'Applicative for Maybe (*15) (Just 12)' is: Nothing\n")))
+              (io ($> ap^Maybe^int^int wrapped (Nothing^int))
+                (Just output (format #t "the result of easy 'Applicative for Maybe (*15) Nothing' is: Just %d\n" output))
+                (default (format #t "the result of easy 'Applicative for Maybe (*15) Nothing' is: Nothing\n")))))
 
           ))
