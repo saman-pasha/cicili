@@ -15,20 +15,19 @@
 
          (decl-data (Functor (<> Functor type))
            (= Functor (<> Functor type ctor)
-              ((<> Functor type fmap t) fmap)
-              ((<> Functor type a_b t) a_b)))
+              ((<> Functor type fmap t) fmap)))
 
          (decl) (func (<> Functor type fmap) (((<> Functor type a_b t) a_b) ((<> f a) input)) (out (<> f b)))
 
-         (decl) (func (<> get Functor type) (((<> Functor type a_b t) a_b)) (out (<> Functor type)))
+         (decl) (func (<> get Functor type) () (out (<> Functor type)))
 
          ;; returns f~b
          (fn (<> fmap type) a->b f~a
-             (match ((<> get Functor type) '(lambda ((a __h_value))
-                                             (out b)
-                                             (return ($> a->b __h_value))))
-               (_ fmap a_b (fmap a_b f~a))
-               (default ((<> mempty (<> f b)))))) ; uses monoid                     
+             ((<> Functor type fmap)
+              '(lambda ((a __h_value))
+                (out b)
+                (return ($> a->b __h_value)))
+              f~a))
 
          ) ; decl-Functor
 
@@ -38,16 +37,15 @@
 
          (define-data (Functor (<> Functor type))
            (= Functor (<> Functor type ctor)
-              ((<> Functor type fmap t) fmap)
-              ((<> Functor type a_b t) a_b)))
+              ((<> Functor type fmap t) fmap)))
 
          (func (<> Functor type fmap) (((<> Functor type a_b t) a_b) ((<> f a) input))
                (out (<> f b))
                (return mat))
 
-         (func (<> get Functor type) (((<> Functor type a_b t) a_b))
+         (func (<> get Functor type) ()
                (out (<> Functor type))
-               (return ($> (<> Functor type ctor) (<> Functor type fmap) a_b)))
+               (return ((<> Functor type ctor) (<> Functor type fmap))))
          
          ) ; define-Functor
 
@@ -55,12 +53,12 @@
 
          ;; returns f~b
          (fn (<> fmap type) a->b f~a
-             (match ((<> get Functor type) '(lambda ((a value))
-                                             (out b)
-                                             (return ($> a->b value))))
-               (_ fmap a_b (fmap a_b f~a))
-               (default ((<> mempty (<> f b)))))) ; uses monoid
-
+             ((<> Functor type fmap)
+              '(lambda ((a __h_value))
+                (out b)
+                (return ($> a->b __h_value)))
+              f~a))
+         
          ) ; import-Functor
 
 

@@ -2977,151 +2977,151 @@ List_char mempty_String_char () {
 }
 void free_Functor_List_int_int (Functor_List_int_int * this ) {
 }
-Functor_List_int_int __h_Functor_List_int_int_ctor_ctor (Functor_List_int_int_fmap_t fmap , Functor_List_int_int_a_b_t a_b ) {
-  return ((Functor_List_int_int){ free_Functor_List_int_int , __h___t , .__h_data._ = { fmap , a_b }});
+Functor_List_int_int Functor_List_int_int_ctor (Functor_List_int_int_fmap_t fmap ) {
+  return ((Functor_List_int_int){ free_Functor_List_int_int , __h___t , .__h_data._ = { fmap }});
 }
 List_int Functor_List_int_int_fmap (Functor_List_int_int_a_b_t a_b , List_int input ) {
-  return ({ /* cicili#Let5072 */
+  return ({ /* cicili#Let5071 */
       __auto_type head  = (((input -> __h_data ). _ ). __h_0_mem );
       __auto_type tail  = (((input -> __h_data ). _ ). __h_1_mem );
       // ----------
-      /* cicili#Block5074 */
-      ({ /* cicili#Let5076 */
+      /* cicili#Block5073 */
+      ({ /* cicili#Let5075 */
         bool __h_case_result  = ((input -> __h_ctor ) ==  __h___t  );
         // ----------
-        ((__h_case_result ) ? __h_Cons_int_ctor (a_b (head ), Functor_List_int_int_fmap (a_b , tail )) : ({ /* cicili#Let5086 */
+        ((__h_case_result ) ? __h_Cons_int_ctor (a_b (head ), Functor_List_int_int_fmap (a_b , tail )) : ({ /* cicili#Let5085 */
             // ----------
-            /* cicili#Block5088 */
+            /* cicili#Block5087 */
             Empty_int ();
           }));
       });
     });
 }
-Functor_List_int_int get_Functor_List_int_int (Functor_List_int_int_a_b_t a_b ) {
-  return __h_Functor_List_int_int_ctor_ctor (Functor_List_int_int_fmap , a_b );
+Functor_List_int_int get_Functor_List_int_int () {
+  return Functor_List_int_int_ctor (Functor_List_int_int_fmap );
 }
 void free_Functor_List_int_Bool (Functor_List_int_Bool * this ) {
 }
-Functor_List_int_Bool __h_Functor_List_int_Bool_ctor_ctor (Functor_List_int_Bool_fmap_t fmap , Functor_List_int_Bool_a_b_t a_b ) {
-  return ((Functor_List_int_Bool){ free_Functor_List_int_Bool , __h___t , .__h_data._ = { fmap , a_b }});
+Functor_List_int_Bool Functor_List_int_Bool_ctor (Functor_List_int_Bool_fmap_t fmap ) {
+  return ((Functor_List_int_Bool){ free_Functor_List_int_Bool , __h___t , .__h_data._ = { fmap }});
 }
 List_Bool Functor_List_int_Bool_fmap (Functor_List_int_Bool_a_b_t a_b , List_int input ) {
-  return ({ /* cicili#Let5121 */
+  return ({ /* cicili#Let5115 */
       __auto_type head  = (((input -> __h_data ). _ ). __h_0_mem );
       __auto_type tail  = (((input -> __h_data ). _ ). __h_1_mem );
       // ----------
-      /* cicili#Block5123 */
-      ({ /* cicili#Let5125 */
+      /* cicili#Block5117 */
+      ({ /* cicili#Let5119 */
         bool __h_case_result  = ((input -> __h_ctor ) ==  __h___t  );
         // ----------
-        ((__h_case_result ) ? __h_Cons_Bool_ctor (a_b (head ), Functor_List_int_Bool_fmap (a_b , tail )) : ({ /* cicili#Let5135 */
+        ((__h_case_result ) ? __h_Cons_Bool_ctor (a_b (head ), Functor_List_int_Bool_fmap (a_b , tail )) : ({ /* cicili#Let5129 */
             // ----------
-            /* cicili#Block5137 */
+            /* cicili#Block5131 */
             Empty_Bool ();
           }));
       });
     });
 }
-Functor_List_int_Bool get_Functor_List_int_Bool (Functor_List_int_Bool_a_b_t a_b ) {
-  return __h_Functor_List_int_Bool_ctor_ctor (Functor_List_int_Bool_fmap , a_b );
+Functor_List_int_Bool get_Functor_List_int_Bool () {
+  return Functor_List_int_Bool_ctor (Functor_List_int_Bool_fmap );
 }
 void free_Functor_List_char_char (Functor_List_char_char * this ) {
 }
-Functor_List_char_char __h_Functor_List_char_char_ctor_ctor (Functor_List_char_char_fmap_t fmap , Functor_List_char_char_a_b_t a_b ) {
-  return ((Functor_List_char_char){ free_Functor_List_char_char , __h___t , .__h_data._ = { fmap , a_b }});
+Functor_List_char_char Functor_List_char_char_ctor (Functor_List_char_char_fmap_t fmap ) {
+  return ((Functor_List_char_char){ free_Functor_List_char_char , __h___t , .__h_data._ = { fmap }});
 }
 List_char Functor_List_char_char_fmap (Functor_List_char_char_a_b_t a_b , List_char input ) {
-  return ({ /* cicili#Let5170 */
+  return ({ /* cicili#Let5159 */
       __auto_type head  = (((input -> __h_data ). _ ). __h_0_mem );
       __auto_type tail  = (((input -> __h_data ). _ ). __h_1_mem );
       // ----------
-      /* cicili#Block5172 */
-      ({ /* cicili#Let5174 */
+      /* cicili#Block5161 */
+      ({ /* cicili#Let5163 */
         bool __h_case_result  = ((input -> __h_ctor ) ==  __h___t  );
         // ----------
-        ((__h_case_result ) ? __h_Cons_char_ctor (a_b (head ), Functor_List_char_char_fmap (a_b , tail )) : ({ /* cicili#Let5184 */
+        ((__h_case_result ) ? __h_Cons_char_ctor (a_b (head ), Functor_List_char_char_fmap (a_b , tail )) : ({ /* cicili#Let5173 */
             // ----------
-            /* cicili#Block5186 */
+            /* cicili#Block5175 */
             Empty_char ();
           }));
       });
     });
 }
-Functor_List_char_char get_Functor_List_char_char (Functor_List_char_char_a_b_t a_b ) {
-  return __h_Functor_List_char_char_ctor_ctor (Functor_List_char_char_fmap , a_b );
+Functor_List_char_char get_Functor_List_char_char () {
+  return Functor_List_char_char_ctor (Functor_List_char_char_fmap );
 }
 void free_Functor_List_char_Bool (Functor_List_char_Bool * this ) {
 }
-Functor_List_char_Bool __h_Functor_List_char_Bool_ctor_ctor (Functor_List_char_Bool_fmap_t fmap , Functor_List_char_Bool_a_b_t a_b ) {
-  return ((Functor_List_char_Bool){ free_Functor_List_char_Bool , __h___t , .__h_data._ = { fmap , a_b }});
+Functor_List_char_Bool Functor_List_char_Bool_ctor (Functor_List_char_Bool_fmap_t fmap ) {
+  return ((Functor_List_char_Bool){ free_Functor_List_char_Bool , __h___t , .__h_data._ = { fmap }});
 }
 List_Bool Functor_List_char_Bool_fmap (Functor_List_char_Bool_a_b_t a_b , List_char input ) {
-  return ({ /* cicili#Let5219 */
+  return ({ /* cicili#Let5203 */
       __auto_type head  = (((input -> __h_data ). _ ). __h_0_mem );
       __auto_type tail  = (((input -> __h_data ). _ ). __h_1_mem );
       // ----------
-      /* cicili#Block5221 */
-      ({ /* cicili#Let5223 */
+      /* cicili#Block5205 */
+      ({ /* cicili#Let5207 */
         bool __h_case_result  = ((input -> __h_ctor ) ==  __h___t  );
         // ----------
-        ((__h_case_result ) ? __h_Cons_Bool_ctor (a_b (head ), Functor_List_char_Bool_fmap (a_b , tail )) : ({ /* cicili#Let5233 */
+        ((__h_case_result ) ? __h_Cons_Bool_ctor (a_b (head ), Functor_List_char_Bool_fmap (a_b , tail )) : ({ /* cicili#Let5217 */
             // ----------
-            /* cicili#Block5235 */
+            /* cicili#Block5219 */
             Empty_Bool ();
           }));
       });
     });
 }
-Functor_List_char_Bool get_Functor_List_char_Bool (Functor_List_char_Bool_a_b_t a_b ) {
-  return __h_Functor_List_char_Bool_ctor_ctor (Functor_List_char_Bool_fmap , a_b );
+Functor_List_char_Bool get_Functor_List_char_Bool () {
+  return Functor_List_char_Bool_ctor (Functor_List_char_Bool_fmap );
 }
 void free_Functor_String_char (Functor_String_char * this ) {
 }
-Functor_String_char __h_Functor_String_char_ctor_ctor (Functor_String_char_fmap_t fmap , Functor_String_char_a_b_t a_b ) {
-  return ((Functor_String_char){ free_Functor_String_char , __h___t , .__h_data._ = { fmap , a_b }});
+Functor_String_char Functor_String_char_ctor (Functor_String_char_fmap_t fmap ) {
+  return ((Functor_String_char){ free_Functor_String_char , __h___t , .__h_data._ = { fmap }});
 }
 List_char Functor_String_char_fmap (Functor_String_char_a_b_t a_b , List_char input ) {
-  return ({ /* cicili#Let5268 */
+  return ({ /* cicili#Let5247 */
       __auto_type head  = (((input -> __h_data ). _ ). __h_0_mem );
       __auto_type tail  = (((input -> __h_data ). _ ). __h_1_mem );
       // ----------
-      /* cicili#Block5270 */
-      ({ /* cicili#Let5272 */
+      /* cicili#Block5249 */
+      ({ /* cicili#Let5251 */
         bool __h_case_result  = ((input -> __h_ctor ) ==  __h___t  );
         // ----------
-        ((__h_case_result ) ? __h_Cons_char_ctor (a_b (head ), Functor_String_char_fmap (a_b , tail )) : ({ /* cicili#Let5282 */
+        ((__h_case_result ) ? __h_Cons_char_ctor (a_b (head ), Functor_String_char_fmap (a_b , tail )) : ({ /* cicili#Let5261 */
             // ----------
-            /* cicili#Block5284 */
+            /* cicili#Block5263 */
             Empty_char ();
           }));
       });
     });
 }
-Functor_String_char get_Functor_String_char (Functor_String_char_a_b_t a_b ) {
-  return __h_Functor_String_char_ctor_ctor (Functor_String_char_fmap , a_b );
+Functor_String_char get_Functor_String_char () {
+  return Functor_String_char_ctor (Functor_String_char_fmap );
 }
 void free_Functor_String_Bool (Functor_String_Bool * this ) {
 }
-Functor_String_Bool __h_Functor_String_Bool_ctor_ctor (Functor_String_Bool_fmap_t fmap , Functor_String_Bool_a_b_t a_b ) {
-  return ((Functor_String_Bool){ free_Functor_String_Bool , __h___t , .__h_data._ = { fmap , a_b }});
+Functor_String_Bool Functor_String_Bool_ctor (Functor_String_Bool_fmap_t fmap ) {
+  return ((Functor_String_Bool){ free_Functor_String_Bool , __h___t , .__h_data._ = { fmap }});
 }
 List_Bool Functor_String_Bool_fmap (Functor_String_Bool_a_b_t a_b , List_char input ) {
-  return ({ /* cicili#Let5317 */
+  return ({ /* cicili#Let5291 */
       __auto_type head  = (((input -> __h_data ). _ ). __h_0_mem );
       __auto_type tail  = (((input -> __h_data ). _ ). __h_1_mem );
       // ----------
-      /* cicili#Block5319 */
-      ({ /* cicili#Let5321 */
+      /* cicili#Block5293 */
+      ({ /* cicili#Let5295 */
         bool __h_case_result  = ((input -> __h_ctor ) ==  __h___t  );
         // ----------
-        ((__h_case_result ) ? __h_Cons_Bool_ctor (a_b (head ), Functor_String_Bool_fmap (a_b , tail )) : ({ /* cicili#Let5331 */
+        ((__h_case_result ) ? __h_Cons_Bool_ctor (a_b (head ), Functor_String_Bool_fmap (a_b , tail )) : ({ /* cicili#Let5305 */
             // ----------
-            /* cicili#Block5333 */
+            /* cicili#Block5307 */
             Empty_Bool ();
           }));
       });
     });
 }
-Functor_String_Bool get_Functor_String_Bool (Functor_String_Bool_a_b_t a_b ) {
-  return __h_Functor_String_Bool_ctor_ctor (Functor_String_Bool_fmap , a_b );
+Functor_String_Bool get_Functor_String_Bool () {
+  return Functor_String_Bool_ctor (Functor_String_Bool_fmap );
 }

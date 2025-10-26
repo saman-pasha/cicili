@@ -85,18 +85,18 @@
 
 (generic define-Monad-Maybe (type a b)
 
-         (define-Monad type Maybe a b
-                             (match applicative
-                               (Just (_ pure ap)
-                                 (match input
-                                   (Just value (fmap a_b input))
-                               (default ((<> Nothing b))))
-                             (<> Just (<> Applicative type)))
+         ;; (define-Monad type Maybe a b
+         ;;               (match applicative
+         ;;                 (Just (_ pure ap)
+         ;;                   (match input
+         ;;                     (Just value (fmap a_b input))
+         ;;                     (default ((<> Nothing b))))
+         ;;                   (<> Just (<> Applicative type)))
          
          ) ; define-Monad-Maybe
 
 (generic import-Monad-Maybe (type a b)
-
+         
          (import-Monad type Maybe a b)
          
          ) ; import-Monad-Maybe

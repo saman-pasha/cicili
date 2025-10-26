@@ -1,6 +1,7 @@
 
 ;;; Monoidal Functor
 
+;; takes a functorial structure to 'ap' (apply) over a structure
 ;; factor  f
 ;; monoid  [ ] a -> [ ] a -> [ ] a
 ;; functor f (a -> b) -> f a -> f b
@@ -11,26 +12,24 @@
 ;;   <*>  :: f (a -> b) -> f a -> f b
 (generic decl-Applicative (type f a b)
 
-         ;; known constructor
-         (typedef func (<> Applicative type pure t) (((<> Functor type) ftor)) (out (<> f (<> Functor type))))
-         ;; takes a functorial structure to ap over a structure
-         (typedef func (<> Applicative type ap t) (((<> f (<> Functor type)) functor) ((<> f a) input)) (out (<> f b)))
+         (typedef func (<> Applicative type pure t) (((<> Functor type a_b t) a_b)) (out (<> f (<> Functor type a_b t))))
+         (typedef func (<> Applicative type ap t) (((<> f (<> Functor type a_b t)) f_a_b) ((<> f a) input)) (out (<> f b)))
 
          (decl-data (Applicative (<> Applicative type))
            (= Applicative (<> Applicative type ctor)
               ((<> Applicative type pure t) pure)
               ((<> Applicative type ap t) ap)))
 
-         (decl) (func (<> Applicative type pure) (((<> Functor type) ftor)) (out (<> f (<> Functor type))))
-         (decl) (func (<> Applicative type ap) (((<> f (<> Functor type)) functor) ((<> f a) input)) (out (<> f b)))
+         (decl) (func (<> Applicative type pure) (((<> Functor type a_b t) a_b)) (out (<> f (<> Functor type a_b t))))
+         (decl) (func (<> Applicative type ap) (((<> f (<> Functor type a_b t)) f_a_b) ((<> f a) input)) (out (<> f b)))
 
          (decl) (func (<> get Applicative type) () (out (<> Applicative type)))
 
-         (fn (<> pure type) ftor
-             ((<> Applicative type pure) ftor))
+         (fn (<> pure type) a_b
+             ((<> Applicative type pure) a_b))
 
-         (fn (<> ap type) functor input
-             ((<> Applicative type ap) functor input))
+         (fn (<> ap type) f_a_b input
+             ((<> Applicative type ap) f_a_b input))
          
          ) ; decl-Applicative
 
@@ -43,11 +42,11 @@
               ((<> Applicative type pure t) pure)
               ((<> Applicative type ap t) ap)))
 
-         (func (<> Applicative type pure) (((<> Functor type) ftor))
-               (out (<> f (<> Functor type)))
-               (return (wrap ftor)))
+         (func (<> Applicative type pure) (((<> Functor type a_b t) a_b))
+               (out (<> f (<> Functor type a_b t)))
+               (return (wrap a_b)))
 
-         (func (<> Applicative type ap) (((<> f (<> Functor type)) functor) ((<> f a) input))
+         (func (<> Applicative type ap) (((<> f (<> Functor type a_b t)) f_a_b) ((<> f a) input))
                (out (<> f b))
                (return mat))
 
@@ -66,17 +65,18 @@
               ((<> Applicative type pure t) pure)
               ((<> Applicative type ap t) ap)))
 
-         (fn (<> pure type) ftor
-             ((<> Applicative type pure) ftor))
+         (fn (<> pure type) a_b
+             ((<> Applicative type pure) a_b))
 
-         (fn (<> ap type) functor input
-             ((<> Applicative type ap) functor input))
+         (fn (<> ap type) f_a_b input
+             ((<> Applicative type ap) f_a_b input))
          
          ) ; import-Applicative
 
 
-;; todo: List Applicative using Monoid
+;; List
 
+;; Maybe
 (generic decl-Applicative-Maybe (type a b)
 
          (decl-Applicative type Maybe a b)
@@ -86,9 +86,9 @@
 (generic define-Applicative-Maybe (type a b)
 
          (define-Applicative type Maybe a b
-                             (<> Just (<> Functor type))
-                             (match functor
-                               (Just (_ fmap a_b) (fmap a_b input))
+                             (<> Just (<> Functor type a_b t))
+                             (match f_a_b
+                               (Just a_b ((<> Functor type fmap) a_b input))
                                (default ((<> Nothing b)))))
          
          ) ; define-Applicative-Maybe

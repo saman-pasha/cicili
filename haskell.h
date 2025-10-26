@@ -1016,17 +1016,19 @@ typedef void (*free_Functor_List_int_int_t) (Functor_List_int_int * this );
 typedef struct Functor_List_int_int {
   free_Functor_List_int_int_t __h_free_data ;
   char __h_ctor ;
-  union { /* ciciliUnion1413 */
-    struct { /* ciciliStruct1414 */
+  union { /* ciciliUnion1412 */
+    struct { /* ciciliStruct1413 */
       Functor_List_int_int_fmap_t __h_0_mem ;
-      Functor_List_int_int_a_b_t __h_1_mem ;
     } Functor , _ ;
   } __h_data ;
 } Functor_List_int_int;
-Functor_List_int_int __h_Functor_List_int_int_ctor_ctor (Functor_List_int_int_fmap_t fmap , Functor_List_int_int_a_b_t a_b );
+Functor_List_int_int Functor_List_int_int_ctor (Functor_List_int_int_fmap_t fmap );
+__attribute__((weak)) Functor_List_int_int Default_Functor_List_int_int (Functor_List_int_int_fmap_t fmap ) {
+  return Functor_List_int_int_ctor (fmap );
+}
 void free_Functor_List_int_int (Functor_List_int_int * this );
 List_int Functor_List_int_int_fmap (Functor_List_int_int_a_b_t a_b , List_int input );
-Functor_List_int_int get_Functor_List_int_int (Functor_List_int_int_a_b_t a_b );
+Functor_List_int_int get_Functor_List_int_int ();
 typedef Bool (*Functor_List_int_Bool_a_b_t) (int value );
 typedef List_Bool (*Functor_List_int_Bool_fmap_t) (Functor_List_int_Bool_a_b_t a_b , List_int input );
 #ifndef __H___h_Functor_ctor_t__
@@ -1040,17 +1042,19 @@ typedef void (*free_Functor_List_int_Bool_t) (Functor_List_int_Bool * this );
 typedef struct Functor_List_int_Bool {
   free_Functor_List_int_Bool_t __h_free_data ;
   char __h_ctor ;
-  union { /* ciciliUnion1455 */
-    struct { /* ciciliStruct1456 */
+  union { /* ciciliUnion1454 */
+    struct { /* ciciliStruct1455 */
       Functor_List_int_Bool_fmap_t __h_0_mem ;
-      Functor_List_int_Bool_a_b_t __h_1_mem ;
     } Functor , _ ;
   } __h_data ;
 } Functor_List_int_Bool;
-Functor_List_int_Bool __h_Functor_List_int_Bool_ctor_ctor (Functor_List_int_Bool_fmap_t fmap , Functor_List_int_Bool_a_b_t a_b );
+Functor_List_int_Bool Functor_List_int_Bool_ctor (Functor_List_int_Bool_fmap_t fmap );
+__attribute__((weak)) Functor_List_int_Bool Default_Functor_List_int_Bool (Functor_List_int_Bool_fmap_t fmap ) {
+  return Functor_List_int_Bool_ctor (fmap );
+}
 void free_Functor_List_int_Bool (Functor_List_int_Bool * this );
 List_Bool Functor_List_int_Bool_fmap (Functor_List_int_Bool_a_b_t a_b , List_int input );
-Functor_List_int_Bool get_Functor_List_int_Bool (Functor_List_int_Bool_a_b_t a_b );
+Functor_List_int_Bool get_Functor_List_int_Bool ();
 typedef char (*Functor_List_char_char_a_b_t) (char value );
 typedef List_char (*Functor_List_char_char_fmap_t) (Functor_List_char_char_a_b_t a_b , List_char input );
 #ifndef __H___h_Functor_ctor_t__
@@ -1064,17 +1068,19 @@ typedef void (*free_Functor_List_char_char_t) (Functor_List_char_char * this );
 typedef struct Functor_List_char_char {
   free_Functor_List_char_char_t __h_free_data ;
   char __h_ctor ;
-  union { /* ciciliUnion1497 */
-    struct { /* ciciliStruct1498 */
+  union { /* ciciliUnion1496 */
+    struct { /* ciciliStruct1497 */
       Functor_List_char_char_fmap_t __h_0_mem ;
-      Functor_List_char_char_a_b_t __h_1_mem ;
     } Functor , _ ;
   } __h_data ;
 } Functor_List_char_char;
-Functor_List_char_char __h_Functor_List_char_char_ctor_ctor (Functor_List_char_char_fmap_t fmap , Functor_List_char_char_a_b_t a_b );
+Functor_List_char_char Functor_List_char_char_ctor (Functor_List_char_char_fmap_t fmap );
+__attribute__((weak)) Functor_List_char_char Default_Functor_List_char_char (Functor_List_char_char_fmap_t fmap ) {
+  return Functor_List_char_char_ctor (fmap );
+}
 void free_Functor_List_char_char (Functor_List_char_char * this );
 List_char Functor_List_char_char_fmap (Functor_List_char_char_a_b_t a_b , List_char input );
-Functor_List_char_char get_Functor_List_char_char (Functor_List_char_char_a_b_t a_b );
+Functor_List_char_char get_Functor_List_char_char ();
 typedef Bool (*Functor_List_char_Bool_a_b_t) (char value );
 typedef List_Bool (*Functor_List_char_Bool_fmap_t) (Functor_List_char_Bool_a_b_t a_b , List_char input );
 #ifndef __H___h_Functor_ctor_t__
@@ -1088,17 +1094,19 @@ typedef void (*free_Functor_List_char_Bool_t) (Functor_List_char_Bool * this );
 typedef struct Functor_List_char_Bool {
   free_Functor_List_char_Bool_t __h_free_data ;
   char __h_ctor ;
-  union { /* ciciliUnion1539 */
-    struct { /* ciciliStruct1540 */
+  union { /* ciciliUnion1538 */
+    struct { /* ciciliStruct1539 */
       Functor_List_char_Bool_fmap_t __h_0_mem ;
-      Functor_List_char_Bool_a_b_t __h_1_mem ;
     } Functor , _ ;
   } __h_data ;
 } Functor_List_char_Bool;
-Functor_List_char_Bool __h_Functor_List_char_Bool_ctor_ctor (Functor_List_char_Bool_fmap_t fmap , Functor_List_char_Bool_a_b_t a_b );
+Functor_List_char_Bool Functor_List_char_Bool_ctor (Functor_List_char_Bool_fmap_t fmap );
+__attribute__((weak)) Functor_List_char_Bool Default_Functor_List_char_Bool (Functor_List_char_Bool_fmap_t fmap ) {
+  return Functor_List_char_Bool_ctor (fmap );
+}
 void free_Functor_List_char_Bool (Functor_List_char_Bool * this );
 List_Bool Functor_List_char_Bool_fmap (Functor_List_char_Bool_a_b_t a_b , List_char input );
-Functor_List_char_Bool get_Functor_List_char_Bool (Functor_List_char_Bool_a_b_t a_b );
+Functor_List_char_Bool get_Functor_List_char_Bool ();
 typedef char (*Functor_String_char_a_b_t) (char value );
 typedef List_char (*Functor_String_char_fmap_t) (Functor_String_char_a_b_t a_b , List_char input );
 #ifndef __H___h_Functor_ctor_t__
@@ -1112,17 +1120,19 @@ typedef void (*free_Functor_String_char_t) (Functor_String_char * this );
 typedef struct Functor_String_char {
   free_Functor_String_char_t __h_free_data ;
   char __h_ctor ;
-  union { /* ciciliUnion1581 */
-    struct { /* ciciliStruct1582 */
+  union { /* ciciliUnion1580 */
+    struct { /* ciciliStruct1581 */
       Functor_String_char_fmap_t __h_0_mem ;
-      Functor_String_char_a_b_t __h_1_mem ;
     } Functor , _ ;
   } __h_data ;
 } Functor_String_char;
-Functor_String_char __h_Functor_String_char_ctor_ctor (Functor_String_char_fmap_t fmap , Functor_String_char_a_b_t a_b );
+Functor_String_char Functor_String_char_ctor (Functor_String_char_fmap_t fmap );
+__attribute__((weak)) Functor_String_char Default_Functor_String_char (Functor_String_char_fmap_t fmap ) {
+  return Functor_String_char_ctor (fmap );
+}
 void free_Functor_String_char (Functor_String_char * this );
 List_char Functor_String_char_fmap (Functor_String_char_a_b_t a_b , List_char input );
-Functor_String_char get_Functor_String_char (Functor_String_char_a_b_t a_b );
+Functor_String_char get_Functor_String_char ();
 typedef Bool (*Functor_String_Bool_a_b_t) (char value );
 typedef List_Bool (*Functor_String_Bool_fmap_t) (Functor_String_Bool_a_b_t a_b , List_char input );
 #ifndef __H___h_Functor_ctor_t__
@@ -1136,14 +1146,16 @@ typedef void (*free_Functor_String_Bool_t) (Functor_String_Bool * this );
 typedef struct Functor_String_Bool {
   free_Functor_String_Bool_t __h_free_data ;
   char __h_ctor ;
-  union { /* ciciliUnion1623 */
-    struct { /* ciciliStruct1624 */
+  union { /* ciciliUnion1622 */
+    struct { /* ciciliStruct1623 */
       Functor_String_Bool_fmap_t __h_0_mem ;
-      Functor_String_Bool_a_b_t __h_1_mem ;
     } Functor , _ ;
   } __h_data ;
 } Functor_String_Bool;
-Functor_String_Bool __h_Functor_String_Bool_ctor_ctor (Functor_String_Bool_fmap_t fmap , Functor_String_Bool_a_b_t a_b );
+Functor_String_Bool Functor_String_Bool_ctor (Functor_String_Bool_fmap_t fmap );
+__attribute__((weak)) Functor_String_Bool Default_Functor_String_Bool (Functor_String_Bool_fmap_t fmap ) {
+  return Functor_String_Bool_ctor (fmap );
+}
 void free_Functor_String_Bool (Functor_String_Bool * this );
 List_Bool Functor_String_Bool_fmap (Functor_String_Bool_a_b_t a_b , List_char input );
-Functor_String_Bool get_Functor_String_Bool (Functor_String_Bool_a_b_t a_b );
+Functor_String_Bool get_Functor_String_Bool ();

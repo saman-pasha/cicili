@@ -37,10 +37,10 @@
         ;; (int -> int) -> Maybe int -> Maybe int
         (decl-Functor-Maybe Maybe^int^int int int)
         (define-Functor-Maybe Maybe^int^int int int)
-        
-        ;; Maybe (Functor (Maybe int) -> (Maybe int))
-        (decl-Maybe Functor^Maybe^int^int)
-        (define-Maybe Functor^Maybe^int^int)
+
+        ;; Maybe ((Maybe int) -> (Maybe int))
+        (decl-Maybe Functor^Maybe^int^int^a_b_t)
+        (define-Maybe Functor^Maybe^int^int^a_b_t)
 
         ;; Maybe (int -> int) -> Maybe int -> Maybe int
         (decl-Applicative-Maybe Maybe^int^int int int)
@@ -150,14 +150,19 @@
 
           ;; using Functor datatype or fmap directly
           ;; apply irreducible function over list
-          (letin* ((ftor_mul_5 (get^Functor^List^int^int  '(lambda ((int value)) (out int) (return (* 5 value)))))
-                   (ftor_mod_3 (get^Functor^List^int^Bool '(lambda ((int value))
-                                                            (out Bool)
-                                                            (return (case (% value 3) (False)
-                                                                          otherwise   (True)))))))
+          (letin* ((ftor_mul_5 (get^Functor^List^int^int))
+                   (ftor_mod_3 (get^Functor^List^int^Bool)))
             
-            (where ((fmap-mul-5 (\\ l (match ftor_mul_5 (_ fmap a_b (fmap a_b l)) (default (Empty^int)))))
-                    (fmap-mod-3 (\\ l (match ftor_mod_3 (_ fmap a_b (fmap a_b l)) (default (Empty^Bool)))))
+            (where ((fmap-mul-5 (\\ l (match ftor_mul_5
+                                        (_ fmap (fmap '(lambda ((int value)) (out int) (return (* 5 value))) l))
+                                        (default (Empty^int)))))
+                    (fmap-mod-3 (\\ l (match ftor_mod_3
+                                        (_ fmap (fmap '(lambda ((int value))
+                                                        (out Bool)
+                                                        (return (case (% value 3) (False)
+                                                                      otherwise   (True))))
+                                                  l))
+                                        (default (Empty^Bool)))))
                     ;; use instance directly
                     (fmap-mul-5P (fmap^List^int^int  (\\ value (* 5 value))))
                     (fmap-mod-3P (fmap^List^int^Bool (\\ value (case (% value 3) (False)
@@ -198,14 +203,14 @@
 
                 )))
 
-          (letin* ((ftor_mul_15 (get^Functor^Maybe^int^int  '(lambda ((int value)) (out int) (return (* 15 value))))))
+          (letin* ((mul_15 '(lambda ((int value)) (out int) (return (* 15 value)))))
             (io (get^Applicative^Maybe^int^int)
               (_ pure ap
-                 (io (ap (pure ftor_mul_15) (Just^int 12))
+                 (io (ap (pure mul_15) (Just^int 12))
                    (Just output (format #t "the result of 'Applicative for Maybe (*15) (Just 12)' is: Just %d\n" output))
                    (default (format #t "the result of 'Applicative for Maybe (*15) (Just 12)' is: Nothing\n")))))
             ;; easy access to ap 'tie-fighter'
-            (letin* ((wrapped (pure^Maybe^int^int ftor_mul_15)))
+            (letin* ((wrapped (pure^Maybe^int^int mul_15)))
               (io ($> ap^Maybe^int^int wrapped (Just^int 12))
                 (Just output (format #t "the result of easy 'Applicative for Maybe (*15) (Just 12)' is: Just %d\n" output))
                 (default (format #t "the result of easy 'Applicative for Maybe (*15) (Just 12)' is: Nothing\n")))
