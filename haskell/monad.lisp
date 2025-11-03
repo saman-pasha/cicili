@@ -13,7 +13,6 @@
 
          ;; join inner and outer structure
          (typedef func (<> Monad type bind t) (((<> m (<> Applicative type)) applicative) ((<> m a) input)) (out (<> m b)))
-         ;; known constructor
          (typedef func (<> Monad type return t) (((<> Applicative type) app)) (out (<> m (<> Applicative type))))
 
          (decl-data (Monad (<> Monad type))

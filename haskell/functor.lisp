@@ -59,7 +59,6 @@
          ) ; import-Functor
 
 
-
 ;; List Functor
 (generic decl-Functor-List (type a b)
 
@@ -73,7 +72,7 @@
 
          (impl-Functor type List a b
                        (match input
-                         (* _ head tail     ; extract   f a
+                         (* _ head tail  ; extract   f a
                             ((<> Cons b) ; construct f b
                              ($> a_b $ head)
                              ((<> fmap Functor type) a_b tail)))
@@ -86,8 +85,6 @@
          (import-Functor type List a b)
 
          ) ; import-Functor-List
-
-
 
 
 ;; Maybe Functor

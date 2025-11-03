@@ -12,7 +12,7 @@
 (import "./rc.lisp")
 (import "./monoid.lisp")
 (import "./functor.lisp")
-;; (import "./applicative.lisp")
+(import "./applicative.lisp")
 ;; (import "./monad.lisp")
 
 (import "./haskell.lisp")

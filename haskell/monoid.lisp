@@ -26,8 +26,6 @@
          ) ; impl-folds
 
 
-
-
 ;; binary associative identity operation
 ;; class Monoid m where
 ;;   mempty  :: m
@@ -57,7 +55,7 @@
 
          ) ; decl-Monoid
 
-;; op is a strict irreducible function which accepts a and b
+;; op is a strict irreducible function which accepts lhs and rhs of type a
 (generic impl-Monoid (type a neutral op)
 
          (impl-data (Monoid (<> Monoid type))
@@ -107,8 +105,6 @@
               ((<> Monoid type mappend t) mappend)))
 
          ) ; import-Monoid
-
-
 
 
 ;; binary associative operation

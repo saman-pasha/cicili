@@ -1,5 +1,5 @@
 
-(import "haskell/applicative.lisp")
+(import "haskell/monad.lisp")
 
 (source "concepts.c" (:std #t :compile #t :link "-L{$CCL} -lhaskell.o -L{$CWD} concepts.o -o main")
         (include "../../haskell.h")
@@ -44,10 +44,6 @@
         (impl-List List^Functor^List^int^int^a_b_t Functor^List^int^int^a_b_t (\\ v (printf "%p" v)))
         (import-List new^List^Functor^List^int^int^a_b_t List^Functor^List^int^int^a_b_t Functor^List^int^int^a_b_t)
 
-        ;; List ((List int) -> (List int))
-        ;; (decl-Maybe Functor^List^int^int^a_b_t)
-        ;; (impl-Maybe Functor^List^int^int^a_b_t)
-
         ;; List (int -> int) -> List int -> List int
         (decl-Applicative-List List^int^int int int)
         (impl-Applicative-List List^int^int int int)
@@ -66,6 +62,7 @@
         (decl-Applicative-Maybe Maybe^int^int int int)
         (impl-Applicative-Maybe Maybe^int^int int int)
 
+        
         (main
             ;; test Rc
             ;; no needs to manage lists pointers
