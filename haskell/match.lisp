@@ -75,7 +75,7 @@
 
              (LET ((el-type (CADR symb)))
                (PUSH `(auto __h_has_len .
-                            (FUNCTION ((<> has len List ,el-type) ,data-name ,(1- (LENGTH (CDDR symb))))))
+                            (FUNCTION ((<> hasLen List ,el-type) ,data-name ,(1- (LENGTH (CDDR symb))))))
                  defs)
                ;; (PUSH `((typeof ((<> has len List ,el-type) ,data-name ,(1- (LENGTH (CDDR symb))))) __h_has_len) defs)
                ;; (PUSH `(set __h_has_len ((<> has len List ,el-type) ,data-name ,(1- (LENGTH (CDDR symb))))) assigns)

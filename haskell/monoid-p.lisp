@@ -35,22 +35,16 @@
 ;;   mconcat :: [m] -> m
 (generic decl-Monoid (type a)
 
-         (typedef func (<> Monoid type mappend t) ((a lhs) (a rhs)) (out a))
-         (typedef func (<> Monoid type mconcat t) (((<> List a) l)) (out a))
-
          (decl-data (Monoid (<> Monoid type))
            (= Monoid (<> Monoid type ctor)
-              ((<> Monoid type mappend t) mappend)
-              (a mempty)
-              ((<> Monoid type mconcat t) mconcat)))
+              (a mempty))
+           (func mempty  () (out a))
+           (func mappend ((a lhs) (a rhs)) (out a))
+           (func mconcat (((<> List a) list)) (out a)))
 
          (decl-data (Semigroup (<> Semigroup type))
-           (= Semigroup (<> Semigroup type ctor)
-              ((<> Monoid type mappend t) mappend)))
-
-         (decl) (func (<> mempty  type) () (out a))
-         (decl) (func (<> mappend type) ((a lhs) (a rhs)) (out a))
-         (decl) (func (<> mconcat type) (((<> List a) list)) (out a))
+           (= Semigroup (<> Semigroup type ctor))
+           (func mappend ((a lhs) (a rhs)) (out a)))
 
          (decl) (func (<> get Monoid type) () (out (<> Monoid type)))
          (decl) (func (<> get Semigroup type) () (out (<> Semigroup type)))
@@ -62,35 +56,34 @@
 
          (impl-data (Monoid (<> Monoid type))
            (= Monoid (<> Monoid type ctor)
-              ((<> Monoid type mappend t) mappend)
-              (a mempty)
-              ((<> Monoid type mconcat t) mconcat)))
+              (a mempty))
+
+           (func mempty ()
+                 (out a)
+                 (return neutral))
+
+           (func mappend ((a lhs) (a rhs))
+                 (out a)
+                 (return (op lhs rhs)))
+
+           (func mconcat (((<> List a) list))
+                 (out a)
+                 (return ((<> foldr a) (<> mappend Monoid type) neutral list))))
 
          (impl-data (Semigroup (<> Semigroup type))
-           (= Semigroup (<> Semigroup type ctor)
-              ((<> Monoid type mappend t) mappend)))
+           (= Semigroup (<> Semigroup type ctor))
 
-         (func (<> mempty type) () (out a)
-               (return neutral))
-
-         (func (<> mappend type) ((a lhs) (a rhs))
-               (out a)
-               (return (op lhs rhs)))
-
-         (func (<> mconcat type) (((<> List a) list))
-               (out a)
-               (return ((<> foldr a) (<> mappend type) neutral list)))
+           (func mappend ((a lhs) (a rhs))
+                 (out a)
+                 (return (op lhs rhs))))
 
          (func (<> get Monoid type) ()
                (out (<> Monoid type))
-               (return ((<> Monoid type ctor)
-                        (<> mappend type)
-                        neutral
-                        (<> mconcat type))))
+               (return ((<> Monoid type ctor) neutral)))
          
          (func (<> get Semigroup type) ()
                (out (<> Semigroup type))
-               (return ((<> Semigroup type ctor) (<> mappend type))))
+               (return ((<> Semigroup type ctor))))
 
          ) ; impl-Monoid
 
@@ -98,13 +91,10 @@
 
          (import-data (Monoid (<> Monoid type))
            (= Monoid (<> Monoid type ctor)
-              ((<> Monoid type mappend t) mappend)
-              (a mempty)
-              ((<> Monoid type mconcat t) mconcat)))
+              (a mempty)))
 
          (import-data (Semigroup (<> Semigroup type))
-           (= Semigroup (<> Semigroup type ctor)
-              ((<> Monoid type mappend t) mappend)))
+           (= Semigroup (<> Semigroup type ctor)))
 
          ) ; import-Monoid
 
@@ -116,14 +106,10 @@
 ;;   mappend :: m -> m -> m
 (generic decl-Semigroup (type a)
 
-         (typedef func (<> Semigroup type mappend t) ((a lhs) (a rhs)) (out a))
-
          (decl-data (<> Semigroup type)
-           (= Semigroup (<> Semigroup type ctor)
-              ((<> Semigroup type mappend t) mappend)))
-
-         (decl) (func (<> mappend type) ((a x) (a y)) (out a))
-
+           (= Semigroup (<> Semigroup type ctor))
+           (func mappend ((a lhs) (a rhs)) (out a)))
+         
          (decl) (func (<> get Semigroup type) () (out (<> Semigroup type)))
          
          ) ; decl-Semigroup
@@ -131,23 +117,25 @@
 (generic impl-Semigroup (type a op)
 
          (impl-data (<> Semigroup type)
-           (= Semigroup (<> Semigroup type ctor)
-              ((<> Monoid type mappend t) mappend)))
+           (= Semigroup (<> Semigroup type ctor))
 
-         (func (<> mappend type) ((a x) (a y))
+           (func mappend ((a lhs) (a rhs))
+                 (out a)
+                 (return (op lhs rhs))))
+
+         (func (<> Semigroup type mappend) ((a x) (a y))
                (out a)
                (return (op x y)))
          
          (func (<> get Semigroup type) ()
                (out (<> Semigroup type))
-               (return ((<> Semigroup type ctor) (<> mappend type))))
+               (return ((<> Semigroup type ctor))))
 
          ) ; impl-Semigroup
 
 (generic import-Semigroup (type)
 
          (import-data (<> Semigroup type)
-           (= Semigroup (<> Semigroup type ctor)
-              ((<> Semigroup type mappend t) mappend)))
+           (= Semigroup (<> Semigroup type ctor)))
 
          ) ; import-Semigroup

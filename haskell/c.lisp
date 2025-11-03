@@ -1,17 +1,13 @@
 
 (header "../haskell.h" (:std #t)
 
-        (decl) (func __h_free_data_router ((void ** instance)))
+        (decl) (func __h_free_data_router ((void *** instance)))
         (decl) (func __h_free_class_router ((void *** instance)))
         
         (enum __h_DefaultCtor
           (__h___t))
 
-        ;; data Bool = False True
-        (decl-data Bool False True)
-        (decl) (func and_Bool  ((Bool lhs) (Bool rhs)) (out Bool))
-        (decl) (func or_Bool   ((Bool lhs) (Bool rhs)) (out Bool))
-        (decl) (func show_Bool ((Bool value)))
+        (decl-Bool)
         
         ;; data Ordering = LT EQ GT
         (decl-data Ordering LT EQ GT)
@@ -71,98 +67,76 @@
 (source "haskell.c" (:std #t :compile "-c haskell.c -o ../haskell.o" :link #f)
         (include "../haskell.h")
         
-        (func __h_free_data_router ((void ** instance))
-              ((cast (func _ ((void * this))) (cof instance)) instance))
-        
-        (func __h_free_class_router ((void *** instance))
+        (func __h_free_data_router ((void *** instance))
               ((cast (func _ ((void * this))) (cof (cof instance))) instance))
         
-        (define-data Bool False True)
-        
-        (func and_Bool ((Bool lhs) (Bool rhs))
-              (out Bool)
-              (return (match lhs
-                        (False   (False))
-                        (default (match rhs
-                                   (False   (False))
-                                   (default (True)))))))
-        
-        (func or_Bool  ((Bool lhs) (Bool rhs))
-              (out Bool)
-              (return (match lhs
-                        (True    (True))
-                        (default (match rhs
-                                   (True    (True))
-                                   (default (False)))))))
+        (func __h_free_class_router ((void *** instance))
+              ((cast (func _ ((void * this))) (cof (cof (cast (void ***) (cof instance))))) instance))
 
-        (func show_Bool ((Bool value))
-              (io value
-                (False   (printf "%s" "False"))
-                (default (printf "%s" "True"))))
-
-        (define-data Ordering LT EQ GT)
+        (impl-Bool)
         
-        (define-Maybe Bool)
-        (define-Maybe int)
-        (define-Maybe char)
-
-        (define-List   List^Bool Bool (\\ v (printf "%s" (match v (True "True") (default "False")))))
-        (define-List   List^int  int  (\\ v (printf "%d" v)))
-        (define-String List^char char (\\ v (printf "%c" v)))
+        (impl-data Ordering LT EQ GT)
         
-        (define-Range  Range^int int  (\\ v (printf "%d" v)))
+        (impl-Maybe Bool)
+        (impl-Maybe int)
+        (impl-Maybe char)
 
-        (define-Maybe List^Bool)
-        (define-Maybe List^int)
-        (define-Maybe List^char)
-        (define-Maybe String)
-
-        (define-List List^List^Bool List^Bool (\\ v ((<> show List^Bool) v)))
-        (define-List List^List^int  List^int  (\\ v ((<> show List^int)  v)))
-        (define-List List^List^char List^char (\\ v ((<> show List^char) v)))
-        (define-List List^String    String    (\\ v ((<> show List^char) v)))
-
-        (define-Rc List^Bool)
-        (define-Rc List^int)
-        (define-Rc List^char)
-        (define-Rc String)
+        (impl-List   List^Bool Bool (\\ v (printf "%s" (match v (True "True") (default "False")))))
+        (impl-List   List^int  int  (\\ v (printf "%d" v)))
+        (impl-String List^char char (\\ v (printf "%c" v)))
         
-        (define-folds Bool)
-        (define-folds int)
-        (define-folds char)
-        
-        (define-Monoid (<> All     Bool) Bool (True)  and_Bool)
-        (define-Monoid (<> Any     Bool) Bool (False) or_Bool)
-        (define-Monoid (<> Sum     int)  int  0       +)
-        (define-Monoid (<> Product int)  int  1       *)
-        
-        (define-folds (<> List Bool))
-        (define-folds (<> List int))
-        (define-folds (<> List char))
+        (impl-Range  Range^int int  (\\ v (printf "%d" v)))
 
-        (define-Monoid (<> List Bool)
+        (impl-Maybe List^Bool)
+        (impl-Maybe List^int)
+        (impl-Maybe List^char)
+        (impl-Maybe String)
+
+        (impl-List List^List^Bool List^Bool (\\ v ((<> show List^Bool) v)))
+        (impl-List List^List^int  List^int  (\\ v ((<> show List^int)  v)))
+        (impl-List List^List^char List^char (\\ v ((<> show List^char) v)))
+        (impl-List List^String    String    (\\ v ((<> show List^char) v)))
+
+        (impl-Rc List^Bool)
+        (impl-Rc List^int)
+        (impl-Rc List^char)
+        (impl-Rc String)
+        
+        (impl-folds Bool)
+        (impl-folds int)
+        (impl-folds char)
+        
+        (impl-Monoid (<> All     Bool) Bool (True)  and_Bool)
+        (impl-Monoid (<> Any     Bool) Bool (False) or_Bool)
+        (impl-Monoid (<> Sum     int)  int  0       +)
+        (impl-Monoid (<> Product int)  int  1       *)
+        
+        (impl-folds (<> List Bool))
+        (impl-folds (<> List int))
+        (impl-folds (<> List char))
+
+        (impl-Monoid (<> List Bool)
           (<> List Bool)
           ((<> Empty Bool))
           (<> append List Bool))
-        (define-Monoid (<> List int)
+        (impl-Monoid (<> List int)
           (<> List int)
           ((<> Empty int))
           (<> append List int))
-        (define-Monoid (<> List char)
+        (impl-Monoid (<> List char)
           (<> List char)
           ((<> Empty char))
           (<> append List char))
-        (define-Monoid (<> String char)
+        (impl-Monoid (<> String char)
           (<> List char)
           ((<> Empty char))
-          (<> append String))
+          (<> append List char))
 
-        (define-Functor-List List^int^int   int  int)
-        (define-Functor-List List^int^Bool  int  Bool)
-        (define-Functor-List List^char^char char char)
-        (define-Functor-List List^char^Bool char Bool)
-        (define-Functor-List String^char    char char)
-        (define-Functor-List String^Bool    char Bool)
+        (impl-Functor-List List^int^int   int  int)
+        (impl-Functor-List List^int^Bool  int  Bool)
+        (impl-Functor-List List^char^char char char)
+        (impl-Functor-List List^char^Bool char Bool)
+        (impl-Functor-List String^char    char char)
+        (impl-Functor-List String^Bool    char Bool)
 
-        ;; (define-Applicative Maybe 
         ) ; haskell.c

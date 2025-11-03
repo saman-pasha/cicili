@@ -4,45 +4,6 @@
          (decl-List type a)
          (typedef type String)
          
-         (inline) (func (<> next String) ((type list)) (out type)
-                        (return ((<> next type) list)))
-         
-         (inline) (func (<> nth String) ((int index) (type list)) (out (<> Maybe a))
-                        (return ((<> nth type) index list)))
-         
-         (inline) (func (<> drop String) ((int index) (type list)) (out type)
-                        (return ((<> drop type) index list)))
-         
-         (inline) (func (<> len String) ((type list)) (out int)
-                        (return ((<> len type) list)))
-         
-         (inline) (func (<> has len String) ((type list) (int desired)) (out int)
-                        (return ((<> has len type) list desired)))
-         
-         (inline) (func (<> take String) ((int len) (type list)) (out type)
-                        (return ((<> take type) len list)))
-         
-         (inline) (func (<> append String) ((type llist) (type rlist)) (out type)
-                        (return ((<> append type) llist rlist)))
-
-         (fn (<> !! String) index list
-             ((<> nth type) index list))
-
-         (fn (<> push String) head tail
-             ($> (<> Cons a) head tail))
-
-         (fn (<> \: String) head tail
-             ($> (<> Cons a) head tail))
-
-         (fn (<> head String) list
-             ((<> nth type) 0 list))
-
-         (fn (<> tail String) list
-             ((<> drop type) 0 list))
-
-         (fn (<> ++ String) llist rlist
-             ((<> append type) llist rlist))
-
          (decl) (func (<> new String Const) ((const a * buf)) (out type))
          (decl) (func (<> show String) ((type list)))
 
@@ -51,9 +12,9 @@
 
          ) ; decl-String
 
-(generic define-String (type a fmt)
+(generic impl-String (type a fmt)
 
-         (define-List type a fmt)
+         (impl-List type a fmt)
 
          (func (<> new String Const) ((const a * buf))
                (out type)
@@ -62,7 +23,7 @@
                    (let ((a item . #'(cof buf)))
                      (if (== item #\Null)
                          (return ((<> Empty a)))
-                         (return ($> (<> Cons a) item $ ((<> new String Const) (++ buf))))))))
+                         (return ((<> Cons a) item ((<> new String Const) (++ buf))))))))
 
          (func (<> show String) ((type list))
                (io list
@@ -71,7 +32,7 @@
                       (fmt head)
                       ((<> show String) tail)))))
 
-         ) ; define-String
+         ) ; impl-String
 
 (generic import-String (ctor type a)
 
@@ -85,23 +46,5 @@
                    (IF (STRINGP buf)
                        `((<> new String Const) ,buf)
                        (ERROR (FORMAT NIL "new^String len required for dynamic array input: ~A" buf))))))
-
-         (fn (<> !! String) index list
-             ((<> nth type) index list))
-
-         (fn (<> push String) head tail
-             ($> (<> Cons a) head tail))
-
-         (fn (<> \: String) head tail
-             ($> (<> Cons a) head tail))
-
-         (fn (<> head String) list
-             ((<> nth type) 0 list))
-
-         (fn (<> tail String) list
-             ((<> drop type) 0 list))
-
-         (fn (<> ++ String) llist rlist
-             ((<> append type) llist rlist))
 
          ) ; import-String

@@ -109,6 +109,10 @@
 (DEFMACRO case (fcond fpath otherwise elsepath &REST guards)
   `(function-h-guard ,fcond ,fpath ,otherwise ,elsepath ,@guards))
 
+;; a way to access receivers inside Table
+(DEFMACRO \. (receiver class)
+  `(-> ,class __h_table ,receiver))
+
 ;; helpers
 (DEFUN make-data-h-type-name (ct)
   (INTERN (FORMAT NIL "__h_~A_t" (MACROEXPAND ct))))

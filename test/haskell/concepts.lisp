@@ -1,5 +1,5 @@
 
-(import "haskell/monad.lisp")
+(import "haskell/applicative.lisp")
 
 (source "concepts.c" (:std #t :compile #t :link "-L{$CCL} -lhaskell.o -L{$CWD} concepts.o -o main")
         (include "../../haskell.h")
@@ -34,18 +34,38 @@
                   (return ((<> Left String int) (new^String "zero division")))
                   (return ((<> Right String int) (/ x y)))))
 
-        ;; (int -> int) -> Maybe int -> Maybe int
+
+        ;; ap List
+        ;; List ((List int) -> (List int))
+        (decl-Maybe Functor^List^int^int^a_b_t)
+        (impl-Maybe Functor^List^int^int^a_b_t)
+
+        (decl-List List^Functor^List^int^int^a_b_t Functor^List^int^int^a_b_t)
+        (impl-List List^Functor^List^int^int^a_b_t Functor^List^int^int^a_b_t (\\ v (printf "%p" v)))
+        (import-List new^List^Functor^List^int^int^a_b_t List^Functor^List^int^int^a_b_t Functor^List^int^int^a_b_t)
+
+        ;; List ((List int) -> (List int))
+        ;; (decl-Maybe Functor^List^int^int^a_b_t)
+        ;; (impl-Maybe Functor^List^int^int^a_b_t)
+
+        ;; List (int -> int) -> List int -> List int
+        (decl-Applicative-List List^int^int int int)
+        (impl-Applicative-List List^int^int int int)
+
+
+        ;; ap Maybe
+        ;; fmap :: (int -> int) -> Maybe int -> Maybe int
         (decl-Functor-Maybe Maybe^int^int int int)
-        (define-Functor-Maybe Maybe^int^int int int)
+        (impl-Functor-Maybe Maybe^int^int int int)
 
         ;; Maybe ((Maybe int) -> (Maybe int))
         (decl-Maybe Functor^Maybe^int^int^a_b_t)
-        (define-Maybe Functor^Maybe^int^int^a_b_t)
+        (impl-Maybe Functor^Maybe^int^int^a_b_t)
 
         ;; Maybe (int -> int) -> Maybe int -> Maybe int
         (decl-Applicative-Maybe Maybe^int^int int int)
-        (define-Applicative-Maybe Maybe^int^int int int)
-        
+        (impl-Applicative-Maybe Maybe^int^int int int)
+
         (main
             ;; test Rc
             ;; no needs to manage lists pointers
@@ -102,8 +122,7 @@
             (io m1
               (Just ch
                 (format #t "16th element is: %c\n" ch))
-              (Nothing (format #t "16th element is: Nothing\n")))
-            )
+              (Nothing (format #t "16th element is: Nothing\n"))))
 
           (format #t "Sum of List (mconcat) of '{ 1 3 5 7 } is: %d\n"
                   (match (get^Monoid^Sum^int)
@@ -153,16 +172,15 @@
           (letin* ((ftor_mul_5 (get^Functor^List^int^int))
                    (ftor_mod_3 (get^Functor^List^int^Bool)))
             
-            (where ((fmap-mul-5 (\\ l (match ftor_mul_5
-                                        (_ fmap (fmap '(lambda ((int value)) (out int) (return (* 5 value))) l))
-                                        (default (Empty^int)))))
-                    (fmap-mod-3 (\\ l (match ftor_mod_3
-                                        (_ fmap (fmap '(lambda ((int value))
-                                                        (out Bool)
-                                                        (return (case (% value 3) (False)
-                                                                      otherwise   (True))))
-                                                  l))
-                                        (default (Empty^Bool)))))
+            (where ((fmap-mul-5 (\\ l ((\. fmap (aof ftor_mul_5))
+                                       '(lambda ((int value)) (out int) (return (* 5 value)))
+                                       l)))
+                    (fmap-mod-3 (\\ l ((\. fmap (aof ftor_mod_3))
+                                       '(lambda ((int value))
+                                         (out Bool)
+                                         (return (case (% value 3) (False)
+                                                       otherwise   (True))))
+                                       l)))
                     ;; use instance directly
                     (fmap-mul-5P (fmap^List^int^int  (\\ value (* 5 value))))
                     (fmap-mod-3P (fmap^List^int^Bool (\\ value (case (% value 3) (False)
@@ -199,9 +217,7 @@
                 ;; other way access to mconcat for a type
                 (format #t "the result of 'Any' monoid is: ")
                 (show^Bool (mconcat^Any^Bool r3))
-                (putchar #\Newline)
-
-                )))
+                (putchar #\Newline))))
 
           (letin* ((mul_15 '(lambda ((int value)) (out int) (return (* 15 value)))))
             (io (get^Applicative^Maybe^int^int)
@@ -217,5 +233,17 @@
               (io ($> ap^Maybe^int^int wrapped (Nothing^int))
                 (Just output (format #t "the result of easy 'Applicative for Maybe (*15) Nothing' is: Just %d\n" output))
                 (default (format #t "the result of easy 'Applicative for Maybe (*15) Nothing' is: Nothing\n")))))
+
+          ;; test applicative over List
+          (where ((fmap-mul-3 '(lambda ((int value)) (out int) (return (* 3 value))))
+                  (fmap-add-4 '(lambda ((int value)) (out int) (return (+ 4 value)))))
+              
+            (letin ((* lf  (new^List^Functor^List^int^int^a_b_t '{ fmap-mul-3 fmap-add-4 }))
+                    (* li  ((<> new List int) '{ 1 2 3 4 5 6 }))
+                    (* afi ($> (<> ap List int int) lf li)))
+                
+                (format #t "applicative [(*3) (+4)] of { 1 2 3 4 5 6 } is:\n")
+                (show^List^int afi)
+                (putchar #\Newline)))
 
           ))

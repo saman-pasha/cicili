@@ -13,11 +13,11 @@
            ) ; guard
          ) ; decl-Maybe
 
-(generic define-Maybe (a)
+(generic impl-Maybe (a)
          
          ;; define inside c.lisp
-         (define-data (Maybe (<> Maybe a))
+         (impl-data (Maybe (<> Maybe a))
            (= Nothing (<> Nothing a))
            (= Just    (<> Just a) (a value)))
          
-         ) ; define-Maybe
+         ) ; impl-Maybe

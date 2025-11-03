@@ -4,8 +4,8 @@
 (DEFMACRO --h-only-haskell-obj (is-ptr factory)
   `(letn ((auto tmp_obj . (FUNCTION ,factory)))
      (cast void ,(IF is-ptr
-                     `(-> tmp_obj __h_free_class)
-                     `($ tmp_obj __h_free_data)))
+                     `(-> tmp_obj __h_table freeClass)
+                     `(-> ($ tmp_obj __h_table) freeData)))
      tmp_obj))
 
 ;; letin accepts only haskell objects are produced by 'data' or 'class'

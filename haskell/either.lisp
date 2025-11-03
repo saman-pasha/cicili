@@ -11,8 +11,8 @@
 
 (generic define-Either (e a)
          
-         (define-data (Either (<> Either e a))
+         (impl-data (Either (<> Either e a))
            (= Left  (<> Left e a) (e error))
            (= Right (<> Right e a) (a value)))
          
-         ) ; define-Either
+         ) ; impl-Either

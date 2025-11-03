@@ -59,7 +59,7 @@
           (Byte  (char  c))
           (Short (short s))
           (Int   (int   x)))
-        (define-data Integer
+        (impl-data Integer
           (Byte  (char  c))
           (Short (short s))
           (Int   (int   x))
@@ -79,7 +79,7 @@
                 (default  (format #t "Integer is N/A\n"))))
         
         (decl-Maybe (<> Maybe char))
-        (define-Maybe (<> Maybe char))
+        (impl-Maybe (<> Maybe char))
 
         (func print_inside_maybe (((<> Maybe (<> Maybe char)) mb))
               (io mb
@@ -102,7 +102,7 @@
                 ((\, i c s) (format #t "tuple: int, char, short = (%d, %c, %d)\n" i c s))))
 
         (decl-Maybe aTuple)
-        (define-Maybe aTuple)
+        (impl-Maybe aTuple)
 
         (fn fun-with-guard x ; 3 different paths
             (case (== x 1)  (format #t "output of function guard1: %d\n" x)
@@ -233,13 +233,13 @@
             
             (format #t "output of printf match: %d\n"
                     ;; match returns a value and all values returned from each case must be the same type
-                    (match (nth^String 3 txt)
+                    (match ((\. nth txt) 3 txt)
                       (Just c  (format #t "the 4th element is: %c\n" c))
                       (default (format #t "4th element not found\n"))))
 
             (where ; where puts exactly the value of each var in place of it, and makes C functions Curry
-                ((llen (len^String txt))
-                 (nthf (\\ n (nth^String n txt))) ; nth function is reserved for access nth element of an array
+                ((llen ((\. len txt) txt))
+                 (nthf (\\ n ((\. nth txt) n txt))) ; nth function is reserved for access nth element of an array
                  (show (\\ f n (match (f n) ; lambda in place of declared show function
                                  (Just c  (format #t "the %dth element is: %c\n" n c))
                                  (default (format #t "%dth element not found\n" n))))))
@@ -252,9 +252,9 @@
 
             (format #t "output of letin: %d\n"
                     ;; use letin to prevent repeatition calls for every llen 
-                    (letn ((auto llen . #'(len^String txt)))
+                    (letn ((auto llen . #'((\. len txt) txt)))
                       (where
-                          ((nthf (\\ n ($> !!^String n txt))) ; !! nth lambdas to C function to use Curry style
+                          ((nthf (\\ n ((\. nth txt) n txt))) ; !! nth lambdas to C function to use Curry style
                            (show (\\ f n (match (f n)
                                            (Just c  (format #t "the %dth element is: %c\n" n c))
                                            (default (format #t "%dth element not found\n" n))))))
@@ -273,18 +273,18 @@
               ;; _ for types with only one ctor
               (* Cons head tail
                  (format #t "first char is: %c, and length of tail is: %d\n"
-                            head (len^String tail))))
+                            head ((\. len txt) tail))))
             
             ;; using list literal constructor
             (letin ((* str5 (new^String '{ #\C #\i #\c #\i #\l #\i })))
-              (format #t "has 'Cicili' desired length 5: %d\n" (has^len^String str5 5))
-              (format #t "has 'Cicili' desired length 6: %d\n" (has^len^String str5 6))
-              (format #t "has 'Cicili' desired length 7: %d\n" (has^len^String str5 7)))
+              (format #t "has 'Cicili' desired length 5: %d\n" ((\. hasLen str5) str5 5))
+              (format #t "has 'Cicili' desired length 6: %d\n" ((\. hasLen str5) str5 6))
+              (format #t "has 'Cicili' desired length 7: %d\n" ((\. hasLen str5) str5 7)))
 
             ;; match should have default case
             ;; io can have default case like match
             ;; but io returns void therefor default case is optional
-            (io (drop^String 12 txt)
+            (io ((\. drop txt) 12 txt)
               ;; simplified list element access
               ;; (Nothing ^ String (format #t "Nothing String\n"))
               ((\: char fst snd trd tail)
@@ -297,47 +297,46 @@
           
           ;; letin is only for data or class instantiation  
           (letin* ((ilist0 (new^List^int '{ 1 2 3 4 }))        ; will be freed by ilist2, Notice: use Rc
-                   (ilist1 ($> \:^List^int 5 ilist0))          ; \: 'push' is push^List^int to list function
+                   (ilist1 ((\. push ilist0) 5 ilist0))        ; \: 'push' is push^List^int to list function
                    (intarr (cast (const int []) '{ 8 7 6 }))   ; pure c object could not be defined by normal letin
                    (ilist2 (new^List^int intarr 3)))           ; * tells compiler the defined variable is a pointer
-            (letin ((* ilist3 ($> ++^List^int ilist2 ilist1))  ; ++ 'append' is append^List^int
-                    (* ilist4 (take^List^int 5 ilist3)))       ; take creates a new list by copy of specified's elements
-              (format #t "first elem of int list0: %d\n" (match (head^List^int ilist0) (Just i i) (default -1)))
-              (format #t "first elem of int list1: %d\n" (match (head^List^int ilist1) (Just i i) (default -1)))
+            (letin ((* ilist3 ((\. append ilist0) ilist2 ilist1))  ; ++ 'append' is append^List^int
+                    (* ilist4 ((\. take ilist0) 5 ilist3)))       ; take creates a new list by copy of specified's elements
+              (format #t "first elem of int list0: %d\n" (match ((\. head ilist0) ilist0) (Just i i) (default -1)))
+              (format #t "first elem of int list1: %d\n" (match ((\. head ilist0) ilist1) (Just i i) (default -1)))
               (format #t "list0:\n")
-              (show^List^int ilist0)
+              ((\. show ilist0) ilist0)
               (format #t "\nlist1:\n")
-              (show^List^int ilist1)
+              ((\. show ilist0) ilist1)
               (format #t "\nlist2:\n")
-              (show^List^int ilist2)
+              ((\. show ilist0) ilist2)
               (format #t "\nlist3:\n")
-              (show^List^int ilist3)
+              ((\. show ilist0) ilist3)
               (format #t "\nlist4: take 5 of list3:\n")
-              (show^List^int ilist4)
+              ((\. show ilist0) ilist4)
               (putchar #\Newline)))
         
           (letin ((* ra0  (new^Range^int 1 20 3))
-                  (* ra1  (take^Range^int 3  ra0))
-                  (* ra2  (take^Range^int 4  ra0))
-                  (* ra3  (take^Range^int 10 ra0))
+                  (* ra1  ((\. take ra0) 3  ra0))
+                  (* ra2  ((\. take ra0) 4  ra0))
+                  (* ra3  ((\. take ra0) 10 ra0))
                   (* str0 (new^String "Hello World!"))
                   (* str1 (new^List^int '{ 72 101 108 108 111 32 87 111 114 108 100 33 })))
             (format #t "range 1 20 3:\n")
-            (show^Range^int ra0)
+            ((\. show ra0) ra0)
             ;; range shows only first of range
             ;; needs to take enough from it
             (format #t "\ntake 3  of range 1 20 3:\n")
-            (show^Range^int ra1)
+            ((\. show ra0) ra1)
             (format #t "\ntake 4  of range 1 20 3:\n")
-            (show^Range^int ra2)
+            ((\. show ra0) ra2)
             (format #t "\ntake 10 of range 1 20 3:\n")
             ;; because List and Range have same two members structure
-            (show^List^int (cast (List^int) ra3))
+            ((\. show str1) (cast (List^int) ra3))
             (format #t "\nString to List^int:\n")
-            (show^List^int (cast (List^int) str0))
+            ((\. show str1) (cast (List^int) str0))
             (format #t "\nList^int to String:\n")
             (show^String (cast (String) str1))
-            (putchar #\Newline)
-            )
+            (putchar #\Newline))
           
           ))

@@ -20,43 +20,43 @@
               ((<> Applicative type pure t) pure)
               ((<> Applicative type ap t) ap)))
 
-         (decl) (func (<> Applicative type pure) (((<> Functor type a_b t) a_b)) (out (<> f (<> Functor type a_b t))))
-         (decl) (func (<> Applicative type ap) (((<> f (<> Functor type a_b t)) f_a_b) ((<> f a) input)) (out (<> f b)))
+         (decl) (func (<> pure Applicative type) (((<> Functor type a_b t) a_b)) (out (<> f (<> Functor type a_b t))))
+         (decl) (func (<> ap Applicative type) (((<> f (<> Functor type a_b t)) f_a_b) ((<> f a) input)) (out (<> f b)))
 
          (decl) (func (<> get Applicative type) () (out (<> Applicative type)))
 
          (fn (<> pure type) a_b
-             ((<> Applicative type pure) a_b))
+             ((<> pure Applicative type) a_b))
 
          (fn (<> ap type) f_a_b input
-             ((<> Applicative type ap) f_a_b input))
+             ((<> ap Applicative type) f_a_b input))
          
          ) ; decl-Applicative
 
 ;; ctor could be every thing where accept an argument of type 'a'
 ;; mat has access to 'functor' and 'input' variables inside 'ap' function
-(generic define-Applicative (type f a b wrap mat)
+(generic impl-Applicative (type f a b wrap mat)
 
-         (define-data (Applicative (<> Applicative type))
+         (impl-data (Applicative (<> Applicative type))
            (= Applicative (<> Applicative type ctor)
               ((<> Applicative type pure t) pure)
               ((<> Applicative type ap t) ap)))
 
-         (func (<> Applicative type pure) (((<> Functor type a_b t) a_b))
+         (func (<> pure Applicative type) (((<> Functor type a_b t) a_b))
                (out (<> f (<> Functor type a_b t)))
                (return (wrap a_b)))
 
-         (func (<> Applicative type ap) (((<> f (<> Functor type a_b t)) f_a_b) ((<> f a) input))
+         (func (<> ap Applicative type) (((<> f (<> Functor type a_b t)) f_a_b) ((<> f a) input))
                (out (<> f b))
                (return mat))
 
          (func (<> get Applicative type) ()
                (out (<> Applicative type))
-               (return ($> (<> Applicative type ctor)
-                         (<> Applicative type pure)
-                         (<> Applicative type ap))))
+               (return ((<> Applicative type ctor)
+                        (<> pure Applicative type)
+                        (<> ap Applicative type))))
 
-         ) ; define-Applicative
+         ) ; impl-Applicative
 
 (generic import-Applicative (type f a b)
 
@@ -66,15 +66,47 @@
               ((<> Applicative type ap t) ap)))
 
          (fn (<> pure type) a_b
-             ((<> Applicative type pure) a_b))
+             ((<> pure Applicative type) a_b))
 
          (fn (<> ap type) f_a_b input
-             ((<> Applicative type ap) f_a_b input))
+             ((<> ap Applicative type) f_a_b input))
          
          ) ; import-Applicative
 
 
 ;; List
+(generic decl-Applicative-List (type a b)
+
+         (decl-Applicative type List a b)
+         
+         ) ; decl-Applicative-List
+
+;; f_a_b is List of a_b [ a -> b]
+;; input is List of a   [ a ]
+;; returns  List of b   [ b ]
+;; all functions inside f_a_b should be a -> b
+;; all functions apply with fmap of Functor
+(generic impl-Applicative-List (type a b)
+
+         (impl-Applicative type List a b
+                             (\\ a->b ((<> new List (<> Functor type a_b t) Wrap) a->b))
+                             (match f_a_b
+                               (* Cons a_b tail
+                                  ((<> mconcat List b)
+                                   ((<> Cons List b)
+                                    ((<> fmap Functor type) a_b input)
+                                    ((<> new List List b Wrap)
+                                     ((<> ap Applicative type) tail input)))))
+                               (default ((<> Empty b)))))
+         
+         ) ; impl-Applicative-List
+
+(generic import-Applicative-List (type a b)
+
+         (import-Applicative type List a b)
+         
+         ) ; import-Applicative-List
+
 
 ;; Maybe
 (generic decl-Applicative-Maybe (type a b)
@@ -83,15 +115,15 @@
          
          ) ; decl-Applicative-Maybe
 
-(generic define-Applicative-Maybe (type a b)
+(generic impl-Applicative-Maybe (type a b)
 
-         (define-Applicative type Maybe a b
+         (impl-Applicative type Maybe a b
                              (<> Just (<> Functor type a_b t))
                              (match f_a_b
-                               (Just a_b ((<> Functor type fmap) a_b input))
+                               (Just a_b ((<> fmap Functor type) a_b input))
                                (default ((<> Nothing b)))))
          
-         ) ; define-Applicative-Maybe
+         ) ; impl-Applicative-Maybe
 
 (generic import-Applicative-Maybe (type a b)
 

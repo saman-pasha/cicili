@@ -14,7 +14,7 @@
          
          ) ; decl-Rc
 
-(generic define-Rc (a)
+(generic impl-Rc (a)
 
          ;; Rc is non-copyable so its definition should be hidden
          (decl-class (Rc (<> Rc a))
@@ -28,7 +28,7 @@
          (decl) (func (<> clone Rc a) (((<> Rc a) rc)) (out (<> Rc a)))
          (decl) (func (<> new Rc a Pure) ((a pointer)) (out (<> Rc a)))
 
-         (define-class (Rc (<> Rc a))
+         (impl-class (Rc (<> Rc a))
            (= Keep (<> Keep Rc a)
             (a pointer)
             (size_t authority) ; who owns the pointer and is accounted
@@ -65,7 +65,7 @@
                       (case (== (cast (size_t) rc) authority)
                         (progn
                           (++ (cof count))
-                          (letn ((auto cloned_rc . #'($> (<> Keep Rc a) pointer 0 count destructor)))
+                          (letn ((auto cloned_rc . #'((<> Keep Rc a) pointer 0 count destructor)))
                             (set ($ (-> cloned_rc __h_data) Keep __h_1_mem) (cast (size_t) cloned_rc))
                             (io cloned_rc (* _ _ authority count
                                              (printf "inside Clone rc: %p, %zx, %d\n" cloned_rc authority (cof count))))
@@ -78,14 +78,14 @@
                (return
                  (letn ((auto count . #'(cast (int *) (malloc (sizeof int)))))
                    (set (cof count) 1)
-                   (letn ((auto cloned_rc . #'($> (<> Keep Rc a) pointer 0 count (<> free a))))
+                   (letn ((auto cloned_rc . #'((<> Keep Rc a) pointer 0 count (<> free a))))
                      (set ($ (-> cloned_rc __h_data) Keep __h_1_mem) (cast (size_t) cloned_rc))
                      (io cloned_rc (* _ _ authority count
                                       (printf "inside Ctor rc: %p, %zx, %d\n" cloned_rc authority (cof count))))
                      cloned_rc))))
 
-         ) ; define-Rc
+         ) ; impl-Rc
 
 (generic import-Rc (a)
 
-         ) ; define-Rc
+         ) ; import-Rc

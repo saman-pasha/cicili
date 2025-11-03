@@ -18,27 +18,32 @@
   (LET* ((alias (MACROEXPAND (CAR name)))
          (name (MACROEXPAND (CADR name)))
          (enum-name (INTERN (FORMAT NIL "__h_~A_ctor_t" alias)))
-         (ctors (MAPCAR #'(LAMBDA (ct)
-                            (LET ((ct (MACROEXPAND ct)))
-                              (SETQ ct (IF (SYMBOLP ct)
-                                           (LIST ct ct)
-                                           (IF (EQUAL (CAR ct) '=)
-                                               (SETQ ct (CDR ct))
-                                               (SETQ ct (CONS (CAR ct) ct)))))
+         (fns '())
+         (ctors (REMOVE
+                 NIL
+                 (MAPCAR #'(LAMBDA (ct)
+                             (IF (AND (LISTP ct) (EQUAL (CAR ct) 'func))
+                                 (PROGN (PUSH ct fns) NIL)
+                                 (LET ((ct (MACROEXPAND ct)))
+                                   (SETQ ct (IF (SYMBOLP ct)
+                                                (LIST ct ct)
+                                                (IF (EQUAL (CAR ct) '=)
+                                                    (SETQ ct (CDR ct))
+                                                    (SETQ ct (CONS (CAR ct) ct)))))
 
-                              (WHEN (OR (EQUAL (CAR ct) 'free) (EQUAL (CADR ct) 'free))
-                                (ERROR (FORMAT NIL "use 'free' destructor only inside definition: ~A" ct)))
-                              
-                              (LIST
-                               ct
-                               (MAPCAR #'(LAMBDA (param)
-                                           (MULTIPLE-VALUE-BIND (const type modifier const-ptr variable array-def)
-                                               (CICILI:SPECIFY-TYPE< param)
-                                             (LIST const type modifier const-ptr variable array-def)))
-                                       (CDDR ct))
-                               ;; real param defs
-                               (CDDR ct))))
-                        (CONS ctor ctors))))
+                                   (WHEN (OR (EQUAL (CAR ct) 'free) (EQUAL (CADR ct) 'free))
+                                     (ERROR (FORMAT NIL "use 'free' destructor only inside definition: ~A" ct)))
+                                   
+                                   (LIST
+                                    ct
+                                    (MAPCAR #'(LAMBDA (param)
+                                                (MULTIPLE-VALUE-BIND (const type modifier const-ptr variable array-def)
+                                                    (CICILI:SPECIFY-TYPE< param)
+                                                  (LIST const type modifier const-ptr variable array-def)))
+                                            (CDDR ct))
+                                    ;; real param defs
+                                    (CDDR ct)))))
+                         (CONS ctor ctors)))))
     
     `($$$
          (guard (<> __H ,enum-name _)
@@ -53,8 +58,15 @@
 
        (typedef func (<> free ,name t) ((,name * this_ptr)))  
 
+       (struct (<> ,name _H_Table)
+         (member (<> free ,name t) freeClass)
+         ,@(MAPCAR #'(LAMBDA (f)
+                       (WHEN (EQUAL (CAR f) 'func)
+                         (CONS 'member f)))
+                   fns))
+
        (struct ,(make-class-h-base-name name)
-         (member (<> free ,name t) __h_free_class)
+         (member const (<> ,name _H_Table) * __h_table)
          (member char __h_ctor)
          (union 
              ,@(MAPCAR #'(LAMBDA (i ct)
@@ -93,33 +105,27 @@
                            (IF (NULL params)
                                `($$$ (decl)   (func ,ct-name     () (out ,name))
                                      (inline) (func ,def-ct-name () (out ,name) (return (,ct-name))))
-                               (IF (> (LENGTH params) 1)
-                                   `($$$ (decl) (func ,(make-data-h-ctor-name ct-name) ,real-params (out ,name))
-                                         (fn ,ct-name ,@(MAPCAR #'(LAMBDA (param) (NTH 4 param)) params)
-                                             (,(make-data-h-ctor-name ct-name)
-                                               ,@(MAPCAR #'(LAMBDA (param) (NTH 4 param)) params)))
-                                         (fn ,def-ct-name ,@(MAPCAR #'(LAMBDA (param) (NTH 4 param)) params)
-                                             (,(make-data-h-ctor-name ct-name)
-                                               ,@(MAPCAR #'(LAMBDA (param) (NTH 4 param)) params))))
-                                   `($$$ (decl)   (func ,ct-name ,real-params (out ,name))
-                                         (inline) (func ,def-ct-name ,real-params (out ,name)
-                                                        (return (,ct-name ,(NTH 4 (CAR params))))))))
+                               `($$$ (decl)   (func ,ct-name ,real-params (out ,name))
+                                     (inline) (func ,def-ct-name ,real-params (out ,name)
+                                                    (return (,ct-name ,@(MAPCAR #'(LAMBDA (param) (NTH 4 param)) params))))))
 
                            (IF (NULL params)
                                `($$$ (decl) (func ,ct-name () (out ,name)))
-                               (IF (> (LENGTH params) 1)
-                                   `($$$ (decl) (func ,(make-data-h-ctor-name ct-name) ,real-params (out ,name))
-                                         (fn ,ct-name ,@(MAPCAR #'(LAMBDA (param) (NTH 4 param)) params)
-                                             (,(make-data-h-ctor-name ct-name)
-                                               ,@(MAPCAR #'(LAMBDA (param) (NTH 4 param)) params))))
-                                   `($$$ (decl) (func ,ct-name ,real-params (out ,name))))))))
+                               `($$$ (decl) (func ,ct-name ,real-params (out ,name)))))))
                  (range-h (LENGTH ctors)) ctors)
+
+       ;; funcs decl
+       ,@(MAPCAR #'(LAMBDA (f)
+                     (LET ((fP (COPY-LIST f)))
+                       (SETF (CADR fP) `(<> ,(CADR f) ,name))
+                       `($$$ (decl) ,fP)))
+                 fns)
 
        ;; destructor
        (decl) (func (<> free ,name) ((,name * this_ptr)))
        )))
 
-(DEFMACRO define-class (name ctor &REST ctors)
+(DEFMACRO impl-class (name ctor &REST ctors)
   (SETQ name (MACROEXPAND name))
   (SETQ name (IF (SYMBOLP name)
                  (LIST name name)
@@ -130,41 +136,64 @@
   (LET* ((alias (MACROEXPAND (CAR name)))
          (name (MACROEXPAND (CADR name)))
          (free-def NIL)
+         (fns '())
          (ctors (REMOVE
-                 NIL 
+                 NIL
                  (MAPCAR #'(LAMBDA (i ct)
-                             (LET ((ct (MACROEXPAND ct)))
-                               (SETQ ct (IF (SYMBOLP ct)
-                                            (LIST ct ct)
-                                            (IF (EQUAL (CAR ct) '=)
-                                                (SETQ ct (CDR ct))
-                                                (SETQ ct (CONS (CAR ct) ct)))))
-                               
-                               (WHEN (OR (EQUAL (CAR ct) 'free) (EQUAL (CADR ct) 'free))
-                                 (IF free-def
-                                     (ERROR (FORMAT NIL "'free' is defined twice: ~A" ct))
-                                     (SETQ free-def ct)))
+                             (IF (AND (LISTP ct) (EQUAL (CAR ct) 'func))
+                                 (PROGN (PUSH ct fns) NIL)
+                                 (LET ((ct (MACROEXPAND ct)))
+                                   (SETQ ct (IF (SYMBOLP ct)
+                                                (LIST ct ct)
+                                                (IF (EQUAL (CAR ct) '=)
+                                                    (SETQ ct (CDR ct))
+                                                    (SETQ ct (CONS (CAR ct) ct)))))
+                                   
+                                   (WHEN (OR (EQUAL (CAR ct) 'free) (EQUAL (CADR ct) 'free))
+                                     (IF free-def
+                                         (ERROR (FORMAT NIL "'free' is defined twice: ~A" ct))
+                                         (SETQ free-def ct)))
 
-                               (WHEN (AND free-def (< i (1- (LENGTH ctors))))
-                                 (ERROR (FORMAT NIL "'free' should be last case: ~A" ct)))
-                               
-                               (IF free-def
-                                   NIL
-                                   (LIST
-                                    ct
-                                    (MAPCAR #'(LAMBDA (param)
-                                                (MULTIPLE-VALUE-BIND (const type modifier const-ptr variable array-def)
-                                                    (CICILI:SPECIFY-TYPE< param)
-                                                  (LIST const type modifier const-ptr variable array-def)))
-                                            (CDDR ct))
-                                    ;; real param defs
-                                    (CDDR ct)))))
+                                   (WHEN (AND free-def (< i (1- (LENGTH ctors))))
+                                     (ERROR (FORMAT NIL "'free' should be last case: ~A" ct)))
+                                   
+                                   (IF free-def
+                                       NIL
+                                       (LIST
+                                        ct
+                                        (MAPCAR #'(LAMBDA (param)
+                                                    (MULTIPLE-VALUE-BIND (const type modifier const-ptr variable array-def)
+                                                        (CICILI:SPECIFY-TYPE< param)
+                                                      (LIST const type modifier const-ptr variable array-def)))
+                                                (CDDR ct))
+                                        ;; real param defs
+                                        (CDDR ct))))))
                          (range-h (1+ (LENGTH ctors))) (CONS ctor ctors)))))
     
-    `($$$ ;; destructor, both variables this_ptr and this are available for class's free functions
-         (func (<> free ,name) ((,name * this_ptr))
-               (let ((auto this . #'(cof this_ptr)))
-                 ,@(CDDR free-def)))
+    `($$$
+         ;; funcs decl
+         ,@(MAPCAR #'(LAMBDA (f)
+                       (LET ((fP (COPY-LIST f)))
+                         (SETF (CADR fP) `(<> ,(CADR f) ,name))
+                         fP))
+                   fns)
+       
+       ;; destructor, both variables this_ptr and this are available for class's free functions
+       (func (<> free ,name) ((,name * this_ptr))
+             (let ((auto this . #'(cof this_ptr)))
+               ,@(CDDR free-def)))
+
+       ;; Table initializer
+       (func (<> get ,name _H_Table) ()
+             (out const (<> ,name _H_Table) * const)
+             (static)
+             (var const (<> ,name _H_Table) table . '{
+                  (<> free ,name)
+                  ,@(MAPCAR #'(LAMBDA (f)
+                                (MACROEXPAND `(<> ,(CADR f) ,name)))
+                            fns)
+                  })
+             (return (aof table)))
        
        ;; constructors
        ,@(MAPCAR #'(LAMBDA (i ct)
@@ -180,78 +209,24 @@
                                   (let ((,name instance . #'(malloc (sizeof ,(make-class-h-base-name name)))))
                                     (set (cof instance)
                                       (cast ,(make-class-h-base-name name) '{
-                                            (<> free ,name)
+                                            ((<> get ,name _H_Table))
                                             ,(make-data-h-type-name (IF (= i (1- (LENGTH ctors))) '_ (CAAR ct)))
                                             }))
                                     (return instance)))
-                           (IF (> (LENGTH params) 1)
-                               `(func ,(make-data-h-ctor-name ct-name)
-                                  ,real-params
+                           `(func ,ct-name ,real-params
                                   (out ,name)
                                   (let ((,name instance . #'(malloc (sizeof ,(make-class-h-base-name name)))))
                                     (set (cof instance)
                                       (cast ,(make-class-h-base-name name) '{
-                                            (<> free ,name)
+                                            ((<> get ,name _H_Table))
                                             ,(make-data-h-type-name (IF (= i (1- (LENGTH ctors))) '_ (CAAR ct)))
                                             ,(INTERN (FORMAT NIL "$__h_data$~A"
                                                              (IF (= i (1- (LENGTH ctors))) '_ (CAAR ct))))
                                             '{ ,@(MAPCAR #'(LAMBDA (param) (NTH 4 param)) params) }
                                             }))
-                                    (return instance)))
-                               `(func ,ct-name ,real-params
-                                      (out ,name)
-                                      (let ((,name instance . #'(malloc (sizeof ,(make-class-h-base-name name)))))
-                                        (set (cof instance)
-                                          (cast ,(make-class-h-base-name name) '{
-                                                (<> free ,name)
-                                                ,(make-data-h-type-name (IF (= i (1- (LENGTH ctors))) '_ (CAAR ct)))
-                                                ,(INTERN (FORMAT NIL "$__h_data$~A"
-                                                                 (IF (= i (1- (LENGTH ctors))) '_ (CAAR ct))))
-                                                '{ ,@(MAPCAR #'(LAMBDA (param) (NTH 4 param)) params) }
-                                                })
-                                          (return instance))))))))
-                 (range-h (LENGTH ctors)) ctors))))
+                                      (return instance))))))
+                 (range-h (LENGTH ctors)) ctors)))) ; impl-class
 
 (DEFMACRO import-class (name ctor &REST ctors)
-  (SETQ name (MACROEXPAND name))
-  (SETQ name (IF (SYMBOLP name)
-                 (LIST name name)
-                 (IF (= 2 (LENGTH name))
-                     name
-                     (ERROR (FORMAT NIL "only match alias and name allowed in data name: ~A" name)))))
-  
-  (LET ((alias (MACROEXPAND (CAR name)))
-        (name (MACROEXPAND (CADR name)))
-        (ctors (MAPCAR #'(LAMBDA (ct)
-                           (LET ((ct (MACROEXPAND ct)))
-                             (SETQ ct (IF (SYMBOLP ct)
-                                          (LIST ct ct)
-                                          (IF (EQUAL (CAR ct) '=)
-                                              (SETQ ct (CDR ct))
-                                              (SETQ ct (CONS (CAR ct) ct)))))
 
-                             (WHEN (OR (EQUAL (CAR ct) 'free) (EQUAL (CADR ct) 'free))
-                               (ERROR (FORMAT NIL "use 'free' destructor only inside definition: ~A" ct)))
-
-                             (LIST
-                              ct
-                              (MAPCAR #'(LAMBDA (param)
-                                          (MULTIPLE-VALUE-BIND (const type modifier const-ptr variable array-def)
-                                              (CICILI:SPECIFY-TYPE< param)
-                                            (LIST const type modifier const-ptr variable array-def)))
-                                      (CDDR ct)))))
-                       (CONS ctor ctors))))
-    
-    `($$$ ;; constructors
-         ,@(MAPCAR #'(LAMBDA (ct)
-                       (LET ((ct-name (CADAR ct))
-                             (params (CADR ct)))
-
-                         (WHEN (EQUAL name ct-name) (ERROR (FORMAT NIL "data type and ctor having same name: ~A" name)))
-                         
-                         (UNLESS (NULL params)
-                           (WHEN (> (LENGTH params) 1)
-                             `(fn ,ct-name ,@(MAPCAR #'(LAMBDA (param) (NTH 4 param)) params)
-                                  (,(make-data-h-ctor-name ct-name)
-                                    ,@(MAPCAR #'(LAMBDA (param) (NTH 4 param)) params)))))))
-                   ctors))))
+  ) ; import-class

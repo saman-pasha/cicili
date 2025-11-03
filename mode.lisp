@@ -227,6 +227,7 @@
    (1 . Left)
    (1 . Right)
    (1 . rc)
+   (1 . impl)
    ))
 
 (defun cicili-add-attributes (face-name keyword-rules)

@@ -1,6 +1,7 @@
 (import "./core.lisp")
 (import "./tuple.lisp")
 (import "./data.lisp")
+(import "./bool.lisp")
 (import "./maybe.lisp")
 (import "./either.lisp")
 (import "./class.lisp")
@@ -11,7 +12,8 @@
 (import "./rc.lisp")
 (import "./monoid.lisp")
 (import "./functor.lisp")
-(import "./applicative.lisp")
+;; (import "./applicative.lisp")
+;; (import "./monad.lisp")
 
 (import "./haskell.lisp")
 
