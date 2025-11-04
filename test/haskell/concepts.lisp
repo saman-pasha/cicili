@@ -26,7 +26,7 @@
         (define-reduce char)
 
         (decl-Either String int)
-        (define-Either String int)
+        (impl-Either String int)
 
         (func divideByZero ((int x) (int y))
               (out (<> Either String int))

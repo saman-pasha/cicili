@@ -1,6 +1,9 @@
 ;; My Cicili for a List
 ;; each List must be defined by this generic
 (generic decl-List (type a)
+
+         ;; dependencies
+         (decl-Maybe a)
          
          (decl-class (List type)
            (= Empty (<> Empty a))
@@ -33,6 +36,9 @@
          ) ; decl-List
 
 (generic impl-List (type a fmt)
+
+         ;; dependencies
+         (impl-Maybe a)
 
          (impl-class (List type)
            (= Empty (<> Empty a))
@@ -161,6 +167,9 @@
          ) ; impl-List
 
 (generic import-List (ctor type a)
+
+         ;; dependencies
+         (import-Maybe a)
 
          (import-class (List type)
            (= Empty (<> Empty a))

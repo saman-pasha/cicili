@@ -12,20 +12,11 @@
         ;; data Ordering = LT EQ GT
         (decl-data Ordering LT EQ GT)
 
-        (decl-Maybe Bool)
-        (decl-Maybe int)
-        (decl-Maybe char)
-
         (decl-List   List^Bool Bool)
         (decl-List   List^int  int)
         (decl-String List^char char)
 
         (decl-Range  Range^int int)
-
-        (decl-Maybe List^Bool)
-        (decl-Maybe List^int)
-        (decl-Maybe List^char)
-        (decl-Maybe String)
 
         (decl-List List^List^Bool List^Bool)
         (decl-List List^List^int  List^int)
@@ -37,18 +28,10 @@
         (decl-Rc List^char)
         (decl-Rc String)
         
-        (decl-folds Bool)
-        (decl-folds int)
-        (decl-folds char)
-        
         (decl-Monoid (<> All     Bool) Bool)
         (decl-Monoid (<> Any     Bool) Bool)
         (decl-Monoid (<> Sum     int)  int)
         (decl-Monoid (<> Product int)  int)
-
-        (decl-folds (<> List Bool))
-        (decl-folds (<> List int))
-        (decl-folds (<> List char))
 
         (decl-Monoid (<> List   Bool) (<> List Bool))
         (decl-Monoid (<> List   int)  (<> List int))
@@ -77,20 +60,11 @@
         
         (impl-data Ordering LT EQ GT)
         
-        (impl-Maybe Bool)
-        (impl-Maybe int)
-        (impl-Maybe char)
-
         (impl-List   List^Bool Bool (\\ v (printf "%s" (match v (True "True") (default "False")))))
         (impl-List   List^int  int  (\\ v (printf "%d" v)))
         (impl-String List^char char (\\ v (printf "%c" v)))
         
         (impl-Range  Range^int int  (\\ v (printf "%d" v)))
-
-        (impl-Maybe List^Bool)
-        (impl-Maybe List^int)
-        (impl-Maybe List^char)
-        (impl-Maybe String)
 
         (impl-List List^List^Bool List^Bool (\\ v ((<> show List^Bool) v)))
         (impl-List List^List^int  List^int  (\\ v ((<> show List^int)  v)))
@@ -102,19 +76,11 @@
         (impl-Rc List^char)
         (impl-Rc String)
         
-        (impl-folds Bool)
-        (impl-folds int)
-        (impl-folds char)
-        
         (impl-Monoid (<> All     Bool) Bool (True)  and_Bool)
         (impl-Monoid (<> Any     Bool) Bool (False) or_Bool)
         (impl-Monoid (<> Sum     int)  int  0       +)
         (impl-Monoid (<> Product int)  int  1       *)
         
-        (impl-folds (<> List Bool))
-        (impl-folds (<> List int))
-        (impl-folds (<> List char))
-
         (impl-Monoid (<> List Bool)
           (<> List Bool)
           ((<> Empty Bool))

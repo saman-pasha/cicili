@@ -45,12 +45,13 @@
                                     (CDDR ct)))))
                          (CONS ctor ctors)))))
     
-    `($$$
-         (guard (<> __H ,enum-name _)
-           (enum ,enum-name
-             (,(make-data-h-type-name (CAAR (CAR (REVERSE ctors)))) . 0)
-             ,@(MAPCAR #'(LAMBDA (i ct) (CONS (make-data-h-type-name (CAAR ct)) (+ i 1)))
-                       (range-h (LENGTH ctors)) (CDR (REVERSE ctors)))))
+    `(guard (<> _ ,name _H_DECL__)
+       
+       (guard (<> __H ,enum-name _)
+         (enum ,enum-name
+           (,(make-data-h-type-name (CAAR (CAR (REVERSE ctors)))) . 0)
+           ,@(MAPCAR #'(LAMBDA (i ct) (CONS (make-data-h-type-name (CAAR ct)) (+ i 1)))
+                     (range-h (LENGTH ctors)) (CDR (REVERSE ctors)))))
 
        (decl) (struct ,(make-class-h-base-name name))
 
@@ -173,13 +174,14 @@
                                         (CDDR ct))))))
                          (range-h (1+ (LENGTH ctors))) (CONS ctor ctors)))))
     
-    `($$$
-         ;; funcs decl
-         ,@(MAPCAR #'(LAMBDA (f)
-                       (LET ((fP (COPY-LIST f)))
-                         (SETF (CADR fP) `(<> ,(CADR f) ,name))
-                         fP))
-                   fns)
+    `(guard (<> _ ,name _H_IMPL__)
+       
+       ;; funcs decl
+       ,@(MAPCAR #'(LAMBDA (f)
+                     (LET ((fP (COPY-LIST f)))
+                       (SETF (CADR fP) `(<> ,(CADR f) ,name))
+                       fP))
+                 fns)
        
        ;; destructor, both variables this_ptr and this are available for class's free functions
        (func (<> free ,name) ((,name * this_ptr))
@@ -227,7 +229,7 @@
                                                              (IF (= i (1- (LENGTH ctors))) '_ (CAAR ct))))
                                             '{ ,@(MAPCAR #'(LAMBDA (param) (NTH 4 param)) params) }
                                             }))
-                                      (return instance))))))
+                                    (return instance))))))
                  (range-h (LENGTH ctors)) ctors)))) ; impl-class
 
 (DEFMACRO import-class (name ctor &REST ctors)

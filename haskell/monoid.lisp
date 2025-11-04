@@ -25,6 +25,9 @@
          
          ) ; impl-folds
 
+(generic import-folds (a)
+
+         ) ; import-folds
 
 ;; binary associative identity operation
 ;; class Monoid m where
@@ -32,6 +35,10 @@
 ;;   mappend :: m -> m -> m
 ;;   mconcat :: [m] -> m
 (generic decl-Monoid (type a)
+
+         ;; dependencies
+         (guard (<> _ folds a _H_DECL_)
+           (decl-folds a))
 
          (typedef func (<> Monoid type mappend t) ((a lhs) (a rhs)) (out a))
          (typedef func (<> Monoid type mconcat t) (((<> List a) l)) (out a))
@@ -58,6 +65,10 @@
 ;; op is a strict irreducible function which accepts lhs and rhs of type a
 (generic impl-Monoid (type a neutral op)
 
+         ;; dependencies
+         (guard (<> _ folds a _H_IMPL_)
+           (impl-folds a))
+         
          (impl-data (Monoid (<> Monoid type))
            (= Monoid (<> Monoid type ctor)
               ((<> Monoid type mappend t) mappend)
@@ -93,6 +104,9 @@
          ) ; impl-Monoid
 
 (generic import-Monoid (type a)
+
+         ;; dependencies
+         (import-folds a)
 
          (import-data (Monoid (<> Monoid type))
            (= Monoid (<> Monoid type ctor)

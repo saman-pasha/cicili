@@ -45,12 +45,13 @@
                                     (CDDR ct)))))
                          (CONS ctor ctors)))))
     
-    `($$$ 
-         (guard (<> __H ,enum-name _)
-           (enum ,enum-name
-             (,(make-data-h-type-name (CAAR (CAR (REVERSE ctors)))) . 0)
-             ,@(MAPCAR #'(LAMBDA (i ct) (CONS (make-data-h-type-name (CAAR ct)) (+ i 1)))
-                       (range-h (LENGTH ctors)) (CDR (REVERSE ctors)))))
+    `(guard (<> _ ,name _H_DECL__)
+
+       (guard (<> __H ,enum-name _)
+         (enum ,enum-name
+           (,(make-data-h-type-name (CAAR (CAR (REVERSE ctors)))) . 0)
+           ,@(MAPCAR #'(LAMBDA (i ct) (CONS (make-data-h-type-name (CAAR ct)) (+ i 1)))
+                     (range-h (LENGTH ctors)) (CDR (REVERSE ctors)))))
 
        (decl) (struct ,name)
 
@@ -66,28 +67,27 @@
        (struct ,name
          (member const (<> ,name _H_Table) * __h_table)
          (member char __h_ctor)
-         (union 
-             ,@(MAPCAR #'(LAMBDA (i ct)
-                           (LET ((ct-name (CAAR ct))
-                                 (params (CADR ct))
-                                 (real-params (CADDR ct))
-                                 (mem-counter -1))
-                             `(struct
-                                  ,@(MAPCAR #'(LAMBDA (param rp)
-                                                (SETQ mem-counter (1+ mem-counter))
-                                                (IF (EQUAL (NTH 1 param) 'func)
-                                                    (LET ((cp-rp (COPY-LIST rp)))
-                                                      (SETF (NTH 1 cp-rp) (make-data-h-member-name mem-counter))
-                                                      `(member ,@cp-rp))
-                                                    (LET ((cp-param (COPY-LIST param)))
-                                                      (SETF (NTH 4 cp-param) (make-data-h-member-name mem-counter))
-                                                      `(member ,@(REMOVE NIL cp-param)))))
-                                            params real-params)
-                                (declare ,ct-name)
-                                ,(LIST 'declare (IF (= i (1- (LENGTH ctors))) ; default ctor case
-                                                    '_
-                                                    (INTERN (FORMAT NIL "_~A" i)))))))
-                       (range-h (LENGTH ctors)) ctors)
+         (union ,@(MAPCAR #'(LAMBDA (i ct)
+                              (LET ((ct-name (CAAR ct))
+                                    (params (CADR ct))
+                                    (real-params (CADDR ct))
+                                    (mem-counter -1))
+                                `(struct
+                                     ,@(MAPCAR #'(LAMBDA (param rp)
+                                                   (SETQ mem-counter (1+ mem-counter))
+                                                   (IF (EQUAL (NTH 1 param) 'func)
+                                                       (LET ((cp-rp (COPY-LIST rp)))
+                                                         (SETF (NTH 1 cp-rp) (make-data-h-member-name mem-counter))
+                                                         `(member ,@cp-rp))
+                                                       (LET ((cp-param (COPY-LIST param)))
+                                                         (SETF (NTH 4 cp-param) (make-data-h-member-name mem-counter))
+                                                         `(member ,@(REMOVE NIL cp-param)))))
+                                               params real-params)
+                                   (declare ,ct-name)
+                                   ,(LIST 'declare (IF (= i (1- (LENGTH ctors))) ; default ctor case
+                                                       '_
+                                                       (INTERN (FORMAT NIL "_~A" i)))))))
+                          (range-h (LENGTH ctors)) ctors)
            (declare __h_data)))
        
        ,@(MAPCAR #'(LAMBDA (i ct)
@@ -171,13 +171,14 @@
                                         (CDDR ct))))))
                          (range-h (1+ (LENGTH ctors))) (CONS ctor ctors)))))
 
-    `($$$
-         ;; funcs decl
-         ,@(MAPCAR #'(LAMBDA (f)
-                       (LET ((fP (COPY-LIST f)))
-                         (SETF (CADR fP) `(<> ,(CADR f) ,name))
-                         fP))
-                   fns)
+    `(guard (<> _ ,name _H_IMPL__)
+
+       ;; funcs decl
+       ,@(MAPCAR #'(LAMBDA (f)
+                     (LET ((fP (COPY-LIST f)))
+                       (SETF (CADR fP) `(<> ,(CADR f) ,name))
+                       fP))
+                 fns)
        
        ;; destructor
        (func (<> free ,name) ((,name * this))

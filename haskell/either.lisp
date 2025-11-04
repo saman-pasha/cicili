@@ -9,10 +9,14 @@
          
          ) ; decl-Either
 
-(generic define-Either (e a)
+(generic impl-Either (e a)
          
          (impl-data (Either (<> Either e a))
            (= Left  (<> Left e a) (e error))
            (= Right (<> Right e a) (a value)))
          
          ) ; impl-Either
+
+(generic import-Either (e a)
+
+         ) ; import-Either
