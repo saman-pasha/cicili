@@ -109,9 +109,13 @@
 (DEFMACRO case (fcond fpath otherwise elsepath &REST guards)
   `(function-h-guard ,fcond ,fpath ,otherwise ,elsepath ,@guards))
 
-;; a way to access receivers inside Table
-(DEFMACRO \. (receiver class)
-  `(-> ,class __h_table ,receiver))
+;; a way to access functions inside Table by instance
+(DEFMACRO \. (function class)
+  `(-> ,class __h_table ,function))
+
+;; a way to access functions inside Table by getTable
+(DEFMACRO \.+ (function type)
+  `(-> ((<> get ,type _H_Table)) ,function))
 
 ;; helpers
 (DEFUN make-data-h-type-name (ct)

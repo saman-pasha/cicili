@@ -332,7 +332,8 @@
             ((\. show ra0) ra2)
             (format #t "\ntake 10 of range 1 20 3:\n")
             ;; because List and Range have same two members structure
-            ((\. show str1) (cast (List^int) ra3))
+            ;; access Table by type
+            ((\.+ show List^int) (cast (List^int) ra3))
             (format #t "\nString to List^int:\n")
             ((\. show str1) (cast (List^int) str0))
             (format #t "\nList^int to String:\n")

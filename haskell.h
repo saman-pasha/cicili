@@ -42,6 +42,7 @@ __attribute__((weak)) Bool Default_Bool () {
 void show_Bool (Bool value );
 Bool or_Bool (Bool lhs , Bool rhs );
 Bool and_Bool (Bool lhs , Bool rhs );
+const Bool__H_Table * const get_Bool__H_Table ();
 void free_Bool (Bool * this );
 #ifndef __H___h_Ordering_ctor_t__
 #define __H___h_Ordering_ctor_t__
@@ -59,12 +60,12 @@ typedef struct Ordering__H_Table {
 typedef struct Ordering {
   const Ordering__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion143 */
-    struct { /* ciciliStruct144 */
+  union { /* ciciliUnion146 */
+    struct { /* ciciliStruct147 */
     } LT , _0 ;
-    struct { /* ciciliStruct145 */
+    struct { /* ciciliStruct148 */
     } EQ , _1 ;
-    struct { /* ciciliStruct146 */
+    struct { /* ciciliStruct149 */
     } GT , _ ;
   } __h_data ;
 } Ordering;
@@ -74,6 +75,7 @@ Ordering GT ();
 __attribute__((weak)) Ordering Default_Ordering () {
   return GT ();
 }
+const Ordering__H_Table * const get_Ordering__H_Table ();
 void free_Ordering (Ordering * this );
 #ifndef __H_Maybe_Bool
 #define __H_Maybe_Bool
@@ -92,10 +94,10 @@ typedef struct Maybe_Bool__H_Table {
 typedef struct Maybe_Bool {
   const Maybe_Bool__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion169 */
-    struct { /* ciciliStruct170 */
+  union { /* ciciliUnion175 */
+    struct { /* ciciliStruct176 */
     } Nothing , _0 ;
-    struct { /* ciciliStruct171 */
+    struct { /* ciciliStruct177 */
       Bool __h_0_mem ;
     } Just , _ ;
   } __h_data ;
@@ -105,6 +107,7 @@ Maybe_Bool Just_Bool (Bool value );
 __attribute__((weak)) Maybe_Bool Default_Maybe_Bool (Bool value ) {
   return Just_Bool (value );
 }
+const Maybe_Bool__H_Table * const get_Maybe_Bool__H_Table ();
 void free_Maybe_Bool (Maybe_Bool * this );
 #endif /* __H_Maybe_Bool */ 
 #ifndef __H_Maybe_int
@@ -124,10 +127,10 @@ typedef struct Maybe_int__H_Table {
 typedef struct Maybe_int {
   const Maybe_int__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion195 */
-    struct { /* ciciliStruct196 */
+  union { /* ciciliUnion204 */
+    struct { /* ciciliStruct205 */
     } Nothing , _0 ;
-    struct { /* ciciliStruct197 */
+    struct { /* ciciliStruct206 */
       int __h_0_mem ;
     } Just , _ ;
   } __h_data ;
@@ -137,6 +140,7 @@ Maybe_int Just_int (int value );
 __attribute__((weak)) Maybe_int Default_Maybe_int (int value ) {
   return Just_int (value );
 }
+const Maybe_int__H_Table * const get_Maybe_int__H_Table ();
 void free_Maybe_int (Maybe_int * this );
 #endif /* __H_Maybe_int */ 
 #ifndef __H_Maybe_char
@@ -156,10 +160,10 @@ typedef struct Maybe_char__H_Table {
 typedef struct Maybe_char {
   const Maybe_char__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion221 */
-    struct { /* ciciliStruct222 */
+  union { /* ciciliUnion233 */
+    struct { /* ciciliStruct234 */
     } Nothing , _0 ;
-    struct { /* ciciliStruct223 */
+    struct { /* ciciliStruct235 */
       char __h_0_mem ;
     } Just , _ ;
   } __h_data ;
@@ -169,6 +173,7 @@ Maybe_char Just_char (char value );
 __attribute__((weak)) Maybe_char Default_Maybe_char (char value ) {
   return Just_char (value );
 }
+const Maybe_char__H_Table * const get_Maybe_char__H_Table ();
 void free_Maybe_char (Maybe_char * this );
 #endif /* __H_Maybe_char */ 
 #ifndef __H___h_List_ctor_t__
@@ -199,10 +204,10 @@ typedef struct List_Bool__H_Table {
 typedef struct __h_List_Bool_class_t {
   const List_Bool__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion260 */
-    struct { /* ciciliStruct261 */
+  union { /* ciciliUnion275 */
+    struct { /* ciciliStruct276 */
     } Empty , _0 ;
-    struct { /* ciciliStruct262 */
+    struct { /* ciciliStruct277 */
       Bool __h_0_mem ;
       List_Bool __h_1_mem ;
     } Cons , _ ;
@@ -225,6 +230,7 @@ List_Bool drop_List_Bool (int index , List_Bool list );
 Maybe_Bool head_List_Bool (List_Bool list );
 Maybe_Bool nth_List_Bool (int index , List_Bool list );
 List_Bool next_List_Bool (List_Bool list );
+const List_Bool__H_Table * const get_List_Bool__H_Table ();
 void free_List_Bool (List_Bool * this_ptr );
 List_Bool new_List_Bool_Pure (const Bool * buf , int len );
 List_Bool new_List_Bool_Wrap (const Bool item );
@@ -256,10 +262,10 @@ typedef struct List_int__H_Table {
 typedef struct __h_List_int_class_t {
   const List_int__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion341 */
-    struct { /* ciciliStruct342 */
+  union { /* ciciliUnion359 */
+    struct { /* ciciliStruct360 */
     } Empty , _0 ;
-    struct { /* ciciliStruct343 */
+    struct { /* ciciliStruct361 */
       int __h_0_mem ;
       List_int __h_1_mem ;
     } Cons , _ ;
@@ -282,6 +288,7 @@ List_int drop_List_int (int index , List_int list );
 Maybe_int head_List_int (List_int list );
 Maybe_int nth_List_int (int index , List_int list );
 List_int next_List_int (List_int list );
+const List_int__H_Table * const get_List_int__H_Table ();
 void free_List_int (List_int * this_ptr );
 List_int new_List_int_Pure (const int * buf , int len );
 List_int new_List_int_Wrap (const int item );
@@ -313,10 +320,10 @@ typedef struct List_char__H_Table {
 typedef struct __h_List_char_class_t {
   const List_char__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion424 */
-    struct { /* ciciliStruct425 */
+  union { /* ciciliUnion445 */
+    struct { /* ciciliStruct446 */
     } Empty , _0 ;
-    struct { /* ciciliStruct426 */
+    struct { /* ciciliStruct447 */
       char __h_0_mem ;
       List_char __h_1_mem ;
     } Cons , _ ;
@@ -339,6 +346,7 @@ List_char drop_List_char (int index , List_char list );
 Maybe_char head_List_char (List_char list );
 Maybe_char nth_List_char (int index , List_char list );
 List_char next_List_char (List_char list );
+const List_char__H_Table * const get_List_char__H_Table ();
 void free_List_char (List_char * this_ptr );
 List_char new_List_char_Pure (const char * buf , int len );
 List_char new_List_char_Wrap (const char item );
@@ -367,10 +375,10 @@ typedef struct Range_int__H_Table {
 typedef struct __h_Range_int_class_t {
   const Range_int__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion501 */
-    struct { /* ciciliStruct502 */
+  union { /* ciciliUnion525 */
+    struct { /* ciciliStruct526 */
     } Empty , _0 ;
-    struct { /* ciciliStruct503 */
+    struct { /* ciciliStruct527 */
       int __h_0_mem ;
       Range_int __h_1_mem ;
       int __h_2_mem ;
@@ -386,6 +394,7 @@ __attribute__((weak)) Range_int Default_Range_int (int from , Range_int tail , i
 void show_Range_int (Range_int list );
 Range_int take_Range_int (int len , Range_int list );
 Range_int next_Range_int (Range_int list );
+const Range_int__H_Table * const get_Range_int__H_Table ();
 void free_Range_int (Range_int * this_ptr );
 Range_int new_Range_int (int from , int to , int step );
 #ifndef __H_Maybe_List_Bool
@@ -405,10 +414,10 @@ typedef struct Maybe_List_Bool__H_Table {
 typedef struct Maybe_List_Bool {
   const Maybe_List_Bool__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion538 */
-    struct { /* ciciliStruct539 */
+  union { /* ciciliUnion565 */
+    struct { /* ciciliStruct566 */
     } Nothing , _0 ;
-    struct { /* ciciliStruct540 */
+    struct { /* ciciliStruct567 */
       List_Bool __h_0_mem ;
     } Just , _ ;
   } __h_data ;
@@ -418,6 +427,7 @@ Maybe_List_Bool Just_List_Bool (List_Bool value );
 __attribute__((weak)) Maybe_List_Bool Default_Maybe_List_Bool (List_Bool value ) {
   return Just_List_Bool (value );
 }
+const Maybe_List_Bool__H_Table * const get_Maybe_List_Bool__H_Table ();
 void free_Maybe_List_Bool (Maybe_List_Bool * this );
 #endif /* __H_Maybe_List_Bool */ 
 #ifndef __H_Maybe_List_int
@@ -437,10 +447,10 @@ typedef struct Maybe_List_int__H_Table {
 typedef struct Maybe_List_int {
   const Maybe_List_int__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion564 */
-    struct { /* ciciliStruct565 */
+  union { /* ciciliUnion594 */
+    struct { /* ciciliStruct595 */
     } Nothing , _0 ;
-    struct { /* ciciliStruct566 */
+    struct { /* ciciliStruct596 */
       List_int __h_0_mem ;
     } Just , _ ;
   } __h_data ;
@@ -450,6 +460,7 @@ Maybe_List_int Just_List_int (List_int value );
 __attribute__((weak)) Maybe_List_int Default_Maybe_List_int (List_int value ) {
   return Just_List_int (value );
 }
+const Maybe_List_int__H_Table * const get_Maybe_List_int__H_Table ();
 void free_Maybe_List_int (Maybe_List_int * this );
 #endif /* __H_Maybe_List_int */ 
 #ifndef __H_Maybe_List_char
@@ -469,10 +480,10 @@ typedef struct Maybe_List_char__H_Table {
 typedef struct Maybe_List_char {
   const Maybe_List_char__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion590 */
-    struct { /* ciciliStruct591 */
+  union { /* ciciliUnion623 */
+    struct { /* ciciliStruct624 */
     } Nothing , _0 ;
-    struct { /* ciciliStruct592 */
+    struct { /* ciciliStruct625 */
       List_char __h_0_mem ;
     } Just , _ ;
   } __h_data ;
@@ -482,6 +493,7 @@ Maybe_List_char Just_List_char (List_char value );
 __attribute__((weak)) Maybe_List_char Default_Maybe_List_char (List_char value ) {
   return Just_List_char (value );
 }
+const Maybe_List_char__H_Table * const get_Maybe_List_char__H_Table ();
 void free_Maybe_List_char (Maybe_List_char * this );
 #endif /* __H_Maybe_List_char */ 
 #ifndef __H_Maybe_String
@@ -501,10 +513,10 @@ typedef struct Maybe_String__H_Table {
 typedef struct Maybe_String {
   const Maybe_String__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion616 */
-    struct { /* ciciliStruct617 */
+  union { /* ciciliUnion652 */
+    struct { /* ciciliStruct653 */
     } Nothing , _0 ;
-    struct { /* ciciliStruct618 */
+    struct { /* ciciliStruct654 */
       String __h_0_mem ;
     } Just , _ ;
   } __h_data ;
@@ -514,6 +526,7 @@ Maybe_String Just_String (String value );
 __attribute__((weak)) Maybe_String Default_Maybe_String (String value ) {
   return Just_String (value );
 }
+const Maybe_String__H_Table * const get_Maybe_String__H_Table ();
 void free_Maybe_String (Maybe_String * this );
 #endif /* __H_Maybe_String */ 
 #ifndef __H___h_List_ctor_t__
@@ -544,10 +557,10 @@ typedef struct List_List_Bool__H_Table {
 typedef struct __h_List_List_Bool_class_t {
   const List_List_Bool__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion655 */
-    struct { /* ciciliStruct656 */
+  union { /* ciciliUnion694 */
+    struct { /* ciciliStruct695 */
     } Empty , _0 ;
-    struct { /* ciciliStruct657 */
+    struct { /* ciciliStruct696 */
       List_Bool __h_0_mem ;
       List_List_Bool __h_1_mem ;
     } Cons , _ ;
@@ -570,6 +583,7 @@ List_List_Bool drop_List_List_Bool (int index , List_List_Bool list );
 Maybe_List_Bool head_List_List_Bool (List_List_Bool list );
 Maybe_List_Bool nth_List_List_Bool (int index , List_List_Bool list );
 List_List_Bool next_List_List_Bool (List_List_Bool list );
+const List_List_Bool__H_Table * const get_List_List_Bool__H_Table ();
 void free_List_List_Bool (List_List_Bool * this_ptr );
 List_List_Bool new_List_List_Bool_Pure (const List_Bool * buf , int len );
 List_List_Bool new_List_List_Bool_Wrap (const List_Bool item );
@@ -601,10 +615,10 @@ typedef struct List_List_int__H_Table {
 typedef struct __h_List_List_int_class_t {
   const List_List_int__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion736 */
-    struct { /* ciciliStruct737 */
+  union { /* ciciliUnion778 */
+    struct { /* ciciliStruct779 */
     } Empty , _0 ;
-    struct { /* ciciliStruct738 */
+    struct { /* ciciliStruct780 */
       List_int __h_0_mem ;
       List_List_int __h_1_mem ;
     } Cons , _ ;
@@ -627,6 +641,7 @@ List_List_int drop_List_List_int (int index , List_List_int list );
 Maybe_List_int head_List_List_int (List_List_int list );
 Maybe_List_int nth_List_List_int (int index , List_List_int list );
 List_List_int next_List_List_int (List_List_int list );
+const List_List_int__H_Table * const get_List_List_int__H_Table ();
 void free_List_List_int (List_List_int * this_ptr );
 List_List_int new_List_List_int_Pure (const List_int * buf , int len );
 List_List_int new_List_List_int_Wrap (const List_int item );
@@ -658,10 +673,10 @@ typedef struct List_List_char__H_Table {
 typedef struct __h_List_List_char_class_t {
   const List_List_char__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion817 */
-    struct { /* ciciliStruct818 */
+  union { /* ciciliUnion862 */
+    struct { /* ciciliStruct863 */
     } Empty , _0 ;
-    struct { /* ciciliStruct819 */
+    struct { /* ciciliStruct864 */
       List_char __h_0_mem ;
       List_List_char __h_1_mem ;
     } Cons , _ ;
@@ -684,6 +699,7 @@ List_List_char drop_List_List_char (int index , List_List_char list );
 Maybe_List_char head_List_List_char (List_List_char list );
 Maybe_List_char nth_List_List_char (int index , List_List_char list );
 List_List_char next_List_List_char (List_List_char list );
+const List_List_char__H_Table * const get_List_List_char__H_Table ();
 void free_List_List_char (List_List_char * this_ptr );
 List_List_char new_List_List_char_Pure (const List_char * buf , int len );
 List_List_char new_List_List_char_Wrap (const List_char item );
@@ -715,10 +731,10 @@ typedef struct List_String__H_Table {
 typedef struct __h_List_String_class_t {
   const List_String__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion898 */
-    struct { /* ciciliStruct899 */
+  union { /* ciciliUnion946 */
+    struct { /* ciciliStruct947 */
     } Empty , _0 ;
-    struct { /* ciciliStruct900 */
+    struct { /* ciciliStruct948 */
       String __h_0_mem ;
       List_String __h_1_mem ;
     } Cons , _ ;
@@ -741,6 +757,7 @@ List_String drop_List_String (int index , List_String list );
 Maybe_String head_List_String (List_String list );
 Maybe_String nth_List_String (int index , List_String list );
 List_String next_List_String (List_String list );
+const List_String__H_Table * const get_List_String__H_Table ();
 void free_List_String (List_String * this_ptr );
 List_String new_List_String_Pure (const String * buf , int len );
 List_String new_List_String_Wrap (const String item );
@@ -787,8 +804,8 @@ typedef struct Monoid_All_Bool__H_Table {
 typedef struct Monoid_All_Bool {
   const Monoid_All_Bool__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion1068 */
-    struct { /* ciciliStruct1069 */
+  union { /* ciciliUnion1119 */
+    struct { /* ciciliStruct1120 */
       Monoid_All_Bool_mappend_t __h_0_mem ;
       Bool __h_1_mem ;
       Monoid_All_Bool_mconcat_t __h_2_mem ;
@@ -799,6 +816,7 @@ Monoid_All_Bool Monoid_All_Bool_ctor (Monoid_All_Bool_mappend_t mappend , Bool m
 __attribute__((weak)) Monoid_All_Bool Default_Monoid_All_Bool (Monoid_All_Bool_mappend_t mappend , Bool mempty , Monoid_All_Bool_mconcat_t mconcat ) {
   return Monoid_All_Bool_ctor (mappend , mempty , mconcat );
 }
+const Monoid_All_Bool__H_Table * const get_Monoid_All_Bool__H_Table ();
 void free_Monoid_All_Bool (Monoid_All_Bool * this );
 #ifndef __H___h_Semigroup_ctor_t__
 #define __H___h_Semigroup_ctor_t__
@@ -814,8 +832,8 @@ typedef struct Semigroup_All_Bool__H_Table {
 typedef struct Semigroup_All_Bool {
   const Semigroup_All_Bool__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion1092 */
-    struct { /* ciciliStruct1093 */
+  union { /* ciciliUnion1146 */
+    struct { /* ciciliStruct1147 */
       Monoid_All_Bool_mappend_t __h_0_mem ;
     } Semigroup , _ ;
   } __h_data ;
@@ -824,6 +842,7 @@ Semigroup_All_Bool Semigroup_All_Bool_ctor (Monoid_All_Bool_mappend_t mappend );
 __attribute__((weak)) Semigroup_All_Bool Default_Semigroup_All_Bool (Monoid_All_Bool_mappend_t mappend ) {
   return Semigroup_All_Bool_ctor (mappend );
 }
+const Semigroup_All_Bool__H_Table * const get_Semigroup_All_Bool__H_Table ();
 void free_Semigroup_All_Bool (Semigroup_All_Bool * this );
 Bool mempty_All_Bool ();
 Bool mappend_All_Bool (Bool lhs , Bool rhs );
@@ -846,8 +865,8 @@ typedef struct Monoid_Any_Bool__H_Table {
 typedef struct Monoid_Any_Bool {
   const Monoid_Any_Bool__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion1137 */
-    struct { /* ciciliStruct1138 */
+  union { /* ciciliUnion1194 */
+    struct { /* ciciliStruct1195 */
       Monoid_Any_Bool_mappend_t __h_0_mem ;
       Bool __h_1_mem ;
       Monoid_Any_Bool_mconcat_t __h_2_mem ;
@@ -858,6 +877,7 @@ Monoid_Any_Bool Monoid_Any_Bool_ctor (Monoid_Any_Bool_mappend_t mappend , Bool m
 __attribute__((weak)) Monoid_Any_Bool Default_Monoid_Any_Bool (Monoid_Any_Bool_mappend_t mappend , Bool mempty , Monoid_Any_Bool_mconcat_t mconcat ) {
   return Monoid_Any_Bool_ctor (mappend , mempty , mconcat );
 }
+const Monoid_Any_Bool__H_Table * const get_Monoid_Any_Bool__H_Table ();
 void free_Monoid_Any_Bool (Monoid_Any_Bool * this );
 #ifndef __H___h_Semigroup_ctor_t__
 #define __H___h_Semigroup_ctor_t__
@@ -873,8 +893,8 @@ typedef struct Semigroup_Any_Bool__H_Table {
 typedef struct Semigroup_Any_Bool {
   const Semigroup_Any_Bool__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion1161 */
-    struct { /* ciciliStruct1162 */
+  union { /* ciciliUnion1221 */
+    struct { /* ciciliStruct1222 */
       Monoid_Any_Bool_mappend_t __h_0_mem ;
     } Semigroup , _ ;
   } __h_data ;
@@ -883,6 +903,7 @@ Semigroup_Any_Bool Semigroup_Any_Bool_ctor (Monoid_Any_Bool_mappend_t mappend );
 __attribute__((weak)) Semigroup_Any_Bool Default_Semigroup_Any_Bool (Monoid_Any_Bool_mappend_t mappend ) {
   return Semigroup_Any_Bool_ctor (mappend );
 }
+const Semigroup_Any_Bool__H_Table * const get_Semigroup_Any_Bool__H_Table ();
 void free_Semigroup_Any_Bool (Semigroup_Any_Bool * this );
 Bool mempty_Any_Bool ();
 Bool mappend_Any_Bool (Bool lhs , Bool rhs );
@@ -905,8 +926,8 @@ typedef struct Monoid_Sum_int__H_Table {
 typedef struct Monoid_Sum_int {
   const Monoid_Sum_int__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion1206 */
-    struct { /* ciciliStruct1207 */
+  union { /* ciciliUnion1269 */
+    struct { /* ciciliStruct1270 */
       Monoid_Sum_int_mappend_t __h_0_mem ;
       int __h_1_mem ;
       Monoid_Sum_int_mconcat_t __h_2_mem ;
@@ -917,6 +938,7 @@ Monoid_Sum_int Monoid_Sum_int_ctor (Monoid_Sum_int_mappend_t mappend , int mempt
 __attribute__((weak)) Monoid_Sum_int Default_Monoid_Sum_int (Monoid_Sum_int_mappend_t mappend , int mempty , Monoid_Sum_int_mconcat_t mconcat ) {
   return Monoid_Sum_int_ctor (mappend , mempty , mconcat );
 }
+const Monoid_Sum_int__H_Table * const get_Monoid_Sum_int__H_Table ();
 void free_Monoid_Sum_int (Monoid_Sum_int * this );
 #ifndef __H___h_Semigroup_ctor_t__
 #define __H___h_Semigroup_ctor_t__
@@ -932,8 +954,8 @@ typedef struct Semigroup_Sum_int__H_Table {
 typedef struct Semigroup_Sum_int {
   const Semigroup_Sum_int__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion1230 */
-    struct { /* ciciliStruct1231 */
+  union { /* ciciliUnion1296 */
+    struct { /* ciciliStruct1297 */
       Monoid_Sum_int_mappend_t __h_0_mem ;
     } Semigroup , _ ;
   } __h_data ;
@@ -942,6 +964,7 @@ Semigroup_Sum_int Semigroup_Sum_int_ctor (Monoid_Sum_int_mappend_t mappend );
 __attribute__((weak)) Semigroup_Sum_int Default_Semigroup_Sum_int (Monoid_Sum_int_mappend_t mappend ) {
   return Semigroup_Sum_int_ctor (mappend );
 }
+const Semigroup_Sum_int__H_Table * const get_Semigroup_Sum_int__H_Table ();
 void free_Semigroup_Sum_int (Semigroup_Sum_int * this );
 int mempty_Sum_int ();
 int mappend_Sum_int (int lhs , int rhs );
@@ -964,8 +987,8 @@ typedef struct Monoid_Product_int__H_Table {
 typedef struct Monoid_Product_int {
   const Monoid_Product_int__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion1275 */
-    struct { /* ciciliStruct1276 */
+  union { /* ciciliUnion1344 */
+    struct { /* ciciliStruct1345 */
       Monoid_Product_int_mappend_t __h_0_mem ;
       int __h_1_mem ;
       Monoid_Product_int_mconcat_t __h_2_mem ;
@@ -976,6 +999,7 @@ Monoid_Product_int Monoid_Product_int_ctor (Monoid_Product_int_mappend_t mappend
 __attribute__((weak)) Monoid_Product_int Default_Monoid_Product_int (Monoid_Product_int_mappend_t mappend , int mempty , Monoid_Product_int_mconcat_t mconcat ) {
   return Monoid_Product_int_ctor (mappend , mempty , mconcat );
 }
+const Monoid_Product_int__H_Table * const get_Monoid_Product_int__H_Table ();
 void free_Monoid_Product_int (Monoid_Product_int * this );
 #ifndef __H___h_Semigroup_ctor_t__
 #define __H___h_Semigroup_ctor_t__
@@ -991,8 +1015,8 @@ typedef struct Semigroup_Product_int__H_Table {
 typedef struct Semigroup_Product_int {
   const Semigroup_Product_int__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion1299 */
-    struct { /* ciciliStruct1300 */
+  union { /* ciciliUnion1371 */
+    struct { /* ciciliStruct1372 */
       Monoid_Product_int_mappend_t __h_0_mem ;
     } Semigroup , _ ;
   } __h_data ;
@@ -1001,6 +1025,7 @@ Semigroup_Product_int Semigroup_Product_int_ctor (Monoid_Product_int_mappend_t m
 __attribute__((weak)) Semigroup_Product_int Default_Semigroup_Product_int (Monoid_Product_int_mappend_t mappend ) {
   return Semigroup_Product_int_ctor (mappend );
 }
+const Semigroup_Product_int__H_Table * const get_Semigroup_Product_int__H_Table ();
 void free_Semigroup_Product_int (Semigroup_Product_int * this );
 int mempty_Product_int ();
 int mappend_Product_int (int lhs , int rhs );
@@ -1026,8 +1051,8 @@ typedef struct Monoid_List_Bool__H_Table {
 typedef struct Monoid_List_Bool {
   const Monoid_List_Bool__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion1382 */
-    struct { /* ciciliStruct1383 */
+  union { /* ciciliUnion1457 */
+    struct { /* ciciliStruct1458 */
       Monoid_List_Bool_mappend_t __h_0_mem ;
       List_Bool __h_1_mem ;
       Monoid_List_Bool_mconcat_t __h_2_mem ;
@@ -1038,6 +1063,7 @@ Monoid_List_Bool Monoid_List_Bool_ctor (Monoid_List_Bool_mappend_t mappend , Lis
 __attribute__((weak)) Monoid_List_Bool Default_Monoid_List_Bool (Monoid_List_Bool_mappend_t mappend , List_Bool mempty , Monoid_List_Bool_mconcat_t mconcat ) {
   return Monoid_List_Bool_ctor (mappend , mempty , mconcat );
 }
+const Monoid_List_Bool__H_Table * const get_Monoid_List_Bool__H_Table ();
 void free_Monoid_List_Bool (Monoid_List_Bool * this );
 #ifndef __H___h_Semigroup_ctor_t__
 #define __H___h_Semigroup_ctor_t__
@@ -1053,8 +1079,8 @@ typedef struct Semigroup_List_Bool__H_Table {
 typedef struct Semigroup_List_Bool {
   const Semigroup_List_Bool__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion1408 */
-    struct { /* ciciliStruct1409 */
+  union { /* ciciliUnion1486 */
+    struct { /* ciciliStruct1487 */
       Monoid_List_Bool_mappend_t __h_0_mem ;
     } Semigroup , _ ;
   } __h_data ;
@@ -1063,6 +1089,7 @@ Semigroup_List_Bool Semigroup_List_Bool_ctor (Monoid_List_Bool_mappend_t mappend
 __attribute__((weak)) Semigroup_List_Bool Default_Semigroup_List_Bool (Monoid_List_Bool_mappend_t mappend ) {
   return Semigroup_List_Bool_ctor (mappend );
 }
+const Semigroup_List_Bool__H_Table * const get_Semigroup_List_Bool__H_Table ();
 void free_Semigroup_List_Bool (Semigroup_List_Bool * this );
 List_Bool mempty_List_Bool ();
 List_Bool mappend_List_Bool (List_Bool lhs , List_Bool rhs );
@@ -1085,8 +1112,8 @@ typedef struct Monoid_List_int__H_Table {
 typedef struct Monoid_List_int {
   const Monoid_List_int__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion1463 */
-    struct { /* ciciliStruct1464 */
+  union { /* ciciliUnion1544 */
+    struct { /* ciciliStruct1545 */
       Monoid_List_int_mappend_t __h_0_mem ;
       List_int __h_1_mem ;
       Monoid_List_int_mconcat_t __h_2_mem ;
@@ -1097,6 +1124,7 @@ Monoid_List_int Monoid_List_int_ctor (Monoid_List_int_mappend_t mappend , List_i
 __attribute__((weak)) Monoid_List_int Default_Monoid_List_int (Monoid_List_int_mappend_t mappend , List_int mempty , Monoid_List_int_mconcat_t mconcat ) {
   return Monoid_List_int_ctor (mappend , mempty , mconcat );
 }
+const Monoid_List_int__H_Table * const get_Monoid_List_int__H_Table ();
 void free_Monoid_List_int (Monoid_List_int * this );
 #ifndef __H___h_Semigroup_ctor_t__
 #define __H___h_Semigroup_ctor_t__
@@ -1112,8 +1140,8 @@ typedef struct Semigroup_List_int__H_Table {
 typedef struct Semigroup_List_int {
   const Semigroup_List_int__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion1489 */
-    struct { /* ciciliStruct1490 */
+  union { /* ciciliUnion1573 */
+    struct { /* ciciliStruct1574 */
       Monoid_List_int_mappend_t __h_0_mem ;
     } Semigroup , _ ;
   } __h_data ;
@@ -1122,6 +1150,7 @@ Semigroup_List_int Semigroup_List_int_ctor (Monoid_List_int_mappend_t mappend );
 __attribute__((weak)) Semigroup_List_int Default_Semigroup_List_int (Monoid_List_int_mappend_t mappend ) {
   return Semigroup_List_int_ctor (mappend );
 }
+const Semigroup_List_int__H_Table * const get_Semigroup_List_int__H_Table ();
 void free_Semigroup_List_int (Semigroup_List_int * this );
 List_int mempty_List_int ();
 List_int mappend_List_int (List_int lhs , List_int rhs );
@@ -1144,8 +1173,8 @@ typedef struct Monoid_List_char__H_Table {
 typedef struct Monoid_List_char {
   const Monoid_List_char__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion1544 */
-    struct { /* ciciliStruct1545 */
+  union { /* ciciliUnion1631 */
+    struct { /* ciciliStruct1632 */
       Monoid_List_char_mappend_t __h_0_mem ;
       List_char __h_1_mem ;
       Monoid_List_char_mconcat_t __h_2_mem ;
@@ -1156,6 +1185,7 @@ Monoid_List_char Monoid_List_char_ctor (Monoid_List_char_mappend_t mappend , Lis
 __attribute__((weak)) Monoid_List_char Default_Monoid_List_char (Monoid_List_char_mappend_t mappend , List_char mempty , Monoid_List_char_mconcat_t mconcat ) {
   return Monoid_List_char_ctor (mappend , mempty , mconcat );
 }
+const Monoid_List_char__H_Table * const get_Monoid_List_char__H_Table ();
 void free_Monoid_List_char (Monoid_List_char * this );
 #ifndef __H___h_Semigroup_ctor_t__
 #define __H___h_Semigroup_ctor_t__
@@ -1171,8 +1201,8 @@ typedef struct Semigroup_List_char__H_Table {
 typedef struct Semigroup_List_char {
   const Semigroup_List_char__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion1570 */
-    struct { /* ciciliStruct1571 */
+  union { /* ciciliUnion1660 */
+    struct { /* ciciliStruct1661 */
       Monoid_List_char_mappend_t __h_0_mem ;
     } Semigroup , _ ;
   } __h_data ;
@@ -1181,6 +1211,7 @@ Semigroup_List_char Semigroup_List_char_ctor (Monoid_List_char_mappend_t mappend
 __attribute__((weak)) Semigroup_List_char Default_Semigroup_List_char (Monoid_List_char_mappend_t mappend ) {
   return Semigroup_List_char_ctor (mappend );
 }
+const Semigroup_List_char__H_Table * const get_Semigroup_List_char__H_Table ();
 void free_Semigroup_List_char (Semigroup_List_char * this );
 List_char mempty_List_char ();
 List_char mappend_List_char (List_char lhs , List_char rhs );
@@ -1203,8 +1234,8 @@ typedef struct Monoid_String_char__H_Table {
 typedef struct Monoid_String_char {
   const Monoid_String_char__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion1625 */
-    struct { /* ciciliStruct1626 */
+  union { /* ciciliUnion1718 */
+    struct { /* ciciliStruct1719 */
       Monoid_String_char_mappend_t __h_0_mem ;
       List_char __h_1_mem ;
       Monoid_String_char_mconcat_t __h_2_mem ;
@@ -1215,6 +1246,7 @@ Monoid_String_char Monoid_String_char_ctor (Monoid_String_char_mappend_t mappend
 __attribute__((weak)) Monoid_String_char Default_Monoid_String_char (Monoid_String_char_mappend_t mappend , List_char mempty , Monoid_String_char_mconcat_t mconcat ) {
   return Monoid_String_char_ctor (mappend , mempty , mconcat );
 }
+const Monoid_String_char__H_Table * const get_Monoid_String_char__H_Table ();
 void free_Monoid_String_char (Monoid_String_char * this );
 #ifndef __H___h_Semigroup_ctor_t__
 #define __H___h_Semigroup_ctor_t__
@@ -1230,8 +1262,8 @@ typedef struct Semigroup_String_char__H_Table {
 typedef struct Semigroup_String_char {
   const Semigroup_String_char__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion1651 */
-    struct { /* ciciliStruct1652 */
+  union { /* ciciliUnion1747 */
+    struct { /* ciciliStruct1748 */
       Monoid_String_char_mappend_t __h_0_mem ;
     } Semigroup , _ ;
   } __h_data ;
@@ -1240,6 +1272,7 @@ Semigroup_String_char Semigroup_String_char_ctor (Monoid_String_char_mappend_t m
 __attribute__((weak)) Semigroup_String_char Default_Semigroup_String_char (Monoid_String_char_mappend_t mappend ) {
   return Semigroup_String_char_ctor (mappend );
 }
+const Semigroup_String_char__H_Table * const get_Semigroup_String_char__H_Table ();
 void free_Semigroup_String_char (Semigroup_String_char * this );
 List_char mempty_String_char ();
 List_char mappend_String_char (List_char lhs , List_char rhs );
@@ -1263,8 +1296,8 @@ typedef struct Functor_List_int_int__H_Table {
 typedef struct Functor_List_int_int {
   const Functor_List_int_int__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion1707 */
-    struct { /* ciciliStruct1708 */
+  union { /* ciciliUnion1806 */
+    struct { /* ciciliStruct1807 */
     } Functor , _ ;
   } __h_data ;
 } Functor_List_int_int;
@@ -1273,6 +1306,7 @@ __attribute__((weak)) Functor_List_int_int Default_Functor_List_int_int () {
   return Functor_List_int_int_ctor ();
 }
 List_int fmap_Functor_List_int_int (Functor_List_int_int_a_b_t a_b , List_int input );
+const Functor_List_int_int__H_Table * const get_Functor_List_int_int__H_Table ();
 void free_Functor_List_int_int (Functor_List_int_int * this );
 Functor_List_int_int get_Functor_List_int_int ();
 typedef Bool (*Functor_List_int_Bool_a_b_t) (int value );
@@ -1292,8 +1326,8 @@ typedef struct Functor_List_int_Bool__H_Table {
 typedef struct Functor_List_int_Bool {
   const Functor_List_int_Bool__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion1753 */
-    struct { /* ciciliStruct1754 */
+  union { /* ciciliUnion1855 */
+    struct { /* ciciliStruct1856 */
     } Functor , _ ;
   } __h_data ;
 } Functor_List_int_Bool;
@@ -1302,6 +1336,7 @@ __attribute__((weak)) Functor_List_int_Bool Default_Functor_List_int_Bool () {
   return Functor_List_int_Bool_ctor ();
 }
 List_Bool fmap_Functor_List_int_Bool (Functor_List_int_Bool_a_b_t a_b , List_int input );
+const Functor_List_int_Bool__H_Table * const get_Functor_List_int_Bool__H_Table ();
 void free_Functor_List_int_Bool (Functor_List_int_Bool * this );
 Functor_List_int_Bool get_Functor_List_int_Bool ();
 typedef char (*Functor_List_char_char_a_b_t) (char value );
@@ -1321,8 +1356,8 @@ typedef struct Functor_List_char_char__H_Table {
 typedef struct Functor_List_char_char {
   const Functor_List_char_char__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion1799 */
-    struct { /* ciciliStruct1800 */
+  union { /* ciciliUnion1904 */
+    struct { /* ciciliStruct1905 */
     } Functor , _ ;
   } __h_data ;
 } Functor_List_char_char;
@@ -1331,6 +1366,7 @@ __attribute__((weak)) Functor_List_char_char Default_Functor_List_char_char () {
   return Functor_List_char_char_ctor ();
 }
 List_char fmap_Functor_List_char_char (Functor_List_char_char_a_b_t a_b , List_char input );
+const Functor_List_char_char__H_Table * const get_Functor_List_char_char__H_Table ();
 void free_Functor_List_char_char (Functor_List_char_char * this );
 Functor_List_char_char get_Functor_List_char_char ();
 typedef Bool (*Functor_List_char_Bool_a_b_t) (char value );
@@ -1350,8 +1386,8 @@ typedef struct Functor_List_char_Bool__H_Table {
 typedef struct Functor_List_char_Bool {
   const Functor_List_char_Bool__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion1845 */
-    struct { /* ciciliStruct1846 */
+  union { /* ciciliUnion1953 */
+    struct { /* ciciliStruct1954 */
     } Functor , _ ;
   } __h_data ;
 } Functor_List_char_Bool;
@@ -1360,6 +1396,7 @@ __attribute__((weak)) Functor_List_char_Bool Default_Functor_List_char_Bool () {
   return Functor_List_char_Bool_ctor ();
 }
 List_Bool fmap_Functor_List_char_Bool (Functor_List_char_Bool_a_b_t a_b , List_char input );
+const Functor_List_char_Bool__H_Table * const get_Functor_List_char_Bool__H_Table ();
 void free_Functor_List_char_Bool (Functor_List_char_Bool * this );
 Functor_List_char_Bool get_Functor_List_char_Bool ();
 typedef char (*Functor_String_char_a_b_t) (char value );
@@ -1379,8 +1416,8 @@ typedef struct Functor_String_char__H_Table {
 typedef struct Functor_String_char {
   const Functor_String_char__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion1891 */
-    struct { /* ciciliStruct1892 */
+  union { /* ciciliUnion2002 */
+    struct { /* ciciliStruct2003 */
     } Functor , _ ;
   } __h_data ;
 } Functor_String_char;
@@ -1389,6 +1426,7 @@ __attribute__((weak)) Functor_String_char Default_Functor_String_char () {
   return Functor_String_char_ctor ();
 }
 List_char fmap_Functor_String_char (Functor_String_char_a_b_t a_b , List_char input );
+const Functor_String_char__H_Table * const get_Functor_String_char__H_Table ();
 void free_Functor_String_char (Functor_String_char * this );
 Functor_String_char get_Functor_String_char ();
 typedef Bool (*Functor_String_Bool_a_b_t) (char value );
@@ -1408,8 +1446,8 @@ typedef struct Functor_String_Bool__H_Table {
 typedef struct Functor_String_Bool {
   const Functor_String_Bool__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion1937 */
-    struct { /* ciciliStruct1938 */
+  union { /* ciciliUnion2051 */
+    struct { /* ciciliStruct2052 */
     } Functor , _ ;
   } __h_data ;
 } Functor_String_Bool;
@@ -1418,5 +1456,6 @@ __attribute__((weak)) Functor_String_Bool Default_Functor_String_Bool () {
   return Functor_String_Bool_ctor ();
 }
 List_Bool fmap_Functor_String_Bool (Functor_String_Bool_a_b_t a_b , List_char input );
+const Functor_String_Bool__H_Table * const get_Functor_String_Bool__H_Table ();
 void free_Functor_String_Bool (Functor_String_Bool * this );
 Functor_String_Bool get_Functor_String_Bool ();

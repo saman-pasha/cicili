@@ -121,6 +121,9 @@
                        `($$$ (decl) ,fP)))
                  fns)
 
+       ;; Table initializer
+       (decl) (func (<> get ,name _H_Table) () (out const (<> ,name _H_Table) * const))
+       
        ;; destructor
        (decl) (func (<> free ,name) ((,name * this_ptr)))
        )))

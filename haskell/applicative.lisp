@@ -75,6 +75,8 @@
 
 
 ;; List
+;; Cartesian Application
+;; enables parallelism computation
 (generic decl-Applicative-List (type a b)
 
          (decl-Applicative type List a b)
@@ -109,6 +111,7 @@
 
 
 ;; Maybe
+;; enables optional computation
 (generic decl-Applicative-Maybe (type a b)
 
          (decl-Applicative type Maybe a b)
