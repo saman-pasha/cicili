@@ -8,13 +8,13 @@
                  
                  (func (<> reduce (<> List a)) (((<> List a) list))
                        (io list
-                         (* Cons head1 (= t * Cons head2 (* Cons head3 tail))
+                         (* Cons head (= t * Cons head1 (* Cons head2 tail))
                             (block
-                                (printf "%c%c%c " head1 head2 head3)
+                                (printf "%c%c%c " head head1 head2)
                               ((<> reduce (<> List a)) t)))
-                         (* Cons head1 (= t * Cons head2 tail)
+                         (* Cons head (= t * Cons head1 tail)
                             (block
-                                (printf "%c%c " head1 head2)
+                                (printf "%c%c " head head1)
                               ((<> reduce (<> List a)) t)))
                          (* Cons head tail
                             (block
@@ -34,34 +34,22 @@
                   (return ((<> Left String int) (new^String "zero division")))
                   (return ((<> Right String int) (/ x y)))))
 
+        (generic ap_a_to_b (a b)
+                 
+                 ;; ap List
+                 ;; List (int -> int) -> List int -> List int
+                 (decl-Applicative-List (<> List a b) a b)
+                 (impl-Applicative-List (<> List a b) a b)
 
-        ;; ap List
-        ;; List ((List int) -> (List int))
-        (decl-Maybe Functor^List^int^int^a_b_t)
-        (impl-Maybe Functor^List^int^int^a_b_t)
+                 ;; ap Maybe
+                 ;; Maybe (int -> int) -> Maybe int -> Maybe int
+                 (decl-Applicative-Maybe (<> Maybe a b) a b)
+                 (impl-Applicative-Maybe (<> Maybe a b) a b)
+                 
+                 ) ; ap_a_to_b
 
-        (decl-List List^Functor^List^int^int^a_b_t Functor^List^int^int^a_b_t)
-        (impl-List List^Functor^List^int^int^a_b_t Functor^List^int^int^a_b_t (\\ v (printf "%p" v)))
-        (import-List new^List^Functor^List^int^int^a_b_t List^Functor^List^int^int^a_b_t Functor^List^int^int^a_b_t)
-
-        ;; List (int -> int) -> List int -> List int
-        (decl-Applicative-List List^int^int int int)
-        (impl-Applicative-List List^int^int int int)
-
-
-        ;; ap Maybe
-        ;; fmap :: (int -> int) -> Maybe int -> Maybe int
-        (decl-Functor-Maybe Maybe^int^int int int)
-        (impl-Functor-Maybe Maybe^int^int int int)
-
-        ;; Maybe ((Maybe int) -> (Maybe int))
-        (decl-Maybe Functor^Maybe^int^int^a_b_t)
-        (impl-Maybe Functor^Maybe^int^int^a_b_t)
-
-        ;; Maybe (int -> int) -> Maybe int -> Maybe int
-        (decl-Applicative-Maybe Maybe^int^int int int)
-        (impl-Applicative-Maybe Maybe^int^int int int)
-
+        (ap_a_to_b int int)
+        (import-List new^List^int^to^int^t (<> List (<> int to int t)) (<> int to int t))
         
         (main
             ;; test Rc
@@ -169,10 +157,10 @@
           (letin* ((ftor_mul_5 (get^Functor^List^int^int))
                    (ftor_mod_3 (get^Functor^List^int^Bool)))
             
-            (where ((fmap-mul-5 (\\ l ((\. fmap (aof ftor_mul_5))
+            (where ((fmap-mul-5 (\\ l ((\. fmap ftor_mul_5)
                                        '(lambda ((int value)) (out int) (return (* 5 value)))
                                        l)))
-                    (fmap-mod-3 (\\ l ((\. fmap (aof ftor_mod_3))
+                    (fmap-mod-3 (\\ l ((\. fmap ftor_mod_3)
                                        '(lambda ((int value))
                                          (out Bool)
                                          (return (case (% value 3) (False)
@@ -216,12 +204,11 @@
                 (show^Bool (mconcat^Any^Bool r3))
                 (putchar #\Newline))))
 
-          (letin* ((mul_15 '(lambda ((int value)) (out int) (return (* 15 value)))))
-            (io (get^Applicative^Maybe^int^int)
-              (_ pure ap
-                 (io (ap (pure mul_15) (Just^int 12))
-                   (Just output (format #t "the result of 'Applicative for Maybe (*15) (Just 12)' is: Just %d\n" output))
-                   (default (format #t "the result of 'Applicative for Maybe (*15) (Just 12)' is: Nothing\n")))))
+          (letin* ((mul_15 '(lambda ((int value)) (out int) (return (* 15 value))))
+                   (apmii (get^Applicative^Maybe^int^int)))
+            (io ((\. ap apmii) ((\. pure apmii) mul_15) (Just^int 12))
+              (Just output (format #t "the result of 'Applicative for Maybe (*15) (Just 12)' is: Just %d\n" output))
+              (default (format #t "the result of 'Applicative for Maybe (*15) (Just 12)' is: Nothing\n")))
             ;; easy access to ap 'tie-fighter'
             (letin* ((wrapped (pure^Maybe^int^int mul_15)))
               (io ($> ap^Maybe^int^int wrapped (Just^int 12))
@@ -235,7 +222,7 @@
           (where ((fmap-mul-3 '(lambda ((int value)) (out int) (return (* 3 value))))
                   (fmap-add-4 '(lambda ((int value)) (out int) (return (+ 4 value)))))
               
-            (letin ((* lf  (new^List^Functor^List^int^int^a_b_t '{ fmap-mul-3 fmap-add-4 }))
+            (letin ((* lf  ((<> new List (<> int to int t)) '{ fmap-mul-3 fmap-add-4 }))
                     (* li  ((<> new List int) '{ 1 2 3 4 5 6 }))
                     (* afi ($> (<> ap List int int) lf li)))
                 

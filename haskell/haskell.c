@@ -14,42 +14,42 @@ void __h_free_class_router (void *** instance ) {
 #ifndef __Bool__H_IMPL__
 #define __Bool__H_IMPL__
 void show_Bool (Bool value ) {
-  { /* cicili#Let2103 */
+  { /* cicili#Let2153 */
     // ----------
-    /* cicili#Block2105 */
-    ({ /* cicili#Let2107 */
+    /* cicili#Block2155 */
+    ({ /* cicili#Let2157 */
       bool __h_case_result  = ((value . __h_ctor ) ==  __h_False_t  );
       // ----------
       if (__h_case_result )
         printf ("%s", "False");
       else
-        { /* cicili#Let2113 */
+        { /* cicili#Let2163 */
           // ----------
-          /* cicili#Block2115 */
+          /* cicili#Block2165 */
           printf ("%s", "True");
         }
     });
   }
 }
 Bool or_Bool (Bool lhs , Bool rhs ) {
-  return ({ /* cicili#Let2121 */
+  return ({ /* cicili#Let2171 */
       // ----------
-      /* cicili#Block2123 */
-      ({ /* cicili#Let2125 */
+      /* cicili#Block2173 */
+      ({ /* cicili#Let2175 */
         bool __h_case_result  = ((lhs . __h_ctor ) ==  __h_True_t  );
         // ----------
-        ((__h_case_result ) ? True () : ({ /* cicili#Let2129 */
+        ((__h_case_result ) ? True () : ({ /* cicili#Let2179 */
             // ----------
-            /* cicili#Block2131 */
-            ({ /* cicili#Let2135 */
+            /* cicili#Block2181 */
+            ({ /* cicili#Let2185 */
               // ----------
-              /* cicili#Block2137 */
-              ({ /* cicili#Let2139 */
+              /* cicili#Block2187 */
+              ({ /* cicili#Let2189 */
                 bool __h_case_result  = ((rhs . __h_ctor ) ==  __h_True_t  );
                 // ----------
-                ((__h_case_result ) ? True () : ({ /* cicili#Let2143 */
+                ((__h_case_result ) ? True () : ({ /* cicili#Let2193 */
                     // ----------
-                    /* cicili#Block2145 */
+                    /* cicili#Block2195 */
                     False ();
                   }));
               });
@@ -59,24 +59,24 @@ Bool or_Bool (Bool lhs , Bool rhs ) {
     });
 }
 Bool and_Bool (Bool lhs , Bool rhs ) {
-  return ({ /* cicili#Let2151 */
+  return ({ /* cicili#Let2201 */
       // ----------
-      /* cicili#Block2153 */
-      ({ /* cicili#Let2155 */
+      /* cicili#Block2203 */
+      ({ /* cicili#Let2205 */
         bool __h_case_result  = ((lhs . __h_ctor ) ==  __h_False_t  );
         // ----------
-        ((__h_case_result ) ? False () : ({ /* cicili#Let2159 */
+        ((__h_case_result ) ? False () : ({ /* cicili#Let2209 */
             // ----------
-            /* cicili#Block2161 */
-            ({ /* cicili#Let2165 */
+            /* cicili#Block2211 */
+            ({ /* cicili#Let2215 */
               // ----------
-              /* cicili#Block2167 */
-              ({ /* cicili#Let2169 */
+              /* cicili#Block2217 */
+              ({ /* cicili#Let2219 */
                 bool __h_case_result  = ((rhs . __h_ctor ) ==  __h_False_t  );
                 // ----------
-                ((__h_case_result ) ? False () : ({ /* cicili#Let2173 */
+                ((__h_case_result ) ? False () : ({ /* cicili#Let2223 */
                     // ----------
-                    /* cicili#Block2175 */
+                    /* cicili#Block2225 */
                     True ();
                   }));
               });
@@ -134,33 +134,33 @@ Maybe_Bool Just_Bool (Bool value ) {
 #ifndef __List_Bool__H_IMPL__
 #define __List_Bool__H_IMPL__
 void show_List_Bool (List_Bool list ) {
-  { /* cicili#Let2228 */
+  { /* cicili#Let2278 */
     __auto_type head  = (((list -> __h_data ). Cons ). __h_0_mem );
     __auto_type tail  = (((list -> __h_data ). Cons ). __h_1_mem );
     // ----------
-    /* cicili#Block2230 */
-    ({ /* cicili#Let2232 */
+    /* cicili#Block2280 */
+    ({ /* cicili#Let2282 */
       bool __h_case_result  = ((list -> __h_ctor ) ==  __h_Cons_t  );
       // ----------
       if (__h_case_result )
-        { /* cicili#Block2235 */
-          { /* cicili#Let2239 */
+        { /* cicili#Block2285 */
+          { /* cicili#Let2289 */
             // ----------
-            /* cicili#Block2241 */
-            ({ /* cicili#Let2243 */
+            /* cicili#Block2291 */
+            ({ /* cicili#Let2293 */
               bool __h_case_result  = ((tail -> __h_ctor ) ==  __h_Cons_t  );
               // ----------
               if (__h_case_result )
-                { /* cicili#Block2246 */
-                  printf ("%s", ({ /* cicili#Let2253 */
+                { /* cicili#Block2296 */
+                  printf ("%s", ({ /* cicili#Let2303 */
                       // ----------
-                      /* cicili#Block2255 */
-                      ({ /* cicili#Let2257 */
+                      /* cicili#Block2305 */
+                      ({ /* cicili#Let2307 */
                         bool __h_case_result  = ((head . __h_ctor ) ==  __h_True_t  );
                         // ----------
-                        ((__h_case_result ) ? "True" : ({ /* cicili#Let2261 */
+                        ((__h_case_result ) ? "True" : ({ /* cicili#Let2311 */
                             // ----------
-                            /* cicili#Block2263 */
+                            /* cicili#Block2313 */
                             "False";
                           }));
                       });
@@ -168,18 +168,18 @@ void show_List_Bool (List_Bool list ) {
                   putchar (' ');
                 }
               else
-                { /* cicili#Let2268 */
+                { /* cicili#Let2318 */
                   // ----------
-                  /* cicili#Block2270 */
-                  printf ("%s", ({ /* cicili#Let2277 */
+                  /* cicili#Block2320 */
+                  printf ("%s", ({ /* cicili#Let2327 */
                       // ----------
-                      /* cicili#Block2279 */
-                      ({ /* cicili#Let2281 */
+                      /* cicili#Block2329 */
+                      ({ /* cicili#Let2331 */
                         bool __h_case_result  = ((head . __h_ctor ) ==  __h_True_t  );
                         // ----------
-                        ((__h_case_result ) ? "True" : ({ /* cicili#Let2285 */
+                        ((__h_case_result ) ? "True" : ({ /* cicili#Let2335 */
                             // ----------
-                            /* cicili#Block2287 */
+                            /* cicili#Block2337 */
                             "False";
                           }));
                       });
@@ -193,23 +193,23 @@ void show_List_Bool (List_Bool list ) {
   }
 }
 List_Bool append_List_Bool (List_Bool llist , List_Bool rlist ) {
-  return ({ /* cicili#Let2293 */
+  return ({ /* cicili#Let2343 */
       __auto_type last  = (llist -> __h_table -> last )(llist );
       // ----------
-      ({ /* cicili#Let2298 */
+      ({ /* cicili#Let2348 */
         __auto_type tail  = (((last -> __h_data ). Cons ). __h_1_mem );
         // ----------
-        /* cicili#Block2300 */
-        ({ /* cicili#Let2302 */
+        /* cicili#Block2350 */
+        ({ /* cicili#Let2352 */
           bool __h_case_result  = ((last -> __h_ctor ) ==  __h_Cons_t  );
           // ----------
-          ((__h_case_result ) ? ({ /* cicili#Progn2304 */
+          ((__h_case_result ) ? ({ /* cicili#Progn2354 */
               free_List_Bool ((&tail ));
               (((last -> __h_data ). Cons ). __h_1_mem ) = rlist ;
               llist ;
-            }) : ({ /* cicili#Let2309 */
+            }) : ({ /* cicili#Let2359 */
               // ----------
-              /* cicili#Block2311 */
+              /* cicili#Block2361 */
               rlist ;
             }));
         });
@@ -220,51 +220,6 @@ List_Bool push_List_Bool (Bool item , List_Bool list ) {
   return Cons_Bool (item , list );
 }
 List_Bool last_List_Bool (List_Bool list ) {
-  return ({ /* cicili#Let2320 */
-      __auto_type tail  = (((list -> __h_data ). Cons ). __h_1_mem );
-      // ----------
-      /* cicili#Block2322 */
-      ({ /* cicili#Let2324 */
-        bool __h_case_result  = ((list -> __h_ctor ) ==  __h_Cons_t  );
-        // ----------
-        ((__h_case_result ) ? ({ /* cicili#Let2328 */
-            // ----------
-            /* cicili#Block2330 */
-            ({ /* cicili#Let2332 */
-              bool __h_case_result  = ((tail -> __h_ctor ) ==  __h_Empty_t  );
-              // ----------
-              ((__h_case_result ) ? list  : ({ /* cicili#Let2336 */
-                  // ----------
-                  /* cicili#Block2338 */
-                  (list -> __h_table -> last )(tail );
-                }));
-            });
-          }) : ({ /* cicili#Let2343 */
-            // ----------
-            /* cicili#Block2345 */
-            list ;
-          }));
-      });
-    });
-}
-List_Bool take_List_Bool (int len , List_Bool list ) {
-  return ({ /* cicili#Let2351 */
-      __auto_type head  = (((list -> __h_data ). Cons ). __h_0_mem );
-      __auto_type tail  = (((list -> __h_data ). Cons ). __h_1_mem );
-      // ----------
-      /* cicili#Block2353 */
-      ({ /* cicili#Let2355 */
-        bool __h_case_result  = (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  (len  >  0 ) );
-        // ----------
-        ((__h_case_result ) ? (list -> __h_table -> push )(head , (list -> __h_table -> take )((--len ), tail )) : ({ /* cicili#Let2361 */
-            // ----------
-            /* cicili#Block2363 */
-            Empty_Bool ();
-          }));
-      });
-    });
-}
-int hasLen_List_Bool (List_Bool list , int desired ) {
   return ({ /* cicili#Let2370 */
       __auto_type tail  = (((list -> __h_data ). Cons ). __h_1_mem );
       // ----------
@@ -272,25 +227,70 @@ int hasLen_List_Bool (List_Bool list , int desired ) {
       ({ /* cicili#Let2374 */
         bool __h_case_result  = ((list -> __h_ctor ) ==  __h_Cons_t  );
         // ----------
-        ((__h_case_result ) ? (((desired  ==  1 )) ? 1 : (1 +  (list -> __h_table -> hasLen )(tail , (--desired )) )) : ({ /* cicili#Let2380 */
+        ((__h_case_result ) ? ({ /* cicili#Let2378 */
             // ----------
-            /* cicili#Block2382 */
+            /* cicili#Block2380 */
+            ({ /* cicili#Let2382 */
+              bool __h_case_result  = ((tail -> __h_ctor ) ==  __h_Empty_t  );
+              // ----------
+              ((__h_case_result ) ? list  : ({ /* cicili#Let2386 */
+                  // ----------
+                  /* cicili#Block2388 */
+                  (list -> __h_table -> last )(tail );
+                }));
+            });
+          }) : ({ /* cicili#Let2393 */
+            // ----------
+            /* cicili#Block2395 */
+            list ;
+          }));
+      });
+    });
+}
+List_Bool take_List_Bool (int len , List_Bool list ) {
+  return ({ /* cicili#Let2401 */
+      __auto_type head  = (((list -> __h_data ). Cons ). __h_0_mem );
+      __auto_type tail  = (((list -> __h_data ). Cons ). __h_1_mem );
+      // ----------
+      /* cicili#Block2403 */
+      ({ /* cicili#Let2405 */
+        bool __h_case_result  = (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  (len  >  0 ) );
+        // ----------
+        ((__h_case_result ) ? (list -> __h_table -> push )(head , (list -> __h_table -> take )((--len ), tail )) : ({ /* cicili#Let2411 */
+            // ----------
+            /* cicili#Block2413 */
+            Empty_Bool ();
+          }));
+      });
+    });
+}
+int hasLen_List_Bool (List_Bool list , int desired ) {
+  return ({ /* cicili#Let2420 */
+      __auto_type tail  = (((list -> __h_data ). Cons ). __h_1_mem );
+      // ----------
+      /* cicili#Block2422 */
+      ({ /* cicili#Let2424 */
+        bool __h_case_result  = ((list -> __h_ctor ) ==  __h_Cons_t  );
+        // ----------
+        ((__h_case_result ) ? (((desired  ==  1 )) ? 1 : (1 +  (list -> __h_table -> hasLen )(tail , (--desired )) )) : ({ /* cicili#Let2430 */
+            // ----------
+            /* cicili#Block2432 */
             0;
           }));
       });
     });
 }
 int len_List_Bool (List_Bool list ) {
-  return ({ /* cicili#Let2388 */
+  return ({ /* cicili#Let2438 */
       __auto_type tail  = (((list -> __h_data ). Cons ). __h_1_mem );
       // ----------
-      /* cicili#Block2390 */
-      ({ /* cicili#Let2392 */
+      /* cicili#Block2440 */
+      ({ /* cicili#Let2442 */
         bool __h_case_result  = ((list -> __h_ctor ) ==  __h_Cons_t  );
         // ----------
-        ((__h_case_result ) ? (1 +  (list -> __h_table -> len )(tail ) ) : ({ /* cicili#Let2397 */
+        ((__h_case_result ) ? (1 +  (list -> __h_table -> len )(tail ) ) : ({ /* cicili#Let2447 */
             // ----------
-            /* cicili#Block2399 */
+            /* cicili#Block2449 */
             0;
           }));
       });
@@ -300,16 +300,16 @@ List_Bool tail_List_Bool (List_Bool list ) {
   return (list -> __h_table -> drop )(0, list );
 }
 List_Bool drop_List_Bool (int index , List_Bool list ) {
-  return (((index  ==  0 )) ? list  : ({ /* cicili#Let2409 */
+  return (((index  ==  0 )) ? list  : ({ /* cicili#Let2459 */
         __auto_type tail  = (((list -> __h_data ). Cons ). __h_1_mem );
         // ----------
-        /* cicili#Block2411 */
-        ({ /* cicili#Let2413 */
+        /* cicili#Block2461 */
+        ({ /* cicili#Let2463 */
           bool __h_case_result  = ((list -> __h_ctor ) ==  __h_Cons_t  );
           // ----------
-          ((__h_case_result ) ? (list -> __h_table -> drop )((--index ), tail ) : ({ /* cicili#Let2418 */
+          ((__h_case_result ) ? (list -> __h_table -> drop )((--index ), tail ) : ({ /* cicili#Let2468 */
               // ----------
-              /* cicili#Block2420 */
+              /* cicili#Block2470 */
               Empty_Bool ();
             }));
         });
@@ -319,62 +319,62 @@ Maybe_Bool head_List_Bool (List_Bool list ) {
   return (list -> __h_table -> nth )(0, list );
 }
 Maybe_Bool nth_List_Bool (int index , List_Bool list ) {
-  return ({ /* cicili#Let2432 */
+  return ({ /* cicili#Let2482 */
       __auto_type head  = (((list -> __h_data ). Cons ). __h_0_mem );
       __auto_type tail  = (((list -> __h_data ). Cons ). __h_1_mem );
       // ----------
-      /* cicili#Block2434 */
-      ({ /* cicili#Let2436 */
+      /* cicili#Block2484 */
+      ({ /* cicili#Let2486 */
         bool __h_case_result  = ((list -> __h_ctor ) ==  __h_Cons_t  );
         // ----------
-        ((__h_case_result ) ? (((index  ==  0 )) ? Just_Bool (head ) : (list -> __h_table -> nth )((--index ), tail )) : ({ /* cicili#Let2443 */
+        ((__h_case_result ) ? (((index  ==  0 )) ? Just_Bool (head ) : (list -> __h_table -> nth )((--index ), tail )) : ({ /* cicili#Let2493 */
             // ----------
-            /* cicili#Block2445 */
+            /* cicili#Block2495 */
             Nothing_Bool ();
           }));
       });
     });
 }
 List_Bool next_List_Bool (List_Bool list ) {
-  return ({ /* cicili#Let2452 */
+  return ({ /* cicili#Let2502 */
       __auto_type tail  = (((list -> __h_data ). Cons ). __h_1_mem );
       // ----------
-      /* cicili#Block2454 */
-      ({ /* cicili#Let2456 */
+      /* cicili#Block2504 */
+      ({ /* cicili#Let2506 */
         bool __h_case_result  = ((list -> __h_ctor ) ==  __h_Cons_t  );
         // ----------
-        ((__h_case_result ) ? tail  : ({ /* cicili#Let2460 */
+        ((__h_case_result ) ? tail  : ({ /* cicili#Let2510 */
             // ----------
-            /* cicili#Block2462 */
+            /* cicili#Block2512 */
             Empty_Bool ();
           }));
       });
     });
 }
 void free_List_Bool (List_Bool * this_ptr ) {
-  { /* cicili#Let2467 */
+  { /* cicili#Let2517 */
     __auto_type this  = (*this_ptr );
     // ----------
-    { /* cicili#Let2471 */
+    { /* cicili#Let2521 */
       __auto_type head  = (((this -> __h_data ). Cons ). __h_0_mem );
       __auto_type tail  = (((this -> __h_data ). Cons ). __h_1_mem );
       // ----------
-      /* cicili#Block2473 */
-      ({ /* cicili#Let2475 */
+      /* cicili#Block2523 */
+      ({ /* cicili#Let2525 */
         bool __h_case_result  = ((this -> __h_ctor ) ==  __h_Cons_t  );
         // ----------
         if (__h_case_result )
-          { /* cicili#Block2478 */
+          { /* cicili#Block2528 */
             printf ("destructuring List: %p, ", this );
-            printf ("%s", ({ /* cicili#Let2485 */
+            printf ("%s", ({ /* cicili#Let2535 */
                 // ----------
-                /* cicili#Block2487 */
-                ({ /* cicili#Let2489 */
+                /* cicili#Block2537 */
+                ({ /* cicili#Let2539 */
                   bool __h_case_result  = ((head . __h_ctor ) ==  __h_True_t  );
                   // ----------
-                  ((__h_case_result ) ? "True" : ({ /* cicili#Let2493 */
+                  ((__h_case_result ) ? "True" : ({ /* cicili#Let2543 */
                       // ----------
-                      /* cicili#Block2495 */
+                      /* cicili#Block2545 */
                       "False";
                     }));
                 });
@@ -384,9 +384,9 @@ void free_List_Bool (List_Bool * this_ptr ) {
             free (this );
           }
         else
-          { /* cicili#Let2501 */
+          { /* cicili#Let2551 */
             // ----------
-            /* cicili#Block2503 */
+            /* cicili#Block2553 */
             free (this );
           }
       });
@@ -398,7 +398,7 @@ const List_Bool__H_Table * const get_List_Bool__H_Table () {
   return (&table );
 }
 List_Bool Empty_Bool () {
-  { /* cicili#Let2512 */
+  { /* cicili#Let2562 */
     List_Bool instance  = malloc (sizeof(__h_List_Bool_class_t));
     // ----------
     (*instance ) = ((__h_List_Bool_class_t){ get_List_Bool__H_Table (), __h_Empty_t });
@@ -406,7 +406,7 @@ List_Bool Empty_Bool () {
   }
 }
 List_Bool Cons_Bool (Bool head , List_Bool tail ) {
-  { /* cicili#Let2517 */
+  { /* cicili#Let2567 */
     List_Bool instance  = malloc (sizeof(__h_List_Bool_class_t));
     // ----------
     (*instance ) = ((__h_List_Bool_class_t){ get_List_Bool__H_Table (), __h___t , .__h_data._ = { head , tail }});
@@ -418,7 +418,7 @@ List_Bool new_List_Bool_Pure (const Bool * buf , int len ) {
   if (buf  ==  NULL  )
     return Empty_Bool ();
   else
-    { /* cicili#Let2526 */
+    { /* cicili#Let2576 */
       Bool item  = (*buf );
       // ----------
       if (len  ==  0 )
@@ -448,31 +448,31 @@ Maybe_int Just_int (int value ) {
 #ifndef __List_int__H_IMPL__
 #define __List_int__H_IMPL__
 void show_List_int (List_int list ) {
-  { /* cicili#Let2562 */
+  { /* cicili#Let2612 */
     __auto_type head  = (((list -> __h_data ). Cons ). __h_0_mem );
     __auto_type tail  = (((list -> __h_data ). Cons ). __h_1_mem );
     // ----------
-    /* cicili#Block2564 */
-    ({ /* cicili#Let2566 */
+    /* cicili#Block2614 */
+    ({ /* cicili#Let2616 */
       bool __h_case_result  = ((list -> __h_ctor ) ==  __h_Cons_t  );
       // ----------
       if (__h_case_result )
-        { /* cicili#Block2569 */
-          { /* cicili#Let2573 */
+        { /* cicili#Block2619 */
+          { /* cicili#Let2623 */
             // ----------
-            /* cicili#Block2575 */
-            ({ /* cicili#Let2577 */
+            /* cicili#Block2625 */
+            ({ /* cicili#Let2627 */
               bool __h_case_result  = ((tail -> __h_ctor ) ==  __h_Cons_t  );
               // ----------
               if (__h_case_result )
-                { /* cicili#Block2580 */
+                { /* cicili#Block2630 */
                   printf ("%d", head );
                   putchar (' ');
                 }
               else
-                { /* cicili#Let2588 */
+                { /* cicili#Let2638 */
                   // ----------
-                  /* cicili#Block2590 */
+                  /* cicili#Block2640 */
                   printf ("%d", head );
                 }
             });
@@ -483,23 +483,23 @@ void show_List_int (List_int list ) {
   }
 }
 List_int append_List_int (List_int llist , List_int rlist ) {
-  return ({ /* cicili#Let2599 */
+  return ({ /* cicili#Let2649 */
       __auto_type last  = (llist -> __h_table -> last )(llist );
       // ----------
-      ({ /* cicili#Let2604 */
+      ({ /* cicili#Let2654 */
         __auto_type tail  = (((last -> __h_data ). Cons ). __h_1_mem );
         // ----------
-        /* cicili#Block2606 */
-        ({ /* cicili#Let2608 */
+        /* cicili#Block2656 */
+        ({ /* cicili#Let2658 */
           bool __h_case_result  = ((last -> __h_ctor ) ==  __h_Cons_t  );
           // ----------
-          ((__h_case_result ) ? ({ /* cicili#Progn2610 */
+          ((__h_case_result ) ? ({ /* cicili#Progn2660 */
               free_List_int ((&tail ));
               (((last -> __h_data ). Cons ). __h_1_mem ) = rlist ;
               llist ;
-            }) : ({ /* cicili#Let2615 */
+            }) : ({ /* cicili#Let2665 */
               // ----------
-              /* cicili#Block2617 */
+              /* cicili#Block2667 */
               rlist ;
             }));
         });
@@ -510,51 +510,6 @@ List_int push_List_int (int item , List_int list ) {
   return Cons_int (item , list );
 }
 List_int last_List_int (List_int list ) {
-  return ({ /* cicili#Let2626 */
-      __auto_type tail  = (((list -> __h_data ). Cons ). __h_1_mem );
-      // ----------
-      /* cicili#Block2628 */
-      ({ /* cicili#Let2630 */
-        bool __h_case_result  = ((list -> __h_ctor ) ==  __h_Cons_t  );
-        // ----------
-        ((__h_case_result ) ? ({ /* cicili#Let2634 */
-            // ----------
-            /* cicili#Block2636 */
-            ({ /* cicili#Let2638 */
-              bool __h_case_result  = ((tail -> __h_ctor ) ==  __h_Empty_t  );
-              // ----------
-              ((__h_case_result ) ? list  : ({ /* cicili#Let2642 */
-                  // ----------
-                  /* cicili#Block2644 */
-                  (list -> __h_table -> last )(tail );
-                }));
-            });
-          }) : ({ /* cicili#Let2649 */
-            // ----------
-            /* cicili#Block2651 */
-            list ;
-          }));
-      });
-    });
-}
-List_int take_List_int (int len , List_int list ) {
-  return ({ /* cicili#Let2657 */
-      __auto_type head  = (((list -> __h_data ). Cons ). __h_0_mem );
-      __auto_type tail  = (((list -> __h_data ). Cons ). __h_1_mem );
-      // ----------
-      /* cicili#Block2659 */
-      ({ /* cicili#Let2661 */
-        bool __h_case_result  = (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  (len  >  0 ) );
-        // ----------
-        ((__h_case_result ) ? (list -> __h_table -> push )(head , (list -> __h_table -> take )((--len ), tail )) : ({ /* cicili#Let2667 */
-            // ----------
-            /* cicili#Block2669 */
-            Empty_int ();
-          }));
-      });
-    });
-}
-int hasLen_List_int (List_int list , int desired ) {
   return ({ /* cicili#Let2676 */
       __auto_type tail  = (((list -> __h_data ). Cons ). __h_1_mem );
       // ----------
@@ -562,25 +517,70 @@ int hasLen_List_int (List_int list , int desired ) {
       ({ /* cicili#Let2680 */
         bool __h_case_result  = ((list -> __h_ctor ) ==  __h_Cons_t  );
         // ----------
-        ((__h_case_result ) ? (((desired  ==  1 )) ? 1 : (1 +  (list -> __h_table -> hasLen )(tail , (--desired )) )) : ({ /* cicili#Let2686 */
+        ((__h_case_result ) ? ({ /* cicili#Let2684 */
             // ----------
-            /* cicili#Block2688 */
+            /* cicili#Block2686 */
+            ({ /* cicili#Let2688 */
+              bool __h_case_result  = ((tail -> __h_ctor ) ==  __h_Empty_t  );
+              // ----------
+              ((__h_case_result ) ? list  : ({ /* cicili#Let2692 */
+                  // ----------
+                  /* cicili#Block2694 */
+                  (list -> __h_table -> last )(tail );
+                }));
+            });
+          }) : ({ /* cicili#Let2699 */
+            // ----------
+            /* cicili#Block2701 */
+            list ;
+          }));
+      });
+    });
+}
+List_int take_List_int (int len , List_int list ) {
+  return ({ /* cicili#Let2707 */
+      __auto_type head  = (((list -> __h_data ). Cons ). __h_0_mem );
+      __auto_type tail  = (((list -> __h_data ). Cons ). __h_1_mem );
+      // ----------
+      /* cicili#Block2709 */
+      ({ /* cicili#Let2711 */
+        bool __h_case_result  = (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  (len  >  0 ) );
+        // ----------
+        ((__h_case_result ) ? (list -> __h_table -> push )(head , (list -> __h_table -> take )((--len ), tail )) : ({ /* cicili#Let2717 */
+            // ----------
+            /* cicili#Block2719 */
+            Empty_int ();
+          }));
+      });
+    });
+}
+int hasLen_List_int (List_int list , int desired ) {
+  return ({ /* cicili#Let2726 */
+      __auto_type tail  = (((list -> __h_data ). Cons ). __h_1_mem );
+      // ----------
+      /* cicili#Block2728 */
+      ({ /* cicili#Let2730 */
+        bool __h_case_result  = ((list -> __h_ctor ) ==  __h_Cons_t  );
+        // ----------
+        ((__h_case_result ) ? (((desired  ==  1 )) ? 1 : (1 +  (list -> __h_table -> hasLen )(tail , (--desired )) )) : ({ /* cicili#Let2736 */
+            // ----------
+            /* cicili#Block2738 */
             0;
           }));
       });
     });
 }
 int len_List_int (List_int list ) {
-  return ({ /* cicili#Let2694 */
+  return ({ /* cicili#Let2744 */
       __auto_type tail  = (((list -> __h_data ). Cons ). __h_1_mem );
       // ----------
-      /* cicili#Block2696 */
-      ({ /* cicili#Let2698 */
+      /* cicili#Block2746 */
+      ({ /* cicili#Let2748 */
         bool __h_case_result  = ((list -> __h_ctor ) ==  __h_Cons_t  );
         // ----------
-        ((__h_case_result ) ? (1 +  (list -> __h_table -> len )(tail ) ) : ({ /* cicili#Let2703 */
+        ((__h_case_result ) ? (1 +  (list -> __h_table -> len )(tail ) ) : ({ /* cicili#Let2753 */
             // ----------
-            /* cicili#Block2705 */
+            /* cicili#Block2755 */
             0;
           }));
       });
@@ -590,16 +590,16 @@ List_int tail_List_int (List_int list ) {
   return (list -> __h_table -> drop )(0, list );
 }
 List_int drop_List_int (int index , List_int list ) {
-  return (((index  ==  0 )) ? list  : ({ /* cicili#Let2715 */
+  return (((index  ==  0 )) ? list  : ({ /* cicili#Let2765 */
         __auto_type tail  = (((list -> __h_data ). Cons ). __h_1_mem );
         // ----------
-        /* cicili#Block2717 */
-        ({ /* cicili#Let2719 */
+        /* cicili#Block2767 */
+        ({ /* cicili#Let2769 */
           bool __h_case_result  = ((list -> __h_ctor ) ==  __h_Cons_t  );
           // ----------
-          ((__h_case_result ) ? (list -> __h_table -> drop )((--index ), tail ) : ({ /* cicili#Let2724 */
+          ((__h_case_result ) ? (list -> __h_table -> drop )((--index ), tail ) : ({ /* cicili#Let2774 */
               // ----------
-              /* cicili#Block2726 */
+              /* cicili#Block2776 */
               Empty_int ();
             }));
         });
@@ -609,52 +609,52 @@ Maybe_int head_List_int (List_int list ) {
   return (list -> __h_table -> nth )(0, list );
 }
 Maybe_int nth_List_int (int index , List_int list ) {
-  return ({ /* cicili#Let2738 */
+  return ({ /* cicili#Let2788 */
       __auto_type head  = (((list -> __h_data ). Cons ). __h_0_mem );
       __auto_type tail  = (((list -> __h_data ). Cons ). __h_1_mem );
       // ----------
-      /* cicili#Block2740 */
-      ({ /* cicili#Let2742 */
+      /* cicili#Block2790 */
+      ({ /* cicili#Let2792 */
         bool __h_case_result  = ((list -> __h_ctor ) ==  __h_Cons_t  );
         // ----------
-        ((__h_case_result ) ? (((index  ==  0 )) ? Just_int (head ) : (list -> __h_table -> nth )((--index ), tail )) : ({ /* cicili#Let2749 */
+        ((__h_case_result ) ? (((index  ==  0 )) ? Just_int (head ) : (list -> __h_table -> nth )((--index ), tail )) : ({ /* cicili#Let2799 */
             // ----------
-            /* cicili#Block2751 */
+            /* cicili#Block2801 */
             Nothing_int ();
           }));
       });
     });
 }
 List_int next_List_int (List_int list ) {
-  return ({ /* cicili#Let2758 */
+  return ({ /* cicili#Let2808 */
       __auto_type tail  = (((list -> __h_data ). Cons ). __h_1_mem );
       // ----------
-      /* cicili#Block2760 */
-      ({ /* cicili#Let2762 */
+      /* cicili#Block2810 */
+      ({ /* cicili#Let2812 */
         bool __h_case_result  = ((list -> __h_ctor ) ==  __h_Cons_t  );
         // ----------
-        ((__h_case_result ) ? tail  : ({ /* cicili#Let2766 */
+        ((__h_case_result ) ? tail  : ({ /* cicili#Let2816 */
             // ----------
-            /* cicili#Block2768 */
+            /* cicili#Block2818 */
             Empty_int ();
           }));
       });
     });
 }
 void free_List_int (List_int * this_ptr ) {
-  { /* cicili#Let2773 */
+  { /* cicili#Let2823 */
     __auto_type this  = (*this_ptr );
     // ----------
-    { /* cicili#Let2777 */
+    { /* cicili#Let2827 */
       __auto_type head  = (((this -> __h_data ). Cons ). __h_0_mem );
       __auto_type tail  = (((this -> __h_data ). Cons ). __h_1_mem );
       // ----------
-      /* cicili#Block2779 */
-      ({ /* cicili#Let2781 */
+      /* cicili#Block2829 */
+      ({ /* cicili#Let2831 */
         bool __h_case_result  = ((this -> __h_ctor ) ==  __h_Cons_t  );
         // ----------
         if (__h_case_result )
-          { /* cicili#Block2784 */
+          { /* cicili#Block2834 */
             printf ("destructuring List: %p, ", this );
             printf ("%d", head );
             putchar ('\n');
@@ -662,9 +662,9 @@ void free_List_int (List_int * this_ptr ) {
             free (this );
           }
         else
-          { /* cicili#Let2793 */
+          { /* cicili#Let2843 */
             // ----------
-            /* cicili#Block2795 */
+            /* cicili#Block2845 */
             free (this );
           }
       });
@@ -676,7 +676,7 @@ const List_int__H_Table * const get_List_int__H_Table () {
   return (&table );
 }
 List_int Empty_int () {
-  { /* cicili#Let2804 */
+  { /* cicili#Let2854 */
     List_int instance  = malloc (sizeof(__h_List_int_class_t));
     // ----------
     (*instance ) = ((__h_List_int_class_t){ get_List_int__H_Table (), __h_Empty_t });
@@ -684,7 +684,7 @@ List_int Empty_int () {
   }
 }
 List_int Cons_int (int head , List_int tail ) {
-  { /* cicili#Let2809 */
+  { /* cicili#Let2859 */
     List_int instance  = malloc (sizeof(__h_List_int_class_t));
     // ----------
     (*instance ) = ((__h_List_int_class_t){ get_List_int__H_Table (), __h___t , .__h_data._ = { head , tail }});
@@ -696,7 +696,7 @@ List_int new_List_int_Pure (const int * buf , int len ) {
   if (buf  ==  NULL  )
     return Empty_int ();
   else
-    { /* cicili#Let2818 */
+    { /* cicili#Let2868 */
       int item  = (*buf );
       // ----------
       if (len  ==  0 )
@@ -726,31 +726,31 @@ Maybe_char Just_char (char value ) {
 #ifndef __List_char__H_IMPL__
 #define __List_char__H_IMPL__
 void show_List_char (List_char list ) {
-  { /* cicili#Let2856 */
+  { /* cicili#Let2906 */
     __auto_type head  = (((list -> __h_data ). Cons ). __h_0_mem );
     __auto_type tail  = (((list -> __h_data ). Cons ). __h_1_mem );
     // ----------
-    /* cicili#Block2858 */
-    ({ /* cicili#Let2860 */
+    /* cicili#Block2908 */
+    ({ /* cicili#Let2910 */
       bool __h_case_result  = ((list -> __h_ctor ) ==  __h_Cons_t  );
       // ----------
       if (__h_case_result )
-        { /* cicili#Block2863 */
-          { /* cicili#Let2867 */
+        { /* cicili#Block2913 */
+          { /* cicili#Let2917 */
             // ----------
-            /* cicili#Block2869 */
-            ({ /* cicili#Let2871 */
+            /* cicili#Block2919 */
+            ({ /* cicili#Let2921 */
               bool __h_case_result  = ((tail -> __h_ctor ) ==  __h_Cons_t  );
               // ----------
               if (__h_case_result )
-                { /* cicili#Block2874 */
+                { /* cicili#Block2924 */
                   printf ("%c", head );
                   putchar (' ');
                 }
               else
-                { /* cicili#Let2882 */
+                { /* cicili#Let2932 */
                   // ----------
-                  /* cicili#Block2884 */
+                  /* cicili#Block2934 */
                   printf ("%c", head );
                 }
             });
@@ -761,23 +761,23 @@ void show_List_char (List_char list ) {
   }
 }
 List_char append_List_char (List_char llist , List_char rlist ) {
-  return ({ /* cicili#Let2893 */
+  return ({ /* cicili#Let2943 */
       __auto_type last  = (llist -> __h_table -> last )(llist );
       // ----------
-      ({ /* cicili#Let2898 */
+      ({ /* cicili#Let2948 */
         __auto_type tail  = (((last -> __h_data ). Cons ). __h_1_mem );
         // ----------
-        /* cicili#Block2900 */
-        ({ /* cicili#Let2902 */
+        /* cicili#Block2950 */
+        ({ /* cicili#Let2952 */
           bool __h_case_result  = ((last -> __h_ctor ) ==  __h_Cons_t  );
           // ----------
-          ((__h_case_result ) ? ({ /* cicili#Progn2904 */
+          ((__h_case_result ) ? ({ /* cicili#Progn2954 */
               free_List_char ((&tail ));
               (((last -> __h_data ). Cons ). __h_1_mem ) = rlist ;
               llist ;
-            }) : ({ /* cicili#Let2909 */
+            }) : ({ /* cicili#Let2959 */
               // ----------
-              /* cicili#Block2911 */
+              /* cicili#Block2961 */
               rlist ;
             }));
         });
@@ -788,51 +788,6 @@ List_char push_List_char (char item , List_char list ) {
   return Cons_char (item , list );
 }
 List_char last_List_char (List_char list ) {
-  return ({ /* cicili#Let2920 */
-      __auto_type tail  = (((list -> __h_data ). Cons ). __h_1_mem );
-      // ----------
-      /* cicili#Block2922 */
-      ({ /* cicili#Let2924 */
-        bool __h_case_result  = ((list -> __h_ctor ) ==  __h_Cons_t  );
-        // ----------
-        ((__h_case_result ) ? ({ /* cicili#Let2928 */
-            // ----------
-            /* cicili#Block2930 */
-            ({ /* cicili#Let2932 */
-              bool __h_case_result  = ((tail -> __h_ctor ) ==  __h_Empty_t  );
-              // ----------
-              ((__h_case_result ) ? list  : ({ /* cicili#Let2936 */
-                  // ----------
-                  /* cicili#Block2938 */
-                  (list -> __h_table -> last )(tail );
-                }));
-            });
-          }) : ({ /* cicili#Let2943 */
-            // ----------
-            /* cicili#Block2945 */
-            list ;
-          }));
-      });
-    });
-}
-List_char take_List_char (int len , List_char list ) {
-  return ({ /* cicili#Let2951 */
-      __auto_type head  = (((list -> __h_data ). Cons ). __h_0_mem );
-      __auto_type tail  = (((list -> __h_data ). Cons ). __h_1_mem );
-      // ----------
-      /* cicili#Block2953 */
-      ({ /* cicili#Let2955 */
-        bool __h_case_result  = (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  (len  >  0 ) );
-        // ----------
-        ((__h_case_result ) ? (list -> __h_table -> push )(head , (list -> __h_table -> take )((--len ), tail )) : ({ /* cicili#Let2961 */
-            // ----------
-            /* cicili#Block2963 */
-            Empty_char ();
-          }));
-      });
-    });
-}
-int hasLen_List_char (List_char list , int desired ) {
   return ({ /* cicili#Let2970 */
       __auto_type tail  = (((list -> __h_data ). Cons ). __h_1_mem );
       // ----------
@@ -840,25 +795,70 @@ int hasLen_List_char (List_char list , int desired ) {
       ({ /* cicili#Let2974 */
         bool __h_case_result  = ((list -> __h_ctor ) ==  __h_Cons_t  );
         // ----------
-        ((__h_case_result ) ? (((desired  ==  1 )) ? 1 : (1 +  (list -> __h_table -> hasLen )(tail , (--desired )) )) : ({ /* cicili#Let2980 */
+        ((__h_case_result ) ? ({ /* cicili#Let2978 */
             // ----------
-            /* cicili#Block2982 */
+            /* cicili#Block2980 */
+            ({ /* cicili#Let2982 */
+              bool __h_case_result  = ((tail -> __h_ctor ) ==  __h_Empty_t  );
+              // ----------
+              ((__h_case_result ) ? list  : ({ /* cicili#Let2986 */
+                  // ----------
+                  /* cicili#Block2988 */
+                  (list -> __h_table -> last )(tail );
+                }));
+            });
+          }) : ({ /* cicili#Let2993 */
+            // ----------
+            /* cicili#Block2995 */
+            list ;
+          }));
+      });
+    });
+}
+List_char take_List_char (int len , List_char list ) {
+  return ({ /* cicili#Let3001 */
+      __auto_type head  = (((list -> __h_data ). Cons ). __h_0_mem );
+      __auto_type tail  = (((list -> __h_data ). Cons ). __h_1_mem );
+      // ----------
+      /* cicili#Block3003 */
+      ({ /* cicili#Let3005 */
+        bool __h_case_result  = (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  (len  >  0 ) );
+        // ----------
+        ((__h_case_result ) ? (list -> __h_table -> push )(head , (list -> __h_table -> take )((--len ), tail )) : ({ /* cicili#Let3011 */
+            // ----------
+            /* cicili#Block3013 */
+            Empty_char ();
+          }));
+      });
+    });
+}
+int hasLen_List_char (List_char list , int desired ) {
+  return ({ /* cicili#Let3020 */
+      __auto_type tail  = (((list -> __h_data ). Cons ). __h_1_mem );
+      // ----------
+      /* cicili#Block3022 */
+      ({ /* cicili#Let3024 */
+        bool __h_case_result  = ((list -> __h_ctor ) ==  __h_Cons_t  );
+        // ----------
+        ((__h_case_result ) ? (((desired  ==  1 )) ? 1 : (1 +  (list -> __h_table -> hasLen )(tail , (--desired )) )) : ({ /* cicili#Let3030 */
+            // ----------
+            /* cicili#Block3032 */
             0;
           }));
       });
     });
 }
 int len_List_char (List_char list ) {
-  return ({ /* cicili#Let2988 */
+  return ({ /* cicili#Let3038 */
       __auto_type tail  = (((list -> __h_data ). Cons ). __h_1_mem );
       // ----------
-      /* cicili#Block2990 */
-      ({ /* cicili#Let2992 */
+      /* cicili#Block3040 */
+      ({ /* cicili#Let3042 */
         bool __h_case_result  = ((list -> __h_ctor ) ==  __h_Cons_t  );
         // ----------
-        ((__h_case_result ) ? (1 +  (list -> __h_table -> len )(tail ) ) : ({ /* cicili#Let2997 */
+        ((__h_case_result ) ? (1 +  (list -> __h_table -> len )(tail ) ) : ({ /* cicili#Let3047 */
             // ----------
-            /* cicili#Block2999 */
+            /* cicili#Block3049 */
             0;
           }));
       });
@@ -868,16 +868,16 @@ List_char tail_List_char (List_char list ) {
   return (list -> __h_table -> drop )(0, list );
 }
 List_char drop_List_char (int index , List_char list ) {
-  return (((index  ==  0 )) ? list  : ({ /* cicili#Let3009 */
+  return (((index  ==  0 )) ? list  : ({ /* cicili#Let3059 */
         __auto_type tail  = (((list -> __h_data ). Cons ). __h_1_mem );
         // ----------
-        /* cicili#Block3011 */
-        ({ /* cicili#Let3013 */
+        /* cicili#Block3061 */
+        ({ /* cicili#Let3063 */
           bool __h_case_result  = ((list -> __h_ctor ) ==  __h_Cons_t  );
           // ----------
-          ((__h_case_result ) ? (list -> __h_table -> drop )((--index ), tail ) : ({ /* cicili#Let3018 */
+          ((__h_case_result ) ? (list -> __h_table -> drop )((--index ), tail ) : ({ /* cicili#Let3068 */
               // ----------
-              /* cicili#Block3020 */
+              /* cicili#Block3070 */
               Empty_char ();
             }));
         });
@@ -887,52 +887,52 @@ Maybe_char head_List_char (List_char list ) {
   return (list -> __h_table -> nth )(0, list );
 }
 Maybe_char nth_List_char (int index , List_char list ) {
-  return ({ /* cicili#Let3032 */
+  return ({ /* cicili#Let3082 */
       __auto_type head  = (((list -> __h_data ). Cons ). __h_0_mem );
       __auto_type tail  = (((list -> __h_data ). Cons ). __h_1_mem );
       // ----------
-      /* cicili#Block3034 */
-      ({ /* cicili#Let3036 */
+      /* cicili#Block3084 */
+      ({ /* cicili#Let3086 */
         bool __h_case_result  = ((list -> __h_ctor ) ==  __h_Cons_t  );
         // ----------
-        ((__h_case_result ) ? (((index  ==  0 )) ? Just_char (head ) : (list -> __h_table -> nth )((--index ), tail )) : ({ /* cicili#Let3043 */
+        ((__h_case_result ) ? (((index  ==  0 )) ? Just_char (head ) : (list -> __h_table -> nth )((--index ), tail )) : ({ /* cicili#Let3093 */
             // ----------
-            /* cicili#Block3045 */
+            /* cicili#Block3095 */
             Nothing_char ();
           }));
       });
     });
 }
 List_char next_List_char (List_char list ) {
-  return ({ /* cicili#Let3052 */
+  return ({ /* cicili#Let3102 */
       __auto_type tail  = (((list -> __h_data ). Cons ). __h_1_mem );
       // ----------
-      /* cicili#Block3054 */
-      ({ /* cicili#Let3056 */
+      /* cicili#Block3104 */
+      ({ /* cicili#Let3106 */
         bool __h_case_result  = ((list -> __h_ctor ) ==  __h_Cons_t  );
         // ----------
-        ((__h_case_result ) ? tail  : ({ /* cicili#Let3060 */
+        ((__h_case_result ) ? tail  : ({ /* cicili#Let3110 */
             // ----------
-            /* cicili#Block3062 */
+            /* cicili#Block3112 */
             Empty_char ();
           }));
       });
     });
 }
 void free_List_char (List_char * this_ptr ) {
-  { /* cicili#Let3067 */
+  { /* cicili#Let3117 */
     __auto_type this  = (*this_ptr );
     // ----------
-    { /* cicili#Let3071 */
+    { /* cicili#Let3121 */
       __auto_type head  = (((this -> __h_data ). Cons ). __h_0_mem );
       __auto_type tail  = (((this -> __h_data ). Cons ). __h_1_mem );
       // ----------
-      /* cicili#Block3073 */
-      ({ /* cicili#Let3075 */
+      /* cicili#Block3123 */
+      ({ /* cicili#Let3125 */
         bool __h_case_result  = ((this -> __h_ctor ) ==  __h_Cons_t  );
         // ----------
         if (__h_case_result )
-          { /* cicili#Block3078 */
+          { /* cicili#Block3128 */
             printf ("destructuring List: %p, ", this );
             printf ("%c", head );
             putchar ('\n');
@@ -940,9 +940,9 @@ void free_List_char (List_char * this_ptr ) {
             free (this );
           }
         else
-          { /* cicili#Let3087 */
+          { /* cicili#Let3137 */
             // ----------
-            /* cicili#Block3089 */
+            /* cicili#Block3139 */
             free (this );
           }
       });
@@ -954,7 +954,7 @@ const List_char__H_Table * const get_List_char__H_Table () {
   return (&table );
 }
 List_char Empty_char () {
-  { /* cicili#Let3098 */
+  { /* cicili#Let3148 */
     List_char instance  = malloc (sizeof(__h_List_char_class_t));
     // ----------
     (*instance ) = ((__h_List_char_class_t){ get_List_char__H_Table (), __h_Empty_t });
@@ -962,7 +962,7 @@ List_char Empty_char () {
   }
 }
 List_char Cons_char (char head , List_char tail ) {
-  { /* cicili#Let3103 */
+  { /* cicili#Let3153 */
     List_char instance  = malloc (sizeof(__h_List_char_class_t));
     // ----------
     (*instance ) = ((__h_List_char_class_t){ get_List_char__H_Table (), __h___t , .__h_data._ = { head , tail }});
@@ -974,7 +974,7 @@ List_char new_List_char_Pure (const char * buf , int len ) {
   if (buf  ==  NULL  )
     return Empty_char ();
   else
-    { /* cicili#Let3112 */
+    { /* cicili#Let3162 */
       char item  = (*buf );
       // ----------
       if (len  ==  0 )
@@ -990,7 +990,7 @@ List_char new_String_Const (const char * buf ) {
   if (buf  ==  NULL  )
     return Empty_char ();
   else
-    { /* cicili#Let3129 */
+    { /* cicili#Let3179 */
       char item  = (*buf );
       // ----------
       if (item  ==  '\0' )
@@ -1000,16 +1000,16 @@ List_char new_String_Const (const char * buf ) {
     }
 }
 void show_String (List_char list ) {
-  { /* cicili#Let3140 */
+  { /* cicili#Let3190 */
     __auto_type head  = (((list -> __h_data ). Cons ). __h_0_mem );
     __auto_type tail  = (((list -> __h_data ). Cons ). __h_1_mem );
     // ----------
-    /* cicili#Block3142 */
-    ({ /* cicili#Let3144 */
+    /* cicili#Block3192 */
+    ({ /* cicili#Let3194 */
       bool __h_case_result  = ((list -> __h_ctor ) ==  __h_Cons_t  );
       // ----------
       if (__h_case_result )
-        ({ /* cicili#Progn3147 */
+        ({ /* cicili#Progn3197 */
           printf ("%c", head );
           show_String (tail );
         });
@@ -1019,31 +1019,31 @@ void show_String (List_char list ) {
 #ifndef __Range_int__H_IMPL__
 #define __Range_int__H_IMPL__
 void show_Range_int (Range_int list ) {
-  { /* cicili#Let3161 */
+  { /* cicili#Let3211 */
     __auto_type head  = (((list -> __h_data ). Cons ). __h_0_mem );
     __auto_type tail  = (((list -> __h_data ). Cons ). __h_1_mem );
     // ----------
-    /* cicili#Block3163 */
-    ({ /* cicili#Let3165 */
+    /* cicili#Block3213 */
+    ({ /* cicili#Let3215 */
       bool __h_case_result  = ((list -> __h_ctor ) ==  __h_Cons_t  );
       // ----------
       if (__h_case_result )
-        { /* cicili#Let3170 */
+        { /* cicili#Let3220 */
           // ----------
-          /* cicili#Block3172 */
-          ({ /* cicili#Let3174 */
+          /* cicili#Block3222 */
+          ({ /* cicili#Let3224 */
             bool __h_case_result  = ((tail -> __h_ctor ) ==  __h_Cons_t  );
             // ----------
             if (__h_case_result )
-              { /* cicili#Block3177 */
+              { /* cicili#Block3227 */
                 printf ("%d", head );
                 putchar (' ');
                 (list -> __h_table -> show )(tail );
               }
             else
-              { /* cicili#Let3186 */
+              { /* cicili#Let3236 */
                 // ----------
-                /* cicili#Block3188 */
+                /* cicili#Block3238 */
                 printf ("%d", head );
               }
           });
@@ -1052,80 +1052,80 @@ void show_Range_int (Range_int list ) {
   }
 }
 Range_int take_Range_int (int len , Range_int list ) {
-  return ({ /* cicili#Let3197 */
+  return ({ /* cicili#Let3247 */
       __auto_type from  = (((list -> __h_data ). Cons ). __h_0_mem );
       __auto_type to  = (((list -> __h_data ). Cons ). __h_2_mem );
       __auto_type step  = (((list -> __h_data ). Cons ). __h_3_mem );
       // ----------
-      /* cicili#Block3199 */
-      ({ /* cicili#Let3201 */
+      /* cicili#Block3249 */
+      ({ /* cicili#Let3251 */
         bool __h_case_result  = (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  (len  >  0 ) );
         // ----------
-        ((__h_case_result ) ? ({ /* cicili#Let3203 */
+        ((__h_case_result ) ? ({ /* cicili#Let3253 */
             __auto_type ne  = (list -> __h_table -> next )(list );
             // ----------
-            ({ /* cicili#Let3208 */
+            ({ /* cicili#Let3258 */
               // ----------
-              /* cicili#Block3210 */
-              ({ /* cicili#Let3212 */
+              /* cicili#Block3260 */
+              ({ /* cicili#Let3262 */
                 bool __h_case_result  = ((ne -> __h_ctor ) ==  __h_Cons_t  );
                 // ----------
-                ((__h_case_result ) ? Cons_Range_int (from , (list -> __h_table -> take )((--len ), ne ), to , step ) : ({ /* cicili#Let3218 */
+                ((__h_case_result ) ? Cons_Range_int (from , (list -> __h_table -> take )((--len ), ne ), to , step ) : ({ /* cicili#Let3268 */
                     // ----------
-                    /* cicili#Block3220 */
+                    /* cicili#Block3270 */
                     Cons_Range_int (from , ne , to , step );
                   }));
               });
             });
-          }) : ({ /* cicili#Let3225 */
+          }) : ({ /* cicili#Let3275 */
             // ----------
-            /* cicili#Block3227 */
+            /* cicili#Block3277 */
             Empty_Range_int ();
           }));
       });
     });
 }
 Range_int next_Range_int (Range_int list ) {
-  return ({ /* cicili#Let3234 */
+  return ({ /* cicili#Let3284 */
       __auto_type from  = (((list -> __h_data ). Cons ). __h_0_mem );
       __auto_type to  = (((list -> __h_data ). Cons ). __h_2_mem );
       __auto_type step  = (((list -> __h_data ). Cons ). __h_3_mem );
       // ----------
-      /* cicili#Block3236 */
-      ({ /* cicili#Let3238 */
+      /* cicili#Block3286 */
+      ({ /* cicili#Let3288 */
         bool __h_case_result  = (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  ((from  +  step  ) <=  to  ) );
         // ----------
-        ((__h_case_result ) ? Cons_Range_int ((from  +  step  ), Empty_Range_int (), to , step ) : ({ /* cicili#Let3244 */
+        ((__h_case_result ) ? Cons_Range_int ((from  +  step  ), Empty_Range_int (), to , step ) : ({ /* cicili#Let3294 */
             // ----------
-            /* cicili#Block3246 */
+            /* cicili#Block3296 */
             Empty_Range_int ();
           }));
       });
     });
 }
 void free_Range_int (Range_int * this_ptr ) {
-  { /* cicili#Let3251 */
+  { /* cicili#Let3301 */
     __auto_type this  = (*this_ptr );
     // ----------
-    { /* cicili#Let3255 */
+    { /* cicili#Let3305 */
       __auto_type from  = (((this -> __h_data ). Cons ). __h_0_mem );
       __auto_type tail  = (((this -> __h_data ). Cons ). __h_1_mem );
       __auto_type to  = (((this -> __h_data ). Cons ). __h_2_mem );
       __auto_type step  = (((this -> __h_data ). Cons ). __h_3_mem );
       // ----------
-      /* cicili#Block3257 */
-      ({ /* cicili#Let3259 */
+      /* cicili#Block3307 */
+      ({ /* cicili#Let3309 */
         bool __h_case_result  = ((this -> __h_ctor ) ==  __h_Cons_t  );
         // ----------
         if (__h_case_result )
-          { /* cicili#Block3262 */
+          { /* cicili#Block3312 */
             free_Range_int ((&tail ));
             free (this );
           }
         else
-          { /* cicili#Let3268 */
+          { /* cicili#Let3318 */
             // ----------
-            /* cicili#Block3270 */
+            /* cicili#Block3320 */
             free (this );
           }
       });
@@ -1137,7 +1137,7 @@ const Range_int__H_Table * const get_Range_int__H_Table () {
   return (&table );
 }
 Range_int Empty_Range_int () {
-  { /* cicili#Let3279 */
+  { /* cicili#Let3329 */
     Range_int instance  = malloc (sizeof(__h_Range_int_class_t));
     // ----------
     (*instance ) = ((__h_Range_int_class_t){ get_Range_int__H_Table (), __h_Empty_t });
@@ -1145,7 +1145,7 @@ Range_int Empty_Range_int () {
   }
 }
 Range_int Cons_Range_int (int from , Range_int tail , int to , int step ) {
-  { /* cicili#Let3284 */
+  { /* cicili#Let3334 */
     Range_int instance  = malloc (sizeof(__h_Range_int_class_t));
     // ----------
     (*instance ) = ((__h_Range_int_class_t){ get_Range_int__H_Table (), __h___t , .__h_data._ = { from , tail , to , step }});
@@ -1174,31 +1174,31 @@ Maybe_List_Bool Just_List_Bool (List_Bool value ) {
 #ifndef __List_List_Bool__H_IMPL__
 #define __List_List_Bool__H_IMPL__
 void show_List_List_Bool (List_List_Bool list ) {
-  { /* cicili#Let3318 */
+  { /* cicili#Let3368 */
     __auto_type head  = (((list -> __h_data ). Cons ). __h_0_mem );
     __auto_type tail  = (((list -> __h_data ). Cons ). __h_1_mem );
     // ----------
-    /* cicili#Block3320 */
-    ({ /* cicili#Let3322 */
+    /* cicili#Block3370 */
+    ({ /* cicili#Let3372 */
       bool __h_case_result  = ((list -> __h_ctor ) ==  __h_Cons_t  );
       // ----------
       if (__h_case_result )
-        { /* cicili#Block3325 */
-          { /* cicili#Let3329 */
+        { /* cicili#Block3375 */
+          { /* cicili#Let3379 */
             // ----------
-            /* cicili#Block3331 */
-            ({ /* cicili#Let3333 */
+            /* cicili#Block3381 */
+            ({ /* cicili#Let3383 */
               bool __h_case_result  = ((tail -> __h_ctor ) ==  __h_Cons_t  );
               // ----------
               if (__h_case_result )
-                { /* cicili#Block3336 */
+                { /* cicili#Block3386 */
                   show_List_Bool (head );
                   putchar (' ');
                 }
               else
-                { /* cicili#Let3345 */
+                { /* cicili#Let3395 */
                   // ----------
-                  /* cicili#Block3347 */
+                  /* cicili#Block3397 */
                   show_List_Bool (head );
                 }
             });
@@ -1209,23 +1209,23 @@ void show_List_List_Bool (List_List_Bool list ) {
   }
 }
 List_List_Bool append_List_List_Bool (List_List_Bool llist , List_List_Bool rlist ) {
-  return ({ /* cicili#Let3357 */
+  return ({ /* cicili#Let3407 */
       __auto_type last  = (llist -> __h_table -> last )(llist );
       // ----------
-      ({ /* cicili#Let3362 */
+      ({ /* cicili#Let3412 */
         __auto_type tail  = (((last -> __h_data ). Cons ). __h_1_mem );
         // ----------
-        /* cicili#Block3364 */
-        ({ /* cicili#Let3366 */
+        /* cicili#Block3414 */
+        ({ /* cicili#Let3416 */
           bool __h_case_result  = ((last -> __h_ctor ) ==  __h_Cons_t  );
           // ----------
-          ((__h_case_result ) ? ({ /* cicili#Progn3368 */
+          ((__h_case_result ) ? ({ /* cicili#Progn3418 */
               free_List_List_Bool ((&tail ));
               (((last -> __h_data ). Cons ). __h_1_mem ) = rlist ;
               llist ;
-            }) : ({ /* cicili#Let3373 */
+            }) : ({ /* cicili#Let3423 */
               // ----------
-              /* cicili#Block3375 */
+              /* cicili#Block3425 */
               rlist ;
             }));
         });
@@ -1236,51 +1236,6 @@ List_List_Bool push_List_List_Bool (List_Bool item , List_List_Bool list ) {
   return Cons_List_Bool (item , list );
 }
 List_List_Bool last_List_List_Bool (List_List_Bool list ) {
-  return ({ /* cicili#Let3384 */
-      __auto_type tail  = (((list -> __h_data ). Cons ). __h_1_mem );
-      // ----------
-      /* cicili#Block3386 */
-      ({ /* cicili#Let3388 */
-        bool __h_case_result  = ((list -> __h_ctor ) ==  __h_Cons_t  );
-        // ----------
-        ((__h_case_result ) ? ({ /* cicili#Let3392 */
-            // ----------
-            /* cicili#Block3394 */
-            ({ /* cicili#Let3396 */
-              bool __h_case_result  = ((tail -> __h_ctor ) ==  __h_Empty_t  );
-              // ----------
-              ((__h_case_result ) ? list  : ({ /* cicili#Let3400 */
-                  // ----------
-                  /* cicili#Block3402 */
-                  (list -> __h_table -> last )(tail );
-                }));
-            });
-          }) : ({ /* cicili#Let3407 */
-            // ----------
-            /* cicili#Block3409 */
-            list ;
-          }));
-      });
-    });
-}
-List_List_Bool take_List_List_Bool (int len , List_List_Bool list ) {
-  return ({ /* cicili#Let3415 */
-      __auto_type head  = (((list -> __h_data ). Cons ). __h_0_mem );
-      __auto_type tail  = (((list -> __h_data ). Cons ). __h_1_mem );
-      // ----------
-      /* cicili#Block3417 */
-      ({ /* cicili#Let3419 */
-        bool __h_case_result  = (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  (len  >  0 ) );
-        // ----------
-        ((__h_case_result ) ? (list -> __h_table -> push )(head , (list -> __h_table -> take )((--len ), tail )) : ({ /* cicili#Let3425 */
-            // ----------
-            /* cicili#Block3427 */
-            Empty_List_Bool ();
-          }));
-      });
-    });
-}
-int hasLen_List_List_Bool (List_List_Bool list , int desired ) {
   return ({ /* cicili#Let3434 */
       __auto_type tail  = (((list -> __h_data ). Cons ). __h_1_mem );
       // ----------
@@ -1288,25 +1243,70 @@ int hasLen_List_List_Bool (List_List_Bool list , int desired ) {
       ({ /* cicili#Let3438 */
         bool __h_case_result  = ((list -> __h_ctor ) ==  __h_Cons_t  );
         // ----------
-        ((__h_case_result ) ? (((desired  ==  1 )) ? 1 : (1 +  (list -> __h_table -> hasLen )(tail , (--desired )) )) : ({ /* cicili#Let3444 */
+        ((__h_case_result ) ? ({ /* cicili#Let3442 */
             // ----------
-            /* cicili#Block3446 */
+            /* cicili#Block3444 */
+            ({ /* cicili#Let3446 */
+              bool __h_case_result  = ((tail -> __h_ctor ) ==  __h_Empty_t  );
+              // ----------
+              ((__h_case_result ) ? list  : ({ /* cicili#Let3450 */
+                  // ----------
+                  /* cicili#Block3452 */
+                  (list -> __h_table -> last )(tail );
+                }));
+            });
+          }) : ({ /* cicili#Let3457 */
+            // ----------
+            /* cicili#Block3459 */
+            list ;
+          }));
+      });
+    });
+}
+List_List_Bool take_List_List_Bool (int len , List_List_Bool list ) {
+  return ({ /* cicili#Let3465 */
+      __auto_type head  = (((list -> __h_data ). Cons ). __h_0_mem );
+      __auto_type tail  = (((list -> __h_data ). Cons ). __h_1_mem );
+      // ----------
+      /* cicili#Block3467 */
+      ({ /* cicili#Let3469 */
+        bool __h_case_result  = (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  (len  >  0 ) );
+        // ----------
+        ((__h_case_result ) ? (list -> __h_table -> push )(head , (list -> __h_table -> take )((--len ), tail )) : ({ /* cicili#Let3475 */
+            // ----------
+            /* cicili#Block3477 */
+            Empty_List_Bool ();
+          }));
+      });
+    });
+}
+int hasLen_List_List_Bool (List_List_Bool list , int desired ) {
+  return ({ /* cicili#Let3484 */
+      __auto_type tail  = (((list -> __h_data ). Cons ). __h_1_mem );
+      // ----------
+      /* cicili#Block3486 */
+      ({ /* cicili#Let3488 */
+        bool __h_case_result  = ((list -> __h_ctor ) ==  __h_Cons_t  );
+        // ----------
+        ((__h_case_result ) ? (((desired  ==  1 )) ? 1 : (1 +  (list -> __h_table -> hasLen )(tail , (--desired )) )) : ({ /* cicili#Let3494 */
+            // ----------
+            /* cicili#Block3496 */
             0;
           }));
       });
     });
 }
 int len_List_List_Bool (List_List_Bool list ) {
-  return ({ /* cicili#Let3452 */
+  return ({ /* cicili#Let3502 */
       __auto_type tail  = (((list -> __h_data ). Cons ). __h_1_mem );
       // ----------
-      /* cicili#Block3454 */
-      ({ /* cicili#Let3456 */
+      /* cicili#Block3504 */
+      ({ /* cicili#Let3506 */
         bool __h_case_result  = ((list -> __h_ctor ) ==  __h_Cons_t  );
         // ----------
-        ((__h_case_result ) ? (1 +  (list -> __h_table -> len )(tail ) ) : ({ /* cicili#Let3461 */
+        ((__h_case_result ) ? (1 +  (list -> __h_table -> len )(tail ) ) : ({ /* cicili#Let3511 */
             // ----------
-            /* cicili#Block3463 */
+            /* cicili#Block3513 */
             0;
           }));
       });
@@ -1316,16 +1316,16 @@ List_List_Bool tail_List_List_Bool (List_List_Bool list ) {
   return (list -> __h_table -> drop )(0, list );
 }
 List_List_Bool drop_List_List_Bool (int index , List_List_Bool list ) {
-  return (((index  ==  0 )) ? list  : ({ /* cicili#Let3473 */
+  return (((index  ==  0 )) ? list  : ({ /* cicili#Let3523 */
         __auto_type tail  = (((list -> __h_data ). Cons ). __h_1_mem );
         // ----------
-        /* cicili#Block3475 */
-        ({ /* cicili#Let3477 */
+        /* cicili#Block3525 */
+        ({ /* cicili#Let3527 */
           bool __h_case_result  = ((list -> __h_ctor ) ==  __h_Cons_t  );
           // ----------
-          ((__h_case_result ) ? (list -> __h_table -> drop )((--index ), tail ) : ({ /* cicili#Let3482 */
+          ((__h_case_result ) ? (list -> __h_table -> drop )((--index ), tail ) : ({ /* cicili#Let3532 */
               // ----------
-              /* cicili#Block3484 */
+              /* cicili#Block3534 */
               Empty_List_Bool ();
             }));
         });
@@ -1335,52 +1335,52 @@ Maybe_List_Bool head_List_List_Bool (List_List_Bool list ) {
   return (list -> __h_table -> nth )(0, list );
 }
 Maybe_List_Bool nth_List_List_Bool (int index , List_List_Bool list ) {
-  return ({ /* cicili#Let3496 */
+  return ({ /* cicili#Let3546 */
       __auto_type head  = (((list -> __h_data ). Cons ). __h_0_mem );
       __auto_type tail  = (((list -> __h_data ). Cons ). __h_1_mem );
       // ----------
-      /* cicili#Block3498 */
-      ({ /* cicili#Let3500 */
+      /* cicili#Block3548 */
+      ({ /* cicili#Let3550 */
         bool __h_case_result  = ((list -> __h_ctor ) ==  __h_Cons_t  );
         // ----------
-        ((__h_case_result ) ? (((index  ==  0 )) ? Just_List_Bool (head ) : (list -> __h_table -> nth )((--index ), tail )) : ({ /* cicili#Let3507 */
+        ((__h_case_result ) ? (((index  ==  0 )) ? Just_List_Bool (head ) : (list -> __h_table -> nth )((--index ), tail )) : ({ /* cicili#Let3557 */
             // ----------
-            /* cicili#Block3509 */
+            /* cicili#Block3559 */
             Nothing_List_Bool ();
           }));
       });
     });
 }
 List_List_Bool next_List_List_Bool (List_List_Bool list ) {
-  return ({ /* cicili#Let3516 */
+  return ({ /* cicili#Let3566 */
       __auto_type tail  = (((list -> __h_data ). Cons ). __h_1_mem );
       // ----------
-      /* cicili#Block3518 */
-      ({ /* cicili#Let3520 */
+      /* cicili#Block3568 */
+      ({ /* cicili#Let3570 */
         bool __h_case_result  = ((list -> __h_ctor ) ==  __h_Cons_t  );
         // ----------
-        ((__h_case_result ) ? tail  : ({ /* cicili#Let3524 */
+        ((__h_case_result ) ? tail  : ({ /* cicili#Let3574 */
             // ----------
-            /* cicili#Block3526 */
+            /* cicili#Block3576 */
             Empty_List_Bool ();
           }));
       });
     });
 }
 void free_List_List_Bool (List_List_Bool * this_ptr ) {
-  { /* cicili#Let3531 */
+  { /* cicili#Let3581 */
     __auto_type this  = (*this_ptr );
     // ----------
-    { /* cicili#Let3535 */
+    { /* cicili#Let3585 */
       __auto_type head  = (((this -> __h_data ). Cons ). __h_0_mem );
       __auto_type tail  = (((this -> __h_data ). Cons ). __h_1_mem );
       // ----------
-      /* cicili#Block3537 */
-      ({ /* cicili#Let3539 */
+      /* cicili#Block3587 */
+      ({ /* cicili#Let3589 */
         bool __h_case_result  = ((this -> __h_ctor ) ==  __h_Cons_t  );
         // ----------
         if (__h_case_result )
-          { /* cicili#Block3542 */
+          { /* cicili#Block3592 */
             printf ("destructuring List: %p, ", this );
             show_List_Bool (head );
             putchar ('\n');
@@ -1388,9 +1388,9 @@ void free_List_List_Bool (List_List_Bool * this_ptr ) {
             free (this );
           }
         else
-          { /* cicili#Let3552 */
+          { /* cicili#Let3602 */
             // ----------
-            /* cicili#Block3554 */
+            /* cicili#Block3604 */
             free (this );
           }
       });
@@ -1402,7 +1402,7 @@ const List_List_Bool__H_Table * const get_List_List_Bool__H_Table () {
   return (&table );
 }
 List_List_Bool Empty_List_Bool () {
-  { /* cicili#Let3563 */
+  { /* cicili#Let3613 */
     List_List_Bool instance  = malloc (sizeof(__h_List_List_Bool_class_t));
     // ----------
     (*instance ) = ((__h_List_List_Bool_class_t){ get_List_List_Bool__H_Table (), __h_Empty_t });
@@ -1410,7 +1410,7 @@ List_List_Bool Empty_List_Bool () {
   }
 }
 List_List_Bool Cons_List_Bool (List_Bool head , List_List_Bool tail ) {
-  { /* cicili#Let3568 */
+  { /* cicili#Let3618 */
     List_List_Bool instance  = malloc (sizeof(__h_List_List_Bool_class_t));
     // ----------
     (*instance ) = ((__h_List_List_Bool_class_t){ get_List_List_Bool__H_Table (), __h___t , .__h_data._ = { head , tail }});
@@ -1422,7 +1422,7 @@ List_List_Bool new_List_List_Bool_Pure (const List_Bool * buf , int len ) {
   if (buf  ==  NULL  )
     return Empty_List_Bool ();
   else
-    { /* cicili#Let3577 */
+    { /* cicili#Let3627 */
       List_Bool item  = (*buf );
       // ----------
       if (len  ==  0 )
@@ -1452,31 +1452,31 @@ Maybe_List_int Just_List_int (List_int value ) {
 #ifndef __List_List_int__H_IMPL__
 #define __List_List_int__H_IMPL__
 void show_List_List_int (List_List_int list ) {
-  { /* cicili#Let3613 */
+  { /* cicili#Let3663 */
     __auto_type head  = (((list -> __h_data ). Cons ). __h_0_mem );
     __auto_type tail  = (((list -> __h_data ). Cons ). __h_1_mem );
     // ----------
-    /* cicili#Block3615 */
-    ({ /* cicili#Let3617 */
+    /* cicili#Block3665 */
+    ({ /* cicili#Let3667 */
       bool __h_case_result  = ((list -> __h_ctor ) ==  __h_Cons_t  );
       // ----------
       if (__h_case_result )
-        { /* cicili#Block3620 */
-          { /* cicili#Let3624 */
+        { /* cicili#Block3670 */
+          { /* cicili#Let3674 */
             // ----------
-            /* cicili#Block3626 */
-            ({ /* cicili#Let3628 */
+            /* cicili#Block3676 */
+            ({ /* cicili#Let3678 */
               bool __h_case_result  = ((tail -> __h_ctor ) ==  __h_Cons_t  );
               // ----------
               if (__h_case_result )
-                { /* cicili#Block3631 */
+                { /* cicili#Block3681 */
                   show_List_int (head );
                   putchar (' ');
                 }
               else
-                { /* cicili#Let3640 */
+                { /* cicili#Let3690 */
                   // ----------
-                  /* cicili#Block3642 */
+                  /* cicili#Block3692 */
                   show_List_int (head );
                 }
             });
@@ -1487,23 +1487,23 @@ void show_List_List_int (List_List_int list ) {
   }
 }
 List_List_int append_List_List_int (List_List_int llist , List_List_int rlist ) {
-  return ({ /* cicili#Let3652 */
+  return ({ /* cicili#Let3702 */
       __auto_type last  = (llist -> __h_table -> last )(llist );
       // ----------
-      ({ /* cicili#Let3657 */
+      ({ /* cicili#Let3707 */
         __auto_type tail  = (((last -> __h_data ). Cons ). __h_1_mem );
         // ----------
-        /* cicili#Block3659 */
-        ({ /* cicili#Let3661 */
+        /* cicili#Block3709 */
+        ({ /* cicili#Let3711 */
           bool __h_case_result  = ((last -> __h_ctor ) ==  __h_Cons_t  );
           // ----------
-          ((__h_case_result ) ? ({ /* cicili#Progn3663 */
+          ((__h_case_result ) ? ({ /* cicili#Progn3713 */
               free_List_List_int ((&tail ));
               (((last -> __h_data ). Cons ). __h_1_mem ) = rlist ;
               llist ;
-            }) : ({ /* cicili#Let3668 */
+            }) : ({ /* cicili#Let3718 */
               // ----------
-              /* cicili#Block3670 */
+              /* cicili#Block3720 */
               rlist ;
             }));
         });
@@ -1514,51 +1514,6 @@ List_List_int push_List_List_int (List_int item , List_List_int list ) {
   return Cons_List_int (item , list );
 }
 List_List_int last_List_List_int (List_List_int list ) {
-  return ({ /* cicili#Let3679 */
-      __auto_type tail  = (((list -> __h_data ). Cons ). __h_1_mem );
-      // ----------
-      /* cicili#Block3681 */
-      ({ /* cicili#Let3683 */
-        bool __h_case_result  = ((list -> __h_ctor ) ==  __h_Cons_t  );
-        // ----------
-        ((__h_case_result ) ? ({ /* cicili#Let3687 */
-            // ----------
-            /* cicili#Block3689 */
-            ({ /* cicili#Let3691 */
-              bool __h_case_result  = ((tail -> __h_ctor ) ==  __h_Empty_t  );
-              // ----------
-              ((__h_case_result ) ? list  : ({ /* cicili#Let3695 */
-                  // ----------
-                  /* cicili#Block3697 */
-                  (list -> __h_table -> last )(tail );
-                }));
-            });
-          }) : ({ /* cicili#Let3702 */
-            // ----------
-            /* cicili#Block3704 */
-            list ;
-          }));
-      });
-    });
-}
-List_List_int take_List_List_int (int len , List_List_int list ) {
-  return ({ /* cicili#Let3710 */
-      __auto_type head  = (((list -> __h_data ). Cons ). __h_0_mem );
-      __auto_type tail  = (((list -> __h_data ). Cons ). __h_1_mem );
-      // ----------
-      /* cicili#Block3712 */
-      ({ /* cicili#Let3714 */
-        bool __h_case_result  = (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  (len  >  0 ) );
-        // ----------
-        ((__h_case_result ) ? (list -> __h_table -> push )(head , (list -> __h_table -> take )((--len ), tail )) : ({ /* cicili#Let3720 */
-            // ----------
-            /* cicili#Block3722 */
-            Empty_List_int ();
-          }));
-      });
-    });
-}
-int hasLen_List_List_int (List_List_int list , int desired ) {
   return ({ /* cicili#Let3729 */
       __auto_type tail  = (((list -> __h_data ). Cons ). __h_1_mem );
       // ----------
@@ -1566,25 +1521,70 @@ int hasLen_List_List_int (List_List_int list , int desired ) {
       ({ /* cicili#Let3733 */
         bool __h_case_result  = ((list -> __h_ctor ) ==  __h_Cons_t  );
         // ----------
-        ((__h_case_result ) ? (((desired  ==  1 )) ? 1 : (1 +  (list -> __h_table -> hasLen )(tail , (--desired )) )) : ({ /* cicili#Let3739 */
+        ((__h_case_result ) ? ({ /* cicili#Let3737 */
             // ----------
-            /* cicili#Block3741 */
+            /* cicili#Block3739 */
+            ({ /* cicili#Let3741 */
+              bool __h_case_result  = ((tail -> __h_ctor ) ==  __h_Empty_t  );
+              // ----------
+              ((__h_case_result ) ? list  : ({ /* cicili#Let3745 */
+                  // ----------
+                  /* cicili#Block3747 */
+                  (list -> __h_table -> last )(tail );
+                }));
+            });
+          }) : ({ /* cicili#Let3752 */
+            // ----------
+            /* cicili#Block3754 */
+            list ;
+          }));
+      });
+    });
+}
+List_List_int take_List_List_int (int len , List_List_int list ) {
+  return ({ /* cicili#Let3760 */
+      __auto_type head  = (((list -> __h_data ). Cons ). __h_0_mem );
+      __auto_type tail  = (((list -> __h_data ). Cons ). __h_1_mem );
+      // ----------
+      /* cicili#Block3762 */
+      ({ /* cicili#Let3764 */
+        bool __h_case_result  = (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  (len  >  0 ) );
+        // ----------
+        ((__h_case_result ) ? (list -> __h_table -> push )(head , (list -> __h_table -> take )((--len ), tail )) : ({ /* cicili#Let3770 */
+            // ----------
+            /* cicili#Block3772 */
+            Empty_List_int ();
+          }));
+      });
+    });
+}
+int hasLen_List_List_int (List_List_int list , int desired ) {
+  return ({ /* cicili#Let3779 */
+      __auto_type tail  = (((list -> __h_data ). Cons ). __h_1_mem );
+      // ----------
+      /* cicili#Block3781 */
+      ({ /* cicili#Let3783 */
+        bool __h_case_result  = ((list -> __h_ctor ) ==  __h_Cons_t  );
+        // ----------
+        ((__h_case_result ) ? (((desired  ==  1 )) ? 1 : (1 +  (list -> __h_table -> hasLen )(tail , (--desired )) )) : ({ /* cicili#Let3789 */
+            // ----------
+            /* cicili#Block3791 */
             0;
           }));
       });
     });
 }
 int len_List_List_int (List_List_int list ) {
-  return ({ /* cicili#Let3747 */
+  return ({ /* cicili#Let3797 */
       __auto_type tail  = (((list -> __h_data ). Cons ). __h_1_mem );
       // ----------
-      /* cicili#Block3749 */
-      ({ /* cicili#Let3751 */
+      /* cicili#Block3799 */
+      ({ /* cicili#Let3801 */
         bool __h_case_result  = ((list -> __h_ctor ) ==  __h_Cons_t  );
         // ----------
-        ((__h_case_result ) ? (1 +  (list -> __h_table -> len )(tail ) ) : ({ /* cicili#Let3756 */
+        ((__h_case_result ) ? (1 +  (list -> __h_table -> len )(tail ) ) : ({ /* cicili#Let3806 */
             // ----------
-            /* cicili#Block3758 */
+            /* cicili#Block3808 */
             0;
           }));
       });
@@ -1594,16 +1594,16 @@ List_List_int tail_List_List_int (List_List_int list ) {
   return (list -> __h_table -> drop )(0, list );
 }
 List_List_int drop_List_List_int (int index , List_List_int list ) {
-  return (((index  ==  0 )) ? list  : ({ /* cicili#Let3768 */
+  return (((index  ==  0 )) ? list  : ({ /* cicili#Let3818 */
         __auto_type tail  = (((list -> __h_data ). Cons ). __h_1_mem );
         // ----------
-        /* cicili#Block3770 */
-        ({ /* cicili#Let3772 */
+        /* cicili#Block3820 */
+        ({ /* cicili#Let3822 */
           bool __h_case_result  = ((list -> __h_ctor ) ==  __h_Cons_t  );
           // ----------
-          ((__h_case_result ) ? (list -> __h_table -> drop )((--index ), tail ) : ({ /* cicili#Let3777 */
+          ((__h_case_result ) ? (list -> __h_table -> drop )((--index ), tail ) : ({ /* cicili#Let3827 */
               // ----------
-              /* cicili#Block3779 */
+              /* cicili#Block3829 */
               Empty_List_int ();
             }));
         });
@@ -1613,52 +1613,52 @@ Maybe_List_int head_List_List_int (List_List_int list ) {
   return (list -> __h_table -> nth )(0, list );
 }
 Maybe_List_int nth_List_List_int (int index , List_List_int list ) {
-  return ({ /* cicili#Let3791 */
+  return ({ /* cicili#Let3841 */
       __auto_type head  = (((list -> __h_data ). Cons ). __h_0_mem );
       __auto_type tail  = (((list -> __h_data ). Cons ). __h_1_mem );
       // ----------
-      /* cicili#Block3793 */
-      ({ /* cicili#Let3795 */
+      /* cicili#Block3843 */
+      ({ /* cicili#Let3845 */
         bool __h_case_result  = ((list -> __h_ctor ) ==  __h_Cons_t  );
         // ----------
-        ((__h_case_result ) ? (((index  ==  0 )) ? Just_List_int (head ) : (list -> __h_table -> nth )((--index ), tail )) : ({ /* cicili#Let3802 */
+        ((__h_case_result ) ? (((index  ==  0 )) ? Just_List_int (head ) : (list -> __h_table -> nth )((--index ), tail )) : ({ /* cicili#Let3852 */
             // ----------
-            /* cicili#Block3804 */
+            /* cicili#Block3854 */
             Nothing_List_int ();
           }));
       });
     });
 }
 List_List_int next_List_List_int (List_List_int list ) {
-  return ({ /* cicili#Let3811 */
+  return ({ /* cicili#Let3861 */
       __auto_type tail  = (((list -> __h_data ). Cons ). __h_1_mem );
       // ----------
-      /* cicili#Block3813 */
-      ({ /* cicili#Let3815 */
+      /* cicili#Block3863 */
+      ({ /* cicili#Let3865 */
         bool __h_case_result  = ((list -> __h_ctor ) ==  __h_Cons_t  );
         // ----------
-        ((__h_case_result ) ? tail  : ({ /* cicili#Let3819 */
+        ((__h_case_result ) ? tail  : ({ /* cicili#Let3869 */
             // ----------
-            /* cicili#Block3821 */
+            /* cicili#Block3871 */
             Empty_List_int ();
           }));
       });
     });
 }
 void free_List_List_int (List_List_int * this_ptr ) {
-  { /* cicili#Let3826 */
+  { /* cicili#Let3876 */
     __auto_type this  = (*this_ptr );
     // ----------
-    { /* cicili#Let3830 */
+    { /* cicili#Let3880 */
       __auto_type head  = (((this -> __h_data ). Cons ). __h_0_mem );
       __auto_type tail  = (((this -> __h_data ). Cons ). __h_1_mem );
       // ----------
-      /* cicili#Block3832 */
-      ({ /* cicili#Let3834 */
+      /* cicili#Block3882 */
+      ({ /* cicili#Let3884 */
         bool __h_case_result  = ((this -> __h_ctor ) ==  __h_Cons_t  );
         // ----------
         if (__h_case_result )
-          { /* cicili#Block3837 */
+          { /* cicili#Block3887 */
             printf ("destructuring List: %p, ", this );
             show_List_int (head );
             putchar ('\n');
@@ -1666,9 +1666,9 @@ void free_List_List_int (List_List_int * this_ptr ) {
             free (this );
           }
         else
-          { /* cicili#Let3847 */
+          { /* cicili#Let3897 */
             // ----------
-            /* cicili#Block3849 */
+            /* cicili#Block3899 */
             free (this );
           }
       });
@@ -1680,7 +1680,7 @@ const List_List_int__H_Table * const get_List_List_int__H_Table () {
   return (&table );
 }
 List_List_int Empty_List_int () {
-  { /* cicili#Let3858 */
+  { /* cicili#Let3908 */
     List_List_int instance  = malloc (sizeof(__h_List_List_int_class_t));
     // ----------
     (*instance ) = ((__h_List_List_int_class_t){ get_List_List_int__H_Table (), __h_Empty_t });
@@ -1688,7 +1688,7 @@ List_List_int Empty_List_int () {
   }
 }
 List_List_int Cons_List_int (List_int head , List_List_int tail ) {
-  { /* cicili#Let3863 */
+  { /* cicili#Let3913 */
     List_List_int instance  = malloc (sizeof(__h_List_List_int_class_t));
     // ----------
     (*instance ) = ((__h_List_List_int_class_t){ get_List_List_int__H_Table (), __h___t , .__h_data._ = { head , tail }});
@@ -1700,7 +1700,7 @@ List_List_int new_List_List_int_Pure (const List_int * buf , int len ) {
   if (buf  ==  NULL  )
     return Empty_List_int ();
   else
-    { /* cicili#Let3872 */
+    { /* cicili#Let3922 */
       List_int item  = (*buf );
       // ----------
       if (len  ==  0 )
@@ -1730,31 +1730,31 @@ Maybe_List_char Just_List_char (List_char value ) {
 #ifndef __List_List_char__H_IMPL__
 #define __List_List_char__H_IMPL__
 void show_List_List_char (List_List_char list ) {
-  { /* cicili#Let3908 */
+  { /* cicili#Let3958 */
     __auto_type head  = (((list -> __h_data ). Cons ). __h_0_mem );
     __auto_type tail  = (((list -> __h_data ). Cons ). __h_1_mem );
     // ----------
-    /* cicili#Block3910 */
-    ({ /* cicili#Let3912 */
+    /* cicili#Block3960 */
+    ({ /* cicili#Let3962 */
       bool __h_case_result  = ((list -> __h_ctor ) ==  __h_Cons_t  );
       // ----------
       if (__h_case_result )
-        { /* cicili#Block3915 */
-          { /* cicili#Let3919 */
+        { /* cicili#Block3965 */
+          { /* cicili#Let3969 */
             // ----------
-            /* cicili#Block3921 */
-            ({ /* cicili#Let3923 */
+            /* cicili#Block3971 */
+            ({ /* cicili#Let3973 */
               bool __h_case_result  = ((tail -> __h_ctor ) ==  __h_Cons_t  );
               // ----------
               if (__h_case_result )
-                { /* cicili#Block3926 */
+                { /* cicili#Block3976 */
                   show_List_char (head );
                   putchar (' ');
                 }
               else
-                { /* cicili#Let3935 */
+                { /* cicili#Let3985 */
                   // ----------
-                  /* cicili#Block3937 */
+                  /* cicili#Block3987 */
                   show_List_char (head );
                 }
             });
@@ -1765,23 +1765,23 @@ void show_List_List_char (List_List_char list ) {
   }
 }
 List_List_char append_List_List_char (List_List_char llist , List_List_char rlist ) {
-  return ({ /* cicili#Let3947 */
+  return ({ /* cicili#Let3997 */
       __auto_type last  = (llist -> __h_table -> last )(llist );
       // ----------
-      ({ /* cicili#Let3952 */
+      ({ /* cicili#Let4002 */
         __auto_type tail  = (((last -> __h_data ). Cons ). __h_1_mem );
         // ----------
-        /* cicili#Block3954 */
-        ({ /* cicili#Let3956 */
+        /* cicili#Block4004 */
+        ({ /* cicili#Let4006 */
           bool __h_case_result  = ((last -> __h_ctor ) ==  __h_Cons_t  );
           // ----------
-          ((__h_case_result ) ? ({ /* cicili#Progn3958 */
+          ((__h_case_result ) ? ({ /* cicili#Progn4008 */
               free_List_List_char ((&tail ));
               (((last -> __h_data ). Cons ). __h_1_mem ) = rlist ;
               llist ;
-            }) : ({ /* cicili#Let3963 */
+            }) : ({ /* cicili#Let4013 */
               // ----------
-              /* cicili#Block3965 */
+              /* cicili#Block4015 */
               rlist ;
             }));
         });
@@ -1792,51 +1792,6 @@ List_List_char push_List_List_char (List_char item , List_List_char list ) {
   return Cons_List_char (item , list );
 }
 List_List_char last_List_List_char (List_List_char list ) {
-  return ({ /* cicili#Let3974 */
-      __auto_type tail  = (((list -> __h_data ). Cons ). __h_1_mem );
-      // ----------
-      /* cicili#Block3976 */
-      ({ /* cicili#Let3978 */
-        bool __h_case_result  = ((list -> __h_ctor ) ==  __h_Cons_t  );
-        // ----------
-        ((__h_case_result ) ? ({ /* cicili#Let3982 */
-            // ----------
-            /* cicili#Block3984 */
-            ({ /* cicili#Let3986 */
-              bool __h_case_result  = ((tail -> __h_ctor ) ==  __h_Empty_t  );
-              // ----------
-              ((__h_case_result ) ? list  : ({ /* cicili#Let3990 */
-                  // ----------
-                  /* cicili#Block3992 */
-                  (list -> __h_table -> last )(tail );
-                }));
-            });
-          }) : ({ /* cicili#Let3997 */
-            // ----------
-            /* cicili#Block3999 */
-            list ;
-          }));
-      });
-    });
-}
-List_List_char take_List_List_char (int len , List_List_char list ) {
-  return ({ /* cicili#Let4005 */
-      __auto_type head  = (((list -> __h_data ). Cons ). __h_0_mem );
-      __auto_type tail  = (((list -> __h_data ). Cons ). __h_1_mem );
-      // ----------
-      /* cicili#Block4007 */
-      ({ /* cicili#Let4009 */
-        bool __h_case_result  = (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  (len  >  0 ) );
-        // ----------
-        ((__h_case_result ) ? (list -> __h_table -> push )(head , (list -> __h_table -> take )((--len ), tail )) : ({ /* cicili#Let4015 */
-            // ----------
-            /* cicili#Block4017 */
-            Empty_List_char ();
-          }));
-      });
-    });
-}
-int hasLen_List_List_char (List_List_char list , int desired ) {
   return ({ /* cicili#Let4024 */
       __auto_type tail  = (((list -> __h_data ). Cons ). __h_1_mem );
       // ----------
@@ -1844,25 +1799,70 @@ int hasLen_List_List_char (List_List_char list , int desired ) {
       ({ /* cicili#Let4028 */
         bool __h_case_result  = ((list -> __h_ctor ) ==  __h_Cons_t  );
         // ----------
-        ((__h_case_result ) ? (((desired  ==  1 )) ? 1 : (1 +  (list -> __h_table -> hasLen )(tail , (--desired )) )) : ({ /* cicili#Let4034 */
+        ((__h_case_result ) ? ({ /* cicili#Let4032 */
             // ----------
-            /* cicili#Block4036 */
+            /* cicili#Block4034 */
+            ({ /* cicili#Let4036 */
+              bool __h_case_result  = ((tail -> __h_ctor ) ==  __h_Empty_t  );
+              // ----------
+              ((__h_case_result ) ? list  : ({ /* cicili#Let4040 */
+                  // ----------
+                  /* cicili#Block4042 */
+                  (list -> __h_table -> last )(tail );
+                }));
+            });
+          }) : ({ /* cicili#Let4047 */
+            // ----------
+            /* cicili#Block4049 */
+            list ;
+          }));
+      });
+    });
+}
+List_List_char take_List_List_char (int len , List_List_char list ) {
+  return ({ /* cicili#Let4055 */
+      __auto_type head  = (((list -> __h_data ). Cons ). __h_0_mem );
+      __auto_type tail  = (((list -> __h_data ). Cons ). __h_1_mem );
+      // ----------
+      /* cicili#Block4057 */
+      ({ /* cicili#Let4059 */
+        bool __h_case_result  = (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  (len  >  0 ) );
+        // ----------
+        ((__h_case_result ) ? (list -> __h_table -> push )(head , (list -> __h_table -> take )((--len ), tail )) : ({ /* cicili#Let4065 */
+            // ----------
+            /* cicili#Block4067 */
+            Empty_List_char ();
+          }));
+      });
+    });
+}
+int hasLen_List_List_char (List_List_char list , int desired ) {
+  return ({ /* cicili#Let4074 */
+      __auto_type tail  = (((list -> __h_data ). Cons ). __h_1_mem );
+      // ----------
+      /* cicili#Block4076 */
+      ({ /* cicili#Let4078 */
+        bool __h_case_result  = ((list -> __h_ctor ) ==  __h_Cons_t  );
+        // ----------
+        ((__h_case_result ) ? (((desired  ==  1 )) ? 1 : (1 +  (list -> __h_table -> hasLen )(tail , (--desired )) )) : ({ /* cicili#Let4084 */
+            // ----------
+            /* cicili#Block4086 */
             0;
           }));
       });
     });
 }
 int len_List_List_char (List_List_char list ) {
-  return ({ /* cicili#Let4042 */
+  return ({ /* cicili#Let4092 */
       __auto_type tail  = (((list -> __h_data ). Cons ). __h_1_mem );
       // ----------
-      /* cicili#Block4044 */
-      ({ /* cicili#Let4046 */
+      /* cicili#Block4094 */
+      ({ /* cicili#Let4096 */
         bool __h_case_result  = ((list -> __h_ctor ) ==  __h_Cons_t  );
         // ----------
-        ((__h_case_result ) ? (1 +  (list -> __h_table -> len )(tail ) ) : ({ /* cicili#Let4051 */
+        ((__h_case_result ) ? (1 +  (list -> __h_table -> len )(tail ) ) : ({ /* cicili#Let4101 */
             // ----------
-            /* cicili#Block4053 */
+            /* cicili#Block4103 */
             0;
           }));
       });
@@ -1872,16 +1872,16 @@ List_List_char tail_List_List_char (List_List_char list ) {
   return (list -> __h_table -> drop )(0, list );
 }
 List_List_char drop_List_List_char (int index , List_List_char list ) {
-  return (((index  ==  0 )) ? list  : ({ /* cicili#Let4063 */
+  return (((index  ==  0 )) ? list  : ({ /* cicili#Let4113 */
         __auto_type tail  = (((list -> __h_data ). Cons ). __h_1_mem );
         // ----------
-        /* cicili#Block4065 */
-        ({ /* cicili#Let4067 */
+        /* cicili#Block4115 */
+        ({ /* cicili#Let4117 */
           bool __h_case_result  = ((list -> __h_ctor ) ==  __h_Cons_t  );
           // ----------
-          ((__h_case_result ) ? (list -> __h_table -> drop )((--index ), tail ) : ({ /* cicili#Let4072 */
+          ((__h_case_result ) ? (list -> __h_table -> drop )((--index ), tail ) : ({ /* cicili#Let4122 */
               // ----------
-              /* cicili#Block4074 */
+              /* cicili#Block4124 */
               Empty_List_char ();
             }));
         });
@@ -1891,52 +1891,52 @@ Maybe_List_char head_List_List_char (List_List_char list ) {
   return (list -> __h_table -> nth )(0, list );
 }
 Maybe_List_char nth_List_List_char (int index , List_List_char list ) {
-  return ({ /* cicili#Let4086 */
+  return ({ /* cicili#Let4136 */
       __auto_type head  = (((list -> __h_data ). Cons ). __h_0_mem );
       __auto_type tail  = (((list -> __h_data ). Cons ). __h_1_mem );
       // ----------
-      /* cicili#Block4088 */
-      ({ /* cicili#Let4090 */
+      /* cicili#Block4138 */
+      ({ /* cicili#Let4140 */
         bool __h_case_result  = ((list -> __h_ctor ) ==  __h_Cons_t  );
         // ----------
-        ((__h_case_result ) ? (((index  ==  0 )) ? Just_List_char (head ) : (list -> __h_table -> nth )((--index ), tail )) : ({ /* cicili#Let4097 */
+        ((__h_case_result ) ? (((index  ==  0 )) ? Just_List_char (head ) : (list -> __h_table -> nth )((--index ), tail )) : ({ /* cicili#Let4147 */
             // ----------
-            /* cicili#Block4099 */
+            /* cicili#Block4149 */
             Nothing_List_char ();
           }));
       });
     });
 }
 List_List_char next_List_List_char (List_List_char list ) {
-  return ({ /* cicili#Let4106 */
+  return ({ /* cicili#Let4156 */
       __auto_type tail  = (((list -> __h_data ). Cons ). __h_1_mem );
       // ----------
-      /* cicili#Block4108 */
-      ({ /* cicili#Let4110 */
+      /* cicili#Block4158 */
+      ({ /* cicili#Let4160 */
         bool __h_case_result  = ((list -> __h_ctor ) ==  __h_Cons_t  );
         // ----------
-        ((__h_case_result ) ? tail  : ({ /* cicili#Let4114 */
+        ((__h_case_result ) ? tail  : ({ /* cicili#Let4164 */
             // ----------
-            /* cicili#Block4116 */
+            /* cicili#Block4166 */
             Empty_List_char ();
           }));
       });
     });
 }
 void free_List_List_char (List_List_char * this_ptr ) {
-  { /* cicili#Let4121 */
+  { /* cicili#Let4171 */
     __auto_type this  = (*this_ptr );
     // ----------
-    { /* cicili#Let4125 */
+    { /* cicili#Let4175 */
       __auto_type head  = (((this -> __h_data ). Cons ). __h_0_mem );
       __auto_type tail  = (((this -> __h_data ). Cons ). __h_1_mem );
       // ----------
-      /* cicili#Block4127 */
-      ({ /* cicili#Let4129 */
+      /* cicili#Block4177 */
+      ({ /* cicili#Let4179 */
         bool __h_case_result  = ((this -> __h_ctor ) ==  __h_Cons_t  );
         // ----------
         if (__h_case_result )
-          { /* cicili#Block4132 */
+          { /* cicili#Block4182 */
             printf ("destructuring List: %p, ", this );
             show_List_char (head );
             putchar ('\n');
@@ -1944,9 +1944,9 @@ void free_List_List_char (List_List_char * this_ptr ) {
             free (this );
           }
         else
-          { /* cicili#Let4142 */
+          { /* cicili#Let4192 */
             // ----------
-            /* cicili#Block4144 */
+            /* cicili#Block4194 */
             free (this );
           }
       });
@@ -1958,7 +1958,7 @@ const List_List_char__H_Table * const get_List_List_char__H_Table () {
   return (&table );
 }
 List_List_char Empty_List_char () {
-  { /* cicili#Let4153 */
+  { /* cicili#Let4203 */
     List_List_char instance  = malloc (sizeof(__h_List_List_char_class_t));
     // ----------
     (*instance ) = ((__h_List_List_char_class_t){ get_List_List_char__H_Table (), __h_Empty_t });
@@ -1966,7 +1966,7 @@ List_List_char Empty_List_char () {
   }
 }
 List_List_char Cons_List_char (List_char head , List_List_char tail ) {
-  { /* cicili#Let4158 */
+  { /* cicili#Let4208 */
     List_List_char instance  = malloc (sizeof(__h_List_List_char_class_t));
     // ----------
     (*instance ) = ((__h_List_List_char_class_t){ get_List_List_char__H_Table (), __h___t , .__h_data._ = { head , tail }});
@@ -1978,7 +1978,7 @@ List_List_char new_List_List_char_Pure (const List_char * buf , int len ) {
   if (buf  ==  NULL  )
     return Empty_List_char ();
   else
-    { /* cicili#Let4167 */
+    { /* cicili#Let4217 */
       List_char item  = (*buf );
       // ----------
       if (len  ==  0 )
@@ -2008,31 +2008,31 @@ Maybe_String Just_String (String value ) {
 #ifndef __List_String__H_IMPL__
 #define __List_String__H_IMPL__
 void show_List_String (List_String list ) {
-  { /* cicili#Let4203 */
+  { /* cicili#Let4253 */
     __auto_type head  = (((list -> __h_data ). Cons ). __h_0_mem );
     __auto_type tail  = (((list -> __h_data ). Cons ). __h_1_mem );
     // ----------
-    /* cicili#Block4205 */
-    ({ /* cicili#Let4207 */
+    /* cicili#Block4255 */
+    ({ /* cicili#Let4257 */
       bool __h_case_result  = ((list -> __h_ctor ) ==  __h_Cons_t  );
       // ----------
       if (__h_case_result )
-        { /* cicili#Block4210 */
-          { /* cicili#Let4214 */
+        { /* cicili#Block4260 */
+          { /* cicili#Let4264 */
             // ----------
-            /* cicili#Block4216 */
-            ({ /* cicili#Let4218 */
+            /* cicili#Block4266 */
+            ({ /* cicili#Let4268 */
               bool __h_case_result  = ((tail -> __h_ctor ) ==  __h_Cons_t  );
               // ----------
               if (__h_case_result )
-                { /* cicili#Block4221 */
+                { /* cicili#Block4271 */
                   show_List_char (head );
                   putchar (' ');
                 }
               else
-                { /* cicili#Let4230 */
+                { /* cicili#Let4280 */
                   // ----------
-                  /* cicili#Block4232 */
+                  /* cicili#Block4282 */
                   show_List_char (head );
                 }
             });
@@ -2043,23 +2043,23 @@ void show_List_String (List_String list ) {
   }
 }
 List_String append_List_String (List_String llist , List_String rlist ) {
-  return ({ /* cicili#Let4242 */
+  return ({ /* cicili#Let4292 */
       __auto_type last  = (llist -> __h_table -> last )(llist );
       // ----------
-      ({ /* cicili#Let4247 */
+      ({ /* cicili#Let4297 */
         __auto_type tail  = (((last -> __h_data ). Cons ). __h_1_mem );
         // ----------
-        /* cicili#Block4249 */
-        ({ /* cicili#Let4251 */
+        /* cicili#Block4299 */
+        ({ /* cicili#Let4301 */
           bool __h_case_result  = ((last -> __h_ctor ) ==  __h_Cons_t  );
           // ----------
-          ((__h_case_result ) ? ({ /* cicili#Progn4253 */
+          ((__h_case_result ) ? ({ /* cicili#Progn4303 */
               free_List_String ((&tail ));
               (((last -> __h_data ). Cons ). __h_1_mem ) = rlist ;
               llist ;
-            }) : ({ /* cicili#Let4258 */
+            }) : ({ /* cicili#Let4308 */
               // ----------
-              /* cicili#Block4260 */
+              /* cicili#Block4310 */
               rlist ;
             }));
         });
@@ -2070,51 +2070,6 @@ List_String push_List_String (String item , List_String list ) {
   return Cons_String (item , list );
 }
 List_String last_List_String (List_String list ) {
-  return ({ /* cicili#Let4269 */
-      __auto_type tail  = (((list -> __h_data ). Cons ). __h_1_mem );
-      // ----------
-      /* cicili#Block4271 */
-      ({ /* cicili#Let4273 */
-        bool __h_case_result  = ((list -> __h_ctor ) ==  __h_Cons_t  );
-        // ----------
-        ((__h_case_result ) ? ({ /* cicili#Let4277 */
-            // ----------
-            /* cicili#Block4279 */
-            ({ /* cicili#Let4281 */
-              bool __h_case_result  = ((tail -> __h_ctor ) ==  __h_Empty_t  );
-              // ----------
-              ((__h_case_result ) ? list  : ({ /* cicili#Let4285 */
-                  // ----------
-                  /* cicili#Block4287 */
-                  (list -> __h_table -> last )(tail );
-                }));
-            });
-          }) : ({ /* cicili#Let4292 */
-            // ----------
-            /* cicili#Block4294 */
-            list ;
-          }));
-      });
-    });
-}
-List_String take_List_String (int len , List_String list ) {
-  return ({ /* cicili#Let4300 */
-      __auto_type head  = (((list -> __h_data ). Cons ). __h_0_mem );
-      __auto_type tail  = (((list -> __h_data ). Cons ). __h_1_mem );
-      // ----------
-      /* cicili#Block4302 */
-      ({ /* cicili#Let4304 */
-        bool __h_case_result  = (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  (len  >  0 ) );
-        // ----------
-        ((__h_case_result ) ? (list -> __h_table -> push )(head , (list -> __h_table -> take )((--len ), tail )) : ({ /* cicili#Let4310 */
-            // ----------
-            /* cicili#Block4312 */
-            Empty_String ();
-          }));
-      });
-    });
-}
-int hasLen_List_String (List_String list , int desired ) {
   return ({ /* cicili#Let4319 */
       __auto_type tail  = (((list -> __h_data ). Cons ). __h_1_mem );
       // ----------
@@ -2122,25 +2077,70 @@ int hasLen_List_String (List_String list , int desired ) {
       ({ /* cicili#Let4323 */
         bool __h_case_result  = ((list -> __h_ctor ) ==  __h_Cons_t  );
         // ----------
-        ((__h_case_result ) ? (((desired  ==  1 )) ? 1 : (1 +  (list -> __h_table -> hasLen )(tail , (--desired )) )) : ({ /* cicili#Let4329 */
+        ((__h_case_result ) ? ({ /* cicili#Let4327 */
             // ----------
-            /* cicili#Block4331 */
+            /* cicili#Block4329 */
+            ({ /* cicili#Let4331 */
+              bool __h_case_result  = ((tail -> __h_ctor ) ==  __h_Empty_t  );
+              // ----------
+              ((__h_case_result ) ? list  : ({ /* cicili#Let4335 */
+                  // ----------
+                  /* cicili#Block4337 */
+                  (list -> __h_table -> last )(tail );
+                }));
+            });
+          }) : ({ /* cicili#Let4342 */
+            // ----------
+            /* cicili#Block4344 */
+            list ;
+          }));
+      });
+    });
+}
+List_String take_List_String (int len , List_String list ) {
+  return ({ /* cicili#Let4350 */
+      __auto_type head  = (((list -> __h_data ). Cons ). __h_0_mem );
+      __auto_type tail  = (((list -> __h_data ). Cons ). __h_1_mem );
+      // ----------
+      /* cicili#Block4352 */
+      ({ /* cicili#Let4354 */
+        bool __h_case_result  = (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  (len  >  0 ) );
+        // ----------
+        ((__h_case_result ) ? (list -> __h_table -> push )(head , (list -> __h_table -> take )((--len ), tail )) : ({ /* cicili#Let4360 */
+            // ----------
+            /* cicili#Block4362 */
+            Empty_String ();
+          }));
+      });
+    });
+}
+int hasLen_List_String (List_String list , int desired ) {
+  return ({ /* cicili#Let4369 */
+      __auto_type tail  = (((list -> __h_data ). Cons ). __h_1_mem );
+      // ----------
+      /* cicili#Block4371 */
+      ({ /* cicili#Let4373 */
+        bool __h_case_result  = ((list -> __h_ctor ) ==  __h_Cons_t  );
+        // ----------
+        ((__h_case_result ) ? (((desired  ==  1 )) ? 1 : (1 +  (list -> __h_table -> hasLen )(tail , (--desired )) )) : ({ /* cicili#Let4379 */
+            // ----------
+            /* cicili#Block4381 */
             0;
           }));
       });
     });
 }
 int len_List_String (List_String list ) {
-  return ({ /* cicili#Let4337 */
+  return ({ /* cicili#Let4387 */
       __auto_type tail  = (((list -> __h_data ). Cons ). __h_1_mem );
       // ----------
-      /* cicili#Block4339 */
-      ({ /* cicili#Let4341 */
+      /* cicili#Block4389 */
+      ({ /* cicili#Let4391 */
         bool __h_case_result  = ((list -> __h_ctor ) ==  __h_Cons_t  );
         // ----------
-        ((__h_case_result ) ? (1 +  (list -> __h_table -> len )(tail ) ) : ({ /* cicili#Let4346 */
+        ((__h_case_result ) ? (1 +  (list -> __h_table -> len )(tail ) ) : ({ /* cicili#Let4396 */
             // ----------
-            /* cicili#Block4348 */
+            /* cicili#Block4398 */
             0;
           }));
       });
@@ -2150,16 +2150,16 @@ List_String tail_List_String (List_String list ) {
   return (list -> __h_table -> drop )(0, list );
 }
 List_String drop_List_String (int index , List_String list ) {
-  return (((index  ==  0 )) ? list  : ({ /* cicili#Let4358 */
+  return (((index  ==  0 )) ? list  : ({ /* cicili#Let4408 */
         __auto_type tail  = (((list -> __h_data ). Cons ). __h_1_mem );
         // ----------
-        /* cicili#Block4360 */
-        ({ /* cicili#Let4362 */
+        /* cicili#Block4410 */
+        ({ /* cicili#Let4412 */
           bool __h_case_result  = ((list -> __h_ctor ) ==  __h_Cons_t  );
           // ----------
-          ((__h_case_result ) ? (list -> __h_table -> drop )((--index ), tail ) : ({ /* cicili#Let4367 */
+          ((__h_case_result ) ? (list -> __h_table -> drop )((--index ), tail ) : ({ /* cicili#Let4417 */
               // ----------
-              /* cicili#Block4369 */
+              /* cicili#Block4419 */
               Empty_String ();
             }));
         });
@@ -2169,52 +2169,52 @@ Maybe_String head_List_String (List_String list ) {
   return (list -> __h_table -> nth )(0, list );
 }
 Maybe_String nth_List_String (int index , List_String list ) {
-  return ({ /* cicili#Let4381 */
+  return ({ /* cicili#Let4431 */
       __auto_type head  = (((list -> __h_data ). Cons ). __h_0_mem );
       __auto_type tail  = (((list -> __h_data ). Cons ). __h_1_mem );
       // ----------
-      /* cicili#Block4383 */
-      ({ /* cicili#Let4385 */
+      /* cicili#Block4433 */
+      ({ /* cicili#Let4435 */
         bool __h_case_result  = ((list -> __h_ctor ) ==  __h_Cons_t  );
         // ----------
-        ((__h_case_result ) ? (((index  ==  0 )) ? Just_String (head ) : (list -> __h_table -> nth )((--index ), tail )) : ({ /* cicili#Let4392 */
+        ((__h_case_result ) ? (((index  ==  0 )) ? Just_String (head ) : (list -> __h_table -> nth )((--index ), tail )) : ({ /* cicili#Let4442 */
             // ----------
-            /* cicili#Block4394 */
+            /* cicili#Block4444 */
             Nothing_String ();
           }));
       });
     });
 }
 List_String next_List_String (List_String list ) {
-  return ({ /* cicili#Let4401 */
+  return ({ /* cicili#Let4451 */
       __auto_type tail  = (((list -> __h_data ). Cons ). __h_1_mem );
       // ----------
-      /* cicili#Block4403 */
-      ({ /* cicili#Let4405 */
+      /* cicili#Block4453 */
+      ({ /* cicili#Let4455 */
         bool __h_case_result  = ((list -> __h_ctor ) ==  __h_Cons_t  );
         // ----------
-        ((__h_case_result ) ? tail  : ({ /* cicili#Let4409 */
+        ((__h_case_result ) ? tail  : ({ /* cicili#Let4459 */
             // ----------
-            /* cicili#Block4411 */
+            /* cicili#Block4461 */
             Empty_String ();
           }));
       });
     });
 }
 void free_List_String (List_String * this_ptr ) {
-  { /* cicili#Let4416 */
+  { /* cicili#Let4466 */
     __auto_type this  = (*this_ptr );
     // ----------
-    { /* cicili#Let4420 */
+    { /* cicili#Let4470 */
       __auto_type head  = (((this -> __h_data ). Cons ). __h_0_mem );
       __auto_type tail  = (((this -> __h_data ). Cons ). __h_1_mem );
       // ----------
-      /* cicili#Block4422 */
-      ({ /* cicili#Let4424 */
+      /* cicili#Block4472 */
+      ({ /* cicili#Let4474 */
         bool __h_case_result  = ((this -> __h_ctor ) ==  __h_Cons_t  );
         // ----------
         if (__h_case_result )
-          { /* cicili#Block4427 */
+          { /* cicili#Block4477 */
             printf ("destructuring List: %p, ", this );
             show_List_char (head );
             putchar ('\n');
@@ -2222,9 +2222,9 @@ void free_List_String (List_String * this_ptr ) {
             free (this );
           }
         else
-          { /* cicili#Let4437 */
+          { /* cicili#Let4487 */
             // ----------
-            /* cicili#Block4439 */
+            /* cicili#Block4489 */
             free (this );
           }
       });
@@ -2236,7 +2236,7 @@ const List_String__H_Table * const get_List_String__H_Table () {
   return (&table );
 }
 List_String Empty_String () {
-  { /* cicili#Let4448 */
+  { /* cicili#Let4498 */
     List_String instance  = malloc (sizeof(__h_List_String_class_t));
     // ----------
     (*instance ) = ((__h_List_String_class_t){ get_List_String__H_Table (), __h_Empty_t });
@@ -2244,7 +2244,7 @@ List_String Empty_String () {
   }
 }
 List_String Cons_String (String head , List_String tail ) {
-  { /* cicili#Let4453 */
+  { /* cicili#Let4503 */
     List_String instance  = malloc (sizeof(__h_List_String_class_t));
     // ----------
     (*instance ) = ((__h_List_String_class_t){ get_List_String__H_Table (), __h___t , .__h_data._ = { head , tail }});
@@ -2256,7 +2256,7 @@ List_String new_List_String_Pure (const String * buf , int len ) {
   if (buf  ==  NULL  )
     return Empty_String ();
   else
-    { /* cicili#Let4462 */
+    { /* cicili#Let4512 */
       String item  = (*buf );
       // ----------
       if (len  ==  0 )
@@ -2285,8 +2285,8 @@ typedef struct Rc_List_Bool__H_Table {
 typedef struct __h_Rc_List_Bool_class_t {
   const Rc_List_Bool__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion4485 */
-    struct { /* ciciliStruct4486 */
+  union { /* ciciliUnion4535 */
+    struct { /* ciciliStruct4536 */
       List_Bool __h_0_mem ;
       size_t __h_1_mem ;
       int * __h_2_mem ;
@@ -2307,31 +2307,31 @@ Rc_List_Bool new_Rc_List_Bool_Pure (List_Bool pointer );
 #ifndef __Rc_List_Bool__H_IMPL__
 #define __Rc_List_Bool__H_IMPL__
 void free_Rc_List_Bool (Rc_List_Bool * this_ptr ) {
-  { /* cicili#Let4517 */
+  { /* cicili#Let4567 */
     __auto_type this  = (*this_ptr );
     // ----------
-    ({ /* cicili#Progn4519 */
+    ({ /* cicili#Progn4569 */
       printf ("destructuring Rc: %p\n", this );
-      { /* cicili#Let4523 */
+      { /* cicili#Let4573 */
         __auto_type pointer  = (((this -> __h_data ). _ ). __h_0_mem );
         __auto_type authority  = (((this -> __h_data ). _ ). __h_1_mem );
         __auto_type count  = (((this -> __h_data ). _ ). __h_2_mem );
         __auto_type destructor  = (((this -> __h_data ). _ ). __h_3_mem );
         // ----------
-        /* cicili#Block4525 */
-        ({ /* cicili#Let4527 */
+        /* cicili#Block4575 */
+        ({ /* cicili#Let4577 */
           bool __h_case_result  = ((this -> __h_ctor ) ==  __h___t  );
           // ----------
           if (__h_case_result )
             {
             if (((size_t)this ) ==  authority  )
-              { /* cicili#Block4532 */
+              { /* cicili#Block4582 */
                 printf ("destructuring authorized Rc: %p , %d\n", this , (*count ));
-                ((((*count ) ==  1 )) ? ({ /* cicili#Progn4535 */
+                ((((*count ) ==  1 )) ? ({ /* cicili#Progn4585 */
                     destructor ((&pointer ));
                     free (count );
                     free (this );
-                  }) : ({ /* cicili#Progn4537 */
+                  }) : ({ /* cicili#Progn4587 */
                     (--(*count ));
                     free (this );
                   }));
@@ -2346,7 +2346,7 @@ const Rc_List_Bool__H_Table * const get_Rc_List_Bool__H_Table () {
   return (&table );
 }
 Rc_List_Bool Keep_Rc_List_Bool (List_Bool pointer , size_t authority , int * count , void (*destructor) (List_Bool * pointer )) {
-  { /* cicili#Let4546 */
+  { /* cicili#Let4596 */
     Rc_List_Bool instance  = malloc (sizeof(__h_Rc_List_Bool_class_t));
     // ----------
     (*instance ) = ((__h_Rc_List_Bool_class_t){ get_Rc_List_Bool__H_Table (), __h___t , .__h_data._ = { pointer , authority , count , destructor }});
@@ -2355,47 +2355,47 @@ Rc_List_Bool Keep_Rc_List_Bool (List_Bool pointer , size_t authority , int * cou
 }
 #endif /* __Rc_List_Bool__H_IMPL__ */ 
 Maybe_List_Bool deref_Rc_List_Bool (Rc_List_Bool rc ) {
-  return ({ /* cicili#Let4555 */
+  return ({ /* cicili#Let4605 */
       __auto_type pointer  = (((rc -> __h_data ). _ ). __h_0_mem );
       __auto_type authority  = (((rc -> __h_data ). _ ). __h_1_mem );
       __auto_type count  = (((rc -> __h_data ). _ ). __h_2_mem );
       __auto_type destructor  = (((rc -> __h_data ). _ ). __h_3_mem );
       // ----------
-      /* cicili#Block4557 */
-      ({ /* cicili#Let4559 */
+      /* cicili#Block4607 */
+      ({ /* cicili#Let4609 */
         bool __h_case_result  = ((rc -> __h_ctor ) ==  __h___t  );
         // ----------
-        ((__h_case_result ) ? ((((((size_t)rc ) ==  authority  ) &&  ((*count ) >=  1 ) )) ? Just_List_Bool (pointer ) : Nothing_List_Bool ()) : ({ /* cicili#Let4566 */
+        ((__h_case_result ) ? ((((((size_t)rc ) ==  authority  ) &&  ((*count ) >=  1 ) )) ? Just_List_Bool (pointer ) : Nothing_List_Bool ()) : ({ /* cicili#Let4616 */
             // ----------
-            /* cicili#Block4568 */
+            /* cicili#Block4618 */
             Nothing_List_Bool ();
           }));
       });
     });
 }
 Rc_List_Bool clone_Rc_List_Bool (Rc_List_Bool rc ) {
-  return ({ /* cicili#Let4577 */
+  return ({ /* cicili#Let4627 */
       __auto_type pointer  = (((rc -> __h_data ). _ ). __h_0_mem );
       __auto_type authority  = (((rc -> __h_data ). _ ). __h_1_mem );
       __auto_type count  = (((rc -> __h_data ). _ ). __h_2_mem );
       __auto_type destructor  = (((rc -> __h_data ). _ ). __h_3_mem );
       // ----------
-      /* cicili#Block4579 */
-      ({ /* cicili#Let4581 */
+      /* cicili#Block4629 */
+      ({ /* cicili#Let4631 */
         bool __h_case_result  = ((rc -> __h_ctor ) ==  __h___t  );
         // ----------
-        ((__h_case_result ) ? (((((size_t)rc ) ==  authority  )) ? ({ /* cicili#Progn4584 */
+        ((__h_case_result ) ? (((((size_t)rc ) ==  authority  )) ? ({ /* cicili#Progn4634 */
               (++(*count ));
-              ({ /* cicili#Let4586 */
+              ({ /* cicili#Let4636 */
                 __auto_type cloned_rc  = Keep_Rc_List_Bool (pointer , 0, count , destructor );
                 // ----------
                 (((cloned_rc -> __h_data ). Keep ). __h_1_mem ) = ((size_t)cloned_rc );
-                { /* cicili#Let4591 */
+                { /* cicili#Let4641 */
                   __auto_type authority  = (((cloned_rc -> __h_data ). _ ). __h_1_mem );
                   __auto_type count  = (((cloned_rc -> __h_data ). _ ). __h_2_mem );
                   // ----------
-                  /* cicili#Block4593 */
-                  ({ /* cicili#Let4595 */
+                  /* cicili#Block4643 */
+                  ({ /* cicili#Let4645 */
                     bool __h_case_result  = ((cloned_rc -> __h_ctor ) ==  __h___t  );
                     // ----------
                     if (__h_case_result )
@@ -2404,29 +2404,29 @@ Rc_List_Bool clone_Rc_List_Bool (Rc_List_Bool rc ) {
                 }
                 cloned_rc ;
               });
-            }) : rc ) : ({ /* cicili#Let4600 */
+            }) : rc ) : ({ /* cicili#Let4650 */
             // ----------
-            /* cicili#Block4602 */
+            /* cicili#Block4652 */
             rc ;
           }));
       });
     });
 }
 Rc_List_Bool new_Rc_List_Bool_Pure (List_Bool pointer ) {
-  return ({ /* cicili#Let4608 */
+  return ({ /* cicili#Let4658 */
       __auto_type count  = ((int *)malloc (sizeof(int)));
       // ----------
       (*count ) = 1;
-      ({ /* cicili#Let4610 */
+      ({ /* cicili#Let4660 */
         __auto_type cloned_rc  = Keep_Rc_List_Bool (pointer , 0, count , free_List_Bool );
         // ----------
         (((cloned_rc -> __h_data ). Keep ). __h_1_mem ) = ((size_t)cloned_rc );
-        { /* cicili#Let4616 */
+        { /* cicili#Let4666 */
           __auto_type authority  = (((cloned_rc -> __h_data ). _ ). __h_1_mem );
           __auto_type count  = (((cloned_rc -> __h_data ). _ ). __h_2_mem );
           // ----------
-          /* cicili#Block4618 */
-          ({ /* cicili#Let4620 */
+          /* cicili#Block4668 */
+          ({ /* cicili#Let4670 */
             bool __h_case_result  = ((cloned_rc -> __h_ctor ) ==  __h___t  );
             // ----------
             if (__h_case_result )
@@ -2454,8 +2454,8 @@ typedef struct Rc_List_int__H_Table {
 typedef struct __h_Rc_List_int_class_t {
   const Rc_List_int__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion4635 */
-    struct { /* ciciliStruct4636 */
+  union { /* ciciliUnion4685 */
+    struct { /* ciciliStruct4686 */
       List_int __h_0_mem ;
       size_t __h_1_mem ;
       int * __h_2_mem ;
@@ -2476,31 +2476,31 @@ Rc_List_int new_Rc_List_int_Pure (List_int pointer );
 #ifndef __Rc_List_int__H_IMPL__
 #define __Rc_List_int__H_IMPL__
 void free_Rc_List_int (Rc_List_int * this_ptr ) {
-  { /* cicili#Let4667 */
+  { /* cicili#Let4717 */
     __auto_type this  = (*this_ptr );
     // ----------
-    ({ /* cicili#Progn4669 */
+    ({ /* cicili#Progn4719 */
       printf ("destructuring Rc: %p\n", this );
-      { /* cicili#Let4673 */
+      { /* cicili#Let4723 */
         __auto_type pointer  = (((this -> __h_data ). _ ). __h_0_mem );
         __auto_type authority  = (((this -> __h_data ). _ ). __h_1_mem );
         __auto_type count  = (((this -> __h_data ). _ ). __h_2_mem );
         __auto_type destructor  = (((this -> __h_data ). _ ). __h_3_mem );
         // ----------
-        /* cicili#Block4675 */
-        ({ /* cicili#Let4677 */
+        /* cicili#Block4725 */
+        ({ /* cicili#Let4727 */
           bool __h_case_result  = ((this -> __h_ctor ) ==  __h___t  );
           // ----------
           if (__h_case_result )
             {
             if (((size_t)this ) ==  authority  )
-              { /* cicili#Block4682 */
+              { /* cicili#Block4732 */
                 printf ("destructuring authorized Rc: %p , %d\n", this , (*count ));
-                ((((*count ) ==  1 )) ? ({ /* cicili#Progn4685 */
+                ((((*count ) ==  1 )) ? ({ /* cicili#Progn4735 */
                     destructor ((&pointer ));
                     free (count );
                     free (this );
-                  }) : ({ /* cicili#Progn4687 */
+                  }) : ({ /* cicili#Progn4737 */
                     (--(*count ));
                     free (this );
                   }));
@@ -2515,7 +2515,7 @@ const Rc_List_int__H_Table * const get_Rc_List_int__H_Table () {
   return (&table );
 }
 Rc_List_int Keep_Rc_List_int (List_int pointer , size_t authority , int * count , void (*destructor) (List_int * pointer )) {
-  { /* cicili#Let4696 */
+  { /* cicili#Let4746 */
     Rc_List_int instance  = malloc (sizeof(__h_Rc_List_int_class_t));
     // ----------
     (*instance ) = ((__h_Rc_List_int_class_t){ get_Rc_List_int__H_Table (), __h___t , .__h_data._ = { pointer , authority , count , destructor }});
@@ -2524,47 +2524,47 @@ Rc_List_int Keep_Rc_List_int (List_int pointer , size_t authority , int * count 
 }
 #endif /* __Rc_List_int__H_IMPL__ */ 
 Maybe_List_int deref_Rc_List_int (Rc_List_int rc ) {
-  return ({ /* cicili#Let4705 */
+  return ({ /* cicili#Let4755 */
       __auto_type pointer  = (((rc -> __h_data ). _ ). __h_0_mem );
       __auto_type authority  = (((rc -> __h_data ). _ ). __h_1_mem );
       __auto_type count  = (((rc -> __h_data ). _ ). __h_2_mem );
       __auto_type destructor  = (((rc -> __h_data ). _ ). __h_3_mem );
       // ----------
-      /* cicili#Block4707 */
-      ({ /* cicili#Let4709 */
+      /* cicili#Block4757 */
+      ({ /* cicili#Let4759 */
         bool __h_case_result  = ((rc -> __h_ctor ) ==  __h___t  );
         // ----------
-        ((__h_case_result ) ? ((((((size_t)rc ) ==  authority  ) &&  ((*count ) >=  1 ) )) ? Just_List_int (pointer ) : Nothing_List_int ()) : ({ /* cicili#Let4716 */
+        ((__h_case_result ) ? ((((((size_t)rc ) ==  authority  ) &&  ((*count ) >=  1 ) )) ? Just_List_int (pointer ) : Nothing_List_int ()) : ({ /* cicili#Let4766 */
             // ----------
-            /* cicili#Block4718 */
+            /* cicili#Block4768 */
             Nothing_List_int ();
           }));
       });
     });
 }
 Rc_List_int clone_Rc_List_int (Rc_List_int rc ) {
-  return ({ /* cicili#Let4727 */
+  return ({ /* cicili#Let4777 */
       __auto_type pointer  = (((rc -> __h_data ). _ ). __h_0_mem );
       __auto_type authority  = (((rc -> __h_data ). _ ). __h_1_mem );
       __auto_type count  = (((rc -> __h_data ). _ ). __h_2_mem );
       __auto_type destructor  = (((rc -> __h_data ). _ ). __h_3_mem );
       // ----------
-      /* cicili#Block4729 */
-      ({ /* cicili#Let4731 */
+      /* cicili#Block4779 */
+      ({ /* cicili#Let4781 */
         bool __h_case_result  = ((rc -> __h_ctor ) ==  __h___t  );
         // ----------
-        ((__h_case_result ) ? (((((size_t)rc ) ==  authority  )) ? ({ /* cicili#Progn4734 */
+        ((__h_case_result ) ? (((((size_t)rc ) ==  authority  )) ? ({ /* cicili#Progn4784 */
               (++(*count ));
-              ({ /* cicili#Let4736 */
+              ({ /* cicili#Let4786 */
                 __auto_type cloned_rc  = Keep_Rc_List_int (pointer , 0, count , destructor );
                 // ----------
                 (((cloned_rc -> __h_data ). Keep ). __h_1_mem ) = ((size_t)cloned_rc );
-                { /* cicili#Let4741 */
+                { /* cicili#Let4791 */
                   __auto_type authority  = (((cloned_rc -> __h_data ). _ ). __h_1_mem );
                   __auto_type count  = (((cloned_rc -> __h_data ). _ ). __h_2_mem );
                   // ----------
-                  /* cicili#Block4743 */
-                  ({ /* cicili#Let4745 */
+                  /* cicili#Block4793 */
+                  ({ /* cicili#Let4795 */
                     bool __h_case_result  = ((cloned_rc -> __h_ctor ) ==  __h___t  );
                     // ----------
                     if (__h_case_result )
@@ -2573,29 +2573,29 @@ Rc_List_int clone_Rc_List_int (Rc_List_int rc ) {
                 }
                 cloned_rc ;
               });
-            }) : rc ) : ({ /* cicili#Let4750 */
+            }) : rc ) : ({ /* cicili#Let4800 */
             // ----------
-            /* cicili#Block4752 */
+            /* cicili#Block4802 */
             rc ;
           }));
       });
     });
 }
 Rc_List_int new_Rc_List_int_Pure (List_int pointer ) {
-  return ({ /* cicili#Let4758 */
+  return ({ /* cicili#Let4808 */
       __auto_type count  = ((int *)malloc (sizeof(int)));
       // ----------
       (*count ) = 1;
-      ({ /* cicili#Let4760 */
+      ({ /* cicili#Let4810 */
         __auto_type cloned_rc  = Keep_Rc_List_int (pointer , 0, count , free_List_int );
         // ----------
         (((cloned_rc -> __h_data ). Keep ). __h_1_mem ) = ((size_t)cloned_rc );
-        { /* cicili#Let4766 */
+        { /* cicili#Let4816 */
           __auto_type authority  = (((cloned_rc -> __h_data ). _ ). __h_1_mem );
           __auto_type count  = (((cloned_rc -> __h_data ). _ ). __h_2_mem );
           // ----------
-          /* cicili#Block4768 */
-          ({ /* cicili#Let4770 */
+          /* cicili#Block4818 */
+          ({ /* cicili#Let4820 */
             bool __h_case_result  = ((cloned_rc -> __h_ctor ) ==  __h___t  );
             // ----------
             if (__h_case_result )
@@ -2623,8 +2623,8 @@ typedef struct Rc_List_char__H_Table {
 typedef struct __h_Rc_List_char_class_t {
   const Rc_List_char__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion4785 */
-    struct { /* ciciliStruct4786 */
+  union { /* ciciliUnion4835 */
+    struct { /* ciciliStruct4836 */
       List_char __h_0_mem ;
       size_t __h_1_mem ;
       int * __h_2_mem ;
@@ -2645,31 +2645,31 @@ Rc_List_char new_Rc_List_char_Pure (List_char pointer );
 #ifndef __Rc_List_char__H_IMPL__
 #define __Rc_List_char__H_IMPL__
 void free_Rc_List_char (Rc_List_char * this_ptr ) {
-  { /* cicili#Let4817 */
+  { /* cicili#Let4867 */
     __auto_type this  = (*this_ptr );
     // ----------
-    ({ /* cicili#Progn4819 */
+    ({ /* cicili#Progn4869 */
       printf ("destructuring Rc: %p\n", this );
-      { /* cicili#Let4823 */
+      { /* cicili#Let4873 */
         __auto_type pointer  = (((this -> __h_data ). _ ). __h_0_mem );
         __auto_type authority  = (((this -> __h_data ). _ ). __h_1_mem );
         __auto_type count  = (((this -> __h_data ). _ ). __h_2_mem );
         __auto_type destructor  = (((this -> __h_data ). _ ). __h_3_mem );
         // ----------
-        /* cicili#Block4825 */
-        ({ /* cicili#Let4827 */
+        /* cicili#Block4875 */
+        ({ /* cicili#Let4877 */
           bool __h_case_result  = ((this -> __h_ctor ) ==  __h___t  );
           // ----------
           if (__h_case_result )
             {
             if (((size_t)this ) ==  authority  )
-              { /* cicili#Block4832 */
+              { /* cicili#Block4882 */
                 printf ("destructuring authorized Rc: %p , %d\n", this , (*count ));
-                ((((*count ) ==  1 )) ? ({ /* cicili#Progn4835 */
+                ((((*count ) ==  1 )) ? ({ /* cicili#Progn4885 */
                     destructor ((&pointer ));
                     free (count );
                     free (this );
-                  }) : ({ /* cicili#Progn4837 */
+                  }) : ({ /* cicili#Progn4887 */
                     (--(*count ));
                     free (this );
                   }));
@@ -2684,7 +2684,7 @@ const Rc_List_char__H_Table * const get_Rc_List_char__H_Table () {
   return (&table );
 }
 Rc_List_char Keep_Rc_List_char (List_char pointer , size_t authority , int * count , void (*destructor) (List_char * pointer )) {
-  { /* cicili#Let4846 */
+  { /* cicili#Let4896 */
     Rc_List_char instance  = malloc (sizeof(__h_Rc_List_char_class_t));
     // ----------
     (*instance ) = ((__h_Rc_List_char_class_t){ get_Rc_List_char__H_Table (), __h___t , .__h_data._ = { pointer , authority , count , destructor }});
@@ -2693,47 +2693,47 @@ Rc_List_char Keep_Rc_List_char (List_char pointer , size_t authority , int * cou
 }
 #endif /* __Rc_List_char__H_IMPL__ */ 
 Maybe_List_char deref_Rc_List_char (Rc_List_char rc ) {
-  return ({ /* cicili#Let4855 */
+  return ({ /* cicili#Let4905 */
       __auto_type pointer  = (((rc -> __h_data ). _ ). __h_0_mem );
       __auto_type authority  = (((rc -> __h_data ). _ ). __h_1_mem );
       __auto_type count  = (((rc -> __h_data ). _ ). __h_2_mem );
       __auto_type destructor  = (((rc -> __h_data ). _ ). __h_3_mem );
       // ----------
-      /* cicili#Block4857 */
-      ({ /* cicili#Let4859 */
+      /* cicili#Block4907 */
+      ({ /* cicili#Let4909 */
         bool __h_case_result  = ((rc -> __h_ctor ) ==  __h___t  );
         // ----------
-        ((__h_case_result ) ? ((((((size_t)rc ) ==  authority  ) &&  ((*count ) >=  1 ) )) ? Just_List_char (pointer ) : Nothing_List_char ()) : ({ /* cicili#Let4866 */
+        ((__h_case_result ) ? ((((((size_t)rc ) ==  authority  ) &&  ((*count ) >=  1 ) )) ? Just_List_char (pointer ) : Nothing_List_char ()) : ({ /* cicili#Let4916 */
             // ----------
-            /* cicili#Block4868 */
+            /* cicili#Block4918 */
             Nothing_List_char ();
           }));
       });
     });
 }
 Rc_List_char clone_Rc_List_char (Rc_List_char rc ) {
-  return ({ /* cicili#Let4877 */
+  return ({ /* cicili#Let4927 */
       __auto_type pointer  = (((rc -> __h_data ). _ ). __h_0_mem );
       __auto_type authority  = (((rc -> __h_data ). _ ). __h_1_mem );
       __auto_type count  = (((rc -> __h_data ). _ ). __h_2_mem );
       __auto_type destructor  = (((rc -> __h_data ). _ ). __h_3_mem );
       // ----------
-      /* cicili#Block4879 */
-      ({ /* cicili#Let4881 */
+      /* cicili#Block4929 */
+      ({ /* cicili#Let4931 */
         bool __h_case_result  = ((rc -> __h_ctor ) ==  __h___t  );
         // ----------
-        ((__h_case_result ) ? (((((size_t)rc ) ==  authority  )) ? ({ /* cicili#Progn4884 */
+        ((__h_case_result ) ? (((((size_t)rc ) ==  authority  )) ? ({ /* cicili#Progn4934 */
               (++(*count ));
-              ({ /* cicili#Let4886 */
+              ({ /* cicili#Let4936 */
                 __auto_type cloned_rc  = Keep_Rc_List_char (pointer , 0, count , destructor );
                 // ----------
                 (((cloned_rc -> __h_data ). Keep ). __h_1_mem ) = ((size_t)cloned_rc );
-                { /* cicili#Let4891 */
+                { /* cicili#Let4941 */
                   __auto_type authority  = (((cloned_rc -> __h_data ). _ ). __h_1_mem );
                   __auto_type count  = (((cloned_rc -> __h_data ). _ ). __h_2_mem );
                   // ----------
-                  /* cicili#Block4893 */
-                  ({ /* cicili#Let4895 */
+                  /* cicili#Block4943 */
+                  ({ /* cicili#Let4945 */
                     bool __h_case_result  = ((cloned_rc -> __h_ctor ) ==  __h___t  );
                     // ----------
                     if (__h_case_result )
@@ -2742,29 +2742,29 @@ Rc_List_char clone_Rc_List_char (Rc_List_char rc ) {
                 }
                 cloned_rc ;
               });
-            }) : rc ) : ({ /* cicili#Let4900 */
+            }) : rc ) : ({ /* cicili#Let4950 */
             // ----------
-            /* cicili#Block4902 */
+            /* cicili#Block4952 */
             rc ;
           }));
       });
     });
 }
 Rc_List_char new_Rc_List_char_Pure (List_char pointer ) {
-  return ({ /* cicili#Let4908 */
+  return ({ /* cicili#Let4958 */
       __auto_type count  = ((int *)malloc (sizeof(int)));
       // ----------
       (*count ) = 1;
-      ({ /* cicili#Let4910 */
+      ({ /* cicili#Let4960 */
         __auto_type cloned_rc  = Keep_Rc_List_char (pointer , 0, count , free_List_char );
         // ----------
         (((cloned_rc -> __h_data ). Keep ). __h_1_mem ) = ((size_t)cloned_rc );
-        { /* cicili#Let4916 */
+        { /* cicili#Let4966 */
           __auto_type authority  = (((cloned_rc -> __h_data ). _ ). __h_1_mem );
           __auto_type count  = (((cloned_rc -> __h_data ). _ ). __h_2_mem );
           // ----------
-          /* cicili#Block4918 */
-          ({ /* cicili#Let4920 */
+          /* cicili#Block4968 */
+          ({ /* cicili#Let4970 */
             bool __h_case_result  = ((cloned_rc -> __h_ctor ) ==  __h___t  );
             // ----------
             if (__h_case_result )
@@ -2792,8 +2792,8 @@ typedef struct Rc_String__H_Table {
 typedef struct __h_Rc_String_class_t {
   const Rc_String__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion4935 */
-    struct { /* ciciliStruct4936 */
+  union { /* ciciliUnion4985 */
+    struct { /* ciciliStruct4986 */
       String __h_0_mem ;
       size_t __h_1_mem ;
       int * __h_2_mem ;
@@ -2814,31 +2814,31 @@ Rc_String new_Rc_String_Pure (String pointer );
 #ifndef __Rc_String__H_IMPL__
 #define __Rc_String__H_IMPL__
 void free_Rc_String (Rc_String * this_ptr ) {
-  { /* cicili#Let4967 */
+  { /* cicili#Let5017 */
     __auto_type this  = (*this_ptr );
     // ----------
-    ({ /* cicili#Progn4969 */
+    ({ /* cicili#Progn5019 */
       printf ("destructuring Rc: %p\n", this );
-      { /* cicili#Let4973 */
+      { /* cicili#Let5023 */
         __auto_type pointer  = (((this -> __h_data ). _ ). __h_0_mem );
         __auto_type authority  = (((this -> __h_data ). _ ). __h_1_mem );
         __auto_type count  = (((this -> __h_data ). _ ). __h_2_mem );
         __auto_type destructor  = (((this -> __h_data ). _ ). __h_3_mem );
         // ----------
-        /* cicili#Block4975 */
-        ({ /* cicili#Let4977 */
+        /* cicili#Block5025 */
+        ({ /* cicili#Let5027 */
           bool __h_case_result  = ((this -> __h_ctor ) ==  __h___t  );
           // ----------
           if (__h_case_result )
             {
             if (((size_t)this ) ==  authority  )
-              { /* cicili#Block4982 */
+              { /* cicili#Block5032 */
                 printf ("destructuring authorized Rc: %p , %d\n", this , (*count ));
-                ((((*count ) ==  1 )) ? ({ /* cicili#Progn4985 */
+                ((((*count ) ==  1 )) ? ({ /* cicili#Progn5035 */
                     destructor ((&pointer ));
                     free (count );
                     free (this );
-                  }) : ({ /* cicili#Progn4987 */
+                  }) : ({ /* cicili#Progn5037 */
                     (--(*count ));
                     free (this );
                   }));
@@ -2853,7 +2853,7 @@ const Rc_String__H_Table * const get_Rc_String__H_Table () {
   return (&table );
 }
 Rc_String Keep_Rc_String (String pointer , size_t authority , int * count , void (*destructor) (String * pointer )) {
-  { /* cicili#Let4996 */
+  { /* cicili#Let5046 */
     Rc_String instance  = malloc (sizeof(__h_Rc_String_class_t));
     // ----------
     (*instance ) = ((__h_Rc_String_class_t){ get_Rc_String__H_Table (), __h___t , .__h_data._ = { pointer , authority , count , destructor }});
@@ -2862,47 +2862,47 @@ Rc_String Keep_Rc_String (String pointer , size_t authority , int * count , void
 }
 #endif /* __Rc_String__H_IMPL__ */ 
 Maybe_String deref_Rc_String (Rc_String rc ) {
-  return ({ /* cicili#Let5005 */
+  return ({ /* cicili#Let5055 */
       __auto_type pointer  = (((rc -> __h_data ). _ ). __h_0_mem );
       __auto_type authority  = (((rc -> __h_data ). _ ). __h_1_mem );
       __auto_type count  = (((rc -> __h_data ). _ ). __h_2_mem );
       __auto_type destructor  = (((rc -> __h_data ). _ ). __h_3_mem );
       // ----------
-      /* cicili#Block5007 */
-      ({ /* cicili#Let5009 */
+      /* cicili#Block5057 */
+      ({ /* cicili#Let5059 */
         bool __h_case_result  = ((rc -> __h_ctor ) ==  __h___t  );
         // ----------
-        ((__h_case_result ) ? ((((((size_t)rc ) ==  authority  ) &&  ((*count ) >=  1 ) )) ? Just_String (pointer ) : Nothing_String ()) : ({ /* cicili#Let5016 */
+        ((__h_case_result ) ? ((((((size_t)rc ) ==  authority  ) &&  ((*count ) >=  1 ) )) ? Just_String (pointer ) : Nothing_String ()) : ({ /* cicili#Let5066 */
             // ----------
-            /* cicili#Block5018 */
+            /* cicili#Block5068 */
             Nothing_String ();
           }));
       });
     });
 }
 Rc_String clone_Rc_String (Rc_String rc ) {
-  return ({ /* cicili#Let5027 */
+  return ({ /* cicili#Let5077 */
       __auto_type pointer  = (((rc -> __h_data ). _ ). __h_0_mem );
       __auto_type authority  = (((rc -> __h_data ). _ ). __h_1_mem );
       __auto_type count  = (((rc -> __h_data ). _ ). __h_2_mem );
       __auto_type destructor  = (((rc -> __h_data ). _ ). __h_3_mem );
       // ----------
-      /* cicili#Block5029 */
-      ({ /* cicili#Let5031 */
+      /* cicili#Block5079 */
+      ({ /* cicili#Let5081 */
         bool __h_case_result  = ((rc -> __h_ctor ) ==  __h___t  );
         // ----------
-        ((__h_case_result ) ? (((((size_t)rc ) ==  authority  )) ? ({ /* cicili#Progn5034 */
+        ((__h_case_result ) ? (((((size_t)rc ) ==  authority  )) ? ({ /* cicili#Progn5084 */
               (++(*count ));
-              ({ /* cicili#Let5036 */
+              ({ /* cicili#Let5086 */
                 __auto_type cloned_rc  = Keep_Rc_String (pointer , 0, count , destructor );
                 // ----------
                 (((cloned_rc -> __h_data ). Keep ). __h_1_mem ) = ((size_t)cloned_rc );
-                { /* cicili#Let5041 */
+                { /* cicili#Let5091 */
                   __auto_type authority  = (((cloned_rc -> __h_data ). _ ). __h_1_mem );
                   __auto_type count  = (((cloned_rc -> __h_data ). _ ). __h_2_mem );
                   // ----------
-                  /* cicili#Block5043 */
-                  ({ /* cicili#Let5045 */
+                  /* cicili#Block5093 */
+                  ({ /* cicili#Let5095 */
                     bool __h_case_result  = ((cloned_rc -> __h_ctor ) ==  __h___t  );
                     // ----------
                     if (__h_case_result )
@@ -2911,29 +2911,29 @@ Rc_String clone_Rc_String (Rc_String rc ) {
                 }
                 cloned_rc ;
               });
-            }) : rc ) : ({ /* cicili#Let5050 */
+            }) : rc ) : ({ /* cicili#Let5100 */
             // ----------
-            /* cicili#Block5052 */
+            /* cicili#Block5102 */
             rc ;
           }));
       });
     });
 }
 Rc_String new_Rc_String_Pure (String pointer ) {
-  return ({ /* cicili#Let5058 */
+  return ({ /* cicili#Let5108 */
       __auto_type count  = ((int *)malloc (sizeof(int)));
       // ----------
       (*count ) = 1;
-      ({ /* cicili#Let5060 */
+      ({ /* cicili#Let5110 */
         __auto_type cloned_rc  = Keep_Rc_String (pointer , 0, count , free_String );
         // ----------
         (((cloned_rc -> __h_data ). Keep ). __h_1_mem ) = ((size_t)cloned_rc );
-        { /* cicili#Let5066 */
+        { /* cicili#Let5116 */
           __auto_type authority  = (((cloned_rc -> __h_data ). _ ). __h_1_mem );
           __auto_type count  = (((cloned_rc -> __h_data ). _ ). __h_2_mem );
           // ----------
-          /* cicili#Block5068 */
-          ({ /* cicili#Let5070 */
+          /* cicili#Block5118 */
+          ({ /* cicili#Let5120 */
             bool __h_case_result  = ((cloned_rc -> __h_ctor ) ==  __h___t  );
             // ----------
             if (__h_case_result )
@@ -2944,26 +2944,26 @@ Rc_String new_Rc_String_Pure (String pointer ) {
       });
     });
 }
-#ifndef __folds_Bool__H_IMPL_
-#define __folds_Bool__H_IMPL_
+#ifndef __folds_Bool__H_IMPL__
+#define __folds_Bool__H_IMPL__
 Bool foldr_Bool (Bool (*folder) (Bool lhs , Bool rhs ), Bool neutral , List_Bool foldable ) {
-  return ({ /* cicili#Let5082 */
+  return ({ /* cicili#Let5132 */
       __auto_type head  = (((foldable -> __h_data ). Cons ). __h_0_mem );
       __auto_type tail  = (((foldable -> __h_data ). Cons ). __h_1_mem );
       // ----------
-      /* cicili#Block5084 */
-      ({ /* cicili#Let5086 */
+      /* cicili#Block5134 */
+      ({ /* cicili#Let5136 */
         bool __h_case_result  = ((foldable -> __h_ctor ) ==  __h_Cons_t  );
         // ----------
-        ((__h_case_result ) ? foldr_Bool (folder , folder (neutral , head ), tail ) : ({ /* cicili#Let5091 */
+        ((__h_case_result ) ? foldr_Bool (folder , folder (neutral , head ), tail ) : ({ /* cicili#Let5141 */
             // ----------
-            /* cicili#Block5093 */
+            /* cicili#Block5143 */
             neutral ;
           }));
       });
     });
 }
-#endif /* __folds_Bool__H_IMPL_ */ 
+#endif /* __folds_Bool__H_IMPL__ */ 
 #ifndef __Monoid_All_Bool__H_IMPL__
 #define __Monoid_All_Bool__H_IMPL__
 void free_Monoid_All_Bool (Monoid_All_Bool * this ) {
@@ -3003,26 +3003,26 @@ Monoid_All_Bool get_Monoid_All_Bool () {
 Semigroup_All_Bool get_Semigroup_All_Bool () {
   return Semigroup_All_Bool_ctor (mappend_All_Bool );
 }
-#ifndef __folds_Bool__H_IMPL_
-#define __folds_Bool__H_IMPL_
+#ifndef __folds_Bool__H_IMPL__
+#define __folds_Bool__H_IMPL__
 Bool foldr_Bool (Bool (*folder) (Bool lhs , Bool rhs ), Bool neutral , List_Bool foldable ) {
-  return ({ /* cicili#Let5156 */
+  return ({ /* cicili#Let5206 */
       __auto_type head  = (((foldable -> __h_data ). Cons ). __h_0_mem );
       __auto_type tail  = (((foldable -> __h_data ). Cons ). __h_1_mem );
       // ----------
-      /* cicili#Block5158 */
-      ({ /* cicili#Let5160 */
+      /* cicili#Block5208 */
+      ({ /* cicili#Let5210 */
         bool __h_case_result  = ((foldable -> __h_ctor ) ==  __h_Cons_t  );
         // ----------
-        ((__h_case_result ) ? foldr_Bool (folder , folder (neutral , head ), tail ) : ({ /* cicili#Let5165 */
+        ((__h_case_result ) ? foldr_Bool (folder , folder (neutral , head ), tail ) : ({ /* cicili#Let5215 */
             // ----------
-            /* cicili#Block5167 */
+            /* cicili#Block5217 */
             neutral ;
           }));
       });
     });
 }
-#endif /* __folds_Bool__H_IMPL_ */ 
+#endif /* __folds_Bool__H_IMPL__ */ 
 #ifndef __Monoid_Any_Bool__H_IMPL__
 #define __Monoid_Any_Bool__H_IMPL__
 void free_Monoid_Any_Bool (Monoid_Any_Bool * this ) {
@@ -3062,26 +3062,26 @@ Monoid_Any_Bool get_Monoid_Any_Bool () {
 Semigroup_Any_Bool get_Semigroup_Any_Bool () {
   return Semigroup_Any_Bool_ctor (mappend_Any_Bool );
 }
-#ifndef __folds_int__H_IMPL_
-#define __folds_int__H_IMPL_
+#ifndef __folds_int__H_IMPL__
+#define __folds_int__H_IMPL__
 int foldr_int (int (*folder) (int lhs , int rhs ), int neutral , List_int foldable ) {
-  return ({ /* cicili#Let5230 */
+  return ({ /* cicili#Let5280 */
       __auto_type head  = (((foldable -> __h_data ). Cons ). __h_0_mem );
       __auto_type tail  = (((foldable -> __h_data ). Cons ). __h_1_mem );
       // ----------
-      /* cicili#Block5232 */
-      ({ /* cicili#Let5234 */
+      /* cicili#Block5282 */
+      ({ /* cicili#Let5284 */
         bool __h_case_result  = ((foldable -> __h_ctor ) ==  __h_Cons_t  );
         // ----------
-        ((__h_case_result ) ? foldr_int (folder , folder (neutral , head ), tail ) : ({ /* cicili#Let5239 */
+        ((__h_case_result ) ? foldr_int (folder , folder (neutral , head ), tail ) : ({ /* cicili#Let5289 */
             // ----------
-            /* cicili#Block5241 */
+            /* cicili#Block5291 */
             neutral ;
           }));
       });
     });
 }
-#endif /* __folds_int__H_IMPL_ */ 
+#endif /* __folds_int__H_IMPL__ */ 
 #ifndef __Monoid_Sum_int__H_IMPL__
 #define __Monoid_Sum_int__H_IMPL__
 void free_Monoid_Sum_int (Monoid_Sum_int * this ) {
@@ -3121,26 +3121,26 @@ Monoid_Sum_int get_Monoid_Sum_int () {
 Semigroup_Sum_int get_Semigroup_Sum_int () {
   return Semigroup_Sum_int_ctor (mappend_Sum_int );
 }
-#ifndef __folds_int__H_IMPL_
-#define __folds_int__H_IMPL_
+#ifndef __folds_int__H_IMPL__
+#define __folds_int__H_IMPL__
 int foldr_int (int (*folder) (int lhs , int rhs ), int neutral , List_int foldable ) {
-  return ({ /* cicili#Let5304 */
+  return ({ /* cicili#Let5354 */
       __auto_type head  = (((foldable -> __h_data ). Cons ). __h_0_mem );
       __auto_type tail  = (((foldable -> __h_data ). Cons ). __h_1_mem );
       // ----------
-      /* cicili#Block5306 */
-      ({ /* cicili#Let5308 */
+      /* cicili#Block5356 */
+      ({ /* cicili#Let5358 */
         bool __h_case_result  = ((foldable -> __h_ctor ) ==  __h_Cons_t  );
         // ----------
-        ((__h_case_result ) ? foldr_int (folder , folder (neutral , head ), tail ) : ({ /* cicili#Let5313 */
+        ((__h_case_result ) ? foldr_int (folder , folder (neutral , head ), tail ) : ({ /* cicili#Let5363 */
             // ----------
-            /* cicili#Block5315 */
+            /* cicili#Block5365 */
             neutral ;
           }));
       });
     });
 }
-#endif /* __folds_int__H_IMPL_ */ 
+#endif /* __folds_int__H_IMPL__ */ 
 #ifndef __Monoid_Product_int__H_IMPL__
 #define __Monoid_Product_int__H_IMPL__
 void free_Monoid_Product_int (Monoid_Product_int * this ) {
@@ -3180,26 +3180,26 @@ Monoid_Product_int get_Monoid_Product_int () {
 Semigroup_Product_int get_Semigroup_Product_int () {
   return Semigroup_Product_int_ctor (mappend_Product_int );
 }
-#ifndef __folds_List_Bool__H_IMPL_
-#define __folds_List_Bool__H_IMPL_
+#ifndef __folds_List_Bool__H_IMPL__
+#define __folds_List_Bool__H_IMPL__
 List_Bool foldr_List_Bool (List_Bool (*folder) (List_Bool lhs , List_Bool rhs ), List_Bool neutral , List_List_Bool foldable ) {
-  return ({ /* cicili#Let5379 */
+  return ({ /* cicili#Let5429 */
       __auto_type head  = (((foldable -> __h_data ). Cons ). __h_0_mem );
       __auto_type tail  = (((foldable -> __h_data ). Cons ). __h_1_mem );
       // ----------
-      /* cicili#Block5381 */
-      ({ /* cicili#Let5383 */
+      /* cicili#Block5431 */
+      ({ /* cicili#Let5433 */
         bool __h_case_result  = ((foldable -> __h_ctor ) ==  __h_Cons_t  );
         // ----------
-        ((__h_case_result ) ? foldr_List_Bool (folder , folder (neutral , head ), tail ) : ({ /* cicili#Let5388 */
+        ((__h_case_result ) ? foldr_List_Bool (folder , folder (neutral , head ), tail ) : ({ /* cicili#Let5438 */
             // ----------
-            /* cicili#Block5390 */
+            /* cicili#Block5440 */
             neutral ;
           }));
       });
     });
 }
-#endif /* __folds_List_Bool__H_IMPL_ */ 
+#endif /* __folds_List_Bool__H_IMPL__ */ 
 #ifndef __Monoid_List_Bool__H_IMPL__
 #define __Monoid_List_Bool__H_IMPL__
 void free_Monoid_List_Bool (Monoid_List_Bool * this ) {
@@ -3239,26 +3239,26 @@ Monoid_List_Bool get_Monoid_List_Bool () {
 Semigroup_List_Bool get_Semigroup_List_Bool () {
   return Semigroup_List_Bool_ctor (mappend_List_Bool );
 }
-#ifndef __folds_List_int__H_IMPL_
-#define __folds_List_int__H_IMPL_
+#ifndef __folds_List_int__H_IMPL__
+#define __folds_List_int__H_IMPL__
 List_int foldr_List_int (List_int (*folder) (List_int lhs , List_int rhs ), List_int neutral , List_List_int foldable ) {
-  return ({ /* cicili#Let5469 */
+  return ({ /* cicili#Let5519 */
       __auto_type head  = (((foldable -> __h_data ). Cons ). __h_0_mem );
       __auto_type tail  = (((foldable -> __h_data ). Cons ). __h_1_mem );
       // ----------
-      /* cicili#Block5471 */
-      ({ /* cicili#Let5473 */
+      /* cicili#Block5521 */
+      ({ /* cicili#Let5523 */
         bool __h_case_result  = ((foldable -> __h_ctor ) ==  __h_Cons_t  );
         // ----------
-        ((__h_case_result ) ? foldr_List_int (folder , folder (neutral , head ), tail ) : ({ /* cicili#Let5478 */
+        ((__h_case_result ) ? foldr_List_int (folder , folder (neutral , head ), tail ) : ({ /* cicili#Let5528 */
             // ----------
-            /* cicili#Block5480 */
+            /* cicili#Block5530 */
             neutral ;
           }));
       });
     });
 }
-#endif /* __folds_List_int__H_IMPL_ */ 
+#endif /* __folds_List_int__H_IMPL__ */ 
 #ifndef __Monoid_List_int__H_IMPL__
 #define __Monoid_List_int__H_IMPL__
 void free_Monoid_List_int (Monoid_List_int * this ) {
@@ -3298,26 +3298,26 @@ Monoid_List_int get_Monoid_List_int () {
 Semigroup_List_int get_Semigroup_List_int () {
   return Semigroup_List_int_ctor (mappend_List_int );
 }
-#ifndef __folds_List_char__H_IMPL_
-#define __folds_List_char__H_IMPL_
+#ifndef __folds_List_char__H_IMPL__
+#define __folds_List_char__H_IMPL__
 List_char foldr_List_char (List_char (*folder) (List_char lhs , List_char rhs ), List_char neutral , List_List_char foldable ) {
-  return ({ /* cicili#Let5559 */
+  return ({ /* cicili#Let5609 */
       __auto_type head  = (((foldable -> __h_data ). Cons ). __h_0_mem );
       __auto_type tail  = (((foldable -> __h_data ). Cons ). __h_1_mem );
       // ----------
-      /* cicili#Block5561 */
-      ({ /* cicili#Let5563 */
+      /* cicili#Block5611 */
+      ({ /* cicili#Let5613 */
         bool __h_case_result  = ((foldable -> __h_ctor ) ==  __h_Cons_t  );
         // ----------
-        ((__h_case_result ) ? foldr_List_char (folder , folder (neutral , head ), tail ) : ({ /* cicili#Let5568 */
+        ((__h_case_result ) ? foldr_List_char (folder , folder (neutral , head ), tail ) : ({ /* cicili#Let5618 */
             // ----------
-            /* cicili#Block5570 */
+            /* cicili#Block5620 */
             neutral ;
           }));
       });
     });
 }
-#endif /* __folds_List_char__H_IMPL_ */ 
+#endif /* __folds_List_char__H_IMPL__ */ 
 #ifndef __Monoid_List_char__H_IMPL__
 #define __Monoid_List_char__H_IMPL__
 void free_Monoid_List_char (Monoid_List_char * this ) {
@@ -3357,26 +3357,26 @@ Monoid_List_char get_Monoid_List_char () {
 Semigroup_List_char get_Semigroup_List_char () {
   return Semigroup_List_char_ctor (mappend_List_char );
 }
-#ifndef __folds_List_char__H_IMPL_
-#define __folds_List_char__H_IMPL_
+#ifndef __folds_List_char__H_IMPL__
+#define __folds_List_char__H_IMPL__
 List_char foldr_List_char (List_char (*folder) (List_char lhs , List_char rhs ), List_char neutral , List_List_char foldable ) {
-  return ({ /* cicili#Let5649 */
+  return ({ /* cicili#Let5699 */
       __auto_type head  = (((foldable -> __h_data ). Cons ). __h_0_mem );
       __auto_type tail  = (((foldable -> __h_data ). Cons ). __h_1_mem );
       // ----------
-      /* cicili#Block5651 */
-      ({ /* cicili#Let5653 */
+      /* cicili#Block5701 */
+      ({ /* cicili#Let5703 */
         bool __h_case_result  = ((foldable -> __h_ctor ) ==  __h_Cons_t  );
         // ----------
-        ((__h_case_result ) ? foldr_List_char (folder , folder (neutral , head ), tail ) : ({ /* cicili#Let5658 */
+        ((__h_case_result ) ? foldr_List_char (folder , folder (neutral , head ), tail ) : ({ /* cicili#Let5708 */
             // ----------
-            /* cicili#Block5660 */
+            /* cicili#Block5710 */
             neutral ;
           }));
       });
     });
 }
-#endif /* __folds_List_char__H_IMPL_ */ 
+#endif /* __folds_List_char__H_IMPL__ */ 
 #ifndef __Monoid_String_char__H_IMPL__
 #define __Monoid_String_char__H_IMPL__
 void free_Monoid_String_char (Monoid_String_char * this ) {
@@ -3418,18 +3418,18 @@ Semigroup_String_char get_Semigroup_String_char () {
 }
 #ifndef __Functor_List_int_int__H_IMPL__
 #define __Functor_List_int_int__H_IMPL__
-List_int fmap_Functor_List_int_int (Functor_List_int_int_a_b_t a_b , List_int input ) {
-  return ({ /* cicili#Let5740 */
+List_int fmap_Functor_List_int_int (int_to_int_t a_b , List_int input ) {
+  return ({ /* cicili#Let5790 */
       __auto_type head  = (((input -> __h_data ). _ ). __h_0_mem );
       __auto_type tail  = (((input -> __h_data ). _ ). __h_1_mem );
       // ----------
-      /* cicili#Block5742 */
-      ({ /* cicili#Let5744 */
+      /* cicili#Block5792 */
+      ({ /* cicili#Let5794 */
         bool __h_case_result  = ((input -> __h_ctor ) ==  __h___t  );
         // ----------
-        ((__h_case_result ) ? Cons_int (a_b (head ), fmap_Functor_List_int_int (a_b , tail )) : ({ /* cicili#Let5751 */
+        ((__h_case_result ) ? Cons_int (a_b (head ), fmap_Functor_List_int_int (a_b , tail )) : ({ /* cicili#Let5801 */
             // ----------
-            /* cicili#Block5753 */
+            /* cicili#Block5803 */
             Empty_int ();
           }));
       });
@@ -3450,18 +3450,18 @@ Functor_List_int_int get_Functor_List_int_int () {
 }
 #ifndef __Functor_List_int_Bool__H_IMPL__
 #define __Functor_List_int_Bool__H_IMPL__
-List_Bool fmap_Functor_List_int_Bool (Functor_List_int_Bool_a_b_t a_b , List_int input ) {
-  return ({ /* cicili#Let5783 */
+List_Bool fmap_Functor_List_int_Bool (int_to_Bool_t a_b , List_int input ) {
+  return ({ /* cicili#Let5833 */
       __auto_type head  = (((input -> __h_data ). _ ). __h_0_mem );
       __auto_type tail  = (((input -> __h_data ). _ ). __h_1_mem );
       // ----------
-      /* cicili#Block5785 */
-      ({ /* cicili#Let5787 */
+      /* cicili#Block5835 */
+      ({ /* cicili#Let5837 */
         bool __h_case_result  = ((input -> __h_ctor ) ==  __h___t  );
         // ----------
-        ((__h_case_result ) ? Cons_Bool (a_b (head ), fmap_Functor_List_int_Bool (a_b , tail )) : ({ /* cicili#Let5794 */
+        ((__h_case_result ) ? Cons_Bool (a_b (head ), fmap_Functor_List_int_Bool (a_b , tail )) : ({ /* cicili#Let5844 */
             // ----------
-            /* cicili#Block5796 */
+            /* cicili#Block5846 */
             Empty_Bool ();
           }));
       });
@@ -3482,18 +3482,18 @@ Functor_List_int_Bool get_Functor_List_int_Bool () {
 }
 #ifndef __Functor_List_char_char__H_IMPL__
 #define __Functor_List_char_char__H_IMPL__
-List_char fmap_Functor_List_char_char (Functor_List_char_char_a_b_t a_b , List_char input ) {
-  return ({ /* cicili#Let5826 */
+List_char fmap_Functor_List_char_char (char_to_char_t a_b , List_char input ) {
+  return ({ /* cicili#Let5876 */
       __auto_type head  = (((input -> __h_data ). _ ). __h_0_mem );
       __auto_type tail  = (((input -> __h_data ). _ ). __h_1_mem );
       // ----------
-      /* cicili#Block5828 */
-      ({ /* cicili#Let5830 */
+      /* cicili#Block5878 */
+      ({ /* cicili#Let5880 */
         bool __h_case_result  = ((input -> __h_ctor ) ==  __h___t  );
         // ----------
-        ((__h_case_result ) ? Cons_char (a_b (head ), fmap_Functor_List_char_char (a_b , tail )) : ({ /* cicili#Let5837 */
+        ((__h_case_result ) ? Cons_char (a_b (head ), fmap_Functor_List_char_char (a_b , tail )) : ({ /* cicili#Let5887 */
             // ----------
-            /* cicili#Block5839 */
+            /* cicili#Block5889 */
             Empty_char ();
           }));
       });
@@ -3514,18 +3514,18 @@ Functor_List_char_char get_Functor_List_char_char () {
 }
 #ifndef __Functor_List_char_Bool__H_IMPL__
 #define __Functor_List_char_Bool__H_IMPL__
-List_Bool fmap_Functor_List_char_Bool (Functor_List_char_Bool_a_b_t a_b , List_char input ) {
-  return ({ /* cicili#Let5869 */
+List_Bool fmap_Functor_List_char_Bool (char_to_Bool_t a_b , List_char input ) {
+  return ({ /* cicili#Let5919 */
       __auto_type head  = (((input -> __h_data ). _ ). __h_0_mem );
       __auto_type tail  = (((input -> __h_data ). _ ). __h_1_mem );
       // ----------
-      /* cicili#Block5871 */
-      ({ /* cicili#Let5873 */
+      /* cicili#Block5921 */
+      ({ /* cicili#Let5923 */
         bool __h_case_result  = ((input -> __h_ctor ) ==  __h___t  );
         // ----------
-        ((__h_case_result ) ? Cons_Bool (a_b (head ), fmap_Functor_List_char_Bool (a_b , tail )) : ({ /* cicili#Let5880 */
+        ((__h_case_result ) ? Cons_Bool (a_b (head ), fmap_Functor_List_char_Bool (a_b , tail )) : ({ /* cicili#Let5930 */
             // ----------
-            /* cicili#Block5882 */
+            /* cicili#Block5932 */
             Empty_Bool ();
           }));
       });
@@ -3544,67 +3544,127 @@ Functor_List_char_Bool Functor_List_char_Bool_ctor () {
 Functor_List_char_Bool get_Functor_List_char_Bool () {
   return Functor_List_char_Bool_ctor ();
 }
-#ifndef __Functor_String_char__H_IMPL__
-#define __Functor_String_char__H_IMPL__
-List_char fmap_Functor_String_char (Functor_String_char_a_b_t a_b , List_char input ) {
-  return ({ /* cicili#Let5912 */
-      __auto_type head  = (((input -> __h_data ). _ ). __h_0_mem );
-      __auto_type tail  = (((input -> __h_data ). _ ). __h_1_mem );
+#ifndef __Functor_Maybe_int_int__H_IMPL__
+#define __Functor_Maybe_int_int__H_IMPL__
+Maybe_int fmap_Functor_Maybe_int_int (int_to_int_t a_b , Maybe_int input ) {
+  return ({ /* cicili#Let5962 */
+      __auto_type val  = (((input . __h_data ). Just ). __h_0_mem );
       // ----------
-      /* cicili#Block5914 */
-      ({ /* cicili#Let5916 */
-        bool __h_case_result  = ((input -> __h_ctor ) ==  __h___t  );
+      /* cicili#Block5964 */
+      ({ /* cicili#Let5966 */
+        bool __h_case_result  = ((input . __h_ctor ) ==  __h_Just_t  );
         // ----------
-        ((__h_case_result ) ? Cons_char (a_b (head ), fmap_Functor_String_char (a_b , tail )) : ({ /* cicili#Let5923 */
+        ((__h_case_result ) ? Just_int (a_b (val )) : ({ /* cicili#Let5976 */
             // ----------
-            /* cicili#Block5925 */
-            Empty_char ();
+            /* cicili#Block5978 */
+            Nothing_int ();
           }));
       });
     });
 }
-void free_Functor_String_char (Functor_String_char * this ) {
+void free_Functor_Maybe_int_int (Functor_Maybe_int_int * this ) {
 }
-const Functor_String_char__H_Table * const get_Functor_String_char__H_Table () {
-  static const Functor_String_char__H_Table table  = { free_Functor_String_char , fmap_Functor_String_char };
+const Functor_Maybe_int_int__H_Table * const get_Functor_Maybe_int_int__H_Table () {
+  static const Functor_Maybe_int_int__H_Table table  = { free_Functor_Maybe_int_int , fmap_Functor_Maybe_int_int };
   return (&table );
 }
-Functor_String_char Functor_String_char_ctor () {
-  return ((Functor_String_char){ get_Functor_String_char__H_Table (), __h___t });
+Functor_Maybe_int_int Functor_Maybe_int_int_ctor () {
+  return ((Functor_Maybe_int_int){ get_Functor_Maybe_int_int__H_Table (), __h___t });
 }
-#endif /* __Functor_String_char__H_IMPL__ */ 
-Functor_String_char get_Functor_String_char () {
-  return Functor_String_char_ctor ();
+#endif /* __Functor_Maybe_int_int__H_IMPL__ */ 
+Functor_Maybe_int_int get_Functor_Maybe_int_int () {
+  return Functor_Maybe_int_int_ctor ();
 }
-#ifndef __Functor_String_Bool__H_IMPL__
-#define __Functor_String_Bool__H_IMPL__
-List_Bool fmap_Functor_String_Bool (Functor_String_Bool_a_b_t a_b , List_char input ) {
-  return ({ /* cicili#Let5955 */
-      __auto_type head  = (((input -> __h_data ). _ ). __h_0_mem );
-      __auto_type tail  = (((input -> __h_data ). _ ). __h_1_mem );
+#ifndef __Functor_Maybe_int_Bool__H_IMPL__
+#define __Functor_Maybe_int_Bool__H_IMPL__
+Maybe_Bool fmap_Functor_Maybe_int_Bool (int_to_Bool_t a_b , Maybe_int input ) {
+  return ({ /* cicili#Let6008 */
+      __auto_type val  = (((input . __h_data ). Just ). __h_0_mem );
       // ----------
-      /* cicili#Block5957 */
-      ({ /* cicili#Let5959 */
-        bool __h_case_result  = ((input -> __h_ctor ) ==  __h___t  );
+      /* cicili#Block6010 */
+      ({ /* cicili#Let6012 */
+        bool __h_case_result  = ((input . __h_ctor ) ==  __h_Just_t  );
         // ----------
-        ((__h_case_result ) ? Cons_Bool (a_b (head ), fmap_Functor_String_Bool (a_b , tail )) : ({ /* cicili#Let5966 */
+        ((__h_case_result ) ? Just_Bool (a_b (val )) : ({ /* cicili#Let6022 */
             // ----------
-            /* cicili#Block5968 */
-            Empty_Bool ();
+            /* cicili#Block6024 */
+            Nothing_Bool ();
           }));
       });
     });
 }
-void free_Functor_String_Bool (Functor_String_Bool * this ) {
+void free_Functor_Maybe_int_Bool (Functor_Maybe_int_Bool * this ) {
 }
-const Functor_String_Bool__H_Table * const get_Functor_String_Bool__H_Table () {
-  static const Functor_String_Bool__H_Table table  = { free_Functor_String_Bool , fmap_Functor_String_Bool };
+const Functor_Maybe_int_Bool__H_Table * const get_Functor_Maybe_int_Bool__H_Table () {
+  static const Functor_Maybe_int_Bool__H_Table table  = { free_Functor_Maybe_int_Bool , fmap_Functor_Maybe_int_Bool };
   return (&table );
 }
-Functor_String_Bool Functor_String_Bool_ctor () {
-  return ((Functor_String_Bool){ get_Functor_String_Bool__H_Table (), __h___t });
+Functor_Maybe_int_Bool Functor_Maybe_int_Bool_ctor () {
+  return ((Functor_Maybe_int_Bool){ get_Functor_Maybe_int_Bool__H_Table (), __h___t });
 }
-#endif /* __Functor_String_Bool__H_IMPL__ */ 
-Functor_String_Bool get_Functor_String_Bool () {
-  return Functor_String_Bool_ctor ();
+#endif /* __Functor_Maybe_int_Bool__H_IMPL__ */ 
+Functor_Maybe_int_Bool get_Functor_Maybe_int_Bool () {
+  return Functor_Maybe_int_Bool_ctor ();
+}
+#ifndef __Functor_Maybe_char_char__H_IMPL__
+#define __Functor_Maybe_char_char__H_IMPL__
+Maybe_char fmap_Functor_Maybe_char_char (char_to_char_t a_b , Maybe_char input ) {
+  return ({ /* cicili#Let6054 */
+      __auto_type val  = (((input . __h_data ). Just ). __h_0_mem );
+      // ----------
+      /* cicili#Block6056 */
+      ({ /* cicili#Let6058 */
+        bool __h_case_result  = ((input . __h_ctor ) ==  __h_Just_t  );
+        // ----------
+        ((__h_case_result ) ? Just_char (a_b (val )) : ({ /* cicili#Let6068 */
+            // ----------
+            /* cicili#Block6070 */
+            Nothing_char ();
+          }));
+      });
+    });
+}
+void free_Functor_Maybe_char_char (Functor_Maybe_char_char * this ) {
+}
+const Functor_Maybe_char_char__H_Table * const get_Functor_Maybe_char_char__H_Table () {
+  static const Functor_Maybe_char_char__H_Table table  = { free_Functor_Maybe_char_char , fmap_Functor_Maybe_char_char };
+  return (&table );
+}
+Functor_Maybe_char_char Functor_Maybe_char_char_ctor () {
+  return ((Functor_Maybe_char_char){ get_Functor_Maybe_char_char__H_Table (), __h___t });
+}
+#endif /* __Functor_Maybe_char_char__H_IMPL__ */ 
+Functor_Maybe_char_char get_Functor_Maybe_char_char () {
+  return Functor_Maybe_char_char_ctor ();
+}
+#ifndef __Functor_Maybe_char_Bool__H_IMPL__
+#define __Functor_Maybe_char_Bool__H_IMPL__
+Maybe_Bool fmap_Functor_Maybe_char_Bool (char_to_Bool_t a_b , Maybe_char input ) {
+  return ({ /* cicili#Let6100 */
+      __auto_type val  = (((input . __h_data ). Just ). __h_0_mem );
+      // ----------
+      /* cicili#Block6102 */
+      ({ /* cicili#Let6104 */
+        bool __h_case_result  = ((input . __h_ctor ) ==  __h_Just_t  );
+        // ----------
+        ((__h_case_result ) ? Just_Bool (a_b (val )) : ({ /* cicili#Let6114 */
+            // ----------
+            /* cicili#Block6116 */
+            Nothing_Bool ();
+          }));
+      });
+    });
+}
+void free_Functor_Maybe_char_Bool (Functor_Maybe_char_Bool * this ) {
+}
+const Functor_Maybe_char_Bool__H_Table * const get_Functor_Maybe_char_Bool__H_Table () {
+  static const Functor_Maybe_char_Bool__H_Table table  = { free_Functor_Maybe_char_Bool , fmap_Functor_Maybe_char_Bool };
+  return (&table );
+}
+Functor_Maybe_char_Bool Functor_Maybe_char_Bool_ctor () {
+  return ((Functor_Maybe_char_Bool){ get_Functor_Maybe_char_Bool__H_Table (), __h___t });
+}
+#endif /* __Functor_Maybe_char_Bool__H_IMPL__ */ 
+Functor_Maybe_char_Bool get_Functor_Maybe_char_Bool () {
+  return Functor_Maybe_char_Bool_ctor ();
 }

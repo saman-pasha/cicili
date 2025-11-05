@@ -10,12 +10,11 @@
 ;;   <$>  :: (a -> b) -> f a -> f b
 (generic decl-Functor (type f a b)
 
-         (typedef func (<> Functor type a_b t) ((a value)) (out b))
-         (typedef func (<> Functor type fmap t) (((<> Functor type a_b t) a_b) ((<> f a) input)) (out (<> f b)))
+         (typedef func (<> a to b t) ((a value)) (out b))
 
          (decl-data (Functor (<> Functor type))
            (= Functor (<> Functor type ctor))
-           (func fmap (((<> Functor type a_b t) a_b) ((<> f a) input)) (out (<> f b))))
+           (func fmap (((<> a to b t) a_b) ((<> f a) input)) (out (<> f b))))
 
          (decl) (func (<> get Functor type) () (out (<> Functor type)))
 
@@ -36,7 +35,7 @@
          (impl-data (Functor (<> Functor type))
            (= Functor (<> Functor type ctor))
 
-           (func fmap (((<> Functor type a_b t) a_b) ((<> f a) input))
+           (func fmap (((<> a to b t) a_b) ((<> f a) input))
                  (out (<> f b))
                  (return mat)))
 

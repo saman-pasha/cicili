@@ -13,10 +13,10 @@
            ;; functions can accept an instance or not,
            ;; with any name
            ;; at any position in parameter list
-           ;; they will be accessed with '\.' 'selector' operator
+           ;; they will be accessed with '\.*' 'selector' operator
            ;; selector finds the path to the function
            ;; selected function could be called then
-           ;; ((\. nth list-instance) 0 alist)
+           ;; ((\.* nth list-instance) 0 alist)
            (func next   ((type list)) (out type))
            (func nth    ((int index) (type list)) (out (<> Maybe a)))
            (func head   ((type list)) (out (<> Maybe a)))
@@ -59,29 +59,29 @@
                    (match list
                      (* Cons head tail
                         (case (== index 0) ((<> Just a) head)
-                              otherwise    ((\. nth list) (-- index) tail)))
+                              otherwise    ((\.* nth list) (-- index) tail)))
                      (default ((<> Nothing a))))))
 
            (func head ((type list))
                  (out (<> Maybe a))
-                 (return ((\. nth list) 0 list)))
+                 (return ((\.* nth list) 0 list)))
 
            (func drop ((int index) (type list))
                  (out type)
                  (return
                    (case (== index 0) list
                          otherwise    (match list
-                                        (* Cons _ tail ((\. drop list) (-- index) tail))
+                                        (* Cons _ tail ((\.* drop list) (-- index) tail))
                                         (default ((<> Empty a)))))))
            
            (func tail ((type list))
                  (out type)
-                 (return ((\. drop list) 0 list)))
+                 (return ((\.* drop list) 0 list)))
            
            (func len ((type list))
                  (out int)
                  (return (match list
-                           (* Cons _ tail (+ 1 ((\. len list) tail)))
+                           (* Cons _ tail (+ 1 ((\.* len list) tail)))
                            (default 0))))
 
            (func hasLen ((type list) (int desired))
@@ -89,14 +89,14 @@
                  (return (match list
                            (* Cons _ tail
                               (case (== desired 1) 1
-                                    otherwise      (+ 1 ((\. hasLen list) tail (-- desired)))))
+                                    otherwise      (+ 1 ((\.* hasLen list) tail (-- desired)))))
                            (default 0))))
 
            (func take ((int len) (type list))
                  (out type)
                  (return (match list
                            (* Cons head tail => (> len 0)
-                              ((\. push list) head ((\. take list) (-- len) tail)))
+                              ((\.* push list) head ((\.* take list) (-- len) tail)))
                            (default ((<> Empty a))))))
 
            
@@ -106,7 +106,7 @@
                            (* Cons _ tail
                               (match tail
                                 (* Empty list)
-                                (default ((\. last list) tail))))
+                                (default ((\.* last list) tail))))
                            (default list))))
 
            (func push ((a item) (type list))
@@ -117,7 +117,7 @@
            ;; no copy
            (func append ((type llist) (type rlist))
                  (out type)
-                 (return (letin* ((last ((\. last llist) llist)))
+                 (return (letin* ((last ((\.* last llist) llist)))
                            (match last
                              (* Cons _ tail
                                 (progn

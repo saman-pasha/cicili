@@ -109,8 +109,12 @@
 (DEFMACRO case (fcond fpath otherwise elsepath &REST guards)
   `(function-h-guard ,fcond ,fpath ,otherwise ,elsepath ,@guards))
 
-;; a way to access functions inside Table by instance
-(DEFMACRO \. (function class)
+;; a way to access functions inside Table by data instance
+(DEFMACRO \. (function data)
+  `(-> (aof ,data) __h_table ,function))
+
+;; a way to access functions inside Table by class instance
+(DEFMACRO \.* (function class)
   `(-> ,class __h_table ,function))
 
 ;; a way to access functions inside Table by getTable

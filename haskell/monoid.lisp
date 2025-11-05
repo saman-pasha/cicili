@@ -37,7 +37,7 @@
 (generic decl-Monoid (type a)
 
          ;; dependencies
-         (guard (<> _ folds a _H_DECL_)
+         (guard (<> _ folds a _H_DECL__)
            (decl-folds a))
 
          (typedef func (<> Monoid type mappend t) ((a lhs) (a rhs)) (out a))
@@ -66,7 +66,7 @@
 (generic impl-Monoid (type a neutral op)
 
          ;; dependencies
-         (guard (<> _ folds a _H_IMPL_)
+         (guard (<> _ folds a _H_IMPL__)
            (impl-folds a))
          
          (impl-data (Monoid (<> Monoid type))

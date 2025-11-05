@@ -37,10 +37,10 @@
                  (out type)
                  (return (match list
                            (* Cons from _ to step => (> len 0)
-                              (letn ((auto ne . #'((\. next list) list)))
+                              (letn ((auto ne . #'((\.* next list) list)))
                                 (match ne
                                   (* Cons
-                                     ((<> Cons type) from ((\. take list) (-- len) ne) to step))
+                                     ((<> Cons type) from ((\.* take list) (-- len) ne) to step))
                                   (default ((<> Cons type) from ne to step)))))
                            (default ((<> Empty type))))))
            
@@ -52,7 +52,7 @@
                            (block
                                (fmt head)
                              (putchar #\Space)
-                             ((\. show list) tail)))
+                             ((\.* show list) tail)))
                         (default (fmt head))))))
 
            (free (io this

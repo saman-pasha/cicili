@@ -928,7 +928,7 @@ int main () {
     fprintf (stdout , "\ntake 10 of range 1 20 3:\n");
     (get_List_int__H_Table ()-> show )(((List_int)ra3 ));
     fprintf (stdout , "\nString to List^int:\n");
-    (str1 -> __h_table -> show )(((List_int)str0 ));
+    (get_List_int__H_Table ()-> show )(((List_int)str0 ));
     fprintf (stdout , "\nList^int to String:\n");
     show_String (((String)str1 ));
     putchar ('\n');

@@ -12,16 +12,10 @@
 ;;   <*>  :: f (a -> b) -> f a -> f b
 (generic decl-Applicative (type f a b)
 
-         (typedef func (<> Applicative type pure t) (((<> Functor type a_b t) a_b)) (out (<> f (<> Functor type a_b t))))
-         (typedef func (<> Applicative type ap t) (((<> f (<> Functor type a_b t)) f_a_b) ((<> f a) input)) (out (<> f b)))
-
          (decl-data (Applicative (<> Applicative type))
-           (= Applicative (<> Applicative type ctor)
-              ((<> Applicative type pure t) pure)
-              ((<> Applicative type ap t) ap)))
-
-         (decl) (func (<> pure Applicative type) (((<> Functor type a_b t) a_b)) (out (<> f (<> Functor type a_b t))))
-         (decl) (func (<> ap Applicative type) (((<> f (<> Functor type a_b t)) f_a_b) ((<> f a) input)) (out (<> f b)))
+           (= Applicative (<> Applicative type ctor))
+           (func pure (((<> a to b t) a_b)) (out (<> f (<> a to b t))))
+           (func ap   (((<> f (<> a to b t)) f_a_b) ((<> f a) input)) (out (<> f b))))
 
          (decl) (func (<> get Applicative type) () (out (<> Applicative type)))
 
@@ -38,32 +32,23 @@
 (generic impl-Applicative (type f a b wrap mat)
 
          (impl-data (Applicative (<> Applicative type))
-           (= Applicative (<> Applicative type ctor)
-              ((<> Applicative type pure t) pure)
-              ((<> Applicative type ap t) ap)))
+           (= Applicative (<> Applicative type ctor))
 
-         (func (<> pure Applicative type) (((<> Functor type a_b t) a_b))
-               (out (<> f (<> Functor type a_b t)))
-               (return (wrap a_b)))
+           (func pure (((<> a to b t) a_b))
+                 (out (<> f (<> a to b t)))
+                 (return (wrap a_b)))
 
-         (func (<> ap Applicative type) (((<> f (<> Functor type a_b t)) f_a_b) ((<> f a) input))
-               (out (<> f b))
-               (return mat))
+           (func ap (((<> f (<> a to b t)) f_a_b) ((<> f a) input))
+                 (out (<> f b))
+                 (return mat)))
 
          (func (<> get Applicative type) ()
                (out (<> Applicative type))
-               (return ((<> Applicative type ctor)
-                        (<> pure Applicative type)
-                        (<> ap Applicative type))))
+               (return ((<> Applicative type ctor))))
 
          ) ; impl-Applicative
 
 (generic import-Applicative (type f a b)
-
-         (import-data (Applicative (<> Applicative type))
-           (= Applicative (<> Applicative type)
-              ((<> Applicative type pure t) pure)
-              ((<> Applicative type ap t) ap)))
 
          (fn (<> pure type) a_b
              ((<> pure Applicative type) a_b))
@@ -79,6 +64,9 @@
 ;; enables parallelism computation
 (generic decl-Applicative-List (type a b)
 
+         ;; dependencies
+         (decl-List (<> List (<> a to b t)) (<> a to b t))
+
          (decl-Applicative type List a b)
          
          ) ; decl-Applicative-List
@@ -90,8 +78,11 @@
 ;; all functions apply with fmap of Functor
 (generic impl-Applicative-List (type a b)
 
+         ;; dependencies
+         (impl-List (<> List (<> a to b t)) (<> a to b t) (\\ v (printf "%p" v)))
+
          (impl-Applicative type List a b
-                             (\\ a->b ((<> new List (<> Functor type a_b t) Wrap) a->b))
+                             (\\ a->b ((<> new List (<> a to b t) Wrap) a->b))
                              (match f_a_b
                                (* Cons a_b tail
                                   ((<> mconcat List b)
@@ -114,14 +105,20 @@
 ;; enables optional computation
 (generic decl-Applicative-Maybe (type a b)
 
+         ;; dependencies
+         (decl-Maybe (<> Maybe (<> a to b t)))
+
          (decl-Applicative type Maybe a b)
          
          ) ; decl-Applicative-Maybe
 
 (generic impl-Applicative-Maybe (type a b)
 
+         ;; dependencies
+         (impl-Maybe (<> Maybe (<> a to b t)))
+         
          (impl-Applicative type Maybe a b
-                             (<> Just (<> Functor type a_b t))
+                             (<> Just (<> a to b t))
                              (match f_a_b
                                (Just a_b ((<> fmap Functor type) a_b input))
                                (default ((<> Nothing b)))))

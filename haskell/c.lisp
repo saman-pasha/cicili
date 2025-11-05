@@ -42,8 +42,11 @@
         (decl-Functor-List List^int^Bool  int  Bool)
         (decl-Functor-List List^char^char char char)
         (decl-Functor-List List^char^Bool char Bool)
-        (decl-Functor-List String^char    char char)
-        (decl-Functor-List String^Bool    char Bool)
+
+        (decl-Functor-Maybe Maybe^int^int   int  int)
+        (decl-Functor-Maybe Maybe^int^Bool  int  Bool)
+        (decl-Functor-Maybe Maybe^char^char char char)
+        (decl-Functor-Maybe Maybe^char^Bool char Bool)
 
         ) ; haskell.h
 
@@ -102,7 +105,10 @@
         (impl-Functor-List List^int^Bool  int  Bool)
         (impl-Functor-List List^char^char char char)
         (impl-Functor-List List^char^Bool char Bool)
-        (impl-Functor-List String^char    char char)
-        (impl-Functor-List String^Bool    char Bool)
+
+        (impl-Functor-Maybe Maybe^int^int   int  int)
+        (impl-Functor-Maybe Maybe^int^Bool  int  Bool)
+        (impl-Functor-Maybe Maybe^char^char char char)
+        (impl-Functor-Maybe Maybe^char^Bool char Bool)
 
         ) ; haskell.c
