@@ -19,15 +19,17 @@
 
          (decl) (func (<> get Applicative type) () (out (<> Applicative type)))
 
-         (fn (<> pure type) a_b
-             ((<> pure Applicative type) a_b))
+         (fn (<> pure type) a->b
+             ((<> pure Applicative type)
+              '(lambda ((a __h_value))
+                (out b)
+                (return ($> a->b __h_value)))))
 
          (fn (<> ap type) f_a_b input
              ((<> ap Applicative type) f_a_b input))
          
          ) ; decl-Applicative
 
-;; ctor could be every thing where accept an argument of type 'a'
 ;; mat has access to 'functor' and 'input' variables inside 'ap' function
 (generic impl-Applicative (type f a b wrap mat)
 
@@ -50,8 +52,11 @@
 
 (generic import-Applicative (type f a b)
 
-         (fn (<> pure type) a_b
-             ((<> pure Applicative type) a_b))
+         (fn (<> pure type) a->b
+             ((<> pure Applicative type)
+              '(lambda ((a __h_value))
+                (out b)
+                (return ($> a->b __h_value)))))
 
          (fn (<> ap type) f_a_b input
              ((<> ap Applicative type) f_a_b input))
@@ -62,6 +67,7 @@
 ;; List
 ;; Cartesian Application
 ;; enables parallelism computation
+;; List (int -> int) -> List int -> List int
 (generic decl-Applicative-List (type a b)
 
          ;; dependencies
@@ -103,6 +109,7 @@
 
 ;; Maybe
 ;; enables optional computation
+;; Maybe (int -> int) -> Maybe int -> Maybe int
 (generic decl-Applicative-Maybe (type a b)
 
          ;; dependencies

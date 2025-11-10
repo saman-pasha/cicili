@@ -1,6 +1,4 @@
 
-(import "haskell/monad.lisp")
-
 (source "concepts.c" (:std #t :compile #t :link "-L{$CCL} -lhaskell.o -L{$CWD} concepts.o -o main")
         (include "../../haskell.h")
 
@@ -34,7 +32,7 @@
                   (return ((<> Left String int) (new^String "zero division")))
                   (return ((<> Right String int) (/ x y)))))
 
-        (generic ap_a_to_b (a b)
+        (generic ap-a-to-b (a b)
                  
                  ;; ap List
                  ;; List (int -> int) -> List int -> List int
@@ -46,9 +44,9 @@
                  (decl-Applicative-Maybe (<> Maybe a b) a b)
                  (impl-Applicative-Maybe (<> Maybe a b) a b)
                  
-                 ) ; ap_a_to_b
+                 ) ; ap-a-to-b
 
-        (ap_a_to_b int int)
+        (ap-a-to-b int int)
         (import-List new^List^int^to^int^t (<> List (<> int to int t)) (<> int to int t))
         
         (main
@@ -208,15 +206,16 @@
                    (apmii (get^Applicative^Maybe^int^int)))
             (io ((\. ap apmii) ((\. pure apmii) mul_15) (Just^int 12))
               (Just output (format #t "the result of 'Applicative for Maybe (*15) (Just 12)' is: Just %d\n" output))
-              (default (format #t "the result of 'Applicative for Maybe (*15) (Just 12)' is: Nothing\n")))
-            ;; easy access to ap 'tie-fighter'
-            (letin* ((wrapped (pure^Maybe^int^int mul_15)))
-              (io ($> ap^Maybe^int^int wrapped (Just^int 12))
-                (Just output (format #t "the result of easy 'Applicative for Maybe (*15) (Just 12)' is: Just %d\n" output))
-                (default (format #t "the result of easy 'Applicative for Maybe (*15) (Just 12)' is: Nothing\n")))
-              (io ($> ap^Maybe^int^int wrapped (Nothing^int))
-                (Just output (format #t "the result of easy 'Applicative for Maybe (*15) Nothing' is: Just %d\n" output))
-                (default (format #t "the result of easy 'Applicative for Maybe (*15) Nothing' is: Nothing\n")))))
+              (default (format #t "the result of 'Applicative for Maybe (*15) (Just 12)' is: Nothing\n"))))
+          
+          ;; easy access to ap 'tie-fighter'
+          (letin* ((wrapped (pure^Maybe^int^int (\\ value (* 15 value)))))
+            (io ($> ap^Maybe^int^int wrapped (Just^int 12))
+              (Just output (format #t "the result of easy 'Applicative for Maybe (*15) (Just 12)' is: Just %d\n" output))
+              (default (format #t "the result of easy 'Applicative for Maybe (*15) (Just 12)' is: Nothing\n")))
+            (io ($> ap^Maybe^int^int wrapped (Nothing^int))
+              (Just output (format #t "the result of easy 'Applicative for Maybe (*15) Nothing' is: Just %d\n" output))
+              (default (format #t "the result of easy 'Applicative for Maybe (*15) Nothing' is: Nothing\n"))))
 
           ;; test applicative over List
           (where ((fmap-mul-3 '(lambda ((int value)) (out int) (return (* 3 value))))

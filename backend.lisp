@@ -555,6 +555,7 @@
 		               (otherwise nil)))
 	             params)
 
+        (output "~&~A" (indent (- lvl 1)))
         (when is-extern   (set-ast-line (output "extern ")))
         (when is-inline   (set-ast-line (output "__attribute__((weak)) ")))
         (when (and is-static (not (key-eq name '|main|))) (set-ast-line (output "static ")))
@@ -623,6 +624,7 @@
         (unless is-declare
           (progn
 	        (compile-body body lvl locals spec)
+            (output "~&~A" (indent (- lvl 1)))
             (output "}"))))))
   (setq *resolve* t))
 

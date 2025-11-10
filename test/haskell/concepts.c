@@ -164,18 +164,18 @@ typedef __h_List_int_to_int_t_class_t * List_int_to_int_t ;
 typedef void (*free_List_int_to_int_t_t) (List_int_to_int_t * this_ptr );
 typedef struct List_int_to_int_t__H_Table {
   free_List_int_to_int_t_t freeClass ;
-  void (*show) (List_int_to_int_t list );
-  List_int_to_int_t (*append) (List_int_to_int_t llist , List_int_to_int_t rlist );
-  List_int_to_int_t (*push) (int_to_int_t item , List_int_to_int_t list );
-  List_int_to_int_t (*last) (List_int_to_int_t list );
-  List_int_to_int_t (*take) (int len , List_int_to_int_t list );
-  int (*hasLen) (List_int_to_int_t list , int desired );
-  int (*len) (List_int_to_int_t list );
-  List_int_to_int_t (*tail) (List_int_to_int_t list );
-  List_int_to_int_t (*drop) (int index , List_int_to_int_t list );
-  Maybe_int_to_int_t (*head) (List_int_to_int_t list );
-  Maybe_int_to_int_t (*nth) (int index , List_int_to_int_t list );
-  List_int_to_int_t (*next) (List_int_to_int_t list );
+    void (*show) (List_int_to_int_t list );
+    List_int_to_int_t (*append) (List_int_to_int_t llist , List_int_to_int_t rlist );
+    List_int_to_int_t (*push) (int_to_int_t item , List_int_to_int_t list );
+    List_int_to_int_t (*last) (List_int_to_int_t list );
+    List_int_to_int_t (*take) (int len , List_int_to_int_t list );
+    int (*hasLen) (List_int_to_int_t list , int desired );
+    int (*len) (List_int_to_int_t list );
+    List_int_to_int_t (*tail) (List_int_to_int_t list );
+    List_int_to_int_t (*drop) (int index , List_int_to_int_t list );
+    Maybe_int_to_int_t (*head) (List_int_to_int_t list );
+    Maybe_int_to_int_t (*nth) (int index , List_int_to_int_t list );
+    List_int_to_int_t (*next) (List_int_to_int_t list );
 } List_int_to_int_t__H_Table;
 typedef struct __h_List_int_to_int_t_class_t {
   const List_int_to_int_t__H_Table * __h_table ;
@@ -223,8 +223,8 @@ typedef struct Applicative_List_int_int Applicative_List_int_int ;
 typedef void (*free_Applicative_List_int_int_t) (Applicative_List_int_int * this );
 typedef struct Applicative_List_int_int__H_Table {
   free_Applicative_List_int_int_t freeData ;
-  List_int (*ap) (List_int_to_int_t f_a_b , List_int input );
-  List_int_to_int_t (*pure) (int_to_int_t a_b );
+    List_int (*ap) (List_int_to_int_t f_a_b , List_int input );
+    List_int_to_int_t (*pure) (int_to_int_t a_b );
 } Applicative_List_int_int__H_Table;
 typedef struct Applicative_List_int_int {
   const Applicative_List_int_int__H_Table * __h_table ;
@@ -401,7 +401,7 @@ int len_List_int_to_int_t (List_int_to_int_t list ) {
     });
 }
 List_int_to_int_t tail_List_int_to_int_t (List_int_to_int_t list ) {
-  return (list -> __h_table -> drop )(0, list );
+  return (list -> __h_table -> drop )(1, list );
 }
 List_int_to_int_t drop_List_int_to_int_t (int index , List_int_to_int_t list ) {
   return (((index  ==  0 )) ? list  : ({ /* cicili#Let620 */
@@ -602,8 +602,8 @@ typedef struct Applicative_Maybe_int_int Applicative_Maybe_int_int ;
 typedef void (*free_Applicative_Maybe_int_int_t) (Applicative_Maybe_int_int * this );
 typedef struct Applicative_Maybe_int_int__H_Table {
   free_Applicative_Maybe_int_int_t freeData ;
-  Maybe_int (*ap) (Maybe_int_to_int_t f_a_b , Maybe_int input );
-  Maybe_int_to_int_t (*pure) (int_to_int_t a_b );
+    Maybe_int (*ap) (Maybe_int_to_int_t f_a_b , Maybe_int input );
+    Maybe_int_to_int_t (*pure) (int_to_int_t a_b );
 } Applicative_Maybe_int_int__H_Table;
 typedef struct Applicative_Maybe_int_int {
   const Applicative_Maybe_int_int__H_Table * __h_table ;
@@ -671,27 +671,6 @@ Applicative_Maybe_int_int Applicative_Maybe_int_int_ctor () {
 #endif /* __Applicative_Maybe_int_int__H_IMPL__ */ 
 Applicative_Maybe_int_int get_Applicative_Maybe_int_int () {
   return Applicative_Maybe_int_int_ctor ();
-}
-static int __ciciliL_1213 (int value ) {
-  return (5 *  value  );
-}
-static Bool __ciciliL_1222 (int value ) {
-  return (((value  %  3 )) ? False () : True ());
-}
-static int __ciciliL_1240 (int __h_value ) {
-  return (5 *  __h_value  );
-}
-static Bool __ciciliL_1250 (int __h_value ) {
-  return (((__h_value  %  3 )) ? False () : True ());
-}
-static int __ciciliL_1277 (int value ) {
-  return (15 *  value  );
-}
-static int __ciciliL_1364 (int value ) {
-  return (3 *  value  );
-}
-static int __ciciliL_1366 (int value ) {
-  return (4 +  value  );
 }
 int main () {
   ({ /* cicili#Let951 */
@@ -981,22 +960,42 @@ int main () {
         tmp_obj ;
       });
       __auto_type r1  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let1208 */
-        __auto_type tmp_obj  = ((&ftor_mul_5 )-> __h_table -> fmap )(__ciciliL_1213 , l1 );
+        __auto_type tmp_obj  = ((&ftor_mul_5 )-> __h_table -> fmap )(({ /* cicili#Progn1213 */
+          int lambda (int value ) {
+            return (5 *  value  );
+          }
+          lambda ;
+        }), l1 );
         // ----------
         ((void)(tmp_obj -> __h_table -> freeClass ));
         tmp_obj ;
       });
-      __auto_type r2  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let1217 */
-        __auto_type tmp_obj  = ((&ftor_mod_3 )-> __h_table -> fmap )(__ciciliL_1222 , r1 );
+      __auto_type r2  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let1218 */
+        __auto_type tmp_obj  = ((&ftor_mod_3 )-> __h_table -> fmap )(({ /* cicili#Progn1223 */
+          Bool lambda (int value ) {
+            return (((value  %  3 )) ? False () : True ());
+          }
+          lambda ;
+        }), r1 );
         // ----------
         ((void)(tmp_obj -> __h_table -> freeClass ));
         tmp_obj ;
       });
-      __auto_type r3  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let1227 */
-        __auto_type tmp_obj  = ({ /* cicili#Let1236 */
-          __auto_type strict_in  __attribute__((__cleanup__(free_List_int ))) = fmap_Functor_List_int_int (__ciciliL_1240 , l1 );
+      __auto_type r3  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let1229 */
+        __auto_type tmp_obj  = ({ /* cicili#Let1238 */
+          __auto_type strict_in  __attribute__((__cleanup__(free_List_int ))) = fmap_Functor_List_int_int (({ /* cicili#Progn1242 */
+            int lambda (int __h_value ) {
+              return (5 *  __h_value  );
+            }
+            lambda ;
+          }), l1 );
           // ----------
-          fmap_Functor_List_int_Bool (__ciciliL_1250 , strict_in );
+          fmap_Functor_List_int_Bool (({ /* cicili#Progn1253 */
+              Bool lambda (int __h_value ) {
+                return (((__h_value  %  3 )) ? False () : True ());
+              }
+              lambda ;
+            }), strict_in );
         });
         // ----------
         ((void)(tmp_obj -> __h_table -> freeClass ));
@@ -1012,16 +1011,16 @@ int main () {
       fprintf (stdout , "fmap (%%3) ! fmap (*5) of { 1 2 3 4 5 6 } is:\n");
       show_List_Bool (r3 );
       putchar ('\n');
-      { /* cicili#Let1264 */
-        __auto_type __h_data1263  = get_Monoid_All_Bool ();
-        __auto_type mconcat  = (((__h_data1263 . __h_data ). _ ). __h_2_mem );
+      { /* cicili#Let1268 */
+        __auto_type __h_data1267  = get_Monoid_All_Bool ();
+        __auto_type mconcat  = (((__h_data1267 . __h_data ). _ ). __h_2_mem );
         // ----------
-        /* cicili#Block1266 */
-        ({ /* cicili#Let1268 */
-          bool __h_case_result  = ((__h_data1263 . __h_ctor ) ==  __h___t  );
+        /* cicili#Block1270 */
+        ({ /* cicili#Let1272 */
+          bool __h_case_result  = ((__h_data1267 . __h_ctor ) ==  __h___t  );
           // ----------
           if (__h_case_result )
-            ({ /* cicili#Progn1271 */
+            ({ /* cicili#Progn1275 */
               fprintf (stdout , "the result of 'All' monoid is: ");
               show_Bool (mconcat (r3 ));
               putchar ('\n');
@@ -1033,83 +1032,103 @@ int main () {
       putchar ('\n');
     });
   });
-  ({ /* cicili#Let1276 */
-    __auto_type mul_15  = __ciciliL_1277 ;
+  ({ /* cicili#Let1280 */
+    __auto_type mul_15  = ({ /* cicili#Progn1281 */
+      int lambda (int value ) {
+        return (15 *  value  );
+      }
+      lambda ;
+    });
     __auto_type apmii  = get_Applicative_Maybe_int_int ();
     // ----------
-    { /* cicili#Let1283 */
-      __auto_type __h_data1282  = ((&apmii )-> __h_table -> ap )(((&apmii )-> __h_table -> pure )(mul_15 ), Just_int (12));
-      __auto_type output  = (((__h_data1282 . __h_data ). Just ). __h_0_mem );
+    { /* cicili#Let1288 */
+      __auto_type __h_data1287  = ((&apmii )-> __h_table -> ap )(((&apmii )-> __h_table -> pure )(mul_15 ), Just_int (12));
+      __auto_type output  = (((__h_data1287 . __h_data ). Just ). __h_0_mem );
       // ----------
-      /* cicili#Block1287 */
-      ({ /* cicili#Let1289 */
-        bool __h_case_result  = ((__h_data1282 . __h_ctor ) ==  __h_Just_t  );
+      /* cicili#Block1292 */
+      ({ /* cicili#Let1294 */
+        bool __h_case_result  = ((__h_data1287 . __h_ctor ) ==  __h_Just_t  );
         // ----------
         if (__h_case_result )
           fprintf (stdout , "the result of 'Applicative for Maybe (*15) (Just 12)' is: Just %d\n", output );
         else
-          { /* cicili#Let1296 */
+          { /* cicili#Let1301 */
             // ----------
-            /* cicili#Block1298 */
+            /* cicili#Block1303 */
             fprintf (stdout , "the result of 'Applicative for Maybe (*15) (Just 12)' is: Nothing\n");
           }
       });
     }
-    ({ /* cicili#Let1302 */
-      __auto_type wrapped  = pure_Applicative_Maybe_int_int (mul_15 );
-      // ----------
-      { /* cicili#Let1309 */
-        __auto_type __h_data1308  = ap_Applicative_Maybe_int_int (wrapped , Just_int (12));
-        __auto_type output  = (((__h_data1308 . __h_data ). Just ). __h_0_mem );
-        // ----------
-        /* cicili#Block1315 */
-        ({ /* cicili#Let1317 */
-          bool __h_case_result  = ((__h_data1308 . __h_ctor ) ==  __h_Just_t  );
-          // ----------
-          if (__h_case_result )
-            fprintf (stdout , "the result of easy 'Applicative for Maybe (*15) (Just 12)' is: Just %d\n", output );
-          else
-            { /* cicili#Let1324 */
-              // ----------
-              /* cicili#Block1326 */
-              fprintf (stdout , "the result of easy 'Applicative for Maybe (*15) (Just 12)' is: Nothing\n");
-            }
-        });
-      }
-      { /* cicili#Let1332 */
-        __auto_type __h_data1331  = ap_Applicative_Maybe_int_int (wrapped , Nothing_int ());
-        __auto_type output  = (((__h_data1331 . __h_data ). Just ). __h_0_mem );
-        // ----------
-        /* cicili#Block1338 */
-        ({ /* cicili#Let1340 */
-          bool __h_case_result  = ((__h_data1331 . __h_ctor ) ==  __h_Just_t  );
-          // ----------
-          if (__h_case_result )
-            fprintf (stdout , "the result of easy 'Applicative for Maybe (*15) Nothing' is: Just %d\n", output );
-          else
-            { /* cicili#Let1347 */
-              // ----------
-              /* cicili#Block1349 */
-              fprintf (stdout , "the result of easy 'Applicative for Maybe (*15) Nothing' is: Nothing\n");
-            }
-        });
-      }
-    });
   });
-  ({ /* cicili#Let1357 */
-    __auto_type lf  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let1359 */
-      __auto_type tmp_obj  = new_List_int_to_int_t_Pure (((const int_to_int_t[]){ __ciciliL_1364 , __ciciliL_1366 }), 2);
+  ({ /* cicili#Let1307 */
+    __auto_type wrapped  = pure_Applicative_Maybe_int_int (({ /* cicili#Progn1310 */
+      int lambda (int __h_value ) {
+        return (15 *  __h_value  );
+      }
+      lambda ;
+    }));
+    // ----------
+    { /* cicili#Let1321 */
+      __auto_type __h_data1320  = ap_Applicative_Maybe_int_int (wrapped , Just_int (12));
+      __auto_type output  = (((__h_data1320 . __h_data ). Just ). __h_0_mem );
+      // ----------
+      /* cicili#Block1327 */
+      ({ /* cicili#Let1329 */
+        bool __h_case_result  = ((__h_data1320 . __h_ctor ) ==  __h_Just_t  );
+        // ----------
+        if (__h_case_result )
+          fprintf (stdout , "the result of easy 'Applicative for Maybe (*15) (Just 12)' is: Just %d\n", output );
+        else
+          { /* cicili#Let1336 */
+            // ----------
+            /* cicili#Block1338 */
+            fprintf (stdout , "the result of easy 'Applicative for Maybe (*15) (Just 12)' is: Nothing\n");
+          }
+      });
+    }
+    { /* cicili#Let1344 */
+      __auto_type __h_data1343  = ap_Applicative_Maybe_int_int (wrapped , Nothing_int ());
+      __auto_type output  = (((__h_data1343 . __h_data ). Just ). __h_0_mem );
+      // ----------
+      /* cicili#Block1350 */
+      ({ /* cicili#Let1352 */
+        bool __h_case_result  = ((__h_data1343 . __h_ctor ) ==  __h_Just_t  );
+        // ----------
+        if (__h_case_result )
+          fprintf (stdout , "the result of easy 'Applicative for Maybe (*15) Nothing' is: Just %d\n", output );
+        else
+          { /* cicili#Let1359 */
+            // ----------
+            /* cicili#Block1361 */
+            fprintf (stdout , "the result of easy 'Applicative for Maybe (*15) Nothing' is: Nothing\n");
+          }
+      });
+    }
+  });
+  ({ /* cicili#Let1369 */
+    __auto_type lf  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let1371 */
+      __auto_type tmp_obj  = new_List_int_to_int_t_Pure (((const int_to_int_t[]){ ({ /* cicili#Progn1376 */
+          int lambda (int value ) {
+            return (3 *  value  );
+          }
+          lambda ;
+        }), ({ /* cicili#Progn1379 */
+          int lambda (int value ) {
+            return (4 +  value  );
+          }
+          lambda ;
+        })}), 2);
       // ----------
       ((void)(tmp_obj -> __h_table -> freeClass ));
       tmp_obj ;
     });
-    __auto_type li  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let1370 */
+    __auto_type li  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let1384 */
       __auto_type tmp_obj  = new_List_int_Pure (((const int[]){ 1, 2, 3, 4, 5, 6}), 6);
       // ----------
       ((void)(tmp_obj -> __h_table -> freeClass ));
       tmp_obj ;
     });
-    __auto_type afi  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let1376 */
+    __auto_type afi  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let1390 */
       __auto_type tmp_obj  = ap_Applicative_List_int_int (lf , li );
       // ----------
       ((void)(tmp_obj -> __h_table -> freeClass ));

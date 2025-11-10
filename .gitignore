@@ -239,3 +239,6 @@ haskell/haskell.c.run3.c
 test/haskell/concepts.c.run1.c
 test/haskell/concepts.c.run2.c
 test/haskell/concepts.c.run3.c
+test/haskell/monadic.c.run1.c
+test/haskell/monadic.c.run2.c
+test/haskell/monadic.c.run3.c

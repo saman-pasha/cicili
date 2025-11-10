@@ -22,9 +22,9 @@ typedef struct Bool Bool ;
 typedef void (*free_Bool_t) (Bool * this );
 typedef struct Bool__H_Table {
   free_Bool_t freeData ;
-  void (*show) (Bool value );
-  Bool (*or) (Bool lhs , Bool rhs );
-  Bool (*and) (Bool lhs , Bool rhs );
+    void (*show) (Bool value );
+    Bool (*or) (Bool lhs , Bool rhs );
+    Bool (*and) (Bool lhs , Bool rhs );
 } Bool__H_Table;
 typedef struct Bool {
   const Bool__H_Table * __h_table ;
@@ -130,18 +130,18 @@ typedef __h_List_Bool_class_t * List_Bool ;
 typedef void (*free_List_Bool_t) (List_Bool * this_ptr );
 typedef struct List_Bool__H_Table {
   free_List_Bool_t freeClass ;
-  void (*show) (List_Bool list );
-  List_Bool (*append) (List_Bool llist , List_Bool rlist );
-  List_Bool (*push) (Bool item , List_Bool list );
-  List_Bool (*last) (List_Bool list );
-  List_Bool (*take) (int len , List_Bool list );
-  int (*hasLen) (List_Bool list , int desired );
-  int (*len) (List_Bool list );
-  List_Bool (*tail) (List_Bool list );
-  List_Bool (*drop) (int index , List_Bool list );
-  Maybe_Bool (*head) (List_Bool list );
-  Maybe_Bool (*nth) (int index , List_Bool list );
-  List_Bool (*next) (List_Bool list );
+    void (*show) (List_Bool list );
+    List_Bool (*append) (List_Bool llist , List_Bool rlist );
+    List_Bool (*push) (Bool item , List_Bool list );
+    List_Bool (*last) (List_Bool list );
+    List_Bool (*take) (int len , List_Bool list );
+    int (*hasLen) (List_Bool list , int desired );
+    int (*len) (List_Bool list );
+    List_Bool (*tail) (List_Bool list );
+    List_Bool (*drop) (int index , List_Bool list );
+    Maybe_Bool (*head) (List_Bool list );
+    Maybe_Bool (*nth) (int index , List_Bool list );
+    List_Bool (*next) (List_Bool list );
 } List_Bool__H_Table;
 typedef struct __h_List_Bool_class_t {
   const List_Bool__H_Table * __h_table ;
@@ -224,18 +224,18 @@ typedef __h_List_int_class_t * List_int ;
 typedef void (*free_List_int_t) (List_int * this_ptr );
 typedef struct List_int__H_Table {
   free_List_int_t freeClass ;
-  void (*show) (List_int list );
-  List_int (*append) (List_int llist , List_int rlist );
-  List_int (*push) (int item , List_int list );
-  List_int (*last) (List_int list );
-  List_int (*take) (int len , List_int list );
-  int (*hasLen) (List_int list , int desired );
-  int (*len) (List_int list );
-  List_int (*tail) (List_int list );
-  List_int (*drop) (int index , List_int list );
-  Maybe_int (*head) (List_int list );
-  Maybe_int (*nth) (int index , List_int list );
-  List_int (*next) (List_int list );
+    void (*show) (List_int list );
+    List_int (*append) (List_int llist , List_int rlist );
+    List_int (*push) (int item , List_int list );
+    List_int (*last) (List_int list );
+    List_int (*take) (int len , List_int list );
+    int (*hasLen) (List_int list , int desired );
+    int (*len) (List_int list );
+    List_int (*tail) (List_int list );
+    List_int (*drop) (int index , List_int list );
+    Maybe_int (*head) (List_int list );
+    Maybe_int (*nth) (int index , List_int list );
+    List_int (*next) (List_int list );
 } List_int__H_Table;
 typedef struct __h_List_int_class_t {
   const List_int__H_Table * __h_table ;
@@ -318,18 +318,18 @@ typedef __h_List_char_class_t * List_char ;
 typedef void (*free_List_char_t) (List_char * this_ptr );
 typedef struct List_char__H_Table {
   free_List_char_t freeClass ;
-  void (*show) (List_char list );
-  List_char (*append) (List_char llist , List_char rlist );
-  List_char (*push) (char item , List_char list );
-  List_char (*last) (List_char list );
-  List_char (*take) (int len , List_char list );
-  int (*hasLen) (List_char list , int desired );
-  int (*len) (List_char list );
-  List_char (*tail) (List_char list );
-  List_char (*drop) (int index , List_char list );
-  Maybe_char (*head) (List_char list );
-  Maybe_char (*nth) (int index , List_char list );
-  List_char (*next) (List_char list );
+    void (*show) (List_char list );
+    List_char (*append) (List_char llist , List_char rlist );
+    List_char (*push) (char item , List_char list );
+    List_char (*last) (List_char list );
+    List_char (*take) (int len , List_char list );
+    int (*hasLen) (List_char list , int desired );
+    int (*len) (List_char list );
+    List_char (*tail) (List_char list );
+    List_char (*drop) (int index , List_char list );
+    Maybe_char (*head) (List_char list );
+    Maybe_char (*nth) (int index , List_char list );
+    List_char (*next) (List_char list );
 } List_char__H_Table;
 typedef struct __h_List_char_class_t {
   const List_char__H_Table * __h_table ;
@@ -366,6 +366,9 @@ void free_List_char (List_char * this_ptr );
 List_char new_List_char_Pure (const char * buf , int len );
 List_char new_List_char_Wrap (const char item );
 typedef List_char String ;
+__attribute__((weak)) List_char__H_Table * get_String__H_Table () {
+  get_List_char__H_Table ();
+}
 List_char new_String_Const (const char * buf );
 void show_String (List_char list );
 __attribute__((weak)) void free_String (List_char * list ) {
@@ -385,17 +388,17 @@ typedef __h_Range_int_class_t * Range_int ;
 typedef void (*free_Range_int_t) (Range_int * this_ptr );
 typedef struct Range_int__H_Table {
   free_Range_int_t freeClass ;
-  void (*show) (Range_int list );
-  Range_int (*take) (int len , Range_int list );
-  Range_int (*next) (Range_int list );
+    void (*show) (Range_int list );
+    Range_int (*take) (int len , Range_int list );
+    Range_int (*next) (Range_int list );
 } Range_int__H_Table;
 typedef struct __h_Range_int_class_t {
   const Range_int__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion522 */
-    struct { /* ciciliStruct523 */
+  union { /* ciciliUnion526 */
+    struct { /* ciciliStruct527 */
     } Empty , _0 ;
-    struct { /* ciciliStruct524 */
+    struct { /* ciciliStruct528 */
       int __h_0_mem ;
       Range_int __h_1_mem ;
       int __h_2_mem ;
@@ -432,10 +435,10 @@ typedef struct Maybe_List_Bool__H_Table {
 typedef struct Maybe_List_Bool {
   const Maybe_List_Bool__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion563 */
-    struct { /* ciciliStruct564 */
+  union { /* ciciliUnion567 */
+    struct { /* ciciliStruct568 */
     } Nothing , _0 ;
-    struct { /* ciciliStruct565 */
+    struct { /* ciciliStruct569 */
       List_Bool __h_0_mem ;
     } Just , _ ;
   } __h_data ;
@@ -462,26 +465,26 @@ typedef __h_List_List_Bool_class_t * List_List_Bool ;
 typedef void (*free_List_List_Bool_t) (List_List_Bool * this_ptr );
 typedef struct List_List_Bool__H_Table {
   free_List_List_Bool_t freeClass ;
-  void (*show) (List_List_Bool list );
-  List_List_Bool (*append) (List_List_Bool llist , List_List_Bool rlist );
-  List_List_Bool (*push) (List_Bool item , List_List_Bool list );
-  List_List_Bool (*last) (List_List_Bool list );
-  List_List_Bool (*take) (int len , List_List_Bool list );
-  int (*hasLen) (List_List_Bool list , int desired );
-  int (*len) (List_List_Bool list );
-  List_List_Bool (*tail) (List_List_Bool list );
-  List_List_Bool (*drop) (int index , List_List_Bool list );
-  Maybe_List_Bool (*head) (List_List_Bool list );
-  Maybe_List_Bool (*nth) (int index , List_List_Bool list );
-  List_List_Bool (*next) (List_List_Bool list );
+    void (*show) (List_List_Bool list );
+    List_List_Bool (*append) (List_List_Bool llist , List_List_Bool rlist );
+    List_List_Bool (*push) (List_Bool item , List_List_Bool list );
+    List_List_Bool (*last) (List_List_Bool list );
+    List_List_Bool (*take) (int len , List_List_Bool list );
+    int (*hasLen) (List_List_Bool list , int desired );
+    int (*len) (List_List_Bool list );
+    List_List_Bool (*tail) (List_List_Bool list );
+    List_List_Bool (*drop) (int index , List_List_Bool list );
+    Maybe_List_Bool (*head) (List_List_Bool list );
+    Maybe_List_Bool (*nth) (int index , List_List_Bool list );
+    List_List_Bool (*next) (List_List_Bool list );
 } List_List_Bool__H_Table;
 typedef struct __h_List_List_Bool_class_t {
   const List_List_Bool__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion603 */
-    struct { /* ciciliStruct604 */
+  union { /* ciciliUnion607 */
+    struct { /* ciciliStruct608 */
     } Empty , _0 ;
-    struct { /* ciciliStruct605 */
+    struct { /* ciciliStruct609 */
       List_Bool __h_0_mem ;
       List_List_Bool __h_1_mem ;
     } Cons , _ ;
@@ -526,10 +529,10 @@ typedef struct Maybe_List_int__H_Table {
 typedef struct Maybe_List_int {
   const Maybe_List_int__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion675 */
-    struct { /* ciciliStruct676 */
+  union { /* ciciliUnion679 */
+    struct { /* ciciliStruct680 */
     } Nothing , _0 ;
-    struct { /* ciciliStruct677 */
+    struct { /* ciciliStruct681 */
       List_int __h_0_mem ;
     } Just , _ ;
   } __h_data ;
@@ -556,26 +559,26 @@ typedef __h_List_List_int_class_t * List_List_int ;
 typedef void (*free_List_List_int_t) (List_List_int * this_ptr );
 typedef struct List_List_int__H_Table {
   free_List_List_int_t freeClass ;
-  void (*show) (List_List_int list );
-  List_List_int (*append) (List_List_int llist , List_List_int rlist );
-  List_List_int (*push) (List_int item , List_List_int list );
-  List_List_int (*last) (List_List_int list );
-  List_List_int (*take) (int len , List_List_int list );
-  int (*hasLen) (List_List_int list , int desired );
-  int (*len) (List_List_int list );
-  List_List_int (*tail) (List_List_int list );
-  List_List_int (*drop) (int index , List_List_int list );
-  Maybe_List_int (*head) (List_List_int list );
-  Maybe_List_int (*nth) (int index , List_List_int list );
-  List_List_int (*next) (List_List_int list );
+    void (*show) (List_List_int list );
+    List_List_int (*append) (List_List_int llist , List_List_int rlist );
+    List_List_int (*push) (List_int item , List_List_int list );
+    List_List_int (*last) (List_List_int list );
+    List_List_int (*take) (int len , List_List_int list );
+    int (*hasLen) (List_List_int list , int desired );
+    int (*len) (List_List_int list );
+    List_List_int (*tail) (List_List_int list );
+    List_List_int (*drop) (int index , List_List_int list );
+    Maybe_List_int (*head) (List_List_int list );
+    Maybe_List_int (*nth) (int index , List_List_int list );
+    List_List_int (*next) (List_List_int list );
 } List_List_int__H_Table;
 typedef struct __h_List_List_int_class_t {
   const List_List_int__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion715 */
-    struct { /* ciciliStruct716 */
+  union { /* ciciliUnion719 */
+    struct { /* ciciliStruct720 */
     } Empty , _0 ;
-    struct { /* ciciliStruct717 */
+    struct { /* ciciliStruct721 */
       List_int __h_0_mem ;
       List_List_int __h_1_mem ;
     } Cons , _ ;
@@ -620,10 +623,10 @@ typedef struct Maybe_List_char__H_Table {
 typedef struct Maybe_List_char {
   const Maybe_List_char__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion787 */
-    struct { /* ciciliStruct788 */
+  union { /* ciciliUnion791 */
+    struct { /* ciciliStruct792 */
     } Nothing , _0 ;
-    struct { /* ciciliStruct789 */
+    struct { /* ciciliStruct793 */
       List_char __h_0_mem ;
     } Just , _ ;
   } __h_data ;
@@ -650,26 +653,26 @@ typedef __h_List_List_char_class_t * List_List_char ;
 typedef void (*free_List_List_char_t) (List_List_char * this_ptr );
 typedef struct List_List_char__H_Table {
   free_List_List_char_t freeClass ;
-  void (*show) (List_List_char list );
-  List_List_char (*append) (List_List_char llist , List_List_char rlist );
-  List_List_char (*push) (List_char item , List_List_char list );
-  List_List_char (*last) (List_List_char list );
-  List_List_char (*take) (int len , List_List_char list );
-  int (*hasLen) (List_List_char list , int desired );
-  int (*len) (List_List_char list );
-  List_List_char (*tail) (List_List_char list );
-  List_List_char (*drop) (int index , List_List_char list );
-  Maybe_List_char (*head) (List_List_char list );
-  Maybe_List_char (*nth) (int index , List_List_char list );
-  List_List_char (*next) (List_List_char list );
+    void (*show) (List_List_char list );
+    List_List_char (*append) (List_List_char llist , List_List_char rlist );
+    List_List_char (*push) (List_char item , List_List_char list );
+    List_List_char (*last) (List_List_char list );
+    List_List_char (*take) (int len , List_List_char list );
+    int (*hasLen) (List_List_char list , int desired );
+    int (*len) (List_List_char list );
+    List_List_char (*tail) (List_List_char list );
+    List_List_char (*drop) (int index , List_List_char list );
+    Maybe_List_char (*head) (List_List_char list );
+    Maybe_List_char (*nth) (int index , List_List_char list );
+    List_List_char (*next) (List_List_char list );
 } List_List_char__H_Table;
 typedef struct __h_List_List_char_class_t {
   const List_List_char__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion827 */
-    struct { /* ciciliStruct828 */
+  union { /* ciciliUnion831 */
+    struct { /* ciciliStruct832 */
     } Empty , _0 ;
-    struct { /* ciciliStruct829 */
+    struct { /* ciciliStruct833 */
       List_char __h_0_mem ;
       List_List_char __h_1_mem ;
     } Cons , _ ;
@@ -714,10 +717,10 @@ typedef struct Maybe_String__H_Table {
 typedef struct Maybe_String {
   const Maybe_String__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion899 */
-    struct { /* ciciliStruct900 */
+  union { /* ciciliUnion903 */
+    struct { /* ciciliStruct904 */
     } Nothing , _0 ;
-    struct { /* ciciliStruct901 */
+    struct { /* ciciliStruct905 */
       String __h_0_mem ;
     } Just , _ ;
   } __h_data ;
@@ -744,26 +747,26 @@ typedef __h_List_String_class_t * List_String ;
 typedef void (*free_List_String_t) (List_String * this_ptr );
 typedef struct List_String__H_Table {
   free_List_String_t freeClass ;
-  void (*show) (List_String list );
-  List_String (*append) (List_String llist , List_String rlist );
-  List_String (*push) (String item , List_String list );
-  List_String (*last) (List_String list );
-  List_String (*take) (int len , List_String list );
-  int (*hasLen) (List_String list , int desired );
-  int (*len) (List_String list );
-  List_String (*tail) (List_String list );
-  List_String (*drop) (int index , List_String list );
-  Maybe_String (*head) (List_String list );
-  Maybe_String (*nth) (int index , List_String list );
-  List_String (*next) (List_String list );
+    void (*show) (List_String list );
+    List_String (*append) (List_String llist , List_String rlist );
+    List_String (*push) (String item , List_String list );
+    List_String (*last) (List_String list );
+    List_String (*take) (int len , List_String list );
+    int (*hasLen) (List_String list , int desired );
+    int (*len) (List_String list );
+    List_String (*tail) (List_String list );
+    List_String (*drop) (int index , List_String list );
+    Maybe_String (*head) (List_String list );
+    Maybe_String (*nth) (int index , List_String list );
+    List_String (*next) (List_String list );
 } List_String__H_Table;
 typedef struct __h_List_String_class_t {
   const List_String__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion939 */
-    struct { /* ciciliStruct940 */
+  union { /* ciciliUnion943 */
+    struct { /* ciciliStruct944 */
     } Empty , _0 ;
-    struct { /* ciciliStruct941 */
+    struct { /* ciciliStruct945 */
       String __h_0_mem ;
       List_String __h_1_mem ;
     } Cons , _ ;
@@ -837,8 +840,8 @@ typedef struct Monoid_All_Bool__H_Table {
 typedef struct Monoid_All_Bool {
   const Monoid_All_Bool__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion1101 */
-    struct { /* ciciliStruct1102 */
+  union { /* ciciliUnion1105 */
+    struct { /* ciciliStruct1106 */
       Monoid_All_Bool_mappend_t __h_0_mem ;
       Bool __h_1_mem ;
       Monoid_All_Bool_mconcat_t __h_2_mem ;
@@ -868,8 +871,8 @@ typedef struct Semigroup_All_Bool__H_Table {
 typedef struct Semigroup_All_Bool {
   const Semigroup_All_Bool__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion1128 */
-    struct { /* ciciliStruct1129 */
+  union { /* ciciliUnion1132 */
+    struct { /* ciciliStruct1133 */
       Monoid_All_Bool_mappend_t __h_0_mem ;
     } Semigroup , _ ;
   } __h_data ;
@@ -908,8 +911,8 @@ typedef struct Monoid_Any_Bool__H_Table {
 typedef struct Monoid_Any_Bool {
   const Monoid_Any_Bool__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion1183 */
-    struct { /* ciciliStruct1184 */
+  union { /* ciciliUnion1187 */
+    struct { /* ciciliStruct1188 */
       Monoid_Any_Bool_mappend_t __h_0_mem ;
       Bool __h_1_mem ;
       Monoid_Any_Bool_mconcat_t __h_2_mem ;
@@ -939,8 +942,8 @@ typedef struct Semigroup_Any_Bool__H_Table {
 typedef struct Semigroup_Any_Bool {
   const Semigroup_Any_Bool__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion1210 */
-    struct { /* ciciliStruct1211 */
+  union { /* ciciliUnion1214 */
+    struct { /* ciciliStruct1215 */
       Monoid_Any_Bool_mappend_t __h_0_mem ;
     } Semigroup , _ ;
   } __h_data ;
@@ -979,8 +982,8 @@ typedef struct Monoid_Sum_int__H_Table {
 typedef struct Monoid_Sum_int {
   const Monoid_Sum_int__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion1265 */
-    struct { /* ciciliStruct1266 */
+  union { /* ciciliUnion1269 */
+    struct { /* ciciliStruct1270 */
       Monoid_Sum_int_mappend_t __h_0_mem ;
       int __h_1_mem ;
       Monoid_Sum_int_mconcat_t __h_2_mem ;
@@ -1010,8 +1013,8 @@ typedef struct Semigroup_Sum_int__H_Table {
 typedef struct Semigroup_Sum_int {
   const Semigroup_Sum_int__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion1292 */
-    struct { /* ciciliStruct1293 */
+  union { /* ciciliUnion1296 */
+    struct { /* ciciliStruct1297 */
       Monoid_Sum_int_mappend_t __h_0_mem ;
     } Semigroup , _ ;
   } __h_data ;
@@ -1050,8 +1053,8 @@ typedef struct Monoid_Product_int__H_Table {
 typedef struct Monoid_Product_int {
   const Monoid_Product_int__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion1347 */
-    struct { /* ciciliStruct1348 */
+  union { /* ciciliUnion1351 */
+    struct { /* ciciliStruct1352 */
       Monoid_Product_int_mappend_t __h_0_mem ;
       int __h_1_mem ;
       Monoid_Product_int_mconcat_t __h_2_mem ;
@@ -1081,8 +1084,8 @@ typedef struct Semigroup_Product_int__H_Table {
 typedef struct Semigroup_Product_int {
   const Semigroup_Product_int__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion1374 */
-    struct { /* ciciliStruct1375 */
+  union { /* ciciliUnion1378 */
+    struct { /* ciciliStruct1379 */
       Monoid_Product_int_mappend_t __h_0_mem ;
     } Semigroup , _ ;
   } __h_data ;
@@ -1121,8 +1124,8 @@ typedef struct Monoid_List_Bool__H_Table {
 typedef struct Monoid_List_Bool {
   const Monoid_List_Bool__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion1439 */
-    struct { /* ciciliStruct1440 */
+  union { /* ciciliUnion1443 */
+    struct { /* ciciliStruct1444 */
       Monoid_List_Bool_mappend_t __h_0_mem ;
       List_Bool __h_1_mem ;
       Monoid_List_Bool_mconcat_t __h_2_mem ;
@@ -1152,8 +1155,8 @@ typedef struct Semigroup_List_Bool__H_Table {
 typedef struct Semigroup_List_Bool {
   const Semigroup_List_Bool__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion1468 */
-    struct { /* ciciliStruct1469 */
+  union { /* ciciliUnion1472 */
+    struct { /* ciciliStruct1473 */
       Monoid_List_Bool_mappend_t __h_0_mem ;
     } Semigroup , _ ;
   } __h_data ;
@@ -1192,8 +1195,8 @@ typedef struct Monoid_List_int__H_Table {
 typedef struct Monoid_List_int {
   const Monoid_List_int__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion1538 */
-    struct { /* ciciliStruct1539 */
+  union { /* ciciliUnion1542 */
+    struct { /* ciciliStruct1543 */
       Monoid_List_int_mappend_t __h_0_mem ;
       List_int __h_1_mem ;
       Monoid_List_int_mconcat_t __h_2_mem ;
@@ -1223,8 +1226,8 @@ typedef struct Semigroup_List_int__H_Table {
 typedef struct Semigroup_List_int {
   const Semigroup_List_int__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion1567 */
-    struct { /* ciciliStruct1568 */
+  union { /* ciciliUnion1571 */
+    struct { /* ciciliStruct1572 */
       Monoid_List_int_mappend_t __h_0_mem ;
     } Semigroup , _ ;
   } __h_data ;
@@ -1263,8 +1266,8 @@ typedef struct Monoid_List_char__H_Table {
 typedef struct Monoid_List_char {
   const Monoid_List_char__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion1637 */
-    struct { /* ciciliStruct1638 */
+  union { /* ciciliUnion1641 */
+    struct { /* ciciliStruct1642 */
       Monoid_List_char_mappend_t __h_0_mem ;
       List_char __h_1_mem ;
       Monoid_List_char_mconcat_t __h_2_mem ;
@@ -1294,8 +1297,8 @@ typedef struct Semigroup_List_char__H_Table {
 typedef struct Semigroup_List_char {
   const Semigroup_List_char__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion1666 */
-    struct { /* ciciliStruct1667 */
+  union { /* ciciliUnion1670 */
+    struct { /* ciciliStruct1671 */
       Monoid_List_char_mappend_t __h_0_mem ;
     } Semigroup , _ ;
   } __h_data ;
@@ -1334,8 +1337,8 @@ typedef struct Monoid_String_char__H_Table {
 typedef struct Monoid_String_char {
   const Monoid_String_char__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion1736 */
-    struct { /* ciciliStruct1737 */
+  union { /* ciciliUnion1740 */
+    struct { /* ciciliStruct1741 */
       Monoid_String_char_mappend_t __h_0_mem ;
       List_char __h_1_mem ;
       Monoid_String_char_mconcat_t __h_2_mem ;
@@ -1365,8 +1368,8 @@ typedef struct Semigroup_String_char__H_Table {
 typedef struct Semigroup_String_char {
   const Semigroup_String_char__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion1765 */
-    struct { /* ciciliStruct1766 */
+  union { /* ciciliUnion1769 */
+    struct { /* ciciliStruct1770 */
       Monoid_String_char_mappend_t __h_0_mem ;
     } Semigroup , _ ;
   } __h_data ;
@@ -1396,13 +1399,13 @@ typedef struct Functor_List_int_int Functor_List_int_int ;
 typedef void (*free_Functor_List_int_int_t) (Functor_List_int_int * this );
 typedef struct Functor_List_int_int__H_Table {
   free_Functor_List_int_int_t freeData ;
-  List_int (*fmap) (int_to_int_t a_b , List_int input );
+    List_int (*fmap) (int_to_int_t a_b , List_int input );
 } Functor_List_int_int__H_Table;
 typedef struct Functor_List_int_int {
   const Functor_List_int_int__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion1818 */
-    struct { /* ciciliStruct1819 */
+  union { /* ciciliUnion1822 */
+    struct { /* ciciliStruct1823 */
     } Functor , _ ;
   } __h_data ;
 } Functor_List_int_int;
@@ -1428,13 +1431,13 @@ typedef struct Functor_List_int_Bool Functor_List_int_Bool ;
 typedef void (*free_Functor_List_int_Bool_t) (Functor_List_int_Bool * this );
 typedef struct Functor_List_int_Bool__H_Table {
   free_Functor_List_int_Bool_t freeData ;
-  List_Bool (*fmap) (int_to_Bool_t a_b , List_int input );
+    List_Bool (*fmap) (int_to_Bool_t a_b , List_int input );
 } Functor_List_int_Bool__H_Table;
 typedef struct Functor_List_int_Bool {
   const Functor_List_int_Bool__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion1861 */
-    struct { /* ciciliStruct1862 */
+  union { /* ciciliUnion1865 */
+    struct { /* ciciliStruct1866 */
     } Functor , _ ;
   } __h_data ;
 } Functor_List_int_Bool;
@@ -1460,13 +1463,13 @@ typedef struct Functor_List_char_char Functor_List_char_char ;
 typedef void (*free_Functor_List_char_char_t) (Functor_List_char_char * this );
 typedef struct Functor_List_char_char__H_Table {
   free_Functor_List_char_char_t freeData ;
-  List_char (*fmap) (char_to_char_t a_b , List_char input );
+    List_char (*fmap) (char_to_char_t a_b , List_char input );
 } Functor_List_char_char__H_Table;
 typedef struct Functor_List_char_char {
   const Functor_List_char_char__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion1904 */
-    struct { /* ciciliStruct1905 */
+  union { /* ciciliUnion1908 */
+    struct { /* ciciliStruct1909 */
     } Functor , _ ;
   } __h_data ;
 } Functor_List_char_char;
@@ -1492,13 +1495,13 @@ typedef struct Functor_List_char_Bool Functor_List_char_Bool ;
 typedef void (*free_Functor_List_char_Bool_t) (Functor_List_char_Bool * this );
 typedef struct Functor_List_char_Bool__H_Table {
   free_Functor_List_char_Bool_t freeData ;
-  List_Bool (*fmap) (char_to_Bool_t a_b , List_char input );
+    List_Bool (*fmap) (char_to_Bool_t a_b , List_char input );
 } Functor_List_char_Bool__H_Table;
 typedef struct Functor_List_char_Bool {
   const Functor_List_char_Bool__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion1947 */
-    struct { /* ciciliStruct1948 */
+  union { /* ciciliUnion1951 */
+    struct { /* ciciliStruct1952 */
     } Functor , _ ;
   } __h_data ;
 } Functor_List_char_Bool;
@@ -1524,13 +1527,13 @@ typedef struct Functor_Maybe_int_int Functor_Maybe_int_int ;
 typedef void (*free_Functor_Maybe_int_int_t) (Functor_Maybe_int_int * this );
 typedef struct Functor_Maybe_int_int__H_Table {
   free_Functor_Maybe_int_int_t freeData ;
-  Maybe_int (*fmap) (int_to_int_t a_b , Maybe_int input );
+    Maybe_int (*fmap) (int_to_int_t a_b , Maybe_int input );
 } Functor_Maybe_int_int__H_Table;
 typedef struct Functor_Maybe_int_int {
   const Functor_Maybe_int_int__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion1990 */
-    struct { /* ciciliStruct1991 */
+  union { /* ciciliUnion1994 */
+    struct { /* ciciliStruct1995 */
     } Functor , _ ;
   } __h_data ;
 } Functor_Maybe_int_int;
@@ -1556,13 +1559,13 @@ typedef struct Functor_Maybe_int_Bool Functor_Maybe_int_Bool ;
 typedef void (*free_Functor_Maybe_int_Bool_t) (Functor_Maybe_int_Bool * this );
 typedef struct Functor_Maybe_int_Bool__H_Table {
   free_Functor_Maybe_int_Bool_t freeData ;
-  Maybe_Bool (*fmap) (int_to_Bool_t a_b , Maybe_int input );
+    Maybe_Bool (*fmap) (int_to_Bool_t a_b , Maybe_int input );
 } Functor_Maybe_int_Bool__H_Table;
 typedef struct Functor_Maybe_int_Bool {
   const Functor_Maybe_int_Bool__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion2033 */
-    struct { /* ciciliStruct2034 */
+  union { /* ciciliUnion2037 */
+    struct { /* ciciliStruct2038 */
     } Functor , _ ;
   } __h_data ;
 } Functor_Maybe_int_Bool;
@@ -1588,13 +1591,13 @@ typedef struct Functor_Maybe_char_char Functor_Maybe_char_char ;
 typedef void (*free_Functor_Maybe_char_char_t) (Functor_Maybe_char_char * this );
 typedef struct Functor_Maybe_char_char__H_Table {
   free_Functor_Maybe_char_char_t freeData ;
-  Maybe_char (*fmap) (char_to_char_t a_b , Maybe_char input );
+    Maybe_char (*fmap) (char_to_char_t a_b , Maybe_char input );
 } Functor_Maybe_char_char__H_Table;
 typedef struct Functor_Maybe_char_char {
   const Functor_Maybe_char_char__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion2076 */
-    struct { /* ciciliStruct2077 */
+  union { /* ciciliUnion2080 */
+    struct { /* ciciliStruct2081 */
     } Functor , _ ;
   } __h_data ;
 } Functor_Maybe_char_char;
@@ -1620,13 +1623,13 @@ typedef struct Functor_Maybe_char_Bool Functor_Maybe_char_Bool ;
 typedef void (*free_Functor_Maybe_char_Bool_t) (Functor_Maybe_char_Bool * this );
 typedef struct Functor_Maybe_char_Bool__H_Table {
   free_Functor_Maybe_char_Bool_t freeData ;
-  Maybe_Bool (*fmap) (char_to_Bool_t a_b , Maybe_char input );
+    Maybe_Bool (*fmap) (char_to_Bool_t a_b , Maybe_char input );
 } Functor_Maybe_char_Bool__H_Table;
 typedef struct Functor_Maybe_char_Bool {
   const Functor_Maybe_char_Bool__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion2119 */
-    struct { /* ciciliStruct2120 */
+  union { /* ciciliUnion2123 */
+    struct { /* ciciliStruct2124 */
     } Functor , _ ;
   } __h_data ;
 } Functor_Maybe_char_Bool;

@@ -6,7 +6,7 @@
          (decl-data (Either (<> Either e a))
            (= Left  (<> Left e a) (e error))
            (= Right (<> Right e a) (a value)))
-         
+ 
          ) ; decl-Either
 
 (generic impl-Either (e a)

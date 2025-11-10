@@ -39,10 +39,18 @@
       
       ((string= os "Darwin") (list
                               ;; C
-                              'dumper   '("-Xclang" "-ast-dump")
+                              ;; gcc
+                              'dumper   '()
                               'compiler `("glibtool" "--tag=CC" "--mode=compile"
-                                                     "clang" "-g" "-O" "-ferror-limit=1000" *verbose*)
-                              'linker   `("glibtool" "--tag=CC" "--mode=link" "clang" "-g" "-O" *verbose*)
+                                                     "gcc" "-g" "-O" "-Wno-incompatible-pointer-types" *verbose*)
+                              'linker   `("glibtool" "--tag=CC" "--mode=link" "gcc" "-g" "-O" *verbose*)
+
+                              ;; ;; clang
+                              ;; 'dumper   '("-Xclang" "-ast-dump")
+                              ;; 'compiler `("glibtool" "--tag=CC" "--mode=compile"
+                              ;;                        "clang" "-g" "-O" "-ferror-limit=1000" *verbose*)
+                              ;; 'linker   `("glibtool" "--tag=CC" "--mode=link" "clang" "-g" "-O" *verbose*)
+
                               ;; C++
                               'cpp-dumper   '("-Xclang" "-ast-dump")
                               'cpp-compiler `("glibtool" "--tag=CXX" "--mode=compile"

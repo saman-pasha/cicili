@@ -76,7 +76,7 @@
            
            (func tail ((type list))
                  (out type)
-                 (return ((\.* drop list) 0 list)))
+                 (return ((\.* drop list) 1 list)))
            
            (func len ((type list))
                  (out int)

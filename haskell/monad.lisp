@@ -3,6 +3,7 @@
 
 ;; join and sequencing functions with same result structure
 ;; like Rc, Maybe, Either
+;; join inner and outer structure
 ;; class Applicative m => Monad m where
 ;;   bind   :: m a -> (a -> m b) -> m b
 ;;   >>=    :: m a -> (a -> m b) -> m b
@@ -11,92 +12,140 @@
 ;;   >>     :: m a -> m b -> m b
 (generic decl-Monad (type m a b)
 
-         ;; join inner and outer structure
-         (typedef func (<> Monad type bind t) (((<> m (<> Applicative type)) applicative) ((<> m a) input)) (out (<> m b)))
-         (typedef func (<> Monad type return t) (((<> Applicative type) app)) (out (<> m (<> Applicative type))))
+         ;; m a -> (a -> m b) -> m b
+         ;; pure (a -> m b)
+         ;; m (a -> m b)
+         ;; m a -> m (a -> m b) -> m (m b)
+         ;; join m (m b)
+         ;; m b
+         
+         (typedef func (<> a to (<> m b) t) ((a value)) (out (<> m b)))
 
          (decl-data (Monad (<> Monad type))
-           (= Monad (<> Monad type ctor)
-              ((<> Monad type bind t) bind)
-              ((<> Monad type return t) return)))
-
-         (decl) (func (<> Monad type bind) (((<> m (<> Applicative type)) applicative) ((<> m a) input)) (out (<> m b)))
-         (decl) (func (<> Monad type return) (((<> Applicative type) app)) (out (<> m (<> Applicative type))))
+           (= Monad (<> Monad type ctor))
+           (func bind    (((<> m a) input) ((<> a to (<> m b) t) a_mb)) (out (<> m b)))
+           (func returnA ((a value)) (out (<> m a)))
+           (func returnB ((b value)) (out (<> m b))))
 
          (decl) (func (<> get Monad type) () (out (<> Monad type)))
 
-         (fn (<> bind type) applicative input
-             ((<> Monad type bind) applicative input))
+         (fn (<> bind type) m~a a->mb
+             ((<> bind Monad type)
+              input
+              '(lambda ((a __h_value))
+                (out (<> m b))
+                (return ($> a->mb __h_value)))))
          
-         (fn (<> return type) app
-             ((<> Monad type return) app))
+         (fn (<> return type) a
+             ((<> return Monad type) a))
+
+         (fn (<> return type) b
+             ((<> return Monad type) b))
 
          ) ; decl-Monad
 
-;; ctor could be every thing where accept an argument of type 'a'
-;; mat has access to 'applicative' and 'input' variables inside 'bind' function
-(generic define-Monad (type m a b wrap mat)
+;; mat has access to 'input' and 'a_mb' variables inside 'bind' function
+(generic impl-Monad (type m a b mat wrap-a wrap-b)
 
-         (define-data (Monad (<> Monad type))
-           (= Monad (<> Monad type ctor)
-              ((<> Monad type bind t) bind)
-              ((<> Monad type return t) return)))
+         (impl-data (Monad (<> Monad type))
+           (= Monad (<> Monad type ctor))
 
-         (func (<> Monad type bind) (((<> m (<> Applicative type)) applicative) ((<> m a) input))
-               (out (<> f b))
-               (return mat))
+           (func bind (((<> m a) input) ((<> a to (<> m b) t) a_mb))
+                 (out (<> m b))
+                 (return mat))
 
-         (func (<> Monad type return) (((<> Applicative type) app))
-               (out (<> f (<> Applicative type)))
-               (return (wrap ftor)))
+           (func returnA ((a value))
+                 (out (<> m a))
+                 (return (wrap-a value)))
+
+           (func returnB ((b value))
+                 (out (<> m b))
+                 (return (wrap-b value))))
 
          (func (<> get Monad type) ()
                (out (<> Monad type))
-               (return ($> (<> Monad type ctor)
-                         (<> Monad type bind)
-                         (<> Monad type return))))
+               (return ((<> Monad type ctor))))
 
-         ) ; define-Monad
+         ) ; impl-Monad
 
 (generic import-Monad (type m a b)
 
-         (import-data (Monad (<> Monad type))
-           (= Monad (<> Monad type ctor)
-              ((<> Monad type bind t) bind)
-              ((<> Monad type return t) return)))
+         (fn (<> bind type) m~a a->mb
+             ((<> bind Monad type)
+              input
+              '(lambda ((a __h_value))
+                (out (<> m b))
+                (return ($> a->mb __h_value)))))
 
-         (fn (<> bind type) applicative input
-             ((<> Monad type bind) applicative input))
+         (fn (<> returnA type) a
+             ((<> return Monad type) a))
          
-         (fn (<> return type) app
-             ((<> Monad type return) app))
+         (fn (<> returnB type) b
+             ((<> return Monad type) b))
          
          ) ; import-Monad
 
 
-;; todo: List Monad using Monoid
-
+;; Maybe a -> (a -> Maybe b) -> Maybe b
 (generic decl-Monad-Maybe (type a b)
 
          (decl-Monad type Maybe a b)
          
          ) ; decl-Monad-Maybe
 
-(generic define-Monad-Maybe (type a b)
+(generic impl-Monad-Maybe (type a b)
 
-         ;; (define-Monad type Maybe a b
-         ;;               (match applicative
-         ;;                 (Just (_ pure ap)
-         ;;                   (match input
-         ;;                     (Just value (fmap a_b input))
-         ;;                     (default ((<> Nothing b))))
-         ;;                   (<> Just (<> Applicative type)))
+         (impl-Monad type Maybe a b
+                     (match input
+                       (Just value (a_mb value))
+                       (default ((<> Nothing b))))
+                     (<> Just a)
+                     (<> Just b))
          
-         ) ; define-Monad-Maybe
+         ) ; impl-Monad-Maybe
 
 (generic import-Monad-Maybe (type a b)
          
          (import-Monad type Maybe a b)
          
          ) ; import-Monad-Maybe
+
+
+;; Either e a -> (a -> Either e b) -> Either e b
+(generic decl-Monad-Either (type e a b)
+
+         ;; dependencies
+         (decl-Either e a)
+         (decl-Either e b)
+         
+         (decl-Monad type (<> Either e) a b)
+         
+         ) ; decl-Monad-Either
+
+;; neutral is just for mat case
+(generic impl-Monad-Either (type e a b neutral)
+
+         ;; dependencies
+         (impl-Either e a)
+         (impl-Either e b)
+
+         (impl-Monad type (<> Either e) a b
+                     (match input
+                       (Right value (a_mb value))
+                       (Left  error ((<> Left e b) error))
+                       (default neutral))
+                     (<> Right e a)
+                     (<> Right e b))
+         
+         ) ; impl-Monad-Either
+
+(generic import-Monad-Either (type e a b)
+
+         ;; dependencies
+         (import-Either e a)
+         (import-Either e b)
+
+         (import-Monad type (<> Either e) a b)
+         
+         ) ; import-Monad-Either
 

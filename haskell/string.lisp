@@ -3,7 +3,11 @@
 
          (decl-List type a)
          (typedef type String)
-         
+
+         (inline) (func (<> get String _H_Table) ()
+                        (out (<> List char _H_Table) *)
+                        ((<> get List char _H_Table)))
+
          (decl) (func (<> new String Const) ((const a * buf)) (out type))
          (decl) (func (<> show String) ((type list)))
 

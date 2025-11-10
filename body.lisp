@@ -11,7 +11,15 @@
                        ((key-eq func 'FUNCTION) (specify-call-expr (cadr def)))
 		               ((key-eq func 'QUOTE)
                         (let ((quoted (cadr def)))
-                          (cond ((key-eq (car quoted) '|lambda|) ; lambda
+                          (cond ((key-eq (car quoted) '|lambda|) ; nested function gcc extension
+                                 (let* ((lname (car quoted))
+                                        (progn-spec (specify-progn
+                                                        (list '|progn|
+                                                              (append (list '|func| lname) (cdr quoted))
+                                                              lname))))
+                                   progn-spec))
+
+                                ((key-eq (car quoted) '|lambda|) ; lambda
                                  (let* ((lname (gensym "__ciciliL_"))
                                         (func-spec (specify-function (append (list '|lambda| lname) (cdr quoted)) '())))
                                    (add-inner func-spec (if *function-spec* *function-spec* *variable-spec*))
