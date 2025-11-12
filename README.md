@@ -4,9 +4,10 @@
 
 Cicili is a powerful programming language that uniquely merges the high-level, mathematical abstractions of **Haskell** with the metaprogramming flexibility of **Lisp** and the raw, low-level performance of **C**. It uses a Lisp-like S-expression syntax to define complex functional concepts, including Algebraic Data Types (ADTs), robust pattern matching, and a full type class system with Functors, Applicatives, and Monads. Unlike traditional functional languages, Cicili transpiles directly to optimized C code, providing native speed and C-level memory control. It achieves memory safety not with a garbage collector, but through a sophisticated, high-level system of V-Tables, automatic RAII-style resource management (via its `letin` macro), and built-in reference counting (`rc`), making it a unique tool for building safe, efficient, and highly abstract systems.
 
-🌌 The Vision
+## The Vision
 
-Cicili is redefining how we write C and C++:
+Its vision is to make programming both philosophical and practical, enabling developers to construct powerful, lawful, and introspective systems that scale from embedded devices to high-performance computation. The goal is to empower a developer to write code that is as safe and expressive as Haskell, using pure functions, Algebraic Data Types, pattern matching, and Monads, while having that code compile directly into C code that is as fast and efficient as if it were written by hand. By using Lisp's metaprogramming to build functional abstractions on top of a C core, Cicili's vision is to create a world where you can write mathematically provable, complex logic for systems like TensorFlow, Databases, or even Operating Systems, and have it run with zero overhead, deterministic memory management (RAII), and no garbage collector.
+
 
 - Safer than C
 - Lighter than C++
