@@ -170,6 +170,13 @@ file closed deferred
 3.  **Cleanup:** After the list is fully processed and freed by `iter_words`, the `letin*` block in `main` exits, triggering the `file_close` destructor, which prints "file closed deferred".
 
 ## Features
-### High-Performance Compile-Time Generation
-### Modular Design & Namespace Control
-### Extensibility and Future Potential
+### Basic
+The [basic.lisp](test/haskell/basic.lisp) file is a comprehensive test suite that demonstrates almost every core feature of the Cicili language, showing how it merges functional paradigms with C-level control and an object-oriented-style V-Table system.
+### Concepts
+The [concepts.lisp](test/haskell/concepts.lisp) file is a comprehensive test suite that demonstrates the full power of Cicili's Haskell-style type class system, showing how Functors, Applicatives, and Monoids all work together on concrete data structures.
+It's a practical showcase of how these high-level abstractions are implemented and used in Cicili.
+### Monadic
+The [monadic.lisp](test/haskell/monadic.lisp) file is a powerful, practical demonstration of monadic computation in Cicili, specifically showcasing the Either monad for robust error handling.
+Its entire purpose is to safely validate and construct an Employee object ((Tuple String int int)) by chaining together a series of operations that can each fail.
+### Definitions
+The [haskell](haskell) folder contains all Cicili's Haskell definitions. review them to fully understand how they are developed by Cicili's C core clauses. Follow Cicili Standard definition model by using generics `decl-`, `impl-`, `import-`.
