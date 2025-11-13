@@ -8,203 +8,178 @@ Cicili is a powerful programming language that uniquely merges the high-level, m
 
 Its vision is to make programming both philosophical and practical, enabling developers to construct powerful, lawful, and introspective systems that scale from embedded devices to high-performance computation. The goal is to empower a developer to write code that is as safe and expressive as Haskell, using pure functions, Algebraic Data Types, pattern matching, and Monads, while having that code compile directly into C code that is as fast and efficient as if it were written by hand. By using Lisp's metaprogramming to build functional abstractions on top of a C core, Cicili's vision is to create a world where you can write mathematically provable, complex logic for systems like TensorFlow, Databases, or even Operating Systems, and have it run with zero overhead, deterministic memory management (RAII), and no garbage collector.
 
+## Demonstration
 
-- Safer than C
-- Lighter than C++
-- More expressive than macros
-- More composable than templates
-
-# ⚙️ Cicili Async Coroutine Sample
-
-This sample code demonstrates the use of Cicili's macro-powered asynchronous coroutine system. It features:
-
-- Stateful coroutines using closures
-- Custom `done`, `yield`, and `error` callbacks
-- Shared `Coordinator` for cooperative scheduling
-- Memory-safe async logic using `defer*`
-- Seamless C and Cicili integration
+This code is a sample of Cicili's power, demonstrating how it builds high-level functional abstractions (like Either for error handling, List processing, and RAII) on top of low-level C file I/O operations.
 
 ```lisp
-;;;; asynchronous sample
-(source "async.c" (:std #t :compile #t :link "-L{$CWD}../lib/std/coroutine -lasync.o -lcoordinator.o -o async_main")
-        (include <stdio.h>)
-        (include "../lib/std/coroutine/coordinator.h")
+;;; sample code
+;;; writes many sentences to a temporary file
+;;; reads file part by part
+;;; stores them in a list of strings
+;;; iterate over all parts
+;;; count the words in each part separated by space or newline character
+(source "word_count.c" (:std #t :compile #t :link "-L{$CCL} -lhaskell.o -L{$CWD} word_count.o -o word_count")
+        (include "../../haskell.h")
+        (include <errno.h>)
 
-        (func done_callback1 ((char payload [128]))  ; done callback
-              (printf "task1 the payload received: %s\n" payload)
+        (typedef char * cstr_t)
+        (typedef FILE * cfile_t)
 
-              (async ((int * state_counter . #'(malloc (sizeof int))))
-                     (defer* ((int * state_counter))
-                       (free state_counter)) ; at done or error
-                     
-                     ;; state constants or variables
-                     (let ((int counter . #'(cof state_counter))
-                           (const int end . 3))
-
-                       ;; poll
-                       (sleep 1)
-                       (printf "cmd3 counter update: %d\n" (++ (cof state_counter)))
-
-                       (if (== counter end)        
-                           (done '(lambda ((int c)) (format #t "cmd3 done: %d\n" c)) counter)         ; done
-                           (if (> counter end)    
-                               (error '(lambda () (format #t "cmd3 error\n")))                        ; error
-                               (yield '(lambda ((int c)) (format #t "cmd3 yield: %d\n" c)) counter))) ; yield
-                       ))
-              )
+        (decl-Either String cfile_t) ; for header file
+        (impl-Either String cfile_t) ; for source file
         
-        (func error_callback1 ((int status))         ; error callback
-              (printf "task1 the routine error status: %d\n" status))
+        ;; https://en.cppreference.com/w/c/io/fgets
+        (func writeTmpFile ()
+              (out Either^String^cfile_t) ; Haskell error handling model in Cicili
 
-        (func done_callback2 ((char payload [128]))  ; done callback
-              (printf "task2 the payload received: %s\n" payload))
+              (let ((FILE * tmpf . #'(tmpfile)))
+
+                (when (== tmpf nil)
+                  (Left^String^cfile_t (strerror errno))) ; on failure returns error number
+                
+                (fputs "Alan Turing\n"      tmpf)
+                (fputs "John von Neumann\n" tmpf)
+                (fputs "Alonzo Church\n"    tmpf)
+
+                ;; ((<> Right String^cfile_t) tmpf) ! Notice ^ works as (<>) clause
+                (return (Right^String^cfile_t tmpf)))) ; on success returns FILE*
+
+        ;; a helper to safely read a file as List of String s
+        (func safeReadFile ((FILE * file))
+              (out List^String) ; List^String defined in prelude
+              (return
+                (case (== file nil) (Empty^String)
+                      otherwise     (letn ((char buf [8]) ; letn returns last clause
+                                           (size_t count . 0))
+                                      (set count (fread buf (sizeof char) (sizeof buf) file))
+                                      (case (== count 0)           (Empty^String)
+                                            (< count (sizeof buf)) (Cons^String (new^String buf count) (Empty^String))
+                                            otherwise              (Cons^String (new^String buf count) (safeReadFile file)))
+                                      ))))
         
-        (func error_callback2 ((int status))         ; error callback
-              (printf "task2 the routine error status: %d\n" status))
+        ;; split by #\Space or #\Newline
+        (func count_words ((String text))
+              (out int)
+              (return (match text
+                        (* Cons ch (= tail * Cons) ; if there is another character
+                           (case (or (== ch #\Space) (== ch #\Newline)) (+ 1 (count_words tail))
+                                 otherwise (count_words tail)))
+                        (default 1)))) ; means Empty, but all matchs need default case
 
+        ;; Iterate over list and Count words in each String
+        (func iter_words ((List^String list))
+              (io list
+                (* Cons str tail
+                   (progn
+                     (show^String str)
+                     (printf " Word count: %d\n" (count_words str))
+                     (iter_words tail)
+                     (free^String (aof str))))
+                ;; last element of a list is allocated too
+                ;; = in io and match makes an alias for whole object
+                (= empty_str default (free^String (aof empty_str)))))
+
+        ;; to auto deferment file close
+        (func file_close ((FILE ** file_ptr))
+              (printf "file closed deferred\n")
+              (fclose (cof file_ptr)))
         
-        (async-main
-
-          (-> __ciciliA_Coordinator_ set_logging #t)
-
-          (async ()
-                 (let ((char buffer [128]))                 
-                   (printf "polling for cmd1: ")                  ; poll
-                   
-                   (if (> (scanf "%s" buffer) 0)
-                       (block (printf "the cmd1: %s\n" buffer)
-                         (if (== (strcmp buffer "quit") 0)
-                             (done done_callback1 buffer)         ; success done
-                             (if (== (strcmp buffer "error") 0)
-                                 (error error_callback1 -300))))  ; error raised
-                       (error error_callback1 -200))))            ; error raised
-          
-          (async ((char * buffer . #'(malloc 128)))                    ; as a state variable
-                 (printf "the state buffer: %s\n" buffer)
-                 
-                 (defer* ((char * buffer))
-                   (printf "buffer being released\n")
-                   (free buffer))
-                 
-                 (printf "polling for cmd2: ")                         ; polling repeatedlty
-                 
-                 (if (> (scanf "%s" buffer) 0)
-                     (block (printf "the cmd2: %s\n" buffer)
-                       (if (== (strcmp buffer "yield") 0)
-                           (yield done_callback2 buffer)               ; success done  a custom callback data
-                           (if (== (strcmp buffer "done") 0)
-                               (done done_callback2 buffer)            ; success done  a custom callback data
-                               (if (== (strcmp buffer "error") 0)
-                                   (error '(lambda ((int status) (char * message))
-                                            (format #t "what's happened? %d: %s\n" status message))
-                                          -3 "don't know")))))         ; error raised  a custom callback error
-                     (error error_callback2 -2)))                      ; error raised  a custom callback error
-
-          ))
+        (main
+            (letin* ((tmpf (writeTmpFile)))
+              (io tmpf
+                (Left  error (letin* ((error error free^String))
+                               (printf "File opening error: ")
+                               (show^String error)
+                               (putchar #\Newline)))
+                (Right file
+                       (letin* ((file file file_close))
+                         (rewind file)
+                         (io (safeReadFile file)
+                           (* Empty (printf "Error: nothing to read\n"))
+                           (= first_cons * Cons
+                              (progn
+                                (printf "File loaded successfully!\n")
+                                (iter_words first_cons))))))))))
 ```
 
-It’s a language for building languages. A tool for shaping systems. A canvas for expressing structure, behavior, and intent—without giving up performance or control.
+Here's a comprehensive breakdown of what this code does and the concepts it showcases:
 
-## Philosophy
+## C Interop and Monadic Error Handling: `writeTmpFile`
 
-At its core, Cicili embraces:
+This function is a perfect example of Cicili's philosophy.
 
-- **Expressive Metaprogramming:**  
-  Write high-level, declarative Lisp-like macros that generate robust, optimized C code. Code writes code—improving maintainability and reducing boilerplate.
+  * **C Interop:** It directly calls C's `stdio.h` functions like `tmpfile()` and `fputs()`. It also uses `errno.h` and `strerror()` for C-level error reporting.
+  * **Haskell Semantics:** It wraps this unsafe C operation in a pure, functional interface. The return type `Either^String^cfile_t` is a **monadic type** that explicitly forces the caller (`main`) to handle both success (`Right file`) and failure (`Left error`). This gives it the safety of a Haskell/Rust `Result` type while operating on a raw C `FILE*`.
 
-- **Performance by Design:**  
-  Cicili compiles directly to C, ensuring extremely fast execution. With features like deferred memory management (`defer` for let variables) and efficient macro expansion, your application benefits from native-like speed without the overhead of interpretation.
+## RAII and File Management: `main` and `file_close`
 
-- **Modular and Extensible Architecture:**  
-  Cicili’s versatile module system and namespace resolution mechanism (including free resolution via a simple `/` prefix) allow the creation of isolated libraries and components. This makes it simple to reuse, extend, and collaborate on large projects.
+The `main` function demonstrates a robust pattern for safe resource management in C.
 
-- **Clean DSL Development:**  
-  By abstracting common tasks (e.g., looping over arrays, conditional execution, function interpolation via lambda, routing for web servers), Cicili creates a natural DSL that integrates smoothly with C’s low-level system programming.
+  * **RAII in Cicili:** The line `(letin* ((file file file_close)))` is a powerful demonstration of **Resource Acquisition Is Initialization (RAII)**.
+  * **`file_close` Destructor:** You've defined a custom `file_close` function that matches the signature required by `letin*` (a pointer to the resource).
+  * **Guaranteed Cleanup:** By binding `file` in this `letin*` block, Cicili guarantees that `file_close` (and thus `fclose`) will be called automatically when the block exits, whether by normal completion or an error. This prevents resource leaks, a common problem in manual C file handling.
+
+## Recursive Data Processing: `safeReadFile`
+
+This function shows how to bridge C I/O with functional data structures.
+
+  * **Chunked Reading:** It uses a fixed-size `(char buf [8])` to read the file in **8-byte chunks**. This is a realistic C-style approach to handling large files.
+  * **Recursive List Building:** It recursively calls itself, using `Cons^String` to build a `List^String` where each element of the list is one of the 8-byte (or smaller) chunks read from the file.
+
+## List Iteration and Word Count: `iter_words` and `count_words`
+
+These functions showcase Cicili's functional list processing.
+
+  * **`iter_words`:** This is a standard recursive function for iterating over a `List`.
+      * It calls `show^String` to print the chunk.
+      * It calls `count_words` on the chunk.
+      * **Destructive Iteration:** Crucially, it calls `(free^String (aof str))`. This means `iter_words` is a *destructive* operation that consumes and frees the list as it iterates, demonstrating fine-grained C-level memory control.
+  * **`count_words`:** This function recursively counts "words" in a chunk.
+      * The logic `(* Cons ch (= tail * Cons))` is a "lookahead" pattern that checks if the current character is not the last one in the chunk.
+      * It counts a "word" by counting the separators (`     ` or `\n`) that are *not* at the very end of the string, and then adds `1` (for the `default 1` case). This logic is flawed for the last chunk ("ch\\n"), which it will count as 1 word, but it correctly processes the other chunks.
+
+## Output
+
+Based on the file content and the 8-byte chunking, the output will be:
+
+```text
+File loaded successfully!
+Alan Tur Word count: 2
+ing
+John Word count: 2
+ von Neu Word count: 3
+mann
+Alo Word count: 2
+nzo Chur Word count: 2
+ch
+ Word count: 1
+file closed deferred
+```
+
+### Output Explained:
+
+1.  **File Content:** "Alan Turing\\nJohn von Neumann\\nAlonzo Church\\n"
+2.  **`safeReadFile` Chunks:**
+      * `"Alan Tur"` (8 bytes) -\> `count_words` finds 1 space. `1 + 1 = 2` words.
+      * `"ing\nJohn"` (8 bytes) -\> `count_words` finds 1 newline. `1 + 1 = 2` words.
+      * `" von Neu"` (8 bytes) -\> `count_words` finds 2 spaces. `2 + 1 = 3` words.
+      * `"mann\nAlo"` (8 bytes) -\> `count_words` finds 1 newline. `1 + 1 = 2` words.
+      * `"nzo Chur"` (8 bytes) -\> `count_words` finds 1 space. `1 + 1 = 2` words.
+      * `"ch\n"` (3 bytes) -\> `count_words` finds 0 separators *not* at the end, hits `default 1`. Result: `1` word.
+3.  **Cleanup:** After the list is fully processed and freed by `iter_words`, the `letin*` block in `main` exits, triggering the `file_close` destructor, which prints "file closed deferred".
 
 ## Features
+### Basic
+The [basic.lisp](test/haskell/basic.lisp) file is a comprehensive test suite that demonstrates almost every core feature of the Cicili language, showing how it merges functional paradigms with C-level control and an object-oriented-style V-Table system.
+### Concepts
+The [concepts.lisp](test/haskell/concepts.lisp) file is a comprehensive test suite that demonstrates the full power of Cicili's Haskell-style type class system, showing how Functors, Applicatives, and Monoids all work together on concrete data structures.
+It's a practical showcase of how these high-level abstractions are implemented and used in Cicili.
+### Monadic
+The [monadic.lisp](test/haskell/monadic.lisp) file is a powerful, practical demonstration of monadic computation in Cicili, specifically showcasing the Either monad for robust error handling.
+Its entire purpose is to safely validate and construct an Employee object ((Tuple String int int)) by chaining together a series of operations that can each fail.
+### Definitions
+The [haskell](haskell) folder contains all Cicili's Haskell definitions. review them to fully understand how they are developed by Cicili's C core clauses. Follow Cicili Standard definition model by using generics `decl-`, `impl-`, `import-`.
+### C core
+Cicili's C core clauses are described in another doc [here](DOC-C.md).
 
-### High-Performance Compile-Time Generation
-
-- **Compiled to C Code:**  
-  Your high-level Cicili code is translated into optimized, idiomatic C, enabling blazing-fast performance and minimal runtime overhead.
-
-- **Deferred Memory Management:**  
-  Using the `defer` attribute in `let` bindings, Cicili automatically frees memory allocated during scope creation. This ensures resource safety and minimizes memory leaks without extra manual cleanup.
-
-- **Macro System:**  
-  Enjoy a rich macro language that lets you define your own DSLs. Built-in macros for conditionals (`when`, `unless`), loops (`for-each`, `for-each-const`), and string formatting (`format`) save you time and reduce boilerplate.
-
-### Object-Oriented and Functional Constructs
-
-- **Structs with Methods:**  
-  Define C-like structures using Lisp macros and attach methods (both inline and dynamically resolved) to simulate object-oriented programming without the runtime cost of inheritance.
-
-- **Lambda Expressions as First-Class Citizens:**  
-  Cicili supports quoted lambda expressions. These provide first-class functions that can be stored in function variables, passed as parameters, or assigned as method implementations.
-
-- **Function Variables and Inline Helpers:**  
-  Declare and assign functions dynamically, empowering functional programming patterns that blend seamlessly with low-level system constraints.
-
-### Modular Design & Namespace Control
-
-- **Sophisticated Module System:**  
-  Organize code into packages and modules to avoid symbol conflicts. Use free resolution (with a `/` prefix) when you need to refer to global types and methods outside the current module context.
-
-- **Dynamic Imports and Initialization:**  
-  Import external macro files into specific namespaces (or the default CL-USER package) and even supply compile-time initialization arguments to configure their behavior.
-
-### Web Development and FastCGI Integration
-
-- **Complete Web Server Toolkit:**  
-  Built on FastCGI, Cicili provides robust routing macros that simplify the definition of GET/POST endpoints, API routes, and parameter handling. The `route` macro and request processing functions let you build a full-featured web server that’s both modular and high performance.
-
-- **Dynamic Route Dispatching:**  
-  Process incoming HTTP requests by dynamically matching their paths and methods against registered routes. Support for serving both static content and dynamic API responses is built right in.
-
-### Extensibility and Future Potential
-
-- **DSL Ecosystem:**  
-  Cicili is not confined to web development. Its powerful macro and module system make it ideal for any domain where code generation and customization are required—from automation tools to embedded systems.
-
-- **Cross-Domain Integration:**  
-  Seamlessly integrate with existing C libraries, and extend Cicili to support advanced features such as parallel processing, WebSockets, or database connectivity as your project grows.
-
-- **Performance Optimizations:**  
-  With further potential enhancements like inline assembly optimizations, task parallelism, and even GPU-accelerated computation, Cicili sets the stage for future high-performance applications.
-
-## How Cicili Works
-
-1. **Macro Expansion:**  
-   During compilation, Cicili processes your high-level Lisp code, expanding macros into efficient C code. This not only simplifies development but also provides strong abstraction without sacrificing performance.
-
-2. **Deferred Execution & Memory Safety:**  
-   With features like auto-deallocation via `defer` attributes on `let` bindings, Cicili manages resources automatically, reducing the risk of memory leaks common in C programming.
-
-3. **Native Compilation & Linking:**  
-   Once the macros have generated the C code, a standard C compiler is used to build the final binary. FastCGI integration, as demonstrated in the sample web server code, lets you deploy lightweight and responsive applications.
-
-# What Makes Cicili Unique?
-
-Unlike general-purpose macro systems in languages like Clojure or Racket, Cicili is:
-
-- **Purpose-built for C**  
-  Its output is actual `.c`/`.h` code, not just interpreted runtime templates.
-
-- **Multi-target aware**  
-  You define headers, sources, and compile settings in a single macro form.
-
-- **Lightweight and portable**  
-  No runtime, no virtual machine—just macro-expansion into raw C.
-
-- **Blends C and Lisp**  
-  It’s a perfect middle ground: low-level power, high-level ergonomics.  
-
-## Contributing
-
-Contributions to Cicili are welcome! Whether you have ideas for new features, improvements to the macro system, or advanced optimizations, please check our contribution guidelines and open an issue or pull request on the project repository.
-
-## Final Thoughts
-
-Cicili represents a revolution in how we write high-level code with low-level performance. With its powerful metaprogramming system, modular architecture, and robust integration with C, it enables developers to create scalable, maintainable, and extremely efficient codebases for web services, DSLs, automation, and beyond.
-
-Join us in exploring the future of Lisp-powered development with Cicili!
