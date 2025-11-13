@@ -102,7 +102,6 @@ This code is a sample of Cicili's power, demonstrating how it builds high-level 
                                 (printf "File loaded successfully!\n")
                                 (iter_words first_cons))))))))))
 ```
-This code is an excellent sample of Cicili's power, demonstrating how it builds high-level functional abstractions (like `Either` for error handling, `List` processing, and RAII) on top of low-level C file I/O operations.
 
 Here's a comprehensive breakdown of what this code does and the concepts it showcases:
 
