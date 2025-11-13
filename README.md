@@ -181,5 +181,5 @@ Its entire purpose is to safely validate and construct an Employee object ((Tupl
 ### Definitions
 The [haskell](haskell) folder contains all Cicili's Haskell definitions. review them to fully understand how they are developed by Cicili's C core clauses. Follow Cicili Standard definition model by using generics `decl-`, `impl-`, `import-`.
 ### C core
-Cicili's C core clauses are described in another doc [here](DOC-c.md).
+Cicili's C core clauses are described in another doc [here](DOC-C.md).
 
