@@ -1,5 +1,5 @@
 ;;; sample code
-;;; writes many sentences to a temprorary file
+;;; writes many sentences to a temporary file
 ;;; reads file part by part
 ;;; stores them in a list of strings
 ;;; iterate over all parts
@@ -11,24 +11,24 @@
         (typedef char * cstr_t)
         (typedef FILE * cfile_t)
 
-        (decl-Either int cfile_t) ; for header file
-        (impl-Either int cfile_t) ; for source file
+        (decl-Either String cfile_t) ; for header file
+        (impl-Either String cfile_t) ; for source file
         
         ;; https://en.cppreference.com/w/c/io/fgets
         (func writeTmpFile ()
-              (out Either^int^cfile_t) ; Haskell error handling model in Cicili
+              (out Either^String^cfile_t) ; Haskell error handling model in Cicili
 
               (let ((FILE * tmpf . #'(tmpfile)))
 
                 (when (== tmpf nil)
-                  (Left^int^cfile_t errno)) ; on failure returns error number
+                  (Left^String^cfile_t (strerror errno))) ; on failure returns error number
                 
                 (fputs "Alan Turing\n"      tmpf)
                 (fputs "John von Neumann\n" tmpf)
                 (fputs "Alonzo Church\n"    tmpf)
 
-                ;; ((<> Right int^cfile_t) tmpf) ! Notice ^ works as (<>) clause
-                (return (Right^int^cfile_t tmpf)))) ; on success returns FILE*
+                ;; ((<> Right String^cfile_t) tmpf) ! Notice ^ works as (<>) clause
+                (return (Right^String^cfile_t tmpf)))) ; on success returns FILE*
 
         ;; a helper to safely read a file as List of String s
         (func safeReadFile ((FILE * file))
@@ -65,14 +65,18 @@
                 ;; = in io and match makes an alias for whole object
                 (= empty_str default (free^String (aof empty_str)))))
 
-        (func file_close ((FILE ** file_ptr)) ; to auto deferment file close
+        ;; to auto deferment file close
+        (func file_close ((FILE ** file_ptr))
               (printf "file closed deferred\n")
               (fclose (cof file_ptr)))
         
         (main
             (letin* ((tmpf (writeTmpFile)))
               (io tmpf
-                (Left  err (printf "Error No: %d occured!\n" err))
+                (Left  error (letin* ((error error free^String))
+                               (printf "File opening error: ")
+                               (show^String error)
+                               (putchar #\Newline)))
                 (Right file
                        (letin* ((file file file_close))
                          (rewind file)

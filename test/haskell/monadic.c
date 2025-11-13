@@ -430,41 +430,41 @@ int main () {
         __auto_type len  = (get_String__H_Table ()-> len )(name );
         // ----------
         ((((len  >  5 ) &&  (len  <  15 ) )) ? Right_String_String (name ) : Left_String_String (new_String_Const ("wrong name!")));
-      }), ({ /* cicili#Progn586 */
-        Either_String_Employee closure (String wName ) {
-          ({ /* cicili#Let591 */
+      }), ({ /* cicili#Progn587 */
+        Either_String_Employee __ciciliC_586 (String wName ) {
+          ({ /* cicili#Let592 */
             __auto_type mesii  = get_Monad_Either_String_int_Employee ();
             // ----------
-            return ((&mesii )-> __h_table -> bind )(((((10 >  0 ) &&  (10 <  100 ) )) ? Right_String_int (10) : Left_String_int (new_String_Const ("wrong id!"))), ({ /* cicili#Progn599 */
-                Either_String_Employee closure (int wId ) {
-                  ({ /* cicili#Let604 */
+            return ((&mesii )-> __h_table -> bind )(((((10 >  0 ) &&  (10 <  100 ) )) ? Right_String_int (10) : Left_String_int (new_String_Const ("wrong id!"))), ({ /* cicili#Progn601 */
+                Either_String_Employee __ciciliC_600 (int wId ) {
+                  ({ /* cicili#Let606 */
                     __auto_type mesie  = get_Monad_Either_String_int_Employee ();
                     // ----------
-                    return ((&mesie )-> __h_table -> bind )(((((3000 >=  1000 ) &&  (3000 <=  5000 ) )) ? Right_String_int (3000) : Left_String_int (new_String_Const ("wrong salary!"))), ({ /* cicili#Progn612 */
-                        Either_String_Employee closure (int wSalary ) {
+                    return ((&mesie )-> __h_table -> bind )(((((3000 >=  1000 ) &&  (3000 <=  5000 ) )) ? Right_String_int (3000) : Left_String_int (new_String_Const ("wrong salary!"))), ({ /* cicili#Progn615 */
+                        Either_String_Employee __ciciliC_614 (int wSalary ) {
                           return Right_String_Employee (((Employee){ wName , wId , wSalary }));
                         }
-                        closure ;
+                        __ciciliC_614 ;
                       }));
                   });
                 }
-                closure ;
+                __ciciliC_600 ;
               }));
           });
         }
-        closure ;
+        __ciciliC_586 ;
       }));
       __auto_type __h_match571_0_arg  = (((__h_data572 . __h_data ). Right ). __h_0_mem );
       const __auto_type name  = (__h_match571_0_arg . __h_0_mem );
       const __auto_type id  = (__h_match571_0_arg . __h_1_mem );
       const __auto_type salary  = (__h_match571_0_arg . __h_2_mem );
       // ----------
-      /* cicili#Block617 */
-      ({ /* cicili#Let619 */
+      /* cicili#Block620 */
+      ({ /* cicili#Let622 */
         bool __h_case_result  = ((__h_data572 . __h_ctor ) ==  __h_Right_t  );
         // ----------
         if (__h_case_result )
-          ({ /* cicili#Progn622 */
+          ({ /* cicili#Progn625 */
             printf ("name is:");
             show_String (name );
             putchar ('\n');
@@ -472,15 +472,15 @@ int main () {
             printf ("salary is: %d\n", salary );
           });
         else
-          { /* cicili#Let627 */
+          { /* cicili#Let630 */
             __auto_type err  = (((__h_data572 . __h_data ). Left ). __h_0_mem );
             // ----------
-            /* cicili#Block629 */
-            ({ /* cicili#Let631 */
+            /* cicili#Block632 */
+            ({ /* cicili#Let634 */
               bool __h_case_result  = ((__h_data572 . __h_ctor ) ==  __h_Left_t  );
               // ----------
               if (__h_case_result )
-                ({ /* cicili#Progn634 */
+                ({ /* cicili#Progn637 */
                   printf ("make Employee error: ");
                   show_String (err );
                   putchar ('\n');
@@ -489,46 +489,46 @@ int main () {
           }
       });
     }
-    { /* cicili#Let640 */
-      __auto_type __h_data638  = ((&messi )-> __h_table -> bind )(({ /* cicili#Let645 */
+    { /* cicili#Let643 */
+      __auto_type __h_data641  = ((&messi )-> __h_table -> bind )(({ /* cicili#Let648 */
         __auto_type len  = (get_String__H_Table ()-> len )(name );
         // ----------
         ((((len  >  5 ) &&  (len  <  15 ) )) ? Right_String_String (name ) : Left_String_String (new_String_Const ("wrong name!")));
-      }), ({ /* cicili#Progn652 */
-        Either_String_Employee closure (String wName ) {
-          ({ /* cicili#Let657 */
+      }), ({ /* cicili#Progn656 */
+        Either_String_Employee __ciciliC_655 (String wName ) {
+          ({ /* cicili#Let661 */
             __auto_type mesii  = get_Monad_Either_String_int_Employee ();
             // ----------
-            return ((&mesii )-> __h_table -> bind )(((((10 >  0 ) &&  (10 <  100 ) )) ? Right_String_int (10) : Left_String_int (new_String_Const ("wrong id!"))), ({ /* cicili#Progn665 */
-                Either_String_Employee closure (int wId ) {
-                  ({ /* cicili#Let670 */
+            return ((&mesii )-> __h_table -> bind )(((((10 >  0 ) &&  (10 <  100 ) )) ? Right_String_int (10) : Left_String_int (new_String_Const ("wrong id!"))), ({ /* cicili#Progn670 */
+                Either_String_Employee __ciciliC_669 (int wId ) {
+                  ({ /* cicili#Let675 */
                     __auto_type mesie  = get_Monad_Either_String_int_Employee ();
                     // ----------
-                    return ((&mesie )-> __h_table -> bind )(((((6000 >=  1000 ) &&  (6000 <=  5000 ) )) ? Right_String_int (6000) : Left_String_int (new_String_Const ("wrong salary!"))), ({ /* cicili#Progn678 */
-                        Either_String_Employee closure (int wSalary ) {
+                    return ((&mesie )-> __h_table -> bind )(((((6000 >=  1000 ) &&  (6000 <=  5000 ) )) ? Right_String_int (6000) : Left_String_int (new_String_Const ("wrong salary!"))), ({ /* cicili#Progn684 */
+                        Either_String_Employee __ciciliC_683 (int wSalary ) {
                           return Right_String_Employee (((Employee){ wName , wId , wSalary }));
                         }
-                        closure ;
+                        __ciciliC_683 ;
                       }));
                   });
                 }
-                closure ;
+                __ciciliC_669 ;
               }));
           });
         }
-        closure ;
+        __ciciliC_655 ;
       }));
-      __auto_type __h_match637_0_arg  = (((__h_data638 . __h_data ). Right ). __h_0_mem );
-      const __auto_type name  = (__h_match637_0_arg . __h_0_mem );
-      const __auto_type id  = (__h_match637_0_arg . __h_1_mem );
-      const __auto_type salary  = (__h_match637_0_arg . __h_2_mem );
+      __auto_type __h_match640_0_arg  = (((__h_data641 . __h_data ). Right ). __h_0_mem );
+      const __auto_type name  = (__h_match640_0_arg . __h_0_mem );
+      const __auto_type id  = (__h_match640_0_arg . __h_1_mem );
+      const __auto_type salary  = (__h_match640_0_arg . __h_2_mem );
       // ----------
-      /* cicili#Block683 */
-      ({ /* cicili#Let685 */
-        bool __h_case_result  = ((__h_data638 . __h_ctor ) ==  __h_Right_t  );
+      /* cicili#Block689 */
+      ({ /* cicili#Let691 */
+        bool __h_case_result  = ((__h_data641 . __h_ctor ) ==  __h_Right_t  );
         // ----------
         if (__h_case_result )
-          ({ /* cicili#Progn688 */
+          ({ /* cicili#Progn694 */
             printf ("name is:");
             show_String (name );
             putchar ('\n');
@@ -536,16 +536,16 @@ int main () {
             printf ("salary is: %d\n", salary );
           });
         else
-          { /* cicili#Let693 */
-            __auto_type err  = (((__h_data638 . __h_data ). Left ). __h_0_mem );
+          { /* cicili#Let699 */
+            __auto_type err  = (((__h_data641 . __h_data ). Left ). __h_0_mem );
             // ----------
-            /* cicili#Block695 */
-            ({ /* cicili#Let697 */
-              bool __h_case_result  = ((__h_data638 . __h_ctor ) ==  __h_Left_t  );
+            /* cicili#Block701 */
+            ({ /* cicili#Let703 */
+              bool __h_case_result  = ((__h_data641 . __h_ctor ) ==  __h_Left_t  );
               // ----------
               if (__h_case_result )
-                ({ /* cicili#Let701 */
-                  __auto_type err  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let703 */
+                ({ /* cicili#Let707 */
+                  __auto_type err  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let709 */
                     __auto_type tmp_obj  = err ;
                     // ----------
                     ((void)(tmp_obj -> __h_table -> freeClass ));

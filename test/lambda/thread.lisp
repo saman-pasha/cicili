@@ -1,4 +1,4 @@
-(import "lib/std/pthread.lisp")
+(import "lib/std/pthread/pthread.lisp")
 
 (source "thread.c" (:std #t :compile #t :link "-L{$CWD} -lthread.o -lpthread -o thread_main")
         (include <unistd.h>)
@@ -8,7 +8,7 @@
             (let ((int a_value . 50)
                   
                   (auto id0 . #'(go ((int a_value)) ; optinal out
-                                    (format #t "a value from thread: %lu -> %d\n" (cast ulong (self)) a_value)))
+                                  (format #t "a value from thread: %lu -> %d\n" (cast ulong (self)) a_value)))
 
                   (auto id1 . #'(go ((int input . 12)) (out void *) ; optinal out
                                     (format #t "early exit thread: %lu -> %d\n" (cast ulong (self)) input)

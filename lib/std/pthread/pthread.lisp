@@ -8,7 +8,7 @@
          (body body)
          (out (IF (AND (LISTP (CAR body)) (EQL (CAAR body) 'out)) (LIST (CAR body)) (LIST))))
     (SETQ body (IF (NULL out) body (CDR body)))
-    `(letn ((auto ,cls . #'(closure ,var-list
+    `(letn ((auto ,cls . #'(def-closure ,var-list
                              '(lambda () ,@out
                                (defer* ((void * context))
                                  (free context))
@@ -38,8 +38,9 @@
         `(pthread_join ,id nil)
         (MULTIPLE-VALUE-BIND (const type modifier const-ptr variable array)
           (CICILI:SPECIFY-TYPE< out)
-          `((var ,@out)
-            (pthread_join ,id (cast (void **) (aof ,variable))))))))
+          `($$$
+               (var ,@out)
+             (pthread_join ,id (cast (void **) (aof ,variable))))))))
 
 (DEFMACRO exit (ret-val)
   `(pthread_exit ,ret-val))

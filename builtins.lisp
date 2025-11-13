@@ -89,57 +89,58 @@
 (DEFMACRO defer* (var-list &REST body)
   (LET* ((name (GENSYM "ciciliDefer"))
          (pname (INTERN (FORMAT NIL "~A_ptr" name))))
-    `((defer ()
-        ,@(MAP 'LIST #'(LAMBDA (var)
-                         (MULTIPLE-VALUE-BIND (const type modifier const-ptr variable array-def)
-                             (CICILI:SPECIFY-TYPE< var)
-                           `(var ,@var . (FUNCTION (-> ,pname ,variable)))))
-               var-list)
-        ,@body)
-      (var '(,@var-list) ,name . 
-           '(,@(MAP 'LIST #'(LAMBDA (var)
-                              (MULTIPLE-VALUE-BIND (const type modifier const-ptr variable array-def)
-                                  (CICILI:SPECIFY-TYPE< var)
-                                variable))
-                    var-list))))))
+    `($$$
+         (defer ()
+           ,@(MAP 'LIST #'(LAMBDA (var)
+                            (MULTIPLE-VALUE-BIND (const type modifier const-ptr variable array-def)
+                                (CICILI:SPECIFY-TYPE< var)
+                              `(var ,@var . (FUNCTION (-> ,pname ,variable)))))
+                  var-list)
+           ,@body)
+       (var '(,@var-list) ,name . 
+            '(,@(MAP 'LIST #'(LAMBDA (var)
+                               (MULTIPLE-VALUE-BIND (const type modifier const-ptr variable array-def)
+                                   (CICILI:SPECIFY-TYPE< var)
+                                 variable))
+                     var-list))))))
 
 ;;; copies capture list to context, use pointer to keep access to context along the process
 ;;; don't free pointers copied into context if the closure is alive
-;;; (closure (capture list)
+;;; (def-closure (capture list)
 ;;;     '(lambda (parameter list)
 ;;;         body))
-;; (DEFMACRO closure (var-list lambda)
-;;   (LET* ((captures (MAP 'LIST #'(LAMBDA (var) (MULTIPLE-VALUE-LIST (CICILI:SPECIFY-TYPE-VALUE< var))) var-list))
-;;          (sname    (GENSYM "__ciciliC_Context_"))
-;;          (lname    (GENSYM "__ciciliC_Routine_"))
-;;          (values   (MAP 'LIST #'(LAMBDA (var1)
-;;                                   (DESTRUCTURING-BIND (const type modifier const-ptr variable array-def default) var1
-;;                                     (IF (NULL default) variable default)))
-;;                         captures))
-;;          (vars     (MAP 'LIST #'(LAMBDA (var2)
-;;                                   (DESTRUCTURING-BIND (const type modifier const-ptr variable array-def default) var2
-;;                                     `(var ,@(REMOVE NIL (LIST const type modifier const-ptr variable array-def)) .
-;;                                           (FUNCTION ($ (-> context context) ,variable)))))
-;;                         captures))
-;;          (members  (MAP 'LIST #'(LAMBDA (var3)
-;;                                   (DESTRUCTURING-BIND (const type modifier const-ptr variable array-def default) var3
-;;                                     `(member ,@(REMOVE NIL (LIST const type modifier const-ptr variable array-def)))))
-;;                         captures))
-;;          (body     (LET ((lm (CADR lambda)))
-;;                      (IF (EQL (CAADDR lm) 'out)
-;;                          (APPEND (LIST (CADDR lm)) vars (CDDDR lm))
-;;                          (APPEND vars (CDDR lm))))))
-;;     `'(closure* (struct ,sname
-;;                   (member func routine (((struct ,sname) * context) ,@(CADADR lambda))
-;;                           ,(IF (EQL (CAR (CAR body)) 'out) (CAR body) (LIST 'out 'void)))
-;;                   (struct ,@members (declare context)))
-;;        (cast (struct ,sname) '{ '(lambda* (,sname . ,lname)
-;;                                   (((struct ,sname) * context) ,@(CADADR lambda)) ,@body)
-;;              '{ ,@values } }))))
+(DEFMACRO def-closure (var-list lambda)
+  (LET* ((captures (MAP 'LIST #'(LAMBDA (var) (MULTIPLE-VALUE-LIST (CICILI:SPECIFY-TYPE-VALUE< var))) var-list))
+         (sname    (GENSYM "__ciciliC_Context_"))
+         (lname    (GENSYM "__ciciliC_Routine_"))
+         (values   (MAP 'LIST #'(LAMBDA (var1)
+                                  (DESTRUCTURING-BIND (const type modifier const-ptr variable array-def default) var1
+                                    (IF (NULL default) variable default)))
+                        captures))
+         (vars     (MAP 'LIST #'(LAMBDA (var2)
+                                  (DESTRUCTURING-BIND (const type modifier const-ptr variable array-def default) var2
+                                    `(var ,@(REMOVE NIL (LIST const type modifier const-ptr variable array-def)) .
+                                          (FUNCTION ($ (-> context context) ,variable)))))
+                        captures))
+         (members  (MAP 'LIST #'(LAMBDA (var3)
+                                  (DESTRUCTURING-BIND (const type modifier const-ptr variable array-def default) var3
+                                    `(member ,@(REMOVE NIL (LIST const type modifier const-ptr variable array-def)))))
+                        captures))
+         (body     (LET ((lm (CADR lambda)))
+                     (IF (EQL (CAADDR lm) 'out)
+                         (APPEND (LIST (CADDR lm)) vars (CDDDR lm))
+                         (APPEND vars (CDDR lm))))))
+    `'(closure* (struct ,sname
+                  (member func routine (((struct ,sname) * context) ,@(CADADR lambda))
+                          ,(IF (EQL (CAR (CAR body)) 'out) (CAR body) (LIST 'out 'void)))
+                  (struct ,@members (declare context)))
+       (cast (struct ,sname) '{ '(lambda* (,sname . ,lname)
+                                  (((struct ,sname) * context) ,@(CADADR lambda)) ,@body)
+             '{ ,@values } }))))
 
-;;; way to execute closure routine
-;; (DEFMACRO exec (closure &REST args)
-;;   `((($ ,closure routine) (aof ,closure) ,@args)))
+;; way to execute closure routine
+(DEFMACRO exec-closure (closure &REST args)
+  `((($ ,closure routine) (aof ,closure) ,@args)))
 
 ;;; asycronous clauses
 ;;; declare a handle in a header for global access or

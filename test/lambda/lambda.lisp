@@ -1,27 +1,24 @@
 ;;; demonstrating function variable and lambda
 (header "lambda.h" ()
         (guard __SHAPE_H__
-        (struct Shape
-          (member int length)
-          (member int width)
-          (member func dynamicDraw (((struct Shape) * _))))
+          (struct Shape
+            (member int length)
+            (member int width)
+            (member func dynamicDraw (((struct Shape) * _))))
 
-        (decl) (method (Shape . staticDraw) ())))
-          
+          (decl) (method (Shape . staticDraw) ())))
+
 (source "lambda.c" (:std #f
-                    :compile #t
-                    :link "-v -o main -L{$CWD} -llambda.o")
+                         :compile #t
+                         :link "-o main -L{$CWD} -llambda.o")
         (include <stdio.h>)
         (include <stdlib.h>)
         (include "lambda.h")
 
-        (method (Shape . staticDraw) ()
-                (printf "area from static draw method: %d\n" (* ($ this length) ($ this width))))
-        
         (var func aFunc ((int x) (int y)) (out int))
 
         (func mulFun ((int x) (int y)) (out int)
-                  (return (* x y)))
+              (return (* x y)))
 
         (typedef func twoIntInputFn_t ((int _) (int _)) (out int))
         
@@ -59,13 +56,11 @@
                   6 7)
 
                 (set ($ shp dynamicDraw) '(lambda ((Shape * shp))
-                                           (printf "shape area is: %d\n" (* ($ shp length) ($ shp width)))))
-                (($ shp dynamicDraw) shp) ; calling function attribute
-                
-                (-> shp staticDraw) ;; static draw call method of Shape 
+                                           (printf "shape area is: %d\n" (* (-> shp length) (-> shp width)))))
+                (($ shp dynamicDraw) (aof shp)) ; calling function attribute
                 
                 ('(lambda ((Shape * shp)) ; calling instant lambda
-                   (printf "shape env is: %d\n" (* 2 (+ ($ shp length) ($ shp width))))) shp)
+                   (printf "shape env is: %d\n" (* 2 (+ (-> shp length) (-> shp width)))))
+                  (aof shp))
 
-                (return EXIT_SUCCESS)
-                )))
+                (return EXIT_SUCCESS))))

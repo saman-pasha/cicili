@@ -8,8 +8,8 @@
 #include <errno.h>
 typedef char * cstr_t ;
 typedef FILE * cfile_t ;
-#ifndef __Either_int_cfile_t__H_DECL__
-#define __Either_int_cfile_t__H_DECL__
+#ifndef __Either_String_cfile_t__H_DECL__
+#define __Either_String_cfile_t__H_DECL__
 #ifndef __H___h_Either_ctor_t__
 #define __H___h_Either_ctor_t__
 typedef enum __h_Either_ctor_t {
@@ -17,58 +17,58 @@ typedef enum __h_Either_ctor_t {
   __h_Left_t = 1
 } __h_Either_ctor_t;
 #endif /* __H___h_Either_ctor_t__ */ 
-typedef struct Either_int_cfile_t Either_int_cfile_t ;
-typedef void (*free_Either_int_cfile_t_t) (Either_int_cfile_t * this );
-typedef struct Either_int_cfile_t__H_Table {
-  free_Either_int_cfile_t_t freeData ;
-} Either_int_cfile_t__H_Table;
-typedef struct Either_int_cfile_t {
-  const Either_int_cfile_t__H_Table * __h_table ;
+typedef struct Either_String_cfile_t Either_String_cfile_t ;
+typedef void (*free_Either_String_cfile_t_t) (Either_String_cfile_t * this );
+typedef struct Either_String_cfile_t__H_Table {
+  free_Either_String_cfile_t_t freeData ;
+} Either_String_cfile_t__H_Table;
+typedef struct Either_String_cfile_t {
+  const Either_String_cfile_t__H_Table * __h_table ;
   char __h_ctor ;
   union { /* ciciliUnion113 */
     struct { /* ciciliStruct114 */
-      int __h_0_mem ;
+      String __h_0_mem ;
     } Left , _0 ;
     struct { /* ciciliStruct115 */
       cfile_t __h_0_mem ;
     } Right , _ ;
   } __h_data ;
-} Either_int_cfile_t;
-Either_int_cfile_t Left_int_cfile_t (int error );
-Either_int_cfile_t Right_int_cfile_t (cfile_t value );
-__attribute__((weak)) Either_int_cfile_t Default_Either_int_cfile_t (cfile_t value ) {
-  return Right_int_cfile_t (value );
+} Either_String_cfile_t;
+Either_String_cfile_t Left_String_cfile_t (String error );
+Either_String_cfile_t Right_String_cfile_t (cfile_t value );
+__attribute__((weak)) Either_String_cfile_t Default_Either_String_cfile_t (cfile_t value ) {
+  return Right_String_cfile_t (value );
 }
-const Either_int_cfile_t__H_Table * const get_Either_int_cfile_t__H_Table ();
-void free_Either_int_cfile_t (Either_int_cfile_t * this );
-#endif /* __Either_int_cfile_t__H_DECL__ */ 
-#ifndef __Either_int_cfile_t__H_IMPL__
-#define __Either_int_cfile_t__H_IMPL__
-void free_Either_int_cfile_t (Either_int_cfile_t * this ) {
+const Either_String_cfile_t__H_Table * const get_Either_String_cfile_t__H_Table ();
+void free_Either_String_cfile_t (Either_String_cfile_t * this );
+#endif /* __Either_String_cfile_t__H_DECL__ */ 
+#ifndef __Either_String_cfile_t__H_IMPL__
+#define __Either_String_cfile_t__H_IMPL__
+void free_Either_String_cfile_t (Either_String_cfile_t * this ) {
 }
-const Either_int_cfile_t__H_Table * const get_Either_int_cfile_t__H_Table () {
-  static const Either_int_cfile_t__H_Table table  = { free_Either_int_cfile_t };
+const Either_String_cfile_t__H_Table * const get_Either_String_cfile_t__H_Table () {
+  static const Either_String_cfile_t__H_Table table  = { free_Either_String_cfile_t };
   return (&table );
 }
-Either_int_cfile_t Left_int_cfile_t (int error ) {
-  return ((Either_int_cfile_t){ get_Either_int_cfile_t__H_Table (), __h_Left_t , .__h_data.Left = { error }});
+Either_String_cfile_t Left_String_cfile_t (String error ) {
+  return ((Either_String_cfile_t){ get_Either_String_cfile_t__H_Table (), __h_Left_t , .__h_data.Left = { error }});
 }
-Either_int_cfile_t Right_int_cfile_t (cfile_t value ) {
-  return ((Either_int_cfile_t){ get_Either_int_cfile_t__H_Table (), __h___t , .__h_data._ = { value }});
+Either_String_cfile_t Right_String_cfile_t (cfile_t value ) {
+  return ((Either_String_cfile_t){ get_Either_String_cfile_t__H_Table (), __h___t , .__h_data._ = { value }});
 }
-#endif /* __Either_int_cfile_t__H_IMPL__ */ 
-Either_int_cfile_t writeTmpFile () {
+#endif /* __Either_String_cfile_t__H_IMPL__ */ 
+Either_String_cfile_t writeTmpFile () {
   { /* cicili#Let148 */
     FILE * tmpf  = tmpfile ();
     // ----------
     if (tmpf  ==  NULL  )
       { /* cicili#Block152 */
-        Left_int_cfile_t (errno );
+        Left_String_cfile_t (strerror (errno ));
       }
     fputs ("Alan Turing\n", tmpf );
     fputs ("John von Neumann\n", tmpf );
     fputs ("Alonzo Church\n", tmpf );
-    return Right_int_cfile_t (tmpf );
+    return Right_String_cfile_t (tmpf );
   }
 }
 List_String safeReadFile (FILE * file ) {
@@ -133,46 +133,52 @@ int main () {
     __auto_type tmpf  = writeTmpFile ();
     // ----------
     { /* cicili#Let208 */
-      __auto_type err  = (((tmpf . __h_data ). Left ). __h_0_mem );
+      __auto_type error  = (((tmpf . __h_data ). Left ). __h_0_mem );
       // ----------
       /* cicili#Block210 */
       ({ /* cicili#Let212 */
         bool __h_case_result  = ((tmpf . __h_ctor ) ==  __h_Left_t  );
         // ----------
         if (__h_case_result )
-          printf ("Error No: %d occured!\n", err );
+          ({ /* cicili#Let216 */
+            __auto_type error  __attribute__((__cleanup__(free_String ))) = error ;
+            // ----------
+            printf ("File opening error: ");
+            show_String (error );
+            putchar ('\n');
+          });
         else
-          { /* cicili#Let218 */
+          { /* cicili#Let221 */
             __auto_type file  = (((tmpf . __h_data ). Right ). __h_0_mem );
             // ----------
-            /* cicili#Block220 */
-            ({ /* cicili#Let222 */
+            /* cicili#Block223 */
+            ({ /* cicili#Let225 */
               bool __h_case_result  = ((tmpf . __h_ctor ) ==  __h_Right_t  );
               // ----------
               if (__h_case_result )
-                ({ /* cicili#Let226 */
+                ({ /* cicili#Let229 */
                   __auto_type file  __attribute__((__cleanup__(file_close ))) = file ;
                   // ----------
                   rewind (file );
-                  { /* cicili#Let231 */
-                    __auto_type __h_data230  = safeReadFile (file );
+                  { /* cicili#Let234 */
+                    __auto_type __h_data233  = safeReadFile (file );
                     // ----------
-                    /* cicili#Block233 */
-                    ({ /* cicili#Let235 */
-                      bool __h_case_result  = ((__h_data230 -> __h_ctor ) ==  __h_Empty_t  );
+                    /* cicili#Block236 */
+                    ({ /* cicili#Let238 */
+                      bool __h_case_result  = ((__h_data233 -> __h_ctor ) ==  __h_Empty_t  );
                       // ----------
                       if (__h_case_result )
                         printf ("Error: nothing to read\n");
                       else
-                        { /* cicili#Let241 */
-                          __auto_type first_cons  = __h_data230 ;
+                        { /* cicili#Let244 */
+                          __auto_type first_cons  = __h_data233 ;
                           // ----------
-                          /* cicili#Block243 */
-                          ({ /* cicili#Let245 */
+                          /* cicili#Block246 */
+                          ({ /* cicili#Let248 */
                             bool __h_case_result  = ((first_cons -> __h_ctor ) ==  __h_Cons_t  );
                             // ----------
                             if (__h_case_result )
-                              ({ /* cicili#Progn248 */
+                              ({ /* cicili#Progn251 */
                                 printf ("File loaded successfully!\n");
                                 iter_words (first_cons );
                               });

@@ -35,11 +35,11 @@
             (int * count)      ; shared variable between instances should be a pointer
             (func destructor ((a * pointer))))
            (free  (progn
-                    (printf "destructuring Rc: %p\n" this)
+                    ;; (printf "destructuring Rc: %p\n" this)
                     (io this
                       (* _ pointer authority count destructor
                          (when (== (cast (size_t) this) authority)
-                           (printf "destructuring authorized Rc: %p , %d\n" this (cof count))
+                           ;; (printf "destructuring authorized Rc: %p , %d\n" this (cof count))
                            (case (== (cof count) 1) (progn
                                                       (destructor (aof pointer))
                                                       (free count)
@@ -67,8 +67,8 @@
                           (++ (cof count))
                           (letn ((auto cloned_rc . #'((<> Keep Rc a) pointer 0 count destructor)))
                             (set ($ (-> cloned_rc __h_data) Keep __h_1_mem) (cast (size_t) cloned_rc))
-                            (io cloned_rc (* _ _ authority count
-                                             (printf "inside Clone rc: %p, %zx, %d\n" cloned_rc authority (cof count))))
+                            ;; (io cloned_rc (* _ _ authority count
+                            ;;                  (printf "inside Clone rc: %p, %zx, %d\n" cloned_rc authority (cof count))))
                             cloned_rc))
                         otherwise rc))
                    (default rc))))
@@ -80,8 +80,8 @@
                    (set (cof count) 1)
                    (letn ((auto cloned_rc . #'((<> Keep Rc a) pointer 0 count (<> free a))))
                      (set ($ (-> cloned_rc __h_data) Keep __h_1_mem) (cast (size_t) cloned_rc))
-                     (io cloned_rc (* _ _ authority count
-                                      (printf "inside Ctor rc: %p, %zx, %d\n" cloned_rc authority (cof count))))
+                     ;; (io cloned_rc (* _ _ authority count
+                     ;;                 (printf "inside Ctor rc: %p, %zx, %d\n" cloned_rc authority (cof count))))
                      cloned_rc))))
 
          ) ; impl-Rc

@@ -145,9 +145,9 @@
            ;; 'this' points to current instance
            (free (io this
                    (* Cons head tail
-                      (block (printf "destructuring List: %p, " this)
-                        (fmt head)
-                        (putchar #\Newline)
+                      (block ;; (printf "destructuring List: %p, " this)
+                          ;; (fmt head)
+                          ;; (putchar #\Newline)
                         ((<> free type) (aof tail))
                         (free this)))
                    (default (free this))))) ; Empty is pointer too

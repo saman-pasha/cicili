@@ -2,77 +2,73 @@
 #include <stdlib.h>
 #include <string.h>
 #include "defer.h"
-static void __ciciliL_104 (Employee ** emp_ptr ) {
-    Employee * emp  = (*emp_ptr );
-    printf ("from defer, emp id is: %d and emp name is: %s\n", (emp ->Id ), (emp ->Name ));
-    free ((emp ->Name ));
-    free (emp );
-    printf ("from defer, emp is freed\n");
+typedef int (*ioInt_t) (int dyn_var );
+static void __ciciliL_105 (Employee ** emp_ptr ) {
+  Employee * emp  = (*emp_ptr );
+  printf ("from defer, emp id is: %d and emp name is: %s\n", (emp -> Id ), (emp -> Name ));
+  free ((emp -> Name ));
+  free (emp );
+  printf ("from defer, emp is freed\n");
 }
-static void __ciciliL_106 (Employee ** empOther ) {
-    free (((void *)(*empOther )));
+static void __ciciliL_107 (Employee ** empOther ) {
+  free (((void *)(*empOther )));
 }
-static void __ciciliL_108 (Employee ** empOzzi ) {
-    free (((void *)(*empOzzi )));
+static void __ciciliL_109 (Employee ** empOzzi ) {
+  free (((void *)(*empOzzi )));
 }
-struct __ciciliC_Context_110 {
-  void (*routine) (struct __ciciliC_Context_110 * context , int x );
-  struct { /* ciciliStruct114 */
-    FILE * file ;
-    char ** msgs ;
-  } context ;
-};
-static void __ciciliC_Context_110_s___ciciliC_Routine_111 (struct __ciciliC_Context_110 * context , int x ) {
-    FILE * file  = ((context -> context ). file );
-    char ** msgs  = ((context -> context ). msgs );
-    fprintf (file , msgs [0], x );
-    fprintf (file , msgs [1], (x  *  x  ));
+static ioInt_t __ciciliL_118 (int state ) {
+  { /* cicili#Let120 */
+    int st  = state ;
+    // ----------
+    return ({ /* cicili#Progn123 */
+        int __ciciliC_122 (int dyn_var ) {
+          return (st  +  dyn_var  );
+        }
+        __ciciliC_122 ;
+      });
+  }
 }
-struct __ciciliC_Context_120 {
-  int (*routine) (struct __ciciliC_Context_120 * context , int dyn_var );
-  struct { /* ciciliStruct124 */
-    int state ;
-  } context ;
-};
-static int __ciciliC_Context_120_s___ciciliC_Routine_121 (struct __ciciliC_Context_120 * context , int dyn_var ) {
-    int state  = ((context -> context ). state );
-    return (state  +  dyn_var  );
-}
-static struct __ciciliC_Context_120 __ciciliL_118 (int state ) {
-    return ((struct __ciciliC_Context_120 ){ __ciciliC_Context_120_s___ciciliC_Routine_121 , { state }});
-}
-struct __ciciliS_135 {
+typedef struct __ciciliS_133 {
   FILE * file ;
   char * msg ;
-};
-static void __ciciliL_136 (struct __ciciliS_135 * ciciliDefer133_ptr ) {
-    FILE * file  = (ciciliDefer133_ptr -> file );
-    char * msg  = (ciciliDefer133_ptr -> msg );
-    fprintf (file , "%s\n", msg );
-    fclose (file );
+} __ciciliS_133;
+static void __ciciliL_134 (struct __ciciliS_133 * ciciliDefer131_ptr ) {
+  FILE * file  = (ciciliDefer131_ptr -> file );
+  char * msg  = (ciciliDefer131_ptr -> msg );
+  fprintf (file , "%s\n", msg );
+  fclose (file );
+  fprintf (stdout , "defer msg printed to file.\n");
 }
 int main () {
-    { /* cicili#Let103 */
-        Employee * emp  __attribute__((__cleanup__(__ciciliL_104 ))) = ((Employee *)malloc (sizeof(Employee)));
-        Employee * empOther  __attribute__((__cleanup__(__ciciliL_106 ))) = ((Employee *)malloc (sizeof(Employee)));
-        Employee * empOzzi  __attribute__((__cleanup__(__ciciliL_108 ))) = malloc (sizeof(Employee));
-        char * msg  = "a message from defer execution\n";
-        char * msg_int  = "int from closure: %d\n";
-        char * msg_int_sqr  = "int sqr from closure: %d\n";
-        FILE * file  = fopen ("./test/lambda/deferral.txt", "w+");
-        __auto_type printInts  = ((struct __ciciliC_Context_110 ){ __ciciliC_Context_110_s___ciciliC_Routine_111 , { file , ((char *[]){ msg_int , msg_int_sqr })}});
-        __auto_type make_closure  = __ciciliL_118 ;
-        __auto_type clo1  = make_closure (10);
-        __auto_type clo2  = make_closure (20);
-        // ----------
-        fprintf (file , "first line from main execution\n");
-        fprintf (stdout , "clo1: %d\n", (clo1 . routine )((&clo1 ), 5));
-        fprintf (stdout , "clo2: %d\n", (clo2 . routine )((&clo2 ), 5));
-        (printInts . routine )((&printInts ), 5);
-        (emp ->Id ) = 100;
-        (emp ->Name ) = calloc (8, sizeof(char));
-        struct __ciciliS_135 ciciliDefer133  __attribute__((__cleanup__(__ciciliL_136 ))) = { file , msg };
-        memcpy ((emp ->Name ), "Jon Doe\0", 8);
-        fprintf (stdout , "emp id is: %d and emp name is: %s\n", (emp ->Id ), (emp ->Name ));
-    }
+  { /* cicili#Let104 */
+    Employee * emp  __attribute__((__cleanup__(__ciciliL_105 ))) = ((Employee *)malloc (sizeof(Employee)));
+    Employee * empOther  __attribute__((__cleanup__(__ciciliL_107 ))) = ((Employee *)malloc (sizeof(Employee)));
+    Employee * empOzzi  __attribute__((__cleanup__(__ciciliL_109 ))) = malloc (sizeof(Employee));
+    char * msg  = "a message from defer execution\n";
+    char * msg_int  = "int from closure: %d\n";
+    char * msg_int_sqr  = "int sqr from closure: %d\n";
+    FILE * file  = fopen ("./test/lambda/deferral.txt", "w");
+    __auto_type printInts  = ({ /* cicili#Progn112 */
+      void __ciciliC_111 (int x ) {
+        fprintf (file , msg_int , x );
+        fprintf (file , msg_int_sqr , (x  *  x  ));
+        fprintf (stdout , "printed to file.\n");
+      }
+      __ciciliC_111 ;
+    });
+    __auto_type make_closure  = __ciciliL_118 ;
+    __auto_type clo1  = make_closure (10);
+    __auto_type clo2  = make_closure (20);
+    // ----------
+    fprintf (file , "first line from main execution\n");
+    fprintf (stdout , "clo1: %d\n", clo1 (5));
+    fprintf (stdout , "clo2: %d\n", clo2 (5));
+    printInts (3);
+    printInts (5);
+    struct __ciciliS_133 ciciliDefer131  __attribute__((__cleanup__(__ciciliL_134 ))) = { file , msg };
+    (emp -> Id ) = 100;
+    (emp -> Name ) = calloc (8, sizeof(char));
+    memcpy ((emp -> Name ), "Jon Doe\0", 8);
+    fprintf (stdout , "emp id is: %d and emp name is: %s\n", (emp -> Id ), (emp -> Name ));
+  }
 }
