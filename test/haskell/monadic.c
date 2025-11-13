@@ -422,7 +422,7 @@ Monad_Either_String_int_Employee get_Monad_Either_String_int_Employee () {
 }
 int main () {
   ({ /* cicili#Let566 */
-    __auto_type name  = new_String_Const ("Jon Doe");
+    __auto_type name  __attribute__((__cleanup__(free_String ))) = new_String_Const ("Jon Doe");
     __auto_type messi  = get_Monad_Either_String_String_Employee ();
     // ----------
     { /* cicili#Let574 */
@@ -431,28 +431,28 @@ int main () {
         // ----------
         ((((len  >  5 ) &&  (len  <  15 ) )) ? Right_String_String (name ) : Left_String_String (new_String_Const ("wrong name!")));
       }), ({ /* cicili#Progn586 */
-        Either_String_Employee lambda (String wName ) {
+        Either_String_Employee closure (String wName ) {
           ({ /* cicili#Let591 */
             __auto_type mesii  = get_Monad_Either_String_int_Employee ();
             // ----------
             return ((&mesii )-> __h_table -> bind )(((((10 >  0 ) &&  (10 <  100 ) )) ? Right_String_int (10) : Left_String_int (new_String_Const ("wrong id!"))), ({ /* cicili#Progn599 */
-                Either_String_Employee lambda (int wId ) {
+                Either_String_Employee closure (int wId ) {
                   ({ /* cicili#Let604 */
                     __auto_type mesie  = get_Monad_Either_String_int_Employee ();
                     // ----------
                     return ((&mesie )-> __h_table -> bind )(((((3000 >=  1000 ) &&  (3000 <=  5000 ) )) ? Right_String_int (3000) : Left_String_int (new_String_Const ("wrong salary!"))), ({ /* cicili#Progn612 */
-                        Either_String_Employee lambda (int wSalary ) {
+                        Either_String_Employee closure (int wSalary ) {
                           return Right_String_Employee (((Employee){ wName , wId , wSalary }));
                         }
-                        lambda ;
+                        closure ;
                       }));
                   });
                 }
-                lambda ;
+                closure ;
               }));
           });
         }
-        lambda ;
+        closure ;
       }));
       __auto_type __h_match571_0_arg  = (((__h_data572 . __h_data ). Right ). __h_0_mem );
       const __auto_type name  = (__h_match571_0_arg . __h_0_mem );
@@ -495,28 +495,28 @@ int main () {
         // ----------
         ((((len  >  5 ) &&  (len  <  15 ) )) ? Right_String_String (name ) : Left_String_String (new_String_Const ("wrong name!")));
       }), ({ /* cicili#Progn652 */
-        Either_String_Employee lambda (String wName ) {
+        Either_String_Employee closure (String wName ) {
           ({ /* cicili#Let657 */
             __auto_type mesii  = get_Monad_Either_String_int_Employee ();
             // ----------
             return ((&mesii )-> __h_table -> bind )(((((10 >  0 ) &&  (10 <  100 ) )) ? Right_String_int (10) : Left_String_int (new_String_Const ("wrong id!"))), ({ /* cicili#Progn665 */
-                Either_String_Employee lambda (int wId ) {
+                Either_String_Employee closure (int wId ) {
                   ({ /* cicili#Let670 */
                     __auto_type mesie  = get_Monad_Either_String_int_Employee ();
                     // ----------
                     return ((&mesie )-> __h_table -> bind )(((((6000 >=  1000 ) &&  (6000 <=  5000 ) )) ? Right_String_int (6000) : Left_String_int (new_String_Const ("wrong salary!"))), ({ /* cicili#Progn678 */
-                        Either_String_Employee lambda (int wSalary ) {
+                        Either_String_Employee closure (int wSalary ) {
                           return Right_String_Employee (((Employee){ wName , wId , wSalary }));
                         }
-                        lambda ;
+                        closure ;
                       }));
                   });
                 }
-                lambda ;
+                closure ;
               }));
           });
         }
-        lambda ;
+        closure ;
       }));
       __auto_type __h_match637_0_arg  = (((__h_data638 . __h_data ). Right ). __h_0_mem );
       const __auto_type name  = (__h_match637_0_arg . __h_0_mem );
@@ -544,7 +544,14 @@ int main () {
               bool __h_case_result  = ((__h_data638 . __h_ctor ) ==  __h_Left_t  );
               // ----------
               if (__h_case_result )
-                ({ /* cicili#Progn700 */
+                ({ /* cicili#Let701 */
+                  __auto_type err  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let703 */
+                    __auto_type tmp_obj  = err ;
+                    // ----------
+                    ((void)(tmp_obj -> __h_table -> freeClass ));
+                    tmp_obj ;
+                  });
+                  // ----------
                   printf ("make Employee error: ");
                   show_String (err );
                   putchar ('\n');

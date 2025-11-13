@@ -11,8 +11,8 @@
                        ((key-eq func 'FUNCTION) (specify-call-expr (cadr def)))
 		               ((key-eq func 'QUOTE)
                         (let ((quoted (cadr def)))
-                          (cond ((key-eq (car quoted) '|lambda|) ; nested function gcc extension
-                                 (let* ((lname (car quoted))
+                          (cond ((key-eq (car quoted) '|closure|) ; nested function gcc extension
+                                 (let* ((lname (GENSYM (car quoted)))
                                         (progn-spec (specify-progn
                                                         (list '|progn|
                                                               (append (list '|func| lname) (cdr quoted))
@@ -38,10 +38,10 @@
                                                     fname)))
                                      (specify-symbol-expr (if *module-path* (free-name *module-path* name) name)))))
 
-                                ((key-eq (car quoted) '|closure*|) ; closure*
-                                 (let ((struct-spec (specify-struct (cadr quoted) '())))
-                                   (add-inner struct-spec (if *function-spec* *function-spec* *variable-spec*))
-                                   (specify-expr (caddr quoted))))
+                                ;; ((key-eq (car quoted) '|closure*|) ; closure*
+                                ;;  (let ((struct-spec (specify-struct (cadr quoted) '())))
+                                ;;    (add-inner struct-spec (if *function-spec* *function-spec* *variable-spec*))
+                                ;;    (specify-expr (caddr quoted))))
                                 
                                 (t (specify-list-expr quoted)))))   ; list
 		               ((and (> (length def) 2) (key-eq func '\|) (key-eq (cadr def) '\|))

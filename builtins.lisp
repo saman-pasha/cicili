@@ -108,38 +108,38 @@
 ;;; (closure (capture list)
 ;;;     '(lambda (parameter list)
 ;;;         body))
-(DEFMACRO closure (var-list lambda)
-  (LET* ((captures (MAP 'LIST #'(LAMBDA (var) (MULTIPLE-VALUE-LIST (CICILI:SPECIFY-TYPE-VALUE< var))) var-list))
-         (sname    (GENSYM "__ciciliC_Context_"))
-         (lname    (GENSYM "__ciciliC_Routine_"))
-         (values   (MAP 'LIST #'(LAMBDA (var1)
-                                  (DESTRUCTURING-BIND (const type modifier const-ptr variable array-def default) var1
-                                    (IF (NULL default) variable default)))
-                        captures))
-         (vars     (MAP 'LIST #'(LAMBDA (var2)
-                                  (DESTRUCTURING-BIND (const type modifier const-ptr variable array-def default) var2
-                                    `(var ,@(REMOVE NIL (LIST const type modifier const-ptr variable array-def)) .
-                                          (FUNCTION ($ (-> context context) ,variable)))))
-                        captures))
-         (members  (MAP 'LIST #'(LAMBDA (var3)
-                                  (DESTRUCTURING-BIND (const type modifier const-ptr variable array-def default) var3
-                                    `(member ,@(REMOVE NIL (LIST const type modifier const-ptr variable array-def)))))
-                        captures))
-         (body     (LET ((lm (CADR lambda)))
-                     (IF (EQL (CAADDR lm) 'out)
-                         (APPEND (LIST (CADDR lm)) vars (CDDDR lm))
-                         (APPEND vars (CDDR lm))))))
-    `'(closure* (struct ,sname
-                  (member func routine (((struct ,sname) * context) ,@(CADADR lambda))
-                          ,(IF (EQL (CAR (CAR body)) 'out) (CAR body) (LIST 'out 'void)))
-                  (struct ,@members (declare context)))
-       (cast (struct ,sname) '{ '(lambda* (,sname . ,lname)
-                                  (((struct ,sname) * context) ,@(CADADR lambda)) ,@body)
-             '{ ,@values } }))))
+;; (DEFMACRO closure (var-list lambda)
+;;   (LET* ((captures (MAP 'LIST #'(LAMBDA (var) (MULTIPLE-VALUE-LIST (CICILI:SPECIFY-TYPE-VALUE< var))) var-list))
+;;          (sname    (GENSYM "__ciciliC_Context_"))
+;;          (lname    (GENSYM "__ciciliC_Routine_"))
+;;          (values   (MAP 'LIST #'(LAMBDA (var1)
+;;                                   (DESTRUCTURING-BIND (const type modifier const-ptr variable array-def default) var1
+;;                                     (IF (NULL default) variable default)))
+;;                         captures))
+;;          (vars     (MAP 'LIST #'(LAMBDA (var2)
+;;                                   (DESTRUCTURING-BIND (const type modifier const-ptr variable array-def default) var2
+;;                                     `(var ,@(REMOVE NIL (LIST const type modifier const-ptr variable array-def)) .
+;;                                           (FUNCTION ($ (-> context context) ,variable)))))
+;;                         captures))
+;;          (members  (MAP 'LIST #'(LAMBDA (var3)
+;;                                   (DESTRUCTURING-BIND (const type modifier const-ptr variable array-def default) var3
+;;                                     `(member ,@(REMOVE NIL (LIST const type modifier const-ptr variable array-def)))))
+;;                         captures))
+;;          (body     (LET ((lm (CADR lambda)))
+;;                      (IF (EQL (CAADDR lm) 'out)
+;;                          (APPEND (LIST (CADDR lm)) vars (CDDDR lm))
+;;                          (APPEND vars (CDDR lm))))))
+;;     `'(closure* (struct ,sname
+;;                   (member func routine (((struct ,sname) * context) ,@(CADADR lambda))
+;;                           ,(IF (EQL (CAR (CAR body)) 'out) (CAR body) (LIST 'out 'void)))
+;;                   (struct ,@members (declare context)))
+;;        (cast (struct ,sname) '{ '(lambda* (,sname . ,lname)
+;;                                   (((struct ,sname) * context) ,@(CADADR lambda)) ,@body)
+;;              '{ ,@values } }))))
 
 ;;; way to execute closure routine
-(DEFMACRO exec (closure &REST args)
-  `((($ ,closure routine) (aof ,closure) ,@args)))
+;; (DEFMACRO exec (closure &REST args)
+;;   `((($ ,closure routine) (aof ,closure) ,@args)))
 
 ;;; asycronous clauses
 ;;; declare a handle in a header for global access or

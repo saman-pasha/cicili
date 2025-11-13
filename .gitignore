@@ -242,3 +242,7 @@ test/haskell/concepts.c.run3.c
 test/haskell/monadic.c.run1.c
 test/haskell/monadic.c.run2.c
 test/haskell/monadic.c.run3.c
+test/haskell/word_count.c.run1.c
+test/haskell/word_count.c.run2.c
+test/haskell/word_count.c.run3.c
+test/haskell/word_count

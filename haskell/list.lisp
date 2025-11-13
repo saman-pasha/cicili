@@ -32,7 +32,9 @@
 
          (decl) (func (<> new type Pure) ((const a * buf) (int len)) (out type))
          (decl) (func (<> new type Wrap) ((const a item)) (out type))
-         
+
+         (decl-Maybe type)
+
          ) ; decl-List
 
 (generic impl-List (type a fmt)
@@ -163,7 +165,9 @@
          (func (<> new type Wrap) ((const a item))
                (out type)
                (return ((<> Cons a) item ((<> Empty a)))))
-         
+
+         (impl-Maybe type)
+
          ) ; impl-List
 
 (generic import-List (ctor type a)
@@ -183,5 +187,7 @@
                (IF (AND (LISTP buf) (EQUAL (CAR buf) 'QUOTE))
                    `((<> new type Pure) (cast (const a []) ,buf) ,(LENGTH (CADR buf)))
                    (ERROR (FORMAT NIL "new^List len required for dynamic array input: ~A" buf)))))
+
+         (import-Maybe type)
 
          ) ; import-List

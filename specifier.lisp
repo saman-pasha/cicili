@@ -494,7 +494,11 @@
           ((and (listp l) (> (length desc) 2) (key-eq (nth (- (length desc) 2) desc) 'QUOTE)) ; ' list and lambda initializer
            (let* ((def (nthcdr (- (length desc) 2) desc))
                   (quoted (cadr def)))
-             (cond ((key-eq (car quoted) '|lambda|) ; lambda initializer
+             (cond ((key-eq (car quoted) '|closure|) ; closure initializer
+                    (multiple-value-bind (const type modifier const-ptr variable array)
+		                (specify-type< (without-last wl))
+		              (values const type modifier const-ptr variable array def)))
+                   ((key-eq (car quoted) '|lambda|) ; lambda initializer
                     (multiple-value-bind (const type modifier const-ptr variable array)
 		                (specify-type< (without-last wl))
 		              (values const type modifier const-ptr variable array def)))
@@ -502,10 +506,10 @@
                     (multiple-value-bind (const type modifier const-ptr variable array)
 		                (specify-type< (without-last wl))
 		              (values const type modifier const-ptr variable array def)))
-                   ((key-eq (car quoted) '|closure*|) ; closure* initializer
-                    (multiple-value-bind (const type modifier const-ptr variable array)
-		                (specify-type< (without-last wl))
-		              (values const type modifier const-ptr variable array def)))
+                   ;; ((key-eq (car quoted) '|closure*|) ; closure* initializer
+                   ;;  (multiple-value-bind (const type modifier const-ptr variable array)
+		           ;;      (specify-type< (without-last wl))
+		           ;;    (values const type modifier const-ptr variable array def)))
                    (t ; list initializer
 	                (setq l (nthcdr (- (length desc) 2) desc))
 		            (multiple-value-bind (const type modifier const-ptr variable array)
@@ -970,10 +974,10 @@
                                                               (array-def *function-spec*)))
                                                  output)) '())
         (let ((out (if (null output) nil (specify-expr output))))
-          (when (and (listp output)
-                  (key-eq (car output) '|closure|)
-                  *function-spec* (key-eq (typeof *function-spec*) '|auto|))
-            (setf (typeof *function-spec*) (list '|struct| (name (car (body out))))))
+          ;; (when (and (listp output)
+          ;;         (key-eq (car output) '|closure|)
+          ;;         *function-spec* (key-eq (typeof *function-spec*) '|auto|))
+          ;;   (setf (typeof *function-spec*) (list '|struct| (name (car (body out))))))
           (make-specifier nil '|@RETURN| nil nil nil nil nil out '())))))
 
 (defun specify-if (def)

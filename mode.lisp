@@ -105,6 +105,7 @@
    (1 . Functor)
    (1 . Applicative)
    (1 . Monad)
+   (1 . default)
    ))
 
 (defun cicili-add-keywords (face-name keyword-rules)
@@ -228,6 +229,8 @@
    (1 . Right)
    (1 . rc)
    (1 . impl)
+   (1 . Empty)
+   (1 . Cons)
    ))
 
 (defun cicili-add-attributes (face-name keyword-rules)

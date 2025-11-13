@@ -1,6 +1,4 @@
 
-(import "haskell/monad.lisp")
-
 (source "monadic.c" (:std #t :compile #t :link "-L{$CCL} -lhaskell.o -L{$CWD} monadic.o -o main")
         (include "../../haskell.h")
 
@@ -13,7 +11,7 @@
         (decl-Monad-Either (<> Either String String Employee) String String Employee)
         (impl-Monad-Either (<> Either String String Employee) String String Employee
                            ((<> Left String Employee) (Empty^char)))
-                
+        
         ;; bind Either String int for id and salary >>= Employee
         (decl-Monad-Either (<> Either String int Employee) String int Employee)
         (impl-Monad-Either (<> Either String int Employee) String int Employee
@@ -31,18 +29,19 @@
                     (validate-salary (\\ salary (case (and (>= salary 1000) (<= salary 5000)) (Right^String^int salary)
                                                       otherwise (Left^String^int (new^String "wrong salary!"))))))
 
-              (letin* ((name (new^String "Jon Doe"))
+              ;; complex monadic computation
+              (letin* ((name (new^String "Jon Doe") free^String) ; letin* takes destructure function
                        (messi (get^Monad^Either^String^String^Employee)))
                 (io ((\. bind messi) (validate-name name)
-                     '(lambda ((String wName))
+                     '(closure ((String wName))
                        (out (<> Either^String^Employee))
                        (letin* ((mesii (get^Monad^Either^String^int^Employee)))
                          (return ((\. bind mesii) (validate-id 10)
-                                  '(lambda ((int wId))
+                                  '(closure ((int wId))
                                     (out (<> Either^String^Employee))
                                     (letin* ((mesie (get^Monad^Either^String^int^Employee)))
                                       (return ((\. bind mesie) (validate-salary 3000)
-                                               '(lambda ((int wSalary))
+                                               '(closure ((int wSalary))
                                                  (out (<> Either^String^Employee))
                                                  (return (Right^String^Employee
                                                              (cast Employee
@@ -60,15 +59,15 @@
                               (putchar #\Newline))))
 
                 (io ((\. bind messi) (validate-name name)
-                     '(lambda ((String wName))
+                     '(closure ((String wName))
                        (out (<> Either^String^Employee))
                        (letin* ((mesii (get^Monad^Either^String^int^Employee)))
                          (return ((\. bind mesii) (validate-id 10)
-                                  '(lambda ((int wId))
+                                  '(closure ((int wId))
                                     (out (<> Either^String^Employee))
                                     (letin* ((mesie (get^Monad^Either^String^int^Employee)))
                                       (return ((\. bind mesie) (validate-salary 6000)
-                                               '(lambda ((int wSalary))
+                                               '(closure ((int wSalary))
                                                  (out (<> Either^String^Employee))
                                                  (return (Right^String^Employee
                                                              (cast Employee
@@ -80,7 +79,7 @@
                            (putchar #\Newline)
                            (printf "id is: %d\n" id)
                            (printf "salary is: %d\n" salary)))
-                  (Left err (progn
+                  (Left err (letin ((* err err)) ; to auto free err String
                               (printf "make Employee error: ")
                               (show^String err)
                               (putchar #\Newline))))

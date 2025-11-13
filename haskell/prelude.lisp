@@ -13,8 +13,7 @@
 (import "./monoid.lisp")
 (import "./functor.lisp")
 (import "./applicative.lisp")
-;; (import "./monad.lisp")
-
+(import "./monad.lisp")
 (import "./haskell.lisp")
 
 (DEFMACRO init-macro ()
