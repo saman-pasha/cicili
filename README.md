@@ -180,3 +180,6 @@ The [monadic.lisp](test/haskell/monadic.lisp) file is a powerful, practical demo
 Its entire purpose is to safely validate and construct an Employee object ((Tuple String int int)) by chaining together a series of operations that can each fail.
 ### Definitions
 The [haskell](haskell) folder contains all Cicili's Haskell definitions. review them to fully understand how they are developed by Cicili's C core clauses. Follow Cicili Standard definition model by using generics `decl-`, `impl-`, `import-`.
+### C core
+Cicili's C core clauses are described in another doc [here](DOC-c.md).
+
