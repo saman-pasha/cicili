@@ -139,7 +139,7 @@ These functions showcase Cicili's functional list processing.
       * The logic `(* Cons ch (= tail * Cons))` is a "lookahead" pattern that checks if the current character is not the last one in the chunk.
       * It counts a "word" by counting the separators (`     ` or `\n`) that are *not* at the very end of the string, and then adds `1` (for the `default 1` case). This logic is flawed for the last chunk ("ch\\n"), which it will count as 1 word, but it correctly processes the other chunks.
 
-## Predicted Output
+## Output
 
 Based on the file content and the 8-byte chunking, the output will be:
 
