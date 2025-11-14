@@ -360,10 +360,10 @@ Maybe_aTuple Just_aTuple (aTuple value ) {
 int factorial (int n ) {
   return (((n  ==  1 )) ? 1 : (n  *  factorial ((n  -  1 )) ));
 }
-static int __ciciliL_533 (int x , int y ) {
+int __ciciliL_533 (int x , int y ) {
   return ((int)pow (((double)x ), ((double)y )));
 }
-static int __ciciliL_541 (int x , int y ) {
+int __ciciliL_541 (int x , int y ) {
   return ((int)pow (((double)x ), ((double)y )));
 }
 typedef struct __ciciliS_630 {

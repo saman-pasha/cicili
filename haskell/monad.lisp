@@ -31,8 +31,8 @@
 
          (fn (<> bind type) m~a a->mb
              ((<> bind Monad type)
-              input
-              '(lambda ((a __h_value))
+              m~a
+              '(closure ((a __h_value))
                 (out (<> m b))
                 (return ($> a->mb __h_value)))))
          
@@ -72,8 +72,8 @@
 
          (fn (<> bind type) m~a a->mb
              ((<> bind Monad type)
-              input
-              '(lambda ((a __h_value))
+              m~a
+              '(closure ((a __h_value))
                 (out (<> m b))
                 (return ($> a->mb __h_value)))))
 

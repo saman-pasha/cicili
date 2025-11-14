@@ -534,7 +534,7 @@
                           (compile-struct los lvl globals spec) ; :no-typedef t
                           (output "~%")))
                        ((key-eq '|@FUNC| (construct los)) ; lambdas
-                        (push (cons '|static| t) (attrs los))
+                        ;; (push (cons '|static| t) (attrs los))
                         (compile-function los lvl globals spec)
                         (output "~%")
                         (pop (attrs los)))

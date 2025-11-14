@@ -246,3 +246,6 @@ test/haskell/word_count.c.run1.c
 test/haskell/word_count.c.run2.c
 test/haskell/word_count.c.run3.c
 test/haskell/word_count
+test/haskell/sample.c.run1.c
+test/haskell/sample.c.run2.c
+test/haskell/sample.c.run3.c

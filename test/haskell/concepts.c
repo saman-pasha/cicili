@@ -717,28 +717,28 @@ Applicative_Maybe_int_int Applicative_Maybe_int_int_ctor () {
 Applicative_Maybe_int_int get_Applicative_Maybe_int_int () {
   return Applicative_Maybe_int_int_ctor ();
 }
-static int __ciciliL_1262 (int value ) {
+int __ciciliL_1262 (int value ) {
   return (5 *  value  );
 }
-static Bool __ciciliL_1271 (int value ) {
+Bool __ciciliL_1271 (int value ) {
   return (((value  %  3 )) ? False () : True ());
 }
-static int __ciciliL_1289 (int __h_value ) {
+int __ciciliL_1289 (int __h_value ) {
   return (5 *  __h_value  );
 }
-static Bool __ciciliL_1299 (int __h_value ) {
+Bool __ciciliL_1299 (int __h_value ) {
   return (((__h_value  %  3 )) ? False () : True ());
 }
-static int __ciciliL_1326 (int value ) {
+int __ciciliL_1326 (int value ) {
   return (15 *  value  );
 }
-static int __ciciliL_1354 (int __h_value ) {
+int __ciciliL_1354 (int __h_value ) {
   return (15 *  __h_value  );
 }
-static int __ciciliL_1419 (int value ) {
+int __ciciliL_1419 (int value ) {
   return (3 *  value  );
 }
-static int __ciciliL_1421 (int value ) {
+int __ciciliL_1421 (int value ) {
   return (4 +  value  );
 }
 int main () {
