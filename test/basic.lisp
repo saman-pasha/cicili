@@ -39,10 +39,6 @@
               (declare role)
               (declare * sub_roles [])))
 
-          (method (Employee . free) () ; notice '.' between struct (receiver) and method
-                  ;; ($ this id) member access causes error, headers doesnt have resolver
-                  (format #t "from free method %d\n" (-> this id))
-                  (free this))
           ))
 
 (source "basic.c"
@@ -57,21 +53,20 @@
               (Employee emp_array [] . '{ '{ 1 "John Doe" } '{ 2 "Saman Pasha" } })
               (defer #t) (Employee * emp . #'(alloc (sizeof Employee)))     ; defer #t means auto free defferal
               (Employee * emps_arr . #'(alloc 5 (sizeof Employee)))         ; when using alloc 'defer #t' is optional
-              (@Employee * emps_ptr_arr . #'(alloc 10 (sizeof Employee *))) ; calls free method at the end of scope
               )
           
-          (free emp) ; will cause malloc error at the end of scope, because of freed manually before automatically
-          (set emp (aof emp1))
+          ;; use $ for access inner member too
+          (set (cof emp) emp1)
           (printf "sum of a series: %d\n" (+ 1 2 3 4 5))
           (printf "is id one? %s\n" (? (== ($ emp1 id) 1) "true" "false"))
           (printf "first emp: %s, second emp: %s\n" ($ (nth 0 emp_array) name) ($ (nth 1 emp_array) name))
-          (printf "postfix 1+: %d, prefix ++: %d\n" (1+ ($ emp id)) (++ ($ emp id)))
-          (+= ($ emp id) 1)
+          (printf "postfix 1+: %d, prefix ++: %d\n" (1+ (-> emp id)) (++ (-> emp id)))
+          (+= (-> emp id) 1)
           (printf "after assignment: %d\n" ($ emp1 id))
-          ;; use $ for access inner member too
           (format #t "access inner member: ($ emp3 tag tag_id): %d\n" ($ emp3 tag tag_id))
           )
         
         (block
             (printf "Hi from inside of a block\n"))
+        
         (return 0)))

@@ -971,7 +971,7 @@
   (let ((output (expand-macros (nth 1 def))))
     (if (and *function-spec* (or (listp (typeof *function-spec*))
                                (and (listp output) (key-eq (car output) '|QUOTE|))))
-        (let ((clause (caadr output)))
+        (let ((clause (if (listp output) (caadr output) nil)))
           (if (or (key-eq clause '|closure|) (key-eq clause '|lambda|))
               (let ((out (if (null output) nil (specify-expr output))))
                 (when (and (listp output)

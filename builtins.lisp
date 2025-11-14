@@ -184,7 +184,7 @@
                 )
 
        (letn ((Coroutine * ,name . #'(malloc (sizeof Coroutine)))
-              (auto ,cls . #'(closure ,var-list
+              (auto ,cls . #'(def-closure ,var-list
                                '(lambda ((Coroutine * __ciciliA_Context_)) (out int)
                                  (defer* ((void * context))
                                    (free context))
