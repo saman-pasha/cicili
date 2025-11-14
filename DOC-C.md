@@ -5,7 +5,7 @@
 The low-level language with a high-level soul.
 Cicili is a powerful metaprogramming system built on the expressive foundation of Lisp. It empowers developers to design domain-specific languages (DSLs), generate efficient C code through macro expansion, and build high-performance web and system applications. With Cicili, you can develop modular software components—from dynamic web servers and API pipelines to automation scripts and embedded systems—while enjoying near-native execution speed and highly maintainable code.
 
-Lisp C Compiler aka. 'Cicili' programming language, which compiles Lisp-like syntax to C code and more extra features like struct's method, lambda, defer execution and function-like macro.
+Lisp C Compiler aka. 'Cicili' programming language, which compiles Lisp-like syntax to C code and more extra features like lambda, defer execution and function-like macro.
 
 ![Cicili Big Picture](./Cicili-Big-Picture.png)
 
@@ -359,21 +359,7 @@ main ()
 ```
 ## Program Structure
 cicili program involves one or many header or source forms calling targets.
-targets are translating its content forms to C code. header targets only compile its content without resolving, but source targets resolves attribue and method access of any struct variable. for example 
-```lisp
-(let ((Employee emp)
-      (Employee * empPtr))
-  ($ emp id)     ; do not needd resolve
-  ($ empPtr id)) ; resolves pointer access
-```
-```c
-{
-  Employee emp;
-  Employee * empPtr;
-  emp.id;
-  empPtr->id;
-}
-```
+targets are translating its content forms to C code. header targets only compile its content without resolving, but source targets resolves attribue and function content.
 each target must has a target c file, and a list of feature arguments.
 ### Features
 All features could be omitted or if available accept `#t` for default behaviour or `#f` for do nothing.
@@ -1003,7 +989,7 @@ int main () {
 ```
 ## Structure
 `declare` clause is for declaring one or more variable(s) at the end of nested struct declaration just for anonymous structures.
-Use `$` form for struct's member access and `->` form for member access of pointer of struct. Both `$` and `->` have other utility if a function defined in source targets and doesn't have `{resolve #f}` attribute. `$` operator resolves attribute access for both instance and pointer variables, also `->` operator won't work for pointer access instead it resolves to method access for structures. `inline` functions or methods in header files also don't have resolving process. Methods can be defined with `method` clause and naming convention `Struct->Method`. All methods have `this` parametr automatically and will receive calling instance or pointer.
+Use `$` form for struct's member access and `->` form for member access of pointer of struct. Both `$` and `->` have other utility if a function defined in source targets and doesn't have `{resolve #f}` attribute. `$` operator resolves attribute access for instance ariables, also `->` operator resolves attribute access for pointer variables. `inline` functions in header files also don't have resolving process.
 ```lisp
 (header "course.h" ()
         (struct Course
@@ -1011,7 +997,7 @@ Use `$` form for struct's member access and `->` form for member access of point
           (member char Subject [50])
           (member int  Price))
 
-        {decl} (method Course->Print ()))
+        {decl} (func printCourse (Course co)))
 
 (source "course.c" (:std #t :compile #t :link #t)
         (include "course.h")
@@ -1019,15 +1005,15 @@ Use `$` form for struct's member access and `->` form for member access of point
         (var Course c1 . '{"domain.com" "Compilers" 100})
         (var Course * pc1 . #'(aof c1))
         
-        (method Course->Print ()
+        (func printCourse (Cource co)
                 (printf "Course: %s in %s for %d$\n" 
-                  ($ this Subject) 
-                  ($ this WebSite)
-                  ($ this Price)))
+                  ($ co Subject) 
+                  ($ co WebSite)
+                  ($ co Price)))
         
         (func main ()
-              (-> c1 Print) 
-              (-> pc1 Print)))
+              (printCourse c1) 
+              (printCourse (cof pc1))))
 ```
 ```c
 // course.h
@@ -1036,17 +1022,17 @@ typedef struct Course {
   char Subject[50];
   int Price;
 } Course;
-void Course_Print (Course * this);
+void printCourse (Course co);
 
 // course.c
 Course c1 = {"domain.com", "Compilers", 100};
 Course * pc1 = (&c1);
-void Course_Print (Course * this) {
-  printf ("Course: %s in %s for %d$\n", (this ->Subject), (this ->WebSite), (this ->Price));
+void printCourse (Course co) {
+  printf ("Course: %s in %s for %d$\n", (co . Subject), (co . WebSite), (co . Price));
 }
 int main () {
-  Course_Print(&c1);
-  Course_Print(pc1);
+  printCourse(c1);
+  printCourse((*pc1));
 }
 ```
 ## Union
@@ -1122,7 +1108,6 @@ typedef int * intptr_t;
 `sbcl --script {--dynamic-space-size=4096MB}? /path/to/cicili.lisp {space separated arg}* {/path/to/cicili-files.lisp}+`
 Available arguments:
 * --debug : will prints too many details about specifying, resolving and compiling.
-* --resolve : shows which and how Cicicli resolving `$` member and `->` method accesses.
 * --verbose : adds `-v` option to `gcc` and `libtool` commands to print more details about compiling and linking. usefull when linking many complex libraries.
 * --macros : prints all macros defined in a macro file when loading by import clause.
 * --macroexpand : prints all expanded macros both usage and output
