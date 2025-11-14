@@ -17,18 +17,6 @@ That's such an inspiring quote by Kent Pitman! Lisp truly stands apart from many
 
 In essence, Lisp allows you to break free from conventional constraints. Where traditional languages expect you to use fixed constructs, Lisp inspires you to extend, compose, and even alter the language to meet your unique challenges. It's this spirit of innovation and radical flexibility that has influenced so many programmers and paved the way for systems like Cicili, which leverage Lisp's capabilities to push boundaries further.
 
-## Instruction
-* Install [SBCL](www.sbcl.org).
-* `gcc` required for compiling and linking. `apt` or `brew` can be used to install [gcc](https://gcc.gnu.org). Current used version: `version 15.2.0`
-* Cicili uses [Libtool](https://www.gnu.org/software/libtool) as default for perfoming better compiling and linking `C` code. Install it for your platform and put it in the `PATH` environment variable. Compiler and linker could be set in `config.lisp` file. Current used version: `(GNU libtool) 2.5.4`
-* Download and copy cicili folder to `~/common-lisp` for enabling [ASDF](https://common-lisp.net/project/asdf) access to cicili package.
-* Install [Quicklisp](https://quicklisp.org)
-* Run `(ql:quickload "cicili")` in `sbcl`
-* Write your own cicili code and save it in `.cicili` or `.lisp` extension.
-* Copy `cicili.lisp` file from source folder into your project path.
-* Send your file as an argument to cicili.lisp. `sbcl --script cicili.lisp test.lisp`
-* If you are using EMACS editor, copy `mode.lisp` file content into `.emacs` or `.emacs.d/init.el` file for syntax highlighting.
-
 ## Features
 * Cicili now uses `IR` (Intermediate Representation) to handle more clauses and features.
 * Cicili macro system lets developers to code in extremely higher order syntax but produce low level C code by using cicili clauses. there are builtins macros here [builtins](builtins.lisp) and macro test folder [macro](test/macro) containing tests and a basic fastcgi web server.
