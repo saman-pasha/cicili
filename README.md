@@ -183,3 +183,15 @@ The [haskell](haskell) folder contains all Cicili's Haskell definitions. review 
 ### C core
 Cicili's C core clauses are described in another doc [here](DOC-C.md).
 
+## Instruction
+* Install [SBCL](www.sbcl.org).
+* `gcc` required for compiling and linking. `apt` or `brew` can be used to install [gcc](https://gcc.gnu.org). Current used version: `version 15.2.0`
+* Cicili uses [Libtool](https://www.gnu.org/software/libtool) as default for perfoming better compiling and linking `C` code. Install it for your platform and put it in the `PATH` environment variable. Compiler and linker could be set in `config.lisp` file. Current used version: `(GNU libtool) 2.5.4`
+* Download and copy cicili folder to `~/common-lisp` for enabling [ASDF](https://common-lisp.net/project/asdf) access to cicili package.
+* Install [Quicklisp](https://quicklisp.org)
+* Run `(ql:quickload "cicili")` in `sbcl`
+* Write your own cicili code and save it in `.cicili` or `.lisp` extension.
+* Copy `cicili.lisp` file from source folder into your project path.
+* Send your file as an argument to cicili.lisp. `sbcl --script cicili.lisp test.lisp`
+* If you are using EMACS editor, copy `mode.lisp` file content into `.emacs` or `.emacs.d/init.el` file for syntax highlighting.
+
