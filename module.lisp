@@ -48,7 +48,16 @@
 		            ((key-eq construct '|module|)
 		             (add-inner (specify-module   clause attributes) module-specifier)
 		             (setq attributes '()))
-		            (t (add-inner (specify-expr   clause) module-specifier)
+		            (t (let ((bd (expand-macros   clause))) ; any macro produce other macro
+                         (if (eq bd clause)
+                             (add-inner (specify-expr bd) module-specifier)
+                             (unless (symbolp bd)
+                               (add-inner
+                                   (if (and (listp bd) (key-eq (car bd) '$$$))
+                                       (specify-body (cdr bd))
+                                       (specify-expr bd))
+                                 module-specifier)))
+                         (setq attributes '()))
                        (setq attributes '()))))
 	        (error (format nil "syntax error ~A" clause)))))
     (setq *module-path* tmp-module-path)

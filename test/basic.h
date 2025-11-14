@@ -29,12 +29,8 @@ typedef struct Employee {
   struct { /* ciciliStruct103 */
     int role_id ;
     char * role_name ;
-    char * (*resolve) (char * prob );
-    const void (*sign) (char * doc );
+        char * (*resolve) (char * prob );
+    const     void (*sign) (char * doc );
   } role , * sub_roles [];
 } Employee;
-void Employee_m_free (Employee * this ) {
-    fprintf (stdout , "from free method %d\n", (this -> id ));
-    free (this );
-}
 #endif /* __TEST_H__ */ 

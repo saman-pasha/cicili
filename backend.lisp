@@ -7,11 +7,12 @@
           (setq sym-name (str:substring 1 t sym-name)))
         (set-ast-line (output sym-name)))
       (if (typep name 'sp)
-          (cond ((key-eq '|@TYPEOF| (construct name))
-                 (compile-typeof name lvl globals parent-spec))
-                ((key-eq '|@BODY| (construct name))
-                 (compile-form (car (body name)) lvl globals parent-spec))
-                (t (error (format nil "wrong complex name: ~A" name))))
+          (progn
+            (cond ((key-eq '|@TYPEOF| (construct name))
+                   (compile-typeof name lvl globals parent-spec))
+                  ((key-eq '|@BODY| (construct name))
+                   (compile-form (car (body name)) lvl globals parent-spec))
+                  (t (error (format nil "wrong complex name: ~A" name)))))
           (let ((type (car name)))
             (cond ((or (key-eq '|struct| type) (key-eq '|union| type))
                    (set-ast-line (output (symbol-name type)))
@@ -63,19 +64,24 @@
          (set-ast-line (output "]")))
         (t (error (format nil "wrong array description, maybe #' missed for function initializer ~A" desc)))))
 
-(defun format-type (const typeof modifier const-ptr name array-def anonymous lvl globals parent-spec)
-  (when anonymous (setq name (format nil "/* ~A */" name)))
-  (when const     (set-ast-line (output "const ")))
-  (unless (null typeof) (compile-type-name typeof lvl globals parent-spec))
-  (when modifier  (output " ") (set-ast-line (output "~A" modifier)))
-  (when const-ptr (output " ") (set-ast-line (output "const" const-ptr)))
+(defun format-type (const typeof modifier const-ptr name array-def anonymous lvl globals parent-spec &key (func-out nil))
   (let ((line-n   -1)
         (col-n    -1))
-    (when name      (output " ")
-          (setq line-n   (funcall *line-num* 0))
-          (setq col-n    (funcall *col-num* 0))
-          (set-ast-line (output "~A "(if (str:starts-with-p "_ciciliParam_" (symbol-name name)) " " name))))
-    (compile-array array-def lvl globals parent-spec)
+    (if (key-eq typeof '|func|)
+        (progn
+          (when const (set-ast-line (output "const ")))
+          (compile-function (car array-def) lvl globals parent-spec :type t :func-out func-out))
+        (progn
+          (when anonymous (setq name (format nil "/* ~A */" name)))
+          (when const     (set-ast-line (output "const ")))
+          (when typeof    (compile-type-name typeof lvl globals parent-spec))
+          (when modifier  (output " ") (set-ast-line (output "~A" modifier)))
+          (when const-ptr (output " ") (set-ast-line (output "const" const-ptr)))
+          (when name      (output " ")
+                (setq line-n   (funcall *line-num* 0))
+                (setq col-n    (funcall *col-num* 0))
+                (set-ast-line (output "~A "(if (str:starts-with-p "_ciciliParam_" (symbol-name name)) " " name))))
+          (compile-array array-def lvl globals parent-spec)))
     (values line-n col-n)))
 
 (defun compile-spec-type (spec lvl globals parent-spec)
@@ -122,7 +128,18 @@
            (set-ast-line (output "~A " '|this|)))
           ((key-eq typeof '|@SYMBOL|)
            (compile-symbol spec value))
-          ((key-eq typeof '|@CHAR|) (set-ast-line (output "'~A'" value))) 
+          ((key-eq typeof '|@CHAR|)
+           (set-ast-line (output "'~A'" (case value
+                                          (#\Null      "\\0")
+                                          (#\Space     " ")
+                                          (#\Newline   "\\n")
+                                          (#\Tab       "\\t")
+                                          (#\Page      "\\v")
+                                          (#\Rubout    "")
+                                          (#\Linefeed  "\\n")
+                                          (#\Return    "\\r")
+                                          (#\Backspace "\\b")
+                                          (otherwise value))))) 
           (t (set-ast-line (output "~A" value))))))
 
 (defun compile-code (spec lvl globals parent-spec)
@@ -285,16 +302,17 @@
     (when (key-eq (construct spec) '|@VAR|) ; '|@PARAM| for struct members, function parameters
       (loop for los being the hash-value of (inners spec)
             do (progn
-                 (if (key-eq '|@STRUCT| (construct los)) ; default t means is multi-output
-                     (when (or (and (null is-static) *target-header*) (and is-static *target-source*))
-                       (compile-struct los lvl globals spec :no-typedef t)
-                       (output "~%"))
-                     (progn ; lambdas
-                       (push (cons '|static| t) (attrs los))
-                       (compile-function los lvl globals spec)
-                       (output "~%")
-                       (pop (attrs los)))))))
-
+                 (cond ((key-eq '|@STRUCT| (construct los)) ; default t means is multi-output
+                        (when (or (and (null is-static) *target-header*) (and is-static *target-source*))
+                          (compile-struct los lvl globals spec) ; :no-typedef t
+                          (output "~%")))
+                       ((key-eq '|@FUNC| (construct los)) ; lambdas
+                        (push (cons '|static| t) (attrs los))
+                        (compile-function los lvl globals spec)
+                        (output "~%")
+                        (pop (attrs los)))
+                       (t (compile-expr los))))))
+    
     (when is-extern   (set-ast-line (output "extern ")))
     (when is-static   (set-ast-line (output "static ")))
     (when is-register (set-ast-line (output "register ")))
@@ -304,41 +322,42 @@
 
 (defun compile-let (spec lvl globals parent-spec &optional is-n) ; is-n means letn - > scope is statement
   (let ((dynamics    '())
-	    (locals      (copy-specifiers globals))
-        (in-progn    (key-eq (construct parent-spec) '|@PROGN|)))
-    (when (or in-progn is-n) (output "("))
+	    (locals      (copy-specifiers globals)))
+
+    (when is-n (output "("))
     (output "{ /* ~A */~%" (name spec))
     (loop for var being the hash-value of (params spec)
           do (progn
-               (output "~&~A" (indent lvl))
-               (compile-variable var lvl locals var)
-               ;; (unless (= (funcall *col-num* 0) 1) (output ";~%"))
+               (output "~&~A" (indent (- lvl 1)))
+               (compile-variable var (- lvl 1) locals var)
                (output ";~%")
                (when (find '|alloc| (attrs var) :test #'key-eq) (push (name var) dynamics))))
-    (output "~&~A" (indent lvl))
+    (output "~&~A" (indent (- lvl 1)))
     (output "// ----------~%")
-    (compile-body (body spec) lvl locals spec)
+    (compile-body (body spec) (- lvl 1) locals spec)
     (output "~&~A" (indent (- lvl 2)))
     (output "}")
-    (when (or in-progn is-n) (output ")"))))
+    (when is-n (output ")"))))
 
 (defun compile-block (spec lvl globals parent-spec)
-  (let ((locals      (copy-specifiers globals)))
-    (output "{ /* ~A */~%" (name spec))
-    (compile-body (body spec) (1+ lvl) locals spec)
-    (output "~&~A" (indent (- lvl 1)))
-    (output "} /* ~A */" (name spec))))
+  (if (> (length (body (body spec))) 0)
+    (let ((locals      (copy-specifiers globals)))
+      (output "{ /* ~A */~%" (name spec))
+      (compile-body (body spec) lvl locals spec)
+      (output "~&~A" (indent (- lvl 1)))
+      (output "}"))
+    (output "/* ~A */" (name spec))))
 
 (defun compile-progn (spec lvl globals parent-spec)
   (let ((locals      (copy-specifiers globals)))
     (output "({ /* ~A */~%" (name spec))
-    (compile-body (body spec) (1+ lvl) locals spec)
-    (output "~&~A" (indent (- lvl 1)))
-    (output "})" (name spec))))
+    (compile-body (body spec) (- lvl 1) locals spec)
+    (output "~&~A" (indent (- lvl 2)))
+    (output "})")))
 
 (defun compile-return (spec lvl globals parent-spec)
   (set-ast-line (output "return "))
-  (when (default spec) (compile-form (default spec) (1+ lvl) globals spec)))
+  (when (default spec) (compile-form (default spec) lvl globals spec)))
 
 (defun compile-if (spec lvl globals parent-spec)
   (let ((locals (copy-specifiers globals))
@@ -352,12 +371,12 @@
         (set-ast-line (output "if ")))
 
     (let* ((cond-const (construct (name spec)))
-           (is-atom (find cond-const (list '|@ATOM| '|@SYMBOL| '|@CALL| '|@->| '|@=>|) :test #'key-eq)))
+           (is-atom (find cond-const (list '|@ATOM| '|@SYMBOL| '|@CALL| '|@-->| '|@->| '|@=>|) :test #'key-eq)))
       (when is-atom (output "("))
       (compile-form (name spec) lvl globals (name spec)) ; condition
       (when is-atom (output ")")))
     (set-ast-line (output "~%"))
-    (compile-body (default spec) lvl locals spec)
+    (compile-body (default spec) (- lvl 1) locals spec)
     
     (let ((else-body (body spec))
           (locals (copy-specifiers globals)))
@@ -370,7 +389,7 @@
           (progn
             (output "~&~A" (indent (- lvl 2)))
             (set-ast-line (output "else~%"))
-            (compile-body else-body lvl locals spec)
+            (compile-body else-body (- lvl 1) locals spec)
             (when add-braces
               (output "~&~A" (indent (- lvl 2)))
               (set-ast-line (output "}"))))))))
@@ -450,14 +469,32 @@
           with l = (- (length nodes) 1)
           for i from 0 to (length nodes)
           do (let ((condition (car node))
+                   (vars-cond (car node))
                    (body (cadr node)))
+               
+               (when (listp condition) ; has variable definition
+                 (setq condition (car (last condition))))
+                 
                (if (= i 0)
                    (set-ast-line (output "if "))
                    (progn
                      (output "~&~A" (indent (- lvl 2)))
                      (set-ast-line (output "else if "))))
-               (let ((is-atom (find (construct condition) (list '|@ATOM| '|@SYMBOL| '|@CALL| '|@->| '|@=>|) :test #'key-eq)))
+               (let ((is-atom (or (listp vars-cond)
+                                (find (construct condition) (list '|@ATOM| '|@SYMBOL| '|@CALL| '|@-->| '|@->| '|@=>|)
+                                    :test #'key-eq))))
                  (when is-atom (output "("))
+
+                 (when (listp vars-cond) ; has variable definition
+                   (dotimes (i (length vars-cond))
+                     (let ((vari (nth i vars-cond)))
+                       (if (eql vari condition)
+                           (output "; ")
+                           (progn
+                             (compile-form vari lvl globals spec)
+                             (when (< i (- (length vars-cond) 2)) (output ", ")))))))
+                 
+                 
                  (compile-form condition lvl globals spec) ; each condition
                  (when is-atom (output ")")))
                (set-ast-line (output " {~%"))
@@ -467,7 +504,7 @@
                    (set-ast-line (output "}~%"))
                    (set-ast-line (output "}")))))))
 
-(defun compile-function (spec lvl globals parent-spec &key ((:type as-type) nil))
+(defun compile-function (spec lvl globals parent-spec &key ((:type as-type) nil) (func-out nil))
   ;; resolve ?
   (let ((is-static   nil)
 	    (is-declare  as-type)
@@ -490,17 +527,18 @@
     (unless as-type
       (loop for los being the hash-value of (inners spec)
             do (progn
-                 (if (key-eq '|@STRUCT| (construct los)) ; inline structs
-                     (when (or (null (default los))
-                             (and (null is-static) *target-header*)
-                             (and is-static *target-source*))
-                       (compile-struct los lvl globals spec :no-typedef t)
-                       (output "~%"))
-                     (progn ; lambdas
-                       (push (cons '|static| t) (attrs los))
-                       (compile-function los lvl globals spec)
-                       (output "~%")
-                       (pop (attrs los)))))))
+                 (cond ((key-eq '|@STRUCT| (construct los)) ; inline structs
+                        (when (or (null (default los))
+                                (and (null is-static) *target-header*)
+                                (and is-static *target-source*))
+                          (compile-struct los lvl globals spec) ; :no-typedef t
+                          (output "~%")))
+                       ((key-eq '|@FUNC| (construct los)) ; lambdas
+                        ;; (push (cons '|static| t) (attrs los))
+                        (compile-function los lvl globals spec)
+                        (output "~%")
+                        (pop (attrs los)))
+                       (t (compile-expr los))))))
 
     ;; compile function
     (let* ((name       (name   spec))
@@ -517,35 +555,50 @@
 		               (otherwise nil)))
 	             params)
 
+        (output "~&~A" (indent (- lvl 1)))
         (when is-extern   (set-ast-line (output "extern ")))
         (when is-inline   (set-ast-line (output "__attribute__((weak)) ")))
         (when (and is-static (not (key-eq name '|main|))) (set-ast-line (output "static ")))
-        (format-type (const spec) (typeof spec) (modifier spec) nil (const-ptr spec) (array-def spec) nil
-                     lvl locals parent-spec)
+
+        ;; if a function returns another function
+        ;; the parameters of the function and returning one should be swapped
+        ;; remind to add and remove (struct * this) if the function is METHOD
+        (if (key-eq (typeof spec) '|func|)
+            (progn
+              (setf (construct (car (array-def spec))) (construct spec))
+              (setf (name (car (array-def spec))) name)
+              (format-type (const spec) (typeof spec) (modifier spec) (const-ptr spec) nil (array-def spec) nil
+                           lvl locals parent-spec :func-out t))
+            (format-type (const spec) (typeof spec) (modifier spec) (const-ptr spec) nil (array-def spec) nil
+                         lvl locals parent-spec :func-out nil))
+        
         (output " ")
 
-        (if (and as-type (key-eq name '_))
-            (if is-volatile (set-ast-line (output "(* volatile)")) (set-ast-line (output "(*)")))
-            (set-ast-line (output "~A " (if is-unique
-                                            (unique spec)
-                                            (if (or is-method is-shared)
-                                                (if as-type
-                                                    (if is-volatile
-                                                        (format nil "(* volatile ~A)"
-                                                                (if is-method
-                                                                    (make-method-name (car name) (cdr name))
-                                                                    (make-shared-name (car name) (cdr name))))
-                                                        (format nil "(*~A)" (if is-method
-                                                                                (make-method-name (car name) (cdr name))
-                                                                                (make-shared-name (car name) (cdr name)))))
-                                                    (if is-method
-                                                        (make-method-name (car name) (cdr name))
-                                                        (make-shared-name (car name) (cdr name))))
-                                                (if as-type
-                                                    (if is-volatile
-                                                        (format nil "(* volatile ~A)" name)
-                                                        (format nil "(*~A)" name))
-                                                    name))))))
+        (cond ((key-eq (typeof spec) '|func|) t)
+              ((and as-type (key-eq name '_))
+               (if is-volatile (set-ast-line (output "(* volatile)")) (set-ast-line (output "(*)"))))
+              (t (when func-out (output "(")) 
+                 (set-ast-line
+                     (output "~A " (if is-unique
+                                       (unique spec)
+                                       (if (or is-method is-shared)
+                                           (if as-type
+                                               (if is-volatile
+                                                   (format nil (if func-out "* volatile ~A" "(* volatile ~A)")
+                                                           (if is-method
+                                                               (make-method-name (car name) (cdr name))
+                                                               (make-shared-name (car name) (cdr name))))
+                                                   (format nil (if func-out "*~A" "(*~A)") (if is-method
+                                                                           (make-method-name (car name) (cdr name))
+                                                                           (make-shared-name (car name) (cdr name)))))
+                                               (if is-method
+                                                   (make-method-name (car name) (cdr name))
+                                                   (make-shared-name (car name) (cdr name))))
+                                           (if as-type
+                                               (if is-volatile
+                                                   (format nil (if func-out "* volatile ~A" "(* volatile ~A)") name)
+                                                   (format nil (if func-out "*~A" "(*~A)") name))
+                                               name)))))))
         
         (output "(")
         (loop for param being the hash-value of params
@@ -561,6 +614,7 @@
               (when info
                 (error (format nil "cicili: function: ~A" info))))))
         (set-ast-line (output ")"))
+        (when func-out (output ")"))
         
         (if is-declare
             (unless as-type (output ";"))
@@ -569,7 +623,8 @@
               (output "{~%")))
         (unless is-declare
           (progn
-	        (compile-body body (1+ lvl) locals spec)
+	        (compile-body body lvl locals spec)
+            (output "~&~A" (indent (- lvl 1)))
             (output "}"))))))
   (setq *resolve* t))
 
@@ -596,6 +651,18 @@
 	             (t (error "wrong inclusion")))))
 
 (defun compile-typedef (spec lvl globals parent-spec)
+  (loop for los being the hash-value of (inners spec)
+        do (progn
+             (cond ((key-eq '|@STRUCT| (construct los)) ; default t means is multi-output
+                    (compile-struct los lvl globals spec) ; :no-typedef t
+                    (output "~%"))
+                   ((key-eq '|@FUNC| (construct los)) ; lambdas
+                    (push (cons '|static| t) (attrs los))
+                    (compile-function los lvl globals spec)
+                    (output "~%")
+                    (pop (attrs los)))
+                   (t (compile-expr los)))))
+
   (set-ast-line (output "~&typedef "))
   (compile-spec-type spec lvl globals parent-spec))
 

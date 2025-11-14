@@ -5,7 +5,7 @@
               (let ((int x . 1)
                     (int y . 5)
                     (bool next . true)
-                    (int digits [] . '{ 1 3 5 7 }))
+                    (int digits [] . '{ 1 3 5 7 9 }))
 
                 (if (== y 3)
                     (printf "y is 4\n")
@@ -53,7 +53,6 @@
                        (case 2 (printf "digit Two\n")   break)
                        (case 3 (printf "digit Three\n") break)
                        (case 4 (printf "digit Four\n")  break)
-                       (case 5 (printf "digit Five\n")  break)
                        (default (printf "unknown digit\n"))))
 
                 (cond ((== x 1) (format #t "x is 1\n"))

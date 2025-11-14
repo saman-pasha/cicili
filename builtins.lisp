@@ -13,13 +13,20 @@
 (DEFMACRO generic (macro types &REST body)
   `(DEFMACRO ,macro (&REST args)
      (LET ((types ',types)
-           (body (COPY-LIST ',body)))
-       (DOTIMES (i (LENGTH args))
+           (body ',body))
+       (UNLESS (= (LENGTH args) (LENGTH types))
+         (ERROR (FORMAT NIL "unmatch generic parameters and arguments: ~A ~A" (QUOTE ,macro) args)))
+       (DOTIMES (i (LENGTH types))
          (SETQ body (SUBST (NTH i args) (NTH i types) body)))
-       `(,@body))))
+       `($$$ ,@body)))) ; $$$ for replace extracted
 
-(DEFMACRO <> (name &REST body)
-  (INTERN (FORMAT NIL "~A_~{~A~}" name body)))
+(DEFMACRO <> (&REST body)
+  (INTERN (FORMAT NIL "~{~A~^^~}"
+                  (MAPCAR #'(LAMBDA (reso)
+                              (IF (SYMBOLP reso)
+                                  reso
+                                  (MACROEXPAND reso)))
+                          body))))
 
 (DEFMACRO shared-func-name (struct method)
   (INTERN (FORMAT NIL "~A_s_~A" struct method)))
@@ -82,26 +89,27 @@
 (DEFMACRO defer* (var-list &REST body)
   (LET* ((name (GENSYM "ciciliDefer"))
          (pname (INTERN (FORMAT NIL "~A_ptr" name))))
-    `((defer ()
-        ,@(MAP 'LIST #'(LAMBDA (var)
-                         (MULTIPLE-VALUE-BIND (const type modifier const-ptr variable array-def)
-                             (CICILI:SPECIFY-TYPE< var)
-                           `(var ,@var . (FUNCTION (-> ,pname ,variable)))))
-               var-list)
-        ,@body)
-      (var '(,@var-list) ,name . 
-           '(,@(MAP 'LIST #'(LAMBDA (var)
-                              (MULTIPLE-VALUE-BIND (const type modifier const-ptr variable array-def)
-                                  (CICILI:SPECIFY-TYPE< var)
-                                variable))
-                    var-list))))))
+    `($$$
+         (defer ()
+           ,@(MAP 'LIST #'(LAMBDA (var)
+                            (MULTIPLE-VALUE-BIND (const type modifier const-ptr variable array-def)
+                                (CICILI:SPECIFY-TYPE< var)
+                              `(var ,@var . (FUNCTION (-> ,pname ,variable)))))
+                  var-list)
+           ,@body)
+       (var '(,@var-list) ,name . 
+            '(,@(MAP 'LIST #'(LAMBDA (var)
+                               (MULTIPLE-VALUE-BIND (const type modifier const-ptr variable array-def)
+                                   (CICILI:SPECIFY-TYPE< var)
+                                 variable))
+                     var-list))))))
 
 ;;; copies capture list to context, use pointer to keep access to context along the process
 ;;; don't free pointers copied into context if the closure is alive
-;;; (closure (capture list)
+;;; (def-closure (capture list)
 ;;;     '(lambda (parameter list)
 ;;;         body))
-(DEFMACRO closure (var-list lambda)
+(DEFMACRO def-closure (var-list lambda)
   (LET* ((captures (MAP 'LIST #'(LAMBDA (var) (MULTIPLE-VALUE-LIST (CICILI:SPECIFY-TYPE-VALUE< var))) var-list))
          (sname    (GENSYM "__ciciliC_Context_"))
          (lname    (GENSYM "__ciciliC_Routine_"))
@@ -130,8 +138,8 @@
                                   (((struct ,sname) * context) ,@(CADADR lambda)) ,@body)
              '{ ,@values } }))))
 
-;;; way to execute closure routine
-(DEFMACRO exec (closure &REST args)
+;; way to execute closure routine
+(DEFMACRO exec-closure (closure &REST args)
   `((($ ,closure routine) (aof ,closure) ,@args)))
 
 ;;; asycronous clauses
@@ -176,7 +184,7 @@
                 )
 
        (letn ((Coroutine * ,name . #'(malloc (sizeof Coroutine)))
-              (auto ,cls . #'(closure ,var-list
+              (auto ,cls . #'(def-closure ,var-list
                                '(lambda ((Coroutine * __ciciliA_Context_)) (out int)
                                  (defer* ((void * context))
                                    (free context))

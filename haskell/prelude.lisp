@@ -1,0 +1,48 @@
+(import "./core.lisp")
+(import "./tuple.lisp")
+(import "./data.lisp")
+(import "./bool.lisp")
+(import "./maybe.lisp")
+(import "./either.lisp")
+(import "./class.lisp")
+(import "./match.lisp")
+(import "./list.lisp")
+(import "./string.lisp")
+(import "./range.lisp")
+(import "./rc.lisp")
+(import "./monoid.lisp")
+(import "./functor.lisp")
+(import "./applicative.lisp")
+(import "./monad.lisp")
+(import "./haskell.lisp")
+
+(DEFMACRO init-macro ()
+  `($$$
+     (import-List   new^List^Bool List^Bool Bool)
+     (import-List   new^List^int  List^int  int)
+     (import-String new^String    List^char char)
+     
+     (import-Range  Range^int int)
+
+     (import-List new^List^List^int  List^List^int  List^int)
+     (import-List new^List^List^char List^List^char List^char)
+     (import-List new^List^String    List^String    String)
+
+     (import-Monoid (<> All     Bool) Bool)
+     (import-Monoid (<> Any     Bool) Bool)
+     (import-Monoid (<> Sum     int)  int)
+     (import-Monoid (<> Product int)  int)
+     
+     (import-Monoid (<> List   Bool) (<> List Bool))
+     (import-Monoid (<> List   int)  (<> List int))
+     (import-Monoid (<> List   char) (<> List char))
+     (import-Monoid (<> String char) (<> List char))
+
+     (import-Functor-List List^int^int   int  int)
+     (import-Functor-List List^int^Bool  int  Bool)
+     (import-Functor-List List^char^char char char)
+     (import-Functor-List List^char^Bool char Bool)
+     (import-Functor-List String^char    char char)
+     (import-Functor-List String^Bool    char Bool)
+
+     ))

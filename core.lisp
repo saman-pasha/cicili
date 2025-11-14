@@ -24,6 +24,8 @@
 (defparameter *module-path* nil)
 ;; all object names inside modules
 (defvar *module-names* (make-hash-table :test 'equal))
+;; current typedef spec during type inline struct compiling
+(defparameter *typedef-spec* nil)
 ;; current variable spec during type inline struct compiling
 (defparameter *variable-spec* nil)
 ;; current function spec during function compiling
@@ -57,6 +59,26 @@
   (if (find (char file-name 0) "./")
       file-name
       (format nil "~A~A" *cicili-path* file-name)))
+
+;; expands all defined macros
+;; for type specification only
+(defun expand-macros (def)
+  (if (atom def) def
+      (let* ((func (car def))
+             (macro (if (symbolp func) (gethash (symbol-name func) *macros*) nil)))
+        (if (or macro (and (symbolp func) (macro-function func)))
+            (let ((tmp-expantion *macroexpand*)
+                  (id (gensym "ME:"))
+                  (result nil))
+              (when *debug-macroexpand* (format t "~A ~A~%" id def))
+              (setf *macroexpand* t)
+              (setq result (if macro (macroexpand `(,macro ,@(cdr def))) (macroexpand def)))
+              (when (and (listp result) (listp (cadr result)) (key-eq (caadr result) 'EVAL-WHEN)) ; outputs macro
+                (setq result (eval result)))
+              (when *debug-macroexpand* (format t "~A macro: ~A result: ~A~%" id macro result))
+              (setf *macroexpand* tmp-expantion)
+              result)
+            def))))
 
 (defparameter *macro-counter*
   (let ((count 100))
@@ -95,7 +117,7 @@
 		  when pos do (write-string replacement out)
 		  while pos)))
 
-(defmacro warning! (&rest rest)
+(defmacro warn! (&rest rest)
   `(format t ,@rest))
 
 (defparameter *line-num*
@@ -222,8 +244,8 @@
 (defun indent (lvl)
   (make-string (* lvl 2) :initial-element #\Space))
 
-(defun <> (name &rest body)
-  (intern (format nil "~A_~{~A~}" name body)))
+;; (defun <> (name &rest body)
+;;   (intern (format nil "~{~A~^_~}" name body)))
 
 (defun make-generic-name (name generic)
   (format nil "~A ## _ ~A" name generic))
@@ -251,7 +273,7 @@
     (cond ((string= name "const") nil)
 	      (t (progn
 	           (dotimes (i (length name))
-		         (unless (find (char name i) "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_1234567890_")
+		         (unless (find (char name i) "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_1234567890_^")
 		           (return-from is-symbol nil)))
 	           t)))))
 
@@ -263,23 +285,24 @@
 
 (defun replace-args< (name-values args)
   (dolist (nv name-values)
-    (return-from replace-args<
-      (loop for arg in args
-            when (or (symbolp arg) (> (length arg) 0))
-            collect (str:replace-all
-                        "[^/]+?/\\.\\./" "" 
-                        (str:replace-all
+    (setq args
+          (loop for arg in args
+                when (or (symbolp arg) (> (length arg) 0))
+                collect (str:replace-all
                             "[^/]+?/\\.\\./" "" 
                             (str:replace-all
                                 "[^/]+?/\\.\\./" "" 
                                 (str:replace-all
                                     "[^/]+?/\\.\\./" "" 
-                                    (str:replace-all (car nv) (uiop:native-namestring (cadr nv))
-                                                     (if (symbolp arg) (symbol-value arg) arg))
+                                    (str:replace-all
+                                        "[^/]+?/\\.\\./" "" 
+                                        (str:replace-all (car nv) (uiop:native-namestring (cadr nv))
+                                                         (if (symbolp arg) (symbol-value arg) arg))
+                                        :regex t)
                                     :regex t)
                                 :regex t)
-                            :regex t)
-                        :regex t)))))
+                            :regex t))))
+  args)
 
 (defun free-name (path name)
   (let* ((r-name (format nil "~{~A~^/~}"

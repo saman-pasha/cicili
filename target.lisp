@@ -18,12 +18,12 @@
 		            ((key-eq construct '|decl|)         (push clause attributes))
 		            ((key-eq construct '|inline|)       (push clause attributes))
 		            ((key-eq construct '|register|)     (push clause attributes))
-		            ((key-eq construct '|auto|)         (push clause attributes))
 		            ((key-eq construct '|extern|)       (push clause attributes))
 		            ((key-eq construct '|volatile|)     (push clause attributes))
 		            ((key-eq construct '|thread-local|) (push clause attributes))
 		            ((key-eq construct '|resolve|)      (push clause attributes))
 		            ((key-eq construct '|defer|)        (push clause attributes))
+                    
 		            ((key-eq construct '|include|)
 		             (add-inner (specify-include  clause attributes) target-specifier) (setq attributes '()))
 		            ((key-eq construct '|var|)
@@ -45,8 +45,18 @@
                     ((key-eq construct '|module|)
 		             (add-inner (specify-module   clause attributes) target-specifier) (setq attributes '()))
                     ((or (key-eq construct '|defmacro|) (key-eq construct '|DEFMACRO|))
-                     (error (format nil "syntax error: DEFMACRO ~A inside target ~A" (cadr clause) name)))
-		            (t (add-inner (specify-expr   clause) target-specifier) (setq attributes '()))))
+                     (let ((symb (eval clause)))
+                       (add-macro (symbol-name symb) symb)))
+		            (t (let ((bd (expand-macros   clause))) ; any macro produce other macro
+                         (if (eq bd clause)
+                             (add-inner (specify-expr bd) target-specifier)
+                             (unless (symbolp bd)
+                               (add-inner
+                                   (if (and (listp bd) (key-eq (car bd) '$$$))
+                                       (specify-body (cdr bd))
+                                       (specify-expr bd))
+                                 target-specifier)))
+                         (setq attributes '())))))
 	        (error (format nil "syntax error ~A" clause))))
       target-specifier)))
 
@@ -126,11 +136,12 @@
                                            (unless (and found cset)
                                              (error
                                               (format nil "custom compilation missed -c or --compile flag: ~A" custom))))))
-                               (let ((cwd       (uiop/os:getcwd))
+                               (let ((ccl       *cicili-path*)
+                                     (cwd       (uiop/os:getcwd))
                                      (args      `(,program ,@arguments ,@custom))
                                      (dump-args `(,program ,@arguments ,@dumper ,@custom)))
-                                 (setq args      (replace-args< `(("{$CWD}" ,cwd)) args))
-                                 (setq dump-args (replace-args< `(("{$CWD}" ,cwd)) dump-args))
+                                 (setq args      (replace-args< `(("{$CCL}" ,ccl) ("{$CWD}" ,cwd)) args))
+                                 (setq dump-args (replace-args< `(("{$CCL}" ,ccl) ("{$CWD}" ,cwd)) dump-args))
                                  (display "cicili compile:" (if dump dump-args args) #\Newline)
 
                                  (setq exit-status
@@ -156,9 +167,10 @@
                                    (setq custom (list file "-o" "main"))
                                    (when (stringp custom)
                                      (setq custom (str:split " " custom))))
-                               (let ((cwd       (uiop/os:getcwd))
+                               (let ((ccl       *cicili-path*)
+                                     (cwd       (uiop/os:getcwd))
                                      (args      `(,program ,@arguments ,@custom)))
-                                 (setq args (replace-args< `(("{$CWD}" ,cwd)) args))
+                                 (setq args (replace-args< `(("{$CCL}" ,ccl) ("{$CWD}" ,cwd)) args))
                                  (display "cicili link:" args #\Newline)
 
 		                         (let ((exit-status
