@@ -249,3 +249,10 @@ test/haskell/word_count
 test/haskell/sample.c.run1.c
 test/haskell/sample.c.run2.c
 test/haskell/sample.c.run3.c
+benchmark/word_count_bench.c.run1.c
+benchmark/word_count_bench.c.run2.c
+benchmark/word_count_bench.c.run3.c
+benchmark/word_count_bench
+*.hs~
+*.hi
+benchmark/word_count
