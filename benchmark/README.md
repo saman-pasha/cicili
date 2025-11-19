@@ -1,7 +1,7 @@
 # Benchmark
 
 ## Sample
-A word counting program which does 1,000,000 times a specific task.
+A word counting program which does 1,000,000 times a specific task. Which has focus on `List` processing and `Either` error handling.
 
  - Opens a temporary file
  - Writes many short lines to the file
@@ -12,7 +12,7 @@ A word counting program which does 1,000,000 times a specific task.
 Not all the code is the same for Cicili and Haskell but almost near.
 The Cicili code is [here](word-count-bench.lisp).
 The Haskell code is [here](word_count.hs).
-Because of Cicili is a expressive language, it is important to see what C code produced to handle expresiveness of Cicili.
+Because of Cicili is a expressive language, it is important to see what C code is produced to handle expresiveness of Cicili.
 The generated C ocde is [here](word_count_bench.c).
 
 ## Compilation
@@ -58,15 +58,17 @@ ghc -O ./benchmark/word_count.hs
 ```
 
 ## Result
-3 times for Cicili output execution:
+4 times for Cicili output execution:
 ```
 284 seconds elapsed
 284 seconds elapsed
 275 seconds elapsed
+284 seconds elapsed
 ```
-3 times for Haskell output execution:
+4 times for Haskell output execution:
 ```
 280 seconds elapsed
 278 seconds elapsed
 277 seconds elapsed
+278 seconds elapsed
 ```
