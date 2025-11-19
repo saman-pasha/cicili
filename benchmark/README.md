@@ -6,7 +6,7 @@ A word counting program which does 1,000,000 times a specific task.
  - Opens a temporary file
  - Writes many short lines to the file
  - Reads this content as many chunks
- - Iterates over characters and splits by Space and Newline
+ - Iterates over characters and splits them by Space and Newline
  - Counts the splitted and prints them
 
 Not all the code is the same for Cicili and Haskell but almost near.
