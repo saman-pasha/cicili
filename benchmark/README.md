@@ -4,7 +4,7 @@
 A word counting program which does 1,000,000 times a specific task.
 
  - Opens a temporary file
- - Writes many short lines to file
+ - Writes many short lines to the file
  - Reads this content as many chunks
  - Iterates over characters and splits by Space and Newline
  - Counts the splitted and prints them
