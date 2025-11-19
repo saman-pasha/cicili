@@ -12,6 +12,8 @@ A word counting program which does 1,000,000 times a specific task.
 Not all the code is the same for Cicili and Haskell but almost near.
 The Cicili code is [here](word-count-bench.lisp).
 The Haskell code is [here](word_count.hs).
+Because of Cicili is a expressive language, it is important to see what C code produced to handle expresiveness of Cicili.
+The generated C ocde is [here](word_count_bench.c).
 
 ## Compilation
 gcc:
