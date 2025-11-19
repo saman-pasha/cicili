@@ -58,14 +58,14 @@ ghc -O ./benchmark/word_count.hs
 ```
 
 ## Result
-3 times for Cicili output execution:
+4 times for Cicili output execution:
 ```
 284 seconds elapsed
 284 seconds elapsed
 275 seconds elapsed
 284 seconds elapsed
 ```
-3 times for Haskell output execution:
+4 times for Haskell output execution:
 ```
 280 seconds elapsed
 278 seconds elapsed
