@@ -1,7 +1,7 @@
 # Benchmark
 
 ## Sample
-A word counting program which does 1,000,000 times a specific task.
+A word counting program which does 1,000,000 times a specific task. Which has focus on `List` processing and `Either` error handling.
 
  - Opens a temporary file
  - Writes many short lines to the file
