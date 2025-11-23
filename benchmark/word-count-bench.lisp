@@ -58,7 +58,7 @@
         (func iter_words ((List^String list))
               (io list
                 (* Cons str tail
-                   (progn
+                   (block
                      (show^String str)
                      (printf " Word count: %d\n" (count_words str))
                      (iter_words tail)
@@ -89,7 +89,7 @@
                                 (io (safeReadFile file)
                                   (* Empty (printf "Error: nothing to read\n"))
                                   (= first_cons * Cons
-                                     (progn
+                                     (block
                                        (printf "File loaded successfully!\n")
                                        (iter_words first_cons))))))))
 
