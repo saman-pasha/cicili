@@ -109,12 +109,12 @@ void iter_words (List_String list ) {
       bool __h_case_result  = ((list -> __h_ctor ) ==  __h_Cons_t  );
       // ----------
       if (__h_case_result )
-        ({ /* cicili#Progn192 */
+        { /* cicili#Block192 */
           show_String (str );
           printf (" Word count: %d\n", count_words (str ));
           iter_words (tail );
           free_String ((&str ));
-        });
+        }
       else
         { /* cicili#Let197 */
           __auto_type empty_str  = list ;
@@ -183,10 +183,10 @@ int main () {
                                   bool __h_case_result  = ((first_cons -> __h_ctor ) ==  __h_Cons_t  );
                                   // ----------
                                   if (__h_case_result )
-                                    ({ /* cicili#Progn256 */
+                                    { /* cicili#Block256 */
                                       printf ("File loaded successfully!\n");
                                       iter_words (first_cons );
-                                    });
+                                    }
                                 });
                               }
                           });
