@@ -1,5 +1,9 @@
 # Cicili: Haskell Semantics, Lisp Syntax, C Performance
 
+ - **The Safety of Haskell**
+ - **The Flexibility of Lisp**
+ - **The Performance of C**
+
 ## Overview
 
 Cicili is a powerful programming language that uniquely merges the high-level, mathematical abstractions of **Haskell** with the metaprogramming flexibility of **Lisp** and the raw, low-level performance of **C**. It uses a Lisp-like S-expression syntax to define complex functional concepts, including Algebraic Data Types (ADTs), robust pattern matching, and a full type class system with Functors, Applicatives, and Monads. Unlike traditional functional languages, Cicili transpiles directly to optimized C code, providing native speed and C-level memory control. It achieves memory safety not with a garbage collector, but through a sophisticated, high-level system of V-Tables, automatic RAII-style resource management (via its `letin` macro), and built-in reference counting (`rc`), making it a unique tool for building safe, efficient, and highly abstract systems.
