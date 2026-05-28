@@ -1,7 +1,7 @@
 (in-package :cicili)
 
 (defvar *unaries* '(|+| |-| |++| |1+| |--| |1-| |~| |not| |cof| |aof| |stringize|))
-(defvar *operators* '(|+| |-| |*| |/| |%| |==| |!=| |>| |<| |>=| |<=| |^| |<<| |>>| |xor| |and| |or| |bitand| |bitor|))
+(defvar *operators* '(|+| |-| |*| |/| |%| |=| |==| |!=| |>| |<| |>=| |<=| |^| |<<| |>>| |xor| |and| |or| |bitand| |bitor|))
 (defvar *assignments* '(|+=| |-=| |*=| |/=| |%=| |<<=| |>>=|))
 (defvar *modifiers* '(|&| |*| |**| |***|))
 (defvar *trait-regex* "'(?:\\w+?\\s)?(\\w+?)(?:\\[\\d*\\]|\\s\\*)?'.*'(?:\\w+?\\s)?(\\w+?)(?:\\[\\d*\\]|\\s\\*)?'")
@@ -41,7 +41,7 @@
 ;; stores current resolver run number
 (defparameter *ast-run* 0)
 ;; stores total resolver run number
-(defparameter *ast-total-runs* 3)
+(defparameter *ast-total-runs* 1) ; 3 for resolver
 ;; stores whether resolver needs another run run number
 (defparameter *more-run* nil)                 
 ;; stores names symbols of all loaded macros 
@@ -53,8 +53,8 @@
 
 ;; relative files from target directory or cicili directory
 ;; if begins with . (./ ../) from target path
-;;; or / (/usr/...) from unix path
-;;; or anything (lib/std/...) from cicili path
+;; or / (/usr/...) from unix path
+;; or anything (lib/std/...) from cicili path
 (defun find-import-file (file-name)
   (if (find (char file-name 0) "./")
       file-name
@@ -66,19 +66,21 @@
   (if (atom def) def
       (let* ((func (car def))
              (macro (if (symbolp func) (gethash (symbol-name func) *macros*) nil)))
-        (if (or macro (and (symbolp func) (macro-function func)))
-            (let ((tmp-expantion *macroexpand*)
-                  (id (gensym "ME:"))
-                  (result nil))
-              (when *debug-macroexpand* (format t "~A ~A~%" id def))
-              (setf *macroexpand* t)
-              (setq result (if macro (macroexpand `(,macro ,@(cdr def))) (macroexpand def)))
-              (when (and (listp result) (listp (cadr result)) (key-eq (caadr result) 'EVAL-WHEN)) ; outputs macro
-                (setq result (eval result)))
-              (when *debug-macroexpand* (format t "~A macro: ~A result: ~A~%" id macro result))
-              (setf *macroexpand* tmp-expantion)
-              result)
-            def))))
+        (if (and (symbolp func) (key-eq func 'QUASIQUOTE))
+            (eval (car (macroexpand `(,(cadr def) ,@(cddr def)))))
+            (if (or macro (and (symbolp func) (macro-function func)))
+                (let ((tmp-expantion *macroexpand*)
+                      (id (gensym "ME:"))
+                      (result nil))
+                  (when *debug-macroexpand* (format t "~A ~A~%" id def))
+                  (setf *macroexpand* t)
+                  (setq result (if macro (macroexpand `(,macro ,@(cdr def))) (macroexpand def)))
+                  (when (and (listp result) (listp (cadr result)) (key-eq (caadr result) 'EVAL-WHEN)) ; outputs macro
+                    (setq result (eval result)))
+                  (when *debug-macroexpand* (format t "~A macro: ~A result: ~A~%" id macro result))
+                  (setf *macroexpand* tmp-expantion)
+                  result)
+                def)))))
 
 (defparameter *macro-counter*
   (let ((count 100))
@@ -117,9 +119,6 @@
 		  when pos do (write-string replacement out)
 		  while pos)))
 
-(defmacro warn! (&rest rest)
-  `(format t ,@rest))
-
 (defparameter *line-num*
   (let ((count 1)
         (actual-count 1))
@@ -154,7 +153,7 @@
   (let* ((line-n  (funcall *line-num* 0))
          (col-n   (funcall *col-num* 0))
          (ast-key (ast-key< (+ line-n plus-line) (+ col-n plus-col))))
-    (when *debug* (display "M:" ast-key (gethash ast-key (nth 1 *ast-lines*)) #\NewLine))
+    (when *debug-ast* (display "M:" ast-key (gethash ast-key (nth 1 *ast-lines*)) #\NewLine))
     (gethash ast-key (nth 1 *ast-lines*))))
 
 (defun prev-ast-by-key< (ast-key)
@@ -170,7 +169,7 @@
             (,col-n  (funcall *col-num* 0))
             (,item   (gethash (ast-key< ,line-n ,col-n) (nth 0 *ast-lines*)))
             (,result ,out))
-       (when *debug* (display "set-run" *ast-run* ">" (ast-key< ,line-n ,col-n) ""))
+       (when *debug-ast* (display "set-run" *ast-run* ">" (ast-key< ,line-n ,col-n) ""))
        (setf (getf ,item 'line-n) ,line-n)
        (setf (getf ,item 'col-n) ,col-n)
        (setf (getf ,item 'res) ,result)
@@ -228,7 +227,7 @@
                     (funcall *col-num* 0 :reset 1 :actual t)
                     (funcall *col-num* (1- (- (length result) index)))))
           (funcall *col-num* (length result)))
-      (when *debug* (display result #\NewLine))
+      (when *debug-ast* (display result #\NewLine))
       result)))
 
 (defun read-file (path)
@@ -306,8 +305,11 @@
 
 (defun free-name (path name)
   (let* ((r-name (format nil "~{~A~^/~}"
-                         (map 'list #'(lambda (x) (if (typep x 'sp) (symbol-name (name x))
-                                                      (symbol-name x)))
+                         (map 'list #'(lambda (x) (if (typep x 'sp)
+                                                      (symbol-name (name x))
+                                                      (if (stringp x)
+                                                          x
+                                                          (symbol-name x))))
                               (append path (if (listp name) name (list name))))))
          (m-name (intern
                   (format nil "cicili~A"

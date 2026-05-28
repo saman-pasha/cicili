@@ -30,11 +30,10 @@
                     body)))
       `(,@body))))
 
-;; '\' haskel lambda sign equivalent
+;; '\' haskell lambda sign equivalent
 (DEFMACRO \\ (&REST body)
   `(fn ,(GENSYM "__h_lambda") ,@body))
 
-;; where and letin are the same
 ;; where puts exactly the value of each var in place of it, and makes C functions Curry
 (DEFMACRO where (args body)
   (IF args
@@ -97,6 +96,23 @@
     (PUSH arg result)
     `(\\ ,arg ,(REDUCE #'LIST (REVERSE result) :FROM-END T))))
 
+;; >>= monad binding facility
+;; in every step 'in' type is input and 'out' is output
+;; no >>= can handle more than one bind with two different input or output
+(DEFMACRO >>= (bind in out &REST steps)
+  (LET ((bind  (MACROEXPAND bind))
+        (out   (MACROEXPAND out))
+        (var   (CAR steps))
+        (there (CDR steps)))
+    (IF there
+        (IF (EQUAL (CAR there) '<-)
+            `(,bind ,(CADR there)
+                    '(closure ((,in ,var))
+                      (out ,out)
+                      (return (>>= ,bind ,in ,out ,@(CDDR there)))))
+            (ERROR (FORMAT NIL ">>= syntax error")))
+        var)))
+
 ;; | function guard
 ;; otherwise case is required
 (DEFMACRO function-h-guard (fcond fpath otherwise elsepath &REST guards)
@@ -105,6 +121,7 @@
                          (IF (AND (ATOM otherwise) (EQUAL otherwise 'otherwise))
                              elsepath
                              (ERROR (FORMAT NIL "case guards without otherwise"))))))
+
 ;; | function guard
 (DEFMACRO case (fcond fpath otherwise elsepath &REST guards)
   `(function-h-guard ,fcond ,fpath ,otherwise ,elsepath ,@guards))
@@ -134,5 +151,17 @@
 (DEFUN make-match-h-arg-name (id number)
   (INTERN (FORMAT NIL "__h_~A_~A_arg" id number)))
 
+(DEFUN make-match-h-item-name (id number)
+  (INTERN (FORMAT NIL "__h_~A_~A_item" id number)))
+
 (DEFUN make-class-h-base-name (ct)
-  (INTERN (FORMAT NIL "__h_~A_class_t" (MACROEXPAND ct))))
+  (INTERN (FORMAT NIL "class_~A" (MACROEXPAND ct))))
+
+(DEFUN make-box-h-base-name (ct)
+  (INTERN (FORMAT NIL "~A_x" (MACROEXPAND ct))))
+
+(DEFUN make-haslen-h-name (id)
+  (INTERN (FORMAT NIL "__h_has_len_~A" id)))
+
+(DEFMACRO static-cast (type value)
+  `(cast ,type (cof (cast (,type *) (aof ,value)))))

@@ -89,7 +89,7 @@
                                 (declare ,ct-name)
                                 ,(LIST 'declare (IF (= i (1- (LENGTH ctors)))
                                                     '_
-                                                    (INTERN (FORMAT NIL "_~A" i)))))))
+                                                    (INTERN (FORMAT NIL "_~A" (- (LENGTH ctors) i 1))))))))
                        (range-h (LENGTH ctors)) ctors)
            (declare __h_data)))
        
@@ -123,7 +123,7 @@
                  fns)
 
        ;; Table initializer
-       (decl) (func (<> get ,name _H_Table) () (out const (<> ,name _H_Table) * const))
+       (decl) (func (<> get ,name _H_Table) () (out (<> ,name _H_Table) * const))
        
        ;; destructor
        (decl) (func (<> free ,name) ((,name * this_ptr)))
@@ -175,7 +175,7 @@
                          (range-h (1+ (LENGTH ctors))) (CONS ctor ctors)))))
     
     `(guard (<> _ ,name _H_IMPL__)
-       
+
        ;; funcs decl
        ,@(MAPCAR #'(LAMBDA (f)
                      (LET ((fP (COPY-LIST f)))
@@ -190,9 +190,9 @@
 
        ;; Table initializer
        (func (<> get ,name _H_Table) ()
-             (out const (<> ,name _H_Table) * const)
+             (out (<> ,name _H_Table) * const)
              (static)
-             (var const (<> ,name _H_Table) table . '{
+             (var (<> ,name _H_Table) table . '{
                   (<> free ,name)
                   ,@(MAPCAR #'(LAMBDA (f)
                                 (MACROEXPAND `(<> ,(CADR f) ,name)))
@@ -217,7 +217,7 @@
                                             ((<> get ,name _H_Table))
                                             ,(make-data-h-type-name (IF (= i (1- (LENGTH ctors))) '_ (CAAR ct)))
                                             }))
-                                    (return instance)))
+                                    (return (analyze! ,name instance))))
                            `(func ,ct-name ,real-params
                                   (out ,name)
                                   (let ((,name instance . #'(malloc (sizeof ,(make-class-h-base-name name)))))
@@ -229,8 +229,9 @@
                                                              (IF (= i (1- (LENGTH ctors))) '_ (CAAR ct))))
                                             '{ ,@(MAPCAR #'(LAMBDA (param) (NTH 4 param)) params) }
                                             }))
-                                    (return instance))))))
-                 (range-h (LENGTH ctors)) ctors)))) ; impl-class
+                                    (return (analyze! ,name instance)))))))
+                 (range-h (LENGTH ctors)) ctors)))
+  ) ; impl-class
 
 (DEFMACRO import-class (name ctor &REST ctors)
 

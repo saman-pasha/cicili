@@ -1,12 +1,13 @@
 
-;;; helper macro will auto defer all vars
+;; helper macro will auto defer all vars
 ;; checks an object has destructor
-(DEFMACRO --h-only-haskell-obj (is-ptr factory)
-  `(letn ((auto tmp_obj . (FUNCTION ,factory)))
-     (cast void ,(IF is-ptr
-                     `(-> tmp_obj __h_table freeClass)
-                     `(-> ($ tmp_obj __h_table) freeData)))
-     tmp_obj))
+(DEFMACRO --h-only-haskell-obj (is-ptr var-name factory)
+  (LET ((var-name var-name))
+    `(letn ((auto ,var-name . (FUNCTION ,factory)))
+       (cast void ,(IF is-ptr
+                       `(-> ,var-name __h_table freeClass)
+                       `(-> ($ ,var-name __h_table) freeData)))
+       ,var-name)))
 
 ;; letin accepts only haskell objects are produced by 'data' or 'class'
 ;; auto destructor calling
@@ -22,14 +23,10 @@
                                 (IF (= (LENGTH var) 2)
                                     `((defer () __h_free_data_router)
                                       (auto ,(CAR var)
-                                        . (FUNCTION (--h-only-haskell-obj
-                                                        ,NIL
-                                                      ,(CADR var)))))
+                                        . (FUNCTION (--h-only-haskell-obj ,NIL ,(CAR var) ,(CADR var)))))
                                     `((defer () __h_free_class_router)
                                       (auto ,(CADR var)
-                                        . (FUNCTION (--h-only-haskell-obj
-                                                        ,T
-                                                      ,(CADDR var)))))))
+                                        . (FUNCTION (--h-only-haskell-obj ,T ,(CADR var) ,(CADDR var)))))))
                       var-list))
      ,@body))
 
@@ -38,7 +35,7 @@
   `(letn ,(APPLY 'APPEND
                  (MAP 'LIST #'(LAMBDA (var)
                                 (WHEN (OR (< (LENGTH var) 2) (> (LENGTH var) 3))
-                                  (ERROR (FORMAT NIL "wrong letin variable definition: ~A" var)))
+                                  (ERROR (FORMAT NIL "wrong letin* variable definition: ~A" var)))
                                 (IF (= (LENGTH var) 2)
                                     `((auto ,(CAR var) . (FUNCTION ,(CADR var))))
                                     `((defer () ,(CADDR var)) (auto ,(CAR var) . (FUNCTION ,(CADR var))))))
@@ -56,11 +53,22 @@
                                 (UNLESS (= (LENGTH var) 3)
                                   (ERROR (FORMAT NIL "wrong rc variable definition: ~A" var)))
 
-                                `((defer () __h_free_class_router)
+                                `((defer () __h_free_data_router)
                                   (auto ,(CAR var)
-                                    . (FUNCTION ((<> new ,(CADR var) Pure)
-                                                 (--h-only-haskell-obj
-                                                     ,T
-                                                   ,(CADDR var)))))))
+                                    . (FUNCTION ((<> new ,(CADR var))
+                                                 (--h-only-haskell-obj ,T ,(CAR var) ,(CADDR var)))))))
                       var-list))
      ,@body))
+
+
+(DEFMACRO new (obj)
+  (LET ((obj obj))
+    `((\.* new ,obj) ,obj)))
+
+(DEFMACRO copy (obj)
+  (LET ((obj obj))
+    `((\.* copy ,obj) ,obj)))
+
+(DEFMACRO show (obj)
+  (LET ((obj obj))
+    `((\.* show ,obj) stdout ,obj)))

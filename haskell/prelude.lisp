@@ -6,10 +6,12 @@
 (import "./either.lisp")
 (import "./class.lisp")
 (import "./match.lisp")
+(import "./rc.lisp")
+(import "./box.lisp")
 (import "./list.lisp")
+(import "./boxed-list.lisp")
 (import "./string.lisp")
 (import "./range.lisp")
-(import "./rc.lisp")
 (import "./monoid.lisp")
 (import "./functor.lisp")
 (import "./applicative.lisp")
@@ -17,16 +19,25 @@
 (import "./haskell.lisp")
 
 (DEFMACRO init-macro ()
-  `($$$
-     (import-List   new^List^Bool List^Bool Bool)
-     (import-List   new^List^int  List^int  int)
-     (import-String new^String    List^char char)
+  `($$$ (fn identity (-input) -input)
+
+     (fn showAsString -show -obj
+         (letn ((char * buffer . #'(cast (char *) (calloc 1024 (sizeof char))))
+                (defer () (fclose file))
+                (CFile file . #'(fmemopen buffer 1024 "w+")))
+           (-show file -obj)
+           buffer))
+
+     (import-List   List^Bool Bool new^List^Bool)
+     (import-List   List^int  int  new^List^int)
+     (import-List   List^char char new^List^char)
+     (import-String String    Char new^String)
      
      (import-Range  Range^int int)
 
-     (import-List new^List^List^int  List^List^int  List^int)
-     (import-List new^List^List^char List^List^char List^char)
-     (import-List new^List^String    List^String    String)
+     (import-List List^List^int  List^int  new^List^List^int)
+     (import-List List^List^char List^char new^List^List^char)
+     (import-List List^String    String    new^List^String)
 
      (import-Monoid (<> All     Bool) Bool)
      (import-Monoid (<> Any     Bool) Bool)
@@ -44,5 +55,5 @@
      (import-Functor-List List^char^Bool char Bool)
      (import-Functor-List String^char    char char)
      (import-Functor-List String^Bool    char Bool)
-
-     ))
+     )
+  ) ; init-macro

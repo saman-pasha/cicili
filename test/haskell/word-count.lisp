@@ -21,7 +21,8 @@
               (let ((FILE * tmpf . #'(tmpfile)))
 
                 (when (== tmpf nil)
-                  (Left^String^cfile_t (strerror errno))) ; on failure returns error number
+                  (let ((auto err . #'(strerror errno)))
+                    (return (Left^String^cfile_t (new^String err (strlen err)))))) ; on failure returns error number
                 
                 (fputs "Alan Turing\n"      tmpf)
                 (fputs "John von Neumann\n" tmpf)
@@ -63,7 +64,7 @@
                      (free^String (aof str))))
                 ;; last element of a list is allocated too
                 ;; = in io and match makes an alias for whole object
-                (= empty_str default (free^String (aof empty_str)))))
+                (= empty_str default (free^List^String (aof empty_str)))))
 
         ;; to auto deferment file close
         (func file_close ((FILE ** file_ptr))

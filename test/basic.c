@@ -1,10 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "basic.h"
-static void __ciciliL_109 (Employee ** emp ) {
+void __ciciliL_109 (Employee ** emp ) {
   free (((void *)(*emp )));
 }
-static void __ciciliL_111 (Employee ** emps_arr ) {
+void __ciciliL_111 (Employee ** emps_arr ) {
   free (((void *)(*emps_arr )));
 }
 int main (int argc , char * argv []) {

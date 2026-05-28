@@ -43,20 +43,9 @@
                                         (io 
                                             ;; This is the monadic chain, like Haskell's 'do' notation.
                                             ;; 'bind^Either^String^String^User' is the (>>=) operator.
-                                            ($> bind^Either^String^String^User (validate_name name_input)
-                                              
-                                              ;; 1. The 'closure' for the *first* success
-                                              '(lambda ((String valid_name))
-                                                (out Either^String^User)
-                                                ;; 2. The second step in the chain
-                                                (return ($> bind^Either^String^int^User (validate_id id-int)
-                                                          
-                                                          ;; 3. The 'closure' for the *second* success
-                                                          '(lambda ((int valid_id))
-                                                            (out Either^String^User)
-                                                            ;; 4. All steps passed. 'return' (pure) the final User.
-                                                            (return (Right^String^User 
-                                                                        (cast User '{ valid_name valid_id }))))))))
+                                            ($> bind^Either^String^String^User valid_name (validate_name name_input)
+                                                ($> bind^Either^String^int^User valid_id (validate_id id-int)
+                                                    (Right^String^User (cast User '{ valid_name valid_id }))))
                                           
                                           ;; --- Pattern match on the result of the *entire* chain ---
                                           (Right ((\, name id))

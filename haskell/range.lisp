@@ -1,82 +1,83 @@
 
-(generic decl-Range (type a)
+(generic decl-Range
+  (type a list-t)
 
-         (decl-class (List type)
-           (= Empty (<> Empty type))
-           (= Cons  (<> Cons type)
-              (a from)
-              (type tail)
-              (a to)
-              (a step))
-           (func next ((type list)) (out type))
-           (func take ((int len) (type list)) (out type))
-           (func show ((type list))))
+  (decl-class (List type)
+    (= Cons (<> Cons type)
+       (a from)
+       (a to)
+       (a step))
+    (= Nil (<> Nil type))
+    (func next ((type list)) (out type))
+    (func take ((int len) (type list)) (out list-t))
+    (func drop ((int len) (type list)) (out type))
+    (func show ((CFile file) (type list)) (out int)))
 
-         (decl) (func (<> new type) ((a from) (a to) (a step)) (out type))
-         
-         ) ; decl-Range
+  (decl) (func (<> new type) ((a from) (a to) (a step)) (out type))
+  
+  ) ; decl-Range
 
-(generic impl-Range (type a fmt)
+(generic impl-Range
+  (type a list-t fmt sep)
 
-         (impl-class (List type)
-           (= Empty (<> Empty type))
-           (= Cons  (<> Cons type)
-              (a from)
-              (type tail)
-              (a to)
-              (a step))
+  (impl-class (List type)
+    (= Cons (<> Cons type)
+       (a from)
+       (a to)
+       (a step))
+    (= Nil (<> Nil type))
 
-           (func next ((type list))
-                 (out type)
-                 (return (match list
-                           (* Cons from _ to step => (<= (+ from step) to)
-                              ((<> Cons type) (+ from step) ((<> Empty type)) to step))
-                           (default ((<> Empty type))))))
-           
-           (func take ((int len) (type list))
-                 (out type)
-                 (return (match list
-                           (* Cons from _ to step => (> len 0)
-                              (letn ((auto ne . #'((<> next type) list)))
-                                (match ne
-                                  (* Cons
-                                     ((<> Cons type) from ((<> take type) (-- len) ne) to step))
-                                  (default ((<> Cons type) from ne to step)))))
-                           (default ((<> Empty type))))))
-           
-           (func show ((type list))
-                 (io list
-                   (* Cons head tail
-                      (io tail
-                        (* Cons
-                           (block
-                               (fmt head)
-                             (putchar #\Space)
-                             ((<> show type) tail)))
-                        (default (fmt head))))))
+    (func next ((type list))
+          (out type)
+          (return (match list
+                    (* Cons from to step <!> (<= (+ from step) to)
+                       ((<> Cons type) (+ from step) to step))
+                    (default ((<> Nil type))))))
+    
+    (func take ((int len) (type list))
+          (out list-t)
+          (return (match list
+                    (* Cons from <!> (> len 0)
+                       (letn ((auto ne . #'((<> next type) list)))
+                         (match ne
+                           (* Cons ((<> Cons a) from ((<> take type) (-- len) ne)))
+                           (default ((<> Cons a) from ((<> Nil a)))))))
+                    (default ((<> Nil a))))))
+    
+    (func drop ((int len) (type list))
+          (out type)
+          (return (match list
+                    (* Cons <!> (> len 0)
+                       (letn ((auto ne . #'((<> next type) list)))
+                         (match ne
+                           (* Cons ((<> drop type) (-- len) ne))
+                           (default list))))
+                    (default list))))
 
-           (free (io this
-                   (* Cons from tail to step
-                      (block
-                          ((<> free type) (aof tail))
-                        (free this)))
-                   (default (free this)))))
+    (func show ((CFile file) (type list))
+          (out int)
+          (return (match list
+                    (* Cons from (+ ($> fmt file from) (fprintf file "%s" sep)))
+                    (default 0))))
 
-         (func (<> new type) ((a from) (a to) (a step))
-               (out type)
-               (return (case (<= from to) ((<> Cons type) from ((<> Empty type)) to step)
-                             otherwise    ((<> Empty type)))))
-         
-         ) ; impl-Range
+    (free (free this)))
 
-(generic import-Range (type a)
+  (func (<> new type) ((a from) (a to) (a step))
+        (out type)
+        (return (case (<= from to) ((<> Cons type) from to step)
+                      otherwise    ((<> Nil type)))))
+  
+  ) ; impl-Range
 
-         (import-class (List type)
-           (= Empty (<> Empty type))
-           (= Cons  (<> Cons type)
-              (a from)
-              (type tail)
-              (a to)
-              (a step)))
-                  
-         ) ; import-Range
+(generic import-Range
+  (type a)
+
+  (import-class (List type)
+    (= Cons  (<> Cons type)
+       (a from)
+       (type tail)
+       (a to)
+       (a step))
+    (= Nil (<> Nil type)))
+
+  ) ; import-Range

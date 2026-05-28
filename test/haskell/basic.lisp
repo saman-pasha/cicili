@@ -73,8 +73,8 @@
               (match self
                 (Byte  c  (format #t "Integer is Byte: %d\n" c))
                 (Short sh (format #t "Integer is Short: %d\n" sh))
-                (Int   i  => (< i 1000) (format #t "Integer is Int below 1000: %d\n" i))
-                (Int   i  => (and (>= i 1000) (< i 10000))
+                (Int   il <!> (< il 1000) (format #t "Integer is Int below 1000: %d\n" il))
+                (Int   i <!> (and (>= i 1000) (< i 10000))
                        (format #t "Integer is Int between 1000 and 10000: %d\n" i))
                 (default  (format #t "Integer is N/A\n"))))
         
@@ -90,16 +90,16 @@
 
         (func print_inner_maybe (((<> Maybe (<> Maybe char)) imb))
               (io imb
-                (Nothing          (format #t "inner Nothing Maybe char: Nothing\n"))
-                (Just    Nothing  (format #t "inner Just Nothing char: Nothing\n"))
-                (Just    (Just c) (format #t "inner Just Just char: Just %c\n" c))))
+                (Nothing           (format #t "inner Nothing Maybe char: Nothing\n"))
+                (Just    (Nothing) (format #t "inner Just Nothing char: Nothing\n"))
+                (Just    (Just c)  (format #t "inner Just Just char: Just %c\n" c))))
 
         (typedef (Tuple int char short) aTuple)
         
         (func print_tuple ((aTuple tup))
               (io tup
-                ((\, i c s) => (> s 10) (format #t "tuple s > 10: int, char, short = (%d, %c, %d)\n" i c s))
-                ((\, i c s) (format #t "tuple: int, char, short = (%d, %c, %d)\n" i c s))))
+                ((\, i c s) <!> (> s 10) (format #t "tuple s > 10: int, char, short = (%d, %c, %d)\n" i c s))
+                ((\, fi fc fs) (format #t "tuple: int, char, short = (%d, %c, %d)\n" fi fc fs))))
 
         (decl-Maybe aTuple)
         (impl-Maybe aTuple)
@@ -116,9 +116,9 @@
               (return (case (== n 1)  1
                             otherwise (* n (factorial (- n 1))))))
 
-        (main
+        (main (format #t "basic test\n")
 
-            (format #t "output of lambda calculus: %d & %d\n" ((l0 2) 3) ((add 2) 3))
+          (format #t "output of lambda calculus: %d & %d\n" ((l0 2) 3) ((add 2) 3))
           (format #t "output of lambda calculus: %d\n" (((p0 2) 3) 4))
 
           (format #t "output of lambda closure: %d\n"  (((adder l0) 2) 3))
@@ -191,8 +191,8 @@
             (print_tuple (cast-tuple aTuple tup1)) ; use pointer or cast-tuple
             ($> (\\ tup
                     (match tup
-                      ((\, i c s) => (> s 10) (format #t "tuple s > 10: int, char, short = (%d, %c, %d)\n" i c s))
-                      ((\, i c s) (format #t "tuple: int, char, short = (%d, %c, %d)\n" i c s))
+                      ((\, i c s) <!> (> s 10) (format #t "tuple s > 10: int, char, short = (%d, %c, %d)\n" i c s))
+                      ((\, fi fc fs) (format #t "tuple: int, char, short = (%d, %c, %d)\n" fi fc fs))
                       (default (format #t "No Tuple?!"))))
               tup2))
 
@@ -207,38 +207,44 @@
 
           (io ((<> Just aTuple) (cast aTuple '{ 55 #\D 93 }))
             (Nothing (format #t "tuple inside maybe: Nothing"))
-            (Just    (= t (\, i c s))
+            (Just (= t (\, i c s))
               (io t
                 ((\, ii cc ss)
                  (progn
                    (format #t "tuple inside maybe: Just tuple: int, char, short = (%d, %c, %d)\n" i c s)
                    (format #t "tuple inside maybe: Just tuple: int, char, short = (%d, %c, %d)\n" ii cc ss))))))
           
-          (io (cast (Tuple int Maybe^char) '{ 5060 (Just^char #\M) })
-            ((\, _ Nothing) (format #t "maybe inside tuple: Nothing\n"))
-            ((\, i (Just c => (> c #\L)))
-             (format #t "maybe inside tuple: (c > L) int, Just char: = (%d, %c)\n" i c))
-            (= t (\, _ (Just c => (< c #\L)))
-               (io t
-                 ((\, i (Just _))
-                  (format #t "maybe inside tuple: (c < L) int, Just char: = (%d, %c)\n" i c)))))
+          (io ((<> Just aTuple) (cast aTuple '{ 56 #\E 94 }))
+            (Nothing (format #t "ow tuple inside maybe: Nothing"))
+            (Just (\, i c s)
+              (format #t "ow tuple inside maybe: Just tuple: int, char, short = (%d, %c, %d)\n" i c s)))
+
+          (letin* ((tt (cast (Tuple int Maybe^char) '{ 5060 (Just^char #\M) })))
+            (io tt
+              ((\, _ (Nothing)) (format #t "maybe inside tuple: Nothing\n"))
+              ((\, i (Just c <!> (> c #\L)))
+               (format #t "maybe inside tuple: (c > L) int, Just char: = (%d, %c)\n" i c))
+              (= t (\, _ (Just cm <!> (< cm #\L)))
+                 (io t
+                   ((\, im (Just _))
+                    (format #t "maybe inside tuple: (c < L) int, Just char: = (%d, %c)\n" im cm))))))
           
           ;; List
           ;; letin evalutes each var once
           ;; var, value, deferer optional, deferer must be a function where accepts pointer of type value
           (letin ((* txt (new^String "Haskell List")))
 
-            (show^String txt)
+            (show txt) ; alias to (show^String txt)
             (putchar #\Newline)
             
             (format #t "output of printf match: %d\n"
                     ;; match returns a value and all values returned from each case must be the same type
-                    (match ((\.* nth txt) 3 txt)
+                    (match (nth 3 txt) ; ((\. nth txt) 3 txt)
                       (Just c  (format #t "the 4th element is: %c\n" c))
                       (default (format #t "4th element not found\n"))))
 
             (where ; where puts exactly the value of each var in place of it, and makes C functions Curry
-                ((llen ((\.* len txt) txt))
+                ((llen ((\.* len txt) txt)) ; (len txt)
                  (nthf (\\ n ((\.* nth txt) n txt))) ; nth function is reserved for access nth element of an array
                  (show (\\ f n (match (f n) ; lambda in place of declared show function
                                  (Just c  (format #t "the %dth element is: %c\n" n c))
@@ -268,45 +274,51 @@
               ;; access by path mode
               ;; * means Cons char ctor returns a pointer beacause Lists are classes
               ;; = str at first of any case makes an alias for whole object
-              ;; ^ opr only inside cases can be used separated,
-              ;; note in other cicili clauses ^ must be mixed whithout any space
-              ;; _ for types with only one ctor
+              ;; _ for types with only one ctor, last ctor id '_' Default ctor
               (* Cons head tail
                  (format #t "first char is: %c, and length of tail is: %d\n"
-                            head ((\.* len txt) tail))))
+                         head ((\.* len tail) tail))))
             
             ;; using list literal constructor
             (letin ((* str5 (new^String '{ #\C #\i #\c #\i #\l #\i })))
-              (format #t "has 'Cicili' desired length 5: %d\n" ((\.* hasLen str5) str5 5))
-              (format #t "has 'Cicili' desired length 6: %d\n" ((\.* hasLen str5) str5 6))
-              (format #t "has 'Cicili' desired length 7: %d\n" ((\.* hasLen str5) str5 7)))
+              (format #t "has 'Cicili' desired length 5: %d\n" ((\.+ hasLen String) str5 5))
+              (format #t "has 'Cicili' desired length 6: %d\n" ((\<> hasLen String) str5 6))
+              (format #t "has 'Cicili' desired length 7: %d\n" ((\.* hasLen str5)   str5 7))
+              (io str5
+                ((\: ch0 (* Cons ch1 (* Cons ch2 tail))) ; multi level inner destructuring
+                 (block (format #t "fst snd trd chars and tail from String: %c, %c, %c, " ch0 ch1 ch2)
+                   (show^String tail)
+                   (putchar #\Newline)))))
 
             ;; match should have default case
             ;; io can have default case like match
             ;; but io returns void therefor default case is optional
-            (io ((\.* drop txt) 12 txt)
+            (format #t "drop 10 of 'Haskell List'\n")
+            (io ((\.* drop txt) 10 txt)
               ;; simplified list element access
               ;; (Nothing ^ String (format #t "Nothing String\n"))
-              ((\: char fst snd trd tail)
-                 (format #t "first, second and third char from String: %c %c %c\n" fst snd trd))
-              ((\: char fst snd tail)
-                 (format #t "first and second char from String: %c %c\n" fst snd))
-              ((\: char fst tail)
-                 (format #t "first char from String: %c\n" fst))
+              ((\: fst snd trd _) ; _ is tail, if _ be removed trd will be tail
+               (format #t "first, second and third char from String: %c %c %c\n" fst snd trd))
+              ((\: fst1 snd1 _) ; comment this case for test below case
+               (format #t "first and second char from String: %c %c\n" fst1 snd1))
+              ((\: fst21 (* Cons ch1 tail1)) ; inner destructuring same the above
+               (format #t "first and second char from String: %c, %c, %p\n" fst21 ch1 tail1))
+              ((\: fst3 _)
+               (format #t "first char from String: %c\n" fst3))
               (default (format #t "default case String\n"))))
           
           ;; letin is only for data or class instantiation  
-          (letin* ((ilist0 (new^List^int '{ 1 2 3 4 }))        ; will be freed by ilist2, Notice: use Rc
-                   (ilist1 ((\.* push ilist0) 5 ilist0))        ; \: 'push' is push^List^int to list function
-                   (intarr (cast (const int []) '{ 8 7 6 }))   ; pure c object could not be defined by normal letin
-                   (ilist2 (new^List^int intarr 3)))           ; * tells compiler the defined variable is a pointer
-            (letin ((* ilist3 ((\.* append ilist0) ilist2 ilist1))  ; ++ 'append' is append^List^int
-                    (* ilist4 ((\.* take ilist0) 5 ilist3)))       ; take creates a new list by copy of specified's elements
+          (letin* ((intarr (cast (const int []) '{ 8 7 6 }))       ; pure c object could not be defined by normal letin
+                   (ilist2 (new^List^int intarr 3) free^List^int)) ; * tells compiler the defined variable is a pointer
+            (letin ((* ilist0 (new^List^int '{ 1 2 3 4 }))
+                    (* ilist1 (push 5 ilist0))           ; \: 'push' is push^List^int to list function
+                    (* ilist3 (append ilist2 ilist1))    ; ++ 'append' is append^List^int
+                    (* ilist4 (take 5 ilist3)))          ; take creates a new list by copy of specified's elements
               (format #t "first elem of int list0: %d\n" (match ((\.* head ilist0) ilist0) (Just i i) (default -1)))
               (format #t "first elem of int list1: %d\n" (match ((\.* head ilist0) ilist1) (Just i i) (default -1)))
               (format #t "list0:\n")
               ((\.* show ilist0) ilist0)
-              (format #t "\nlist1:\n")
+              (format #t "\nlist1 push 5:\n")
               ((\.* show ilist0) ilist1)
               (format #t "\nlist2:\n")
               ((\.* show ilist0) ilist2)
@@ -315,29 +327,42 @@
               (format #t "\nlist4: take 5 of list3:\n")
               ((\.* show ilist0) ilist4)
               (putchar #\Newline)))
-        
+
+          ;; working with ranges
           (letin ((* ra0  (new^Range^int 1 20 3))
-                  (* ra1  ((\.* take ra0) 3  ra0))
-                  (* ra2  ((\.* take ra0) 4  ra0))
-                  (* ra3  ((\.* take ra0) 10 ra0))
-                  (* str0 (new^String "Hello World!"))
-                  (* str1 (new^List^int '{ 72 101 108 108 111 32 87 111 114 108 100 33 })))
+                  (* ra1  (take  3 ra0)) ; ((\.* take ra0)  3 ra0)
+                  (* ra2  (take  4 ra0))
+                  (* rad1 (drop  4 ra0))
+                  (* ra4  (take  2 rad1))
+                  (* ra5  (take  4 rad1))
+                  (* ra3  (take 10 ra0)))
             (format #t "range 1 20 3:\n")
             ((\.* show ra0) ra0)
             ;; range shows only first of range
             ;; needs to take enough from it
             (format #t "\ntake 3  of range 1 20 3:\n")
-            ((\.* show ra0) ra1)
+            ((<> show List^int) ra1)
             (format #t "\ntake 4  of range 1 20 3:\n")
-            ((\.* show ra0) ra2)
+            ((\.* show ra1) ra2)
+            (format #t "\ntake 2  of drop  4 range 1 20 3:\n")
+            ((\.* show ra1) ra4)
+            (format #t "\ntake 4  of drop  4 range 1 20 3:\n")
+            ((\.* show ra1) ra5)
             (format #t "\ntake 10 of range 1 20 3:\n")
-            ;; because List and Range have same two members structure
             ;; access Table by type
-            ((\.+ show List^int) (cast (List^int) ra3))
+            ((\.+ show List^int) ra3))
+
+          ;; casting
+          (letin ((* str0 (new^String "Hello World!"))
+                  (* str1 (new^List^int '{ 72 101 108 108 111 32 87 111 114 108 100 33 })))
             (format #t "\nString to List^int:\n")
-            ((\.+ show List^int) (cast (List^int) str0))
+            ((\.+ show List^int) (static-cast List^int str0))
+            (format #t "\nString to List^char:\n")
+            ((\.+ show List^char) (static-cast List^char str0))
+            (format #t "\nList^int to List^char:\n")
+            (show^List^char (static-cast List^char str1))
             (format #t "\nList^int to String:\n")
-            (show^String (cast (String) str1))
+            (show^String (static-cast String str1))
             (putchar #\Newline))
           
           ))

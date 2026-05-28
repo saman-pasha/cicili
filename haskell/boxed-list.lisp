@@ -1,0 +1,389 @@
+;;; My Cicili for a List
+;;; Safe List Processing (LisP) Solution in C using Haskell thinking model
+
+;; each BoxedList must be defined by this generic
+(generic decl-BoxedList
+  (type a)
+  
+  ;; dependencies
+  (decl-Maybe a)
+
+  (decl-box (List type)
+    (= Cons (<> BoxedCons a)
+       (a head)
+       (type tail))
+    (= Nil (<> BoxedNil a))
+    (func len     ((type list)) (out int))
+    (func hasLen  ((type list) (int desired)) (out int))
+    (func nth     ((int index) (type list)) (out (<> Maybe a)))
+    (func nthcdr  ((int index) (type list)) (out type))
+    (func head    ((type list)) (out (<> Maybe a)))
+    (func drop    ((int index) (type list)) (out type))
+    (func tail    ((type list)) (out type))
+    (func init    ((type list)) (out type))
+    (func last    ((type list)) (out type))
+    (func take    ((int len) (type list)) (out type))
+    (func push    ((a item) (type list)) (out type))
+    (func append  ((type llist) (type rlist)) (out type))
+    (func reverse ((type list)) (out type))
+    (func insert  ((type llist) (a item) (type rlist)) (out type))
+    (func delete  ((type list) (type aimed)) (out type))
+    (func replace ((type list) (a item) (type aimed)) (out type))
+    (func insertAt  ((type llist) (a item) (int index)) (out type))
+    (func deleteAt  ((type list) (int index)) (out type))
+    (func replaceAt ((type list) (a item) (int index)) (out type))
+    (func copy    ((type list)) (out type))
+    (func show    ((CFile file) (type list)) (out int))
+    (func pure    ((const a * buf) (int len)) (out type))
+    (func wrap    ((const a item)) (out type))
+    (func toArray ((type list) (a term)) (out a *)))
+
+  (decl-Maybe type)
+  
+  ) ; decl-BoxedList
+
+(generic impl-BoxedList
+  (type ; type name
+   a    ; element
+   fmt  ; a function ((FILE * file) (BoxedList list))
+   sep) ; C const literal string to separate elements
+
+  ;; dependencies
+  (impl-Maybe a)
+
+  (impl-box (List type)
+    (= Cons (<> BoxedCons a)
+       (a head)
+       (type tail))
+    (= Nil (<> BoxedNil a))
+
+    (func len ((type list))
+          (out int)
+          (return (match# list
+                    (dead 0)
+                    (* Cons _ tail (+ 1 ((<> len type) tail)))
+                    (default 0))))
+
+    (func hasLen ((type list) (int desired))
+          (out int)
+          (return (match# list
+                    (dead 0)
+                    (* Cons _ tail
+                       (case (== desired 1) 1
+                             otherwise      (+ 1 ((<> hasLen type) tail (-- desired)))))
+                    (default 0))))
+
+    (func nth ((int index) (type list))
+          (out (<> Maybe a))
+          (return (match# list
+                    (dead ((<> Nothing a)))
+                    (* Cons head tail 
+                       (case (== index 0) ((<> Just a) head)
+                             (<  index 0) ((<> Nothing a))
+                             otherwise    ((<> nth type) (-- index) tail)))
+                    (default ((<> Nothing a))))))
+
+    ;; returns nth tail
+    ;; 0 means itself
+    (func nthcdr ((int index) (type list))
+          (out type)
+          (return (match# list
+                    (dead list)
+                    (* Cons _ tail <!> (> index 0) ((<> nthcdr type) (-- index) tail))
+                    (default list))))
+    
+    (func head ((type list))
+          (out (<> Maybe a))
+          (return ((<> nth type) 0 list)))
+    
+    (func drop ((int len) (type list))
+          (out type)
+          (return (case (<= len 0) ((<> clone Box type) list)
+                        otherwise  (match# list
+                                     (dead ((<> clone Box type) list))
+                                     (* Cons _ tail ((<> drop type) (-- len) tail))
+                                     (default ((<> clone Box type) list))))))
+
+    (func tail ((type list))
+          (out type)
+          (return ((<> drop type) 1 list)))
+    
+    (func init ((type list))
+          (out type)
+          (return (match# list
+                    (dead list)
+                    (* Cons head tail -># tail
+                       (dead tail)
+                       (* Cons ((<> BoxedCons a) head ((<> init type) tail)))
+                       (default tail))
+                    (default list))))
+    
+    (func last ((type list))
+          (out type)
+          (return (match# list
+                    (dead ((<> clone Box type) list))
+                    (* Cons _ tail -># tail
+                       (dead ((<> clone Box type) list))
+                       (* Nil ((<> clone Box type) list))
+                       (default ((<> last type) tail)))
+                    (default ((<> clone Box type) list)))))
+
+    ;; copies first len elements
+    (func take ((int len) (type list))
+          (out type)
+          (return (case (<= len 0) ((<> BoxedNil a))
+                        otherwise  (match# list
+                                     (dead ((<> BoxedNil a)))
+                                     (* Cons head tail ((<> BoxedCons a) head ((<> take type) (-- len) tail)))
+                                     (default ((<> BoxedNil a)))))))
+    
+    (func push ((a item) (type list))
+          (out type)
+          (return ((<> BoxedCons a) item ((<> clone Box type) list))))
+
+    ;; pushes llist's items one by one from back to the rlist
+    (func append ((type llist) (type rlist))
+          (out type)
+          (return (match# llist
+                    (dead ((<> clone Box type) rlist))
+                    (* Cons head tail ((<> BoxedCons a) head ((<> append type) tail rlist)))
+                    (default ((<> clone Box type) rlist)))))
+
+    (func reverse ((type list))
+          (out type)
+          
+          (func _reverse ((type list) (type rlist))
+                (out type)
+                (return (match# list
+                          (dead rlist)
+                          (* Cons head tail (_reverse tail ((<> BoxedCons a) head rlist)))
+                          (default rlist))))
+          
+          (return (match# list
+                    (dead list)
+                    (* Cons head tail (_reverse tail ((<> BoxedCons a) head ((<> BoxedNil a)))))
+                    (default list))))
+    
+    ;; pushes item to the rlist
+    ;; pushes llist's items one by one from back to the new list
+    ;; back is the place where rlist founded inside llist, if rlist be a cons of llist
+    ;; if it doesn't the result is (llist's items ++ itme ++ rlist's items)
+    (func insert ((type llist) (a item) (type rlist))
+          (out type)
+          (return (match ((<> get Box type) llist)
+                    (Just llistp -> ((<> get Box type) rlist)
+                          (Just rlistp -> llistp
+                                (* Cons head tail <!> (!= llistp rlistp)
+                                   ((<> BoxedCons a) head ((<> insert type) tail item rlist)))
+                                (default ((<> BoxedCons a) item ((<> clone Box type) rlist))))
+                          (default (letin ((nil_item ((<> BoxedNil a))))
+                                     ((<> insert type) llist item nil_item))))
+                    (default ((<> BoxedCons a) item rlist)))))
+    
+    ;; traverses list till reachs aimed
+    ;; then copy all traversed cons
+    ;; appends them to tail of aimed
+    (func delete ((type list) (type aimed))
+          (out type)
+          (return (match ((<> get Box type) list)
+                    (Just listp -> ((<> get Box type) aimed)
+                          (Just aimedp -> listp
+                                (* Cons head tail <!> (!= listp aimedp) ((<> BoxedCons a) head ((<> delete type) tail aimed)))
+                                (default -> aimedp
+                                         (* Cons _ taill ((<> clone Box type) taill))
+                                         (default ((<> BoxedNil a)))))
+                          (default ((<> clone Box type) list)))
+                    (default ((<> clone Box type) list)))))
+    
+    ;; removes the aimed element like does delete
+    ;; but insert the new element replace of aimed
+    (func replace ((type list) (a item) (type aimed))
+          (out type)
+          (return (match ((<> get Box type) list)
+                    (Just listp -> ((<> get Box type) aimed)
+                          (Just aimedp -> listp
+                                (* Cons head tail <!> (!= listp aimedp) ((<> BoxedCons a) head ((<> replace type) tail item aimed)))
+                                (default -> aimedp
+                                         (* Cons _ taill ((<> BoxedCons a) item ((<> clone Box type) taill)))
+                                         (default ((<> clone Box type) aimed))))
+                          (default ((<> clone Box type) list)))
+                    (default ((<> clone Box type) list)))))
+
+    (func insertAt  ((type llist) (a item) (int index))
+          (out type)
+          (return (match# llist
+                    (dead ((<> BoxedCons a) item llist))
+                    (* Cons head tail <!> (> index 0) ((<> BoxedCons a) head ((<> insertAt type) tail item (- index 1))))
+                    (default ((<> BoxedCons a) item llist)))))
+    
+    (func deleteAt  ((type list) (int index))
+          (out type)
+          (return (match# list
+                    (dead ((<> clone Box type) list))
+                    (* Cons head tail <!> (> index 0) ((<> BoxedCons a) head ((<> deleteAt type) tail (- index 1))))
+                    (default -># list
+                             (dead ((<> clone Box type) list))
+                             (* Cons _ taill taill)
+                             (default ((<> clone Box type) list))))))
+    
+    (func replaceAt ((type list) (a item) (int index))
+          (out type)
+          (return (match# list
+                    (dead ((<> clone Box type) list))
+                    (* Cons head tail <!> (> index 0) ((<> BoxedCons a) head ((<> replaceAt type) tail item (- index 1))))
+                    (default -># list
+                             (dead ((<> clone Box type) list))
+                             (* Cons _ taill ((<> BoxedCons a) item taill))
+                             (default ((<> clone Box type) list))))))
+
+    (func copy ((type list))
+          (out type)
+          (return (match# list
+                    (dead ((<> BoxedNil a)))
+                    (* Cons head tail ((<> BoxedCons a) head ((<> copy type) tail)))
+                    (default ((<> BoxedNil a))))))
+
+    (func show ((CFile file) (type list))
+          (out int)
+          (return (match# list
+                    (dead 0)
+                    (* Cons head tail
+                       (+ (match# tail
+                            (dead 0)
+                            (* Cons (+ ($> fmt file head) (fprintf file "%s" sep)))
+                            (default ($> fmt file head)))
+                          ((<> show type) file tail)))
+                    (default 0))))
+    
+    (func pure ((const a * buf) (int len))
+          (out type)
+          (return (case (null buf) ((<> BoxedNil a))
+                        otherwise  (letn ((a item . #'(cof buf)))
+                                     (case (== len 0) ((<> BoxedNil a))
+                                           otherwise  ((<> BoxedCons a) item ((<> pure type) (++ buf) (-- len))))))))
+
+    ;; for single element list
+    (func wrap ((const a item))
+          (out type)
+          (return ((<> BoxedCons a) item ((<> BoxedNil a)))))
+
+    (func toArray ((type list) (a term)) (out a *)
+          
+          (func array ((type list) (int count))
+                (out a *)
+                (return (match# list
+                          (dead (letn ((a * arr . #'(calloc count (sizeof a))))
+                                  (set (nth (- count 1) arr) term)
+                                  arr))
+                          (* Cons head tail (letn ((a * arr . #'(array tail (+ count 1))))
+                                              (set (nth count arr) head)
+                                              arr))
+                          (default (letn ((a * arr . #'(calloc count (sizeof a))))
+                                     (set (nth (- count 1) arr) term)
+                                     arr)))))
+                
+          (return (array list 0)))
+
+    (free (syslog! (printf "free BoxedList %s: %p\n" (symbol-name a) this))
+      (io this
+            (* Cons _ tail
+               (block (syslog! (printf "freeing BoxedCons:\n")
+                        ((<> show type) stdout this)
+                        (putchar #\Newline))
+                 (free this)
+                 ((<> free Box type) (aof tail))))
+            (* Nil
+               (block (syslog! (printf "freeing BoxedNil:\n"))
+                 (free this))))) ; Nil is pointer too
+
+    ) ; impl-box
+
+  (impl-Maybe type)
+
+  ) ; impl-BoxedList
+
+(generic import-BoxedList
+  (type
+   a
+   ctor)
+
+  ;; dependencies
+  (import-Maybe a)
+
+  (import-box (List type)
+    (= Cons (<> BoxedCons a)
+       (a head)
+       (type tail))
+    (= Nil (<> BoxedNil a)))
+
+  (DEFMACRO ctor (buf &OPTIONAL len)
+    (LET ((len len))
+      (IF len
+          `((<> pure type) ,buf ,len)
+          (IF (AND (LISTP buf) (EQUAL (CAR buf) 'QUOTE))
+              `((<> pure type) (cast (const a []) ,buf) ,(LENGTH (CADR buf)))
+              (ERROR (FORMAT NIL "new^BoxedList len required for dynamic array input: ~A" buf))))))
+
+  (import-Maybe type)
+
+  ) ; import-BoxedList
+
+;; ;; list helper macros
+;; ;; (list type elm1 elm2 elm3 ...)
+;; (DEFMACRO boxed-list (elem-type &REST pure-list)
+;;   (LET ((elem-type elem-type))
+;;     `((<> pure BoxedList ,elem-type)
+;;       (cast (,elem-type []) '{ ,@pure-list })
+;;       ,(LENGTH pure-list))))
+
+;; ;; there is nth function for element access of arrays
+;; ;; (DEFMACRO nth (index list)
+;; ;;   (LET ((list list))
+;; ;;     `((\.* nth ,list) ,index ,list)))
+
+;; (DEFMACRO head (list)
+;;   (LET ((list list))
+;;     `((\.* head ,list) ,list)))
+
+;; (DEFMACRO drop (index list)
+;;   (LET ((list list))
+;;     `((\.* drop ,list) ,index ,list)))
+
+;; (DEFMACRO tail (list)
+;;   (LET ((list list))
+;;     `((\.* tail ,list) ,list)))
+
+;; (DEFMACRO len (list)
+;;   (LET ((list list))
+;;     `((\.* len ,list) ,list)))
+
+;; (DEFMACRO hasLen (list desired)
+;;   (LET ((list list))
+;;     `((\.* hasLen ,list) ,list ,desired)))
+
+;; (DEFMACRO init (list)
+;;   (LET ((list list))
+;;     `((\.* init ,list) ,list)))
+
+;; (DEFMACRO last (list)
+;;   (LET ((list list))
+;;     `((\.* last ,list) ,list)))
+
+;; (DEFMACRO take (index list)
+;;   (LET ((list list))
+;;     `((\.* take ,list) ,index ,list)))
+
+;; (DEFMACRO push (elem list)
+;;   (LET ((list list))
+;;     `((\.* push ,list) ,elem ,list)))
+
+;; ;; (append l1 l2 l3 ...)
+;; ;; auto free temporary results
+;; (DEFMACRO append (llist rlist &REST lists)
+;;   (LET ((llist llist)
+;;         (rlist rlist)
+;;         (lists lists))
+;;     (IF lists
+;;         `(letin ((* tmp_list (append ,rlist ,@lists)))
+;;            ((\.* append ,llist) ,llist tmp_list))
+;;         `((\.* append ,llist) ,llist ,rlist))))

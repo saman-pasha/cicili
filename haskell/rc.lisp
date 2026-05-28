@@ -1,91 +1,346 @@
 
+;; Cell
+;; Keeps Cicili types where declared by 'decl-class'
+(generic decl-pure-Cell
+  (type a)
+
+  ;; dependencies
+  (decl-Maybe a)
+  
+  (decl-data (Cell type)
+    (= Alive (<> __h_Alive a)
+       (a * pointer) ; shared variable between instances should be a pointer
+       (size_t address))
+    (= Dead (<> Dead a))
+    
+    (func get  ((type life)) (out (<> Maybe a)))
+    (func take ((type * this)) (out (<> Maybe a)))
+    (func new  ((a pointer)) (out type)))
+  
+  ) ; decl-pure-Cell
+
+(generic impl-pure-Cell
+  (type a)
+
+  ;; dependencies
+  (impl-Maybe a)
+  
+  (impl-data (Cell type)
+    (= Alive (<> __h_Alive a)
+       (a * pointer)
+       (size_t address))
+    (= Dead (<> Dead a))
+
+    (func get ((type life))
+          (out (<> Maybe a))
+          (return (match life
+                    (Alive pointer address
+                           (case (and pointer (== (cast size_t (cof pointer)) address))
+                             ((<> Just a) (cof pointer))
+                             otherwise ((<> Nothing a))))
+                    (default ((<> Nothing a))))))
+    
+    (func take ((type * this))
+          (out (<> Maybe a))
+          (return (match this
+                    (* Alive pointer address
+                       (case (and pointer (== (cast size_t (cof pointer)) address))
+                         (letin* ((result ((<> Just a) (cof pointer))))
+                           (syslog! (printf "take Cell: %p\n" (cof pointer)))
+                           (set (cof pointer) nil)
+                           (free (cast (void *) pointer))
+                           (set (cof this) ((<> Dead a)))
+                           result)
+                         otherwise ((<> Nothing a))))
+                    (default ((<> Nothing a))))))
+
+    (func new ((a pointer))
+          (out type)
+          (return (letn ((auto holder . #'(cast (a *) (malloc (sizeof a *)))))
+                    (set (cof holder) pointer)
+                    ((<> __h_Alive a) holder (cast size_t pointer)))))
+    
+    (free (syslog! (printf "free Cell: %p\n" this))
+      (io this
+        (* Alive pointer address
+           (when (and pointer (== (cast size_t (cof pointer)) address))
+             (syslog! (printf "free Alive Cell: %p, %p, %zx\n" this (cof pointer) address))
+             ((<> free a) pointer)
+             (set (cof pointer) nil)
+             (free (cast (void *) pointer))
+             (set (cof this) ((<> Dead a)))))
+        (* Dead (syslog! (printf "free Dead Cell: %p\n" this))))))
+
+  ) ; impl-pure-Cell
+
+(generic decl-Cell
+  (a)
+
+  (decl-pure-Cell (<> Cell a) a)
+    
+  ) ; decl-Cell
+
+(generic impl-Cell
+  (a)
+
+  (impl-pure-Cell (<> Cell a) a)
+  
+  ) ; impl-Cell
+
+(generic import-Cell
+  (a)
+
+  ) ; import-Cell
+
+
 ;; Reference Counting
 ;; Multiple ownership
 ;; a could be an object or a pointer
-(generic decl-Rc (a)
+;; Keeps Cicili types where declared by 'decl-class'
+(generic decl-pure-Rc
+  (type
+   a)
 
-         (decl) (struct (<> __h Rc a class t))
-         (typedef (struct (<> __h Rc a class t)) * (<> Rc a))
-         
-         (decl) (func (<> free Rc a) (((<> Rc a) * this)))
-         (decl) (func (<> deref Rc a) (((<> Rc a) rc)) (out (<> Maybe a)))
-         (decl) (func (<> clone Rc a) (((<> Rc a) rc)) (out (<> Rc a)))
-         (decl) (func (<> new Rc a Pure) ((a pointer)) (out (<> Rc a)))
-         
-         ) ; decl-Rc
+  ;; dependencies
+  (decl-Maybe a)
+  
+  (decl-data (Rc type)
+    (= Hold (<> __h_Hold a)
+       (a * pointer) ; shared variable between instances should be a pointer
+       (int * count)
+       (size_t address))
+    (= Gone (<> Gone a))
+    
+    (func get   ((type rc)) (out (<> Maybe a)))
+    (func take  ((type * this)) (out (<> Maybe a)))
+    (func clone ((type rc)) (out type))
+    (func new   ((a pointer)) (out type)))
+  
+  ) ; decl-pure-Rc
 
-(generic impl-Rc (a)
+(generic impl-pure-Rc
+  (type
+   a)
 
-         ;; Rc is non-copyable so its definition should be hidden
-         (decl-class (Rc (<> Rc a))
-           (= Keep (<> Keep Rc a)
-              (a pointer)
-              (size_t authority) ; who owns the pointer and is accounted
-              (int * count)        ; shared variable between instances should be a pointer
-              (func destructor ((a * pointer)))))
+  ;; dependencies
+  (impl-Maybe a)
+  
+  (impl-data (Rc type)
+    (= Hold (<> __h_Hold a)
+       (a * pointer)
+       (int * count)
+       (size_t address))
+    (= Gone (<> Gone a))
 
-         (decl) (func (<> deref Rc a) (((<> Rc a) rc)) (out (<> Maybe a)))
-         (decl) (func (<> clone Rc a) (((<> Rc a) rc)) (out (<> Rc a)))
-         (decl) (func (<> new Rc a Pure) ((a pointer)) (out (<> Rc a)))
-
-         (impl-class (Rc (<> Rc a))
-           (= Keep (<> Keep Rc a)
-            (a pointer)
-            (size_t authority) ; who owns the pointer and is accounted
-            (int * count)      ; shared variable between instances should be a pointer
-            (func destructor ((a * pointer))))
-           (free  (progn
-                    ;; (printf "destructuring Rc: %p\n" this)
-                    (io this
-                      (* _ pointer authority count destructor
-                         (when (== (cast (size_t) this) authority)
-                           ;; (printf "destructuring authorized Rc: %p , %d\n" this (cof count))
-                           (case (== (cof count) 1) (progn
-                                                      (destructor (aof pointer))
-                                                      (free count)
-                                                      (free this))
-                                 otherwise          (progn
-                                                      (-- (cof count))
-                                                      (free this)))))))))
-         
-         (func (<> deref Rc a) (((<> Rc a) rc))
-               (out (<> Maybe a))
-               (return
-                 (match rc
-                   (* _ pointer authority count destructor
-                      (case (and (== (cast (size_t) rc) authority) (>= (cof count) 1)) ((<> Just a) pointer)
+    (func get ((type rc))
+          (out (<> Maybe a))
+          (return (match rc
+                    (Hold pointer count address
+                          (case (and pointer (== (cast size_t (cof pointer)) address) (> (cof count) 0))
+                            ((<> Just a) (cof pointer))
                             otherwise ((<> Nothing a))))
-                   (default ((<> Nothing a))))))
-               
-         (func (<> clone Rc a) (((<> Rc a) rc))
-               (out (<> Rc a))
-               (return
-                 (match rc
-                   (* _ pointer authority count destructor
-                      (case (== (cast (size_t) rc) authority)
-                        (progn
-                          (++ (cof count))
-                          (letn ((auto cloned_rc . #'((<> Keep Rc a) pointer 0 count destructor)))
-                            (set ($ (-> cloned_rc __h_data) Keep __h_1_mem) (cast (size_t) cloned_rc))
-                            ;; (io cloned_rc (* _ _ authority count
-                            ;;                  (printf "inside Clone rc: %p, %zx, %d\n" cloned_rc authority (cof count))))
-                            cloned_rc))
-                        otherwise rc))
-                   (default rc))))
-         
-         (func (<> new Rc a Pure) ((a pointer))
-               (out (<> Rc a))
-               (return
-                 (letn ((auto count . #'(cast (int *) (malloc (sizeof int)))))
-                   (set (cof count) 1)
-                   (letn ((auto cloned_rc . #'((<> Keep Rc a) pointer 0 count (<> free a))))
-                     (set ($ (-> cloned_rc __h_data) Keep __h_1_mem) (cast (size_t) cloned_rc))
-                     ;; (io cloned_rc (* _ _ authority count
-                     ;;                 (printf "inside Ctor rc: %p, %zx, %d\n" cloned_rc authority (cof count))))
-                     cloned_rc))))
+                    (default ((<> Nothing a))))))
+    
+    (func take ((type * this))
+          (out (<> Maybe a))
+          (return (match this
+                    (* Hold pointer count address
+                       (case (and pointer (== (cast size_t (cof pointer)) address))
+                         (letin* ((result ((<> Just a) (cof pointer))))
+                           (syslog! (printf "take Rc: %p\n" (cof pointer)))
+                           (if (== (cof count) 1)
+                               (block (set (cof count) 0)
+                                 (free (cast (void *) count))
+                                 (set (cof pointer) nil)
+                                 (free (cast (void *) pointer))
+                                 (set (cof this) ((<> Gone a))))
+                               (-- (cof count)))
+                           result)
+                         otherwise ((<> Nothing a))))
+                    (default ((<> Nothing a))))))
 
-         ) ; impl-Rc
+    (func clone ((type rc))
+          (out type)
+          (return (match rc
+                    (Hold pointer count address
+                          (case (and pointer (== (cast size_t (cof pointer)) address))
+                            (progn
+                              (++ (cof count))
+                              ((<> __h_Hold a) pointer count address))
+                            otherwise ((<> Gone a))))
+                    (default ((<> Gone a))))))
 
-(generic import-Rc (a)
+    (func new ((a pointer))
+          (out type)
+          (return (letn ((auto count . #'(cast (int *) (malloc (sizeof int))))
+                         (auto holder . #'(cast (a *) (malloc (sizeof a *)))))
+                    (set (cof count) 1)
+                    (set (cof holder) pointer)
+                    (syslog! (printf "new Hold Rc %s: %p, %zx\n" (symbol-name a) holder (cast size_t pointer)))
+                    ((<> __h_Hold a) holder count (cast size_t pointer)))))
+    
+    (free (syslog! (printf "free Rc: %p\n" this))
+      (io this
+        (* Hold pointer count address
+           (when (and pointer (== (cast size_t (cof pointer)) address))
+             (if (== (cof count) 1)
+                 (block (syslog! (printf "free Hold Rc %s: %p, %p, %d, %zx\n" (symbol-name a) this (cof pointer) (cof count) address))
+                   ((<> free a) pointer)
+                   (set (cof count) 0)
+                   (free (cast (void *) count))
+                   (set (cof pointer) nil)
+                   (free (cast (void *) pointer))
+                   (set (cof this) ((<> Gone a))))
+                 (-- (cof count)))))
+        (* Gone (syslog! (printf "free Gone Rc: %p\n" this))))))
 
-         ) ; import-Rc
+  ) ; impl-pure-Rc
+
+(generic decl-Rc
+  (a)
+
+  (decl-pure-Rc (<> Rc a) a)
+
+  ) ; decl-Rc
+
+(generic impl-Rc
+  (a)
+
+  (impl-pure-Rc (<> Rc a) a)
+
+  ); impl-Rc
+
+(generic import-Rc
+  (a)
+
+  ) ; import-Rc
+
+
+;; Atomic Reference Counting
+;; Multi-thread multiple ownership
+;; 'a' could be an object or a pointer
+;; Keeps Cicili types where declared by 'decl-class'
+;; source dependencies
+;; (import "lib/std/pthread/pthread.lisp")
+;; (include <pthread.h>)
+(generic decl-Arc
+  (a)
+
+  ;; dependencies
+  (decl-Maybe a)
+  
+  (decl-data (Rc (<> Arc a))
+    (= Hold (<> __h_AtomicHold a)
+       (a * pointer) ; shared variable between instances should be a pointer
+       (int * count)
+       (size_t address)
+       (pthread_mutex_t * mutex))
+    (= Gone (<> AtomicGone a))
+    
+    (func get   (((<> Arc a) arc)) (out (<> Maybe a)))
+    (func take  (((<> Arc a) * this)) (out (<> Maybe a)))
+    (func clone (((<> Arc a) arc)) (out (<> Arc a)))
+    (func new   ((a pointer) (pthread_mutex_t * mutex)) (out (<> Arc a)))
+    (func lock  (((<> Arc a) arc)
+                 (func alive_callback ((a pointer)))
+                 (func dead_callback  ()))))
+  
+  ) ; decl-Arc
+
+(generic impl-Arc
+  (a)
+
+  ;; dependencies
+  (impl-Maybe a)
+  
+  (impl-data (Rc (<> Arc a))
+    (= Hold (<> __h_AtomicHold a)
+       (a * pointer)
+       (int * count)
+       (size_t address)
+       (pthread_mutex_t * mutex))
+    (= Gone (<> AtomicGone a))
+
+    (func get (((<> Arc a) arc))
+          (out (<> Maybe a))
+          (return (match arc
+                    (Hold pointer count address mutex
+                          (lockn mutex
+                            (case (and pointer (== (cast size_t (cof pointer)) address) (> (cof count) 0))
+                              ((<> Just a) (cof pointer))
+                              otherwise ((<> Nothing a)))))
+                    (default ((<> Nothing a))))))
+    
+    (func take (((<> Arc a) * this))
+          (out (<> Maybe a))
+          (return (match this
+                    (* Hold pointer count address mutex
+                       (lockn mutex
+                         (case (and pointer (== (cast size_t (cof pointer)) address))
+                           (letin* ((result ((<> Just a) (cof pointer))))
+                             (syslog! (printf "take Arc: %p\n" (cof pointer)))
+                             (if (== (cof count) 1)
+                                 (block (set (cof count) 0)
+                                   (free (cast (void *) count))
+                                   (set (cof pointer) nil)
+                                   (free (cast (void *) pointer))
+                                   (set (cof this) ((<> AtomicGone a))))
+                                 (-- (cof count)))
+                             result)
+                           otherwise ((<> Nothing a)))))
+                    (default ((<> Nothing a))))))
+
+    (func clone (((<> Arc a) arc))
+          (out (<> Arc a))
+          (return (match arc
+                    (Hold pointer count address mutex
+                          (lockn mutex
+                            (case (and pointer (== (cast size_t (cof pointer)) address))
+                              (progn
+                                (++ (cof count))
+                                ((<> __h_AtomicHold a) pointer count address mutex))
+                              otherwise ((<> AtomicGone a)))))
+                    (default ((<> AtomicGone a))))))
+
+    ;; needs recursive mutex
+    (func new ((a pointer) (pthread_mutex_t * mutex))
+          (out (<> Arc a))
+          (return (letn ((auto count . #'(cast (int *) (malloc (sizeof int))))
+                         (auto holder . #'(cast (a *) (malloc (sizeof a *)))))
+                    (set (cof count) 1)
+                    (set (cof holder) pointer)
+                    ((<> __h_AtomicHold a) holder count (cast size_t pointer) mutex))))
+
+    (func lock (((<> Arc a) arc)
+                (func alive_callback ((a pointer)))
+                (func dead_callback  ()))
+          (io arc
+            (Hold pointer count address mutex
+                  (lock mutex
+                    (if (and pointer (== (cast size_t (cof pointer)) address) (> (cof count) 0))
+                        (alive_callback (cof pointer))
+                        (dead_callback))))
+            (Gone (dead_callback))))
+    
+    (free (syslog! (printf "free Arc: %p\n" this))
+      (io this
+        (* Hold pointer count address mutex
+           (lock mutex
+             (when (and pointer (== (cast size_t (cof pointer)) address))
+               (if (== (cof count) 1)
+                   (block (syslog! (printf "free Hold Arc %s: %p, %p, %zx\n" (symbol-name a) this (cof pointer) address))
+                     ((<> free a) pointer)
+                     (set (cof count) 0)
+                     (free (cast (void *) count))
+                     (set (cof pointer) nil)
+                     (free (cast (void *) pointer))
+                     (set (cof this) ((<> AtomicGone a))))
+                   (-- (cof count))))))
+        (* Gone (syslog! (printf "free Gone Arc: %p\n" this))))))
+  
+  ) ; impl-Arc
+
+(generic import-Arc
+  (a)
+
+  ) ; import-Arc

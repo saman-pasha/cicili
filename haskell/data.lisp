@@ -86,7 +86,7 @@
                                    (declare ,ct-name)
                                    ,(LIST 'declare (IF (= i (1- (LENGTH ctors))) ; default ctor case
                                                        '_
-                                                       (INTERN (FORMAT NIL "_~A" i)))))))
+                                                       (INTERN (FORMAT NIL "_~A" (- (LENGTH ctors) i 1))))))))
                           (range-h (LENGTH ctors)) ctors)
            (declare __h_data)))
        
@@ -124,7 +124,8 @@
 
        ;; destructor
        (decl) (func (<> free ,name) ((,name * this)))
-       )))
+       ))
+  ) ; decl-data
 
 (DEFMACRO impl-data (name ctor &REST ctors)
   (SETQ name (MACROEXPAND name))
@@ -207,21 +208,24 @@
                        (IF (NULL params)
                            `(func ,ct-name ()
                                   (out ,name)
-                                  (return (cast ,name '{
-                                                ((<> get ,name _H_Table))
-                                                ,(make-data-h-type-name
-                                                     (IF (= i (1- (LENGTH ctors))) '_ (CAAR ct)))
-                                                })))
+                                  (let ((,name instance . #'(cast ,name '{
+                                                                  ((<> get ,name _H_Table))
+                                                                  ,(make-data-h-type-name
+                                                                       (IF (= i (1- (LENGTH ctors))) '_ (CAAR ct)))
+                                                                  })))
+                                    (return instance)))
                            `(func ,ct-name ,real-params
                                   (out ,name)
-                                  (return (cast ,name '{
-                                                ((<> get ,name _H_Table))
-                                                ,(make-data-h-type-name (IF (= i (1- (LENGTH ctors))) '_ (CAAR ct)))
-                                                ,(INTERN (FORMAT NIL "$__h_data$~A"
-                                                                 (IF (= i (1- (LENGTH ctors))) '_ (CAAR ct))))
-                                                '{ ,@(MAPCAR #'(LAMBDA (param) (NTH 4 param)) params) }
-                                                }))))))
-                 (range-h (LENGTH ctors)) ctors)))) ; impl-data
+                                  (let ((,name instance . #'(cast ,name '{
+                                                                  ((<> get ,name _H_Table))
+                                                                  ,(make-data-h-type-name (IF (= i (1- (LENGTH ctors))) '_ (CAAR ct)))
+                                                                  ,(INTERN (FORMAT NIL "$__h_data$~A"
+                                                                                   (IF (= i (1- (LENGTH ctors))) '_ (CAAR ct))))
+                                                                  '{ ,@(MAPCAR #'(LAMBDA (param) (NTH 4 param)) params) }
+                                                                  })))
+                                    (return instance))))))
+                 (range-h (LENGTH ctors)) ctors)))
+  ) ; impl-data
 
 (DEFMACRO import-data (name ctor &REST ctors)
   

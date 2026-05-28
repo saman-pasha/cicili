@@ -1,6 +1,7 @@
 (in-package :cicili)
 
 (defun specify-expr (def)
+  (setq def (expand-macros def))
   (cond ((key-eq  def '|nil|) (specify-nil-expr))
         ((atom    def)        (specify-atom-expr def))
         (t (let ((func (car def)))
@@ -139,6 +140,7 @@
 		                      ((key-eq func '|register|)     (push form attributes) nil)
 		                      ((key-eq func '|extern|)       (push form attributes) nil)
 		                      ((key-eq func '|volatile|)     (push form attributes) nil)
+		                      ((key-eq func '|auto|)         (push form attributes) nil)
 		                      ((key-eq func '|thread-local|) (push form attributes) nil)
 		                      ((key-eq func '|resolve|)      (push form attributes) nil)
 		                      ((key-eq func '|defer|)        (push form attributes) nil)

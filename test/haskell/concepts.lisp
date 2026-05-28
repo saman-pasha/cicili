@@ -2,24 +2,25 @@
 (source "concepts.c" (:std #t :compile #t :link "-L{$CCL} -lhaskell.o -L{$CWD} concepts.o -o main")
         (include "../../haskell.h")
 
-        (generic define-reduce (a)
-                 
-                 (func (<> reduce (<> List a)) (((<> List a) list))
-                       (io list
-                         (* Cons head (= t * Cons head1 (* Cons head2 tail))
-                            (block
-                                (printf "%c%c%c " head head1 head2)
-                              ((<> reduce (<> List a)) t)))
-                         (* Cons head (= t * Cons head1 tail)
-                            (block
-                                (printf "%c%c " head head1)
-                              ((<> reduce (<> List a)) t)))
-                         (* Cons head tail
-                            (block
-                                (printf "%c " head)
-                              ((<> reduce (<> List a)) tail)))))
+        (generic define-reduce
+          (a)
+          
+          (func (<> reduce (<> List a)) (((<> List a) list))
+                (io list
+                  (* Cons head (= t * Cons head1 (* Cons head2))
+                     (block
+                         (printf "%c%c%c " head head1 head2)
+                       ((<> reduce (<> List a)) t)))
+                  (* Cons head (= t * Cons head1)
+                     (block
+                         (printf "%c%c " head head1)
+                       ((<> reduce (<> List a)) t)))
+                  (* Cons head tail
+                     (block
+                         (printf "%c " head)
+                       ((<> reduce (<> List a)) tail)))))
 
-                 ) ; decl-reduce
+          ) ; define-reduce
 
         (define-reduce char)
 
@@ -32,42 +33,25 @@
                   (return ((<> Left String int) (new^String "zero division")))
                   (return ((<> Right String int) (/ x y)))))
 
-        (generic ap-a-to-b (a b)
-                 
-                 ;; ap List
-                 ;; List (int -> int) -> List int -> List int
-                 (decl-Applicative-List (<> List a b) a b)
-                 (impl-Applicative-List (<> List a b) a b)
+        (generic ap-a-to-b
+          (a b)
+          
+          ;; ap List
+          ;; List (int -> int) -> List int -> List int
+          (decl-Applicative-List (<> List a b) a b)
+          (impl-Applicative-List (<> List a b) a b)
 
-                 ;; ap Maybe
-                 ;; Maybe (int -> int) -> Maybe int -> Maybe int
-                 (decl-Applicative-Maybe (<> Maybe a b) a b)
-                 (impl-Applicative-Maybe (<> Maybe a b) a b)
-                 
-                 ) ; ap-a-to-b
+          ;; ap Maybe
+          ;; Maybe (int -> int) -> Maybe int -> Maybe int
+          (decl-Applicative-Maybe (<> Maybe a b) a b)
+          (impl-Applicative-Maybe (<> Maybe a b) a b)
+          
+          ) ; ap-a-to-b
 
         (ap-a-to-b int int)
         (import-List new^List^int^to^int^t (<> List (<> int to int t)) (<> int to int t))
         
-        (main
-            ;; test Rc
-            ;; no needs to manage lists pointers
-            ;; use clone Rc to clone each Rc you want to use anywhere
-            ;; rc authority is the address who can clone or destroy the wrapped object 
-            (rc ((rc0 Rc^List^int (new^List^int '{ 1 2 3 4 }))) ; has authority
-              
-              (letin* ((rc1 (clone^Rc^List^int rc0) free^Rc^List^int)) ; has authority
-                
-                ;; (let ((auto rc2 . rc1)) ; pointer copy access same rc
-                ;;   ((<> free Rc List int) (aof rc2)))
-                
-                (format #t "list0:\n")
-                (io (deref^Rc^List^int rc0) (_ list0 (show^List^int list0)))
-                (putchar #\Newline)
-                
-                (format #t "list1:\n")
-                (io (deref^Rc^List^int rc1) (_ list1 (show^List^int list1)))
-                (putchar #\Newline)))
+        (main (format #t "concepts test\n")
 
           ;; test Either
           ;; error case
@@ -88,14 +72,37 @@
                       (free^String (aof e))))
             (Right a (printf "division result: %d\n" a)))
 
+          ;; test Rc
+          ;; no needs to manage lists pointers
+          ;; use clone Rc to clone each Rc you want to use anywhere
+          (rc ((rc0 Rc^List^int (new^List^int '{ 1 2 3 4 })))
+            
+            ;; ((<> get Rc List int) rc0)
+            (io (get^Rc^List^int rc0)
+              (Just list0 
+                (block (format #t "list from rc0: ")
+                  (show^List^int list0)
+                  (putchar #\Newline))))
+            
+            (letin* ((rc1 (clone^Rc^List^int rc0) free^Rc^List^int))
+              
+              ;; (let ((auto rc2 . rc1)) ; pointer copy access same rc
+              ;;   ((<> free Rc List int) (aof rc2)))
+              
+              (io (get^Rc^List^int rc1)
+                (Just list1 
+                  (block (format #t "list from rc1: ")
+                    (show^List^int list1)
+                    (putchar #\Newline))))))
+          
           ;; String is a List^char
           (letin ((* chrlst (new^String "Hello List!"))
-                  (m0     (nth^List^char 3  chrlst))
-                  (m1     (nth^List^char 15 chrlst)))
+                  (m0 (nth^String 3  chrlst))
+                  (m1 (nth^String 15 chrlst)))
 
             (show^String chrlst)
             (putchar #\Newline)
-            (reduce^List^char chrlst)
+            (reduce^List^char (static-cast List^char chrlst))
             (putchar #\Newline)
             
             (io m0
@@ -109,26 +116,26 @@
 
           (format #t "Sum of List (mconcat) of '{ 1 3 5 7 } is: %d\n"
                   (match (get^Monoid^Sum^int)
-                    (_ mappend mempty mconcat
-                       (letin ((* l ((<> new List int) '{ 1 3 5 7 })))
-                         (format #t "Sum mempty is: %d\n" mempty)
-                         (format #t "left identity (%d 12) is: %d\n" mempty (mappend mempty 12))
-                         (format #t "right identity (12 %d) is: %d\n" mempty (mappend 12 mempty))
-                         (format #t "associativity: (5 (7 12)) is: %d and ((5 7) 12)) is: %d\n"
-                                 (mappend 5 (mappend 7 12)) (mappend (mappend 5 7) 12))
-                         (mconcat l)))
+                    (Monoid mappend mempty mconcat
+                            (letin ((* l ((<> new List int) '{ 1 3 5 7 })))
+                              (format #t "Sum mempty is: %d\n" mempty)
+                              (format #t "left identity (%d 12) is: %d\n" mempty (mappend mempty 12))
+                              (format #t "right identity (12 %d) is: %d\n" mempty (mappend 12 mempty))
+                              (format #t "associativity: (5 (7 12)) is: %d and ((5 7) 12)) is: %d\n"
+                                      (mappend 5 (mappend 7 12)) (mappend (mappend 5 7) 12))
+                              (mconcat l)))
                     (default -1)))
 
           (format #t "Product of List (mconcat) of '{ 1 3 5 7 } is: %d\n"
                   (match (get^Monoid^Product^int)
-                    (_ mappend mempty mconcat
-                       (letin ((* l ((<> new List int) '{ 1 3 5 7 })))
-                         (format #t "Product mempty is: %d\n" mempty)
-                         (format #t "left identity (%d 12) is: %d\n" mempty (mappend mempty 12))
-                         (format #t "right identity (12 %d) is: %d\n" mempty (mappend 12 mempty))
-                         (format #t "associativity: (5 (7 12)) is: %d and ((5 7) 12)) is: %d\n"
-                                 (mappend 5 (mappend 7 12)) (mappend (mappend 5 7) 12))
-                         (mconcat l)))
+                    (Monoid mappend mempty mconcat
+                            (letin ((* l ((<> new List int) '{ 1 3 5 7 })))
+                              (format #t "Product mempty is: %d\n" mempty)
+                              (format #t "left identity (%d 12) is: %d\n" mempty (mappend mempty 12))
+                              (format #t "right identity (12 %d) is: %d\n" mempty (mappend 12 mempty))
+                              (format #t "associativity: (5 (7 12)) is: %d and ((5 7) 12)) is: %d\n"
+                                      (mappend 5 (mappend 7 12)) (mappend (mappend 5 7) 12))
+                              (mconcat l)))
                     (default -1)))
 
           ;; use mempty, mappend, mconcat without get datatype
@@ -142,13 +149,13 @@
               (putchar #\Newline)))
 
           (io (get^Semigroup^String^char)
-            (_ mappend
-               (letin* ((s1 ((<> new String) "Hello "))
-                        (s2 ((<> new String) "Cicili!")))
-                 (letin ((* result (mappend s1 s2))) ; frees all at once because of using append they are chained together
-                   (format #t "Concat of Strings (mappend Semigroup) of 'Hello ' and 'Cicili' is:\n")
-                   (show^String result)
-                   (putchar #\Newline)))))
+            (Semigroup mappend
+              (letin* ((s1 ((<> new List^char) "Hello " 6))
+                       (s2 ((<> new List^char) "Cicili!" 7)))
+                (letin ((* result (mappend s1 s2))) ; frees all at once because of using append they are chained together
+                  (format #t "Concat of Strings (mappend Semigroup) of 'Hello ' and 'Cicili' is:\n")
+                  (show^String (static-cast String result))
+                  (putchar #\Newline)))))
 
           ;; using Functor datatype or fmap directly
           ;; apply irreducible function over list
@@ -220,13 +227,13 @@
           ;; test applicative over List
           (where ((fmap-mul-3 '(lambda ((int value)) (out int) (return (* 3 value))))
                   (fmap-add-4 '(lambda ((int value)) (out int) (return (+ 4 value)))))
-              
+            
             (letin ((* lf  ((<> new List (<> int to int t)) '{ fmap-mul-3 fmap-add-4 }))
                     (* li  ((<> new List int) '{ 1 2 3 4 5 6 }))
                     (* afi ($> (<> ap List int int) lf li)))
-                
-                (format #t "applicative [(*3) (+4)] of { 1 2 3 4 5 6 } is:\n")
-                (show^List^int afi)
-                (putchar #\Newline)))
+              
+              (format #t "applicative [(*3) (+4)] of { 1 2 3 4 5 6 } is:\n")
+              (show^List^int afi)
+              (putchar #\Newline)))
 
           ))

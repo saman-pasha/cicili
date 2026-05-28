@@ -3,6 +3,15 @@
 (DEFUN import (file-name &OPTIONAL pack init-args)
   (CICILI:LOAD-MACRO-FILE file-name pack init-args (OR *LOAD-TRUENAME* *COMPILE-FILE-TRUENAME*)))
 
+(DEFMACRO make (&KEY (std '#f) (haskell '#f) (compile '#f) (link '#f))
+  (LET ((std std)
+        (compile compile)
+        (link link))
+    `(,@(IF std (LIST ':std std) (LIST '#f))
+        ,@(IF haskell (LIST ':haskell haskell) (LIST '#f))
+        ,@(IF compile (LIST ':compile compile) (LIST '#f))
+        ,@(IF link (LIST ':link link) (LIST '#f)))))
+
 ;;; main simple forms
 (DEFMACRO main (&REST body)
   `(func main () (out int) ,@body))
@@ -10,15 +19,50 @@
 (DEFMACRO main* (&REST body)
   `(func main ((int argc) (char * argv [])) (out int) ,@body))
 
-(DEFMACRO generic (macro types &REST body)
-  `(DEFMACRO ,macro (&REST args)
-     (LET ((types ',types)
-           (body ',body))
-       (UNLESS (= (LENGTH args) (LENGTH types))
-         (ERROR (FORMAT NIL "unmatch generic parameters and arguments: ~A ~A" (QUOTE ,macro) args)))
-       (DOTIMES (i (LENGTH types))
-         (SETQ body (SUBST (NTH i args) (NTH i types) body)))
-       `($$$ ,@body)))) ; $$$ for replace extracted
+;; 4 levels debugging facility
+(DEFMACRO syslog! (&REST body)
+  (IF (> CICILI::*DEBUG-WARNINGS* 3)
+      `(progn ,@body)
+      `($$$ )))
+
+;; 3 levels debugging facility
+(DEFMACRO debug! (&REST body)
+  (IF (> CICILI::*DEBUG-WARNINGS* 2)
+      `(progn ,@body)
+      `($$$ )))
+
+(DEFMACRO warn! (&REST body)
+  (IF (> CICILI::*DEBUG-WARNINGS* 1)
+      `(progn ,@body)
+      `($$$ )))
+
+(DEFMACRO info! (&REST body)
+  (IF (> CICILI::*DEBUG-WARNINGS* 0)
+      `(progn ,@body)
+      `($$$ )))
+
+;; prints everythings to stderr instead of stdout temporary
+(DEFMACRO error! (&REST body)
+  `(letn ((auto tmp_stdout . stdout))
+     (set stdout stderr)
+     ,@body
+     (set stdout tmp_stdout)))
+
+(DEFMACRO analyze! (name pointer)
+  (IF (AND CICILI::*DEBUG-ANALYZE*
+        (NOT (STR:CONTAINSP"__h_StackItem" (SYMBOL-NAME name))))
+      `(__h_stack_push ,pointer)
+      pointer))
+
+(DEFMACRO analyze-data! (&REST body)
+  (IF CICILI::*DEBUG-ANALYZE*
+      `(let ((char * __h_stack_buffer . #'(calloc 2048 (sizeof char)))
+             (CFile __h_stack_out . #'(fmemopen __h_stack_buffer 2048 "w+")))
+         ,@body
+         (fclose __h_stack_out)
+         (__h_stack_push_data __h_stack_buffer)
+         (__h_stack_push_separator))
+      `($$$ )))
 
 (DEFMACRO <> (&REST body)
   (INTERN (FORMAT NIL "~{~A~^^~}"
@@ -27,6 +71,26 @@
                                   reso
                                   (MACROEXPAND reso)))
                           body))))
+
+(DEFMACRO generic (macro types &REST body)
+  `(DEFMACRO ,macro (&REST args)
+     (LET ((types ',types)
+           (body ',body))
+       (UNLESS (= (LENGTH args) (LENGTH types))
+         (ERROR (FORMAT NIL "unmatch generic parameters and arguments: ~A ~A" (QUOTE ,macro) args)))
+       (DOTIMES (i (LENGTH types))
+         (LET ((arg (NTH i args)))
+           (SETQ body (SUBST (IF (AND (LISTP arg) (EQUAL (CAR arg) '<>)) (MACROEXPAND arg) arg)
+                        (NTH i types) body))))
+       `($$$ ,@body)))) ; $$$ for replace extracted
+
+(DEFMACRO inline-generic (args body)
+  (LET ((body body))
+    (DOLIST (arg args)
+      (LET ((dst (CAR arg))
+            (src (CADR arg)))
+        (SETQ body (SUBST (IF (AND (LISTP src) (EQUAL (CAR src) '<>)) (MACROEXPAND src) src) dst body))))
+    body))
 
 (DEFMACRO shared-func-name (struct method)
   (INTERN (FORMAT NIL "~A_s_~A" struct method)))
@@ -55,11 +119,12 @@
   `(if (not ,cond) (block ,@body)))
 
 ;;; loops over any indexable structures in C for each item []
-(DEFMACRO for-each (counter      ; name of counter variable
-                    item         ; name of iterator pointer
-                    array        ; array to be traveresed or pointer to its one of items
-                    length       ; length of array or count of loop should go through
-                    &REST body)  ; what to do each turn
+;; name of counter variable
+;; name of iterator pointer
+;; array to be traveresed or pointer to its one of items
+;; length of array or count of loop should go through
+;; what to do each turn
+(DEFMACRO for-each (counter item array length &REST body)
   `(let (((typeof (nth 0 ,array)) * ,item . ,(IF (LISTP array) `(FUNCTION ,array) array)))
      (for ((int ,counter . 0))
        (< ,counter ,length)
@@ -68,11 +133,12 @@
        ,@body)))
 
 ;;; loops over any indexable constant structures in C for each item []
-(DEFMACRO for-each-const (counter      ; name of counter variable
-                          item         ; name of iterator pointer
-                          array        ; array to be traveresed or pointer to its one of items
-                          length       ; length of array or count of loop should go through
-                          &REST body)  ; what to do each turn
+;; name of counter variable
+;; name of iterator pointer
+;; array to be traveresed or pointer to its one of items
+;; length of array or count of loop should go through
+;; what to do each turn
+(DEFMACRO for-each-const (counter item array length &REST body)
   `(let ((const (typeof (nth 0 ,array)) * ,item . ,(IF (LISTP array) `(FUNCTION ,array) array)))
      (for ((int ,counter . 0))
        (< ,counter ,length)
@@ -90,13 +156,13 @@
   (LET* ((name (GENSYM "ciciliDefer"))
          (pname (INTERN (FORMAT NIL "~A_ptr" name))))
     `($$$
-         (defer ()
-           ,@(MAP 'LIST #'(LAMBDA (var)
-                            (MULTIPLE-VALUE-BIND (const type modifier const-ptr variable array-def)
-                                (CICILI:SPECIFY-TYPE< var)
-                              `(var ,@var . (FUNCTION (-> ,pname ,variable)))))
-                  var-list)
-           ,@body)
+       (defer ()
+         ,@(MAP 'LIST #'(LAMBDA (var)
+                          (MULTIPLE-VALUE-BIND (const type modifier const-ptr variable array-def)
+                              (CICILI:SPECIFY-TYPE< var)
+                            `(var ,@var . (FUNCTION (-> ,pname ,variable)))))
+                var-list)
+         ,@body)
        (var '(,@var-list) ,name . 
             '(,@(MAP 'LIST #'(LAMBDA (var)
                                (MULTIPLE-VALUE-BIND (const type modifier const-ptr variable array-def)
@@ -134,7 +200,7 @@
                   (member func routine (((struct ,sname) * context) ,@(CADADR lambda))
                           ,(IF (EQL (CAR (CAR body)) 'out) (CAR body) (LIST 'out 'void)))
                   (struct ,@members (declare context)))
-       (cast (struct ,sname) '{ '(lambda* (,sname . ,lname)
+       (cast (struct ,sname) '{ '(lambda* (<> ,sname ,lname)
                                   (((struct ,sname) * context) ,@(CADADR lambda)) ,@body)
              '{ ,@values } }))))
 
@@ -156,12 +222,12 @@
 (DEFMACRO async-main (&REST body)
   `((async-handle-def)
     (main ,@body
-      (-> __ciciliA_Coordinator_ loop))))
+          (-> __ciciliA_Coordinator_ loop))))
 
 (DEFMACRO async-main* (&REST body)
   `((async-handle-def)
     (main* ,@body
-      (-> __ciciliA_Coordinator_ loop))))
+           (-> __ciciliA_Coordinator_ loop))))
 
 ;;; non-local exits: done, yield, error
 ;;; done calls done_callback and returns from function
@@ -173,13 +239,16 @@
         (body body))
     
     `(macrolet ((yield (callback &REST args)
-                  `(block (,callback ,@args)
+                  `(block
+                     (,callback ,@args)
                      (longjmp ($ __ciciliA_Coordinator_ main) -1)))
                 (done (callback &REST args)
-                  `(block (,callback ,@args)
+                  `(block
+                     (,callback ,@args)
                      (return 0)))
                 (error (callback &REST args)
-                  `(block (,callback ,@args)
+                  `(block
+                     (,callback ,@args)
                      (return 0)))
                 )
 
@@ -201,9 +270,9 @@
 ;;; optional helper macro will auto defer all vars
 (DEFMACRO defer-let (var-list &REST body)
   `(block ,@(MAP 'LIST #'(LAMBDA (var)
-                            `((defer #t) (var ,@var)))
-                  var-list)
-     ,@body))
+                           `((defer #t) (var ,@var)))
+                 var-list)
+          ,@body))
 
 ;;; list should have a len member
 (DEFMACRO dolist (vars &REST body)
@@ -231,3 +300,17 @@
 
 (DEFMACRO null (value)
   `(== ,value nil))
+
+;; compile-time symbol to C "constant string"
+(DEFMACRO symbol-name (symb)
+  `(QUASIQUOTE (SUBSTITUTE #\_ #\^ (SYMBOL-NAME ',(CICILI::EXPAND-MACROS symb)))))
+
+(DEFUN find-subseq (itm lst &OPTIONAL &KEY (test #'EQUAL))
+  (DO* ((lst (CDR lst) (CDR lst))
+        (elm (CAR lst) (IF (LISTP lst) (CAR lst) lst)))
+       ((OR (ATOM lst) (NULL elm)) (FUNCALL test itm elm))
+    (IF (LISTP elm)
+        (LET ((res (find-subseq itm elm :test test)))
+          (IF res (RETURN-FROM find-subseq T) NIL))
+        (WHEN (FUNCALL test itm elm)
+          (RETURN-FROM find-subseq T)))))

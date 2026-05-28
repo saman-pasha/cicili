@@ -30,9 +30,10 @@
 (defun compile-ast (targets ast-file-name)
   (setf *gensym-counter* 100)
   (dolist (target targets)
-    (let* ((tname   (car target))
-	       (ir      nil)
-           (macro (if (symbolp tname) (gethash (symbol-name tname) *macros*) nil)))
+    (let* ((tname (car target))
+	       (ir    nil)
+           (macro (if (symbolp tname) (gethash (symbol-name tname) *macros*) nil))
+           (args  (expand-macros (nth 2 target))))
       (cond ((key-eq tname '|import|)
              (load-macro-file (cadr target) (caddr target) (cadddr target) ast-file-name))
 
@@ -52,7 +53,7 @@
                     (unless *only-link* (setq ir (specify-target target)))
                     (setf *target-spec* ir)
                     (setf *target-file* (file-namestring (nth 1 target)))
-                    (setf *cpp* (and (getf (nth 2 target) ':|cpp|) (key-eq (getf (nth 2 target) ':|cpp|) '|true|)))
+                    (setf *cpp* (and (getf args ':|cpp|) (key-eq (getf args ':|cpp|) '|true|)))
 
                     (let ((file (nth 1 target))
                           (globals nil)
@@ -92,7 +93,7 @@
                         ;; manipulate ast
                         (setq has-error nil)
                         (let ((start-time (get-universal-time)))
-	                      (compile-target file (nth 2 target) ir globals stdout stderr t (key-eq tname '|header|))
+	                      (compile-target file args ir globals stdout stderr t (key-eq tname '|header|))
                           (display "C compiling time:" (- (get-universal-time) start-time) "s" #\Newline))
                         
                         ;; iterate over errors
@@ -213,7 +214,7 @@
                         (setq stderr  (make-string-output-stream))
                         (setf *gensym-counter* 100)
 
-	                    (compile-target (nth 1 target) (nth 2 target) ir globals stdout stderr nil nil)
+	                    (compile-target (nth 1 target) args ir globals stdout stderr nil nil)
 
                         (with-input-from-string (err-stream (get-output-stream-string stderr))
                             (do ((s (read-line err-stream nil nil) (read-line err-stream nil nil)))
@@ -274,7 +275,7 @@
             (set-macro-character #\| nil nil)
             (let ((*readtable* (copy-readtable)))
 	          (setf (readtable-case *readtable*) :preserve)
-              (CL:LOAD FILE-NAME))
+              (CL:LOAD (file-namestring file-name)))
             (set-macro-character #\| function non-terminating-p))
           (use-package package))
         
@@ -311,6 +312,21 @@
                   (t (error (format nil "unknown form ~A" tname))))))))))
 
 (set-dispatch-macro-character
+    #\# #\Space #'(lambda (stream char1 char2)
+		            (declare (ignore stream char1 char2))
+		            (read-from-string ":EOL")))
+
+(set-dispatch-macro-character
+    #\# #\Tab #'(lambda (stream char1 char2)
+		          (declare (ignore stream char1 char2))
+		          (read-from-string ":EOL")))
+
+(set-dispatch-macro-character
+    #\# #\Linefeed #'(lambda (stream char1 char2)
+		               (declare (ignore stream char1 char2))
+		               (read-from-string ":EOL")))
+
+(set-dispatch-macro-character
     #\# #\t #'(lambda (stream char1 char2)
 		        (declare (ignore stream char1 char2))
 		        (read-from-string "true")))
@@ -343,3 +359,11 @@
 			        ((and (char= char #\") (or (null prev-char) (not (char= prev-char #\\)))) nil)
 			      (write char :stream out :escape nil)
                   (setq prev-char char))))))
+
+;; (defvar *semicolon-macro-character* (get-macro-character #\;))
+;; (set-macro-character #\; #'(lambda (stream char)
+;; 		                     ;; (declare (ignore stream))
+;;                              (if (char= (read-char stream nil nil) #\Newline)
+;; 		                         (read-from-string ":EOL")
+;;                                  (funcall *semicolon-macro-character* stream char)))
+;;                      nil)

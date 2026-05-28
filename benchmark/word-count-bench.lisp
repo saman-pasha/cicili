@@ -10,7 +10,6 @@
         (include <errno.h>)
         (include <time.h>)
         
-        (typedef char * cstr_t)
         (typedef FILE * cfile_t)
 
         (decl-Either String cfile_t) ; for header file
@@ -19,11 +18,14 @@
         ;; https://en.cppreference.com/w/c/io/fgets
         (func writeTmpFile ()
               (out Either^String^cfile_t) ; Haskell error handling model in Cicili
-
+              ;; uncomment to raise custom error
+              ;; (return (Left^String^cfile_t (new^String "some custom error!")))
+              
               (let ((FILE * tmpf . #'(tmpfile)))
 
                 (when (== tmpf nil)
-                  (Left^String^cfile_t (strerror errno))) ; on failure returns error number
+                  (let ((auto err . #'(strerror errno)))
+                    (return (Left^String^cfile_t (new^String err (strlen err)))))) ; on failure returns error number
                 
                 (fputs "Alan Turing\n"      tmpf)
                 (fputs "John von Neumann\n" tmpf)
@@ -32,16 +34,17 @@
                 ;; ((<> Right String^cfile_t) tmpf) ! Notice ^ works as (<>) clause
                 (return (Right^String^cfile_t tmpf)))) ; on success returns FILE*
 
+        ;; recursive
         ;; a helper to safely read a file as List of String s
         (func safeReadFile ((FILE * file))
               (out List^String) ; List^String defined in prelude
               (return
-                (case (== file nil) (Empty^String)
+                (case (== file nil) (Nil^String)
                       otherwise     (letn ((char buf [8]) ; letn returns last clause
                                            (size_t count . 0))
                                       (set count (fread buf (sizeof char) (sizeof buf) file))
-                                      (case (== count 0)           (Empty^String)
-                                            (< count (sizeof buf)) (Cons^String (new^String buf count) (Empty^String))
+                                      (case (== count 0)           (Nil^String)
+                                            (< count (sizeof buf)) (Cons^String (new^String buf count) (Nil^String))
                                             otherwise              (Cons^String (new^String buf count) (safeReadFile file)))
                                       ))))
         
@@ -58,18 +61,14 @@
         (func iter_words ((List^String list))
               (io list
                 (* Cons str tail
-                   (block
-                     (show^String str)
-                     (printf " Word count: %d\n" (count_words str))
+                   (block (info! (show^String str)
+                            (printf " Word count: %d\n" (count_words str)))
                      (iter_words tail)
-                     (free^String (aof str))))
-                ;; last element of a list is rcgallocated too
-                ;; = in io and match makes an alias for whole object
-                (= empty_str default (free^String (aof empty_str)))))
+                     (free^String (aof str))))))
 
-        ;; to auto deferment file close
+        ;; for auto deferment file close
         (func file_close ((FILE ** file_ptr))
-              (printf "file closed deferred\n")
+              (info! (printf "file closed deferred\n"))
               (fclose (cof file_ptr)))
         
         (main
@@ -79,19 +78,18 @@
                    
                    (letin* ((tmpf (writeTmpFile)))
                      (io tmpf
-                       (Left  error (letin* ((error error free^String))
-                                      (printf "File opening error: ")
-                                      (show^String error)
-                                      (putchar #\Newline)))
+                       (Left error (letin* ((error error free^String))
+                                     (error! (printf "File opening error: ")
+                                       (show^String error)
+                                       (putchar #\Newline))))
                        (Right file
                               (letin* ((file file file_close))
                                 (rewind file)
-                                (io (safeReadFile file)
-                                  (* Empty (printf "Error: nothing to read\n"))
-                                  (= first_cons * Cons
-                                     (block
-                                       (printf "File loaded successfully!\n")
-                                       (iter_words first_cons))))))))
+                                (letin ((* words (safeReadFile file)))
+                                  (io words
+                                    (* Cons (block (info! (printf "File loaded successfully!\n"))
+                                              (iter_words words)))
+                                    (* Nil (error! (printf "Error: nothing to read\n")))))))))
 
                    ) ; for
               

@@ -1,193 +1,349 @@
-;; My Cicili for a List
+;;;; Linked List not Safe
 ;; each List must be defined by this generic
-(generic decl-List (type a)
+(generic decl-List
+  (type a)
+  
+  ;; dependencies
+  (decl-Maybe a)
 
-         ;; dependencies
-         (decl-Maybe a)
-         
-         (decl-class (List type)
-           (= Empty (<> Empty a))
-           (= Cons  (<> Cons a)
-              (a head)
-              (type tail))
-           ;; functions can accept an instance or not,
-           ;; with any name
-           ;; at any position in parameter list
-           ;; they will be accessed with '\.*' 'selector' operator
-           ;; selector finds the path to the function
-           ;; selected function could be called then
-           ;; ((\.* nth list-instance) 0 alist)
-           (func next   ((type list)) (out type))
-           (func nth    ((int index) (type list)) (out (<> Maybe a)))
-           (func head   ((type list)) (out (<> Maybe a)))
-           (func drop   ((int index) (type list)) (out type))
-           (func tail   ((type list)) (out type))
-           (func len    ((type list)) (out int))
-           (func hasLen ((type list) (int desired)) (out int))
-           (func take   ((int len) (type list)) (out type))
-           (func last   ((type list)) (out type))
-           (func push   ((a item) (type list)) (out type))
-           (func append ((type llist) (type rlist)) (out type))
-           (func show   ((type list))))
+  (decl-class (List type)
+    (= Cons (<> Cons a) ;; List ctor
+       (a head)
+       (type tail))
+    (= Nil (<> Nil a))  ;; last ctor alias '_' could be used as match for default ctor
+    ;; functions can accept an instance or not, with any name, 
+    ;; at any position in parameter list
+    ;; they will be accessed by '\.' 'selector' operator ('\.*' for class defined functions)
+    ;; selector finds the path to the function
+    ;; selected function could be called then
+    ;; ((\. nth list-instance) 0 alist)
+    (func nth     ((int index) (type list)) (out (<> Maybe a)))
+    (func nthcdr  ((int index) (type list)) (out type))
+    (func head    ((type list)) (out (<> Maybe a)))
+    (func drop    ((int index) (type list)) (out type))
+    (func tail    ((type list)) (out type))
+    (func len     ((type list)) (out int))
+    (func hasLen  ((type list) (int desired)) (out int))
+    (func init    ((type list)) (out type))
+    (func last    ((type list)) (out type))
+    (func take    ((int len) (type list)) (out type))
+    (func push    ((a item) (type list)) (out type))
+    (func append  ((type llist) (type rlist)) (out type))
+    (func reverse ((type list)) (out type))
+    (func insert  ((type llist) (a item) (type rlist)) (out type))
+    (func delete  ((type list) (type aimed)) (out type))
+    (func replace ((type list) (a item) (type aimed)) (out type))
+    (func insertAt  ((type llist) (a item) (int index)) (out type))
+    (func deleteAt  ((type list) (int index)) (out type))
+    (func replaceAt ((type list) (a item) (int index)) (out type))
+    (func copy    ((type list)) (out type))
+    (func show    ((CFile file) (type list)) (out int))
+    (func pure    ((const a * buf) (int len)) (out type))
+    (func wrap    ((const a item)) (out type))
+    (func toArray ((type list) (a term)) (out a *)))
 
-         (decl) (func (<> new type Pure) ((const a * buf) (int len)) (out type))
-         (decl) (func (<> new type Wrap) ((const a item)) (out type))
+  (decl-Maybe type)
+  
+  ) ; decl-List
 
-         (decl-Maybe type)
+(generic impl-List
+  (type
+   a
+   fmt  ; a function ((FILE * file) (BoxedList list))
+   sep)
 
-         ) ; decl-List
+  ;; dependencies
+  (impl-Maybe a)
 
-(generic impl-List (type a fmt)
+  (impl-class (List type)
+    (= Cons (<> Cons a)
+       (a head)
+       (type tail))
+    (= Nil (<> Nil a))
 
-         ;; dependencies
-         (impl-Maybe a)
+    (func nth ((int index) (type list))
+          (out (<> Maybe a))
+          (return (match list
+                    (* Cons head tail 
+                       (case (== index 0) ((<> Just a) head)
+                             (<  index 0) ((<> Nothing a))
+                             otherwise    ((<> nth type) (-- index) tail)))
+                    (default ((<> Nothing a))))))
 
-         (impl-class (List type)
-           (= Empty (<> Empty a))
-           (= Cons  (<> Cons a)
-              (a head)
-              (type tail))
-           
-           (func next ((type list))
-                 (out type)
-                 (return
-                   (match list
-                     (* Cons _ tail tail)
-                     (default ((<> Empty a))))))
-           
-           (func nth ((int index) (type list))
-                 (out (<> Maybe a))
-                 (return
-                   (match list
-                     (* Cons head tail
-                        (case (== index 0) ((<> Just a) head)
-                              otherwise    ((<> nth type) (-- index) tail)))
-                     (default ((<> Nothing a))))))
+    (func nthcdr ((int index) (type list))
+          (out type)
+          (return (match list
+                    (* Cons _ tail <!> (> index 0) ((<> nthcdr type) (-- index) tail))
+                    (default list))))
+    
+    (func head ((type list))
+          (out (<> Maybe a))
+          (return (match list
+                    (* Cons head ((<> Just a) head))
+                    (default ((<> Nothing a))))))
+    
+    (func drop ((int len) (type list))
+          (out type)
+          (return (case (<= len 0) ((<> copy type) list)
+                        otherwise  (match list
+                                     (* Cons _ tail ((<> drop type) (-- len) tail))
+                                     (default ((<> Nil a)))))))
 
-           (func head ((type list))
-                 (out (<> Maybe a))
-                 (return ((<> nth type) 0 list)))
+    (func tail ((type list))
+          (out type)
+          (return ((<> drop type) 1 list)))
+    
+    (func len ((type list))
+          (out int)
+          (return (match list
+                    (* Cons _ tail (+ 1 ((<> len type) tail)))
+                    (default 0))))
 
-           (func drop ((int index) (type list))
-                 (out type)
-                 (return
-                   (case (== index 0) list
-                         otherwise    (match list
-                                        (* Cons _ tail ((<> drop type) (-- index) tail))
-                                        (default ((<> Empty a)))))))
-           
-           (func tail ((type list))
-                 (out type)
-                 (return ((<> drop type) 1 list)))
-           
-           (func len ((type list))
-                 (out int)
-                 (return (match list
-                           (* Cons _ tail (+ 1 ((<> len type) tail)))
-                           (default 0))))
+    (func hasLen ((type list) (int desired))
+          (out int)
+          (return (match list
+                    (* Cons _ tail (case (== desired 1) 1
+                                         otherwise      (+ 1 ((<> hasLen type) tail (-- desired)))))
+                    (default 0))))
 
-           (func hasLen ((type list) (int desired))
-                 (out int)
-                 (return (match list
-                           (* Cons _ tail
-                              (case (== desired 1) 1
-                                    otherwise      (+ 1 ((<> hasLen type) tail (-- desired)))))
-                           (default 0))))
+    (func init ((type list))
+          (out type)
+          (return (match list
+                    (* Cons head (= tail * Cons) ((<> Cons a) head ((<> init type) tail)))
+                    (default ((<> Nil a))))))
+    
+    (func last ((type list))
+          (out type)
+          (return (match list
+                    (* Cons _ tail -> tail
+                       (* Nil ((<> copy type) list))
+                       (default ((<> last type) tail)))
+                    (default ((<> Nil a))))))
 
-           (func take ((int len) (type list))
-                 (out type)
-                 (return (match list
-                           (* Cons head tail => (> len 0)
-                              ((<> push type) head ((<> take type) (-- len) tail)))
-                           (default ((<> Empty a))))))
+    ;; copies first len elements
+    (func take ((int len) (type list))
+          (out type)
+          (return (case (<= len 0) ((<> Nil a))
+                        otherwise  (match list
+                                     (* Cons head tail ((<> Cons a) head ((<> take type) (-- len) tail)))
+                                     (default ((<> Nil a)))))))
+    
+    (func push ((a item) (type list))
+          (out type)
+          (return ((<> Cons a) item ((<> copy type) list))))
 
-           
-           (func last ((type list))
-                 (out type)
-                 (return (match list
-                           (* Cons _ tail
-                              (match tail
-                                (* Empty list)
-                                (default ((<> last type) tail))))
-                           (default list))))
+    ;; pushes llist's items one by one from back to the copy of rlist
+    (func append ((type llist) (type rlist))
+          (out type)
+          (return (match llist
+                    (* Cons head tail ((<> Cons a) head ((<> append type) tail rlist)))
+                    (default ((<> copy type) rlist)))))
 
-           (func push ((a item) (type list))
-                 (out type)
-                 (return ((<> Cons a) item list)))
+    (func reverse ((type list))
+          (out type)
 
-           ;; appends second list at the end of first list and returns the first list
-           ;; no copy
-           (func append ((type llist) (type rlist))
-                 (out type)
-                 (return (letin* ((last ((<> last type) llist)))
-                           (match last
-                             (* Cons _ tail
-                                (progn
-                                  ((<> free type) (aof tail))
-                                  (set ($ (-> last __h_data) Cons __h_1_mem) rlist)
-                                  llist))
-                             (default rlist)))))
+          (func _reverse ((type list) (type rlist))
+                (out type)
+                (return (match list
+                          (* Cons head tail (_reverse tail ((<> Cons a) head rlist)))
+                          (default rlist))))
+          
+          (return (match list
+                    (* Cons head tail (_reverse tail ((<> Cons a) head ((<> Nil a)))))
+                    (default list))))
+    
+    ;; pushes item to the new list
+    ;; pushes llist's items one by one from back to the new list
+    ;; back is the place where rlist founded inside llist, if rlist be a cons of llist
+    ;; if it doesn't the result is (llist's items ++ itme ++ rlist's items)
+    (func insert ((type llist) (a item) (type rlist))
+          (out type)
+          (return (match llist
+                    (* Cons head tail <!> (!= llist rlist) ((<> Cons a) head ((<> insert type) tail item rlist)))
+                    (default ((<> Cons a) item ((<> copy type) rlist))))))
 
-           (func show ((type list))
-                 (io list
-                   (* Cons head tail
-                      (block
-                          (io tail
-                            (* Cons
-                               (block
-                                   (fmt head)
-                                 (putchar #\Space)))
-                            (default (fmt head)))
-                        ((<> show type) tail)))))
+    ;; traverses list till reachs aimed
+    ;; then copy all traversed cons
+    ;; appends them to copied tail of aimed
+    (func delete ((type list) (type aimed))
+          (out type)
+          (return (match list
+                    (* Cons head tail <!> (!= list aimed) ((<> Cons a) head ((<> delete type) tail aimed)))
+                    (default -> aimed
+                             (* Cons _ taill ((<> copy type) taill))
+                             (default ((<> Nil a)))))))
+    
+    ;; removes the aimed element like does delete
+    ;; but insert the new element replace of aimed
+    (func replace ((type list) (a item) (type aimed))
+          (out type)
+          (return (match list
+                    (* Cons head tail <!> (!= list aimed) ((<> Cons a) head ((<> replace type) tail item aimed)))
+                    (default -> aimed
+                             (* Cons _ taill ((<> Cons a) item ((<> copy type) taill)))
+                             (default ((<> Nil a)))))))
 
-           ;; destructor
-           ;; no parameter list
-           ;; 'this' points to current instance
-           (free (io this
-                   (* Cons head tail
-                      (block ;; (printf "destructuring List: %p, " this)
-                          ;; (fmt head)
-                          ;; (putchar #\Newline)
-                        ((<> free type) (aof tail))
-                        (free this)))
-                   (default (free this))))) ; Empty is pointer too
+    (func insertAt  ((type llist) (a item) (int index))
+          (out type)
+          (return (match llist
+                    (* Cons head tail <!> (> index 0) ((<> Cons a) head ((<> insertAt type) tail item (- index 1))))
+                    (default ((<> Cons a) item ((<> copy type) llist))))))
+    
+    (func deleteAt  ((type list) (int index))
+          (out type)
+          (return (match list
+                    (* Cons head tail <!> (> index 0) ((<> Cons a) head ((<> deleteAt type) tail (- index 1))))
+                    (default -> list
+                             (* Cons _ taill ((<> copy type) taill))
+                             (default ((<> Nil a)))))))
+    
+    (func replaceAt ((type list) (a item) (int index))
+          (out type)
+          (return (match list
+                    (* Cons head tail <!> (> index 0) ((<> Cons a) head ((<> replaceAt type) tail item (- index 1))))
+                    (default -> list
+                             (* Cons _ taill ((<> Cons a) item ((<> copy type) taill)))
+                             (default ((<> Nil a)))))))
 
-         (func (<> new type Pure) ((const a * buf) (int len))
-               (out type)
-               (if (null buf)
-                   (return ((<> Empty a)))
-                   (let ((a item . #'(cof buf)))
-                     (if (== len 0)
-                         (return ((<> Empty a)))
-                         (return ((<> Cons a) item ((<> new type Pure) (++ buf) (-- len))))))))
+    (func copy ((type list))
+          (out type)
+          (return (match list
+                    (* Cons head tail ((<> Cons a) head ((<> copy type) tail)))
+                    (default ((<> Nil a))))))
 
-         ;; for single element list
-         (func (<> new type Wrap) ((const a item))
-               (out type)
-               (return ((<> Cons a) item ((<> Empty a)))))
+    (func show ((CFile file) (type list))
+          (out int)
+          (return (match list
+                    (* Cons head tail
+                       (+ (match tail
+                            (* Cons (+ ($> fmt file head) (fprintf file "%s" sep)))
+                            (default ($> fmt file head)))
+                          ((<> show type) file tail)))
+                    (default 0))))
+    
+    (func pure ((const a * buf) (int len))
+          (out type)
+          (return (case (null buf) ((<> Nil a))
+                        otherwise  (letn ((a item . #'(cof buf)))
+                                     (case (== len 0) ((<> Nil a))
+                                           otherwise  ((<> Cons a) item ((<> pure type) (++ buf) (-- len))))))))
 
-         (impl-Maybe type)
+    ;; for single element list
+    (func wrap ((const a item))
+          (out type)
+          (return ((<> Cons a) item ((<> Nil a)))))
 
-         ) ; impl-List
+    (func toArray ((type list) (a term)) (out a *)
+          
+          (func array ((type list) (int count))
+                (out a *)
+                (return (match list
+                          (* Cons head tail (letn ((a * arr . #'(array tail (+ count 1))))
+                                              (set (nth count arr) head)
+                                              arr))
+                          (default (letn ((a * arr . #'(calloc count (sizeof a))))
+                                     (set (nth (- count 1) arr) term)
+                                     arr)))))
+                
+          (return (array list 0)))
 
-(generic import-List (ctor type a)
+    (free (io this
+            (* Cons _ tail
+               (block (syslog! (printf "freeing Cons:\n")
+                        ((<> show type) stdout this)
+                        (putchar #\Newline))
+                 (free this)
+                 ((<> free type) (aof tail))))
+            (* Nil
+               (block (syslog! (printf "freeing Nil:\n"))
+                 (free this)))))) ; Nil is pointer too
 
-         ;; dependencies
-         (import-Maybe a)
+  (impl-Maybe type)
 
-         (import-class (List type)
-           (= Empty (<> Empty a))
-           (= Cons  (<> Cons a)
-              (a head)
-              (type tail)))
-         
-         (DEFMACRO ctor (buf &OPTIONAL len)
-           (IF len
-               `((<> new type Pure) ,buf ,len)
-               (IF (AND (LISTP buf) (EQUAL (CAR buf) 'QUOTE))
-                   `((<> new type Pure) (cast (const a []) ,buf) ,(LENGTH (CADR buf)))
-                   (ERROR (FORMAT NIL "new^List len required for dynamic array input: ~A" buf)))))
+  ) ; impl-List
 
-         (import-Maybe type)
+(generic import-List
+  (type
+   a
+   ctor)
 
-         ) ; import-List
+  ;; dependencies
+  (import-Maybe a)
+
+  (import-class (List type)
+    (= Cons (<> Cons a)
+       (a head)
+       (type tail))
+    (= Nil (<> Nil a)))
+
+  (DEFMACRO ctor (buf &OPTIONAL len)
+    (LET ((len len))
+      (IF len
+          `((<> pure type) ,buf ,len)
+          (IF (AND (LISTP buf) (EQUAL (CAR buf) 'QUOTE))
+              `((<> pure type) (cast (const a []) ,buf) ,(LENGTH (CADR buf)))
+              (ERROR (FORMAT NIL "new^List len required for dynamic array input: ~A" buf))))))
+
+  (import-Maybe type)
+
+  ) ; import-List
+
+;; list helper macros
+;; (list type elm1 elm2 elm3 ...)
+(DEFMACRO list (elem-type &REST pure-list)
+  (LET ((elem-type elem-type))
+    `((<> pure List ,elem-type)
+      (cast (,elem-type []) '{ ,@pure-list })
+      ,(LENGTH pure-list))))
+
+;; there is nth function for element access of arrays
+;; (DEFMACRO nth (index list)
+;;   (LET ((list list))
+;;     `((\.* nth ,list) ,index ,list)))
+
+(DEFMACRO head (list)
+  (LET ((list list))
+    `((\.* head ,list) ,list)))
+
+(DEFMACRO drop (index list)
+  (LET ((list list))
+    `((\.* drop ,list) ,index ,list)))
+
+(DEFMACRO tail (list)
+  (LET ((list list))
+    `((\.* tail ,list) ,list)))
+
+(DEFMACRO len (list)
+  (LET ((list list))
+    `((\.* len ,list) ,list)))
+
+(DEFMACRO hasLen (list desired)
+  (LET ((list list))
+    `((\.* hasLen ,list) ,list ,desired)))
+
+(DEFMACRO init (list)
+  (LET ((list list))
+    `((\.* init ,list) ,list)))
+
+(DEFMACRO last (list)
+  (LET ((list list))
+    `((\.* last ,list) ,list)))
+
+(DEFMACRO take (index list)
+  (LET ((list list))
+    `((\.* take ,list) ,index ,list)))
+
+(DEFMACRO push (elem list)
+  (LET ((list list))
+    `((\.* push ,list) ,elem ,list)))
+
+;; (append l1 l2 l3 ...)
+;; auto free temporary results
+(DEFMACRO append (llist rlist &REST lists)
+  (LET ((llist llist)
+        (rlist rlist)
+        (lists lists))
+    (IF lists
+        `(letin ((* tmp_list (append ,rlist ,@lists)))
+           ((\.* append ,llist) ,llist tmp_list))
+        `((\.* append ,llist) ,llist ,rlist))))

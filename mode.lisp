@@ -1,26 +1,36 @@
 ;; cicili Customization
+
+(setf (symbol-plist 'block) (symbol-plist 'progn))
+(setf (symbol-plist 'case) (symbol-plist 'cond))
+
 (defun cicili-add-types (face-name keyword-rules)
   (let* ((keyword-list (mapcar #'(lambda (x)
-				   (symbol-name (cdr x)))
-			       keyword-rules))
-	 (keyword-regexp (concat "[ \t\n(]\\("
-				 (regexp-opt keyword-list)
-				 "\\)[ \t\n)]")))
+				                   (symbol-name (cdr x)))
+			                   keyword-rules))
+	     (keyword-regexp (concat "[ \t\n(]\\("
+				                 (regexp-opt keyword-list)
+				                 "\\)[ \t\n)]")))
     (font-lock-add-keywords 'lisp-mode
-			    `((,keyword-regexp 1 ',face-name))))
+			                `((,keyword-regexp 1 ',face-name))))
   (mapc #'(lambda (x)
-	    (put (cdr x)
-		 'lisp-indent-function
-		 (car x)))
-	keyword-rules))
- 
+	        (put (cdr x)
+		         'lisp-indent-function
+		         (car x))
+            (put (cdr x)
+		         'common-lisp-indent-function
+		         (car x)))
+	    keyword-rules))
+
 (cicili-add-types
  'font-lock-type-face
- '((1 . main)
+ '((0 . main)
    (1 . const)
+   (1 . function)
+   (0 . block)
    (1 . func)
    (1 . this)
    (1 . void)
+   (1 . integer)
    (1 . unsigned)
    (1 . char)
    (1 . uchar)
@@ -72,11 +82,14 @@
    (1 . u128)
    (1 . intmax_t)
    (1 . intptr_t)
-   (1 . bool)
+   (1 . boolean)
+   (1 . symbol)
+   (1 . error)
    (1 . true)
    (1 . false)
    (1 . nil)
    (1 . auto)
+   (1 . uintptr_t)
    (1 . size_t)
    (1 . namespace)
    (1 . null)
@@ -86,7 +99,8 @@
    (1 . text)
    (1 . vector)
    (1 . $)
-   (1 . =>)
+   (1 . !)
+   (1 . ->)
    (1 . Maybe)
    (1 . Nothing)
    (1 . Just)
@@ -95,50 +109,62 @@
    (1 . otherwise)
    (1 . String)
    (1 . List)
+   (1 . array)
+   (1 . object)
    (1 . Range)
    (1 . Either)
    (1 . Left)
    (1 . Right)
+   (1 . Cell)
    (1 . Rc)
+   (1 . Arc)
    (1 . show)
    (1 . Monoid)
    (1 . Functor)
    (1 . Applicative)
    (1 . Monad)
    (1 . default)
+   (1 . <!>)
+   (1 . ~)
    ))
 
 (defun cicili-add-keywords (face-name keyword-rules)
   (let* ((keyword-list (mapcar #'(lambda (x)
-				   (symbol-name (cdr x)))
-			       keyword-rules))
-	 (keyword-regexp (concat "(\\("
-				 (regexp-opt keyword-list)
-				 "\\)[ \t\n]*")))
+				                   (symbol-name (cdr x)))
+			                   keyword-rules))
+	     (keyword-regexp (concat "(\\("
+				                 (regexp-opt keyword-list)
+				                 "\\)[ \t\n]*")))
     (font-lock-add-keywords 'lisp-mode
-			    `((,keyword-regexp 1 ',face-name))))
+			                `((,keyword-regexp 1 ',face-name))))
   (mapc #'(lambda (x)
-	    (put (cdr x)
-		 'lisp-indent-function
-		 (car x)))
-	keyword-rules))
- 
+	        (put (cdr x)
+		         'lisp-indent-function
+		         (car x))
+            (put (cdr x)
+		         'common-lisp-indent-function
+		         (car x)))
+	    keyword-rules))
+
 (cicili-add-keywords
  'font-lock-keyword-face
  '((1 . cicili)
-   (1 . main)
-   (1 . main*)
+   (0 . main)
+   (0 . main*)
    (1 . generic)
    (1 . format)
    (1 . code)
    (1 . header)
    (1 . source)
+   (1 . make)
    (1 . guard)
    (1 . ghost)
    (1 . module)
    (1 . include)
    (1 . var)
    (1 . lambda)
+   (1 . function)
+   (0 . block)
    (1 . func)
    (1 . out)
    (1 . enum)
@@ -162,16 +188,18 @@
    (1 . typeof)
    (1 . cast)
    (1 . switch)
-   (1 . case)
    (1 . default)
    (1 . while)
+   (1 . break)
+   (1 . continue)
    (1 . for)
    (1 . for-each)
    (1 . for-each-const)
    (1 . new)
+   (1 . pure)
    (1 . printf)
    (1 . scanf)
-   (1 . free)
+   (0 . free)
    (1 . $)
    (1 . ->)
    (1 . import)
@@ -179,7 +207,6 @@
    (1 . defer-let)
    (1 . using)
    (1 . $$)
-   (1 . =>)
    (1 . <>)
    (1 . t<>)
    (1 . closure)
@@ -189,12 +216,15 @@
    (1 . join)
    (1 . cancel)
    (1 . exit)
+   (1 . exit_self)
+   (1 . abort)
+   (1 . assert)
    (1 . async)
    (1 . yield)
    (1 . done)
-   (1 . async-main)
-   (1 . async-main*)
-   (1 . $$$)
+   (0 . async-main)
+   (0 . async-main*)
+   (0 . $$$)
    (1 . fn)
    (1 . \\)
    (1 . letin)
@@ -202,7 +232,7 @@
    (1 . $>)
    (1 . data)
    (1 . match)
-   (1 . tuple)
+   (0 . tuple)
    (1 . cast-tuple)
    (1 . \,)
    (1 . \:)
@@ -216,7 +246,6 @@
    (1 . !>)
    (1 . nthcdr)
    (1 . push)
-   (1 . \:)
    (1 . head)
    (1 . tail)
    (1 . append)
@@ -224,32 +253,45 @@
    (1 . take)
    (1 . drop)
    (1 . !!)
+   (1 . init)
+   (1 . last)
+   (1 . hasLen)
+   (1 . copy)
+   (1 . fmap)
    (1 . Either)
    (1 . Left)
    (1 . Right)
    (1 . rc)
    (1 . impl)
+   (1 . List)
    (1 . Empty)
    (1 . Cons)
+   (1 . const)
+   (1 . dead)
+   (0 . lock)
+   (0 . lockn)
    ))
 
 (defun cicili-add-attributes (face-name keyword-rules)
   (let* ((keyword-list (mapcar #'(lambda (x)
-				   (symbol-name (cdr x)))
-			       keyword-rules))
-	 (keyword-regexp (concat "(\\("
-				 (regexp-opt keyword-list)
-				 "\\)[ \t\n]*")))
+				                   (symbol-name (cdr x)))
+			                   keyword-rules))
+	     (keyword-regexp (concat "(\\("
+				                 (regexp-opt keyword-list)
+				                 "\\)[ \t\n]*")))
     (font-lock-add-keywords 'lisp-mode
-			    `((,keyword-regexp 1 ',face-name))))
+			                `((,keyword-regexp 1 ',face-name))))
   (mapc #'(lambda (x)
-	    (put (cdr x)
-		 'lisp-indent-function
-		 (car x)))
-	keyword-rules))
- 
+	        (put (cdr x)
+		         'lisp-indent-function
+		         (car x))
+            (put (cdr x)
+		         'common-lisp-indent-function
+		         (car x)))
+	    keyword-rules))
+
 (cicili-add-attributes
- 'font-lock-preprocessor-face
+ 'font-lock-warning-face
  '((1 . static)
    (1 . decl)
    (1 . inline)
@@ -262,6 +304,46 @@
    (1 . resolve)
    (1 . thread-local)
    (1 . define)
+   ))
+
+(cicili-add-attributes
+ 'font-lock-type-face
+ '((1 . decl)
+   (1 . impl)
+   (1 . import)
+   (1 . <>)
+   ))
+
+(defun cicili-add-warnings (face-name keyword-rules)
+  (let* ((keyword-list (mapcar #'(lambda (x)
+				                   (symbol-name (cdr x)))
+			                   keyword-rules))
+	     (keyword-regexp (concat "(\\("
+				                 (regexp-opt keyword-list)
+				                 "\\)[ \t\n]*")))
+    (font-lock-add-keywords 'lisp-mode
+			                `((,keyword-regexp 1 ',face-name))))
+  (mapc #'(lambda (x)
+	        (put (cdr x)
+		         'lisp-indent-function
+		         (car x))
+            (put (cdr x)
+		         'common-lisp-indent-function
+		         (car x)))
+	    keyword-rules))
+
+(cicili-add-warnings
+ 'font-lock-warning-face
+ '((1 . alloc)
+   (1 . malloc)
+   (1 . calloc)
+   (1 . syslog!)
+   (1 . debug!)
+   (1 . warn!)
+   (1 . info!)
+   (1 . error!)
+   (1 . analyze!)
+   (1 . analyze-data!)
    ))
 
 (font-lock-add-keywords
@@ -316,5 +398,5 @@
 
 (font-lock-add-keywords
  'lisp-mode
- '(("(data[ \t\n]+(?\\(\\(\\sw\\|\\s_\\)+\\)[ \t\n]*"
-    (1 'font-lock-function-name-face))))
+ '(("(<>[ \t\n]+(?\\(\\(\\sw\\|\\s_\\)+\\)[ \t\n]*"
+    (1 'font-lock-escape-face))))

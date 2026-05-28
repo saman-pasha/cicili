@@ -1,54 +1,42 @@
 
-(generic decl-String (type a)
+(generic decl-String
+  (type a)
 
-         (decl-List type a)
-         (typedef type String)
+  (decl-List type a)
 
-         (inline) (func (<> get String _H_Table) ()
-                        (out (<> List char _H_Table) *)
-                        ((<> get List char _H_Table)))
+  (decl) (func (<> new type Const) ((const a * buf)) (out type))
 
-         (decl) (func (<> new String Const) ((const a * buf)) (out type))
-         (decl) (func (<> show String) ((type list)))
+  ) ; decl-String
 
-         (inline) (func (<> free String) ((type * list))
-                        ((<> free type) list))
+(generic impl-String
+  (type a fmt sep)
 
-         ) ; decl-String
+  (impl-List type a fmt sep)
 
-(generic impl-String (type a fmt)
+  (func (<> new type Const) ((const a * buf))
+        (out type)
+        (if (null buf)
+            (return ((<> Nil a)))
+            (let ((a item . #'(cof buf)))
+              (if (== item #\Null)
+                  (return ((<> Nil a)))
+                  (return ((<> Cons a) item ((<> new type Const) (++ buf))))))))
 
-         (impl-List type a fmt)
+  ) ; impl-String
 
-         (func (<> new String Const) ((const a * buf))
-               (out type)
-               (if (null buf)
-                   (return ((<> Empty a)))
-                   (let ((a item . #'(cof buf)))
-                     (if (== item #\Null)
-                         (return ((<> Empty a)))
-                         (return ((<> Cons a) item ((<> new String Const) (++ buf))))))))
+(generic import-String
+  (type a ctor)
 
-         (func (<> show String) ((type list))
-               (io list
-                 (* Cons head tail
-                    (progn
-                      (fmt head)
-                      ((<> show String) tail)))))
+  (import-List type a ctor)
 
-         ) ; impl-String
+  (DEFMACRO ctor (buf &OPTIONAL len)
+    (LET ((len len))
+      (IF len
+          `((<> pure type) ,buf ,len)
+          (IF (AND (LISTP buf) (EQUAL (CAR buf) 'QUOTE))
+              `((<> pure type) (cast (const a []) ,buf) ,(LENGTH (CADR buf)))
+              (IF (STRINGP buf)
+                  `((<> new type Const) ,buf)
+                  (ERROR (FORMAT NIL "new^String len required for dynamic array input: ~A" buf)))))))
 
-(generic import-String (ctor type a)
-
-         (import-List ctor type a)
-
-         (DEFMACRO ctor (buf &OPTIONAL len)
-           (IF len
-               `((<> new type Pure) ,buf ,len)
-               (IF (AND (LISTP buf) (EQUAL (CAR buf) 'QUOTE))
-                   `((<> new type Pure) (cast (const a []) ,buf) ,(LENGTH (CADR buf)))
-                   (IF (STRINGP buf)
-                       `((<> new String Const) ,buf)
-                       (ERROR (FORMAT NIL "new^String len required for dynamic array input: ~A" buf))))))
-
-         ) ; import-String
+  ) ; import-String

@@ -2,11 +2,11 @@
 
 (defun specify-target (target)
   (let* ((name    (nth 1 target))
-	     (args    (nth 2 target))
+	     (args    (expand-macros (nth 2 target)))
 	     (clauses (nthcdr 3 target))
 	     (target-specifier (make-specifier name '|@TARGET| nil nil nil nil nil nil args)))
     (format t "-------------------- cicili: specifying target ~A~%" name)
-    (unless (zerop (mod (length args) 2)) (error (format nil "wrong target features ~A" name)))
+    (unless (zerop (mod (length args) 2)) (error (format nil "wrong target features ~A" args)))
     (let ((attributes '()))
       (dolist (clause clauses)
 	    (if (consp clause)
@@ -47,7 +47,7 @@
                     ((or (key-eq construct '|defmacro|) (key-eq construct '|DEFMACRO|))
                      (let ((symb (eval clause)))
                        (add-macro (symbol-name symb) symb)))
-		            (t (let ((bd (expand-macros   clause))) ; any macro produce other macro
+		            (t (let ((bd (expand-macros   clause))) ; any macro which produces another macro
                          (if (eq bd clause)
                              (add-inner (specify-expr bd) target-specifier)
                              (unless (symbolp bd)
@@ -61,7 +61,8 @@
       target-specifier)))
 
 (defun compile-target (file args spec globals stdout stderr dump header &key from-body)
-  (let ((args (if spec (attrs spec) args)))
+  (let ((args (if spec (attrs spec) args))
+        (has-haskell nil))
     (if (stringp file)
         (progn
           (ensure-directories-exist file)
@@ -86,22 +87,27 @@
                  (funcall *col-num* 0 :reset 1 :actual t)
 	             (dotimes (i (length args))
 	               (when (zerop (mod i 2))
-	                 (when (key-eq (nth i args) ':|std|)
-		               (let ((custom (nth (+ i 1) args)))
-		                 (when (key-eq custom '|true|)
-                           (if *cpp*
-                               (progn
-                                 (set-ast-line (output "~&#include ")) (set-ast-line (output "<string>~%"))
-                                 (set-ast-line (output "~&#include ")) (set-ast-line (output "<iostream>~%"))
-                                 )
-                               (progn
-                                 (set-ast-line (output "~&#include ")) (set-ast-line (output "<stdio.h>~%"))
-                                 (set-ast-line (output "~&#include ")) (set-ast-line (output "<stddef.h>~%"))
-                                 (set-ast-line (output "~&#include ")) (set-ast-line (output "<stdint.h>~%"))
-                                 (set-ast-line (output "~&#include ")) (set-ast-line (output "<stdlib.h>~%"))
-                                 (set-ast-line (output "~&#include ")) (set-ast-line (output "<string.h>~%"))
-                                 (set-ast-line (output "~&#include ")) (set-ast-line (output "<stdbool.h>~%"))
-                                 )))))))
+	                 (if (key-eq (nth i args) ':|std|)
+		                 (let ((custom (nth (+ i 1) args)))
+		                   (when (key-eq custom '|true|)
+                             (if *cpp*
+                                 (progn
+                                   (set-ast-line (output "~&#include ")) (set-ast-line (output "<string>~%"))
+                                   (set-ast-line (output "~&#include ")) (set-ast-line (output "<iostream>~%"))
+                                   )
+                                 (progn
+                                   (set-ast-line (output "~&#include ")) (set-ast-line (output "<stdio.h>~%"))
+                                   (set-ast-line (output "~&#include ")) (set-ast-line (output "<stddef.h>~%"))
+                                   (set-ast-line (output "~&#include ")) (set-ast-line (output "<stdint.h>~%"))
+                                   (set-ast-line (output "~&#include ")) (set-ast-line (output "<stdlib.h>~%"))
+                                   (set-ast-line (output "~&#include ")) (set-ast-line (output "<string.h>~%"))
+                                   (set-ast-line (output "~&#include ")) (set-ast-line (output "<stdbool.h>~%"))
+                                   ))))
+                         (when (key-eq (nth i args) ':|haskell|)
+		                   (let ((custom (nth (+ i 1) args)))
+		                     (when (key-eq custom '|true|)
+                               (setq has-haskell t)
+                               (set-ast-line (output "~&#include ")) (set-ast-line (output "\"haskell.h\"~%"))))))))
                  (compile-body-map (inners spec) 0 globals spec)
 	             (close *output*))
                (when header (return-from compile-target t))
@@ -110,51 +116,52 @@
 	             (dotimes (i (length args))
 	               (when (zerop (mod i 2))
 	                 (when (and (not *only-link*) (key-eq (nth i args) ':|compile|))
-                       (display (if *cpp* "compiler set for C++" "compiler set for C") #\Newline)
-                       
-		               (let* ((dumper    (if *cpp* (getf *configs* 'cpp-dumper) (getf *configs* 'dumper)))
-                              (command   (if *cpp* (getf *configs* 'cpp-compiler) (getf *configs* 'compiler)))
-		                      (program   (car command))
-		                      (arguments (cdr command))
-		                      (custom    (nth (+ i 1) args)))
-                         (if (or (key-eq custom '|true|) (stringp custom))
-                             (progn
-		                       (if (key-eq custom '|true|)
-                                   (setq custom (list "-c" file))
-                                   (progn
-                                     (setq custom (str:split "\\s+" custom :regex t))
-                                     (let ((found nil)
-                                           (cset nil))
-                                       (loop for carg in custom
-                                             for i from 0 to (length custom)
-                                             do (if (or (string-equal carg "-c") (string-equal carg "--compile"))
-                                                    (setq found t)
-                                                    (when found
-                                                      (setq cset t)
-                                                      (setf (nth i custom) file)
-                                                      (return))))
-                                           (unless (and found cset)
-                                             (error
-                                              (format nil "custom compilation missed -c or --compile flag: ~A" custom))))))
-                               (let ((ccl       *cicili-path*)
-                                     (cwd       (uiop/os:getcwd))
-                                     (args      `(,program ,@arguments ,@custom))
-                                     (dump-args `(,program ,@arguments ,@dumper ,@custom)))
-                                 (setq args      (replace-args< `(("{$CCL}" ,ccl) ("{$CWD}" ,cwd)) args))
-                                 (setq dump-args (replace-args< `(("{$CCL}" ,ccl) ("{$CWD}" ,cwd)) dump-args))
-                                 (display "cicili compile:" (if dump dump-args args) #\Newline)
+                       (unless (key-eq (nth (+ i 1) args) '|false|)
+                         (display (if *cpp* "compiler set for C++" "compiler set for C") #\Newline)
+                         
+		                 (let* ((dumper    (if *cpp* (getf *configs* 'cpp-dumper) (getf *configs* 'dumper)))
+                                (command   (if *cpp* (getf *configs* 'cpp-compiler) (getf *configs* 'compiler)))
+		                        (program   (car command))
+		                        (arguments (cdr command))
+		                        (custom    (nth (+ i 1) args)))
+		                   (if (key-eq custom '|true|)
+                               (setq custom (if has-haskell (list "-I{$CCL}" "-c" file) (list "-c" file)))
+                               (progn
+                                 (if (stringp custom)
+                                     (setq custom (str:split "\\s+"
+                                                    (if has-haskell (concatenate 'string "-I{$CCL} " custom) custom) :regex t))
+                                     (setq custom `("-I{$CCL}" ,@custom)))
+                                 (let ((found nil)
+                                       (cset nil))
+                                   (loop for carg in custom
+                                         for i from 0 to (length custom)
+                                         do (if (or (string-equal carg "-c") (string-equal carg "--compile"))
+                                                (setq found t)
+                                                (when found
+                                                  (setq cset t)
+                                                  (setf (nth i custom) file)
+                                                  (return))))
+                                   (unless (and found cset)
+                                     (error (format nil "custom compilation missed -c or --compile flag: ~A" custom))))))
+                           (setq custom (map 'list #'(lambda (c) (expand-macros c)) custom))
+                           (let ((ccl       *cicili-path*)
+                                 (cwd       (uiop/os:getcwd))
+                                 (args      `(,program ,@arguments ,@custom))
+                                 (dump-args `(,program ,@arguments ,@dumper ,@custom)))
+                             (setq args      (replace-args< `(("{$CCL}" ,ccl) ("{$CWD}" ,cwd)) args))
+                             (setq dump-args (replace-args< `(("{$CCL}" ,ccl) ("{$CWD}" ,cwd)) dump-args))
+                             (display "cicili compile:" (if dump dump-args args) #\Newline)
 
-                                 (setq exit-status
-                                       (multiple-value-list
-                                           (if dump
-                                               (uiop:run-program dump-args :ignore-error-status t
-                                                                 :input nil :output stdout :error-output stderr)
-		                                       (uiop:run-program args :ignore-error-status t
-                                                                 :input nil :output stdout :error-output stderr))))
-                                 (when (and (not (equal (nth 2 exit-status) 0)) (> *ast-run* *ast-total-runs*))
-                                   (display (format nil "cicili exited with status: ~A" exit-status) #\Newline))))
-                             (error (format nil "invalid :compile value, required a custom command or #t"))))
-                       (setq is-compiled t))
+                             (setq exit-status
+                                   (multiple-value-list
+                                       (if dump
+                                           (uiop:run-program dump-args :ignore-error-status t
+                                                             :input nil :output stdout :error-output stderr)
+		                                   (uiop:run-program args :ignore-error-status t
+                                                             :input nil :output stdout :error-output stderr))))
+                             (when (and (not (equal (nth 2 exit-status) 0)) (> *ast-run* *ast-total-runs*))
+                               (display (format nil "cicili exited with status: ~A" exit-status) #\Newline))))
+                         (setq is-compiled t)))
 	                 (when (and (equal (nth 2 exit-status) 0) (not dump) (not header) (key-eq (nth i args) ':|link|))
                        (if is-compiled
 		                   (let* ((command   (if *cpp* (getf *configs* 'cpp-linker) (getf *configs* 'linker)))
@@ -164,9 +171,16 @@
 		                     (unless (key-eq custom '|false|)
                                (format t "-------------------- cicili: linking target ~A~%" file)
                                (if (key-eq custom '|true|)
-                                   (setq custom (list file "-o" "main"))
+                                   (setq custom (if has-haskell
+                                                    (list file "-I{$CCL}" "-L{$CCL}"
+                                                          (if *debug-analyze* "-lhaskell_analyze.o" "-lhaskell.o") "-o" "main")
+                                                    (list file "-o" "main")))
                                    (when (stringp custom)
                                      (setq custom (str:split " " custom))))
+                               (setq custom `("-L{$CWD}" ,@custom))
+                               (when has-haskell
+                                 (setq custom `("-L{$CCL}" ,(if *debug-analyze* "-lhaskell_analyze.o" "-lhaskell.o") ,@custom)))
+                               (setq custom (map 'list #'(lambda (c) (expand-macros c)) custom))
                                (let ((ccl       *cicili-path*)
                                      (cwd       (uiop/os:getcwd))
                                      (args      `(,program ,@arguments ,@custom)))

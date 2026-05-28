@@ -1,11 +1,9 @@
 (in-package :cicili)
 
 ;; prints too many details about compiling ast
-(defparameter *debug* nil)
+(defparameter *debug-ast* nil)
 ;; prints resolved members and methods
 (defparameter *debug-resolve* nil)
-;; prints warning about symbols and function
-(defparameter *warn* nil)
 ;; prints verbosity of compilation and link
 (defparameter *verbose* "")
 ;; debug all loaded macros with namespace
@@ -18,6 +16,15 @@
 (defparameter *debug-runs* nil)
 ;; prints output of c compiler dumps
 (defparameter *debug-dump* nil)
+;; enables syslog!, debug!, warn!, info! macros
+;; syslog! 4, compiles all 4 levels into output code, Cicili core logs
+;; debug!  3, compiles 3 levels into output code,     User logs
+;; warn!   2, compiles only warn! and info! levels,   User logs
+;; info!   1, compiles only info! level,              User logs
+(defparameter *debug-warnings* 0)
+;; --analyze
+;; finds and prints haskell class and box instances where haven't been freed till the end of program
+(defparameter *debug-analyze* nil)
 
 (format t "~&software type: ~S~%" (software-type))
 ;;;; os specific toolset
@@ -25,37 +32,34 @@
   (let ((os (software-type)))
     (cond
       
-      ((string= os "Linux") (list
-                             ;; C
-                             'dumper   '()
-                             'compiler `("libtool" "--tag=CC" "--mode=compile"
-                                                   "gcc" "-g" "-O" "-Wno-incompatible-pointer-types" *verbose*)
-                             'linker   `("libtool" "--tag=CC" "--mode=link" "gcc" "-g" "-O" *verbose*)
-                             ;; C++
-                             'cpp-dumper   '("")
-                             'cpp-compiler `("libtool" "--tag=CXX" "--mode=compile"
-                                                       "g++" "-g" "-O" "-Wno-incompatible-pointer-types" *verbose*)
-                             'cpp-linker   `("libtool" "--tag=CXX" "--mode=link" "g++" "-g" "-O" *verbose*)))
+      ((string= os "Linux")
+       (list
+        ;; C
+        'dumper   '()
+        'compiler `("libtool" "--tag=CC" "--mode=compile" "gcc" "-g" *verbose*)
+        'linker   `("libtool" "--tag=CC" "--mode=link" "gcc" "-g" *verbose*)
+        ;; C++
+        'cpp-dumper   '("")
+        'cpp-compiler `("libtool" "--tag=CXX" "--mode=compile" "g++" "-g" *verbose*)
+        'cpp-linker   `("libtool" "--tag=CXX" "--mode=link" "g++" "-g" *verbose*)))
       
-      ((string= os "Darwin") (list
-                              ;; C
-                              'dumper   '()
-                              'compiler `("glibtool" "--tag=CC" "--mode=compile"
-                                                     "gcc" "-g" "-O" "-Wno-incompatible-pointer-types" *verbose*)
-                              'linker   `("glibtool" "--tag=CC" "--mode=link" "gcc" "-g" "-O" *verbose*)
-
-                              ;; C++
-                              'cpp-dumper   '()
-                              'cpp-compiler `("glibtool" "--tag=CXX" "--mode=compile"
-                                                         "g++" "-g" "-O" "-Wno-incompatible-pointer-types" *verbose*)
-                              'cpp-linker   `("glibtool" "--tag=CXX" "--mode=link" "g++" "-g" "-O" *verbose*)))
+      ((string= os "Darwin")
+       (list
+        ;; C
+        'dumper   '()
+        'compiler `("glibtool" "--tag=CC" "--mode=compile" "gcc" "-g" "-Werror" "-Wall" "-Wno-maybe-uninitialized" *verbose*)
+        'linker   `("glibtool" "--tag=CC" "--mode=link" "gcc" "-g" *verbose*)
+        ;; C++
+        'cpp-dumper   '()
+        'cpp-compiler `("glibtool" "--tag=CXX" "--mode=compile" "g++" "-g" "-O" "-Werror" *verbose*)
+        'cpp-linker   `("glibtool" "--tag=CXX" "--mode=link" "g++" "-g" "-O" *verbose*)))
       
       (t (list
           ;; C
           'dumper   '()
-          'compiler `("libtool" "--tag=CC" "--mode=compile" "gcc" "-g" "-O" "-Wno-incompatible-pointer-types" *verbose*)
-          'linker   `("libtool" "--tag=CC" "--mode=link" "gcc" "-g" "-O" *verbose*)
+          'compiler `("libtool" "--tag=CC" "--mode=compile" "gcc" "-g" *verbose*)
+          'linker   `("libtool" "--tag=CC" "--mode=link" "gcc" "-g" *verbose*)
           ;; C++
           'cpp-dumper   '()
-          'cpp-compiler `("libtool" "--tag=CXX" "--mode=compile" "g++" "-g" "-O" "-Wno-incompatible-pointer-types" *verbose*)
-          'cpp-linker   `("libtool" "--tag=CXX" "--mode=link" "g++" "-g" "-O" *verbose*))))))
+          'cpp-compiler `("libtool" "--tag=CXX" "--mode=compile" "g++" "-g" *verbose*)
+          'cpp-linker   `("libtool" "--tag=CXX" "--mode=link" "g++" "-g" *verbose*))))))

@@ -153,23 +153,23 @@ Either_String_String returnA_Monad_Either_String_String_User (String value ) {
   return Right_String_String (value );
 }
 Either_String_User bind_Monad_Either_String_String_User (Either_String_String input , String_to_Either_String_User_t a_mb ) {
-  return ({ /* cicili#Let270 */
+  return ({ /* cicili#Let268 */
       __auto_type value  = (((input . __h_data ). Right ). __h_0_mem );
       // ----------
-      /* cicili#Block272 */
-      ({ /* cicili#Let274 */
+      /* cicili#Block270 */
+      ({ /* cicili#Let272 */
         bool __h_case_result  = ((input . __h_ctor ) ==  __h_Right_t  );
         // ----------
-        ((__h_case_result ) ? a_mb (value ) : ({ /* cicili#Let278 */
+        ((__h_case_result ) ? a_mb (value ) : ({ /* cicili#Let276 */
             __auto_type error  = (((input . __h_data ). Left ). __h_0_mem );
             // ----------
-            /* cicili#Block280 */
-            ({ /* cicili#Let282 */
+            /* cicili#Block278 */
+            ({ /* cicili#Let280 */
               bool __h_case_result  = ((input . __h_ctor ) ==  __h_Left_t  );
               // ----------
-              ((__h_case_result ) ? Left_String_User (error ) : ({ /* cicili#Let287 */
+              ((__h_case_result ) ? Left_String_User (error ) : ({ /* cicili#Let285 */
                   // ----------
-                  /* cicili#Block289 */
+                  /* cicili#Block287 */
                   Left_String_User (Empty_char ());
                 }));
             });
@@ -207,11 +207,11 @@ typedef struct Either_String_int__H_Table {
 typedef struct Either_String_int {
   const Either_String_int__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion321 */
-    struct { /* ciciliStruct322 */
+  union { /* ciciliUnion319 */
+    struct { /* ciciliStruct320 */
       String __h_0_mem ;
     } Left , _0 ;
-    struct { /* ciciliStruct323 */
+    struct { /* ciciliStruct321 */
       int __h_0_mem ;
     } Right , _ ;
   } __h_data ;
@@ -241,11 +241,11 @@ typedef struct Either_String_User__H_Table {
 typedef struct Either_String_User {
   const Either_String_User__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion349 */
-    struct { /* ciciliStruct350 */
+  union { /* ciciliUnion347 */
+    struct { /* ciciliStruct348 */
       String __h_0_mem ;
     } Left , _0 ;
-    struct { /* ciciliStruct351 */
+    struct { /* ciciliStruct349 */
       User __h_0_mem ;
     } Right , _ ;
   } __h_data ;
@@ -278,8 +278,8 @@ typedef struct Monad_Either_String_int_User__H_Table {
 typedef struct Monad_Either_String_int_User {
   const Monad_Either_String_int_User__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion389 */
-    struct { /* ciciliStruct390 */
+  union { /* ciciliUnion387 */
+    struct { /* ciciliStruct388 */
     } Monad , _ ;
   } __h_data ;
 } Monad_Either_String_int_User;
@@ -333,23 +333,23 @@ Either_String_int returnA_Monad_Either_String_int_User (int value ) {
   return Right_String_int (value );
 }
 Either_String_User bind_Monad_Either_String_int_User (Either_String_int input , int_to_Either_String_User_t a_mb ) {
-  return ({ /* cicili#Let475 */
+  return ({ /* cicili#Let471 */
       __auto_type value  = (((input . __h_data ). Right ). __h_0_mem );
       // ----------
-      /* cicili#Block477 */
-      ({ /* cicili#Let479 */
+      /* cicili#Block473 */
+      ({ /* cicili#Let475 */
         bool __h_case_result  = ((input . __h_ctor ) ==  __h_Right_t  );
         // ----------
-        ((__h_case_result ) ? a_mb (value ) : ({ /* cicili#Let483 */
+        ((__h_case_result ) ? a_mb (value ) : ({ /* cicili#Let479 */
             __auto_type error  = (((input . __h_data ). Left ). __h_0_mem );
             // ----------
-            /* cicili#Block485 */
-            ({ /* cicili#Let487 */
+            /* cicili#Block481 */
+            ({ /* cicili#Let483 */
               bool __h_case_result  = ((input . __h_ctor ) ==  __h_Left_t  );
               // ----------
-              ((__h_case_result ) ? Left_String_User (error ) : ({ /* cicili#Let492 */
+              ((__h_case_result ) ? Left_String_User (error ) : ({ /* cicili#Let488 */
                   // ----------
-                  /* cicili#Block494 */
+                  /* cicili#Block490 */
                   Left_String_User (Empty_char ());
                 }));
             });
@@ -383,57 +383,51 @@ Either_String_int validate_id (int id ) {
     return Left_String_int (new_String_Const ("Error: ID must be > 100"));
 }
 int main () {
-  ({ /* cicili#Progn530 */
-    ({ /* cicili#Let537 */
-      __auto_type name_input  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let539 */
+  ({ /* cicili#Progn526 */
+    ({ /* cicili#Let533 */
+      __auto_type name_input  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let535 */
         __auto_type tmp_obj  = new_String_Const ("ValidUsername");
         // ----------
         ((void)(tmp_obj -> __h_table -> freeClass ));
         tmp_obj ;
       });
       // ----------
-      { /* cicili#Let548 */
-        __auto_type __h_data546  = bind_Monad_Either_String_String_User (validate_name (name_input ), ({ /* cicili#Progn554 */
-          Either_String_User __ciciliL_559 (String valid_name ) {
-            return bind_Monad_Either_String_int_User (validate_id (200), ({ /* cicili#Progn566 */
-                Either_String_User __ciciliL_571 (int valid_id ) {
+      { /* cicili#Let544 */
+        __auto_type __h_data542  = bind_Monad_Either_String_String_User (validate_name (name_input ), ({ /* cicili#Progn551 */
+          Either_String_User __ciciliC_550 (String valid_name ) {
+            return bind_Monad_Either_String_int_User (validate_id (200), ({ /* cicili#Progn561 */
+                Either_String_User __ciciliC_560 (int valid_id ) {
                   return Right_String_User (((User){ valid_name , valid_id }));
                 }
-                Either_String_User __ciciliC_565 (int __h_value ) {
-                  return __ciciliL_571 (__h_value );
-                }
-                __ciciliC_565 ;
+                __ciciliC_560 ;
               }));
           }
-          Either_String_User __ciciliC_553 (String __h_value ) {
-            return __ciciliL_559 (__h_value );
-          }
-          __ciciliC_553 ;
+          __ciciliC_550 ;
         }));
-        __auto_type __h_match545_0_arg  = (((__h_data546 . __h_data ). Right ). __h_0_mem );
-        const __auto_type name  = (__h_match545_0_arg . __h_0_mem );
-        const __auto_type id  = (__h_match545_0_arg . __h_1_mem );
+        __auto_type __h_match541_0_arg  = (((__h_data542 . __h_data ). Right ). __h_0_mem );
+        const __auto_type name  = (__h_match541_0_arg . __h_0_mem );
+        const __auto_type id  = (__h_match541_0_arg . __h_1_mem );
         // ----------
-        /* cicili#Block574 */
-        ({ /* cicili#Let576 */
-          bool __h_case_result  = ((__h_data546 . __h_ctor ) ==  __h_Right_t  );
+        /* cicili#Block566 */
+        ({ /* cicili#Let568 */
+          bool __h_case_result  = ((__h_data542 . __h_ctor ) ==  __h_Right_t  );
           // ----------
           if (__h_case_result )
-            ({ /* cicili#Progn579 */
+            ({ /* cicili#Progn571 */
               printf ("--- SUCCESS ---\nUser Name: ");
               show_String (name );
               printf ("\nUser ID:   %d\n\n", id );
             });
           else
-            { /* cicili#Let584 */
-              __auto_type err  = (((__h_data546 . __h_data ). Left ). __h_0_mem );
+            { /* cicili#Let576 */
+              __auto_type err  = (((__h_data542 . __h_data ). Left ). __h_0_mem );
               // ----------
-              /* cicili#Block586 */
-              ({ /* cicili#Let588 */
-                bool __h_case_result  = ((__h_data546 . __h_ctor ) ==  __h_Left_t  );
+              /* cicili#Block578 */
+              ({ /* cicili#Let580 */
+                bool __h_case_result  = ((__h_data542 . __h_ctor ) ==  __h_Left_t  );
                 // ----------
                 if (__h_case_result )
-                  ({ /* cicili#Progn591 */
+                  ({ /* cicili#Progn583 */
                     printf ("--- FAILED ---\nError: ");
                     show_String (err );
                     printf ("\n\n");
@@ -444,56 +438,50 @@ int main () {
         });
       }
     });
-    ({ /* cicili#Let598 */
-      __auto_type name_input  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let600 */
+    ({ /* cicili#Let590 */
+      __auto_type name_input  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let592 */
         __auto_type tmp_obj  = new_String_Const ("Bad");
         // ----------
         ((void)(tmp_obj -> __h_table -> freeClass ));
         tmp_obj ;
       });
       // ----------
-      { /* cicili#Let609 */
-        __auto_type __h_data607  = bind_Monad_Either_String_String_User (validate_name (name_input ), ({ /* cicili#Progn615 */
-          Either_String_User __ciciliL_620 (String valid_name ) {
-            return bind_Monad_Either_String_int_User (validate_id (300), ({ /* cicili#Progn627 */
-                Either_String_User __ciciliL_632 (int valid_id ) {
+      { /* cicili#Let601 */
+        __auto_type __h_data599  = bind_Monad_Either_String_String_User (validate_name (name_input ), ({ /* cicili#Progn608 */
+          Either_String_User __ciciliC_607 (String valid_name ) {
+            return bind_Monad_Either_String_int_User (validate_id (300), ({ /* cicili#Progn618 */
+                Either_String_User __ciciliC_617 (int valid_id ) {
                   return Right_String_User (((User){ valid_name , valid_id }));
                 }
-                Either_String_User __ciciliC_626 (int __h_value ) {
-                  return __ciciliL_632 (__h_value );
-                }
-                __ciciliC_626 ;
+                __ciciliC_617 ;
               }));
           }
-          Either_String_User __ciciliC_614 (String __h_value ) {
-            return __ciciliL_620 (__h_value );
-          }
-          __ciciliC_614 ;
+          __ciciliC_607 ;
         }));
-        __auto_type __h_match606_0_arg  = (((__h_data607 . __h_data ). Right ). __h_0_mem );
-        const __auto_type name  = (__h_match606_0_arg . __h_0_mem );
-        const __auto_type id  = (__h_match606_0_arg . __h_1_mem );
+        __auto_type __h_match598_0_arg  = (((__h_data599 . __h_data ). Right ). __h_0_mem );
+        const __auto_type name  = (__h_match598_0_arg . __h_0_mem );
+        const __auto_type id  = (__h_match598_0_arg . __h_1_mem );
         // ----------
-        /* cicili#Block635 */
-        ({ /* cicili#Let637 */
-          bool __h_case_result  = ((__h_data607 . __h_ctor ) ==  __h_Right_t  );
+        /* cicili#Block623 */
+        ({ /* cicili#Let625 */
+          bool __h_case_result  = ((__h_data599 . __h_ctor ) ==  __h_Right_t  );
           // ----------
           if (__h_case_result )
-            ({ /* cicili#Progn640 */
+            ({ /* cicili#Progn628 */
               printf ("--- SUCCESS ---\nUser Name: ");
               show_String (name );
               printf ("\nUser ID:   %d\n\n", id );
             });
           else
-            { /* cicili#Let645 */
-              __auto_type err  = (((__h_data607 . __h_data ). Left ). __h_0_mem );
+            { /* cicili#Let633 */
+              __auto_type err  = (((__h_data599 . __h_data ). Left ). __h_0_mem );
               // ----------
-              /* cicili#Block647 */
-              ({ /* cicili#Let649 */
-                bool __h_case_result  = ((__h_data607 . __h_ctor ) ==  __h_Left_t  );
+              /* cicili#Block635 */
+              ({ /* cicili#Let637 */
+                bool __h_case_result  = ((__h_data599 . __h_ctor ) ==  __h_Left_t  );
                 // ----------
                 if (__h_case_result )
-                  ({ /* cicili#Progn652 */
+                  ({ /* cicili#Progn640 */
                     printf ("--- FAILED ---\nError: ");
                     show_String (err );
                     printf ("\n\n");
@@ -504,56 +492,50 @@ int main () {
         });
       }
     });
-    ({ /* cicili#Let659 */
-      __auto_type name_input  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let661 */
+    ({ /* cicili#Let647 */
+      __auto_type name_input  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let649 */
         __auto_type tmp_obj  = new_String_Const ("AnotherValidName");
         // ----------
         ((void)(tmp_obj -> __h_table -> freeClass ));
         tmp_obj ;
       });
       // ----------
-      { /* cicili#Let670 */
-        __auto_type __h_data668  = bind_Monad_Either_String_String_User (validate_name (name_input ), ({ /* cicili#Progn676 */
-          Either_String_User __ciciliL_681 (String valid_name ) {
-            return bind_Monad_Either_String_int_User (validate_id (50), ({ /* cicili#Progn688 */
-                Either_String_User __ciciliL_693 (int valid_id ) {
+      { /* cicili#Let658 */
+        __auto_type __h_data656  = bind_Monad_Either_String_String_User (validate_name (name_input ), ({ /* cicili#Progn665 */
+          Either_String_User __ciciliC_664 (String valid_name ) {
+            return bind_Monad_Either_String_int_User (validate_id (50), ({ /* cicili#Progn675 */
+                Either_String_User __ciciliC_674 (int valid_id ) {
                   return Right_String_User (((User){ valid_name , valid_id }));
                 }
-                Either_String_User __ciciliC_687 (int __h_value ) {
-                  return __ciciliL_693 (__h_value );
-                }
-                __ciciliC_687 ;
+                __ciciliC_674 ;
               }));
           }
-          Either_String_User __ciciliC_675 (String __h_value ) {
-            return __ciciliL_681 (__h_value );
-          }
-          __ciciliC_675 ;
+          __ciciliC_664 ;
         }));
-        __auto_type __h_match667_0_arg  = (((__h_data668 . __h_data ). Right ). __h_0_mem );
-        const __auto_type name  = (__h_match667_0_arg . __h_0_mem );
-        const __auto_type id  = (__h_match667_0_arg . __h_1_mem );
+        __auto_type __h_match655_0_arg  = (((__h_data656 . __h_data ). Right ). __h_0_mem );
+        const __auto_type name  = (__h_match655_0_arg . __h_0_mem );
+        const __auto_type id  = (__h_match655_0_arg . __h_1_mem );
         // ----------
-        /* cicili#Block696 */
-        ({ /* cicili#Let698 */
-          bool __h_case_result  = ((__h_data668 . __h_ctor ) ==  __h_Right_t  );
+        /* cicili#Block680 */
+        ({ /* cicili#Let682 */
+          bool __h_case_result  = ((__h_data656 . __h_ctor ) ==  __h_Right_t  );
           // ----------
           if (__h_case_result )
-            ({ /* cicili#Progn701 */
+            ({ /* cicili#Progn685 */
               printf ("--- SUCCESS ---\nUser Name: ");
               show_String (name );
               printf ("\nUser ID:   %d\n\n", id );
             });
           else
-            { /* cicili#Let706 */
-              __auto_type err  = (((__h_data668 . __h_data ). Left ). __h_0_mem );
+            { /* cicili#Let690 */
+              __auto_type err  = (((__h_data656 . __h_data ). Left ). __h_0_mem );
               // ----------
-              /* cicili#Block708 */
-              ({ /* cicili#Let710 */
-                bool __h_case_result  = ((__h_data668 . __h_ctor ) ==  __h_Left_t  );
+              /* cicili#Block692 */
+              ({ /* cicili#Let694 */
+                bool __h_case_result  = ((__h_data656 . __h_ctor ) ==  __h_Left_t  );
                 // ----------
                 if (__h_case_result )
-                  ({ /* cicili#Progn713 */
+                  ({ /* cicili#Progn697 */
                     printf ("--- FAILED ---\nError: ");
                     show_String (err );
                     printf ("\n\n");

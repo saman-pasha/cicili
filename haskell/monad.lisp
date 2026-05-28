@@ -29,12 +29,12 @@
 
          (decl) (func (<> get Monad type) () (out (<> Monad type)))
 
-         (fn (<> bind type) m~a a->mb
+         (fn (<> bind type) var-a m~a a->mb
              ((<> bind Monad type)
               m~a
-              '(closure ((a __h_value))
+              '(closure ((a var-a ))
                 (out (<> m b))
-                (return ($> a->mb __h_value)))))
+                (return a->mb))))
          
          (fn (<> return type) a
              ((<> return Monad type) a))
@@ -70,13 +70,13 @@
 
 (generic import-Monad (type m a b)
 
-         (fn (<> bind type) m~a a->mb
+         (fn (<> bind type) var-a m~a a->mb
              ((<> bind Monad type)
               m~a
-              '(closure ((a __h_value))
+              '(closure ((a var-a ))
                 (out (<> m b))
-                (return ($> a->mb __h_value)))))
-
+                (return a->mb))))
+         
          (fn (<> returnA type) a
              ((<> return Monad type) a))
          

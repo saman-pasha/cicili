@@ -135,7 +135,7 @@
                                           (#\Newline   "\\n")
                                           (#\Tab       "\\t")
                                           (#\Page      "\\v")
-                                          (#\Rubout    "")
+                                          (#\Rubout    "\\x7F")
                                           (#\Linefeed  "\\n")
                                           (#\Return    "\\r")
                                           (#\Backspace "\\b")
@@ -340,16 +340,16 @@
     (when is-n (output ")"))))
 
 (defun compile-block (spec lvl globals parent-spec)
-  (if (> (length (body (body spec))) 0)
-    (let ((locals      (copy-specifiers globals)))
+  (let ((locals (copy-specifiers globals))
+        (body (body spec)))
+    (when (or (> (length (body body)) 0) (key-eq '|@IF| (construct parent-spec)))
       (output "{ /* ~A */~%" (name spec))
-      (compile-body (body spec) lvl locals spec)
+      (compile-body body lvl locals spec)
       (output "~&~A" (indent (- lvl 1)))
-      (output "}"))
-    (output "/* ~A */" (name spec))))
+      (output "}"))))
 
 (defun compile-progn (spec lvl globals parent-spec)
-  (let ((locals      (copy-specifiers globals)))
+  (let ((locals (copy-specifiers globals)))
     (output "({ /* ~A */~%" (name spec))
     (compile-body (body spec) (- lvl 1) locals spec)
     (output "~&~A" (indent (- lvl 2)))
@@ -511,6 +511,7 @@
 	    (is-inline   nil)
 	    (is-extern   nil)
 	    (is-volatile nil)
+	    (is-auto     nil)
         (do-resolve  nil)
         (is-unique  (unique spec)))
     (dolist (attr (attrs spec))
@@ -520,6 +521,7 @@
 	    ('|inline|   (setq is-inline   t))
 	    ('|extern|   (setq is-extern   t))
 	    ('|volatile| (setq is-volatile t))
+	    ('|auto|     (setq is-auto     t))
         ('|resolve|  (setq do-resolve  (cdr attr)))))
     (when (and (> *ast-run* 1) (key-eq '|false| do-resolve)) (setq *resolve* nil))
 
@@ -555,10 +557,17 @@
 		               (otherwise nil)))
 	             params)
 
+        ;; destroyer initizlizer definition
+        ;; (when (key-eq name '|main|)
+        ;;   (output "static BoxedList_CVoid ")
+        ;;   (output "__h_destroyer_stack")
+        ;;   (output ";~%"))
+        
         (output "~&~A" (indent (- lvl 1)))
         (when is-extern   (set-ast-line (output "extern ")))
         (when is-inline   (set-ast-line (output "__attribute__((weak)) ")))
         (when (and is-static (not (key-eq name '|main|))) (set-ast-line (output "static ")))
+        (when is-auto     (set-ast-line (output "auto ")))
 
         ;; if a function returns another function
         ;; the parameters of the function and returning one should be swapped
@@ -623,6 +632,37 @@
               (output "{~%")))
         (unless is-declare
           (progn
+            ;; haskell initializer and analyzer stack
+            (let ((nameStr (symbol-name name)))
+              (when (and *debug-analyze*
+                      (or (key-eq name '|main|)
+                        (and (not (str:starts-with-p "__h_init" nameStr))
+                          (not (str:starts-with-p "__h_free" nameStr))
+                          (not (str:starts-with-p "__h_stack" nameStr))
+                          (not (str:containsp "__h_StackItem" nameStr))
+                          (not (and (str:starts-with-p "get_" nameStr)
+                                 (str:ends-with-p "__H_Table" nameStr))))))
+                (output "#ifdef ")
+                (output "__CICILI_HASKELL_H_DECL__~%")
+                (if (key-eq name '|main|)
+                    (progn
+                      (output "__h_init_haskell ();~%")
+                      (output "__h_stack_push_func ((void *)__func__);~%")
+                      (output "BoxedList_BoxedList___h_StackItem  __h_stack_pin ~%")
+                      (output "__attribute__((__cleanup__(__h_stack_free_main))) = __h_stack ();~%")
+                      (output "__h_stack_push_separator ();~%"))
+                    (progn
+                      (output "__h_stack_push_func ((void *)__func__);~%")
+                      (output "BoxedList_BoxedList___h_StackItem __h_stack_pin ~%")
+                      (output "__attribute__((__cleanup__(__h_stack_free))) = __h_stack ();~%")
+                      (output "__h_stack_push_separator ();~%")))
+                (when (key-eq name '|main|)
+                  (output "#else~%")
+                  (output "printf (\"Cicili Haskell is not included!\\n\");~%")
+                  (output "exit ();~%"))
+                (output "#endif~%")))
+                      
+            ;; body
 	        (compile-body body lvl locals spec)
             (output "~&~A" (indent (- lvl 1)))
             (output "}"))))))

@@ -1,5 +1,5 @@
 (defsystem "cicili"
-  :version "0.0.15"
+  :version "0.0.16"
   :author  "Saman Heidarzadeh Pasha (saman.h.pasha@gmail.com)"
   :license "GPL-3.0 license"
   :depends-on ("sha1" "base64" "str" "cl-ppcre")
@@ -13,5 +13,5 @@
 	           (:file "core"       :depends-on ("config"))
 	           (:file "config"     :depends-on ("package"))
 	           (:file "package"))
-  :description "Cicili is a Lisp-dialect programming language that implements Haskell's advanced functional semantics, like ADTs, Monads, and pattern matching, by transpiling directly to high-performance C with built-in, RAII-style automatic memory management."
+  :description "Safe Modern C Solution. Cicili is a Lisp-dialect programming language that implements Haskell's advanced functional semantics, like ADTs, Monads, and pattern matching, by transpiling directly to high-performance C with built-in, RAII-style automatic memory management."
   :in-order-to ((test-op (test-op "test"))))

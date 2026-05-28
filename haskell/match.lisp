@@ -3,25 +3,26 @@
 ;; data type and arguments expansion
 ;; needs default case as default return value
 ;; all cases after default case will be ignored
-;; each match can has a guard with => a condition
+;; each match can has a guard with '<!> a condition
 ;; access by path mode
 ;; * means Cons char ctor returns a pointer beacause Lists are classes
 ;; = str at first of any case makes an alias for whole object
 ;; ^ opr only inside cases can be used separated,
 ;; note in other cicili clauses ^ must be mixed whithout any space
 ;; _ for types with only one ctor
-(DEFUN match-case-h-details (match-id data case)
-  (LET* ((parts (partition-h-data case '^))
+(DEFUN match-case-h-details (data case &OPTIONAL is-inner-case)
+  (LET* ((match-id (GENSYM "match"))
+         (parts (partition-h-data case '^))
          (result (REDUCE #'(LAMBDA (x y)
                              (APPEND
-                              (REVERSE (CDR (REVERSE x)))
-                              (LIST (MACROEXPAND `(<> ,(CAR (LAST x)) ,(CAR y))))
-                              (CDR y)))
+                                 (REVERSE (CDR (REVERSE x)))
+                               (LIST (MACROEXPAND `(<> ,(CAR (LAST x)) ,(CAR y))))
+                               (CDR y)))
                    parts))) ;; to mix names separated with ^
     (SETQ case result)
     
     (LET* ((has-alias (AND (LISTP case) (EQUAL (CAR case) '=)))
-           (data-name (IF has-alias (CADR case) (IF (LISTP data) (GENSYM "__h_data") data)))
+           (data-name (IF has-alias (CADR case) (IF (LISTP data) match-id data)))
            (case (IF has-alias (CDDR case) case))
            (symb (MACROEXPAND (CAR case)))
            (tail (CDR case))
@@ -29,176 +30,318 @@
            (assigns ())
            (args ())
            (conds ())
-           (=>found NIL)
-           (is-ptr NIL))
+           (dos ())
+           (<!>found NIL)
+           (is-ptr  NIL)
+           (is-dptr NIL))
 
-      (WHEN (AND (ATOM symb) (EQUAL symb '*))
+      (WHEN (AND (ATOM symb) (OR (EQUAL symb '*) (EQUAL symb '**)))
+        (WHEN (EQUAL symb '**) (SETQ is-dptr T))
         (SETQ is-ptr T)
         (SETQ case (CDR case))
         (SETQ symb (MACROEXPAND (CAR case)))
         (SETQ tail (CDR case)))
-
-      (COND ((AND (LISTP symb) (EQUAL (CAR symb) '\,)) ; tuple \,
-             (WHEN (OR has-alias (NOT (EQL data data-name)))
-               (PUSH `(auto ,data-name . ,(IF (LISTP data) `(FUNCTION ,data) data)) defs))
-             ;; (PUSH `(set ,data-name ,data) assigns))
+      
+      ;; (WHEN (OR has-alias (NOT (EQL data data-name)))
+      (WHEN (OR has-alias (NOT (EQL data data-name)))
+        (IF is-inner-case
+            (PROGN
+              ;; (PUSH `((typeof ,data) ,data-name) defs)
+              ;; (PUSH `(set ,data-name ,data) assigns)
+              ;; (SETQ conds (IF conds `(and ,conds (progn (= ,data-name ,data) true))
+              ;;                 `(progn (= ,data-name ,data) true))) ; assigns
+              )
+            (PUSH `(auto ,data-name . (FUNCTION ,data)) defs)))
              
+      (COND ((AND (LISTP symb) (EQUAL (CAR symb) '\,)) ; tuple \,
              (DOTIMES (i (1- (LENGTH symb))) 
                (LET ((arg (MACROEXPAND (NTH (1+ i) symb))))
-                 (UNLESS (EQUAL arg '_)
+                 (UNLESS (OR (EQUAL arg '_) (AND (SYMBOLP arg) (EQUAL (CHAR (SYMBOL-NAME arg) 0) #\_)))
                    (LET ((arg-name (make-match-h-arg-name match-id i))
                          (mem-name (LIST '$ data-name (make-data-h-member-name i))))
                      (IF (ATOM arg)
                          (PROGN
-                           (PUSH `(const auto ,arg . (FUNCTION ,mem-name)) defs)
-                           (SETF (GETF args arg) (INTERN (FORMAT NIL "PREV_CASE_~A" arg))))
-                         (LET ((match-id (GENSYM "match")))
-                           (PUSH `(auto ,arg-name . (FUNCTION ,mem-name)) defs)
-                           (MULTIPLE-VALUE-BIND (in-data-name in-symb in-tail in-defs in-assigns in-args in-conds)
-                               (match-case-h-details match-id arg-name (APPEND arg (LIST NIL)))
+                           ;; (LET ((arg-string (SYMBOL-NAME arg)))
+                           ;;   (WHEN (OR (STR:STARTS-WITH-P "*" arg-string) (STR:STARTS-WITH-P "&" arg-string))
+                           ;;     (LET ((arg-s (INTERN (STR:SUBSTRING 1 T arg-string))))
+                           ;;       (PUSH (LIST arg-s (INTERN (FORMAT NIL "(~A)" arg))) args)
+                           ;;       (SETQ arg arg-s))))
+                           (SETQ args (PUSH arg args))                        
+                           ;; (PUSH `(auto ,arg . (FUNCTION ,mem-name)) defs)
+                           (PUSH `((typeof ,mem-name) ,arg) defs)
+                           ;; (PUSH `(set ,arg ,mem-name) assigns)
+                           (SETQ conds (IF conds `(and ,conds (progn (= ,arg ,mem-name) true))
+                                                   `(progn (= ,arg ,mem-name) true))) ; assigns
+                           )
+                         (PROGN
+                           ;; (PUSH `(auto ,arg-name . (FUNCTION ,mem-name)) defs)
+                           (PUSH `((typeof ,mem-name) ,arg-name) defs)
+                           ;; (PUSH `(set ,arg-name ,mem-name) assigns)
+                           (SETQ conds (IF conds `(and ,conds (progn (= ,arg-name ,mem-name) true))
+                                           `(progn (= ,arg-name ,mem-name) true))); assigns
+                           (MULTIPLE-VALUE-BIND (in-data-name in-symb in-tail in-defs in-assigns in-args in-conds in-dos)
+                               (match-case-h-details arg-name
+                                                     (IF (OR (EQUAL (CAR arg) '\,) (EQUAL (CAR arg) '\:))
+                                                         (APPEND (LIST arg) (LIST NIL)) (APPEND arg (LIST NIL)))
+                                                     T)
                              (SETQ defs (APPEND in-defs defs))
                              (SETQ assigns (APPEND in-assigns assigns))
                              (SETQ args (APPEND in-args args))
+                             (SETQ dos (APPEND in-dos dos))
                              (WHEN in-conds (SETQ conds (IF conds `(and ,conds ,in-conds) in-conds))))))))))
-             (IF (EQUAL (CAR tail) '=>)
+             (IF (EQUAL (CAR tail) '<!>)
                  (PROGN
-                   (SETQ =>found T)
+                   (SETQ <!>found T)
                    (SETQ conds (IF conds `(and ,conds ,(NTH 1 tail)) (NTH 1 tail))))
                  (SETQ conds (IF conds conds 'true))))
 
             ((AND (LISTP symb) (EQUAL (CAR symb) '\:)) ; list \:
-             (WHEN (OR has-alias (NOT (EQL data data-name)))
-               (PUSH `(auto ,data-name . ,(IF (LISTP data) `(FUNCTION ,data) data)) defs))
-             ;;  (PUSH `(set ,data-name ,data) assigns))
-             ;; (PUSH `((typeof ,data) ,data-name) defs)
-             ;; (PUSH `(set ,data-name ,data) assigns))
-
-             (LET ((el-type (CADR symb)))
-               (PUSH `(auto __h_has_len .
-                            (FUNCTION ((<> hasLen List ,el-type) ,data-name ,(1- (LENGTH (CDDR symb))))))
-                 defs)
-               ;; (PUSH `((typeof ((<> has len List ,el-type) ,data-name ,(1- (LENGTH (CDDR symb))))) __h_has_len) defs)
-               ;; (PUSH `(set __h_has_len ((<> has len List ,el-type) ,data-name ,(1- (LENGTH (CDDR symb))))) assigns)
-               (SETQ conds `(== __h_has_len ,(- (LENGTH symb) 3)))
-               (DOTIMES (i (- (LENGTH symb) 2))
-                 (LET ((arg (MACROEXPAND (NTH (+ i 2) symb))))
-                   (UNLESS (EQUAL arg '_)
-                     (LET ((arg-name (make-match-h-arg-name match-id i))
-                           (mem-name (IF (< i (- (LENGTH symb) 3))
-                                         (LIST '$ `((<> nth List ,el-type) ,i ,data-name)
-                                               '__h_data
-                                               'Just
+             (SETQ conds `(== ((\.* hasLen ,data-name) ,data-name ,(1- (LENGTH (CDR symb)))) ,(1- (LENGTH (CDR symb)))))
+             (DOTIMES (i (- (LENGTH symb) 1))
+               (LET ((prev-arg (make-match-h-item-name match-id (- i 1)))
+                     (curr-arg (make-match-h-item-name match-id i))
+                     (arg      (MACROEXPAND (NTH (+ i 1) symb))))
+                 (UNLESS (OR (EQUAL arg '_) (AND (SYMBOLP arg) (EQUAL (CHAR (SYMBOL-NAME arg) 0) #\_)))
+                   (LET* ((item-name (IF (= i 0)
+                                         data-name
+                                         (LIST '$ (LIST '-> prev-arg '__h_data) 'Cons
+                                               (make-data-h-member-name 1))))
+                          (mem-name (LIST '$ (LIST '-> curr-arg '__h_data) 'Cons
+                                          (make-data-h-member-name 0)))
+                          (type-name (IF (< i (- (LENGTH symb) 2))
+                                         (LIST '$ (LIST '-> item-name '__h_data) 'Cons
                                                (make-data-h-member-name 0))
-                                         `((<> drop List ,el-type) ,i ,data-name))))
-                       (IF (ATOM arg)
-                           (PROGN
-                             (PUSH `((typeof ,mem-name) ,arg) defs)
-                             (PUSH `(set ,arg ,mem-name) assigns)
-                             (SETF (GETF args arg) (INTERN (FORMAT NIL "PREV_CASE_~A" arg))))
-                           (LET ((match-id (GENSYM "match")))
-                             (PUSH `((typeof ,mem-name) ,arg-name) defs)
-                             (PUSH `(set ,arg-name ,mem-name) assigns)
-                             (MULTIPLE-VALUE-BIND (in-data-name in-symb in-tail in-defs in-assigns in-args in-conds)
-                                 (match-case-h-details match-id arg-name (APPEND arg (LIST NIL)))
-                               (SETQ defs (APPEND in-defs defs))
-                               (SETQ assigns (APPEND in-assigns assigns))
-                               (SETQ args (APPEND in-args args))
-                               (WHEN in-conds (SETQ conds (IF conds `(and ,conds ,in-conds) in-conds))))))))))
-               (IF (EQUAL (CAR tail) '=>)
-                   (PROGN
-                     (SETQ =>found T)
-                     (SETQ conds (IF conds `(and ,conds ,(NTH 1 tail)) (NTH 1 tail))))
-                   (SETQ conds (IF conds conds 'true)))))
-
-            (T (WHEN (OR has-alias (NOT (EQL data data-name)))
-                 (PUSH `(auto ,data-name . ,(IF (LISTP data) `(FUNCTION ,data) data)) defs))
-               ;; (PUSH `(set ,data-name ,data) assigns))
-
-               (DOTIMES (i (1- (LENGTH tail))) ; data type
-                 (LET ((arg (MACROEXPAND (NTH (1+ i) case))))
-                   (UNLESS =>found
-                     (IF (EQUAL arg '=>)
+                                         (LIST '$ (LIST '-> item-name '__h_data) 'Cons
+                                               (make-data-h-member-name 1)))))
+                     
+                     ;; (WHEN (= i 0)
+                     ;;   (SETQ conds `(and ,conds ,curr-arg))) ; check __h_cons null
+                     
+                     (IF (ATOM arg)
                          (PROGN
-                           (SETQ =>found T)
+                           ;; (LET ((arg-string (SYMBOL-NAME arg)))
+                           ;;   (WHEN (OR (STR:STARTS-WITH-P "*" arg-string) (STR:STARTS-WITH-P "&" arg-string))
+                           ;;     (LET ((arg-s (INTERN (STR:SUBSTRING 1 T arg-string))))
+                           ;;       (PUSH (LIST arg-s (INTERN (FORMAT NIL "(~A)" arg))) args)
+                           ;;       (SETQ arg arg-s))))
+                           (SETQ args (PUSH arg args))
+                           (IF (< i (- (LENGTH symb) 2))
+                               (PROGN
+                                 ;; (PUSH `(auto ,curr-arg . (FUNCTION ,item-name)) defs)
+                                 (PUSH `((typeof ,item-name) ,curr-arg) defs)
+                                 (PUSH `(set ,curr-arg ,item-name) assigns)
+                                 ;; (PUSH `(auto ,arg . (FUNCTION ,mem-name)) defs)
+                                 (PUSH `((typeof ,mem-name) ,arg) defs)
+                                 (PUSH `(set ,arg ,mem-name) assigns)
+                                 )
+                               (PROGN
+                                 ;; (PUSH `(auto ,arg . (FUNCTION ,item-name)) defs)
+                                 (PUSH `((typeof ,item-name) ,arg) defs)
+                                 (PUSH `(set ,arg ,item-name) assigns)
+                                 )))
+                         (LET ((arg-name (make-match-h-arg-name match-id i)))
+                           (IF (< i (- (LENGTH symb) 3))
+                               (PROGN
+                                 ;; (PUSH `(auto ,curr-arg . (FUNCTION ,item-name)) defs)
+                                 (PUSH `((typeof ,item-name) ,curr-arg) defs)
+                                 (PUSH `(set ,curr-arg ,item-name) assigns)
+                                 ;; (PUSH `(auto ,arg-name . (FUNCTION ,mem-name)) defs)
+                                 (PUSH `((typeof ,mem-name) ,arg-name) defs)
+                                 (PUSH `(set ,arg-name ,mem-name) assigns)
+                                 )
+                               (PROGN
+                                 ;; (PUSH `(auto ,arg-name . (FUNCTION ,item-name)) defs)
+                                 (PUSH `((typeof ,item-name) ,arg-name) defs)
+                                 (PUSH `(set ,arg-name ,item-name) assigns)
+                                 ))
+                           (MULTIPLE-VALUE-BIND (in-data-name in-symb in-tail in-defs in-assigns in-args in-conds in-dos)
+                               (match-case-h-details arg-name
+                                                     (IF (OR (EQUAL (CAR arg) '\,) (EQUAL (CAR arg) '\:))
+                                                         (APPEND (LIST arg) (LIST NIL)) (APPEND arg (LIST NIL)))
+                                                     T)
+                             (SETQ defs (APPEND in-defs defs))
+                             (SETQ assigns (APPEND in-assigns assigns))
+                             (SETQ args (APPEND in-args args))
+                             (SETQ dos (APPEND in-dos dos))
+                             (WHEN in-conds (SETQ conds (IF conds `(and ,conds ,in-conds) in-conds))))))))))
+             (IF (EQUAL (CAR tail) '<!>)
+                 (PROGN
+                   (SETQ <!>found T)
+                   (SETQ conds (IF conds `(and ,conds ,(NTH 1 tail)) (NTH 1 tail))))
+                 (SETQ conds (IF conds conds 'true))))
+
+            (T (DOTIMES (i (1- (LENGTH tail))) ; data type
+                 (LET ((arg (MACROEXPAND (NTH (1+ i) case))))
+                   (UNLESS <!>found
+                     (IF (EQUAL arg '<!>)
+                         (PROGN
+                           (SETQ <!>found T)
                            (SETQ conds (IF conds `(and ,conds ,(NTH (+ i 2) case)) (NTH (+ i 2) case))))
-                         (UNLESS (EQUAL arg '_)
-                           (LET ((arg-name (make-match-h-arg-name match-id i))
-                                 (mem-name (LIST '$
-                                                 (LIST (IF is-ptr '-> '$) data-name '__h_data)
+                         (UNLESS (OR (EQUAL arg '_) (AND (SYMBOLP arg) (EQUAL (CHAR (SYMBOL-NAME arg) 0) #\_)))
+                           (LET ((mem-name (LIST '$
+                                                 (LIST (IF is-ptr '-> '$) (IF is-dptr (LIST 'cof data-name) data-name) '__h_data)
                                                  symb
                                                  (make-data-h-member-name i))))
                              (IF (ATOM arg)
                                  (PROGN
-                                   ;; (PUSH `((typeof ,mem-name) ,arg) defs)
-                                   ;; (PUSH `(set ,arg ,mem-name) assigns)
-                                   (PUSH `(auto ,arg . ,(IF (LISTP mem-name) `(FUNCTION ,mem-name) mem-name)) defs)
-
-                                   (SETF (GETF args arg) (INTERN (FORMAT NIL "PREV_CASE_~A" arg))))
-                                 (LET ((match-id (GENSYM "match")))
+                                   ;; (LET ((arg-string (SYMBOL-NAME arg)))
+                                   ;;   (WHEN (OR (STR:STARTS-WITH-P "*" arg-string) (STR:STARTS-WITH-P "&" arg-string))
+                                   ;;     (LET ((arg-s (INTERN (STR:SUBSTRING 1 T arg-string))))
+                                   ;;       (PUSH (LIST arg-s (INTERN (FORMAT NIL "(~A)" arg))) args)
+                                   ;;       (SETQ arg arg-s))))
+                                   (SETQ args (PUSH arg args))
+                                   ;; (PUSH `(auto ,arg . (FUNCTION ,mem-name)) defs)
+                                   (PUSH `((typeof ,mem-name) ,arg) defs)
+                                   ;; (PUSH `(= ,arg ,mem-name) conds)
+                                   (SETQ conds (IF conds `(and ,conds (progn (= ,arg ,mem-name) true))
+                                                   `(progn (= ,arg ,mem-name) true))) ; assigns
+                                   )
+                                 (LET ((arg-name (make-match-h-arg-name match-id i)))
+                                   ;; (PUSH `(auto ,arg-name . (FUNCTION ,mem-name)) defs)
                                    ;; (PUSH `((typeof ,mem-name) ,arg-name) defs)
-                                   ;; (PUSH `(set ,arg-name ,mem-name) assigns)
-                                   (PUSH `(auto ,arg-name . ,(IF (LISTP mem-name) `(FUNCTION ,mem-name) mem-name)) defs)
-
-                                   (MULTIPLE-VALUE-BIND (in-data-name in-symb in-tail in-defs in-assigns in-args in-conds)
-                                       (match-case-h-details match-id arg-name (APPEND arg (LIST NIL)))
+                                   ;; (PUSH `(= ,arg-name ,mem-name) conds)
+                                   ;; (SETQ conds (IF conds `(and ,conds (progn (= ,arg-name ,mem-name) true))
+                                   ;; `(progn (= ,arg-name ,mem-name) true))) ; assigns
+                                   (MULTIPLE-VALUE-BIND (in-data-name in-symb in-tail in-defs in-assigns
+                                                                      in-args in-conds in-dos)
+                                       (match-case-h-details arg-name
+                                                             (IF (OR (EQUAL (CAR arg) '\,) (EQUAL (CAR arg) '\:))
+                                                                 (APPEND (LIST arg) (LIST NIL)) (APPEND arg (LIST NIL)))
+                                                             T)
+                                     
+                                     (PUSH `((typeof ,mem-name) ,in-data-name) defs)
+                                     (SETQ conds (IF conds `(and ,conds (progn (= ,in-data-name ,mem-name) true))
+                                                     `(progn (= ,in-data-name ,mem-name) true))) ; assigns
+                                   
                                      (SETQ defs (APPEND in-defs defs))
                                      (SETQ assigns (APPEND in-assigns assigns))
                                      (SETQ args (APPEND in-args args))
+                                     (SETQ dos (APPEND in-dos dos))
                                      (WHEN in-conds (SETQ conds (IF conds `(and ,conds ,in-conds) in-conds))))))
                              ))))))))
       
-      (WHEN (OR (AND =>found (LISTP symb) (/= (LENGTH case) 4))
-              (AND =>found (ATOM symb) (< (LENGTH case) 4))
-              (AND (NULL =>found) (LISTP symb) (/= (LENGTH case) 2))
-              (AND (NULL =>found) (ATOM symb) (< (LENGTH case) 2)))
+      (WHEN (OR (AND <!>found (LISTP symb) (/= (LENGTH case) 4))
+              (AND <!>found (ATOM symb) (< (LENGTH case) 4))
+              (AND (NULL <!>found) (LISTP symb) (/= (LENGTH case) 2))
+              (AND (NULL <!>found) (ATOM symb) (< (LENGTH case) 2)))
         (ERROR (FORMAT NIL "match case wrong definition: ~A" case)))
 
       (UNLESS (EQUAL symb 'default)
-        (WHEN (ATOM symb)
-          (SETQ conds (IF (AND conds (EQUAL conds 'true))
-                          `(== (,(IF is-ptr '-> '$) ,data-name __h_ctor) ,(make-data-h-type-name symb))
-                          (IF conds
-                              `(and (== (,(IF is-ptr '-> '$) ,data-name __h_ctor) ,(make-data-h-type-name symb)) ,conds)
-                              `(== (,(IF is-ptr '-> '$) ,data-name __h_ctor) ,(make-data-h-type-name symb)))))))
+        (SETQ conds (IF (AND conds (EQUAL conds 'true))
+                        (IF (ATOM symb)
+                            `(and true (== (,(IF is-ptr '-> '$)
+                                             ,(IF is-dptr (LIST 'cof data-name) data-name) __h_ctor)
+                                         ,(make-data-h-type-name symb)))
+                            `(and true ,conds))
+                        (IF (ATOM symb)
+                            (IF conds
+                                `(and true (and (== (,(IF is-ptr '-> '$) ,(IF is-dptr (LIST 'cof data-name) data-name) __h_ctor)
+                                                  ,(make-data-h-type-name symb))
+                                             ,conds))
+                                `(and true (== (,(IF is-ptr '-> '$) ,(IF is-dptr (LIST 'cof data-name) data-name) __h_ctor)
+                                             ,(make-data-h-type-name symb))))
+                            (IF (AND (LISTP symb) (EQUAL (CAR symb) '\:))
+                                conds                   ; list
+                                `(and true ,conds)))))) ; tuple
 
-      (VALUES data-name symb tail defs assigns args conds))))
+      (VALUES data-name symb tail defs assigns args conds dos))))
 
-(DEFMACRO match* (data cases is-io prev-args)
+(DEFMACRO match*-case (data case cases is-io &OPTIONAL prev-args)
+  (LET ((->found (POSITION '-> case))) ; inner match application operator
+    (IF ->found
+        (SETQ case `(,@(SUBSEQ case 0 ->found) (,(IF is-io 'io 'match) ,@(CDR (SUBSEQ case ->found)))))
+        (LET ((->#found (POSITION '-># case)))
+          (WHEN ->#found
+            (SETQ case `(,@(SUBSEQ case 0 ->#found) (,(IF is-io 'io# 'match#) ,@(CDR (SUBSEQ case ->#found))))))))
+    
+    (MULTIPLE-VALUE-BIND (data-name symb tail defs assigns args conds dos)
+        (match-case-h-details data case)
+
+      ;; match cases can use same arg names
+      ;; but nested matches can't use outer match arg names
+      (DOLIST (arg (SET-DIFFERENCE prev-args args))
+        (WHEN (find-subseq arg case)
+            (ERROR (FORMAT NIL "previous match case arg usage: ~A~%  in ~A" arg case))))
+      
+      ;; (LET ((filtered-prev-args ()))
+      ;;   (DOTIMES (i (LENGTH args))
+      ;;     (WHEN (= 0 (REM i 2)) (REMF prev-args (NTH i args))))
+      ;;   (DOTIMES (i (LENGTH prev-args))
+      ;;     (WHEN (= 0 (REM i 2))
+      ;;       (PUSH (LIST (NTH i prev-args) (GETF prev-args (NTH i prev-args))) filtered-prev-args)))
+      
+      (SETQ dos (APPEND (REVERSE dos) (LIST (CAR (LAST case)))))
+      
+      `(,(IF is-io 'let 'letn) ,(REVERSE defs)
+         ;; (inline-generic ,args
+         ,(IF (AND assigns conds)
+              (LET ((ctor-cond (AND (LISTP conds) (CAR conds))))
+                (IF (AND (SYMBOLP ctor-cond) (EQUAL ctor-cond 'and))
+                    `(if ,(CADR conds) (block ,@(REVERSE assigns)))
+                    `(if ,conds (block ,@(REVERSE assigns)))))
+              `(block ,@(REVERSE assigns)))
+         ;; )
+         ;; (inline-generic ,args
+         ,(IF conds
+              `(letn ((bool __h_case_result . (FUNCTION ,conds)))
+                 ,(APPEND
+                      `(,(IF is-io 'if '?) __h_case_result (,(IF is-io 'block 'progn) ,@dos))
+                    (IF cases
+                        `((match* ,data-name ,cases ,is-io ,(UNION args prev-args)))
+                        '())))
+              `(,(IF is-io 'block 'progn) ,@dos))
+         ;; )
+         ))))
+
+(DEFMACRO match* (data cases is-io &OPTIONAL prev-args)
   (IF (NULL cases)
       `($$$)
-      (LET* ((match-id (GENSYM "match"))
-             (case (CAR cases)))
-        (MULTIPLE-VALUE-BIND (data-name symb tail defs assigns args conds)
-            (match-case-h-details match-id data case)
-
-          ;; (LET ((filtered-prev-args ()))
-          ;;   (DOTIMES (i (LENGTH args))
-          ;;     (WHEN (= 0 (REM i 2)) (REMF prev-args (NTH i args))))
-          ;;   (DOTIMES (i (LENGTH prev-args))
-          ;;     (WHEN (= 0 (REM i 2))
-          ;;       (PUSH (LIST (NTH i prev-args) (GETF prev-args (NTH i prev-args))) filtered-prev-args)))
-          
-          `(,(IF is-io 'let 'letn) ,(REVERSE defs)
-             ,(IF (AND assigns conds)
-                  (LET ((ctor-cond (CAR conds)))
-                    (IF (AND (SYMBOLP ctor-cond) (EQUAL ctor-cond 'and))
-                        `(if ,(CADR conds) (block ,@(REVERSE assigns)))
-                        `(if ,conds (block ,@(REVERSE assigns)))))
-                  `(block ,@(REVERSE assigns)))
-             ;; (where ,(REVERSE filtered-prev-args)
-             ,(IF conds
-                  `(letn ((bool __h_case_result . (FUNCTION ,conds)))
-                     ,(APPEND
-                       `(,(IF is-io 'if '?) __h_case_result ,(CAR (LAST case)))
-                       (IF (CDR cases)
-                           `((match* ,data-name ,(CDR cases) ,is-io ,args))
-                           '())))
-                  (CAR (LAST case))))))))
+      (LET* ((case (CAR cases))
+             (~found (POSITION '~ case))) ; inner match application operator
+        
+        (IF ~found ; outer most destructure only
+            `(match*-case ,data
+               ,(APPEND (SUBSEQ case 0 ~found) (SUBSEQ case (+ (POSITION '~ case :FROM-END T) 2)))
+               ,(APPEND (LIST (APPEND (SUBSEQ case 0 (- ~found 1)) (SUBSEQ case (+ ~found 1)))) (CDR cases))
+               ,is-io
+               ,prev-args)
+            `(match*-case ,data ,case ,(CDR cases) ,is-io ,prev-args))
+        ))) ; match*
 
 ;; match with required default value or void
 (DEFMACRO match (data &REST cases)
-  `(match* ,data ,cases NIL NIL))
+  `(match* ,data ,cases NIL))
 
 ;; match with optional default case
 (DEFMACRO io (data &REST cases)
-  `(match* ,data ,cases T NIL))
+  `(match* ,data ,cases T))
+
+;; match box with required default value or void and required dead case
+;; first case should be dead case
+(DEFMACRO match# (data &REST cases)
+  (LET* ((data data)
+         (cases cases)
+         (dead (LET ((first (CAR cases)))
+                 (IF (EQUAL (CAR first) 'dead) (CADR first) NIL))))
+    (IF dead
+        `(letin* ((__h_matchbox ,data))
+           (match ((\. get __h_matchbox) __h_matchbox)
+             (Just unboxed (match unboxed ,@(CDR cases)))
+             (default ,dead)))
+        (ERROR "match box dead case is required"))))
+
+;; match box with optional default case and optional dead case
+;; first case should be dead case
+(DEFMACRO io# (data &REST cases)
+  (LET* ((data data)
+         (cases cases)
+         (dead (LET ((first (CAR cases)))
+                 (IF (EQUAL (CAR first) 'dead) (CADR first) NIL))))
+    (IF dead
+        `(letin* ((__h_matchbox ,data))
+           (io ((\. get __h_matchbox) __h_matchbox)
+             (Just unboxed (io unboxed ,@(CDR cases)))
+             (Nothing ,dead)))
+        `(letin* ((__h_matchbox ,data))
+           (io ((\. get __h_matchbox) __h_matchbox)
+             (Just unboxed (io unboxed ,@cases)))))))

@@ -1,0 +1,69 @@
+
+(import "draft/collection/btree.lisp")
+
+(DEFMACRO init-macro ()
+  `($$$ nil
+     ;; to use (<> new List DynamicType) helper macro
+     (import-List (<> List DynamicType) DynamicType (<> new List DynamicType))
+     
+     ;; to use (<> new BTree CStr DynamicType) helper macro
+     (import-B-Tree (<> BTree CStr DynamicType) CStr DynamicType (<> new BTree CStr DynamicType))
+     )) ; init-macro
+
+;; a facility macro to create literal DynamicTypes
+(DEFMACRO new^DynamicType (payload)
+  (LET ((payload payload))
+    (IF (ATOM payload)
+        (COND
+          ((STRINGP payload) `((<> Dynamic String)  (new^String^Const ,payload)))
+          ((FLOATP  payload) `((<> Dynamic Float)   ,payload))
+          ((NUMBERP payload) `((<> Dynamic Integer) ,payload))
+          ((SYMBOLP payload)
+           (COND
+             ((EQUAL payload 'true)  `((<> Dynamic Boolean) (True)))
+             ((EQUAL payload '#t)    `((<> Dynamic Boolean) (True)))
+             ((EQUAL payload 'false) `((<> Dynamic Boolean) (False)))
+             ((EQUAL payload '#f)    `((<> Dynamic Boolean) (False)))
+             ((EQUAL payload 'nil)   `((<> Dynamic Null)))
+             (T (LET* ((pstr (SYMBOL-NAME payload))
+                       (fstr (CHAR pstr 0))
+                       (lstr (CHAR pstr (- (LENGTH pstr) 1))))
+                  (IF (DIGIT-CHAR-P fstr)
+                      (COND
+                        ((FIND #\. pstr)  `((<> Dynamic Float)   ,payload))
+                        ((EQUAL lstr #\L) `((<> Dynamic Float)   ,payload))
+                        ((EQUAL lstr #\l) `((<> Dynamic Integer) ,payload))
+                        (T (ERROR (FORMAT NIL "unknown number ~A in DynamicType literal" payload))))
+                      payload))))))
+        (LET ((ctor (CAR payload))
+              (args (CDR payload)))
+          (COND
+            ((EQUAL ctor 'List)
+             (LET* ((has-name (AND (SYMBOLP (CAR args)) (STRING-EQUAL (SYMBOL-NAME (CAR args)) "xml-tag")))
+                    (xml-tag (IF has-name (CADR args) "item"))
+                    (args (IF has-name (CDDR args) args)))
+               `((<> Dynamic List)
+                 ((<> new List DynamicType)
+                  '( ,@(MAP 'LIST #'(LAMBDA (arg) `(new^DynamicType ,arg)) args)) )
+                 ,xml-tag)))
+            ((EQUAL ctor 'Object)
+             `((<> Dynamic Object)
+               (match ((<> new BTree CStr DynamicType)
+                       ,@(MAP 'LIST
+                              #'(LAMBDA (i arg)
+                                  (IF (= (MOD i 2) 0)
+                                      (IF (SYMBOLP arg)
+                                          (SYMBOL-NAME arg)
+                                          (IF (STRINGP arg)
+                                              arg
+                                              (ERROR (FORMAT NIL "Dynamic Object keys should be string or symbol: ~%~A in ~A" arg args))))
+                                      `(new^DynamicType ,arg)))
+                              (range-h (LENGTH args)) args))
+                 (Right tree tree)
+                 (Left err (error! (printf "DynamicType Object creation error: ")
+                             ((<> show BTree CStr DynamicType Error) err)
+                             (putchar #\Newline)
+                             (exit -1)
+                             nil))
+                 (default nil))))
+            (T payload))))))
