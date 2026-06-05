@@ -285,6 +285,7 @@
 	    (is-declare  nil)
 	    (is-extern   nil)
         (is-alloc    nil)
+        (is-atomic   nil)
         (has-defer   nil)
         (is-unique   (unique spec)))
     
@@ -296,6 +297,7 @@
 	        ((key-eq (car attr) '|decl|)         (setq is-declare  t))
 	        ((key-eq (car attr) '|extern|)       (setq is-extern   t))
             ((key-eq (car attr) '|alloc|)        (setq is-alloc    t))
+            ((key-eq (car attr) '|atomic|)       (setq is-atomic   t))
             ((key-eq (car attr) '|defer|)        (setq has-defer   (cdr attr)))
             (t (error (format nil "unknown variable attribute ~A for ~A" attr spec)))))
 
@@ -318,6 +320,7 @@
     (when is-register (set-ast-line (output "register ")))
     (unless (key-eq (typeof spec) '|func|) (when is-volatile (set-ast-line (output "volatile "))))
     (when is-thread-l (set-ast-line (output "__thread ")))
+    (when is-atomic   (set-ast-line (output "_Atomic ")))
     (compile-spec-type-value spec lvl globals parent-spec has-defer)))
 
 (defun compile-let (spec lvl globals parent-spec &optional is-n) ; is-n means letn - > scope is statement
@@ -659,7 +662,7 @@
                 (when (key-eq name '|main|)
                   (output "#else~%")
                   (output "printf (\"Cicili Haskell is not included!\\n\");~%")
-                  (output "exit ();~%"))
+                  (output "exit (EXIT_FAILURE);~%"))
                 (output "#endif~%")))
                       
             ;; body

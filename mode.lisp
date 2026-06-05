@@ -304,6 +304,7 @@
    (1 . resolve)
    (1 . thread-local)
    (1 . define)
+   (0 . atomic)
    ))
 
 (cicili-add-attributes
@@ -337,6 +338,7 @@
  '((1 . alloc)
    (1 . malloc)
    (1 . calloc)
+   (1 . realloc)
    (1 . syslog!)
    (1 . debug!)
    (1 . warn!)

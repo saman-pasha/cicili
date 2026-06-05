@@ -285,3 +285,6 @@ test/haskell/boxing.c.run1.c
 test/haskell/boxing.c.run2.c
 test/haskell/boxing.c.run3.c
 test/haskell/match.c.run1.c
+draft/tests/io/main
+/draft/tests/io/main.dSYM
+draft/tests/pthread/main

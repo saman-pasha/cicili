@@ -1,0 +1,39 @@
+;;; https://en.cppreference.com/c/language/atomic
+
+(import "lib/std/pthread/pthread.lisp")
+
+(source "pthread_atomic.c"
+  (make :std #t
+        :compile #t
+        :link ("-lpthread" "-lpthread_atomic.o" "-o" "main"))
+
+  (include <stdatomic.h>)
+  (include <pthread.h>)
+
+  (atomic)
+  (var int atomic_counter . 0)
+  (var int locked_counter . 0)
+  (var int counter . 0)
+  
+  (main
+    (let ((pthread_t threads [10]))
+      (for ((int i . 0)) (< i 10) ((++ i))
+           (set (nth i threads)
+             (go ()
+               (for ((int n . 0)) (< n 1000) ((++ n))
+                    (++ atomic_counter) ; fast
+                    ;; NIL UPPER CASE is required
+                    ;; for lock macro compatibility
+                    (lock NIL (++ locked_counter))
+                    ;; (printf "Result: %d\n" (lockn NIL (++ locked_counter)))
+                    (++ counter)
+                    ))))
+
+      (for ((int i . 0)) (< i 10) ((++ i))
+           (join (nth i threads)))
+
+      (printf "atomic_counter: %d\n" atomic_counter)
+      (printf "locked_counter: %d\n" locked_counter)
+      (printf "counter: %d\n" counter))
+    ) ; main
+  ) ; pthread.c

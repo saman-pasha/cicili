@@ -68,7 +68,7 @@
                                         (block (FCGX_PutS "HTTP/1.1 200 OK\r\n" (-> req out))
                                                (FCGX_PutS "Content-Type: text/html\r\n\r\n" (-> req out))
                                                (FCGX_PutS "<html><head><title>New User</title></head><body>" (-> req out))
-                                               (FCGX_PutS "<form action\"/newuser\" method=\"post\">" (-> req out))
+                                               (FCGX_PutS "<form action=\"/newuser\" method=\"post\">" (-> req out))
                                                (FCGX_PutS "<br/>User Id: <input type=\"text\" name=\"id\"/>" (-> req out))
                                                (FCGX_PutS "<br/>User Name: <input type=\"text\" name=\"name\"/>" (-> req out))
                                                (FCGX_PutS "<br/><button type=\"submit\">Register</button>" (-> req out))
@@ -87,7 +87,7 @@
                                                 (Nothing (FCGX_PutS "HTTP/1.1 400 Bad Request\r\n" (-> req out)))))))))))))
           
           (io result
-            (Right fd (format #t "FasstCGI server on FD: %d was quitet successfully" fd))
+            (Right fd (format #t "FasstCGI server on FD: %d was quitted successfully" fd))
             (Left err (block (format #t "FasstCGI server was quitet with error: ")
                              ((<> show RouterError) err))))) ; letin*
         

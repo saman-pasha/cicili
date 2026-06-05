@@ -37,9 +37,9 @@
     (IF (NULL out)
         `(pthread_join ,id nil)
         (MULTIPLE-VALUE-BIND (const type modifier const-ptr variable array)
-          (CICILI:SPECIFY-TYPE< out)
+            (CICILI:SPECIFY-TYPE< out)
           `($$$ (var ,@out)
-             (pthread_join ,id (cast (void **) (aof ,variable))))))))
+                (pthread_join ,id (cast (void **) (aof ,variable))))))))
 
 ;; to not be confused with "exit" program function
 (DEFMACRO exit-self (ret-val)
@@ -65,19 +65,24 @@
   `(var pthread_cond_t ,cond (FUNCTION PTHREAD_COND_INITIALIZER)))
 
 ;;; NIL means free lock
+;;; atomic block
+;;; safe for short circuit
 (DEFMACRO lock (mutex &REST body)
   (LET ((mutex mutex))
     (IF mutex
-        `(block (pthread_mutex_lock ,mutex)
+        `(block
+           (pthread_mutex_lock ,mutex)
            ,@body
            (pthread_mutex_unlock ,mutex))
-        (LET ((lock-id (GENSYM "lock")))
-          `(let ((pthread_mutex_t ,lock-id))
-             (pthread_mutex_init (aof ,lock-id) nil) ; mutexattr
+        (LET ((lock-id (GENSYM "lock"))
+              (unlock-id (GENSYM "unlock")))
+          `(let ((static)
+                 (pthread_mutex_t ,lock-id . (FUNCTION PTHREAD_MUTEX_INITIALIZER))
+                 (defer () (pthread_mutex_unlock ,unlock-id))
+                 (pthread_mutex_t * ,unlock-id . (FUNCTION (aof ,lock-id))))
              (pthread_mutex_lock (aof ,lock-id))
              ,@body
-             (pthread_mutex_unlock (aof ,lock-id))
-             (pthread_mutex_destroy (aof ,lock-id)))))))
+             )))))
 
 (DEFMACRO lockn (mutex &REST body)
   (LET ((mutex mutex))
@@ -87,11 +92,11 @@
            (var auto lock_result . #'(progn ,@body))
            (pthread_mutex_unlock ,mutex)
            lock_result)
-        (LET ((lock-id (GENSYM "lock")))
-          `(letn ((pthread_mutex_t ,lock-id))
-             (pthread_mutex_init (aof ,lock-id) nil) ; mutexattr
+        (LET ((lock-id (GENSYM "lockn"))
+              (unlock-id (GENSYM "unlockn")))
+          `(letn ((static)
+                  (pthread_mutex_t ,lock-id . (FUNCTION PTHREAD_MUTEX_INITIALIZER))
+                  (defer () (pthread_mutex_unlock ,unlock-id))
+                  (pthread_mutex_t * ,unlock-id . (FUNCTION (aof ,lock-id))))
              (pthread_mutex_lock (aof ,lock-id))
-             (var auto lock_result . #'(progn ,@body))
-             (pthread_mutex_unlock (aof ,lock-id))
-             (pthread_mutex_destroy (aof ,lock-id))
-             lock_result)))))
+             ,@body)))))

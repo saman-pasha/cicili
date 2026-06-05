@@ -203,7 +203,7 @@
                              )))
             
             (io result
-              (Right fd (format #t "FasstCGI server on FD: %d was quitet successfully" fd))
+              (Right fd (format #t "FasstCGI server on FD: %d was quitted successfully" fd))
               (Left err (block (format #t "FasstCGI server was quitet with error: ")
                           ((<> show RouterError) err))))) ; letin*
           ) ; letin

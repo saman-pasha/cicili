@@ -22,6 +22,7 @@
 		            ((key-eq construct '|volatile|)     (push clause attributes))
 		            ((key-eq construct '|thread-local|) (push clause attributes))
 		            ((key-eq construct '|resolve|)      (push clause attributes))
+		            ((key-eq construct '|atomic|)       (push clause attributes))
 		            ((key-eq construct '|defer|)        (push clause attributes))
                     
 		            ((key-eq construct '|include|)

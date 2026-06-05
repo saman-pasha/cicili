@@ -36,11 +36,11 @@
                 (out (<> m b))
                 (return a->mb))))
          
-         (fn (<> return type) a
-             ((<> return Monad type) a))
+         (fn (<> returnA type) a
+             ((<> returnA Monad type) a))
 
-         (fn (<> return type) b
-             ((<> return Monad type) b))
+         (fn (<> returnB type) b
+             ((<> returnB Monad type) b))
 
          ) ; decl-Monad
 
@@ -78,10 +78,10 @@
                 (return a->mb))))
          
          (fn (<> returnA type) a
-             ((<> return Monad type) a))
+             ((<> returnA Monad type) a))
          
          (fn (<> returnB type) b
-             ((<> return Monad type) b))
+             ((<> returnB Monad type) b))
          
          ) ; import-Monad
 

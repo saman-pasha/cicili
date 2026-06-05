@@ -457,7 +457,7 @@
 
     (setq type (specify-typeof< type))
     
-    (unless (or (null const)     (key-eq const '|const|)) (setq status -2))
+    (unless (or (null const) (key-eq const '|const|)) (setq status -2))
     (unless (or (null modifier)
               (key-eq modifier '&)
               (key-eq modifier '*)
@@ -479,7 +479,7 @@
             (setq array (list (specify-expr (nth 1 (car array))) (specify-expr (nth 1 (cadr array)))))
             (when (= (length array) 3)
               (setq array (list (specify-expr (nth 1 array)))))))
-    (when   (< status 0) (error (format nil "wrong type descriptor ~D ~A" status desc)))
+    (when (< status 0) (error (format nil "wrong type descriptor ~D ~A" status desc)))
     (values const (if type (if (typep type 'sp) type (specify-name< type)) type)
             modifier const-ptr (when variable (specify-name< variable)) array)))
 
@@ -757,6 +757,7 @@
          (is-declare  nil)
 	     (is-extern   nil)
          (is-alloc    nil)
+         (is-atomic   nil)
          (has-defer   nil)
 	     (type  (cdr def)))
 
@@ -768,6 +769,7 @@
 	          ((key-eq name '|static|)       (setq is-static   t))
 	          ((key-eq name '|decl|)         (setq is-declare  t))
 	          ((key-eq name '|extern|)       (setq is-extern   t))
+	          ((key-eq name '|atomic|)       (setq is-atomic   t))
               ((key-eq name '|defer|)
                (let ((quoted (cadr attr)))
                  (if (null quoted)
@@ -812,6 +814,7 @@
 		  (when is-register (push (cons '|register|     t) attributes))
 		  (when is-volatile (push (cons '|volatile|     t) attributes))
 		  (when is-thread-l (push (cons '|thread-local| t) attributes))
+		  (when is-atomic   (push (cons '|atomic|       t) attributes))
 		  (when (or (eq has-defer t) (and is-alloc (null has-defer)))
             (push (cons '|alloc| t) attributes)
             (when (or (null has-defer) (eq has-defer t)) ; auto deferment
@@ -862,6 +865,7 @@
           (is-volatile nil)
 	      (is-thread-l nil)
           (is-alloc    nil)
+          (is-atomic   nil)
           (has-defer   nil))
       (dolist (type-desc (nth 1 def))
         (unless (and (not (null type-desc)) (listp type-desc))
@@ -870,6 +874,7 @@
               ((and (key-eq (car type-desc) '|volatile|)     (= (length (cdr type-desc)) 0)) (setq is-volatile t))
               ((and (key-eq (car type-desc) '|thread-local|) (= (length (cdr type-desc)) 0)) (setq is-thread-l t))
 	          ((and (key-eq (car type-desc) '|static|)       (= (length (cdr type-desc)) 0)) (setq is-static   t))
+	          ((and (key-eq (car type-desc) '|atomic|)       (= (length (cdr type-desc)) 0)) (setq is-atomic   t))
 	          ((key-eq (car type-desc) '|defer|)
                (let ((quoted (cadr type-desc)))
                  (if (null quoted)
@@ -898,6 +903,7 @@
 		             (when is-register (push (cons '|register|     t) attributes))
 		             (when is-volatile (push (cons '|volatile|     t) attributes))
 		             (when is-thread-l (push (cons '|thread-local| t) attributes))
+		             (when is-atomic   (push (cons '|atomic|       t) attributes))
 		             (when (or has-atsign (eq has-defer t) (and is-alloc (null has-defer)))
                        (push (cons '|alloc| t) attributes)
                        (when (or has-atsign (null has-defer) (eq has-defer t)) ; auto deferment
@@ -957,6 +963,7 @@
                    (setq is-volatile nil)
                    (setq is-thread-l nil)
                    (setq is-alloc    nil)
+                   (setq is-atomic   nil)
                    (setq has-defer   nil))))))
     (setf (body let-var) (specify-body (nthcdr 2 def)))
     let-var))
@@ -1439,6 +1446,7 @@
 		            ((key-eq construct '|volatile|)     (push clause attributes))
 		            ((key-eq construct '|thread-local|) (push clause attributes))
 		            ((key-eq construct '|resolve|)      (push clause attributes))
+		            ((key-eq construct '|atomic|)       (push clause attributes))
 		            ((key-eq construct '|defer|)        (push clause attributes))
 		            ((key-eq construct '|include|)
 		             (add-inner (specify-include  clause attributes) guard-specifier) (setq attributes '()))

@@ -52,7 +52,7 @@
               ;;                 `(progn (= ,data-name ,data) true))) ; assigns
               )
             (PUSH `(auto ,data-name . (FUNCTION ,data)) defs)))
-             
+      
       (COND ((AND (LISTP symb) (EQUAL (CAR symb) '\,)) ; tuple \,
              (DOTIMES (i (1- (LENGTH symb))) 
                (LET ((arg (MACROEXPAND (NTH (1+ i) symb))))
@@ -71,7 +71,7 @@
                            (PUSH `((typeof ,mem-name) ,arg) defs)
                            ;; (PUSH `(set ,arg ,mem-name) assigns)
                            (SETQ conds (IF conds `(and ,conds (progn (= ,arg ,mem-name) true))
-                                                   `(progn (= ,arg ,mem-name) true))) ; assigns
+                                           `(progn (= ,arg ,mem-name) true))) ; assigns
                            )
                          (PROGN
                            ;; (PUSH `(auto ,arg-name . (FUNCTION ,mem-name)) defs)
@@ -81,9 +81,9 @@
                                            `(progn (= ,arg-name ,mem-name) true))); assigns
                            (MULTIPLE-VALUE-BIND (in-data-name in-symb in-tail in-defs in-assigns in-args in-conds in-dos)
                                (match-case-h-details arg-name
-                                                     (IF (OR (EQUAL (CAR arg) '\,) (EQUAL (CAR arg) '\:))
-                                                         (APPEND (LIST arg) (LIST NIL)) (APPEND arg (LIST NIL)))
-                                                     T)
+                                 (IF (OR (EQUAL (CAR arg) '\,) (EQUAL (CAR arg) '\:))
+                                     (APPEND (LIST arg) (LIST NIL)) (APPEND arg (LIST NIL)))
+                                 T)
                              (SETQ defs (APPEND in-defs defs))
                              (SETQ assigns (APPEND in-assigns assigns))
                              (SETQ args (APPEND in-args args))
@@ -156,9 +156,9 @@
                                  ))
                            (MULTIPLE-VALUE-BIND (in-data-name in-symb in-tail in-defs in-assigns in-args in-conds in-dos)
                                (match-case-h-details arg-name
-                                                     (IF (OR (EQUAL (CAR arg) '\,) (EQUAL (CAR arg) '\:))
-                                                         (APPEND (LIST arg) (LIST NIL)) (APPEND arg (LIST NIL)))
-                                                     T)
+                                 (IF (OR (EQUAL (CAR arg) '\,) (EQUAL (CAR arg) '\:))
+                                     (APPEND (LIST arg) (LIST NIL)) (APPEND arg (LIST NIL)))
+                                 T)
                              (SETQ defs (APPEND in-defs defs))
                              (SETQ assigns (APPEND in-assigns assigns))
                              (SETQ args (APPEND in-args args))
@@ -205,14 +205,14 @@
                                    (MULTIPLE-VALUE-BIND (in-data-name in-symb in-tail in-defs in-assigns
                                                                       in-args in-conds in-dos)
                                        (match-case-h-details arg-name
-                                                             (IF (OR (EQUAL (CAR arg) '\,) (EQUAL (CAR arg) '\:))
-                                                                 (APPEND (LIST arg) (LIST NIL)) (APPEND arg (LIST NIL)))
-                                                             T)
+                                         (IF (OR (EQUAL (CAR arg) '\,) (EQUAL (CAR arg) '\:))
+                                             (APPEND (LIST arg) (LIST NIL)) (APPEND arg (LIST NIL)))
+                                         T)
                                      
                                      (PUSH `((typeof ,mem-name) ,in-data-name) defs)
                                      (SETQ conds (IF conds `(and ,conds (progn (= ,in-data-name ,mem-name) true))
                                                      `(progn (= ,in-data-name ,mem-name) true))) ; assigns
-                                   
+                                     
                                      (SETQ defs (APPEND in-defs defs))
                                      (SETQ assigns (APPEND in-assigns assigns))
                                      (SETQ args (APPEND in-args args))
@@ -261,7 +261,7 @@
       ;; but nested matches can't use outer match arg names
       (DOLIST (arg (SET-DIFFERENCE prev-args args))
         (WHEN (find-subseq arg case)
-            (ERROR (FORMAT NIL "previous match case arg usage: ~A~%  in ~A" arg case))))
+          (ERROR (FORMAT NIL "previous match case arg usage: ~A~%  in ~A" arg case))))
       
       ;; (LET ((filtered-prev-args ()))
       ;;   (DOTIMES (i (LENGTH args))
