@@ -94,7 +94,7 @@
           (putchar #\Newline)
 
           ;; test StringBuffer
-          (let (((<> StringBuffer char) sb . #'((<> new StringBuffer char) 4)))
+          (let (((<> StringBuffer char) sb . #'((<> new StringBuffer char) 4 #t)))
             (set sb ((<> print StringBuffer char) sb "123" 3))
             (set sb ((<> print StringBuffer char) sb "123" 3))
             (set sb ((<> print StringBuffer char) sb "123" 3))

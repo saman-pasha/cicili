@@ -267,7 +267,7 @@ int main () {
     show_DynamicType (stdout , dt13 );
     putchar ('\n');
     { /* cicili#Let426 */
-      StringBuffer_char sb  = new_StringBuffer_char (4);
+      StringBuffer_char sb  = new_StringBuffer_char (4, true );
       // ----------
       sb  = print_StringBuffer_char (sb , "123", 3);
       sb  = print_StringBuffer_char (sb , "123", 3);
@@ -523,7 +523,7 @@ int main () {
           // ----------
           if (__h_case_result )
             { /* cicili#Block629 */
-              fprintf (stdout , "FasstCGI server on FD: %d was quitet successfully", fd );
+              fprintf (stdout , "FasstCGI server on FD: %d was quitted successfully", fd );
             }
           else
             { /* cicili#Let635 */

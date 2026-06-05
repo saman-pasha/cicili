@@ -64,7 +64,7 @@
                 (out DynamicType)
                 ;; trace
                 ;; (printf "\nparseJson\n")
-                (where ((new  ((<> new StringBuffer char) 16))
+                (where ((new  ((<> new StringBuffer char) 16 #t))
                         (put  (\\ -ch (set sb ((<> put StringBuffer char) sb -ch))))
                         (derr (\\ -fmt ((<> Dynamic Error)
                                         (letn ((char * reason . nil))
@@ -106,7 +106,7 @@
                               (block (when (or (== cursor #\]) (== cursor #\})) (ungetc cursor file))
                                 (if in_integer
                                     (io sb
-                                      (Bufferred buffer
+                                      (NullTerminated buffer
                                         (let ((char * endptr)
                                               (i64 value))
                                           (set sb new)
@@ -118,7 +118,7 @@
                                       (default (return ((<> Dynamic Error) (strdup "Parse Json: no buffer")))))
                                     (if in_float
                                         (io sb
-                                          (Bufferred buffer
+                                          (NullTerminated buffer
                                             (let ((char * endptr)
                                                   (real value))
                                               (set sb new)
@@ -130,7 +130,7 @@
                                           (default (return ((<> Dynamic Error) (strdup "Parse Json: no buffer")))))
                                         (if in_symbol
                                             (io sb
-                                              (Bufferred buffer len
+                                              (NullTerminated buffer len
                                                          (block (set sb new)
                                                            (set in_symbol false)
                                                            (if (== (strncmp buffer "true" len) 0)
@@ -145,7 +145,7 @@
                                                 (if (and hadItem (or (== cursor #\,) (== cursor #\:)))
                                                     (break)
                                                     (io sb
-                                                      (Bufferred buffer
+                                                      (NullTerminated buffer
                                                         (block (put cursor)
                                                           (return (derr "Parse Json: unmatched symbol: '%s' at position: %d"))))
                                                       (default (return ((<> Dynamic Error) (strdup "Parse Json: no buffer"))))))))))))
@@ -207,7 +207,7 @@
                                                                (Right tree ((<> Dynamic Object) tree))
                                                                ;; tree error
                                                                (default (match sb
-                                                                          (Bufferred buffer
+                                                                          (NullTerminated buffer
                                                                             (progn
                                                                               (put cursor)
                                                                               (derr "Parse Json: object creation of '%s' at position: %d")))
@@ -223,7 +223,7 @@
                                                                                 ((<> toArray List char) (cast List^char key) #\Null)
                                                                                 stackKeys)))
                                                   (default (return (match sb
-                                                                     (Bufferred buffer
+                                                                     (NullTerminated buffer
                                                                        (progn
                                                                          (put cursor)
                                                                          (derr "Parse Json: object creation of '%s' at position: %d")))
@@ -236,7 +236,7 @@
                                                           (Right tree ((<> Dynamic Object) tree))
                                                           ;; tree error
                                                           (default (match sb
-                                                                     (Bufferred buffer
+                                                                     (NullTerminated buffer
                                                                        (progn
                                                                          (put cursor)
                                                                          (derr "Parse Json: object creation of '%s' at position: %d")))
@@ -246,7 +246,7 @@
                         (case #\"
                           (when in_string
                             (io sb
-                              (Bufferred buffer len
+                              (NullTerminated buffer len
                                          (block (set sb new)
                                            (set in_string false)
                                            (return ((<> Dynamic String) (pure^String buffer len)))))
@@ -262,7 +262,7 @@
                                     (set in_float true))
                                   (block (put cursor)
                                     (io sb
-                                      (Bufferred buffer (return (derr "Parse Json: invalid floating point: '%s' at position: %d")))
+                                      (NullTerminated buffer (return (derr "Parse Json: invalid floating point: '%s' at position: %d")))
                                       (default (return ((<> Dynamic Error) (strdup "Parse Json: no buffer"))))))))
                           (break))
                         ;; ranges
@@ -289,14 +289,15 @@
                                               (set in_symbol true))
                                             (block (put cursor)
                                               (io sb
-                                                (Bufferred buffer (return (derr "Parse Json: wrong integer definition: '%s' at position: %d")))
+                                                (NullTerminated buffer
+                                                  (return (derr "Parse Json: wrong integer definition: '%s' at position: %d")))
                                                 (default (return ((<> Dynamic Error) (strdup "Parse Json: no buffer"))))))))
                                     ;; all other characters
                                     (if in_string
                                         (put cursor)
                                         (block (put cursor)
                                           (io sb
-                                            (Bufferred buffer
+                                            (NullTerminated buffer
                                               (return (derr "Parse Json: invalid character outside string quotation: '%s' at position: %d")))
                                             (default (return ((<> Dynamic Error) (strdup "Parse Json: no buffer")))))))))
                           (break)

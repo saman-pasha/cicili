@@ -5,15 +5,14 @@ typedef struct class_BTree_CStr_DynamicType * BTree_CStr_DynamicType ;
 #ifndef __H___h_DynamicType_ctor_t__
 #define __H___h_DynamicType_ctor_t__
 typedef enum __h_DynamicType_ctor_t {
-  __h_Function_t = 0,
-  __h_Error_t = 1,
-  __h_Null_t = 2,
-  __h_Object_t = 3,
-  __h_List_t = 4,
-  __h_Boolean_t = 5,
-  __h_Float_t = 6,
-  __h_Integer_t = 7,
-  __h_String_t = 8
+  __h_Error_t = 0,
+  __h_Null_t = 1,
+  __h_Object_t = 2,
+  __h_List_t = 3,
+  __h_Boolean_t = 4,
+  __h_Float_t = 5,
+  __h_Integer_t = 6,
+  __h_String_t = 7
 } __h_DynamicType_ctor_t;
 #endif /* __H___h_DynamicType_ctor_t__ */ 
 typedef struct class_DynamicType class_DynamicType ;
@@ -35,11 +34,11 @@ typedef struct Maybe_DynamicType_x__H_Table {
 typedef struct Maybe_DynamicType_x {
   const Maybe_DynamicType_x__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion123 */
-    struct { /* ciciliStruct124 */
+  union { /* ciciliUnion122 */
+    struct { /* ciciliStruct123 */
       DynamicType_x __h_0_mem ;
     } Just , _1 ;
-    struct { /* ciciliStruct125 */
+    struct { /* ciciliStruct124 */
     } Nothing , _ ;
   } __h_data ;
 } Maybe_DynamicType_x;
@@ -72,13 +71,13 @@ typedef struct Box_DynamicType__H_Table {
 typedef struct Box_DynamicType {
   const Box_DynamicType__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion155 */
-    struct { /* ciciliStruct156 */
+  union { /* ciciliUnion154 */
+    struct { /* ciciliStruct155 */
       DynamicType_x * __h_0_mem ;
       int * __h_1_mem ;
       size_t __h_2_mem ;
     } Hold , _1 ;
-    struct { /* ciciliStruct157 */
+    struct { /* ciciliStruct156 */
     } Gone , _ ;
   } __h_data ;
 } Box_DynamicType;
@@ -107,36 +106,31 @@ typedef struct DynamicType__H_Table {
 typedef struct class_DynamicType {
   const DynamicType__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion198 */
-    struct { /* ciciliStruct199 */
+  union { /* ciciliUnion197 */
+    struct { /* ciciliStruct198 */
       String __h_0_mem ;
-    } String , _8 ;
-    struct { /* ciciliStruct200 */
+    } String , _7 ;
+    struct { /* ciciliStruct199 */
       int64_t __h_0_mem ;
-    } Integer , _7 ;
-    struct { /* ciciliStruct201 */
+    } Integer , _6 ;
+    struct { /* ciciliStruct200 */
       long double __h_0_mem ;
-    } Float , _6 ;
-    struct { /* ciciliStruct202 */
+    } Float , _5 ;
+    struct { /* ciciliStruct201 */
       Bool __h_0_mem ;
-    } Boolean , _5 ;
-    struct { /* ciciliStruct203 */
+    } Boolean , _4 ;
+    struct { /* ciciliStruct202 */
       List_DynamicType __h_0_mem ;
       CStr __h_1_mem ;
-    } List , _4 ;
-    struct { /* ciciliStruct204 */
+    } List , _3 ;
+    struct { /* ciciliStruct203 */
       BTree_CStr_DynamicType __h_0_mem ;
-    } Object , _3 ;
+    } Object , _2 ;
+    struct { /* ciciliStruct204 */
+    } Null , _1 ;
     struct { /* ciciliStruct205 */
-    } Null , _2 ;
-    struct { /* ciciliStruct206 */
       CStr __h_0_mem ;
-    } Error , _1 ;
-    struct { /* ciciliStruct207 */
-      List_DynamicType __h_0_mem ;
-      DynamicType __h_1_mem ;
-      void * __h_2_mem ;
-    } Function , _ ;
+    } Error , _ ;
   } __h_data ;
 } class_DynamicType;
 DynamicType Dynamic_String (String data );
@@ -147,9 +141,8 @@ DynamicType Dynamic_List (List_DynamicType data , CStr xml_name );
 DynamicType Dynamic_Object (BTree_CStr_DynamicType data );
 DynamicType Dynamic_Null ();
 DynamicType Dynamic_Error (CStr reason );
-DynamicType Dynamic_Function (List_DynamicType params , DynamicType out , void * fptr );
-__attribute__((weak)) DynamicType Default_DynamicType (List_DynamicType params , DynamicType out , void * fptr ) {
-  return Dynamic_Function (params , out , fptr );
+__attribute__((weak)) DynamicType Default_DynamicType (CStr reason ) {
+  return Dynamic_Error (reason );
 }
 int show_DynamicType (CFile file , DynamicType dt );
 DynamicType search_DynamicType (DynamicType dt , CStr path );
@@ -176,11 +169,11 @@ typedef struct Maybe_DynamicType__H_Table {
 typedef struct Maybe_DynamicType {
   const Maybe_DynamicType__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion275 */
-    struct { /* ciciliStruct276 */
+  union { /* ciciliUnion268 */
+    struct { /* ciciliStruct269 */
       DynamicType __h_0_mem ;
     } Just , _1 ;
-    struct { /* ciciliStruct277 */
+    struct { /* ciciliStruct270 */
     } Nothing , _ ;
   } __h_data ;
 } Maybe_DynamicType;
@@ -234,12 +227,12 @@ typedef struct List_DynamicType__H_Table {
 typedef struct class_List_DynamicType {
   const List_DynamicType__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion327 */
-    struct { /* ciciliStruct328 */
+  union { /* ciciliUnion320 */
+    struct { /* ciciliStruct321 */
       DynamicType __h_0_mem ;
       List_DynamicType __h_1_mem ;
     } Cons , _1 ;
-    struct { /* ciciliStruct329 */
+    struct { /* ciciliStruct322 */
     } Nil , _ ;
   } __h_data ;
 } class_List_DynamicType;
@@ -292,11 +285,11 @@ typedef struct Maybe_List_DynamicType__H_Table {
 typedef struct Maybe_List_DynamicType {
   const Maybe_List_DynamicType__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion429 */
-    struct { /* ciciliStruct430 */
+  union { /* ciciliUnion422 */
+    struct { /* ciciliStruct423 */
       List_DynamicType __h_0_mem ;
     } Just , _1 ;
-    struct { /* ciciliStruct431 */
+    struct { /* ciciliStruct424 */
     } Nothing , _ ;
   } __h_data ;
 } Maybe_List_DynamicType;
@@ -309,11 +302,11 @@ const Maybe_List_DynamicType__H_Table * const get_Maybe_List_DynamicType__H_Tabl
 void free_Maybe_List_DynamicType (Maybe_List_DynamicType * this );
 #endif /* __Maybe_List_DynamicType__H_DECL__ */ 
 typedef struct class_BTree_CStr_DynamicType * BTree_CStr_DynamicType ;
-typedef struct ciciliSA8w7ybFPfLiYFR4pZus3INJlWE_ {
+typedef struct ciciliu_Auem4Re_lgZgdbQG_0Ba5a1QA_ {
   CStr __h_0_mem ;
   DynamicType __h_1_mem ;
-} ciciliSA8w7ybFPfLiYFR4pZus3INJlWE_;
-typedef ciciliSA8w7ybFPfLiYFR4pZus3INJlWE_ BTree_CStr_DynamicType_pair_t ;
+} ciciliu_Auem4Re_lgZgdbQG_0Ba5a1QA_;
+typedef ciciliu_Auem4Re_lgZgdbQG_0Ba5a1QA_ BTree_CStr_DynamicType_pair_t ;
 #ifndef __BTree_CStr_DynamicType_Error__H_DECL__
 #define __BTree_CStr_DynamicType_Error__H_DECL__
 #ifndef __H___h_BTreeError_ctor_t__
@@ -337,26 +330,26 @@ typedef struct BTree_CStr_DynamicType_Error__H_Table {
 typedef struct BTree_CStr_DynamicType_Error {
   const BTree_CStr_DynamicType_Error__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion465 */
-    struct { /* ciciliStruct466 */
+  union { /* ciciliUnion458 */
+    struct { /* ciciliStruct459 */
     } ERR_INVALID_OBJECT , _6 ;
-    struct { /* ciciliStruct467 */
+    struct { /* ciciliStruct460 */
       int __h_0_mem ;
     } ERR_INVALID_ORDER , _5 ;
-    struct { /* ciciliStruct468 */
+    struct { /* ciciliStruct461 */
       BTree_CStr_DynamicType_pair_t __h_0_mem ;
     } ERR_UNIQUE_KEY , _4 ;
-    struct { /* ciciliStruct469 */
+    struct { /* ciciliStruct462 */
       CStr __h_0_mem ;
     } ERR_NOT_FOUND , _3 ;
-    struct { /* ciciliStruct470 */
+    struct { /* ciciliStruct463 */
       BTree_CStr_DynamicType_pair_t __h_0_mem ;
       int __h_1_mem ;
     } ERR_ACCESS_DEAD_CHILD , _2 ;
-    struct { /* ciciliStruct471 */
+    struct { /* ciciliStruct464 */
       BTree_CStr_DynamicType __h_0_mem ;
     } ERR_INVALID_BRANCH , _1 ;
-    struct { /* ciciliStruct472 */
+    struct { /* ciciliStruct465 */
       char * __h_0_mem ;
     } ERR_CANT_BORROW , _ ;
   } __h_data ;
@@ -392,11 +385,11 @@ typedef struct Either_BTree_CStr_DynamicType_Error_BTree_CStr_DynamicType__H_Tab
 typedef struct Either_BTree_CStr_DynamicType_Error_BTree_CStr_DynamicType {
   const Either_BTree_CStr_DynamicType_Error_BTree_CStr_DynamicType__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion519 */
-    struct { /* ciciliStruct520 */
+  union { /* ciciliUnion512 */
+    struct { /* ciciliStruct513 */
       BTree_CStr_DynamicType __h_0_mem ;
     } Right , _1 ;
-    struct { /* ciciliStruct521 */
+    struct { /* ciciliStruct514 */
       BTree_CStr_DynamicType_Error __h_0_mem ;
     } Left , _ ;
   } __h_data ;
@@ -426,11 +419,11 @@ typedef struct Maybe_BTree_CStr_DynamicType__H_Table {
 typedef struct Maybe_BTree_CStr_DynamicType {
   const Maybe_BTree_CStr_DynamicType__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion547 */
-    struct { /* ciciliStruct548 */
+  union { /* ciciliUnion540 */
+    struct { /* ciciliStruct541 */
       BTree_CStr_DynamicType __h_0_mem ;
     } Just , _1 ;
-    struct { /* ciciliStruct549 */
+    struct { /* ciciliStruct542 */
     } Nothing , _ ;
   } __h_data ;
 } Maybe_BTree_CStr_DynamicType;
@@ -459,11 +452,11 @@ typedef struct Maybe_BTree_CStr_DynamicType_pair_t__H_Table {
 typedef struct Maybe_BTree_CStr_DynamicType_pair_t {
   const Maybe_BTree_CStr_DynamicType_pair_t__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion577 */
-    struct { /* ciciliStruct578 */
+  union { /* ciciliUnion570 */
+    struct { /* ciciliStruct571 */
       BTree_CStr_DynamicType_pair_t __h_0_mem ;
     } Just , _1 ;
-    struct { /* ciciliStruct579 */
+    struct { /* ciciliStruct572 */
     } Nothing , _ ;
   } __h_data ;
 } Maybe_BTree_CStr_DynamicType_pair_t;
@@ -517,12 +510,12 @@ typedef struct List_BTree_CStr_DynamicType_pair_t__H_Table {
 typedef struct class_List_BTree_CStr_DynamicType_pair_t {
   const List_BTree_CStr_DynamicType_pair_t__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion629 */
-    struct { /* ciciliStruct630 */
+  union { /* ciciliUnion622 */
+    struct { /* ciciliStruct623 */
       BTree_CStr_DynamicType_pair_t __h_0_mem ;
       List_BTree_CStr_DynamicType_pair_t __h_1_mem ;
     } Cons , _1 ;
-    struct { /* ciciliStruct631 */
+    struct { /* ciciliStruct624 */
     } Nil , _ ;
   } __h_data ;
 } class_List_BTree_CStr_DynamicType_pair_t;
@@ -575,11 +568,11 @@ typedef struct Maybe_List_BTree_CStr_DynamicType_pair_t__H_Table {
 typedef struct Maybe_List_BTree_CStr_DynamicType_pair_t {
   const Maybe_List_BTree_CStr_DynamicType_pair_t__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion731 */
-    struct { /* ciciliStruct732 */
+  union { /* ciciliUnion724 */
+    struct { /* ciciliStruct725 */
       List_BTree_CStr_DynamicType_pair_t __h_0_mem ;
     } Just , _1 ;
-    struct { /* ciciliStruct733 */
+    struct { /* ciciliStruct726 */
     } Nothing , _ ;
   } __h_data ;
 } Maybe_List_BTree_CStr_DynamicType_pair_t;
@@ -608,11 +601,11 @@ typedef struct Maybe_BTree_CStr_DynamicType__H_Table {
 typedef struct Maybe_BTree_CStr_DynamicType {
   const Maybe_BTree_CStr_DynamicType__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion763 */
-    struct { /* ciciliStruct764 */
+  union { /* ciciliUnion756 */
+    struct { /* ciciliStruct757 */
       BTree_CStr_DynamicType __h_0_mem ;
     } Just , _1 ;
-    struct { /* ciciliStruct765 */
+    struct { /* ciciliStruct758 */
     } Nothing , _ ;
   } __h_data ;
 } Maybe_BTree_CStr_DynamicType;
@@ -645,13 +638,13 @@ typedef struct Rc_BTree_CStr_DynamicType__H_Table {
 typedef struct Rc_BTree_CStr_DynamicType {
   const Rc_BTree_CStr_DynamicType__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion795 */
-    struct { /* ciciliStruct796 */
+  union { /* ciciliUnion788 */
+    struct { /* ciciliStruct789 */
       BTree_CStr_DynamicType * __h_0_mem ;
       int * __h_1_mem ;
       size_t __h_2_mem ;
     } Hold , _1 ;
-    struct { /* ciciliStruct797 */
+    struct { /* ciciliStruct790 */
     } Gone , _ ;
   } __h_data ;
 } Rc_BTree_CStr_DynamicType;
@@ -684,11 +677,11 @@ typedef struct Maybe_Rc_BTree_CStr_DynamicType__H_Table {
 typedef struct Maybe_Rc_BTree_CStr_DynamicType {
   const Maybe_Rc_BTree_CStr_DynamicType__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion839 */
-    struct { /* ciciliStruct840 */
+  union { /* ciciliUnion832 */
+    struct { /* ciciliStruct833 */
       Rc_BTree_CStr_DynamicType __h_0_mem ;
     } Just , _1 ;
-    struct { /* ciciliStruct841 */
+    struct { /* ciciliStruct834 */
     } Nothing , _ ;
   } __h_data ;
 } Maybe_Rc_BTree_CStr_DynamicType;
@@ -742,12 +735,12 @@ typedef struct List_Rc_BTree_CStr_DynamicType__H_Table {
 typedef struct class_List_Rc_BTree_CStr_DynamicType {
   const List_Rc_BTree_CStr_DynamicType__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion891 */
-    struct { /* ciciliStruct892 */
+  union { /* ciciliUnion884 */
+    struct { /* ciciliStruct885 */
       Rc_BTree_CStr_DynamicType __h_0_mem ;
       List_Rc_BTree_CStr_DynamicType __h_1_mem ;
     } Cons , _1 ;
-    struct { /* ciciliStruct893 */
+    struct { /* ciciliStruct886 */
     } Nil , _ ;
   } __h_data ;
 } class_List_Rc_BTree_CStr_DynamicType;
@@ -800,11 +793,11 @@ typedef struct Maybe_List_Rc_BTree_CStr_DynamicType__H_Table {
 typedef struct Maybe_List_Rc_BTree_CStr_DynamicType {
   const Maybe_List_Rc_BTree_CStr_DynamicType__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion993 */
-    struct { /* ciciliStruct994 */
+  union { /* ciciliUnion986 */
+    struct { /* ciciliStruct987 */
       List_Rc_BTree_CStr_DynamicType __h_0_mem ;
     } Just , _1 ;
-    struct { /* ciciliStruct995 */
+    struct { /* ciciliStruct988 */
     } Nothing , _ ;
   } __h_data ;
 } Maybe_List_Rc_BTree_CStr_DynamicType;
@@ -834,8 +827,8 @@ typedef struct Functor_List_Rc_BTree_CStr_DynamicType__H_Table {
 typedef struct Functor_List_Rc_BTree_CStr_DynamicType {
   const Functor_List_Rc_BTree_CStr_DynamicType__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion1030 */
-    struct { /* ciciliStruct1031 */
+  union { /* ciciliUnion1023 */
+    struct { /* ciciliStruct1024 */
     } Functor , _ ;
   } __h_data ;
 } Functor_List_Rc_BTree_CStr_DynamicType;
@@ -877,16 +870,16 @@ typedef struct BTree_CStr_DynamicType__H_Table {
 typedef struct class_BTree_CStr_DynamicType {
   const BTree_CStr_DynamicType__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion1090 */
-    struct { /* ciciliStruct1091 */
+  union { /* ciciliUnion1083 */
+    struct { /* ciciliStruct1084 */
       List_BTree_CStr_DynamicType_pair_t __h_0_mem ;
       List_Rc_BTree_CStr_DynamicType __h_1_mem ;
     } Branch , _2 ;
-    struct { /* ciciliStruct1092 */
+    struct { /* ciciliStruct1085 */
       List_BTree_CStr_DynamicType_pair_t __h_0_mem ;
       List_Rc_BTree_CStr_DynamicType __h_1_mem ;
     } Internal , _1 ;
-    struct { /* ciciliStruct1093 */
+    struct { /* ciciliStruct1086 */
       List_BTree_CStr_DynamicType_pair_t __h_0_mem ;
     } Leaf , _ ;
   } __h_data ;
@@ -916,37 +909,45 @@ void free_BTree_CStr_DynamicType (BTree_CStr_DynamicType * this_ptr );
 #define __H___h_StringBuffer_ctor_t__
 typedef enum __h_StringBuffer_ctor_t {
   __h_Freed_t = 0,
-  __h_Bufferred_t = 1
+  __h_NullTerminated_t = 1,
+  __h_Bufferred_t = 2
 } __h_StringBuffer_ctor_t;
 #endif /* __H___h_StringBuffer_ctor_t__ */ 
 typedef struct StringBuffer_char StringBuffer_char ;
 typedef void (*free_StringBuffer_char_t) (StringBuffer_char * this );
 typedef struct StringBuffer_char__H_Table {
   free_StringBuffer_char_t freeData ;
-    StringBuffer_char (*new) (int size );
+    StringBuffer_char (*new) (int step , bool null_terminated );
     StringBuffer_char (*put) (StringBuffer_char sb , char data );
     StringBuffer_char (*print) (StringBuffer_char sb , char * data , int len );
 } StringBuffer_char__H_Table;
 typedef struct StringBuffer_char {
   const StringBuffer_char__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion1179 */
-    struct { /* ciciliStruct1180 */
+  union { /* ciciliUnion1172 */
+    struct { /* ciciliStruct1173 */
       char * __h_0_mem ;
       int __h_1_mem ;
       int __h_2_mem ;
       int __h_3_mem ;
-    } Bufferred , _1 ;
-    struct { /* ciciliStruct1181 */
+    } Bufferred , _2 ;
+    struct { /* ciciliStruct1174 */
+      char * __h_0_mem ;
+      int __h_1_mem ;
+      int __h_2_mem ;
+      int __h_3_mem ;
+    } NullTerminated , _1 ;
+    struct { /* ciciliStruct1175 */
     } Freed , _ ;
   } __h_data ;
 } StringBuffer_char;
 StringBuffer_char MakeStringBuffer_char (char * buffer , int cursor , int size , int step );
+StringBuffer_char MakeNullTerminatedBuffer_char (char * buffer , int cursor , int size , int step );
 StringBuffer_char FreedStringBuffer_char ();
 __attribute__((weak)) StringBuffer_char Default_StringBuffer_char () {
   return FreedStringBuffer_char ();
 }
-StringBuffer_char new_StringBuffer_char (int size );
+StringBuffer_char new_StringBuffer_char (int step , bool null_terminated );
 StringBuffer_char put_StringBuffer_char (StringBuffer_char sb , char data );
 StringBuffer_char print_StringBuffer_char (StringBuffer_char sb , char * data , int len );
 const StringBuffer_char__H_Table * const get_StringBuffer_char__H_Table ();
