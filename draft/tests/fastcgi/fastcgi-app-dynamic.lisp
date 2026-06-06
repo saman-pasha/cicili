@@ -106,13 +106,13 @@
             (set sb ((<> print StringBuffer char) sb "54321" 5))
             
             (io sb
-              (Bufferred buffer cursor size (printf "R1 %s %d %d\n" buffer cursor size))
+              (NullTerminated buffer cursor size (printf "R1 %s %d %d\n" buffer cursor size))
               (default (printf "R1 sb is freed\n")))
 
             ((<> free StringBuffer char) (aof sb))
             
             (io sb
-              (Bufferred buffer cursor size (printf "R2 %s %d %d\n" buffer cursor size))
+              (NullTerminated buffer cursor size (printf "R2 %s %d %d\n" buffer cursor size))
               (default (printf "R2 sb is freed\n"))))
           (putchar #\Newline)
 

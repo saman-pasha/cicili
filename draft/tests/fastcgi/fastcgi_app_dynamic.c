@@ -279,20 +279,20 @@ int main () {
       sb  = put_StringBuffer_char (sb , 'd');
       sb  = print_StringBuffer_char (sb , "54321", 5);
       { /* cicili#Let441 */
-        typeof((((sb . __h_data ). Bufferred ). __h_0_mem )) buffer ;
-        typeof((((sb . __h_data ). Bufferred ). __h_1_mem )) cursor ;
-        typeof((((sb . __h_data ). Bufferred ). __h_2_mem )) size ;
+        typeof((((sb . __h_data ). NullTerminated ). __h_0_mem )) buffer ;
+        typeof((((sb . __h_data ). NullTerminated ). __h_1_mem )) cursor ;
+        typeof((((sb . __h_data ). NullTerminated ). __h_2_mem )) size ;
         // ----------
         
         ({ /* cicili#Let445 */
-          bool __h_case_result  = (true  &&  (((sb . __h_ctor ) ==  __h_Bufferred_t  ) &&  ((({ /* cicili#Progn446 */
-                    (buffer  =  (((sb . __h_data ). Bufferred ). __h_0_mem ) );
+          bool __h_case_result  = (true  &&  (((sb . __h_ctor ) ==  __h_NullTerminated_t  ) &&  ((({ /* cicili#Progn446 */
+                    (buffer  =  (((sb . __h_data ). NullTerminated ). __h_0_mem ) );
                     true ;
                   }) &&  ({ /* cicili#Progn448 */
-                    (cursor  =  (((sb . __h_data ). Bufferred ). __h_1_mem ) );
+                    (cursor  =  (((sb . __h_data ). NullTerminated ). __h_1_mem ) );
                     true ;
                   }) ) &&  ({ /* cicili#Progn450 */
-                  (size  =  (((sb . __h_data ). Bufferred ). __h_2_mem ) );
+                  (size  =  (((sb . __h_data ). NullTerminated ). __h_2_mem ) );
                   true ;
                 }) ) ) );
           // ----------
@@ -312,20 +312,20 @@ int main () {
       }
       free_StringBuffer_char ((&sb ));
       { /* cicili#Let468 */
-        typeof((((sb . __h_data ). Bufferred ). __h_0_mem )) buffer ;
-        typeof((((sb . __h_data ). Bufferred ). __h_1_mem )) cursor ;
-        typeof((((sb . __h_data ). Bufferred ). __h_2_mem )) size ;
+        typeof((((sb . __h_data ). NullTerminated ). __h_0_mem )) buffer ;
+        typeof((((sb . __h_data ). NullTerminated ). __h_1_mem )) cursor ;
+        typeof((((sb . __h_data ). NullTerminated ). __h_2_mem )) size ;
         // ----------
         
         ({ /* cicili#Let472 */
-          bool __h_case_result  = (true  &&  (((sb . __h_ctor ) ==  __h_Bufferred_t  ) &&  ((({ /* cicili#Progn473 */
-                    (buffer  =  (((sb . __h_data ). Bufferred ). __h_0_mem ) );
+          bool __h_case_result  = (true  &&  (((sb . __h_ctor ) ==  __h_NullTerminated_t  ) &&  ((({ /* cicili#Progn473 */
+                    (buffer  =  (((sb . __h_data ). NullTerminated ). __h_0_mem ) );
                     true ;
                   }) &&  ({ /* cicili#Progn475 */
-                    (cursor  =  (((sb . __h_data ). Bufferred ). __h_1_mem ) );
+                    (cursor  =  (((sb . __h_data ). NullTerminated ). __h_1_mem ) );
                     true ;
                   }) ) &&  ({ /* cicili#Progn477 */
-                  (size  =  (((sb . __h_data ). Bufferred ). __h_2_mem ) );
+                  (size  =  (((sb . __h_data ). NullTerminated ). __h_2_mem ) );
                   true ;
                 }) ) ) );
           // ----------
