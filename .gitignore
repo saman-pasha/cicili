@@ -289,3 +289,5 @@ draft/tests/io/main
 /draft/tests/io/main.dSYM
 draft/tests/pthread/main
 draft/tests/fastcgi/fastcgi_app_dynamic
+draft/tests/collection/main
+/draft/tests/collection/main.dSYM

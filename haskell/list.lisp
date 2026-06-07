@@ -49,7 +49,7 @@
 (generic impl-List
   (type
    a
-   fmt  ; a function ((FILE * file) (BoxedList list))
+   fmt  ; a reducible function ((FILE * file) (List list))
    sep)
 
   ;; dependencies

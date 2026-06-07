@@ -7,8 +7,9 @@
     (= Bufferred      (<> MakeStringBuffer a)         (a * buffer) (int cursor) (int size) (int step))
     (= NullTerminated (<> MakeNullTerminatedBuffer a) (a * buffer) (int cursor) (int size) (int step))
     (= Freed          (<> FreedStringBuffer a))
-    (func print (((<> StringBuffer a) sb) (a * data) (int len)) (out (<> StringBuffer a)))
-    (func put   (((<> StringBuffer a) sb) (a data)) (out (<> StringBuffer a)))
+    (func print (((<> StringBuffer a) sb) (const a * data) (int len)) (out (<> StringBuffer a)))
+    (func put   (((<> StringBuffer a) sb) (const a data)) (out (<> StringBuffer a)))
+    (func newCapacity ((int capacity) (int step) (bool null_terminated)) (out (<> StringBuffer a)))
     (func new   ((int step) (bool null_terminated)) (out (<> StringBuffer a))))
 
   ) ; decl-StringBuffer
@@ -21,7 +22,7 @@
     (= NullTerminated (<> MakeNullTerminatedBuffer a) (a * buffer) (int cursor) (int size) (int step))
     (= Freed          (<> FreedStringBuffer a))
     
-    (func print (((<> StringBuffer a) sb) (a * data) (int len))
+    (func print (((<> StringBuffer a) sb) (const a * data) (int len))
           (out (<> StringBuffer a))
           (return (match sb
                     (Bufferred buffer cursor size step
@@ -43,22 +44,26 @@
                                       ((<> MakeNullTerminatedBuffer a) buffer (+ cursor len) size step)))
                     (default ((<> FreedStringBuffer a))))))
 
-    (func put (((<> StringBuffer a) sb) (a data))
+    (func put (((<> StringBuffer a) sb) (const a data))
           (out (<> StringBuffer a))
           (return ((<> print StringBuffer a) sb (aof data) 1)))
     
-    (func new ((int step) (bool null_terminated))
+    (func newCapacity ((int capacity) (int step) (bool null_terminated))
           (out (<> StringBuffer a))
           (return (case null_terminated
-                        (letn ((a * buffer . #'(malloc (* (+ step 1) (sizeof a))))
-                               ((<> StringBuffer a) sb . #'((<> MakeNullTerminatedBuffer a) buffer 0 step step)))
+                        (letn ((a * buffer . #'(malloc (* (+ capacity 1) (sizeof a))))
+                               ((<> StringBuffer a) sb . #'((<> MakeNullTerminatedBuffer a) buffer 0 capacity step)))
                           (set (cof buffer) (cast a #\Null))
                           sb)
                         otherwise
-                        (letn ((a * buffer . #'(malloc (* step (sizeof a))))
-                               ((<> StringBuffer a) sb . #'((<> MakeStringBuffer a) buffer 0 step step)))
+                        (letn ((a * buffer . #'(malloc (* capacity (sizeof a))))
+                               ((<> StringBuffer a) sb . #'((<> MakeStringBuffer a) buffer 0 capacity step)))
                           sb))))
-    
+
+    (func new ((int step) (bool null_terminated))
+          (out (<> StringBuffer a))
+          (return ((<> newCapacity StringBuffer a) step step null_terminated)))
+
     (free (io this
             (* Bufferred ~ NullTerminated buffer
                (block
@@ -68,3 +73,8 @@
     ) ; impl-data
 
   ) ; impl-StringBuffer
+
+(generic import-StringBuffer
+  (a)
+
+  ) ; import-StringBuffer

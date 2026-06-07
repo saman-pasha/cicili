@@ -20,6 +20,22 @@
   (func afterRequest ((Request rr))
         (debug! (format #t "Middleware: After request.\n")))  ;; Example: Response transformation
 
+  (func range ((i64 from) (i64 to) (i64 step))
+        (out DynamicType)
+        (return (new^DynamicType (List ((<> Dynamic Integer) from)
+                                       ((<> Dynamic Integer) to)
+                                       ((<> Dynamic Integer) step)))))
+
+  (func take ((DynamicType args))
+        (out DynamicType)
+        (return (match# args
+                  (dead ((<> Dynamic Error) (strdup "take dead args")))
+                  (* List (\: count range _) -># range
+                     (dead ((<> Dynamic Error) (strdup "take dead range")))
+                     (* List (\: from to step _) (new^DynamicType (List count to step from))) ; do something
+                     (default ((<> Dynamic Error) (strdup "take wrong range"))))
+                  (default ((<> Dynamic Error) (strdup "take wrong args"))))))
+  
   ;; Entry Point
   (func main () (out int)
 
@@ -45,12 +61,16 @@
                                                "roles"   (List "Founder" "Developer" "Backend")
                                                "data"    dt12
                                                "friends" (List))))
-                (dt14 (new^DynamicType (Object :id      22
-                                               :name    "Saman's Friend"
-                                               :roles   (List :xml-tag "role" "CoFounder" "Developer" "Frontend")
-                                               :data    (Object :basics (List dt0 dt1 dt2)
-                                                                :raw nil)
-                                               :friends (List :xml-tag "friend" dt13))))
+                (dt14 (new^DynamicType (Object :id       22
+                                               :name     "Saman's Friend"
+                                               :roles    (List :xml-tag "role" "CoFounder" "Developer" "Frontend")
+                                               :data     (Object :basics (List dt0 dt1 dt2)
+                                                                 :raw nil)
+                                               :friends  (List :xml-tag "friend" dt13))))
+
+                (range01 (range 0 1000000 1))
+                (thunk02 ((<> Dynamic Thunk) (new^DynamicType (List 5 range01)) take))
+                ;; (thunk03 (lazy take 5 range01))
                 ) ; letin
           
           ((<> show DynamicType) stdout dt0)
@@ -159,7 +179,17 @@
               (putchar #\Newline))
             (fclose file)
             ) ; let 
-            
+          
+          ;; test thunk laziness
+          ((<> show DynamicType) stdout thunk02)
+          (putchar #\Newline)
+          ((<> show DynamicType) stdout ((<> force DynamicType) thunk02))
+          (putchar #\Newline)
+          ;; ((<> show DynamicType) stdout thunk03)
+          ;; (putchar #\Newline)
+          ;; ((<> show DynamicType) stdout ((<> force DynamicType) thunk03))
+          ;; (putchar #\Newline)
+          
           ;; Define and start a Router using router macro
           (letin* ((result (make-router (MakeDetailedRouter "/usr/local/var/run/fcgi.sock"
                                           routes  ; available in make-router macro

@@ -239,7 +239,7 @@
             
             (format #t "output of printf match: %d\n"
                     ;; match returns a value and all values returned from each case must be the same type
-                    (match (nth 3 txt) ; ((\. nth txt) 3 txt)
+                    (match ((<> nth String) 3 txt) ; ((\. nth txt) 3 txt)
                       (Just c  (format #t "the 4th element is: %c\n" c))
                       (default (format #t "4th element not found\n"))))
 
@@ -287,7 +287,7 @@
               (io str5
                 ((\: ch0 (* Cons ch1 (* Cons ch2 tail))) ; multi level inner destructuring
                  (block (format #t "fst snd trd chars and tail from String: %c, %c, %c, " ch0 ch1 ch2)
-                   (show^String tail)
+                   (show^String stdout tail)
                    (putchar #\Newline)))))
 
             ;; match should have default case
@@ -317,15 +317,15 @@
               (format #t "first elem of int list0: %d\n" (match ((\.* head ilist0) ilist0) (Just i i) (default -1)))
               (format #t "first elem of int list1: %d\n" (match ((\.* head ilist0) ilist1) (Just i i) (default -1)))
               (format #t "list0:\n")
-              ((\.* show ilist0) ilist0)
+              ((\.* show ilist0) stdout  ilist0)
               (format #t "\nlist1 push 5:\n")
-              ((\.* show ilist0) ilist1)
+              ((\.* show ilist0) stdout ilist1)
               (format #t "\nlist2:\n")
-              ((\.* show ilist0) ilist2)
+              ((\.* show ilist0) stdout ilist2)
               (format #t "\nlist3:\n")
-              ((\.* show ilist0) ilist3)
+              ((\.* show ilist0) stdout ilist3)
               (format #t "\nlist4: take 5 of list3:\n")
-              ((\.* show ilist0) ilist4)
+              ((\.* show ilist0) stdout ilist4)
               (putchar #\Newline)))
 
           ;; working with ranges
@@ -337,32 +337,32 @@
                   (* ra5  (take  4 rad1))
                   (* ra3  (take 10 ra0)))
             (format #t "range 1 20 3:\n")
-            ((\.* show ra0) ra0)
+            ((\.* show ra0) stdout ra0)
             ;; range shows only first of range
             ;; needs to take enough from it
             (format #t "\ntake 3  of range 1 20 3:\n")
-            ((<> show List^int) ra1)
+            ((<> show List^int) stdout ra1)
             (format #t "\ntake 4  of range 1 20 3:\n")
-            ((\.* show ra1) ra2)
+            ((\.* show ra1) stdout ra2)
             (format #t "\ntake 2  of drop  4 range 1 20 3:\n")
-            ((\.* show ra1) ra4)
+            ((\.* show ra1) stdout ra4)
             (format #t "\ntake 4  of drop  4 range 1 20 3:\n")
-            ((\.* show ra1) ra5)
+            ((\.* show ra1) stdout ra5)
             (format #t "\ntake 10 of range 1 20 3:\n")
             ;; access Table by type
-            ((\.+ show List^int) ra3))
+            ((\.+ show List^int) stdout ra3))
 
           ;; casting
           (letin ((* str0 (new^String "Hello World!"))
                   (* str1 (new^List^int '{ 72 101 108 108 111 32 87 111 114 108 100 33 })))
             (format #t "\nString to List^int:\n")
-            ((\.+ show List^int) (static-cast List^int str0))
+            ((\.+ show List^int) stdout (static-cast List^int str0))
             (format #t "\nString to List^char:\n")
-            ((\.+ show List^char) (static-cast List^char str0))
+            ((\.+ show List^char) stdout (static-cast List^char str0))
             (format #t "\nList^int to List^char:\n")
-            (show^List^char (static-cast List^char str1))
+            (show^List^char stdout (static-cast List^char str1))
             (format #t "\nList^int to String:\n")
-            (show^String (static-cast String str1))
+            (show^String stdout (static-cast String str1))
             (putchar #\Newline))
           
           ))

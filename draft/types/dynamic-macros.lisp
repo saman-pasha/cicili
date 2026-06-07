@@ -67,3 +67,6 @@
                              nil))
                  (default nil))))
             (T payload))))))
+
+(DEFMACRO lazy (fun &REST args)
+  `((<> Dynamic Thunk) (new^DynamicType (List ,@args)) ,fun))
