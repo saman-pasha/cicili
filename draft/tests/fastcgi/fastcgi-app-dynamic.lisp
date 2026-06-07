@@ -70,7 +70,7 @@
 
                 (range01 (range 0 1000000 1))
                 (thunk02 ((<> Dynamic Thunk) (new^DynamicType (List 5 range01)) take))
-                ;; (thunk03 (lazy take 5 range01))
+                (thunk03 (lazy take 5 range01))
                 ) ; letin
           
           ((<> show DynamicType) stdout dt0)
@@ -185,10 +185,10 @@
           (putchar #\Newline)
           ((<> show DynamicType) stdout ((<> force DynamicType) thunk02))
           (putchar #\Newline)
-          ;; ((<> show DynamicType) stdout thunk03)
-          ;; (putchar #\Newline)
-          ;; ((<> show DynamicType) stdout ((<> force DynamicType) thunk03))
-          ;; (putchar #\Newline)
+          ((<> show DynamicType) stdout thunk03)
+          (putchar #\Newline)
+          ((<> show DynamicType) stdout ((<> force DynamicType) thunk03))
+          (putchar #\Newline)
           
           ;; Define and start a Router using router macro
           (letin* ((result (make-router (MakeDetailedRouter "/usr/local/var/run/fcgi.sock"

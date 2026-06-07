@@ -375,6 +375,12 @@ int main () {
       ((void)((thunk02 . __h_table )-> freeData ));
       thunk02 ;
     });
+    __auto_type thunk03  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let524 */
+      __auto_type thunk03  = Dynamic_Thunk (Dynamic_List (pure_List_DynamicType (((const DynamicType[]){ Dynamic_Integer (5), range01 }), 2), "item"), take );
+      // ----------
+      ((void)((thunk03 . __h_table )-> freeData ));
+      thunk03 ;
+    });
     // ----------
     show_DynamicType (stdout , dt0 );
     fprintf (stdout , " ");
@@ -408,7 +414,7 @@ int main () {
     fprintf (stdout , "a dynamic object: \n");
     show_DynamicType (stdout , dt13 );
     putchar ('\n');
-    { /* cicili#Let547 */
+    { /* cicili#Let560 */
       StringBuffer_char sb  = new_StringBuffer_char (4, true );
       // ----------
       sb  = print_StringBuffer_char (sb , "123", 3);
@@ -420,68 +426,68 @@ int main () {
       sb  = put_StringBuffer_char (sb , 'c');
       sb  = put_StringBuffer_char (sb , 'd');
       sb  = print_StringBuffer_char (sb , "54321", 5);
-      { /* cicili#Let562 */
+      { /* cicili#Let575 */
         typeof((((sb . __h_data ). NullTerminated ). __h_0_mem )) buffer ;
         typeof((((sb . __h_data ). NullTerminated ). __h_1_mem )) cursor ;
         typeof((((sb . __h_data ). NullTerminated ). __h_2_mem )) size ;
         // ----------
         ;
-        ({ /* cicili#Let564 */
-          bool __h_case_result  = (true  &&  (((sb . __h_ctor ) ==  __h_NullTerminated_t  ) &&  ((({ /* cicili#Progn565 */
+        ({ /* cicili#Let577 */
+          bool __h_case_result  = (true  &&  (((sb . __h_ctor ) ==  __h_NullTerminated_t  ) &&  ((({ /* cicili#Progn578 */
                     (buffer  =  (((sb . __h_data ). NullTerminated ). __h_0_mem ) );
                     true ;
-                  }) &&  ({ /* cicili#Progn567 */
+                  }) &&  ({ /* cicili#Progn580 */
                     (cursor  =  (((sb . __h_data ). NullTerminated ). __h_1_mem ) );
                     true ;
-                  }) ) &&  ({ /* cicili#Progn569 */
+                  }) ) &&  ({ /* cicili#Progn582 */
                   (size  =  (((sb . __h_data ). NullTerminated ). __h_2_mem ) );
                   true ;
                 }) ) ) );
           // ----------
           
           if (__h_case_result )
-            { /* cicili#Block575 */
+            { /* cicili#Block588 */
               printf ("R1 %s %d %d\n", buffer , cursor , size );
             }
           else
-            { /* cicili#Let580 */
+            { /* cicili#Let593 */
               // ----------
               ;
-              { /* cicili#Block582 */
+              { /* cicili#Block595 */
                 printf ("R1 sb is freed\n");
               }
             }
         });
       }
       free_StringBuffer_char ((&sb ));
-      { /* cicili#Let587 */
+      { /* cicili#Let600 */
         typeof((((sb . __h_data ). NullTerminated ). __h_0_mem )) buffer ;
         typeof((((sb . __h_data ). NullTerminated ). __h_1_mem )) cursor ;
         typeof((((sb . __h_data ). NullTerminated ). __h_2_mem )) size ;
         // ----------
         ;
-        ({ /* cicili#Let589 */
-          bool __h_case_result  = (true  &&  (((sb . __h_ctor ) ==  __h_NullTerminated_t  ) &&  ((({ /* cicili#Progn590 */
+        ({ /* cicili#Let602 */
+          bool __h_case_result  = (true  &&  (((sb . __h_ctor ) ==  __h_NullTerminated_t  ) &&  ((({ /* cicili#Progn603 */
                     (buffer  =  (((sb . __h_data ). NullTerminated ). __h_0_mem ) );
                     true ;
-                  }) &&  ({ /* cicili#Progn592 */
+                  }) &&  ({ /* cicili#Progn605 */
                     (cursor  =  (((sb . __h_data ). NullTerminated ). __h_1_mem ) );
                     true ;
-                  }) ) &&  ({ /* cicili#Progn594 */
+                  }) ) &&  ({ /* cicili#Progn607 */
                   (size  =  (((sb . __h_data ). NullTerminated ). __h_2_mem ) );
                   true ;
                 }) ) ) );
           // ----------
           
           if (__h_case_result )
-            { /* cicili#Block600 */
+            { /* cicili#Block613 */
               printf ("R2 %s %d %d\n", buffer , cursor , size );
             }
           else
-            { /* cicili#Let605 */
+            { /* cicili#Let618 */
               // ----------
               ;
-              { /* cicili#Block607 */
+              { /* cicili#Block620 */
                 printf ("R2 sb is freed\n");
               }
             }
@@ -489,14 +495,14 @@ int main () {
       }
     }
     putchar ('\n');
-    { /* cicili#Let609 */
+    { /* cicili#Let622 */
       char buffer [1024] = { 0};
       CFile file  = fmemopen (buffer , sizeof(buffer), "w+");
       // ----------
       toJson_DynamicType (file , dt14 );
       rewind (file );
-      ({ /* cicili#Let613 */
-        __auto_type dtJson  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let615 */
+      ({ /* cicili#Let626 */
+        __auto_type dtJson  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let628 */
           __auto_type dtJson  = parseJson_DynamicType (file );
           // ----------
           ((void)((dtJson . __h_table )-> freeData ));
@@ -514,31 +520,35 @@ int main () {
     putchar ('\n');
     show_DynamicType (stdout , force_DynamicType (thunk02 ));
     putchar ('\n');
-    ({ /* cicili#Let626 */
-      __auto_type result  = ({ /* cicili#Let628 */
-        Route routes_defs [] = { { "/json", METHOD_GET , ({ /* cicili#Progn630 */
-              void __ciciliC_629 (Request rr ) {
-                { /* cicili#Let635 */
+    show_DynamicType (stdout , thunk03 );
+    putchar ('\n');
+    show_DynamicType (stdout , force_DynamicType (thunk03 ));
+    putchar ('\n');
+    ({ /* cicili#Let642 */
+      __auto_type result  = ({ /* cicili#Let644 */
+        Route routes_defs [] = { { "/json", METHOD_GET , ({ /* cicili#Progn646 */
+              void __ciciliC_645 (Request rr ) {
+                { /* cicili#Let651 */
                   typeof((((rr -> __h_data ). _ ). __h_0_mem )) req ;
                   // ----------
                   ;
-                  ({ /* cicili#Let637 */
-                    bool __h_case_result  = (true  &&  (((rr -> __h_ctor ) ==  __h___t  ) &&  ({ /* cicili#Progn638 */
+                  ({ /* cicili#Let653 */
+                    bool __h_case_result  = (true  &&  (((rr -> __h_ctor ) ==  __h___t  ) &&  ({ /* cicili#Progn654 */
                           (req  =  (((rr -> __h_data ). _ ). __h_0_mem ) );
                           true ;
                         }) ) );
                     // ----------
                     
                     if (__h_case_result )
-                      { /* cicili#Block644 */
-                        { /* cicili#Let646 */
+                      { /* cicili#Block660 */
+                        { /* cicili#Let662 */
                           char buffer [1024] = { 0};
                           CFile file  = fmemopen (buffer , sizeof(buffer), "w+");
                           // ----------
                           toJson_DynamicType (file , dt14 );
                           rewind (file );
-                          ({ /* cicili#Let650 */
-                            __auto_type dtJson  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let652 */
+                          ({ /* cicili#Let666 */
+                            __auto_type dtJson  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let668 */
                               __auto_type dtJson  = parseJson_DynamicType (file );
                               // ----------
                               ((void)((dtJson . __h_table )-> freeData ));
@@ -556,23 +566,23 @@ int main () {
                   });
                 }
               }
-              __ciciliC_629 ;
-            })}, { "/xml", METHOD_GET , ({ /* cicili#Progn658 */
-              void __ciciliC_657 (Request rr ) {
-                { /* cicili#Let663 */
+              __ciciliC_645 ;
+            })}, { "/xml", METHOD_GET , ({ /* cicili#Progn674 */
+              void __ciciliC_673 (Request rr ) {
+                { /* cicili#Let679 */
                   typeof((((rr -> __h_data ). _ ). __h_0_mem )) req ;
                   // ----------
                   ;
-                  ({ /* cicili#Let665 */
-                    bool __h_case_result  = (true  &&  (((rr -> __h_ctor ) ==  __h___t  ) &&  ({ /* cicili#Progn666 */
+                  ({ /* cicili#Let681 */
+                    bool __h_case_result  = (true  &&  (((rr -> __h_ctor ) ==  __h___t  ) &&  ({ /* cicili#Progn682 */
                           (req  =  (((rr -> __h_data ). _ ). __h_0_mem ) );
                           true ;
                         }) ) );
                     // ----------
                     
                     if (__h_case_result )
-                      { /* cicili#Block672 */
-                        { /* cicili#Let674 */
+                      { /* cicili#Block688 */
+                        { /* cicili#Let690 */
                           char buffer [1024] = { 0};
                           CFile file  = fmemopen (buffer , sizeof(buffer), "w");
                           // ----------
@@ -586,11 +596,11 @@ int main () {
                   });
                 }
               }
-              __ciciliC_657 ;
+              __ciciliC_673 ;
             })}};
         // ----------
-        ({ /* cicili#Let679 */
-          __auto_type routes  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let681 */
+        ({ /* cicili#Let695 */
+          __auto_type routes  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let697 */
             __auto_type routes  = Leaf_BTree_CStr_Route (Nil_BTree_CStr_Route_pair_t ());
             // ----------
             ((void)(routes -> __h_table -> freeClass ));
@@ -598,54 +608,54 @@ int main () {
           });
           // ----------
           for (int i  = 0; (i  <  2 ); (++i )) {
-              { /* cicili#Let690 */
+              { /* cicili#Let706 */
                 __auto_type route  = routes_defs [i ];
                 typeof((route . __h_0_mem )) path ;
                 // ----------
                 ;
-                ({ /* cicili#Let692 */
-                  bool __h_case_result  = (true  &&  ({ /* cicili#Progn693 */
+                ({ /* cicili#Let708 */
+                  bool __h_case_result  = (true  &&  ({ /* cicili#Progn709 */
                       (path  =  (route . __h_0_mem ) );
                       true ;
                     }) );
                   // ----------
                   
                   if (__h_case_result )
-                    { /* cicili#Block699 */
-                      { /* cicili#Let703 */
-                        __auto_type match702  = insert_BTree_CStr_Route (routes , path , route );
-                        typeof((((match702 . __h_data ). Right ). __h_0_mem )) new_routes ;
+                    { /* cicili#Block715 */
+                      { /* cicili#Let719 */
+                        __auto_type match718  = insert_BTree_CStr_Route (routes , path , route );
+                        typeof((((match718 . __h_data ). Right ). __h_0_mem )) new_routes ;
                         // ----------
                         ;
-                        ({ /* cicili#Let706 */
-                          bool __h_case_result  = (true  &&  (((match702 . __h_ctor ) ==  __h_Right_t  ) &&  ({ /* cicili#Progn707 */
-                                (new_routes  =  (((match702 . __h_data ). Right ). __h_0_mem ) );
+                        ({ /* cicili#Let722 */
+                          bool __h_case_result  = (true  &&  (((match718 . __h_ctor ) ==  __h_Right_t  ) &&  ({ /* cicili#Progn723 */
+                                (new_routes  =  (((match718 . __h_data ). Right ). __h_0_mem ) );
                                 true ;
                               }) ) );
                           // ----------
                           
                           if (__h_case_result )
-                            { /* cicili#Block713 */
-                              { /* cicili#Block715 */
+                            { /* cicili#Block729 */
+                              { /* cicili#Block731 */
                                 free_BTree_CStr_Route ((&routes ));
                                 routes  = new_routes ;
                               }
                             }
                           else
-                            { /* cicili#Let721 */
-                              typeof((((match702 . __h_data ). Left ). __h_0_mem )) error ;
+                            { /* cicili#Let737 */
+                              typeof((((match718 . __h_data ). Left ). __h_0_mem )) error ;
                               // ----------
                               ;
-                              ({ /* cicili#Let723 */
-                                bool __h_case_result  = (true  &&  (((match702 . __h_ctor ) ==  __h_Left_t  ) &&  ({ /* cicili#Progn724 */
-                                      (error  =  (((match702 . __h_data ). Left ). __h_0_mem ) );
+                              ({ /* cicili#Let739 */
+                                bool __h_case_result  = (true  &&  (((match718 . __h_ctor ) ==  __h_Left_t  ) &&  ({ /* cicili#Progn740 */
+                                      (error  =  (((match718 . __h_data ). Left ). __h_0_mem ) );
                                       true ;
                                     }) ) );
                                 // ----------
                                 
                                 if (__h_case_result )
-                                  { /* cicili#Block730 */
-                                    { /* cicili#Block732 */
+                                  { /* cicili#Block746 */
+                                    { /* cicili#Block748 */
                                       fprintf (stderr , "router error occured! ");
                                       show_BTree_CStr_Route_Error (error );
                                       putchar ('\n');
@@ -664,36 +674,36 @@ int main () {
         });
       });
       // ----------
-      { /* cicili#Let740 */
+      { /* cicili#Let756 */
         typeof((((result . __h_data ). Right ). __h_0_mem )) fd ;
         // ----------
         ;
-        ({ /* cicili#Let742 */
-          bool __h_case_result  = (true  &&  (((result . __h_ctor ) ==  __h_Right_t  ) &&  ({ /* cicili#Progn743 */
+        ({ /* cicili#Let758 */
+          bool __h_case_result  = (true  &&  (((result . __h_ctor ) ==  __h_Right_t  ) &&  ({ /* cicili#Progn759 */
                 (fd  =  (((result . __h_data ). Right ). __h_0_mem ) );
                 true ;
               }) ) );
           // ----------
           
           if (__h_case_result )
-            { /* cicili#Block749 */
+            { /* cicili#Block765 */
               fprintf (stdout , "FasstCGI server on FD: %d was quitted successfully", fd );
             }
           else
-            { /* cicili#Let755 */
+            { /* cicili#Let771 */
               typeof((((result . __h_data ). Left ). __h_0_mem )) err ;
               // ----------
               ;
-              ({ /* cicili#Let757 */
-                bool __h_case_result  = (true  &&  (((result . __h_ctor ) ==  __h_Left_t  ) &&  ({ /* cicili#Progn758 */
+              ({ /* cicili#Let773 */
+                bool __h_case_result  = (true  &&  (((result . __h_ctor ) ==  __h_Left_t  ) &&  ({ /* cicili#Progn774 */
                       (err  =  (((result . __h_data ). Left ). __h_0_mem ) );
                       true ;
                     }) ) );
                 // ----------
                 
                 if (__h_case_result )
-                  { /* cicili#Block764 */
-                    { /* cicili#Block766 */
+                  { /* cicili#Block780 */
+                    { /* cicili#Block782 */
                       fprintf (stdout , "FasstCGI server was quitet with error: ");
                       show_RouterError (err );
                     }
