@@ -18,9 +18,9 @@
     ;; selected function could be called then
     ;; ((\. nth list-instance) 0 alist)
     (func nth     ((int index) (type list)) (out (<> Maybe a)))
-    (func nthcdr  ((int index) (type list)) (out type))
+    (func nthcdr  ((int index) (type list)) (out type)) ; iterator
     (func head    ((type list)) (out (<> Maybe a)))
-    (func drop    ((int index) (type list)) (out type))
+    (func drop    ((int len) (type list)) (out type))
     (func tail    ((type list)) (out type))
     (func len     ((type list)) (out int))
     (func hasLen  ((type list) (int desired)) (out int))
@@ -183,11 +183,11 @@
                              (* Cons _ taill ((<> Cons a) item ((<> copy type) taill)))
                              (default ((<> Nil a)))))))
 
-    (func insertAt  ((type llist) (a item) (int index))
+    (func insertAt  ((type list) (a item) (int index))
           (out type)
-          (return (match llist
+          (return (match list
                     (* Cons head tail <!> (> index 0) ((<> Cons a) head ((<> insertAt type) tail item (- index 1))))
-                    (default ((<> Cons a) item ((<> copy type) llist))))))
+                    (default ((<> Cons a) item ((<> copy type) list))))))
     
     (func deleteAt  ((type list) (int index))
           (out type)

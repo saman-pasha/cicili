@@ -16,9 +16,9 @@
     (func len     ((type list)) (out int))
     (func hasLen  ((type list) (int desired)) (out int))
     (func nth     ((int index) (type list)) (out (<> Maybe a)))
-    (func nthcdr  ((int index) (type list)) (out type))
+    (func nthcdr  ((int index) (type list)) (out type)) ; iterator
     (func head    ((type list)) (out (<> Maybe a)))
-    (func drop    ((int index) (type list)) (out type))
+    (func drop    ((int len) (type list)) (out type))
     (func tail    ((type list)) (out type))
     (func init    ((type list)) (out type))
     (func last    ((type list)) (out type))
@@ -209,12 +209,12 @@
                           (default ((<> clone Box type) list)))
                     (default ((<> clone Box type) list)))))
 
-    (func insertAt  ((type llist) (a item) (int index))
+    (func insertAt  ((type list) (a item) (int index))
           (out type)
-          (return (match# llist
-                    (dead ((<> BoxedCons a) item llist))
+          (return (match# list
+                    (dead ((<> BoxedCons a) item list))
                     (* Cons head tail <!> (> index 0) ((<> BoxedCons a) head ((<> insertAt type) tail item (- index 1))))
-                    (default ((<> BoxedCons a) item llist)))))
+                    (default ((<> BoxedCons a) item list)))))
     
     (func deleteAt  ((type list) (int index))
           (out type)
