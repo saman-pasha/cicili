@@ -63,17 +63,21 @@
                                       ((<> print StringBuffer a) new_sb buffer cursor)))
                     (default ((<> FreedStringBuffer a))))))
     
-    (func copySlice (((<> StringBuffer a) sb) (int cursor) (int size))
+    (func copySlice (((<> StringBuffer a) sb) (int pos) (int len))
           (out (<> StringBuffer a))
           (return (match sb
-                    (Buffered buffer _cursor _size step
+                    (Buffered buffer cursor _size step
                               (letn (((<> StringBuffer a) new_sb .
-                                      #'((<> newCapacity StringBuffer a) size step #f)))
-                                ((<> print StringBuffer a) new_sb (+ buffer cursor) size)))
-                    (NullTerminated buffer _cursor _size step
+                                      #'((<> newCapacity StringBuffer a) len step #f)))
+                                (case (<= (+ pos len) cursor)
+                                      ((<> print StringBuffer a) new_sb (+ buffer pos) len)
+                                      otherwise ((<> print StringBuffer a) new_sb (+ buffer pos) (- cursor pos)))))
+                    (NullTerminated buffer cursor _size step
                                     (letn (((<> StringBuffer a) new_sb .
-                                            #'((<> newCapacity StringBuffer a) size step #t)))
-                                      ((<> print StringBuffer a) new_sb (+ buffer cursor) size)))
+                                            #'((<> newCapacity StringBuffer a) len step #t)))
+                                      (case (<= (+ pos len) cursor)
+                                            ((<> print StringBuffer a) new_sb (+ buffer pos) len)
+                                            otherwise ((<> print StringBuffer a) new_sb (+ buffer pos) (- cursor pos)))))
                     (default ((<> FreedStringBuffer a))))))
 
     (func newCapacity ((int capacity) (int step) (bool null_terminated))

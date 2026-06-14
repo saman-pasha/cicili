@@ -43,6 +43,7 @@
             (v18 (take^Vector^int 3 v03))
             (v19 (take^Vector^char 5 v05))
             (v20 (take^Vector^char 2 v19))
+            (v50 (wrap^Vector^int 1000))
             ) ; decls
 
       (printf "v03: ")
@@ -164,7 +165,14 @@
                             (show^Vector^char stdout v20)
                             (putchar #\Newline)))
             (default (exit-status -129)))
-
+          ;; wrap
+          (io# v50
+            (dead (exit-status -300))
+            (* Buffer (block (printf "wrap 1000 v50: ")
+                             (show^Vector^int stdout v50)
+                             (putchar #\Newline)))
+            (default (exit-status -301)))
+          
           ;; modification
           (letin (
                   (v033  (new^Vector^int  (cast (const int []) '{ 1 2 3 4 5 }) 5))

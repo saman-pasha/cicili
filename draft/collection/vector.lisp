@@ -425,7 +425,8 @@
 
     (func wrap ((const a item))
           (out type)
-          (return ((<> pureCapacity type) 16 16)))
+          (return (letin ((new_vec ((<> pureCapacity type) 16 16)))
+                    ((<> push type) item new_vec))))
 
     (func toArray ((type vector))
           (out a *)
@@ -472,7 +473,7 @@
   (import-Maybe a)
   (import-StringBuffer a)
 
-  (import-box (List type)
+  (import-box (Vector type)
     (= Buffer (<> Buffer a) ((<> StringBuffer a) buffer))
     (= Slice  (<> Slice a)  (type vector) (int cursor) (int size))
     (= None   (<> None a)))
