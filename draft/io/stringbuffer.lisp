@@ -104,8 +104,10 @@
                               (letn ((a * new_buffer . #'(realloc buffer (* len (sizeof a)))))
                                 ((<> MakeStringBuffer a) new_buffer (? (< cursor len) cursor len) len step)))
                     (NullTerminated buffer cursor _size step
-                                    (letn ((a * new_buffer . #'(realloc buffer (* len (sizeof a)))))
-                                      ((<> MakeNullTerminatedBuffer a) new_buffer (? (< cursor len) cursor len) len step)))
+                                    (letn ((a * new_buffer . #'(realloc buffer (* (+ len 1) (sizeof a))))
+                                           (size_t new_cursor . #'(? (< cursor len) cursor len)))
+                                      (set (cof (+ new_buffer new_cursor)) (cast a #\Null))
+                                      ((<> MakeNullTerminatedBuffer a) new_buffer new_cursor len step)))
                     (default ((<> FreedStringBuffer a))))))
     
     (free (io this

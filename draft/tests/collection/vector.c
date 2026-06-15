@@ -425,9 +425,11 @@ __h_stack_push_separator ();
               
               ((__h_case_result ) ? ({ /* cicili#Progn510 */
                   ({ /* cicili#Let512 */
-                    int * new_buffer  = realloc (buffer , (len  *  sizeof(int) ));
+                    int * new_buffer  = realloc (buffer , ((len  +  1 ) *  sizeof(int) ));
+                    size_t new_cursor  = (((cursor  <  len  )) ? cursor  : len );
                     // ----------
-                    MakeNullTerminatedBuffer_int (new_buffer , (((cursor  <  len  )) ? cursor  : len ), len , step );
+                    (*(new_buffer  +  new_cursor  )) = ((int)'\0');
+                    MakeNullTerminatedBuffer_int (new_buffer , new_cursor , len , step );
                   });
                 }) : ({ /* cicili#Let517 */
                   // ----------
@@ -4812,9 +4814,11 @@ __h_stack_push_separator ();
               
               ((__h_case_result ) ? ({ /* cicili#Progn4125 */
                   ({ /* cicili#Let4127 */
-                    char * new_buffer  = realloc (buffer , (len  *  sizeof(char) ));
+                    char * new_buffer  = realloc (buffer , ((len  +  1 ) *  sizeof(char) ));
+                    size_t new_cursor  = (((cursor  <  len  )) ? cursor  : len );
                     // ----------
-                    MakeNullTerminatedBuffer_char (new_buffer , (((cursor  <  len  )) ? cursor  : len ), len , step );
+                    (*(new_buffer  +  new_cursor  )) = ((char)'\0');
+                    MakeNullTerminatedBuffer_char (new_buffer , new_cursor , len , step );
                   });
                 }) : ({ /* cicili#Let4132 */
                   // ----------
