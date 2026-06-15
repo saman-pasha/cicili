@@ -1,3 +1,326 @@
+📘 BTree — Persistent, Immutable, Rc‑Managed B‑Tree for Cicili
+
+BTree k v is Cicili’s persistent, immutable, Rc‑managed B‑Tree implementation.  
+It provides:
+
+- logarithmic search, insert, and delete  
+- structural sharing via Rc  
+- safe, immutable nodes  
+- automatic memory management  
+- functional API  
+- error reporting via Either  
+- optional callbacks for deletion  
+- pure construction from lists  
+
+This B‑Tree is suitable for:
+
+- databases  
+- indexes  
+- key‑value stores  
+- persistent data structures  
+- concurrent readers (immutable versions)  
+
+It is fully persistent:  
+every modification returns a new tree, and old versions remain valid.
+
+---
+
+🧩 Data Representation
+
+`lisp
+(BTree k v) =
+  | Branch   items children
+  | Internal items children
+  | Leaf     items
+`
+
+Leaf
+Contains only items:
+
+`
+(List (Tuple k v))
+`
+
+Internal
+Contains:
+
+- items: sorted key/value pairs  
+- children: list of Rc<BTree>  
+
+Branch
+A temporary node used during splits.  
+It is not part of the final tree structure; it is an intermediate result during insertion or deletion.
+
+---
+
+🧠 Supporting Types
+
+Tuple k v
+A key/value pair.
+
+List
+Persistent list used for:
+
+- items  
+- children  
+
+Rc
+Reference‑counted pointer used for:
+
+- structural sharing  
+- safe persistence  
+- memory‑safe children  
+
+Maybe
+Used for:
+
+- search results  
+- min/max  
+- optional parent references  
+
+Either Error Tree
+Used for:
+
+- insert errors  
+- delete errors  
+- invalid operations  
+
+---
+
+⚠️ Error Types
+
+`lisp
+BTreeError =
+  | ERRINVALIDOBJECT
+  | ERRINVALIDORDER order
+  | ERRUNIQUEKEY item
+  | ERRNOTFOUND key
+  | ERRACCESSDEAD_CHILD item index
+  | ERRINVALIDBRANCH branch
+  | ERRCANTBORROW reason
+`
+
+Each error has a show function for printing.
+
+---
+
+⚙️ API Reference
+
+Construction
+
+pure(keys[], values[], len) → Either Error (BTree k v)
+Build a B‑Tree from raw arrays.
+
+fromLists(List k, List v) → Either Error (BTree k v)
+Build a B‑Tree from persistent lists.
+
+---
+
+Core Operations
+
+order() → size_t
+Returns the B‑Tree order m.
+
+---
+
+search(tree, key) → Maybe (Tuple k v)
+Standard B‑Tree search.
+
+- returns Just (k,v) if found  
+- returns Nothing if not found  
+
+---
+
+insert(tree, key, value) → Either Error (BTree k v)
+Insert a key/value pair.
+
+- returns a new tree  
+- old tree remains valid  
+- detects duplicate keys  
+- performs node splits when needed  
+
+---
+
+delete(tree, key, callback) → Either Error (BTree k v)
+Delete a key.
+
+- callback is invoked with the removed (k,v)  
+- handles all B‑Tree deletion cases:  
+  - leaf deletion  
+  - internal deletion  
+  - borrow from left  
+  - borrow from right  
+  - merge  
+  - split after merge (rare but supported)  
+
+---
+
+min(tree) → Maybe (Tuple k v)
+Return the smallest key/value pair.
+
+max(tree) → Maybe (Tuple k v)
+Return the largest key/value pair.
+
+---
+
+traverse(tree, callback)
+In‑order traversal.
+
+Callback receives:
+
+- (Tuple k v)  
+- Bool hasNext  
+
+---
+
+show(file, tree) → size_t
+Pretty‑print the tree.
+
+---
+
+🧬 Internal Mechanics
+
+Order Parameters
+
+`lisp
+U = m
+L = ceil(m / 2)
+`
+
+- U = maximum number of items before split  
+- L = minimum number of items after merge/borrow  
+
+---
+
+Split
+Performed when a node overflows.
+
+- middle item is promoted  
+- left and right children are created  
+- returns a Branch node  
+
+Used in:
+
+- insertion  
+- deletion (via splitForDelete)  
+
+---
+
+Borrow
+During deletion, if a child has too few items:
+
+- borrow from right sibling  
+- or borrow from left sibling  
+- or merge if borrowing is impossible  
+
+Borrowing is implemented separately for:
+
+- leaf nodes  
+- internal nodes  
+
+---
+
+Merge
+When both siblings have minimum items:
+
+- merge left + parent key + right  
+- may cause parent underflow  
+- may trigger recursive merge  
+
+---
+
+Structural Sharing
+All children are stored as:
+
+`
+List (Rc BTree)
+`
+
+This ensures:
+
+- old versions remain valid  
+- memory is shared safely  
+- no mutation occurs in place  
+
+---
+
+🧮 Performance Characteristics
+
+| Operation | Complexity |
+|----------|------------|
+| search | O(log n) |
+| insert | O(log n) |
+| delete | O(log n) |
+| min/max | O(log n) |
+| traverse | O(n) |
+
+Memory usage is efficient due to Rc‑based structural sharing.
+
+---
+
+🧵 Safety Guarantees
+
+✔ Fully persistent
+Old versions remain valid forever.
+
+✔ Rc‑managed
+No manual memory management required.
+
+✔ Immutable nodes
+No in‑place mutation.
+
+✔ Safe deletion
+Borrow/merge logic ensures tree invariants.
+
+✔ Safe children access
+Errors detect invalid child references.
+
+---
+
+🧭 Usage Examples
+
+Insert
+`lisp
+(match ((<> insert BTree int int) tree 42 100)
+  (Right newTree newTree)
+  (Left err (show err)))
+`
+
+Search
+`lisp
+(match ((<> search BTree int int) tree 42)
+  (Just item (printf "found: %d" (cof item)))
+  (default (printf "not found")))
+`
+
+Delete
+`lisp
+((<> delete BTree int int) tree 42 (\\ item (printf "removed: %d" (cof item))))
+`
+
+---
+
+🧩 Design Philosophy
+
+Cicili’s B‑Tree is designed to be:
+
+- persistent  
+- immutable  
+- memory‑safe  
+- Rc‑managed  
+- functional  
+- high‑performance  
+
+It is ideal for:
+
+- databases  
+- indexes  
+- persistent maps  
+- multi‑version concurrency  
+- functional programming  
+
+---
+
 📘 Vector — High‑Performance, Slice‑Aware, Copy‑On‑Write Sequence
 
 Vector a is Cicili’s dynamic, contiguous, slice‑aware, copy‑on‑write (COW) sequence type.  
