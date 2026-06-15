@@ -4,15 +4,16 @@
   (a) ; char or any buffer item
 
   (decl-data (StringBuffer (<> StringBuffer a))
-    (= Buffered      (<> MakeStringBuffer a)         (a * buffer) (int cursor) (int size) (int step))
-    (= NullTerminated (<> MakeNullTerminatedBuffer a) (a * buffer) (int cursor) (int size) (int step))
+    (= Buffered       (<> MakeStringBuffer a)         (a * buffer) (size_t cursor) (size_t size) (size_t step))
+    (= NullTerminated (<> MakeNullTerminatedBuffer a) (a * buffer) (size_t cursor) (size_t size) (size_t step))
     (= Freed          (<> FreedStringBuffer a))
-    (func print (((<> StringBuffer a) sb) (const a * data) (int len)) (out (<> StringBuffer a)))
-    (func put   (((<> StringBuffer a) sb) (const a data)) (out (<> StringBuffer a)))
-    (func copy  (((<> StringBuffer a) sb)) (out (<> StringBuffer a)))
-    (func copySlice   (((<> StringBuffer a) sb) (int cursor) (int size)) (out (<> StringBuffer a)))
-    (func newCapacity ((int capacity) (int step) (bool null_terminated)) (out (<> StringBuffer a)))
-    (func new   ((int step) (bool null_terminated)) (out (<> StringBuffer a))))
+    (func print  (((<> StringBuffer a) sb) (const a * data) (size_t len)) (out (<> StringBuffer a)))
+    (func put    (((<> StringBuffer a) sb) (const a data)) (out (<> StringBuffer a)))
+    (func copy   (((<> StringBuffer a) sb)) (out (<> StringBuffer a)))
+    (func copySlice   (((<> StringBuffer a) sb) (size_t cursor) (size_t size)) (out (<> StringBuffer a)))
+    (func newCapacity ((size_t capacity) (size_t step) (bool null_terminated)) (out (<> StringBuffer a)))
+    (func new    ((size_t step) (bool null_terminated)) (out (<> StringBuffer a)))
+    (func resize (((<> StringBuffer a) sb) (size_t size)) (out (<> StringBuffer a))))
 
   ) ; decl-StringBuffer
 
@@ -20,15 +21,15 @@
   (a)
   
   (impl-data (StringBuffer (<> StringBuffer a))
-    (= Buffered      (<> MakeStringBuffer a)         (a * buffer) (int cursor) (int size) (int step))
-    (= NullTerminated (<> MakeNullTerminatedBuffer a) (a * buffer) (int cursor) (int size) (int step))
+    (= Buffered       (<> MakeStringBuffer a)         (a * buffer) (size_t cursor) (size_t size) (size_t step))
+    (= NullTerminated (<> MakeNullTerminatedBuffer a) (a * buffer) (size_t cursor) (size_t size) (size_t step))
     (= Freed          (<> FreedStringBuffer a))
     
-    (func print (((<> StringBuffer a) sb) (const a * data) (int len))
+    (func print (((<> StringBuffer a) sb) (const a * data) (size_t len))
           (out (<> StringBuffer a))
           (return (match sb
                     (Buffered buffer cursor size step
-                              (letn ((int blen . #'(* len (sizeof a))))
+                              (letn ((size_t blen . #'(* len (sizeof a))))
                                 (when (< (- size cursor) len)
                                   (set size (* step (+ (/ (+ cursor len) step) 1)))
                                   (let ((a * new_buffer . #'(realloc buffer (* size (sizeof a)))))
@@ -36,7 +37,7 @@
                                 (memcpy (+ buffer cursor) data blen)
                                 ((<> MakeStringBuffer a) buffer (+ cursor len) size step)))
                     (NullTerminated buffer cursor size step
-                                    (letn ((int blen . #'(* len (sizeof a))))
+                                    (letn ((size_t blen . #'(* len (sizeof a))))
                                       (when (< (- size cursor) len)
                                         (set size (* step (+ (/ (+ cursor len) step) 1)))
                                         (let ((a * new_buffer . #'(realloc buffer (* (+ size 1) (sizeof a)))))
@@ -63,7 +64,7 @@
                                       ((<> print StringBuffer a) new_sb buffer cursor)))
                     (default ((<> FreedStringBuffer a))))))
     
-    (func copySlice (((<> StringBuffer a) sb) (int pos) (int len))
+    (func copySlice (((<> StringBuffer a) sb) (size_t pos) (size_t len))
           (out (<> StringBuffer a))
           (return (match sb
                     (Buffered buffer cursor _size step
@@ -80,7 +81,7 @@
                                             otherwise ((<> print StringBuffer a) new_sb (+ buffer pos) (- cursor pos)))))
                     (default ((<> FreedStringBuffer a))))))
 
-    (func newCapacity ((int capacity) (int step) (bool null_terminated))
+    (func newCapacity ((size_t capacity) (size_t step) (bool null_terminated))
           (out (<> StringBuffer a))
           (return (case null_terminated
                         (letn ((a * buffer . #'(malloc (* (+ capacity 1) (sizeof a))))
@@ -92,10 +93,21 @@
                                ((<> StringBuffer a) sb . #'((<> MakeStringBuffer a) buffer 0 capacity step)))
                           sb))))
 
-    (func new ((int step) (bool null_terminated))
+    (func new ((size_t step) (bool null_terminated))
           (out (<> StringBuffer a))
           (return ((<> newCapacity StringBuffer a) step step null_terminated)))
 
+    (func resize (((<> StringBuffer a) sb) (size_t len))
+          (out (<> StringBuffer a))
+          (return (match sb
+                    (Buffered buffer cursor _size step
+                              (letn ((a * new_buffer . #'(realloc buffer (* len (sizeof a)))))
+                                ((<> MakeStringBuffer a) new_buffer (? (< cursor len) cursor len) len step)))
+                    (NullTerminated buffer cursor _size step
+                                    (letn ((a * new_buffer . #'(realloc buffer (* len (sizeof a)))))
+                                      ((<> MakeNullTerminatedBuffer a) new_buffer (? (< cursor len) cursor len) len step)))
+                    (default ((<> FreedStringBuffer a))))))
+    
     (free (io this
             (* Buffered ~ NullTerminated buffer
                (block

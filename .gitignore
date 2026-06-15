@@ -291,3 +291,5 @@ draft/tests/pthread/main
 draft/tests/fastcgi/fastcgi_app_dynamic
 draft/tests/collection/main
 /draft/tests/collection/main.dSYM
+benchmark/concurrent_btree
+draft/tests/collection/btree

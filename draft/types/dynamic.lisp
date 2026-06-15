@@ -25,7 +25,7 @@
     (func toXml     ((CFile file) (CStr root) (DynamicType dt)) (out int))
     (func search    ((DynamicType dt) (CStr path)) (out DynamicType))
     (func force     ((DynamicType thunk)) (out DynamicType))
-    (func show      ((CFile file) (DynamicType dt)) (out int)))
+    (func show      ((CFile file) (DynamicType dt)) (out size_t)))
     
   ;; dependencies
   (decl-List (<> List DynamicType) DynamicType)
@@ -65,13 +65,14 @@
                 (out DynamicType)
                 ;; trace
                 ;; (printf "\nparseJson\n")
+                
                 (where ((new  ((<> new StringBuffer char) 16 #t))
                         (put  (\\ -ch (set sb ((<> put StringBuffer char) sb -ch))))
                         (derr (\\ -fmt ((<> Dynamic Error)
                                         (letn ((char * reason . nil))
                                           (asprintf (aof reason) -fmt buffer counter)
                                           reason)))))
-                  (let ((int counter . 0)
+                  (let ((size_t counter . 0)
                         (char cursor . #\Null)
                         ((<> StringBuffer char) sb . #'new)
                         (bool in_string  . false)
@@ -182,7 +183,7 @@
                         (case #\{
                           (if in_string
                               (put cursor)
-                              (let ((int counter . 0)
+                              (let ((size_t counter . 0)
                                     ((<> List CStr) stackKeys . #'((<> Nil CStr)))
                                     ((<> List DynamicType) stackVals . #'((<> Nil DynamicType))))
                                 (while true
@@ -311,10 +312,10 @@
           (return (_parseJson file false)))
     
     (func toJson ((CFile file) (DynamicType dt))
-          (out int)
+          (out size_t)
           
           (func listToJson (((<> List DynamicType) list))
-                (out int)
+                (out size_t)
                 (return (match list
                           (* Cons head tail
                              (+ ((<> toJson DynamicType) file head)                                
@@ -325,8 +326,8 @@
                           (default (fprintf file "]")))))
 
           (func objectToJson (((<> BTree CStr DynamicType) tree))
-                (out int)
-                (return (letn ((int counter . #'(fprintf file "{")))
+                (out size_t)
+                (return (letn ((size_t counter . #'(fprintf file "{")))
                           ((<> traverse BTree CStr DynamicType)
                            tree
                            '(closure (((<> BTree CStr DynamicType pair_t) item) (Bool hasNext))
@@ -359,13 +360,13 @@
                     (default   (fprintf file "null")))))
 
     (func toXml ((CFile file) (CStr root) (DynamicType dt))
-          (out int)
+          (out size_t)
 
-          (auto) (decl) (func objectToXml ((CStr key) ((<> BTree CStr DynamicType) tree)) (out int))
-          (auto) (decl) (func toXml_ ((CStr key) (DynamicType dt)) (out int))
+          (auto) (decl) (func objectToXml ((CStr key) ((<> BTree CStr DynamicType) tree)) (out size_t))
+          (auto) (decl) (func toXml_ ((CStr key) (DynamicType dt)) (out size_t))
           
           (func listToXml ((CStr key) (CStr xml_name) ((<> List DynamicType) list))
-                (out int)
+                (out size_t)
                 (return (match list
                           (* Cons head tail
                              (+ (match# head
@@ -378,10 +379,10 @@
                           (default 0))))
 
           (func objectToXml ((CStr key) ((<> BTree CStr DynamicType) tree))
-                (out int)
+                (out size_t)
                 (return
                   (+ (fprintf file "<%s " key)
-                     (letn ((int counter . 0))
+                     (letn ((size_t counter . 0))
                        ((<> traverse BTree CStr DynamicType)
                         tree
                         '(closure (((<> BTree CStr DynamicType pair_t) item) (Bool hasNext))
@@ -403,7 +404,7 @@
                                (fprintf file " ")))))
                        counter)
                      (fprintf file ">")
-                     (letn ((int counter . 0))
+                     (letn ((size_t counter . 0))
                        ((<> traverse BTree CStr DynamicType)
                         tree
                         '(closure (((<> BTree CStr DynamicType pair_t) item) (Bool hasNext))
@@ -422,7 +423,7 @@
                      (fprintf file "</%s>" key))))
 
           (func toXml_ ((CStr key) (DynamicType dt))
-                (out int)
+                (out size_t)
                 (return (match# dt
                           (dead (fprintf file "nothing"))
                           (* String  data (+ (fprintf file "\"")
@@ -445,7 +446,7 @@
     (func search ((DynamicType dt) (CStr path))
           (out DynamicType)
           (return (letn ((char script [256] . '{ 0 })
-                         (int counter . 0)
+                         (size_t counter . 0)
                          (char * cursor . path))
                     (for () (!= (cof cursor) #\Null) ((++ cursor))
                          (if (== (cof cursor) #\/)
@@ -505,7 +506,7 @@
                                 reason))))))
 
     (func show ((CFile file) (DynamicType dt))
-          (out int)
+          (out size_t)
           (return (match# dt
                     (dead (fprintf file "nil"))
                     (* String  data (+ (fprintf file "\"")

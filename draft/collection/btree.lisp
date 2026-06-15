@@ -19,10 +19,10 @@
   ;; Errors maybe raise during insertion or deletion
   (decl-data (BTreeError (<> type Error))
     (= ERR_INVALID_OBJECT    (<> type ERR_INVALID_OBJECT))
-    (= ERR_INVALID_ORDER     (<> type ERR_INVALID_ORDER)     (int order))
+    (= ERR_INVALID_ORDER     (<> type ERR_INVALID_ORDER)     (size_t order))
     (= ERR_UNIQUE_KEY        (<> type ERR_UNIQUE_KEY)        ((<> type pair_t) item))
     (= ERR_NOT_FOUND         (<> type ERR_NOT_FOUND)         (k key))
-    (= ERR_ACCESS_DEAD_CHILD (<> type ERR_ACCESS_DEAD_CHILD) ((<> type pair_t) item) (int index))
+    (= ERR_ACCESS_DEAD_CHILD (<> type ERR_ACCESS_DEAD_CHILD) ((<> type pair_t) item) (size_t index))
     (= ERR_INVALID_BRANCH    (<> type ERR_INVALID_BRANCH)    (type branch))
     (= ERR_CANT_BORROW       (<> type ERR_CANT_BORROW)       (char * reason))
 
@@ -51,15 +51,15 @@
     (= Leaf (<> Leaf type)
        ((<> List type pair_t) items))
     
-    (func order     () (out int))
+    (func order     () (out size_t))
     (func insert    ((type tree) (k skey) (v svalue)) (out (<> Either (<> type Error) type)))
     (func search    ((type tree) (k skey)) (out (<> Maybe type pair_t)))
     (func delete    ((type tree) (k skey) (func callback (((<> type pair_t) item)))) (out (<> Either (<> type Error) type)))
     (func min       ((type tree)) (out (<> Maybe type pair_t)))
     (func max       ((type tree)) (out (<> Maybe type pair_t)))
     (func traverse  ((type tree) (func callback (((<> type pair_t) item) (Bool hasNext)))))
-    (func show      ((CFile file) (type tree)) (out int))
-    (func pure      ((k keys []) (v values []) (int len)) (out (<> Either (<> type Error) type)))
+    (func show      ((CFile file) (type tree)) (out size_t))
+    (func pure      ((k keys []) (v values []) (size_t len)) (out (<> Either (<> type Error) type)))
     (func fromLists (((<> List k) keys) ((<> List v) values)) (out (<> Either (<> type Error) type))))
   
   ) ; decl-B-Tree
@@ -71,20 +71,20 @@
 
   (impl-data (BTreeError (<> type Error))
     (= ERR_INVALID_OBJECT    (<> type ERR_INVALID_OBJECT))
-    (= ERR_INVALID_ORDER     (<> type ERR_INVALID_ORDER)     (int order))
+    (= ERR_INVALID_ORDER     (<> type ERR_INVALID_ORDER)     (size_t order))
     (= ERR_UNIQUE_KEY        (<> type ERR_UNIQUE_KEY)        ((<> type pair_t) item))
     (= ERR_NOT_FOUND         (<> type ERR_NOT_FOUND)         (k key))
-    (= ERR_ACCESS_DEAD_CHILD (<> type ERR_ACCESS_DEAD_CHILD) ((<> type pair_t) item) (int index))
+    (= ERR_ACCESS_DEAD_CHILD (<> type ERR_ACCESS_DEAD_CHILD) ((<> type pair_t) item) (size_t index))
     (= ERR_INVALID_BRANCH    (<> type ERR_INVALID_BRANCH)    (type branch))
     (= ERR_CANT_BORROW       (<> type ERR_CANT_BORROW)       (char * reason))
 
     (func show (((<> type Error) error))
           (io error
             (ERR_INVALID_OBJECT (printf "invalid B-Tree object"))
-            (ERR_INVALID_ORDER order (printf "invalid B-Tree order: %d" order))
+            (ERR_INVALID_ORDER order (printf "invalid B-Tree order: %zu" order))
             (ERR_UNIQUE_KEY item (block (printf "unique key: ") ($> sh-item stdout item)))
             (ERR_NOT_FOUND key (block (printf "key not found: ") ($> sh-key stdout key)))
-            (ERR_ACCESS_DEAD_CHILD item index (block (printf "dead child at index: %d of item: " index) ($> sh-item stdout item)))
+            (ERR_ACCESS_DEAD_CHILD item index (block (printf "dead child at index: %zu of item: " index) ($> sh-item stdout item)))
             (ERR_INVALID_BRANCH branch (block (printf "invalid branch: ") (show branch)))
             (ERR_CANT_BORROW reason (printf "borrow error: %s" reason))
             (default (printf "unknown error")))))
@@ -105,8 +105,8 @@
   (impl-Functor-List (<> List (<> Rc type)) (<> Rc type) (<> Rc type))
 
   ;; private constants
-  (var int (<> U type) . `m) ; inside generic default atom values should set with ` or QUASIQUOTE 
-  (var int (<> L type) . `(CEILING m 2)) ; compile time calculation with ` or QUASIQUOTE inside generic
+  (var size_t (<> U type) . `m) ; inside generic default atom values should set with ` or QUASIQUOTE 
+  (var size_t (<> L type) . `(CEILING m 2)) ; compile time calculation with ` or QUASIQUOTE inside generic
 
   ;; aliases
   (DEFMACRO branch   (-i -c) `((<> Branch   type) ,-i ,-c))
@@ -219,8 +219,8 @@
   ;; merge with parent if needed
   (func (<> mergeUp type) (((<> List type pair_t) items)
                            ((<> List Rc type) children)
-                           (int pitem_index)
-                           (int pchild_index)
+                           (size_t pitem_index)
+                           (size_t pchild_index)
                            ((<> List type pair_t) left_items)
                            ((<> List Rc type) left_children)
                            ((<> List type pair_t) right_items)
@@ -269,8 +269,8 @@
 
   
   (decl) (func (<> deleteWithParent type) (((<> Maybe type) wparent)
-                                           (int pitem_index)
-                                           (int pchild_index)
+                                           (size_t pitem_index)
+                                           (size_t pchild_index)
                                            (type tree)
                                            (k skey)
                                            (func callback (((<> type pair_t) item))))
@@ -281,7 +281,7 @@
                               ((<> List Rc type) children)
                               ((<> Maybe (<> List type pair_t)) wleft)
                               ((<> List type pair_t) current)
-                              (int index)
+                              (size_t index)
                               (type nchild)
                               (func callback (((<> type pair_t) item))))
         (out (<> Either (<> type Error) type))
@@ -457,7 +457,7 @@
                                   ((<> List type pair_t) items)
                                   ((<> List Rc type) children)
                                   ((<> List type pair_t) current)
-                                  (int index)
+                                  (size_t index)
                                   (func callback (((<> type pair_t) item))))
         (out (<> Either (<> type Error) type))
 
@@ -649,8 +649,8 @@
         ) ; borrowInternal
 
   (func (<> deleteWithParent type) (((<> Maybe type) wparent)
-                                    (int pitem_index)
-                                    (int pchild_index)
+                                    (size_t pitem_index)
+                                    (size_t pchild_index)
                                     (type tree)
                                     (k skey)
                                     (func callback (((<> type pair_t) item))))
@@ -672,7 +672,7 @@
                               ((<> List Rc type) children)
                               ((<> Maybe (<> List type pair_t)) wleft)
                               ((<> List type pair_t) current)
-                              (int index))
+                              (size_t index))
               (out (<> Either (<> type Error) type))
 
               (analyze-data! ((<> show List type pair_t) __h_stack_out current))
@@ -876,7 +876,7 @@
         ;; delete from a leaf
         (func deleteLeaf (((<> List type pair_t) items)
                           ((<> List type pair_t) current)
-                          (int index))
+                          (size_t index))
               (out (<> Either (<> type Error) type))
 
               (debug!
@@ -932,7 +932,7 @@
        ((<> List type pair_t) items))
 
     (func order ()
-          (out int)
+          (out size_t)
           (return m))
     
     (func insert ((type tree) (k skey) (v svalue))
@@ -953,7 +953,7 @@
           (func insertInternal (((<> List type pair_t) items)
                                 ((<> List Rc type) children)
                                 ((<> List type pair_t) current)
-                                (int index))
+                                (size_t index))
                 (out (<> Either (<> type Error) type))
                 
                 (debug!
@@ -1097,7 +1097,7 @@
           ;; insert into a leaf
           (func insertLeaf (((<> List type pair_t) items)
                             ((<> List type pair_t) current)
-                            (int index))
+                            (size_t index))
                 (out (<> Either (<> type Error) type))
 
                 (debug!
@@ -1147,7 +1147,7 @@
 
           (func searchInternal (((<> List Rc type) children)
                                 ((<> List type pair_t) current)
-                                (int index))
+                                (size_t index))
                 (out (<> Maybe type pair_t))
                 
                 (return (match current
@@ -1170,7 +1170,7 @@
                           (default ((<> Nothing type pair_t))))))
 
           (func searchLeaf (((<> List type pair_t) current)
-                            (int index))
+                            (size_t index))
                 (out (<> Maybe type pair_t))
                 
                 (return (match current
@@ -1297,12 +1297,12 @@
     
 
     (func show ((CFile file) (type tree))
-          (out int)
+          (out size_t)
           
-          (auto) (decl) (func showTree ((int indent) (type tree)) (out int))
+          (auto) (decl) (func showTree ((int indent) (type tree)) (out size_t))
 
           (func showChildren ((int indent) ((<> List Rc type) children))
-                (out int)
+                (out size_t)
                 (return (match children
                           (* Cons head tail
                              (+ (match tail
@@ -1317,7 +1317,7 @@
                           (default 0))))
           
           (func showTree ((int indent) (type tree))
-                (out int)
+                (out size_t)
                 (return (+ (fprintf file "%d%*c" indent (* indent 2) #\Space)
                            (match tree
                              (* Branch ~ Internal items children
@@ -1332,11 +1332,11 @@
           (return (+ (showTree 1 tree)
                      (fprintf file "\n"))))
 
-    (func pure ((k keys []) (v values []) (int len))
+    (func pure ((k keys []) (v values []) (size_t len))
           (out (<> Either (<> type Error) type))
           
           (return (letn ((type tree . #'((<> Leaf type) ((<> Nil type pair_t)))))
-                    (for ((int i . 0)) (< i len) ((++ i))
+                    (for ((size_t i . 0)) (< i len) ((++ i))
                          (io ((<> insert type) tree (nth i keys) (nth i values))
                            (Right new_tree (block ((<> free type) (aof tree))
                                                   (set tree new_tree)))

@@ -53,9 +53,9 @@
       (show^Vector^char stdout v05)
       (putchar #\Newline)
 
-      (printf "length 5 of v03: %d\n" (len^Vector^int v03))
-      (printf "has length 6 of v05: %d\n" (hasLen^Vector^char v05 6))
-      (printf "has length 12 of v05: %d\n" (hasLen^Vector^char v05 12))
+      (printf "length 5 of v03: %ld\n" (len^Vector^int v03))
+      (printf "has length 6 of v05: %ld\n" (hasLen^Vector^char v05 6))
+      (printf "has length 12 of v05: %ld\n" (hasLen^Vector^char v05 12))
 
       (where ((exit-status (\\ -status (block (printf "status: %d\n" -status)
                                               (exit EXIT_FAILURE)))))
@@ -304,6 +304,14 @@
                   (vt10 (drop^Vector^char 5 v244))
                   (v47  (replaceAt^Vector^int  vt9  9 1))   ; COW
                   (v48  (replaceAt^Vector^char vt10 #\K 3)) ; COW
+                  (vt51  (copy^Vector^int  v233))
+                  (vt61  (copy^Vector^char v244))
+                  (v451  (resize^Vector^int  vt51 1))
+                  (v461  (resize^Vector^char vt61 15))
+                  (vt91  (drop^Vector^int  4 v233))
+                  (vt101 (drop^Vector^char 5 v244))
+                  (v471  (resize^Vector^int  vt91  1))  ; COW
+                  (v481  (resize^Vector^char vt101 15)) ; COW
                   ) ; decls
             
             ;; insertAt
@@ -381,6 +389,32 @@
                                (show^Vector^char stdout v48)
                                (putchar #\Newline)))
               (default (exit-status -172)))
+            ;; resize
+            (io# v451
+              (dead (exit-status -173))
+              (* Buffer (block (printf "resize 1 v233: ")
+                               (show^Vector^int stdout v451)
+                               (putchar #\Newline)))
+              (default (exit-status -174)))
+            (io# v461
+              (dead (exit-status -175))
+              (* Buffer (block (printf "resize 15 v244: ")
+                               (show^Vector^char stdout v461)
+                               (putchar #\Newline)))
+              (default (exit-status -176)))
+            (io# v471
+              (dead (exit-status -177))
+              (* Buffer (block (printf "resize 1 of drop 4 v233: ")
+                               (show^Vector^int stdout v471)
+                               (putchar #\Newline)))
+              (default (exit-status -178)))
+            (io# v481
+              (dead (exit-status -179))
+              (* Buffer (block (printf "resize 15 of drop 5 v244: ")
+                               (show^Vector^char stdout v481)
+                               (putchar #\Newline)))
+              (default (exit-status -180)))
+
             ) ; letin
           
           )) ; where

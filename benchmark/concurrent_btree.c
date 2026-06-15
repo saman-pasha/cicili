@@ -8,11 +8,11 @@
 #include "haskell.h"
 #include <pthread.h>
 #include <unistd.h>
-typedef struct ciciliOOfsDXI5U_FbKRkKR3SY21XS8rk_ {
+typedef struct cicilij7m5fP15wzT_TjHw_cTOu_wU4Gw_ {
   Cell_String __h_0_mem ;
   int __h_1_mem ;
-} ciciliOOfsDXI5U_FbKRkKR3SY21XS8rk_;
-typedef ciciliOOfsDXI5U_FbKRkKR3SY21XS8rk_ User ;
+} cicilij7m5fP15wzT_TjHw_cTOu_wU4Gw_;
+typedef cicilij7m5fP15wzT_TjHw_cTOu_wU4Gw_ User ;
 Ordering compareKey (int lkey , int rkey ) {
   return (((lkey  <  rkey  )) ? LT () : (((lkey  ==  rkey  )) ? EQ () : GT ()));
 }
@@ -83,7 +83,7 @@ typedef struct List_User__H_Table {
     int (*hasLen) (List_User list , int desired );
     int (*len) (List_User list );
     List_User (*tail) (List_User list );
-    List_User (*drop) (int index , List_User list );
+    List_User (*drop) (int len , List_User list );
     Maybe_User (*head) (List_User list );
     List_User (*nthcdr) (int index , List_User list );
     Maybe_User (*nth) (int index , List_User list );
@@ -125,7 +125,7 @@ List_User init_List_User (List_User list );
 int hasLen_List_User (List_User list , int desired );
 int len_List_User (List_User list );
 List_User tail_List_User (List_User list );
-List_User drop_List_User (int index , List_User list );
+List_User drop_List_User (int len , List_User list );
 Maybe_User head_List_User (List_User list );
 List_User nthcdr_List_User (int index , List_User list );
 Maybe_User nth_List_User (int index , List_User list );
@@ -196,16 +196,17 @@ User * toArray_List_User (List_User list , User term ) {
         typeof((((list -> __h_data ). Cons ). __h_0_mem )) head ;
         typeof((((list -> __h_data ). Cons ). __h_1_mem )) tail ;
         // ----------
-        
-        ({ /* cicili#Let332 */
-          bool __h_case_result  = (true  &&  (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  (({ /* cicili#Progn333 */
+        ;
+        ({ /* cicili#Let330 */
+          bool __h_case_result  = (true  &&  (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  (({ /* cicili#Progn331 */
                   (head  =  (((list -> __h_data ). Cons ). __h_0_mem ) );
                   true ;
-                }) &&  ({ /* cicili#Progn335 */
+                }) &&  ({ /* cicili#Progn333 */
                   (tail  =  (((list -> __h_data ). Cons ). __h_1_mem ) );
                   true ;
                 }) ) ) );
           // ----------
+          
           ((__h_case_result ) ? ({ /* cicili#Progn338 */
               ({ /* cicili#Let340 */
                 User * arr  = array (tail , (count  +  1 ));
@@ -215,9 +216,9 @@ User * toArray_List_User (List_User list , User term ) {
               });
             }) : ({ /* cicili#Let344 */
               // ----------
-              
-              ({ /* cicili#Progn348 */
-                ({ /* cicili#Let350 */
+              ;
+              ({ /* cicili#Progn346 */
+                ({ /* cicili#Let348 */
                   User * arr  = calloc (count , sizeof(User));
                   // ----------
                   arr [(count  -  1 )] = term ;
@@ -234,126 +235,132 @@ List_User wrap_List_User (const User item ) {
   return Cons_User (item , Nil_User ());
 }
 List_User pure_List_User (const User * buf , int len ) {
-  return (((buf  ==  NULL  )) ? Nil_User () : ({ /* cicili#Let361 */
+  return (((buf  ==  NULL  )) ? Nil_User () : ({ /* cicili#Let359 */
         User item  = (*buf );
         // ----------
         (((len  ==  0 )) ? Nil_User () : Cons_User (item , pure_List_User ((++buf ), (--len ))));
       }));
 }
 int show_List_User (CFile file , List_User list ) {
-  return ({ /* cicili#Let371 */
+  return ({ /* cicili#Let369 */
       typeof((((list -> __h_data ). Cons ). __h_0_mem )) head ;
       typeof((((list -> __h_data ). Cons ). __h_1_mem )) tail ;
       // ----------
-      
-      ({ /* cicili#Let375 */
-        bool __h_case_result  = (true  &&  (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  (({ /* cicili#Progn376 */
+      ;
+      ({ /* cicili#Let371 */
+        bool __h_case_result  = (true  &&  (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  (({ /* cicili#Progn372 */
                 (head  =  (((list -> __h_data ). Cons ). __h_0_mem ) );
                 true ;
-              }) &&  ({ /* cicili#Progn378 */
+              }) &&  ({ /* cicili#Progn374 */
                 (tail  =  (((list -> __h_data ). Cons ). __h_1_mem ) );
                 true ;
               }) ) ) );
         // ----------
-        ((__h_case_result ) ? ({ /* cicili#Progn381 */
-            (({ /* cicili#Let385 */
+        
+        ((__h_case_result ) ? ({ /* cicili#Progn379 */
+            (({ /* cicili#Let383 */
                 // ----------
-                
-                ({ /* cicili#Let389 */
+                ;
+                ({ /* cicili#Let385 */
                   bool __h_case_result  = (true  &&  ((tail -> __h_ctor ) ==  __h_Cons_t  ) );
                   // ----------
-                  ((__h_case_result ) ? ({ /* cicili#Progn391 */
-                      (({ /* cicili#Let397 */
+                  
+                  ((__h_case_result ) ? ({ /* cicili#Progn389 */
+                      (({ /* cicili#Let395 */
                           typeof((head . __h_0_mem )) wname ;
                           typeof((head . __h_1_mem )) salary ;
                           // ----------
-                          
-                          ({ /* cicili#Let401 */
-                            bool __h_case_result  = (true  &&  (({ /* cicili#Progn402 */
+                          ;
+                          ({ /* cicili#Let397 */
+                            bool __h_case_result  = (true  &&  (({ /* cicili#Progn398 */
                                   (wname  =  (head . __h_0_mem ) );
                                   true ;
-                                }) &&  ({ /* cicili#Progn404 */
+                                }) &&  ({ /* cicili#Progn400 */
                                   (salary  =  (head . __h_1_mem ) );
                                   true ;
                                 }) ) );
                             // ----------
-                            ((__h_case_result ) ? ({ /* cicili#Progn407 */
-                                ({ /* cicili#Let411 */
-                                  __auto_type match410  = get_Cell_String (wname );
-                                  typeof((((match410 . __h_data ). Just ). __h_0_mem )) name ;
+                            
+                            ((__h_case_result ) ? ({ /* cicili#Progn405 */
+                                ({ /* cicili#Let409 */
+                                  __auto_type match408  = get_Cell_String (wname );
+                                  typeof((((match408 . __h_data ). Just ). __h_0_mem )) name ;
                                   // ----------
-                                  
-                                  ({ /* cicili#Let416 */
-                                    bool __h_case_result  = (true  &&  (((match410 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn417 */
-                                          (name  =  (((match410 . __h_data ). Just ). __h_0_mem ) );
+                                  ;
+                                  ({ /* cicili#Let412 */
+                                    bool __h_case_result  = (true  &&  (((match408 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn413 */
+                                          (name  =  (((match408 . __h_data ). Just ). __h_0_mem ) );
                                           true ;
                                         }) ) );
                                     // ----------
-                                    ((__h_case_result ) ? ({ /* cicili#Progn420 */
+                                    
+                                    ((__h_case_result ) ? ({ /* cicili#Progn418 */
                                         (fprintf (file , "('") +  show_String (file , name ) +  fprintf (file , "', %d)", salary ) );
-                                      }) : ({ /* cicili#Let424 */
+                                      }) : ({ /* cicili#Let422 */
                                         // ----------
-                                        
-                                        ({ /* cicili#Progn428 */
+                                        ;
+                                        ({ /* cicili#Progn424 */
                                           fprintf (file , "item is deleted in another version!");
                                         });
                                       }));
                                   });
                                 });
-                              }) : ({ /* cicili#Let432 */
+                              }) : ({ /* cicili#Let428 */
                                 // ----------
-                                
-                                ({ /* cicili#Progn436 */
+                                ;
+                                ({ /* cicili#Progn430 */
                                   0;
                                 });
                               }));
                           });
                         }) +  fprintf (file , "%s", " ") );
-                    }) : ({ /* cicili#Let440 */
+                    }) : ({ /* cicili#Let434 */
                       // ----------
-                      
-                      ({ /* cicili#Progn444 */
-                        ({ /* cicili#Let450 */
+                      ;
+                      ({ /* cicili#Progn436 */
+                        ({ /* cicili#Let442 */
                           typeof((head . __h_0_mem )) wname ;
                           typeof((head . __h_1_mem )) salary ;
                           // ----------
-                          
-                          ({ /* cicili#Let454 */
-                            bool __h_case_result  = (true  &&  (({ /* cicili#Progn455 */
+                          ;
+                          ({ /* cicili#Let444 */
+                            bool __h_case_result  = (true  &&  (({ /* cicili#Progn445 */
                                   (wname  =  (head . __h_0_mem ) );
                                   true ;
-                                }) &&  ({ /* cicili#Progn457 */
+                                }) &&  ({ /* cicili#Progn447 */
                                   (salary  =  (head . __h_1_mem ) );
                                   true ;
                                 }) ) );
                             // ----------
-                            ((__h_case_result ) ? ({ /* cicili#Progn460 */
-                                ({ /* cicili#Let464 */
-                                  __auto_type match463  = get_Cell_String (wname );
-                                  typeof((((match463 . __h_data ). Just ). __h_0_mem )) name ;
+                            
+                            ((__h_case_result ) ? ({ /* cicili#Progn452 */
+                                ({ /* cicili#Let456 */
+                                  __auto_type match455  = get_Cell_String (wname );
+                                  typeof((((match455 . __h_data ). Just ). __h_0_mem )) name ;
                                   // ----------
-                                  
-                                  ({ /* cicili#Let469 */
-                                    bool __h_case_result  = (true  &&  (((match463 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn470 */
-                                          (name  =  (((match463 . __h_data ). Just ). __h_0_mem ) );
+                                  ;
+                                  ({ /* cicili#Let459 */
+                                    bool __h_case_result  = (true  &&  (((match455 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn460 */
+                                          (name  =  (((match455 . __h_data ). Just ). __h_0_mem ) );
                                           true ;
                                         }) ) );
                                     // ----------
-                                    ((__h_case_result ) ? ({ /* cicili#Progn473 */
+                                    
+                                    ((__h_case_result ) ? ({ /* cicili#Progn465 */
                                         (fprintf (file , "('") +  show_String (file , name ) +  fprintf (file , "', %d)", salary ) );
-                                      }) : ({ /* cicili#Let477 */
+                                      }) : ({ /* cicili#Let469 */
                                         // ----------
-                                        
-                                        ({ /* cicili#Progn481 */
+                                        ;
+                                        ({ /* cicili#Progn471 */
                                           fprintf (file , "item is deleted in another version!");
                                         });
                                       }));
                                   });
                                 });
-                              }) : ({ /* cicili#Let485 */
+                              }) : ({ /* cicili#Let475 */
                                 // ----------
-                                
-                                ({ /* cicili#Progn489 */
+                                ;
+                                ({ /* cicili#Progn477 */
                                   0;
                                 });
                               }));
@@ -363,10 +370,10 @@ int show_List_User (CFile file , List_User list ) {
                     }));
                 });
               }) +  show_List_User (file , tail ) );
-          }) : ({ /* cicili#Let494 */
+          }) : ({ /* cicili#Let482 */
             // ----------
-            
-            ({ /* cicili#Progn498 */
+            ;
+            ({ /* cicili#Progn484 */
               0;
             });
           }));
@@ -374,26 +381,27 @@ int show_List_User (CFile file , List_User list ) {
     });
 }
 List_User copy_List_User (List_User list ) {
-  return ({ /* cicili#Let504 */
+  return ({ /* cicili#Let490 */
       typeof((((list -> __h_data ). Cons ). __h_0_mem )) head ;
       typeof((((list -> __h_data ). Cons ). __h_1_mem )) tail ;
       // ----------
-      
-      ({ /* cicili#Let508 */
-        bool __h_case_result  = (true  &&  (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  (({ /* cicili#Progn509 */
+      ;
+      ({ /* cicili#Let492 */
+        bool __h_case_result  = (true  &&  (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  (({ /* cicili#Progn493 */
                 (head  =  (((list -> __h_data ). Cons ). __h_0_mem ) );
                 true ;
-              }) &&  ({ /* cicili#Progn511 */
+              }) &&  ({ /* cicili#Progn495 */
                 (tail  =  (((list -> __h_data ). Cons ). __h_1_mem ) );
                 true ;
               }) ) ) );
         // ----------
-        ((__h_case_result ) ? ({ /* cicili#Progn514 */
+        
+        ((__h_case_result ) ? ({ /* cicili#Progn500 */
             Cons_User (head , copy_List_User (tail ));
-          }) : ({ /* cicili#Let520 */
+          }) : ({ /* cicili#Let506 */
             // ----------
-            
-            ({ /* cicili#Progn524 */
+            ;
+            ({ /* cicili#Progn508 */
               Nil_User ();
             });
           }));
@@ -401,42 +409,44 @@ List_User copy_List_User (List_User list ) {
     });
 }
 List_User replaceAt_List_User (List_User list , User item , int index ) {
-  return ({ /* cicili#Let531 */
+  return ({ /* cicili#Let515 */
       typeof((((list -> __h_data ). Cons ). __h_0_mem )) head ;
       typeof((((list -> __h_data ). Cons ). __h_1_mem )) tail ;
       // ----------
-      
-      ({ /* cicili#Let535 */
-        bool __h_case_result  = (true  &&  (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  ((({ /* cicili#Progn536 */
+      ;
+      ({ /* cicili#Let517 */
+        bool __h_case_result  = (true  &&  (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  ((({ /* cicili#Progn518 */
                   (head  =  (((list -> __h_data ). Cons ). __h_0_mem ) );
                   true ;
-                }) &&  ({ /* cicili#Progn538 */
+                }) &&  ({ /* cicili#Progn520 */
                   (tail  =  (((list -> __h_data ). Cons ). __h_1_mem ) );
                   true ;
                 }) ) &&  (index  >  0 ) ) ) );
         // ----------
-        ((__h_case_result ) ? ({ /* cicili#Progn541 */
+        
+        ((__h_case_result ) ? ({ /* cicili#Progn525 */
             Cons_User (head , replaceAt_List_User (tail , item , (index  -  1 )));
-          }) : ({ /* cicili#Let547 */
+          }) : ({ /* cicili#Let531 */
             // ----------
-            
-            ({ /* cicili#Progn551 */
-              ({ /* cicili#Let555 */
+            ;
+            ({ /* cicili#Progn533 */
+              ({ /* cicili#Let537 */
                 typeof((((list -> __h_data ). Cons ). __h_1_mem )) taill ;
                 // ----------
-                
-                ({ /* cicili#Let559 */
-                  bool __h_case_result  = (true  &&  (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  ({ /* cicili#Progn560 */
+                ;
+                ({ /* cicili#Let539 */
+                  bool __h_case_result  = (true  &&  (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  ({ /* cicili#Progn540 */
                         (taill  =  (((list -> __h_data ). Cons ). __h_1_mem ) );
                         true ;
                       }) ) );
                   // ----------
-                  ((__h_case_result ) ? ({ /* cicili#Progn563 */
+                  
+                  ((__h_case_result ) ? ({ /* cicili#Progn545 */
                       Cons_User (item , copy_List_User (taill ));
-                    }) : ({ /* cicili#Let569 */
+                    }) : ({ /* cicili#Let551 */
                       // ----------
-                      
-                      ({ /* cicili#Progn573 */
+                      ;
+                      ({ /* cicili#Progn553 */
                         Nil_User ();
                       });
                     }));
@@ -448,42 +458,44 @@ List_User replaceAt_List_User (List_User list , User item , int index ) {
     });
 }
 List_User deleteAt_List_User (List_User list , int index ) {
-  return ({ /* cicili#Let580 */
+  return ({ /* cicili#Let560 */
       typeof((((list -> __h_data ). Cons ). __h_0_mem )) head ;
       typeof((((list -> __h_data ). Cons ). __h_1_mem )) tail ;
       // ----------
-      
-      ({ /* cicili#Let584 */
-        bool __h_case_result  = (true  &&  (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  ((({ /* cicili#Progn585 */
+      ;
+      ({ /* cicili#Let562 */
+        bool __h_case_result  = (true  &&  (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  ((({ /* cicili#Progn563 */
                   (head  =  (((list -> __h_data ). Cons ). __h_0_mem ) );
                   true ;
-                }) &&  ({ /* cicili#Progn587 */
+                }) &&  ({ /* cicili#Progn565 */
                   (tail  =  (((list -> __h_data ). Cons ). __h_1_mem ) );
                   true ;
                 }) ) &&  (index  >  0 ) ) ) );
         // ----------
-        ((__h_case_result ) ? ({ /* cicili#Progn590 */
+        
+        ((__h_case_result ) ? ({ /* cicili#Progn570 */
             Cons_User (head , deleteAt_List_User (tail , (index  -  1 )));
-          }) : ({ /* cicili#Let596 */
+          }) : ({ /* cicili#Let576 */
             // ----------
-            
-            ({ /* cicili#Progn600 */
-              ({ /* cicili#Let604 */
+            ;
+            ({ /* cicili#Progn578 */
+              ({ /* cicili#Let582 */
                 typeof((((list -> __h_data ). Cons ). __h_1_mem )) taill ;
                 // ----------
-                
-                ({ /* cicili#Let608 */
-                  bool __h_case_result  = (true  &&  (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  ({ /* cicili#Progn609 */
+                ;
+                ({ /* cicili#Let584 */
+                  bool __h_case_result  = (true  &&  (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  ({ /* cicili#Progn585 */
                         (taill  =  (((list -> __h_data ). Cons ). __h_1_mem ) );
                         true ;
                       }) ) );
                   // ----------
-                  ((__h_case_result ) ? ({ /* cicili#Progn612 */
+                  
+                  ((__h_case_result ) ? ({ /* cicili#Progn590 */
                       copy_List_User (taill );
-                    }) : ({ /* cicili#Let617 */
+                    }) : ({ /* cicili#Let595 */
                       // ----------
-                      
-                      ({ /* cicili#Progn621 */
+                      ;
+                      ({ /* cicili#Progn597 */
                         Nil_User ();
                       });
                     }));
@@ -494,70 +506,73 @@ List_User deleteAt_List_User (List_User list , int index ) {
       });
     });
 }
-List_User insertAt_List_User (List_User llist , User item , int index ) {
-  return ({ /* cicili#Let628 */
-      typeof((((llist -> __h_data ). Cons ). __h_0_mem )) head ;
-      typeof((((llist -> __h_data ). Cons ). __h_1_mem )) tail ;
+List_User insertAt_List_User (List_User list , User item , int index ) {
+  return ({ /* cicili#Let604 */
+      typeof((((list -> __h_data ). Cons ). __h_0_mem )) head ;
+      typeof((((list -> __h_data ). Cons ). __h_1_mem )) tail ;
       // ----------
-      
-      ({ /* cicili#Let632 */
-        bool __h_case_result  = (true  &&  (((llist -> __h_ctor ) ==  __h_Cons_t  ) &&  ((({ /* cicili#Progn633 */
-                  (head  =  (((llist -> __h_data ). Cons ). __h_0_mem ) );
+      ;
+      ({ /* cicili#Let606 */
+        bool __h_case_result  = (true  &&  (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  ((({ /* cicili#Progn607 */
+                  (head  =  (((list -> __h_data ). Cons ). __h_0_mem ) );
                   true ;
-                }) &&  ({ /* cicili#Progn635 */
-                  (tail  =  (((llist -> __h_data ). Cons ). __h_1_mem ) );
+                }) &&  ({ /* cicili#Progn609 */
+                  (tail  =  (((list -> __h_data ). Cons ). __h_1_mem ) );
                   true ;
                 }) ) &&  (index  >  0 ) ) ) );
         // ----------
-        ((__h_case_result ) ? ({ /* cicili#Progn638 */
+        
+        ((__h_case_result ) ? ({ /* cicili#Progn614 */
             Cons_User (head , insertAt_List_User (tail , item , (index  -  1 )));
-          }) : ({ /* cicili#Let644 */
+          }) : ({ /* cicili#Let620 */
             // ----------
-            
-            ({ /* cicili#Progn648 */
-              Cons_User (item , copy_List_User (llist ));
+            ;
+            ({ /* cicili#Progn622 */
+              Cons_User (item , copy_List_User (list ));
             });
           }));
       });
     });
 }
 List_User replace_List_User (List_User list , User item , List_User aimed ) {
-  return ({ /* cicili#Let656 */
+  return ({ /* cicili#Let630 */
       typeof((((list -> __h_data ). Cons ). __h_0_mem )) head ;
       typeof((((list -> __h_data ). Cons ). __h_1_mem )) tail ;
       // ----------
-      
-      ({ /* cicili#Let660 */
-        bool __h_case_result  = (true  &&  (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  ((({ /* cicili#Progn661 */
+      ;
+      ({ /* cicili#Let632 */
+        bool __h_case_result  = (true  &&  (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  ((({ /* cicili#Progn633 */
                   (head  =  (((list -> __h_data ). Cons ). __h_0_mem ) );
                   true ;
-                }) &&  ({ /* cicili#Progn663 */
+                }) &&  ({ /* cicili#Progn635 */
                   (tail  =  (((list -> __h_data ). Cons ). __h_1_mem ) );
                   true ;
                 }) ) &&  (list  !=  aimed  ) ) ) );
         // ----------
-        ((__h_case_result ) ? ({ /* cicili#Progn666 */
+        
+        ((__h_case_result ) ? ({ /* cicili#Progn640 */
             Cons_User (head , replace_List_User (tail , item , aimed ));
-          }) : ({ /* cicili#Let672 */
+          }) : ({ /* cicili#Let646 */
             // ----------
-            
-            ({ /* cicili#Progn676 */
-              ({ /* cicili#Let680 */
+            ;
+            ({ /* cicili#Progn648 */
+              ({ /* cicili#Let652 */
                 typeof((((aimed -> __h_data ). Cons ). __h_1_mem )) taill ;
                 // ----------
-                
-                ({ /* cicili#Let684 */
-                  bool __h_case_result  = (true  &&  (((aimed -> __h_ctor ) ==  __h_Cons_t  ) &&  ({ /* cicili#Progn685 */
+                ;
+                ({ /* cicili#Let654 */
+                  bool __h_case_result  = (true  &&  (((aimed -> __h_ctor ) ==  __h_Cons_t  ) &&  ({ /* cicili#Progn655 */
                         (taill  =  (((aimed -> __h_data ). Cons ). __h_1_mem ) );
                         true ;
                       }) ) );
                   // ----------
-                  ((__h_case_result ) ? ({ /* cicili#Progn688 */
+                  
+                  ((__h_case_result ) ? ({ /* cicili#Progn660 */
                       Cons_User (item , copy_List_User (taill ));
-                    }) : ({ /* cicili#Let694 */
+                    }) : ({ /* cicili#Let666 */
                       // ----------
-                      
-                      ({ /* cicili#Progn698 */
+                      ;
+                      ({ /* cicili#Progn668 */
                         Nil_User ();
                       });
                     }));
@@ -569,42 +584,44 @@ List_User replace_List_User (List_User list , User item , List_User aimed ) {
     });
 }
 List_User delete_List_User (List_User list , List_User aimed ) {
-  return ({ /* cicili#Let705 */
+  return ({ /* cicili#Let675 */
       typeof((((list -> __h_data ). Cons ). __h_0_mem )) head ;
       typeof((((list -> __h_data ). Cons ). __h_1_mem )) tail ;
       // ----------
-      
-      ({ /* cicili#Let709 */
-        bool __h_case_result  = (true  &&  (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  ((({ /* cicili#Progn710 */
+      ;
+      ({ /* cicili#Let677 */
+        bool __h_case_result  = (true  &&  (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  ((({ /* cicili#Progn678 */
                   (head  =  (((list -> __h_data ). Cons ). __h_0_mem ) );
                   true ;
-                }) &&  ({ /* cicili#Progn712 */
+                }) &&  ({ /* cicili#Progn680 */
                   (tail  =  (((list -> __h_data ). Cons ). __h_1_mem ) );
                   true ;
                 }) ) &&  (list  !=  aimed  ) ) ) );
         // ----------
-        ((__h_case_result ) ? ({ /* cicili#Progn715 */
+        
+        ((__h_case_result ) ? ({ /* cicili#Progn685 */
             Cons_User (head , delete_List_User (tail , aimed ));
-          }) : ({ /* cicili#Let721 */
+          }) : ({ /* cicili#Let691 */
             // ----------
-            
-            ({ /* cicili#Progn725 */
-              ({ /* cicili#Let729 */
+            ;
+            ({ /* cicili#Progn693 */
+              ({ /* cicili#Let697 */
                 typeof((((aimed -> __h_data ). Cons ). __h_1_mem )) taill ;
                 // ----------
-                
-                ({ /* cicili#Let733 */
-                  bool __h_case_result  = (true  &&  (((aimed -> __h_ctor ) ==  __h_Cons_t  ) &&  ({ /* cicili#Progn734 */
+                ;
+                ({ /* cicili#Let699 */
+                  bool __h_case_result  = (true  &&  (((aimed -> __h_ctor ) ==  __h_Cons_t  ) &&  ({ /* cicili#Progn700 */
                         (taill  =  (((aimed -> __h_data ). Cons ). __h_1_mem ) );
                         true ;
                       }) ) );
                   // ----------
-                  ((__h_case_result ) ? ({ /* cicili#Progn737 */
+                  
+                  ((__h_case_result ) ? ({ /* cicili#Progn705 */
                       copy_List_User (taill );
-                    }) : ({ /* cicili#Let742 */
+                    }) : ({ /* cicili#Let710 */
                       // ----------
-                      
-                      ({ /* cicili#Progn746 */
+                      ;
+                      ({ /* cicili#Progn712 */
                         Nil_User ();
                       });
                     }));
@@ -616,26 +633,27 @@ List_User delete_List_User (List_User list , List_User aimed ) {
     });
 }
 List_User insert_List_User (List_User llist , User item , List_User rlist ) {
-  return ({ /* cicili#Let753 */
+  return ({ /* cicili#Let719 */
       typeof((((llist -> __h_data ). Cons ). __h_0_mem )) head ;
       typeof((((llist -> __h_data ). Cons ). __h_1_mem )) tail ;
       // ----------
-      
-      ({ /* cicili#Let757 */
-        bool __h_case_result  = (true  &&  (((llist -> __h_ctor ) ==  __h_Cons_t  ) &&  ((({ /* cicili#Progn758 */
+      ;
+      ({ /* cicili#Let721 */
+        bool __h_case_result  = (true  &&  (((llist -> __h_ctor ) ==  __h_Cons_t  ) &&  ((({ /* cicili#Progn722 */
                   (head  =  (((llist -> __h_data ). Cons ). __h_0_mem ) );
                   true ;
-                }) &&  ({ /* cicili#Progn760 */
+                }) &&  ({ /* cicili#Progn724 */
                   (tail  =  (((llist -> __h_data ). Cons ). __h_1_mem ) );
                   true ;
                 }) ) &&  (llist  !=  rlist  ) ) ) );
         // ----------
-        ((__h_case_result ) ? ({ /* cicili#Progn763 */
+        
+        ((__h_case_result ) ? ({ /* cicili#Progn729 */
             Cons_User (head , insert_List_User (tail , item , rlist ));
-          }) : ({ /* cicili#Let769 */
+          }) : ({ /* cicili#Let735 */
             // ----------
-            
-            ({ /* cicili#Progn773 */
+            ;
+            ({ /* cicili#Progn737 */
               Cons_User (item , copy_List_User (rlist ));
             });
           }));
@@ -644,52 +662,54 @@ List_User insert_List_User (List_User llist , User item , List_User rlist ) {
 }
 List_User reverse_List_User (List_User list ) {
   List_User _reverse (List_User list , List_User rlist ) {
-    return ({ /* cicili#Let782 */
+    return ({ /* cicili#Let746 */
         typeof((((list -> __h_data ). Cons ). __h_0_mem )) head ;
         typeof((((list -> __h_data ). Cons ). __h_1_mem )) tail ;
         // ----------
-        
-        ({ /* cicili#Let786 */
-          bool __h_case_result  = (true  &&  (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  (({ /* cicili#Progn787 */
+        ;
+        ({ /* cicili#Let748 */
+          bool __h_case_result  = (true  &&  (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  (({ /* cicili#Progn749 */
                   (head  =  (((list -> __h_data ). Cons ). __h_0_mem ) );
                   true ;
-                }) &&  ({ /* cicili#Progn789 */
+                }) &&  ({ /* cicili#Progn751 */
                   (tail  =  (((list -> __h_data ). Cons ). __h_1_mem ) );
                   true ;
                 }) ) ) );
           // ----------
-          ((__h_case_result ) ? ({ /* cicili#Progn792 */
+          
+          ((__h_case_result ) ? ({ /* cicili#Progn756 */
               _reverse (tail , Cons_User (head , rlist ));
-            }) : ({ /* cicili#Let797 */
+            }) : ({ /* cicili#Let761 */
               // ----------
-              
-              ({ /* cicili#Progn801 */
+              ;
+              ({ /* cicili#Progn763 */
                 rlist ;
               });
             }));
         });
       });
   }
-  return ({ /* cicili#Let805 */
+  return ({ /* cicili#Let767 */
       typeof((((list -> __h_data ). Cons ). __h_0_mem )) head ;
       typeof((((list -> __h_data ). Cons ). __h_1_mem )) tail ;
       // ----------
-      
-      ({ /* cicili#Let809 */
-        bool __h_case_result  = (true  &&  (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  (({ /* cicili#Progn810 */
+      ;
+      ({ /* cicili#Let769 */
+        bool __h_case_result  = (true  &&  (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  (({ /* cicili#Progn770 */
                 (head  =  (((list -> __h_data ). Cons ). __h_0_mem ) );
                 true ;
-              }) &&  ({ /* cicili#Progn812 */
+              }) &&  ({ /* cicili#Progn772 */
                 (tail  =  (((list -> __h_data ). Cons ). __h_1_mem ) );
                 true ;
               }) ) ) );
         // ----------
-        ((__h_case_result ) ? ({ /* cicili#Progn815 */
+        
+        ((__h_case_result ) ? ({ /* cicili#Progn777 */
             _reverse (tail , Cons_User (head , Nil_User ()));
-          }) : ({ /* cicili#Let821 */
+          }) : ({ /* cicili#Let783 */
             // ----------
-            
-            ({ /* cicili#Progn825 */
+            ;
+            ({ /* cicili#Progn785 */
               list ;
             });
           }));
@@ -697,26 +717,27 @@ List_User reverse_List_User (List_User list ) {
     });
 }
 List_User append_List_User (List_User llist , List_User rlist ) {
-  return ({ /* cicili#Let831 */
+  return ({ /* cicili#Let791 */
       typeof((((llist -> __h_data ). Cons ). __h_0_mem )) head ;
       typeof((((llist -> __h_data ). Cons ). __h_1_mem )) tail ;
       // ----------
-      
-      ({ /* cicili#Let835 */
-        bool __h_case_result  = (true  &&  (((llist -> __h_ctor ) ==  __h_Cons_t  ) &&  (({ /* cicili#Progn836 */
+      ;
+      ({ /* cicili#Let793 */
+        bool __h_case_result  = (true  &&  (((llist -> __h_ctor ) ==  __h_Cons_t  ) &&  (({ /* cicili#Progn794 */
                 (head  =  (((llist -> __h_data ). Cons ). __h_0_mem ) );
                 true ;
-              }) &&  ({ /* cicili#Progn838 */
+              }) &&  ({ /* cicili#Progn796 */
                 (tail  =  (((llist -> __h_data ). Cons ). __h_1_mem ) );
                 true ;
               }) ) ) );
         // ----------
-        ((__h_case_result ) ? ({ /* cicili#Progn841 */
+        
+        ((__h_case_result ) ? ({ /* cicili#Progn801 */
             Cons_User (head , append_List_User (tail , rlist ));
-          }) : ({ /* cicili#Let847 */
+          }) : ({ /* cicili#Let807 */
             // ----------
-            
-            ({ /* cicili#Progn851 */
+            ;
+            ({ /* cicili#Progn809 */
               copy_List_User (rlist );
             });
           }));
@@ -727,26 +748,27 @@ List_User push_List_User (User item , List_User list ) {
   return Cons_User (item , copy_List_User (list ));
 }
 List_User take_List_User (int len , List_User list ) {
-  return (((len  <=  0 )) ? Nil_User () : ({ /* cicili#Let864 */
+  return (((len  <=  0 )) ? Nil_User () : ({ /* cicili#Let822 */
         typeof((((list -> __h_data ). Cons ). __h_0_mem )) head ;
         typeof((((list -> __h_data ). Cons ). __h_1_mem )) tail ;
         // ----------
-        
-        ({ /* cicili#Let868 */
-          bool __h_case_result  = (true  &&  (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  (({ /* cicili#Progn869 */
+        ;
+        ({ /* cicili#Let824 */
+          bool __h_case_result  = (true  &&  (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  (({ /* cicili#Progn825 */
                   (head  =  (((list -> __h_data ). Cons ). __h_0_mem ) );
                   true ;
-                }) &&  ({ /* cicili#Progn871 */
+                }) &&  ({ /* cicili#Progn827 */
                   (tail  =  (((list -> __h_data ). Cons ). __h_1_mem ) );
                   true ;
                 }) ) ) );
           // ----------
-          ((__h_case_result ) ? ({ /* cicili#Progn874 */
+          
+          ((__h_case_result ) ? ({ /* cicili#Progn832 */
               Cons_User (head , take_List_User ((--len ), tail ));
-            }) : ({ /* cicili#Let880 */
+            }) : ({ /* cicili#Let838 */
               // ----------
-              
-              ({ /* cicili#Progn884 */
+              ;
+              ({ /* cicili#Progn840 */
                 Nil_User ();
               });
             }));
@@ -754,38 +776,40 @@ List_User take_List_User (int len , List_User list ) {
       }));
 }
 List_User last_List_User (List_User list ) {
-  return ({ /* cicili#Let891 */
+  return ({ /* cicili#Let847 */
       typeof((((list -> __h_data ). Cons ). __h_1_mem )) tail ;
       // ----------
-      
-      ({ /* cicili#Let895 */
-        bool __h_case_result  = (true  &&  (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  ({ /* cicili#Progn896 */
+      ;
+      ({ /* cicili#Let849 */
+        bool __h_case_result  = (true  &&  (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  ({ /* cicili#Progn850 */
               (tail  =  (((list -> __h_data ). Cons ). __h_1_mem ) );
               true ;
             }) ) );
         // ----------
-        ((__h_case_result ) ? ({ /* cicili#Progn899 */
-            ({ /* cicili#Let903 */
+        
+        ((__h_case_result ) ? ({ /* cicili#Progn855 */
+            ({ /* cicili#Let859 */
               // ----------
-              
-              ({ /* cicili#Let907 */
+              ;
+              ({ /* cicili#Let861 */
                 bool __h_case_result  = (true  &&  ((tail -> __h_ctor ) ==  __h_Nil_t  ) );
                 // ----------
-                ((__h_case_result ) ? ({ /* cicili#Progn909 */
+                
+                ((__h_case_result ) ? ({ /* cicili#Progn865 */
                     copy_List_User (list );
-                  }) : ({ /* cicili#Let914 */
+                  }) : ({ /* cicili#Let870 */
                     // ----------
-                    
-                    ({ /* cicili#Progn918 */
+                    ;
+                    ({ /* cicili#Progn872 */
                       last_List_User (tail );
                     });
                   }));
               });
             });
-          }) : ({ /* cicili#Let923 */
+          }) : ({ /* cicili#Let877 */
             // ----------
-            
-            ({ /* cicili#Progn927 */
+            ;
+            ({ /* cicili#Progn879 */
               Nil_User ();
             });
           }));
@@ -793,26 +817,27 @@ List_User last_List_User (List_User list ) {
     });
 }
 List_User init_List_User (List_User list ) {
-  return ({ /* cicili#Let935 */
+  return ({ /* cicili#Let887 */
       typeof((((list -> __h_data ). Cons ). __h_0_mem )) head ;
       typeof((((list -> __h_data ). Cons ). __h_1_mem )) tail ;
       // ----------
-      
-      ({ /* cicili#Let939 */
-        bool __h_case_result  = (true  &&  (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  ((({ /* cicili#Progn940 */
+      ;
+      ({ /* cicili#Let889 */
+        bool __h_case_result  = (true  &&  (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  ((({ /* cicili#Progn890 */
                   (head  =  (((list -> __h_data ). Cons ). __h_0_mem ) );
                   true ;
-                }) &&  ({ /* cicili#Progn942 */
+                }) &&  ({ /* cicili#Progn892 */
                   (tail  =  (((list -> __h_data ). Cons ). __h_1_mem ) );
                   true ;
                 }) ) &&  (true  &&  ((tail -> __h_ctor ) ==  __h_Cons_t  ) ) ) ) );
         // ----------
-        ((__h_case_result ) ? ({ /* cicili#Progn945 */
+        
+        ((__h_case_result ) ? ({ /* cicili#Progn897 */
             Cons_User (head , init_List_User (tail ));
-          }) : ({ /* cicili#Let951 */
+          }) : ({ /* cicili#Let903 */
             // ----------
-            
-            ({ /* cicili#Progn955 */
+            ;
+            ({ /* cicili#Progn905 */
               Nil_User ();
             });
           }));
@@ -820,22 +845,23 @@ List_User init_List_User (List_User list ) {
     });
 }
 int hasLen_List_User (List_User list , int desired ) {
-  return ({ /* cicili#Let962 */
+  return ({ /* cicili#Let912 */
       typeof((((list -> __h_data ). Cons ). __h_1_mem )) tail ;
       // ----------
-      
-      ({ /* cicili#Let966 */
-        bool __h_case_result  = (true  &&  (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  ({ /* cicili#Progn967 */
+      ;
+      ({ /* cicili#Let914 */
+        bool __h_case_result  = (true  &&  (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  ({ /* cicili#Progn915 */
               (tail  =  (((list -> __h_data ). Cons ). __h_1_mem ) );
               true ;
             }) ) );
         // ----------
-        ((__h_case_result ) ? ({ /* cicili#Progn970 */
+        
+        ((__h_case_result ) ? ({ /* cicili#Progn920 */
             (((desired  ==  1 )) ? 1 : (1 +  hasLen_List_User (tail , (--desired )) ));
-          }) : ({ /* cicili#Let976 */
+          }) : ({ /* cicili#Let926 */
             // ----------
-            
-            ({ /* cicili#Progn980 */
+            ;
+            ({ /* cicili#Progn928 */
               0;
             });
           }));
@@ -843,22 +869,23 @@ int hasLen_List_User (List_User list , int desired ) {
     });
 }
 int len_List_User (List_User list ) {
-  return ({ /* cicili#Let986 */
+  return ({ /* cicili#Let934 */
       typeof((((list -> __h_data ). Cons ). __h_1_mem )) tail ;
       // ----------
-      
-      ({ /* cicili#Let990 */
-        bool __h_case_result  = (true  &&  (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  ({ /* cicili#Progn991 */
+      ;
+      ({ /* cicili#Let936 */
+        bool __h_case_result  = (true  &&  (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  ({ /* cicili#Progn937 */
               (tail  =  (((list -> __h_data ). Cons ). __h_1_mem ) );
               true ;
             }) ) );
         // ----------
-        ((__h_case_result ) ? ({ /* cicili#Progn994 */
+        
+        ((__h_case_result ) ? ({ /* cicili#Progn942 */
             (1 +  len_List_User (tail ) );
-          }) : ({ /* cicili#Let999 */
+          }) : ({ /* cicili#Let947 */
             // ----------
-            
-            ({ /* cicili#Progn1003 */
+            ;
+            ({ /* cicili#Progn949 */
               0;
             });
           }));
@@ -869,22 +896,23 @@ List_User tail_List_User (List_User list ) {
   return drop_List_User (1, list );
 }
 List_User drop_List_User (int len , List_User list ) {
-  return (((len  <=  0 )) ? copy_List_User (list ) : ({ /* cicili#Let1014 */
+  return (((len  <=  0 )) ? copy_List_User (list ) : ({ /* cicili#Let960 */
         typeof((((list -> __h_data ). Cons ). __h_1_mem )) tail ;
         // ----------
-        
-        ({ /* cicili#Let1018 */
-          bool __h_case_result  = (true  &&  (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  ({ /* cicili#Progn1019 */
+        ;
+        ({ /* cicili#Let962 */
+          bool __h_case_result  = (true  &&  (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  ({ /* cicili#Progn963 */
                 (tail  =  (((list -> __h_data ). Cons ). __h_1_mem ) );
                 true ;
               }) ) );
           // ----------
-          ((__h_case_result ) ? ({ /* cicili#Progn1022 */
+          
+          ((__h_case_result ) ? ({ /* cicili#Progn968 */
               drop_List_User ((--len ), tail );
-            }) : ({ /* cicili#Let1027 */
+            }) : ({ /* cicili#Let973 */
               // ----------
-              
-              ({ /* cicili#Progn1031 */
+              ;
+              ({ /* cicili#Progn975 */
                 Nil_User ();
               });
             }));
@@ -892,22 +920,23 @@ List_User drop_List_User (int len , List_User list ) {
       }));
 }
 Maybe_User head_List_User (List_User list ) {
-  return ({ /* cicili#Let1039 */
+  return ({ /* cicili#Let983 */
       typeof((((list -> __h_data ). Cons ). __h_0_mem )) head ;
       // ----------
-      
-      ({ /* cicili#Let1043 */
-        bool __h_case_result  = (true  &&  (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  ({ /* cicili#Progn1044 */
+      ;
+      ({ /* cicili#Let985 */
+        bool __h_case_result  = (true  &&  (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  ({ /* cicili#Progn986 */
               (head  =  (((list -> __h_data ). Cons ). __h_0_mem ) );
               true ;
             }) ) );
         // ----------
-        ((__h_case_result ) ? ({ /* cicili#Progn1047 */
+        
+        ((__h_case_result ) ? ({ /* cicili#Progn991 */
             Just_User (head );
-          }) : ({ /* cicili#Let1052 */
+          }) : ({ /* cicili#Let996 */
             // ----------
-            
-            ({ /* cicili#Progn1056 */
+            ;
+            ({ /* cicili#Progn998 */
               Nothing_User ();
             });
           }));
@@ -915,22 +944,23 @@ Maybe_User head_List_User (List_User list ) {
     });
 }
 List_User nthcdr_List_User (int index , List_User list ) {
-  return ({ /* cicili#Let1063 */
+  return ({ /* cicili#Let1005 */
       typeof((((list -> __h_data ). Cons ). __h_1_mem )) tail ;
       // ----------
-      
-      ({ /* cicili#Let1067 */
-        bool __h_case_result  = (true  &&  (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  (({ /* cicili#Progn1068 */
+      ;
+      ({ /* cicili#Let1007 */
+        bool __h_case_result  = (true  &&  (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  (({ /* cicili#Progn1008 */
                 (tail  =  (((list -> __h_data ). Cons ). __h_1_mem ) );
                 true ;
               }) &&  (index  >  0 ) ) ) );
         // ----------
-        ((__h_case_result ) ? ({ /* cicili#Progn1071 */
+        
+        ((__h_case_result ) ? ({ /* cicili#Progn1013 */
             nthcdr_List_User ((--index ), tail );
-          }) : ({ /* cicili#Let1076 */
+          }) : ({ /* cicili#Let1018 */
             // ----------
-            
-            ({ /* cicili#Progn1080 */
+            ;
+            ({ /* cicili#Progn1020 */
               list ;
             });
           }));
@@ -938,26 +968,27 @@ List_User nthcdr_List_User (int index , List_User list ) {
     });
 }
 Maybe_User nth_List_User (int index , List_User list ) {
-  return ({ /* cicili#Let1087 */
+  return ({ /* cicili#Let1027 */
       typeof((((list -> __h_data ). Cons ). __h_0_mem )) head ;
       typeof((((list -> __h_data ). Cons ). __h_1_mem )) tail ;
       // ----------
-      
-      ({ /* cicili#Let1091 */
-        bool __h_case_result  = (true  &&  (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  (({ /* cicili#Progn1092 */
+      ;
+      ({ /* cicili#Let1029 */
+        bool __h_case_result  = (true  &&  (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  (({ /* cicili#Progn1030 */
                 (head  =  (((list -> __h_data ). Cons ). __h_0_mem ) );
                 true ;
-              }) &&  ({ /* cicili#Progn1094 */
+              }) &&  ({ /* cicili#Progn1032 */
                 (tail  =  (((list -> __h_data ). Cons ). __h_1_mem ) );
                 true ;
               }) ) ) );
         // ----------
-        ((__h_case_result ) ? ({ /* cicili#Progn1097 */
+        
+        ((__h_case_result ) ? ({ /* cicili#Progn1037 */
             (((index  ==  0 )) ? Just_User (head ) : (((index  <  0 )) ? Nothing_User () : nth_List_User ((--index ), tail )));
-          }) : ({ /* cicili#Let1106 */
+          }) : ({ /* cicili#Let1046 */
             // ----------
-            
-            ({ /* cicili#Progn1110 */
+            ;
+            ({ /* cicili#Progn1048 */
               Nothing_User ();
             });
           }));
@@ -965,36 +996,38 @@ Maybe_User nth_List_User (int index , List_User list ) {
     });
 }
 void free_List_User (List_User * this_ptr ) {
-  { /* cicili#Let1115 */
+  { /* cicili#Let1053 */
     __auto_type this  = (*this_ptr );
     // ----------
-    { /* cicili#Let1119 */
+    { /* cicili#Let1057 */
       typeof((((this -> __h_data ). Cons ). __h_1_mem )) tail ;
       // ----------
-      
-      ({ /* cicili#Let1123 */
-        bool __h_case_result  = (true  &&  (((this -> __h_ctor ) ==  __h_Cons_t  ) &&  ({ /* cicili#Progn1124 */
+      ;
+      ({ /* cicili#Let1059 */
+        bool __h_case_result  = (true  &&  (((this -> __h_ctor ) ==  __h_Cons_t  ) &&  ({ /* cicili#Progn1060 */
               (tail  =  (((this -> __h_data ). Cons ). __h_1_mem ) );
               true ;
             }) ) );
         // ----------
+        
         if (__h_case_result )
-          { /* cicili#Block1128 */
-            { /* cicili#Block1130 */
+          { /* cicili#Block1066 */
+            { /* cicili#Block1068 */
               free (this );
               free_List_User ((&tail ));
             }
           }
         else
-          { /* cicili#Let1138 */
+          { /* cicili#Let1076 */
             // ----------
-            
-            ({ /* cicili#Let1142 */
+            ;
+            ({ /* cicili#Let1078 */
               bool __h_case_result  = (true  &&  ((this -> __h_ctor ) ==  __h_Nil_t  ) );
               // ----------
+              
               if (__h_case_result )
-                { /* cicili#Block1145 */
-                  { /* cicili#Block1147 */
+                { /* cicili#Block1083 */
+                  { /* cicili#Block1085 */
                     free (this );
                   }
                 }
@@ -1009,7 +1042,7 @@ List_User__H_Table * const get_List_User__H_Table () {
   return (&table );
 }
 List_User Cons_User (User head , List_User tail ) {
-  { /* cicili#Let1158 */
+  { /* cicili#Let1096 */
     List_User instance  = malloc (sizeof(class_List_User));
     // ----------
     (*instance ) = ((class_List_User){ get_List_User__H_Table (), __h_Cons_t , .__h_data.Cons = { head , tail }});
@@ -1017,7 +1050,7 @@ List_User Cons_User (User head , List_User tail ) {
   }
 }
 List_User Nil_User () {
-  { /* cicili#Let1164 */
+  { /* cicili#Let1102 */
     List_User instance  = malloc (sizeof(class_List_User));
     // ----------
     (*instance ) = ((class_List_User){ get_List_User__H_Table (), __h___t });
@@ -1034,14 +1067,14 @@ const Maybe_List_User__H_Table * const get_Maybe_List_User__H_Table () {
   return (&table );
 }
 Maybe_List_User Just_List_User (List_User value ) {
-  { /* cicili#Let1181 */
+  { /* cicili#Let1119 */
     Maybe_List_User instance  = ((Maybe_List_User){ get_Maybe_List_User__H_Table (), __h_Just_t , .__h_data.Just = { value }});
     // ----------
     return instance ;
   }
 }
 Maybe_List_User Nothing_List_User () {
-  { /* cicili#Let1186 */
+  { /* cicili#Let1124 */
     Maybe_List_User instance  = ((Maybe_List_User){ get_Maybe_List_User__H_Table (), __h___t });
     // ----------
     return instance ;
@@ -1049,11 +1082,11 @@ Maybe_List_User Nothing_List_User () {
 }
 #endif /* __Maybe_List_User__H_IMPL__ */ 
 typedef struct class_BTree_int_User * BTree_int_User ;
-typedef struct cicilip8cwWRLaSkEmX6DploZHOdmwNDQ_ {
+typedef struct cicilijKplJJK838GTV1rZQgTl7VYrGJ4_ {
   int __h_0_mem ;
   User __h_1_mem ;
-} cicilip8cwWRLaSkEmX6DploZHOdmwNDQ_;
-typedef cicilip8cwWRLaSkEmX6DploZHOdmwNDQ_ BTree_int_User_pair_t ;
+} cicilijKplJJK838GTV1rZQgTl7VYrGJ4_;
+typedef cicilijKplJJK838GTV1rZQgTl7VYrGJ4_ BTree_int_User_pair_t ;
 #ifndef __BTree_int_User_Error__H_DECL__
 #define __BTree_int_User_Error__H_DECL__
 #ifndef __H___h_BTreeError_ctor_t__
@@ -1077,35 +1110,35 @@ typedef struct BTree_int_User_Error__H_Table {
 typedef struct BTree_int_User_Error {
   const BTree_int_User_Error__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion1211 */
-    struct { /* ciciliStruct1212 */
+  union { /* ciciliUnion1149 */
+    struct { /* ciciliStruct1150 */
     } ERR_INVALID_OBJECT , _6 ;
-    struct { /* ciciliStruct1213 */
-      int __h_0_mem ;
+    struct { /* ciciliStruct1151 */
+      size_t __h_0_mem ;
     } ERR_INVALID_ORDER , _5 ;
-    struct { /* ciciliStruct1214 */
+    struct { /* ciciliStruct1152 */
       BTree_int_User_pair_t __h_0_mem ;
     } ERR_UNIQUE_KEY , _4 ;
-    struct { /* ciciliStruct1215 */
+    struct { /* ciciliStruct1153 */
       int __h_0_mem ;
     } ERR_NOT_FOUND , _3 ;
-    struct { /* ciciliStruct1216 */
+    struct { /* ciciliStruct1154 */
       BTree_int_User_pair_t __h_0_mem ;
-      int __h_1_mem ;
+      size_t __h_1_mem ;
     } ERR_ACCESS_DEAD_CHILD , _2 ;
-    struct { /* ciciliStruct1217 */
+    struct { /* ciciliStruct1155 */
       BTree_int_User __h_0_mem ;
     } ERR_INVALID_BRANCH , _1 ;
-    struct { /* ciciliStruct1218 */
+    struct { /* ciciliStruct1156 */
       char * __h_0_mem ;
     } ERR_CANT_BORROW , _ ;
   } __h_data ;
 } BTree_int_User_Error;
 BTree_int_User_Error BTree_int_User_ERR_INVALID_OBJECT ();
-BTree_int_User_Error BTree_int_User_ERR_INVALID_ORDER (int order );
+BTree_int_User_Error BTree_int_User_ERR_INVALID_ORDER (size_t order );
 BTree_int_User_Error BTree_int_User_ERR_UNIQUE_KEY (BTree_int_User_pair_t item );
 BTree_int_User_Error BTree_int_User_ERR_NOT_FOUND (int key );
-BTree_int_User_Error BTree_int_User_ERR_ACCESS_DEAD_CHILD (BTree_int_User_pair_t item , int index );
+BTree_int_User_Error BTree_int_User_ERR_ACCESS_DEAD_CHILD (BTree_int_User_pair_t item , size_t index );
 BTree_int_User_Error BTree_int_User_ERR_INVALID_BRANCH (BTree_int_User branch );
 BTree_int_User_Error BTree_int_User_ERR_CANT_BORROW (char * reason );
 __attribute__((weak)) BTree_int_User_Error Default_BTree_int_User_Error (char * reason ) {
@@ -1132,11 +1165,11 @@ typedef struct Either_BTree_int_User_Error_BTree_int_User__H_Table {
 typedef struct Either_BTree_int_User_Error_BTree_int_User {
   const Either_BTree_int_User_Error_BTree_int_User__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion1265 */
-    struct { /* ciciliStruct1266 */
+  union { /* ciciliUnion1203 */
+    struct { /* ciciliStruct1204 */
       BTree_int_User __h_0_mem ;
     } Right , _1 ;
-    struct { /* ciciliStruct1267 */
+    struct { /* ciciliStruct1205 */
       BTree_int_User_Error __h_0_mem ;
     } Left , _ ;
   } __h_data ;
@@ -1166,11 +1199,11 @@ typedef struct Maybe_BTree_int_User__H_Table {
 typedef struct Maybe_BTree_int_User {
   const Maybe_BTree_int_User__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion1293 */
-    struct { /* ciciliStruct1294 */
+  union { /* ciciliUnion1231 */
+    struct { /* ciciliStruct1232 */
       BTree_int_User __h_0_mem ;
     } Just , _1 ;
-    struct { /* ciciliStruct1295 */
+    struct { /* ciciliStruct1233 */
     } Nothing , _ ;
   } __h_data ;
 } Maybe_BTree_int_User;
@@ -1199,11 +1232,11 @@ typedef struct Maybe_BTree_int_User_pair_t__H_Table {
 typedef struct Maybe_BTree_int_User_pair_t {
   const Maybe_BTree_int_User_pair_t__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion1323 */
-    struct { /* ciciliStruct1324 */
+  union { /* ciciliUnion1261 */
+    struct { /* ciciliStruct1262 */
       BTree_int_User_pair_t __h_0_mem ;
     } Just , _1 ;
-    struct { /* ciciliStruct1325 */
+    struct { /* ciciliStruct1263 */
     } Nothing , _ ;
   } __h_data ;
 } Maybe_BTree_int_User_pair_t;
@@ -1249,7 +1282,7 @@ typedef struct List_BTree_int_User_pair_t__H_Table {
     int (*hasLen) (List_BTree_int_User_pair_t list , int desired );
     int (*len) (List_BTree_int_User_pair_t list );
     List_BTree_int_User_pair_t (*tail) (List_BTree_int_User_pair_t list );
-    List_BTree_int_User_pair_t (*drop) (int index , List_BTree_int_User_pair_t list );
+    List_BTree_int_User_pair_t (*drop) (int len , List_BTree_int_User_pair_t list );
     Maybe_BTree_int_User_pair_t (*head) (List_BTree_int_User_pair_t list );
     List_BTree_int_User_pair_t (*nthcdr) (int index , List_BTree_int_User_pair_t list );
     Maybe_BTree_int_User_pair_t (*nth) (int index , List_BTree_int_User_pair_t list );
@@ -1257,12 +1290,12 @@ typedef struct List_BTree_int_User_pair_t__H_Table {
 typedef struct class_List_BTree_int_User_pair_t {
   const List_BTree_int_User_pair_t__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion1375 */
-    struct { /* ciciliStruct1376 */
+  union { /* ciciliUnion1313 */
+    struct { /* ciciliStruct1314 */
       BTree_int_User_pair_t __h_0_mem ;
       List_BTree_int_User_pair_t __h_1_mem ;
     } Cons , _1 ;
-    struct { /* ciciliStruct1377 */
+    struct { /* ciciliStruct1315 */
     } Nil , _ ;
   } __h_data ;
 } class_List_BTree_int_User_pair_t;
@@ -1291,7 +1324,7 @@ List_BTree_int_User_pair_t init_List_BTree_int_User_pair_t (List_BTree_int_User_
 int hasLen_List_BTree_int_User_pair_t (List_BTree_int_User_pair_t list , int desired );
 int len_List_BTree_int_User_pair_t (List_BTree_int_User_pair_t list );
 List_BTree_int_User_pair_t tail_List_BTree_int_User_pair_t (List_BTree_int_User_pair_t list );
-List_BTree_int_User_pair_t drop_List_BTree_int_User_pair_t (int index , List_BTree_int_User_pair_t list );
+List_BTree_int_User_pair_t drop_List_BTree_int_User_pair_t (int len , List_BTree_int_User_pair_t list );
 Maybe_BTree_int_User_pair_t head_List_BTree_int_User_pair_t (List_BTree_int_User_pair_t list );
 List_BTree_int_User_pair_t nthcdr_List_BTree_int_User_pair_t (int index , List_BTree_int_User_pair_t list );
 Maybe_BTree_int_User_pair_t nth_List_BTree_int_User_pair_t (int index , List_BTree_int_User_pair_t list );
@@ -1315,11 +1348,11 @@ typedef struct Maybe_List_BTree_int_User_pair_t__H_Table {
 typedef struct Maybe_List_BTree_int_User_pair_t {
   const Maybe_List_BTree_int_User_pair_t__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion1477 */
-    struct { /* ciciliStruct1478 */
+  union { /* ciciliUnion1415 */
+    struct { /* ciciliStruct1416 */
       List_BTree_int_User_pair_t __h_0_mem ;
     } Just , _1 ;
-    struct { /* ciciliStruct1479 */
+    struct { /* ciciliStruct1417 */
     } Nothing , _ ;
   } __h_data ;
 } Maybe_List_BTree_int_User_pair_t;
@@ -1348,11 +1381,11 @@ typedef struct Maybe_BTree_int_User__H_Table {
 typedef struct Maybe_BTree_int_User {
   const Maybe_BTree_int_User__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion1509 */
-    struct { /* ciciliStruct1510 */
+  union { /* ciciliUnion1447 */
+    struct { /* ciciliStruct1448 */
       BTree_int_User __h_0_mem ;
     } Just , _1 ;
-    struct { /* ciciliStruct1511 */
+    struct { /* ciciliStruct1449 */
     } Nothing , _ ;
   } __h_data ;
 } Maybe_BTree_int_User;
@@ -1385,13 +1418,13 @@ typedef struct Rc_BTree_int_User__H_Table {
 typedef struct Rc_BTree_int_User {
   const Rc_BTree_int_User__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion1541 */
-    struct { /* ciciliStruct1542 */
+  union { /* ciciliUnion1479 */
+    struct { /* ciciliStruct1480 */
       BTree_int_User * __h_0_mem ;
       int * __h_1_mem ;
       size_t __h_2_mem ;
     } Hold , _1 ;
-    struct { /* ciciliStruct1543 */
+    struct { /* ciciliStruct1481 */
     } Gone , _ ;
   } __h_data ;
 } Rc_BTree_int_User;
@@ -1424,11 +1457,11 @@ typedef struct Maybe_Rc_BTree_int_User__H_Table {
 typedef struct Maybe_Rc_BTree_int_User {
   const Maybe_Rc_BTree_int_User__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion1585 */
-    struct { /* ciciliStruct1586 */
+  union { /* ciciliUnion1523 */
+    struct { /* ciciliStruct1524 */
       Rc_BTree_int_User __h_0_mem ;
     } Just , _1 ;
-    struct { /* ciciliStruct1587 */
+    struct { /* ciciliStruct1525 */
     } Nothing , _ ;
   } __h_data ;
 } Maybe_Rc_BTree_int_User;
@@ -1474,7 +1507,7 @@ typedef struct List_Rc_BTree_int_User__H_Table {
     int (*hasLen) (List_Rc_BTree_int_User list , int desired );
     int (*len) (List_Rc_BTree_int_User list );
     List_Rc_BTree_int_User (*tail) (List_Rc_BTree_int_User list );
-    List_Rc_BTree_int_User (*drop) (int index , List_Rc_BTree_int_User list );
+    List_Rc_BTree_int_User (*drop) (int len , List_Rc_BTree_int_User list );
     Maybe_Rc_BTree_int_User (*head) (List_Rc_BTree_int_User list );
     List_Rc_BTree_int_User (*nthcdr) (int index , List_Rc_BTree_int_User list );
     Maybe_Rc_BTree_int_User (*nth) (int index , List_Rc_BTree_int_User list );
@@ -1482,12 +1515,12 @@ typedef struct List_Rc_BTree_int_User__H_Table {
 typedef struct class_List_Rc_BTree_int_User {
   const List_Rc_BTree_int_User__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion1637 */
-    struct { /* ciciliStruct1638 */
+  union { /* ciciliUnion1575 */
+    struct { /* ciciliStruct1576 */
       Rc_BTree_int_User __h_0_mem ;
       List_Rc_BTree_int_User __h_1_mem ;
     } Cons , _1 ;
-    struct { /* ciciliStruct1639 */
+    struct { /* ciciliStruct1577 */
     } Nil , _ ;
   } __h_data ;
 } class_List_Rc_BTree_int_User;
@@ -1516,7 +1549,7 @@ List_Rc_BTree_int_User init_List_Rc_BTree_int_User (List_Rc_BTree_int_User list 
 int hasLen_List_Rc_BTree_int_User (List_Rc_BTree_int_User list , int desired );
 int len_List_Rc_BTree_int_User (List_Rc_BTree_int_User list );
 List_Rc_BTree_int_User tail_List_Rc_BTree_int_User (List_Rc_BTree_int_User list );
-List_Rc_BTree_int_User drop_List_Rc_BTree_int_User (int index , List_Rc_BTree_int_User list );
+List_Rc_BTree_int_User drop_List_Rc_BTree_int_User (int len , List_Rc_BTree_int_User list );
 Maybe_Rc_BTree_int_User head_List_Rc_BTree_int_User (List_Rc_BTree_int_User list );
 List_Rc_BTree_int_User nthcdr_List_Rc_BTree_int_User (int index , List_Rc_BTree_int_User list );
 Maybe_Rc_BTree_int_User nth_List_Rc_BTree_int_User (int index , List_Rc_BTree_int_User list );
@@ -1540,11 +1573,11 @@ typedef struct Maybe_List_Rc_BTree_int_User__H_Table {
 typedef struct Maybe_List_Rc_BTree_int_User {
   const Maybe_List_Rc_BTree_int_User__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion1739 */
-    struct { /* ciciliStruct1740 */
+  union { /* ciciliUnion1677 */
+    struct { /* ciciliStruct1678 */
       List_Rc_BTree_int_User __h_0_mem ;
     } Just , _1 ;
-    struct { /* ciciliStruct1741 */
+    struct { /* ciciliStruct1679 */
     } Nothing , _ ;
   } __h_data ;
 } Maybe_List_Rc_BTree_int_User;
@@ -1574,8 +1607,8 @@ typedef struct Functor_List_Rc_BTree_int_User__H_Table {
 typedef struct Functor_List_Rc_BTree_int_User {
   const Functor_List_Rc_BTree_int_User__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion1776 */
-    struct { /* ciciliStruct1777 */
+  union { /* ciciliUnion1714 */
+    struct { /* ciciliStruct1715 */
     } Functor , _ ;
   } __h_data ;
 } Functor_List_Rc_BTree_int_User;
@@ -1604,29 +1637,29 @@ typedef void (*free_BTree_int_User_t) (BTree_int_User * this_ptr );
 typedef struct BTree_int_User__H_Table {
   free_BTree_int_User_t freeClass ;
     Either_BTree_int_User_Error_BTree_int_User (*fromLists) (List_int keys , List_User values );
-    Either_BTree_int_User_Error_BTree_int_User (*pure) (int keys [], User values [], int len );
-    int (*show) (CFile file , BTree_int_User tree );
+    Either_BTree_int_User_Error_BTree_int_User (*pure) (int keys [], User values [], size_t len );
+    size_t (*show) (CFile file , BTree_int_User tree );
     void (*traverse) (BTree_int_User tree ,   void (*callback) (BTree_int_User_pair_t item , Bool hasNext ));
     Maybe_BTree_int_User_pair_t (*max) (BTree_int_User tree );
     Maybe_BTree_int_User_pair_t (*min) (BTree_int_User tree );
     Either_BTree_int_User_Error_BTree_int_User (*delete) (BTree_int_User tree , int skey ,   void (*callback) (BTree_int_User_pair_t item ));
     Maybe_BTree_int_User_pair_t (*search) (BTree_int_User tree , int skey );
     Either_BTree_int_User_Error_BTree_int_User (*insert) (BTree_int_User tree , int skey , User svalue );
-    int (*order) ();
+    size_t (*order) ();
 } BTree_int_User__H_Table;
 typedef struct class_BTree_int_User {
   const BTree_int_User__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion1836 */
-    struct { /* ciciliStruct1837 */
+  union { /* ciciliUnion1774 */
+    struct { /* ciciliStruct1775 */
       List_BTree_int_User_pair_t __h_0_mem ;
       List_Rc_BTree_int_User __h_1_mem ;
     } Branch , _2 ;
-    struct { /* ciciliStruct1838 */
+    struct { /* ciciliStruct1776 */
       List_BTree_int_User_pair_t __h_0_mem ;
       List_Rc_BTree_int_User __h_1_mem ;
     } Internal , _1 ;
-    struct { /* ciciliStruct1839 */
+    struct { /* ciciliStruct1777 */
       List_BTree_int_User_pair_t __h_0_mem ;
     } Leaf , _ ;
   } __h_data ;
@@ -1638,110 +1671,115 @@ __attribute__((weak)) BTree_int_User Default_BTree_int_User (List_BTree_int_User
   return Leaf_BTree_int_User (items );
 }
 Either_BTree_int_User_Error_BTree_int_User fromLists_BTree_int_User (List_int keys , List_User values );
-Either_BTree_int_User_Error_BTree_int_User pure_BTree_int_User (int keys [], User values [], int len );
-int show_BTree_int_User (CFile file , BTree_int_User tree );
+Either_BTree_int_User_Error_BTree_int_User pure_BTree_int_User (int keys [], User values [], size_t len );
+size_t show_BTree_int_User (CFile file , BTree_int_User tree );
 void traverse_BTree_int_User (BTree_int_User tree , void (*callback) (BTree_int_User_pair_t item , Bool hasNext ));
 Maybe_BTree_int_User_pair_t max_BTree_int_User (BTree_int_User tree );
 Maybe_BTree_int_User_pair_t min_BTree_int_User (BTree_int_User tree );
 Either_BTree_int_User_Error_BTree_int_User delete_BTree_int_User (BTree_int_User tree , int skey , void (*callback) (BTree_int_User_pair_t item ));
 Maybe_BTree_int_User_pair_t search_BTree_int_User (BTree_int_User tree , int skey );
 Either_BTree_int_User_Error_BTree_int_User insert_BTree_int_User (BTree_int_User tree , int skey , User svalue );
-int order_BTree_int_User ();
+size_t order_BTree_int_User ();
 BTree_int_User__H_Table * const get_BTree_int_User__H_Table ();
 void free_BTree_int_User (BTree_int_User * this_ptr );
 #endif /* __BTree_int_User__H_DECL__ */ 
 #ifndef __BTree_int_User_Error__H_IMPL__
 #define __BTree_int_User_Error__H_IMPL__
 void show_BTree_int_User_Error (BTree_int_User_Error error ) {
-  { /* cicili#Let1916 */
+  { /* cicili#Let1854 */
     // ----------
-    
-    ({ /* cicili#Let1920 */
+    ;
+    ({ /* cicili#Let1856 */
       bool __h_case_result  = (true  &&  ((error . __h_ctor ) ==  __h_ERR_INVALID_OBJECT_t  ) );
       // ----------
+      
       if (__h_case_result )
-        { /* cicili#Block1923 */
+        { /* cicili#Block1861 */
           printf ("invalid B-Tree object");
         }
       else
-        { /* cicili#Let1928 */
+        { /* cicili#Let1866 */
           typeof((((error . __h_data ). ERR_INVALID_ORDER ). __h_0_mem )) order ;
           // ----------
-          
-          ({ /* cicili#Let1932 */
-            bool __h_case_result  = (true  &&  (((error . __h_ctor ) ==  __h_ERR_INVALID_ORDER_t  ) &&  ({ /* cicili#Progn1933 */
+          ;
+          ({ /* cicili#Let1868 */
+            bool __h_case_result  = (true  &&  (((error . __h_ctor ) ==  __h_ERR_INVALID_ORDER_t  ) &&  ({ /* cicili#Progn1869 */
                   (order  =  (((error . __h_data ). ERR_INVALID_ORDER ). __h_0_mem ) );
                   true ;
                 }) ) );
             // ----------
+            
             if (__h_case_result )
-              { /* cicili#Block1937 */
-                printf ("invalid B-Tree order: %d", order );
+              { /* cicili#Block1875 */
+                printf ("invalid B-Tree order: %zu", order );
               }
             else
-              { /* cicili#Let1942 */
+              { /* cicili#Let1880 */
                 typeof((((error . __h_data ). ERR_UNIQUE_KEY ). __h_0_mem )) item ;
                 // ----------
-                
-                ({ /* cicili#Let1946 */
-                  bool __h_case_result  = (true  &&  (((error . __h_ctor ) ==  __h_ERR_UNIQUE_KEY_t  ) &&  ({ /* cicili#Progn1947 */
+                ;
+                ({ /* cicili#Let1882 */
+                  bool __h_case_result  = (true  &&  (((error . __h_ctor ) ==  __h_ERR_UNIQUE_KEY_t  ) &&  ({ /* cicili#Progn1883 */
                         (item  =  (((error . __h_data ). ERR_UNIQUE_KEY ). __h_0_mem ) );
                         true ;
                       }) ) );
                   // ----------
+                  
                   if (__h_case_result )
-                    { /* cicili#Block1951 */
-                      { /* cicili#Block1953 */
+                    { /* cicili#Block1889 */
+                      { /* cicili#Block1891 */
                         printf ("unique key: ");
-                        ({ /* cicili#Let1960 */
+                        ({ /* cicili#Let1898 */
                           typeof((item . __h_0_mem )) id ;
-                          typeof((item . __h_1_mem )) __h_match1958_1_arg ;
-                          typeof((__h_match1958_1_arg . __h_0_mem )) wname ;
-                          typeof((__h_match1958_1_arg . __h_1_mem )) salary ;
+                          typeof((item . __h_1_mem )) __h_match1896_1_arg ;
+                          typeof((__h_match1896_1_arg . __h_0_mem )) wname ;
+                          typeof((__h_match1896_1_arg . __h_1_mem )) salary ;
                           // ----------
-                          
-                          ({ /* cicili#Let1964 */
-                            bool __h_case_result  = (true  &&  ((({ /* cicili#Progn1965 */
+                          ;
+                          ({ /* cicili#Let1900 */
+                            bool __h_case_result  = (true  &&  ((({ /* cicili#Progn1901 */
                                     (id  =  (item . __h_0_mem ) );
                                     true ;
-                                  }) &&  ({ /* cicili#Progn1967 */
-                                    (__h_match1958_1_arg  =  (item . __h_1_mem ) );
+                                  }) &&  ({ /* cicili#Progn1903 */
+                                    (__h_match1896_1_arg  =  (item . __h_1_mem ) );
                                     true ;
-                                  }) ) &&  (true  &&  (({ /* cicili#Progn1969 */
-                                      (wname  =  (__h_match1958_1_arg . __h_0_mem ) );
+                                  }) ) &&  (true  &&  (({ /* cicili#Progn1905 */
+                                      (wname  =  (__h_match1896_1_arg . __h_0_mem ) );
                                       true ;
-                                    }) &&  ({ /* cicili#Progn1971 */
-                                      (salary  =  (__h_match1958_1_arg . __h_1_mem ) );
+                                    }) &&  ({ /* cicili#Progn1907 */
+                                      (salary  =  (__h_match1896_1_arg . __h_1_mem ) );
                                       true ;
                                     }) ) ) ) );
                             // ----------
-                            ((__h_case_result ) ? ({ /* cicili#Progn1974 */
-                                ({ /* cicili#Let1978 */
-                                  __auto_type match1977  = get_Cell_String (wname );
-                                  typeof((((match1977 . __h_data ). Just ). __h_0_mem )) name ;
+                            
+                            ((__h_case_result ) ? ({ /* cicili#Progn1912 */
+                                ({ /* cicili#Let1916 */
+                                  __auto_type match1915  = get_Cell_String (wname );
+                                  typeof((((match1915 . __h_data ). Just ). __h_0_mem )) name ;
                                   // ----------
-                                  
-                                  ({ /* cicili#Let1983 */
-                                    bool __h_case_result  = (true  &&  (((match1977 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn1984 */
-                                          (name  =  (((match1977 . __h_data ). Just ). __h_0_mem ) );
+                                  ;
+                                  ({ /* cicili#Let1919 */
+                                    bool __h_case_result  = (true  &&  (((match1915 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn1920 */
+                                          (name  =  (((match1915 . __h_data ). Just ). __h_0_mem ) );
                                           true ;
                                         }) ) );
                                     // ----------
-                                    ((__h_case_result ) ? ({ /* cicili#Progn1987 */
+                                    
+                                    ((__h_case_result ) ? ({ /* cicili#Progn1925 */
                                         (fprintf (stdout , "(%d, '", id ) +  show_String (stdout , name ) +  fprintf (stdout , "', %d)", salary ) );
-                                      }) : ({ /* cicili#Let1991 */
+                                      }) : ({ /* cicili#Let1929 */
                                         // ----------
-                                        
-                                        ({ /* cicili#Progn1995 */
+                                        ;
+                                        ({ /* cicili#Progn1931 */
                                           fprintf (stdout , "%d, but item is deleted in another version!", id );
                                         });
                                       }));
                                   });
                                 });
-                              }) : ({ /* cicili#Let1999 */
+                              }) : ({ /* cicili#Let1935 */
                                 // ----------
-                                
-                                ({ /* cicili#Progn2003 */
+                                ;
+                                ({ /* cicili#Progn1937 */
                                   0;
                                 });
                               }));
@@ -1750,91 +1788,95 @@ void show_BTree_int_User_Error (BTree_int_User_Error error ) {
                       }
                     }
                   else
-                    { /* cicili#Let2008 */
+                    { /* cicili#Let1942 */
                       typeof((((error . __h_data ). ERR_NOT_FOUND ). __h_0_mem )) key ;
                       // ----------
-                      
-                      ({ /* cicili#Let2012 */
-                        bool __h_case_result  = (true  &&  (((error . __h_ctor ) ==  __h_ERR_NOT_FOUND_t  ) &&  ({ /* cicili#Progn2013 */
+                      ;
+                      ({ /* cicili#Let1944 */
+                        bool __h_case_result  = (true  &&  (((error . __h_ctor ) ==  __h_ERR_NOT_FOUND_t  ) &&  ({ /* cicili#Progn1945 */
                               (key  =  (((error . __h_data ). ERR_NOT_FOUND ). __h_0_mem ) );
                               true ;
                             }) ) );
                         // ----------
+                        
                         if (__h_case_result )
-                          { /* cicili#Block2017 */
-                            { /* cicili#Block2019 */
+                          { /* cicili#Block1951 */
+                            { /* cicili#Block1953 */
                               printf ("key not found: ");
                               fprintf (stdout , "%d", key );
                             }
                           }
                         else
-                          { /* cicili#Let2027 */
+                          { /* cicili#Let1961 */
                             typeof((((error . __h_data ). ERR_ACCESS_DEAD_CHILD ). __h_0_mem )) item ;
                             typeof((((error . __h_data ). ERR_ACCESS_DEAD_CHILD ). __h_1_mem )) index ;
                             // ----------
-                            
-                            ({ /* cicili#Let2031 */
-                              bool __h_case_result  = (true  &&  (((error . __h_ctor ) ==  __h_ERR_ACCESS_DEAD_CHILD_t  ) &&  (({ /* cicili#Progn2032 */
+                            ;
+                            ({ /* cicili#Let1963 */
+                              bool __h_case_result  = (true  &&  (((error . __h_ctor ) ==  __h_ERR_ACCESS_DEAD_CHILD_t  ) &&  (({ /* cicili#Progn1964 */
                                       (item  =  (((error . __h_data ). ERR_ACCESS_DEAD_CHILD ). __h_0_mem ) );
                                       true ;
-                                    }) &&  ({ /* cicili#Progn2034 */
+                                    }) &&  ({ /* cicili#Progn1966 */
                                       (index  =  (((error . __h_data ). ERR_ACCESS_DEAD_CHILD ). __h_1_mem ) );
                                       true ;
                                     }) ) ) );
                               // ----------
+                              
                               if (__h_case_result )
-                                { /* cicili#Block2038 */
-                                  { /* cicili#Block2040 */
-                                    printf ("dead child at index: %d of item: ", index );
-                                    ({ /* cicili#Let2047 */
+                                { /* cicili#Block1972 */
+                                  { /* cicili#Block1974 */
+                                    printf ("dead child at index: %zu of item: ", index );
+                                    ({ /* cicili#Let1981 */
                                       typeof((item . __h_0_mem )) id ;
-                                      typeof((item . __h_1_mem )) __h_match2045_1_arg ;
-                                      typeof((__h_match2045_1_arg . __h_0_mem )) wname ;
-                                      typeof((__h_match2045_1_arg . __h_1_mem )) salary ;
+                                      typeof((item . __h_1_mem )) __h_match1979_1_arg ;
+                                      typeof((__h_match1979_1_arg . __h_0_mem )) wname ;
+                                      typeof((__h_match1979_1_arg . __h_1_mem )) salary ;
                                       // ----------
-                                      
-                                      ({ /* cicili#Let2051 */
-                                        bool __h_case_result  = (true  &&  ((({ /* cicili#Progn2052 */
+                                      ;
+                                      ({ /* cicili#Let1983 */
+                                        bool __h_case_result  = (true  &&  ((({ /* cicili#Progn1984 */
                                                 (id  =  (item . __h_0_mem ) );
                                                 true ;
-                                              }) &&  ({ /* cicili#Progn2054 */
-                                                (__h_match2045_1_arg  =  (item . __h_1_mem ) );
+                                              }) &&  ({ /* cicili#Progn1986 */
+                                                (__h_match1979_1_arg  =  (item . __h_1_mem ) );
                                                 true ;
-                                              }) ) &&  (true  &&  (({ /* cicili#Progn2056 */
-                                                  (wname  =  (__h_match2045_1_arg . __h_0_mem ) );
+                                              }) ) &&  (true  &&  (({ /* cicili#Progn1988 */
+                                                  (wname  =  (__h_match1979_1_arg . __h_0_mem ) );
                                                   true ;
-                                                }) &&  ({ /* cicili#Progn2058 */
-                                                  (salary  =  (__h_match2045_1_arg . __h_1_mem ) );
+                                                }) &&  ({ /* cicili#Progn1990 */
+                                                  (salary  =  (__h_match1979_1_arg . __h_1_mem ) );
                                                   true ;
                                                 }) ) ) ) );
                                         // ----------
-                                        ((__h_case_result ) ? ({ /* cicili#Progn2061 */
-                                            ({ /* cicili#Let2065 */
-                                              __auto_type match2064  = get_Cell_String (wname );
-                                              typeof((((match2064 . __h_data ). Just ). __h_0_mem )) name ;
+                                        
+                                        ((__h_case_result ) ? ({ /* cicili#Progn1995 */
+                                            ({ /* cicili#Let1999 */
+                                              __auto_type match1998  = get_Cell_String (wname );
+                                              typeof((((match1998 . __h_data ). Just ). __h_0_mem )) name ;
                                               // ----------
-                                              
-                                              ({ /* cicili#Let2070 */
-                                                bool __h_case_result  = (true  &&  (((match2064 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn2071 */
-                                                      (name  =  (((match2064 . __h_data ). Just ). __h_0_mem ) );
+                                              ;
+                                              ({ /* cicili#Let2002 */
+                                                bool __h_case_result  = (true  &&  (((match1998 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn2003 */
+                                                      (name  =  (((match1998 . __h_data ). Just ). __h_0_mem ) );
                                                       true ;
                                                     }) ) );
                                                 // ----------
-                                                ((__h_case_result ) ? ({ /* cicili#Progn2074 */
+                                                
+                                                ((__h_case_result ) ? ({ /* cicili#Progn2008 */
                                                     (fprintf (stdout , "(%d, '", id ) +  show_String (stdout , name ) +  fprintf (stdout , "', %d)", salary ) );
-                                                  }) : ({ /* cicili#Let2078 */
+                                                  }) : ({ /* cicili#Let2012 */
                                                     // ----------
-                                                    
-                                                    ({ /* cicili#Progn2082 */
+                                                    ;
+                                                    ({ /* cicili#Progn2014 */
                                                       fprintf (stdout , "%d, but item is deleted in another version!", id );
                                                     });
                                                   }));
                                               });
                                             });
-                                          }) : ({ /* cicili#Let2086 */
+                                          }) : ({ /* cicili#Let2018 */
                                             // ----------
-                                            
-                                            ({ /* cicili#Progn2090 */
+                                            ;
+                                            ({ /* cicili#Progn2020 */
                                               0;
                                             });
                                           }));
@@ -1843,43 +1885,45 @@ void show_BTree_int_User_Error (BTree_int_User_Error error ) {
                                   }
                                 }
                               else
-                                { /* cicili#Let2095 */
+                                { /* cicili#Let2025 */
                                   typeof((((error . __h_data ). ERR_INVALID_BRANCH ). __h_0_mem )) branch ;
                                   // ----------
-                                  
-                                  ({ /* cicili#Let2099 */
-                                    bool __h_case_result  = (true  &&  (((error . __h_ctor ) ==  __h_ERR_INVALID_BRANCH_t  ) &&  ({ /* cicili#Progn2100 */
+                                  ;
+                                  ({ /* cicili#Let2027 */
+                                    bool __h_case_result  = (true  &&  (((error . __h_ctor ) ==  __h_ERR_INVALID_BRANCH_t  ) &&  ({ /* cicili#Progn2028 */
                                           (branch  =  (((error . __h_data ). ERR_INVALID_BRANCH ). __h_0_mem ) );
                                           true ;
                                         }) ) );
                                     // ----------
+                                    
                                     if (__h_case_result )
-                                      { /* cicili#Block2104 */
-                                        { /* cicili#Block2106 */
+                                      { /* cicili#Block2034 */
+                                        { /* cicili#Block2036 */
                                           printf ("invalid branch: ");
                                           (branch -> __h_table -> show )(stdout , branch );
                                         }
                                       }
                                     else
-                                      { /* cicili#Let2113 */
+                                      { /* cicili#Let2043 */
                                         typeof((((error . __h_data ). ERR_CANT_BORROW ). __h_0_mem )) reason ;
                                         // ----------
-                                        
-                                        ({ /* cicili#Let2117 */
-                                          bool __h_case_result  = (true  &&  (((error . __h_ctor ) ==  __h_ERR_CANT_BORROW_t  ) &&  ({ /* cicili#Progn2118 */
+                                        ;
+                                        ({ /* cicili#Let2045 */
+                                          bool __h_case_result  = (true  &&  (((error . __h_ctor ) ==  __h_ERR_CANT_BORROW_t  ) &&  ({ /* cicili#Progn2046 */
                                                 (reason  =  (((error . __h_data ). ERR_CANT_BORROW ). __h_0_mem ) );
                                                 true ;
                                               }) ) );
                                           // ----------
+                                          
                                           if (__h_case_result )
-                                            { /* cicili#Block2122 */
+                                            { /* cicili#Block2052 */
                                               printf ("borrow error: %s", reason );
                                             }
                                           else
-                                            { /* cicili#Let2127 */
+                                            { /* cicili#Let2057 */
                                               // ----------
-                                              
-                                              { /* cicili#Block2131 */
+                                              ;
+                                              { /* cicili#Block2059 */
                                                 printf ("unknown error");
                                               }
                                             }
@@ -1905,49 +1949,49 @@ const BTree_int_User_Error__H_Table * const get_BTree_int_User_Error__H_Table ()
   return (&table );
 }
 BTree_int_User_Error BTree_int_User_ERR_INVALID_OBJECT () {
-  { /* cicili#Let2143 */
+  { /* cicili#Let2071 */
     BTree_int_User_Error instance  = ((BTree_int_User_Error){ get_BTree_int_User_Error__H_Table (), __h_ERR_INVALID_OBJECT_t });
     // ----------
     return instance ;
   }
 }
-BTree_int_User_Error BTree_int_User_ERR_INVALID_ORDER (int order ) {
-  { /* cicili#Let2148 */
+BTree_int_User_Error BTree_int_User_ERR_INVALID_ORDER (size_t order ) {
+  { /* cicili#Let2076 */
     BTree_int_User_Error instance  = ((BTree_int_User_Error){ get_BTree_int_User_Error__H_Table (), __h_ERR_INVALID_ORDER_t , .__h_data.ERR_INVALID_ORDER = { order }});
     // ----------
     return instance ;
   }
 }
 BTree_int_User_Error BTree_int_User_ERR_UNIQUE_KEY (BTree_int_User_pair_t item ) {
-  { /* cicili#Let2153 */
+  { /* cicili#Let2081 */
     BTree_int_User_Error instance  = ((BTree_int_User_Error){ get_BTree_int_User_Error__H_Table (), __h_ERR_UNIQUE_KEY_t , .__h_data.ERR_UNIQUE_KEY = { item }});
     // ----------
     return instance ;
   }
 }
 BTree_int_User_Error BTree_int_User_ERR_NOT_FOUND (int key ) {
-  { /* cicili#Let2159 */
+  { /* cicili#Let2087 */
     BTree_int_User_Error instance  = ((BTree_int_User_Error){ get_BTree_int_User_Error__H_Table (), __h_ERR_NOT_FOUND_t , .__h_data.ERR_NOT_FOUND = { key }});
     // ----------
     return instance ;
   }
 }
-BTree_int_User_Error BTree_int_User_ERR_ACCESS_DEAD_CHILD (BTree_int_User_pair_t item , int index ) {
-  { /* cicili#Let2164 */
+BTree_int_User_Error BTree_int_User_ERR_ACCESS_DEAD_CHILD (BTree_int_User_pair_t item , size_t index ) {
+  { /* cicili#Let2092 */
     BTree_int_User_Error instance  = ((BTree_int_User_Error){ get_BTree_int_User_Error__H_Table (), __h_ERR_ACCESS_DEAD_CHILD_t , .__h_data.ERR_ACCESS_DEAD_CHILD = { item , index }});
     // ----------
     return instance ;
   }
 }
 BTree_int_User_Error BTree_int_User_ERR_INVALID_BRANCH (BTree_int_User branch ) {
-  { /* cicili#Let2170 */
+  { /* cicili#Let2098 */
     BTree_int_User_Error instance  = ((BTree_int_User_Error){ get_BTree_int_User_Error__H_Table (), __h_ERR_INVALID_BRANCH_t , .__h_data.ERR_INVALID_BRANCH = { branch }});
     // ----------
     return instance ;
   }
 }
 BTree_int_User_Error BTree_int_User_ERR_CANT_BORROW (char * reason ) {
-  { /* cicili#Let2175 */
+  { /* cicili#Let2103 */
     BTree_int_User_Error instance  = ((BTree_int_User_Error){ get_BTree_int_User_Error__H_Table (), __h___t , .__h_data._ = { reason }});
     // ----------
     return instance ;
@@ -1963,14 +2007,14 @@ const Either_BTree_int_User_Error_BTree_int_User__H_Table * const get_Either_BTr
   return (&table );
 }
 Either_BTree_int_User_Error_BTree_int_User Right_BTree_int_User_Error_BTree_int_User (BTree_int_User value ) {
-  { /* cicili#Let2191 */
+  { /* cicili#Let2119 */
     Either_BTree_int_User_Error_BTree_int_User instance  = ((Either_BTree_int_User_Error_BTree_int_User){ get_Either_BTree_int_User_Error_BTree_int_User__H_Table (), __h_Right_t , .__h_data.Right = { value }});
     // ----------
     return instance ;
   }
 }
 Either_BTree_int_User_Error_BTree_int_User Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_Error error ) {
-  { /* cicili#Let2196 */
+  { /* cicili#Let2124 */
     Either_BTree_int_User_Error_BTree_int_User instance  = ((Either_BTree_int_User_Error_BTree_int_User){ get_Either_BTree_int_User_Error_BTree_int_User__H_Table (), __h___t , .__h_data._ = { error }});
     // ----------
     return instance ;
@@ -1986,14 +2030,14 @@ const Maybe_BTree_int_User__H_Table * const get_Maybe_BTree_int_User__H_Table ()
   return (&table );
 }
 Maybe_BTree_int_User Just_BTree_int_User (BTree_int_User value ) {
-  { /* cicili#Let2212 */
+  { /* cicili#Let2140 */
     Maybe_BTree_int_User instance  = ((Maybe_BTree_int_User){ get_Maybe_BTree_int_User__H_Table (), __h_Just_t , .__h_data.Just = { value }});
     // ----------
     return instance ;
   }
 }
 Maybe_BTree_int_User Nothing_BTree_int_User () {
-  { /* cicili#Let2217 */
+  { /* cicili#Let2145 */
     Maybe_BTree_int_User instance  = ((Maybe_BTree_int_User){ get_Maybe_BTree_int_User__H_Table (), __h___t });
     // ----------
     return instance ;
@@ -2009,14 +2053,14 @@ const Maybe_BTree_int_User_pair_t__H_Table * const get_Maybe_BTree_int_User_pair
   return (&table );
 }
 Maybe_BTree_int_User_pair_t Just_BTree_int_User_pair_t (BTree_int_User_pair_t value ) {
-  { /* cicili#Let2235 */
+  { /* cicili#Let2163 */
     Maybe_BTree_int_User_pair_t instance  = ((Maybe_BTree_int_User_pair_t){ get_Maybe_BTree_int_User_pair_t__H_Table (), __h_Just_t , .__h_data.Just = { value }});
     // ----------
     return instance ;
   }
 }
 Maybe_BTree_int_User_pair_t Nothing_BTree_int_User_pair_t () {
-  { /* cicili#Let2240 */
+  { /* cicili#Let2168 */
     Maybe_BTree_int_User_pair_t instance  = ((Maybe_BTree_int_User_pair_t){ get_Maybe_BTree_int_User_pair_t__H_Table (), __h___t });
     // ----------
     return instance ;
@@ -2027,32 +2071,33 @@ Maybe_BTree_int_User_pair_t Nothing_BTree_int_User_pair_t () {
 #define __List_BTree_int_User_pair_t__H_IMPL__
 BTree_int_User_pair_t * toArray_List_BTree_int_User_pair_t (List_BTree_int_User_pair_t list , BTree_int_User_pair_t term ) {
   BTree_int_User_pair_t * array (List_BTree_int_User_pair_t list , int count ) {
-    return ({ /* cicili#Let2250 */
+    return ({ /* cicili#Let2178 */
         typeof((((list -> __h_data ). Cons ). __h_0_mem )) head ;
         typeof((((list -> __h_data ). Cons ). __h_1_mem )) tail ;
         // ----------
-        
-        ({ /* cicili#Let2254 */
-          bool __h_case_result  = (true  &&  (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  (({ /* cicili#Progn2255 */
+        ;
+        ({ /* cicili#Let2180 */
+          bool __h_case_result  = (true  &&  (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  (({ /* cicili#Progn2181 */
                   (head  =  (((list -> __h_data ). Cons ). __h_0_mem ) );
                   true ;
-                }) &&  ({ /* cicili#Progn2257 */
+                }) &&  ({ /* cicili#Progn2183 */
                   (tail  =  (((list -> __h_data ). Cons ). __h_1_mem ) );
                   true ;
                 }) ) ) );
           // ----------
-          ((__h_case_result ) ? ({ /* cicili#Progn2260 */
-              ({ /* cicili#Let2262 */
+          
+          ((__h_case_result ) ? ({ /* cicili#Progn2188 */
+              ({ /* cicili#Let2190 */
                 BTree_int_User_pair_t * arr  = array (tail , (count  +  1 ));
                 // ----------
                 arr [count ] = head ;
                 arr ;
               });
-            }) : ({ /* cicili#Let2266 */
+            }) : ({ /* cicili#Let2194 */
               // ----------
-              
-              ({ /* cicili#Progn2270 */
-                ({ /* cicili#Let2272 */
+              ;
+              ({ /* cicili#Progn2196 */
+                ({ /* cicili#Let2198 */
                   BTree_int_User_pair_t * arr  = calloc (count , sizeof(BTree_int_User_pair_t));
                   // ----------
                   arr [(count  -  1 )] = term ;
@@ -2069,142 +2114,148 @@ List_BTree_int_User_pair_t wrap_List_BTree_int_User_pair_t (const BTree_int_User
   return Cons_BTree_int_User_pair_t (item , Nil_BTree_int_User_pair_t ());
 }
 List_BTree_int_User_pair_t pure_List_BTree_int_User_pair_t (const BTree_int_User_pair_t * buf , int len ) {
-  return (((buf  ==  NULL  )) ? Nil_BTree_int_User_pair_t () : ({ /* cicili#Let2283 */
+  return (((buf  ==  NULL  )) ? Nil_BTree_int_User_pair_t () : ({ /* cicili#Let2209 */
         BTree_int_User_pair_t item  = (*buf );
         // ----------
         (((len  ==  0 )) ? Nil_BTree_int_User_pair_t () : Cons_BTree_int_User_pair_t (item , pure_List_BTree_int_User_pair_t ((++buf ), (--len ))));
       }));
 }
 int show_List_BTree_int_User_pair_t (CFile file , List_BTree_int_User_pair_t list ) {
-  return ({ /* cicili#Let2293 */
+  return ({ /* cicili#Let2219 */
       typeof((((list -> __h_data ). Cons ). __h_0_mem )) head ;
       typeof((((list -> __h_data ). Cons ). __h_1_mem )) tail ;
       // ----------
-      
-      ({ /* cicili#Let2297 */
-        bool __h_case_result  = (true  &&  (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  (({ /* cicili#Progn2298 */
+      ;
+      ({ /* cicili#Let2221 */
+        bool __h_case_result  = (true  &&  (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  (({ /* cicili#Progn2222 */
                 (head  =  (((list -> __h_data ). Cons ). __h_0_mem ) );
                 true ;
-              }) &&  ({ /* cicili#Progn2300 */
+              }) &&  ({ /* cicili#Progn2224 */
                 (tail  =  (((list -> __h_data ). Cons ). __h_1_mem ) );
                 true ;
               }) ) ) );
         // ----------
-        ((__h_case_result ) ? ({ /* cicili#Progn2303 */
-            (({ /* cicili#Let2307 */
+        
+        ((__h_case_result ) ? ({ /* cicili#Progn2229 */
+            (({ /* cicili#Let2233 */
                 // ----------
-                
-                ({ /* cicili#Let2311 */
+                ;
+                ({ /* cicili#Let2235 */
                   bool __h_case_result  = (true  &&  ((tail -> __h_ctor ) ==  __h_Cons_t  ) );
                   // ----------
-                  ((__h_case_result ) ? ({ /* cicili#Progn2313 */
-                      (({ /* cicili#Let2320 */
+                  
+                  ((__h_case_result ) ? ({ /* cicili#Progn2239 */
+                      (({ /* cicili#Let2246 */
                           typeof((head . __h_0_mem )) id ;
-                          typeof((head . __h_1_mem )) __h_match2318_1_arg ;
-                          typeof((__h_match2318_1_arg . __h_0_mem )) wname ;
-                          typeof((__h_match2318_1_arg . __h_1_mem )) salary ;
+                          typeof((head . __h_1_mem )) __h_match2244_1_arg ;
+                          typeof((__h_match2244_1_arg . __h_0_mem )) wname ;
+                          typeof((__h_match2244_1_arg . __h_1_mem )) salary ;
                           // ----------
-                          
-                          ({ /* cicili#Let2324 */
-                            bool __h_case_result  = (true  &&  ((({ /* cicili#Progn2325 */
+                          ;
+                          ({ /* cicili#Let2248 */
+                            bool __h_case_result  = (true  &&  ((({ /* cicili#Progn2249 */
                                     (id  =  (head . __h_0_mem ) );
                                     true ;
-                                  }) &&  ({ /* cicili#Progn2327 */
-                                    (__h_match2318_1_arg  =  (head . __h_1_mem ) );
+                                  }) &&  ({ /* cicili#Progn2251 */
+                                    (__h_match2244_1_arg  =  (head . __h_1_mem ) );
                                     true ;
-                                  }) ) &&  (true  &&  (({ /* cicili#Progn2329 */
-                                      (wname  =  (__h_match2318_1_arg . __h_0_mem ) );
+                                  }) ) &&  (true  &&  (({ /* cicili#Progn2253 */
+                                      (wname  =  (__h_match2244_1_arg . __h_0_mem ) );
                                       true ;
-                                    }) &&  ({ /* cicili#Progn2331 */
-                                      (salary  =  (__h_match2318_1_arg . __h_1_mem ) );
+                                    }) &&  ({ /* cicili#Progn2255 */
+                                      (salary  =  (__h_match2244_1_arg . __h_1_mem ) );
                                       true ;
                                     }) ) ) ) );
                             // ----------
-                            ((__h_case_result ) ? ({ /* cicili#Progn2334 */
-                                ({ /* cicili#Let2338 */
-                                  __auto_type match2337  = get_Cell_String (wname );
-                                  typeof((((match2337 . __h_data ). Just ). __h_0_mem )) name ;
+                            
+                            ((__h_case_result ) ? ({ /* cicili#Progn2260 */
+                                ({ /* cicili#Let2264 */
+                                  __auto_type match2263  = get_Cell_String (wname );
+                                  typeof((((match2263 . __h_data ). Just ). __h_0_mem )) name ;
                                   // ----------
-                                  
-                                  ({ /* cicili#Let2343 */
-                                    bool __h_case_result  = (true  &&  (((match2337 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn2344 */
-                                          (name  =  (((match2337 . __h_data ). Just ). __h_0_mem ) );
+                                  ;
+                                  ({ /* cicili#Let2267 */
+                                    bool __h_case_result  = (true  &&  (((match2263 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn2268 */
+                                          (name  =  (((match2263 . __h_data ). Just ). __h_0_mem ) );
                                           true ;
                                         }) ) );
                                     // ----------
-                                    ((__h_case_result ) ? ({ /* cicili#Progn2347 */
+                                    
+                                    ((__h_case_result ) ? ({ /* cicili#Progn2273 */
                                         (fprintf (file , "(%d, '", id ) +  show_String (file , name ) +  fprintf (file , "', %d)", salary ) );
-                                      }) : ({ /* cicili#Let2351 */
+                                      }) : ({ /* cicili#Let2277 */
                                         // ----------
-                                        
-                                        ({ /* cicili#Progn2355 */
+                                        ;
+                                        ({ /* cicili#Progn2279 */
                                           fprintf (file , "%d, but item is deleted in another version!", id );
                                         });
                                       }));
                                   });
                                 });
-                              }) : ({ /* cicili#Let2359 */
+                              }) : ({ /* cicili#Let2283 */
                                 // ----------
-                                
-                                ({ /* cicili#Progn2363 */
+                                ;
+                                ({ /* cicili#Progn2285 */
                                   0;
                                 });
                               }));
                           });
                         }) +  fprintf (file , "%s", " ") );
-                    }) : ({ /* cicili#Let2367 */
+                    }) : ({ /* cicili#Let2289 */
                       // ----------
-                      
-                      ({ /* cicili#Progn2371 */
-                        ({ /* cicili#Let2378 */
+                      ;
+                      ({ /* cicili#Progn2291 */
+                        ({ /* cicili#Let2298 */
                           typeof((head . __h_0_mem )) id ;
-                          typeof((head . __h_1_mem )) __h_match2376_1_arg ;
-                          typeof((__h_match2376_1_arg . __h_0_mem )) wname ;
-                          typeof((__h_match2376_1_arg . __h_1_mem )) salary ;
+                          typeof((head . __h_1_mem )) __h_match2296_1_arg ;
+                          typeof((__h_match2296_1_arg . __h_0_mem )) wname ;
+                          typeof((__h_match2296_1_arg . __h_1_mem )) salary ;
                           // ----------
-                          
-                          ({ /* cicili#Let2382 */
-                            bool __h_case_result  = (true  &&  ((({ /* cicili#Progn2383 */
+                          ;
+                          ({ /* cicili#Let2300 */
+                            bool __h_case_result  = (true  &&  ((({ /* cicili#Progn2301 */
                                     (id  =  (head . __h_0_mem ) );
                                     true ;
-                                  }) &&  ({ /* cicili#Progn2385 */
-                                    (__h_match2376_1_arg  =  (head . __h_1_mem ) );
+                                  }) &&  ({ /* cicili#Progn2303 */
+                                    (__h_match2296_1_arg  =  (head . __h_1_mem ) );
                                     true ;
-                                  }) ) &&  (true  &&  (({ /* cicili#Progn2387 */
-                                      (wname  =  (__h_match2376_1_arg . __h_0_mem ) );
+                                  }) ) &&  (true  &&  (({ /* cicili#Progn2305 */
+                                      (wname  =  (__h_match2296_1_arg . __h_0_mem ) );
                                       true ;
-                                    }) &&  ({ /* cicili#Progn2389 */
-                                      (salary  =  (__h_match2376_1_arg . __h_1_mem ) );
+                                    }) &&  ({ /* cicili#Progn2307 */
+                                      (salary  =  (__h_match2296_1_arg . __h_1_mem ) );
                                       true ;
                                     }) ) ) ) );
                             // ----------
-                            ((__h_case_result ) ? ({ /* cicili#Progn2392 */
-                                ({ /* cicili#Let2396 */
-                                  __auto_type match2395  = get_Cell_String (wname );
-                                  typeof((((match2395 . __h_data ). Just ). __h_0_mem )) name ;
+                            
+                            ((__h_case_result ) ? ({ /* cicili#Progn2312 */
+                                ({ /* cicili#Let2316 */
+                                  __auto_type match2315  = get_Cell_String (wname );
+                                  typeof((((match2315 . __h_data ). Just ). __h_0_mem )) name ;
                                   // ----------
-                                  
-                                  ({ /* cicili#Let2401 */
-                                    bool __h_case_result  = (true  &&  (((match2395 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn2402 */
-                                          (name  =  (((match2395 . __h_data ). Just ). __h_0_mem ) );
+                                  ;
+                                  ({ /* cicili#Let2319 */
+                                    bool __h_case_result  = (true  &&  (((match2315 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn2320 */
+                                          (name  =  (((match2315 . __h_data ). Just ). __h_0_mem ) );
                                           true ;
                                         }) ) );
                                     // ----------
-                                    ((__h_case_result ) ? ({ /* cicili#Progn2405 */
+                                    
+                                    ((__h_case_result ) ? ({ /* cicili#Progn2325 */
                                         (fprintf (file , "(%d, '", id ) +  show_String (file , name ) +  fprintf (file , "', %d)", salary ) );
-                                      }) : ({ /* cicili#Let2409 */
+                                      }) : ({ /* cicili#Let2329 */
                                         // ----------
-                                        
-                                        ({ /* cicili#Progn2413 */
+                                        ;
+                                        ({ /* cicili#Progn2331 */
                                           fprintf (file , "%d, but item is deleted in another version!", id );
                                         });
                                       }));
                                   });
                                 });
-                              }) : ({ /* cicili#Let2417 */
+                              }) : ({ /* cicili#Let2335 */
                                 // ----------
-                                
-                                ({ /* cicili#Progn2421 */
+                                ;
+                                ({ /* cicili#Progn2337 */
                                   0;
                                 });
                               }));
@@ -2214,10 +2265,10 @@ int show_List_BTree_int_User_pair_t (CFile file , List_BTree_int_User_pair_t lis
                     }));
                 });
               }) +  show_List_BTree_int_User_pair_t (file , tail ) );
-          }) : ({ /* cicili#Let2426 */
+          }) : ({ /* cicili#Let2342 */
             // ----------
-            
-            ({ /* cicili#Progn2430 */
+            ;
+            ({ /* cicili#Progn2344 */
               0;
             });
           }));
@@ -2225,26 +2276,27 @@ int show_List_BTree_int_User_pair_t (CFile file , List_BTree_int_User_pair_t lis
     });
 }
 List_BTree_int_User_pair_t copy_List_BTree_int_User_pair_t (List_BTree_int_User_pair_t list ) {
-  return ({ /* cicili#Let2436 */
+  return ({ /* cicili#Let2350 */
       typeof((((list -> __h_data ). Cons ). __h_0_mem )) head ;
       typeof((((list -> __h_data ). Cons ). __h_1_mem )) tail ;
       // ----------
-      
-      ({ /* cicili#Let2440 */
-        bool __h_case_result  = (true  &&  (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  (({ /* cicili#Progn2441 */
+      ;
+      ({ /* cicili#Let2352 */
+        bool __h_case_result  = (true  &&  (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  (({ /* cicili#Progn2353 */
                 (head  =  (((list -> __h_data ). Cons ). __h_0_mem ) );
                 true ;
-              }) &&  ({ /* cicili#Progn2443 */
+              }) &&  ({ /* cicili#Progn2355 */
                 (tail  =  (((list -> __h_data ). Cons ). __h_1_mem ) );
                 true ;
               }) ) ) );
         // ----------
-        ((__h_case_result ) ? ({ /* cicili#Progn2446 */
+        
+        ((__h_case_result ) ? ({ /* cicili#Progn2360 */
             Cons_BTree_int_User_pair_t (head , copy_List_BTree_int_User_pair_t (tail ));
-          }) : ({ /* cicili#Let2452 */
+          }) : ({ /* cicili#Let2366 */
             // ----------
-            
-            ({ /* cicili#Progn2456 */
+            ;
+            ({ /* cicili#Progn2368 */
               Nil_BTree_int_User_pair_t ();
             });
           }));
@@ -2252,42 +2304,44 @@ List_BTree_int_User_pair_t copy_List_BTree_int_User_pair_t (List_BTree_int_User_
     });
 }
 List_BTree_int_User_pair_t replaceAt_List_BTree_int_User_pair_t (List_BTree_int_User_pair_t list , BTree_int_User_pair_t item , int index ) {
-  return ({ /* cicili#Let2463 */
+  return ({ /* cicili#Let2375 */
       typeof((((list -> __h_data ). Cons ). __h_0_mem )) head ;
       typeof((((list -> __h_data ). Cons ). __h_1_mem )) tail ;
       // ----------
-      
-      ({ /* cicili#Let2467 */
-        bool __h_case_result  = (true  &&  (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  ((({ /* cicili#Progn2468 */
+      ;
+      ({ /* cicili#Let2377 */
+        bool __h_case_result  = (true  &&  (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  ((({ /* cicili#Progn2378 */
                   (head  =  (((list -> __h_data ). Cons ). __h_0_mem ) );
                   true ;
-                }) &&  ({ /* cicili#Progn2470 */
+                }) &&  ({ /* cicili#Progn2380 */
                   (tail  =  (((list -> __h_data ). Cons ). __h_1_mem ) );
                   true ;
                 }) ) &&  (index  >  0 ) ) ) );
         // ----------
-        ((__h_case_result ) ? ({ /* cicili#Progn2473 */
+        
+        ((__h_case_result ) ? ({ /* cicili#Progn2385 */
             Cons_BTree_int_User_pair_t (head , replaceAt_List_BTree_int_User_pair_t (tail , item , (index  -  1 )));
-          }) : ({ /* cicili#Let2479 */
+          }) : ({ /* cicili#Let2391 */
             // ----------
-            
-            ({ /* cicili#Progn2483 */
-              ({ /* cicili#Let2487 */
+            ;
+            ({ /* cicili#Progn2393 */
+              ({ /* cicili#Let2397 */
                 typeof((((list -> __h_data ). Cons ). __h_1_mem )) taill ;
                 // ----------
-                
-                ({ /* cicili#Let2491 */
-                  bool __h_case_result  = (true  &&  (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  ({ /* cicili#Progn2492 */
+                ;
+                ({ /* cicili#Let2399 */
+                  bool __h_case_result  = (true  &&  (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  ({ /* cicili#Progn2400 */
                         (taill  =  (((list -> __h_data ). Cons ). __h_1_mem ) );
                         true ;
                       }) ) );
                   // ----------
-                  ((__h_case_result ) ? ({ /* cicili#Progn2495 */
+                  
+                  ((__h_case_result ) ? ({ /* cicili#Progn2405 */
                       Cons_BTree_int_User_pair_t (item , copy_List_BTree_int_User_pair_t (taill ));
-                    }) : ({ /* cicili#Let2501 */
+                    }) : ({ /* cicili#Let2411 */
                       // ----------
-                      
-                      ({ /* cicili#Progn2505 */
+                      ;
+                      ({ /* cicili#Progn2413 */
                         Nil_BTree_int_User_pair_t ();
                       });
                     }));
@@ -2299,42 +2353,44 @@ List_BTree_int_User_pair_t replaceAt_List_BTree_int_User_pair_t (List_BTree_int_
     });
 }
 List_BTree_int_User_pair_t deleteAt_List_BTree_int_User_pair_t (List_BTree_int_User_pair_t list , int index ) {
-  return ({ /* cicili#Let2512 */
+  return ({ /* cicili#Let2420 */
       typeof((((list -> __h_data ). Cons ). __h_0_mem )) head ;
       typeof((((list -> __h_data ). Cons ). __h_1_mem )) tail ;
       // ----------
-      
-      ({ /* cicili#Let2516 */
-        bool __h_case_result  = (true  &&  (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  ((({ /* cicili#Progn2517 */
+      ;
+      ({ /* cicili#Let2422 */
+        bool __h_case_result  = (true  &&  (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  ((({ /* cicili#Progn2423 */
                   (head  =  (((list -> __h_data ). Cons ). __h_0_mem ) );
                   true ;
-                }) &&  ({ /* cicili#Progn2519 */
+                }) &&  ({ /* cicili#Progn2425 */
                   (tail  =  (((list -> __h_data ). Cons ). __h_1_mem ) );
                   true ;
                 }) ) &&  (index  >  0 ) ) ) );
         // ----------
-        ((__h_case_result ) ? ({ /* cicili#Progn2522 */
+        
+        ((__h_case_result ) ? ({ /* cicili#Progn2430 */
             Cons_BTree_int_User_pair_t (head , deleteAt_List_BTree_int_User_pair_t (tail , (index  -  1 )));
-          }) : ({ /* cicili#Let2528 */
+          }) : ({ /* cicili#Let2436 */
             // ----------
-            
-            ({ /* cicili#Progn2532 */
-              ({ /* cicili#Let2536 */
+            ;
+            ({ /* cicili#Progn2438 */
+              ({ /* cicili#Let2442 */
                 typeof((((list -> __h_data ). Cons ). __h_1_mem )) taill ;
                 // ----------
-                
-                ({ /* cicili#Let2540 */
-                  bool __h_case_result  = (true  &&  (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  ({ /* cicili#Progn2541 */
+                ;
+                ({ /* cicili#Let2444 */
+                  bool __h_case_result  = (true  &&  (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  ({ /* cicili#Progn2445 */
                         (taill  =  (((list -> __h_data ). Cons ). __h_1_mem ) );
                         true ;
                       }) ) );
                   // ----------
-                  ((__h_case_result ) ? ({ /* cicili#Progn2544 */
+                  
+                  ((__h_case_result ) ? ({ /* cicili#Progn2450 */
                       copy_List_BTree_int_User_pair_t (taill );
-                    }) : ({ /* cicili#Let2549 */
+                    }) : ({ /* cicili#Let2455 */
                       // ----------
-                      
-                      ({ /* cicili#Progn2553 */
+                      ;
+                      ({ /* cicili#Progn2457 */
                         Nil_BTree_int_User_pair_t ();
                       });
                     }));
@@ -2345,70 +2401,73 @@ List_BTree_int_User_pair_t deleteAt_List_BTree_int_User_pair_t (List_BTree_int_U
       });
     });
 }
-List_BTree_int_User_pair_t insertAt_List_BTree_int_User_pair_t (List_BTree_int_User_pair_t llist , BTree_int_User_pair_t item , int index ) {
-  return ({ /* cicili#Let2560 */
-      typeof((((llist -> __h_data ). Cons ). __h_0_mem )) head ;
-      typeof((((llist -> __h_data ). Cons ). __h_1_mem )) tail ;
+List_BTree_int_User_pair_t insertAt_List_BTree_int_User_pair_t (List_BTree_int_User_pair_t list , BTree_int_User_pair_t item , int index ) {
+  return ({ /* cicili#Let2464 */
+      typeof((((list -> __h_data ). Cons ). __h_0_mem )) head ;
+      typeof((((list -> __h_data ). Cons ). __h_1_mem )) tail ;
       // ----------
-      
-      ({ /* cicili#Let2564 */
-        bool __h_case_result  = (true  &&  (((llist -> __h_ctor ) ==  __h_Cons_t  ) &&  ((({ /* cicili#Progn2565 */
-                  (head  =  (((llist -> __h_data ). Cons ). __h_0_mem ) );
+      ;
+      ({ /* cicili#Let2466 */
+        bool __h_case_result  = (true  &&  (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  ((({ /* cicili#Progn2467 */
+                  (head  =  (((list -> __h_data ). Cons ). __h_0_mem ) );
                   true ;
-                }) &&  ({ /* cicili#Progn2567 */
-                  (tail  =  (((llist -> __h_data ). Cons ). __h_1_mem ) );
+                }) &&  ({ /* cicili#Progn2469 */
+                  (tail  =  (((list -> __h_data ). Cons ). __h_1_mem ) );
                   true ;
                 }) ) &&  (index  >  0 ) ) ) );
         // ----------
-        ((__h_case_result ) ? ({ /* cicili#Progn2570 */
+        
+        ((__h_case_result ) ? ({ /* cicili#Progn2474 */
             Cons_BTree_int_User_pair_t (head , insertAt_List_BTree_int_User_pair_t (tail , item , (index  -  1 )));
-          }) : ({ /* cicili#Let2576 */
+          }) : ({ /* cicili#Let2480 */
             // ----------
-            
-            ({ /* cicili#Progn2580 */
-              Cons_BTree_int_User_pair_t (item , copy_List_BTree_int_User_pair_t (llist ));
+            ;
+            ({ /* cicili#Progn2482 */
+              Cons_BTree_int_User_pair_t (item , copy_List_BTree_int_User_pair_t (list ));
             });
           }));
       });
     });
 }
 List_BTree_int_User_pair_t replace_List_BTree_int_User_pair_t (List_BTree_int_User_pair_t list , BTree_int_User_pair_t item , List_BTree_int_User_pair_t aimed ) {
-  return ({ /* cicili#Let2588 */
+  return ({ /* cicili#Let2490 */
       typeof((((list -> __h_data ). Cons ). __h_0_mem )) head ;
       typeof((((list -> __h_data ). Cons ). __h_1_mem )) tail ;
       // ----------
-      
-      ({ /* cicili#Let2592 */
-        bool __h_case_result  = (true  &&  (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  ((({ /* cicili#Progn2593 */
+      ;
+      ({ /* cicili#Let2492 */
+        bool __h_case_result  = (true  &&  (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  ((({ /* cicili#Progn2493 */
                   (head  =  (((list -> __h_data ). Cons ). __h_0_mem ) );
                   true ;
-                }) &&  ({ /* cicili#Progn2595 */
+                }) &&  ({ /* cicili#Progn2495 */
                   (tail  =  (((list -> __h_data ). Cons ). __h_1_mem ) );
                   true ;
                 }) ) &&  (list  !=  aimed  ) ) ) );
         // ----------
-        ((__h_case_result ) ? ({ /* cicili#Progn2598 */
+        
+        ((__h_case_result ) ? ({ /* cicili#Progn2500 */
             Cons_BTree_int_User_pair_t (head , replace_List_BTree_int_User_pair_t (tail , item , aimed ));
-          }) : ({ /* cicili#Let2604 */
+          }) : ({ /* cicili#Let2506 */
             // ----------
-            
-            ({ /* cicili#Progn2608 */
-              ({ /* cicili#Let2612 */
+            ;
+            ({ /* cicili#Progn2508 */
+              ({ /* cicili#Let2512 */
                 typeof((((aimed -> __h_data ). Cons ). __h_1_mem )) taill ;
                 // ----------
-                
-                ({ /* cicili#Let2616 */
-                  bool __h_case_result  = (true  &&  (((aimed -> __h_ctor ) ==  __h_Cons_t  ) &&  ({ /* cicili#Progn2617 */
+                ;
+                ({ /* cicili#Let2514 */
+                  bool __h_case_result  = (true  &&  (((aimed -> __h_ctor ) ==  __h_Cons_t  ) &&  ({ /* cicili#Progn2515 */
                         (taill  =  (((aimed -> __h_data ). Cons ). __h_1_mem ) );
                         true ;
                       }) ) );
                   // ----------
-                  ((__h_case_result ) ? ({ /* cicili#Progn2620 */
+                  
+                  ((__h_case_result ) ? ({ /* cicili#Progn2520 */
                       Cons_BTree_int_User_pair_t (item , copy_List_BTree_int_User_pair_t (taill ));
-                    }) : ({ /* cicili#Let2626 */
+                    }) : ({ /* cicili#Let2526 */
                       // ----------
-                      
-                      ({ /* cicili#Progn2630 */
+                      ;
+                      ({ /* cicili#Progn2528 */
                         Nil_BTree_int_User_pair_t ();
                       });
                     }));
@@ -2420,42 +2479,44 @@ List_BTree_int_User_pair_t replace_List_BTree_int_User_pair_t (List_BTree_int_Us
     });
 }
 List_BTree_int_User_pair_t delete_List_BTree_int_User_pair_t (List_BTree_int_User_pair_t list , List_BTree_int_User_pair_t aimed ) {
-  return ({ /* cicili#Let2637 */
+  return ({ /* cicili#Let2535 */
       typeof((((list -> __h_data ). Cons ). __h_0_mem )) head ;
       typeof((((list -> __h_data ). Cons ). __h_1_mem )) tail ;
       // ----------
-      
-      ({ /* cicili#Let2641 */
-        bool __h_case_result  = (true  &&  (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  ((({ /* cicili#Progn2642 */
+      ;
+      ({ /* cicili#Let2537 */
+        bool __h_case_result  = (true  &&  (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  ((({ /* cicili#Progn2538 */
                   (head  =  (((list -> __h_data ). Cons ). __h_0_mem ) );
                   true ;
-                }) &&  ({ /* cicili#Progn2644 */
+                }) &&  ({ /* cicili#Progn2540 */
                   (tail  =  (((list -> __h_data ). Cons ). __h_1_mem ) );
                   true ;
                 }) ) &&  (list  !=  aimed  ) ) ) );
         // ----------
-        ((__h_case_result ) ? ({ /* cicili#Progn2647 */
+        
+        ((__h_case_result ) ? ({ /* cicili#Progn2545 */
             Cons_BTree_int_User_pair_t (head , delete_List_BTree_int_User_pair_t (tail , aimed ));
-          }) : ({ /* cicili#Let2653 */
+          }) : ({ /* cicili#Let2551 */
             // ----------
-            
-            ({ /* cicili#Progn2657 */
-              ({ /* cicili#Let2661 */
+            ;
+            ({ /* cicili#Progn2553 */
+              ({ /* cicili#Let2557 */
                 typeof((((aimed -> __h_data ). Cons ). __h_1_mem )) taill ;
                 // ----------
-                
-                ({ /* cicili#Let2665 */
-                  bool __h_case_result  = (true  &&  (((aimed -> __h_ctor ) ==  __h_Cons_t  ) &&  ({ /* cicili#Progn2666 */
+                ;
+                ({ /* cicili#Let2559 */
+                  bool __h_case_result  = (true  &&  (((aimed -> __h_ctor ) ==  __h_Cons_t  ) &&  ({ /* cicili#Progn2560 */
                         (taill  =  (((aimed -> __h_data ). Cons ). __h_1_mem ) );
                         true ;
                       }) ) );
                   // ----------
-                  ((__h_case_result ) ? ({ /* cicili#Progn2669 */
+                  
+                  ((__h_case_result ) ? ({ /* cicili#Progn2565 */
                       copy_List_BTree_int_User_pair_t (taill );
-                    }) : ({ /* cicili#Let2674 */
+                    }) : ({ /* cicili#Let2570 */
                       // ----------
-                      
-                      ({ /* cicili#Progn2678 */
+                      ;
+                      ({ /* cicili#Progn2572 */
                         Nil_BTree_int_User_pair_t ();
                       });
                     }));
@@ -2467,26 +2528,27 @@ List_BTree_int_User_pair_t delete_List_BTree_int_User_pair_t (List_BTree_int_Use
     });
 }
 List_BTree_int_User_pair_t insert_List_BTree_int_User_pair_t (List_BTree_int_User_pair_t llist , BTree_int_User_pair_t item , List_BTree_int_User_pair_t rlist ) {
-  return ({ /* cicili#Let2685 */
+  return ({ /* cicili#Let2579 */
       typeof((((llist -> __h_data ). Cons ). __h_0_mem )) head ;
       typeof((((llist -> __h_data ). Cons ). __h_1_mem )) tail ;
       // ----------
-      
-      ({ /* cicili#Let2689 */
-        bool __h_case_result  = (true  &&  (((llist -> __h_ctor ) ==  __h_Cons_t  ) &&  ((({ /* cicili#Progn2690 */
+      ;
+      ({ /* cicili#Let2581 */
+        bool __h_case_result  = (true  &&  (((llist -> __h_ctor ) ==  __h_Cons_t  ) &&  ((({ /* cicili#Progn2582 */
                   (head  =  (((llist -> __h_data ). Cons ). __h_0_mem ) );
                   true ;
-                }) &&  ({ /* cicili#Progn2692 */
+                }) &&  ({ /* cicili#Progn2584 */
                   (tail  =  (((llist -> __h_data ). Cons ). __h_1_mem ) );
                   true ;
                 }) ) &&  (llist  !=  rlist  ) ) ) );
         // ----------
-        ((__h_case_result ) ? ({ /* cicili#Progn2695 */
+        
+        ((__h_case_result ) ? ({ /* cicili#Progn2589 */
             Cons_BTree_int_User_pair_t (head , insert_List_BTree_int_User_pair_t (tail , item , rlist ));
-          }) : ({ /* cicili#Let2701 */
+          }) : ({ /* cicili#Let2595 */
             // ----------
-            
-            ({ /* cicili#Progn2705 */
+            ;
+            ({ /* cicili#Progn2597 */
               Cons_BTree_int_User_pair_t (item , copy_List_BTree_int_User_pair_t (rlist ));
             });
           }));
@@ -2495,52 +2557,54 @@ List_BTree_int_User_pair_t insert_List_BTree_int_User_pair_t (List_BTree_int_Use
 }
 List_BTree_int_User_pair_t reverse_List_BTree_int_User_pair_t (List_BTree_int_User_pair_t list ) {
   List_BTree_int_User_pair_t _reverse (List_BTree_int_User_pair_t list , List_BTree_int_User_pair_t rlist ) {
-    return ({ /* cicili#Let2714 */
+    return ({ /* cicili#Let2606 */
         typeof((((list -> __h_data ). Cons ). __h_0_mem )) head ;
         typeof((((list -> __h_data ). Cons ). __h_1_mem )) tail ;
         // ----------
-        
-        ({ /* cicili#Let2718 */
-          bool __h_case_result  = (true  &&  (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  (({ /* cicili#Progn2719 */
+        ;
+        ({ /* cicili#Let2608 */
+          bool __h_case_result  = (true  &&  (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  (({ /* cicili#Progn2609 */
                   (head  =  (((list -> __h_data ). Cons ). __h_0_mem ) );
                   true ;
-                }) &&  ({ /* cicili#Progn2721 */
+                }) &&  ({ /* cicili#Progn2611 */
                   (tail  =  (((list -> __h_data ). Cons ). __h_1_mem ) );
                   true ;
                 }) ) ) );
           // ----------
-          ((__h_case_result ) ? ({ /* cicili#Progn2724 */
+          
+          ((__h_case_result ) ? ({ /* cicili#Progn2616 */
               _reverse (tail , Cons_BTree_int_User_pair_t (head , rlist ));
-            }) : ({ /* cicili#Let2729 */
+            }) : ({ /* cicili#Let2621 */
               // ----------
-              
-              ({ /* cicili#Progn2733 */
+              ;
+              ({ /* cicili#Progn2623 */
                 rlist ;
               });
             }));
         });
       });
   }
-  return ({ /* cicili#Let2737 */
+  return ({ /* cicili#Let2627 */
       typeof((((list -> __h_data ). Cons ). __h_0_mem )) head ;
       typeof((((list -> __h_data ). Cons ). __h_1_mem )) tail ;
       // ----------
-      
-      ({ /* cicili#Let2741 */
-        bool __h_case_result  = (true  &&  (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  (({ /* cicili#Progn2742 */
+      ;
+      ({ /* cicili#Let2629 */
+        bool __h_case_result  = (true  &&  (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  (({ /* cicili#Progn2630 */
                 (head  =  (((list -> __h_data ). Cons ). __h_0_mem ) );
                 true ;
-              }) &&  ({ /* cicili#Progn2744 */
+              }) &&  ({ /* cicili#Progn2632 */
                 (tail  =  (((list -> __h_data ). Cons ). __h_1_mem ) );
                 true ;
               }) ) ) );
         // ----------
-        ((__h_case_result ) ? ({ /* cicili#Progn2747 */
+        
+        ((__h_case_result ) ? ({ /* cicili#Progn2637 */
             _reverse (tail , Cons_BTree_int_User_pair_t (head , Nil_BTree_int_User_pair_t ()));
-          }) : ({ /* cicili#Let2753 */
+          }) : ({ /* cicili#Let2643 */
             // ----------
-            
-            ({ /* cicili#Progn2757 */
+            ;
+            ({ /* cicili#Progn2645 */
               list ;
             });
           }));
@@ -2548,26 +2612,27 @@ List_BTree_int_User_pair_t reverse_List_BTree_int_User_pair_t (List_BTree_int_Us
     });
 }
 List_BTree_int_User_pair_t append_List_BTree_int_User_pair_t (List_BTree_int_User_pair_t llist , List_BTree_int_User_pair_t rlist ) {
-  return ({ /* cicili#Let2763 */
+  return ({ /* cicili#Let2651 */
       typeof((((llist -> __h_data ). Cons ). __h_0_mem )) head ;
       typeof((((llist -> __h_data ). Cons ). __h_1_mem )) tail ;
       // ----------
-      
-      ({ /* cicili#Let2767 */
-        bool __h_case_result  = (true  &&  (((llist -> __h_ctor ) ==  __h_Cons_t  ) &&  (({ /* cicili#Progn2768 */
+      ;
+      ({ /* cicili#Let2653 */
+        bool __h_case_result  = (true  &&  (((llist -> __h_ctor ) ==  __h_Cons_t  ) &&  (({ /* cicili#Progn2654 */
                 (head  =  (((llist -> __h_data ). Cons ). __h_0_mem ) );
                 true ;
-              }) &&  ({ /* cicili#Progn2770 */
+              }) &&  ({ /* cicili#Progn2656 */
                 (tail  =  (((llist -> __h_data ). Cons ). __h_1_mem ) );
                 true ;
               }) ) ) );
         // ----------
-        ((__h_case_result ) ? ({ /* cicili#Progn2773 */
+        
+        ((__h_case_result ) ? ({ /* cicili#Progn2661 */
             Cons_BTree_int_User_pair_t (head , append_List_BTree_int_User_pair_t (tail , rlist ));
-          }) : ({ /* cicili#Let2779 */
+          }) : ({ /* cicili#Let2667 */
             // ----------
-            
-            ({ /* cicili#Progn2783 */
+            ;
+            ({ /* cicili#Progn2669 */
               copy_List_BTree_int_User_pair_t (rlist );
             });
           }));
@@ -2578,26 +2643,27 @@ List_BTree_int_User_pair_t push_List_BTree_int_User_pair_t (BTree_int_User_pair_
   return Cons_BTree_int_User_pair_t (item , copy_List_BTree_int_User_pair_t (list ));
 }
 List_BTree_int_User_pair_t take_List_BTree_int_User_pair_t (int len , List_BTree_int_User_pair_t list ) {
-  return (((len  <=  0 )) ? Nil_BTree_int_User_pair_t () : ({ /* cicili#Let2796 */
+  return (((len  <=  0 )) ? Nil_BTree_int_User_pair_t () : ({ /* cicili#Let2682 */
         typeof((((list -> __h_data ). Cons ). __h_0_mem )) head ;
         typeof((((list -> __h_data ). Cons ). __h_1_mem )) tail ;
         // ----------
-        
-        ({ /* cicili#Let2800 */
-          bool __h_case_result  = (true  &&  (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  (({ /* cicili#Progn2801 */
+        ;
+        ({ /* cicili#Let2684 */
+          bool __h_case_result  = (true  &&  (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  (({ /* cicili#Progn2685 */
                   (head  =  (((list -> __h_data ). Cons ). __h_0_mem ) );
                   true ;
-                }) &&  ({ /* cicili#Progn2803 */
+                }) &&  ({ /* cicili#Progn2687 */
                   (tail  =  (((list -> __h_data ). Cons ). __h_1_mem ) );
                   true ;
                 }) ) ) );
           // ----------
-          ((__h_case_result ) ? ({ /* cicili#Progn2806 */
+          
+          ((__h_case_result ) ? ({ /* cicili#Progn2692 */
               Cons_BTree_int_User_pair_t (head , take_List_BTree_int_User_pair_t ((--len ), tail ));
-            }) : ({ /* cicili#Let2812 */
+            }) : ({ /* cicili#Let2698 */
               // ----------
-              
-              ({ /* cicili#Progn2816 */
+              ;
+              ({ /* cicili#Progn2700 */
                 Nil_BTree_int_User_pair_t ();
               });
             }));
@@ -2605,38 +2671,40 @@ List_BTree_int_User_pair_t take_List_BTree_int_User_pair_t (int len , List_BTree
       }));
 }
 List_BTree_int_User_pair_t last_List_BTree_int_User_pair_t (List_BTree_int_User_pair_t list ) {
-  return ({ /* cicili#Let2823 */
+  return ({ /* cicili#Let2707 */
       typeof((((list -> __h_data ). Cons ). __h_1_mem )) tail ;
       // ----------
-      
-      ({ /* cicili#Let2827 */
-        bool __h_case_result  = (true  &&  (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  ({ /* cicili#Progn2828 */
+      ;
+      ({ /* cicili#Let2709 */
+        bool __h_case_result  = (true  &&  (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  ({ /* cicili#Progn2710 */
               (tail  =  (((list -> __h_data ). Cons ). __h_1_mem ) );
               true ;
             }) ) );
         // ----------
-        ((__h_case_result ) ? ({ /* cicili#Progn2831 */
-            ({ /* cicili#Let2835 */
+        
+        ((__h_case_result ) ? ({ /* cicili#Progn2715 */
+            ({ /* cicili#Let2719 */
               // ----------
-              
-              ({ /* cicili#Let2839 */
+              ;
+              ({ /* cicili#Let2721 */
                 bool __h_case_result  = (true  &&  ((tail -> __h_ctor ) ==  __h_Nil_t  ) );
                 // ----------
-                ((__h_case_result ) ? ({ /* cicili#Progn2841 */
+                
+                ((__h_case_result ) ? ({ /* cicili#Progn2725 */
                     copy_List_BTree_int_User_pair_t (list );
-                  }) : ({ /* cicili#Let2846 */
+                  }) : ({ /* cicili#Let2730 */
                     // ----------
-                    
-                    ({ /* cicili#Progn2850 */
+                    ;
+                    ({ /* cicili#Progn2732 */
                       last_List_BTree_int_User_pair_t (tail );
                     });
                   }));
               });
             });
-          }) : ({ /* cicili#Let2855 */
+          }) : ({ /* cicili#Let2737 */
             // ----------
-            
-            ({ /* cicili#Progn2859 */
+            ;
+            ({ /* cicili#Progn2739 */
               Nil_BTree_int_User_pair_t ();
             });
           }));
@@ -2644,26 +2712,27 @@ List_BTree_int_User_pair_t last_List_BTree_int_User_pair_t (List_BTree_int_User_
     });
 }
 List_BTree_int_User_pair_t init_List_BTree_int_User_pair_t (List_BTree_int_User_pair_t list ) {
-  return ({ /* cicili#Let2867 */
+  return ({ /* cicili#Let2747 */
       typeof((((list -> __h_data ). Cons ). __h_0_mem )) head ;
       typeof((((list -> __h_data ). Cons ). __h_1_mem )) tail ;
       // ----------
-      
-      ({ /* cicili#Let2871 */
-        bool __h_case_result  = (true  &&  (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  ((({ /* cicili#Progn2872 */
+      ;
+      ({ /* cicili#Let2749 */
+        bool __h_case_result  = (true  &&  (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  ((({ /* cicili#Progn2750 */
                   (head  =  (((list -> __h_data ). Cons ). __h_0_mem ) );
                   true ;
-                }) &&  ({ /* cicili#Progn2874 */
+                }) &&  ({ /* cicili#Progn2752 */
                   (tail  =  (((list -> __h_data ). Cons ). __h_1_mem ) );
                   true ;
                 }) ) &&  (true  &&  ((tail -> __h_ctor ) ==  __h_Cons_t  ) ) ) ) );
         // ----------
-        ((__h_case_result ) ? ({ /* cicili#Progn2877 */
+        
+        ((__h_case_result ) ? ({ /* cicili#Progn2757 */
             Cons_BTree_int_User_pair_t (head , init_List_BTree_int_User_pair_t (tail ));
-          }) : ({ /* cicili#Let2883 */
+          }) : ({ /* cicili#Let2763 */
             // ----------
-            
-            ({ /* cicili#Progn2887 */
+            ;
+            ({ /* cicili#Progn2765 */
               Nil_BTree_int_User_pair_t ();
             });
           }));
@@ -2671,22 +2740,23 @@ List_BTree_int_User_pair_t init_List_BTree_int_User_pair_t (List_BTree_int_User_
     });
 }
 int hasLen_List_BTree_int_User_pair_t (List_BTree_int_User_pair_t list , int desired ) {
-  return ({ /* cicili#Let2894 */
+  return ({ /* cicili#Let2772 */
       typeof((((list -> __h_data ). Cons ). __h_1_mem )) tail ;
       // ----------
-      
-      ({ /* cicili#Let2898 */
-        bool __h_case_result  = (true  &&  (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  ({ /* cicili#Progn2899 */
+      ;
+      ({ /* cicili#Let2774 */
+        bool __h_case_result  = (true  &&  (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  ({ /* cicili#Progn2775 */
               (tail  =  (((list -> __h_data ). Cons ). __h_1_mem ) );
               true ;
             }) ) );
         // ----------
-        ((__h_case_result ) ? ({ /* cicili#Progn2902 */
+        
+        ((__h_case_result ) ? ({ /* cicili#Progn2780 */
             (((desired  ==  1 )) ? 1 : (1 +  hasLen_List_BTree_int_User_pair_t (tail , (--desired )) ));
-          }) : ({ /* cicili#Let2908 */
+          }) : ({ /* cicili#Let2786 */
             // ----------
-            
-            ({ /* cicili#Progn2912 */
+            ;
+            ({ /* cicili#Progn2788 */
               0;
             });
           }));
@@ -2694,22 +2764,23 @@ int hasLen_List_BTree_int_User_pair_t (List_BTree_int_User_pair_t list , int des
     });
 }
 int len_List_BTree_int_User_pair_t (List_BTree_int_User_pair_t list ) {
-  return ({ /* cicili#Let2918 */
+  return ({ /* cicili#Let2794 */
       typeof((((list -> __h_data ). Cons ). __h_1_mem )) tail ;
       // ----------
-      
-      ({ /* cicili#Let2922 */
-        bool __h_case_result  = (true  &&  (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  ({ /* cicili#Progn2923 */
+      ;
+      ({ /* cicili#Let2796 */
+        bool __h_case_result  = (true  &&  (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  ({ /* cicili#Progn2797 */
               (tail  =  (((list -> __h_data ). Cons ). __h_1_mem ) );
               true ;
             }) ) );
         // ----------
-        ((__h_case_result ) ? ({ /* cicili#Progn2926 */
+        
+        ((__h_case_result ) ? ({ /* cicili#Progn2802 */
             (1 +  len_List_BTree_int_User_pair_t (tail ) );
-          }) : ({ /* cicili#Let2931 */
+          }) : ({ /* cicili#Let2807 */
             // ----------
-            
-            ({ /* cicili#Progn2935 */
+            ;
+            ({ /* cicili#Progn2809 */
               0;
             });
           }));
@@ -2720,22 +2791,23 @@ List_BTree_int_User_pair_t tail_List_BTree_int_User_pair_t (List_BTree_int_User_
   return drop_List_BTree_int_User_pair_t (1, list );
 }
 List_BTree_int_User_pair_t drop_List_BTree_int_User_pair_t (int len , List_BTree_int_User_pair_t list ) {
-  return (((len  <=  0 )) ? copy_List_BTree_int_User_pair_t (list ) : ({ /* cicili#Let2946 */
+  return (((len  <=  0 )) ? copy_List_BTree_int_User_pair_t (list ) : ({ /* cicili#Let2820 */
         typeof((((list -> __h_data ). Cons ). __h_1_mem )) tail ;
         // ----------
-        
-        ({ /* cicili#Let2950 */
-          bool __h_case_result  = (true  &&  (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  ({ /* cicili#Progn2951 */
+        ;
+        ({ /* cicili#Let2822 */
+          bool __h_case_result  = (true  &&  (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  ({ /* cicili#Progn2823 */
                 (tail  =  (((list -> __h_data ). Cons ). __h_1_mem ) );
                 true ;
               }) ) );
           // ----------
-          ((__h_case_result ) ? ({ /* cicili#Progn2954 */
+          
+          ((__h_case_result ) ? ({ /* cicili#Progn2828 */
               drop_List_BTree_int_User_pair_t ((--len ), tail );
-            }) : ({ /* cicili#Let2959 */
+            }) : ({ /* cicili#Let2833 */
               // ----------
-              
-              ({ /* cicili#Progn2963 */
+              ;
+              ({ /* cicili#Progn2835 */
                 Nil_BTree_int_User_pair_t ();
               });
             }));
@@ -2743,22 +2815,23 @@ List_BTree_int_User_pair_t drop_List_BTree_int_User_pair_t (int len , List_BTree
       }));
 }
 Maybe_BTree_int_User_pair_t head_List_BTree_int_User_pair_t (List_BTree_int_User_pair_t list ) {
-  return ({ /* cicili#Let2971 */
+  return ({ /* cicili#Let2843 */
       typeof((((list -> __h_data ). Cons ). __h_0_mem )) head ;
       // ----------
-      
-      ({ /* cicili#Let2975 */
-        bool __h_case_result  = (true  &&  (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  ({ /* cicili#Progn2976 */
+      ;
+      ({ /* cicili#Let2845 */
+        bool __h_case_result  = (true  &&  (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  ({ /* cicili#Progn2846 */
               (head  =  (((list -> __h_data ). Cons ). __h_0_mem ) );
               true ;
             }) ) );
         // ----------
-        ((__h_case_result ) ? ({ /* cicili#Progn2979 */
+        
+        ((__h_case_result ) ? ({ /* cicili#Progn2851 */
             Just_BTree_int_User_pair_t (head );
-          }) : ({ /* cicili#Let2984 */
+          }) : ({ /* cicili#Let2856 */
             // ----------
-            
-            ({ /* cicili#Progn2988 */
+            ;
+            ({ /* cicili#Progn2858 */
               Nothing_BTree_int_User_pair_t ();
             });
           }));
@@ -2766,22 +2839,23 @@ Maybe_BTree_int_User_pair_t head_List_BTree_int_User_pair_t (List_BTree_int_User
     });
 }
 List_BTree_int_User_pair_t nthcdr_List_BTree_int_User_pair_t (int index , List_BTree_int_User_pair_t list ) {
-  return ({ /* cicili#Let2995 */
+  return ({ /* cicili#Let2865 */
       typeof((((list -> __h_data ). Cons ). __h_1_mem )) tail ;
       // ----------
-      
-      ({ /* cicili#Let2999 */
-        bool __h_case_result  = (true  &&  (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  (({ /* cicili#Progn3000 */
+      ;
+      ({ /* cicili#Let2867 */
+        bool __h_case_result  = (true  &&  (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  (({ /* cicili#Progn2868 */
                 (tail  =  (((list -> __h_data ). Cons ). __h_1_mem ) );
                 true ;
               }) &&  (index  >  0 ) ) ) );
         // ----------
-        ((__h_case_result ) ? ({ /* cicili#Progn3003 */
+        
+        ((__h_case_result ) ? ({ /* cicili#Progn2873 */
             nthcdr_List_BTree_int_User_pair_t ((--index ), tail );
-          }) : ({ /* cicili#Let3008 */
+          }) : ({ /* cicili#Let2878 */
             // ----------
-            
-            ({ /* cicili#Progn3012 */
+            ;
+            ({ /* cicili#Progn2880 */
               list ;
             });
           }));
@@ -2789,26 +2863,27 @@ List_BTree_int_User_pair_t nthcdr_List_BTree_int_User_pair_t (int index , List_B
     });
 }
 Maybe_BTree_int_User_pair_t nth_List_BTree_int_User_pair_t (int index , List_BTree_int_User_pair_t list ) {
-  return ({ /* cicili#Let3019 */
+  return ({ /* cicili#Let2887 */
       typeof((((list -> __h_data ). Cons ). __h_0_mem )) head ;
       typeof((((list -> __h_data ). Cons ). __h_1_mem )) tail ;
       // ----------
-      
-      ({ /* cicili#Let3023 */
-        bool __h_case_result  = (true  &&  (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  (({ /* cicili#Progn3024 */
+      ;
+      ({ /* cicili#Let2889 */
+        bool __h_case_result  = (true  &&  (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  (({ /* cicili#Progn2890 */
                 (head  =  (((list -> __h_data ). Cons ). __h_0_mem ) );
                 true ;
-              }) &&  ({ /* cicili#Progn3026 */
+              }) &&  ({ /* cicili#Progn2892 */
                 (tail  =  (((list -> __h_data ). Cons ). __h_1_mem ) );
                 true ;
               }) ) ) );
         // ----------
-        ((__h_case_result ) ? ({ /* cicili#Progn3029 */
+        
+        ((__h_case_result ) ? ({ /* cicili#Progn2897 */
             (((index  ==  0 )) ? Just_BTree_int_User_pair_t (head ) : (((index  <  0 )) ? Nothing_BTree_int_User_pair_t () : nth_List_BTree_int_User_pair_t ((--index ), tail )));
-          }) : ({ /* cicili#Let3038 */
+          }) : ({ /* cicili#Let2906 */
             // ----------
-            
-            ({ /* cicili#Progn3042 */
+            ;
+            ({ /* cicili#Progn2908 */
               Nothing_BTree_int_User_pair_t ();
             });
           }));
@@ -2816,36 +2891,38 @@ Maybe_BTree_int_User_pair_t nth_List_BTree_int_User_pair_t (int index , List_BTr
     });
 }
 void free_List_BTree_int_User_pair_t (List_BTree_int_User_pair_t * this_ptr ) {
-  { /* cicili#Let3047 */
+  { /* cicili#Let2913 */
     __auto_type this  = (*this_ptr );
     // ----------
-    { /* cicili#Let3051 */
+    { /* cicili#Let2917 */
       typeof((((this -> __h_data ). Cons ). __h_1_mem )) tail ;
       // ----------
-      
-      ({ /* cicili#Let3055 */
-        bool __h_case_result  = (true  &&  (((this -> __h_ctor ) ==  __h_Cons_t  ) &&  ({ /* cicili#Progn3056 */
+      ;
+      ({ /* cicili#Let2919 */
+        bool __h_case_result  = (true  &&  (((this -> __h_ctor ) ==  __h_Cons_t  ) &&  ({ /* cicili#Progn2920 */
               (tail  =  (((this -> __h_data ). Cons ). __h_1_mem ) );
               true ;
             }) ) );
         // ----------
+        
         if (__h_case_result )
-          { /* cicili#Block3060 */
-            { /* cicili#Block3062 */
+          { /* cicili#Block2926 */
+            { /* cicili#Block2928 */
               free (this );
               free_List_BTree_int_User_pair_t ((&tail ));
             }
           }
         else
-          { /* cicili#Let3070 */
+          { /* cicili#Let2936 */
             // ----------
-            
-            ({ /* cicili#Let3074 */
+            ;
+            ({ /* cicili#Let2938 */
               bool __h_case_result  = (true  &&  ((this -> __h_ctor ) ==  __h_Nil_t  ) );
               // ----------
+              
               if (__h_case_result )
-                { /* cicili#Block3077 */
-                  { /* cicili#Block3079 */
+                { /* cicili#Block2943 */
+                  { /* cicili#Block2945 */
                     free (this );
                   }
                 }
@@ -2860,7 +2937,7 @@ List_BTree_int_User_pair_t__H_Table * const get_List_BTree_int_User_pair_t__H_Ta
   return (&table );
 }
 List_BTree_int_User_pair_t Cons_BTree_int_User_pair_t (BTree_int_User_pair_t head , List_BTree_int_User_pair_t tail ) {
-  { /* cicili#Let3090 */
+  { /* cicili#Let2956 */
     List_BTree_int_User_pair_t instance  = malloc (sizeof(class_List_BTree_int_User_pair_t));
     // ----------
     (*instance ) = ((class_List_BTree_int_User_pair_t){ get_List_BTree_int_User_pair_t__H_Table (), __h_Cons_t , .__h_data.Cons = { head , tail }});
@@ -2868,7 +2945,7 @@ List_BTree_int_User_pair_t Cons_BTree_int_User_pair_t (BTree_int_User_pair_t hea
   }
 }
 List_BTree_int_User_pair_t Nil_BTree_int_User_pair_t () {
-  { /* cicili#Let3096 */
+  { /* cicili#Let2962 */
     List_BTree_int_User_pair_t instance  = malloc (sizeof(class_List_BTree_int_User_pair_t));
     // ----------
     (*instance ) = ((class_List_BTree_int_User_pair_t){ get_List_BTree_int_User_pair_t__H_Table (), __h___t });
@@ -2885,14 +2962,14 @@ const Maybe_List_BTree_int_User_pair_t__H_Table * const get_Maybe_List_BTree_int
   return (&table );
 }
 Maybe_List_BTree_int_User_pair_t Just_List_BTree_int_User_pair_t (List_BTree_int_User_pair_t value ) {
-  { /* cicili#Let3113 */
+  { /* cicili#Let2979 */
     Maybe_List_BTree_int_User_pair_t instance  = ((Maybe_List_BTree_int_User_pair_t){ get_Maybe_List_BTree_int_User_pair_t__H_Table (), __h_Just_t , .__h_data.Just = { value }});
     // ----------
     return instance ;
   }
 }
 Maybe_List_BTree_int_User_pair_t Nothing_List_BTree_int_User_pair_t () {
-  { /* cicili#Let3118 */
+  { /* cicili#Let2984 */
     Maybe_List_BTree_int_User_pair_t instance  = ((Maybe_List_BTree_int_User_pair_t){ get_Maybe_List_BTree_int_User_pair_t__H_Table (), __h___t });
     // ----------
     return instance ;
@@ -2908,14 +2985,14 @@ const Maybe_BTree_int_User__H_Table * const get_Maybe_BTree_int_User__H_Table ()
   return (&table );
 }
 Maybe_BTree_int_User Just_BTree_int_User (BTree_int_User value ) {
-  { /* cicili#Let3138 */
+  { /* cicili#Let3004 */
     Maybe_BTree_int_User instance  = ((Maybe_BTree_int_User){ get_Maybe_BTree_int_User__H_Table (), __h_Just_t , .__h_data.Just = { value }});
     // ----------
     return instance ;
   }
 }
 Maybe_BTree_int_User Nothing_BTree_int_User () {
-  { /* cicili#Let3143 */
+  { /* cicili#Let3009 */
     Maybe_BTree_int_User instance  = ((Maybe_BTree_int_User){ get_Maybe_BTree_int_User__H_Table (), __h___t });
     // ----------
     return instance ;
@@ -2925,7 +3002,7 @@ Maybe_BTree_int_User Nothing_BTree_int_User () {
 #ifndef __Rc_BTree_int_User__H_IMPL__
 #define __Rc_BTree_int_User__H_IMPL__
 Rc_BTree_int_User new_Rc_BTree_int_User (BTree_int_User pointer ) {
-  return ({ /* cicili#Let3150 */
+  return ({ /* cicili#Let3016 */
       __auto_type count  = ((int *)malloc (sizeof(int)));
       __auto_type holder  = ((BTree_int_User *)malloc (sizeof(BTree_int_User *)));
       // ----------
@@ -2935,33 +3012,34 @@ Rc_BTree_int_User new_Rc_BTree_int_User (BTree_int_User pointer ) {
     });
 }
 Rc_BTree_int_User clone_Rc_BTree_int_User (Rc_BTree_int_User rc ) {
-  return ({ /* cicili#Let3159 */
+  return ({ /* cicili#Let3025 */
       typeof((((rc . __h_data ). Hold ). __h_0_mem )) pointer ;
       typeof((((rc . __h_data ). Hold ). __h_1_mem )) count ;
       typeof((((rc . __h_data ). Hold ). __h_2_mem )) address ;
       // ----------
-      
-      ({ /* cicili#Let3163 */
-        bool __h_case_result  = (true  &&  (((rc . __h_ctor ) ==  __h_Hold_t  ) &&  ((({ /* cicili#Progn3164 */
+      ;
+      ({ /* cicili#Let3027 */
+        bool __h_case_result  = (true  &&  (((rc . __h_ctor ) ==  __h_Hold_t  ) &&  ((({ /* cicili#Progn3028 */
                   (pointer  =  (((rc . __h_data ). Hold ). __h_0_mem ) );
                   true ;
-                }) &&  ({ /* cicili#Progn3166 */
+                }) &&  ({ /* cicili#Progn3030 */
                   (count  =  (((rc . __h_data ). Hold ). __h_1_mem ) );
                   true ;
-                }) ) &&  ({ /* cicili#Progn3168 */
+                }) ) &&  ({ /* cicili#Progn3032 */
                 (address  =  (((rc . __h_data ). Hold ). __h_2_mem ) );
                 true ;
               }) ) ) );
         // ----------
-        ((__h_case_result ) ? ({ /* cicili#Progn3171 */
-            (((pointer  &&  (((size_t)(*pointer )) ==  address  ) )) ? ({ /* cicili#Progn3174 */
+        
+        ((__h_case_result ) ? ({ /* cicili#Progn3037 */
+            (((pointer  &&  (((size_t)(*pointer )) ==  address  ) )) ? ({ /* cicili#Progn3040 */
                 (++(*count ));
                 __h_Hold_BTree_int_User (pointer , count , address );
               }) : Gone_BTree_int_User ());
-          }) : ({ /* cicili#Let3180 */
+          }) : ({ /* cicili#Let3046 */
             // ----------
-            
-            ({ /* cicili#Progn3184 */
+            ;
+            ({ /* cicili#Progn3048 */
               Gone_BTree_int_User ();
             });
           }));
@@ -2969,30 +3047,113 @@ Rc_BTree_int_User clone_Rc_BTree_int_User (Rc_BTree_int_User rc ) {
     });
 }
 Maybe_BTree_int_User take_Rc_BTree_int_User (Rc_BTree_int_User * this ) {
-  return ({ /* cicili#Let3192 */
+  return ({ /* cicili#Let3056 */
       typeof((((this -> __h_data ). Hold ). __h_0_mem )) pointer ;
       typeof((((this -> __h_data ). Hold ). __h_1_mem )) count ;
       typeof((((this -> __h_data ). Hold ). __h_2_mem )) address ;
       // ----------
-      
-      ({ /* cicili#Let3196 */
-        bool __h_case_result  = (true  &&  (((this -> __h_ctor ) ==  __h_Hold_t  ) &&  ((({ /* cicili#Progn3197 */
+      ;
+      ({ /* cicili#Let3058 */
+        bool __h_case_result  = (true  &&  (((this -> __h_ctor ) ==  __h_Hold_t  ) &&  ((({ /* cicili#Progn3059 */
                   (pointer  =  (((this -> __h_data ). Hold ). __h_0_mem ) );
                   true ;
-                }) &&  ({ /* cicili#Progn3199 */
+                }) &&  ({ /* cicili#Progn3061 */
                   (count  =  (((this -> __h_data ). Hold ). __h_1_mem ) );
                   true ;
-                }) ) &&  ({ /* cicili#Progn3201 */
+                }) ) &&  ({ /* cicili#Progn3063 */
                 (address  =  (((this -> __h_data ). Hold ). __h_2_mem ) );
                 true ;
               }) ) ) );
         // ----------
-        ((__h_case_result ) ? ({ /* cicili#Progn3204 */
-            (((pointer  &&  (((size_t)(*pointer )) ==  address  ) )) ? ({ /* cicili#Let3208 */
+        
+        ((__h_case_result ) ? ({ /* cicili#Progn3068 */
+            (((pointer  &&  (((size_t)(*pointer )) ==  address  ) )) ? ({ /* cicili#Let3072 */
                 __auto_type result  = Just_BTree_int_User ((*pointer ));
                 // ----------
+                if ((*count ) >=  1 )
+                  { /* cicili#Block3078 */
+                    (*count ) = 0;
+                    (*pointer ) = NULL ;
+                  }
+                result ;
+              }) : Nothing_BTree_int_User ());
+          }) : ({ /* cicili#Let3083 */
+            // ----------
+            ;
+            ({ /* cicili#Progn3085 */
+              Nothing_BTree_int_User ();
+            });
+          }));
+      });
+    });
+}
+Maybe_BTree_int_User get_Rc_BTree_int_User (Rc_BTree_int_User rc ) {
+  return ({ /* cicili#Let3093 */
+      typeof((((rc . __h_data ). Hold ). __h_0_mem )) pointer ;
+      typeof((((rc . __h_data ). Hold ). __h_1_mem )) count ;
+      typeof((((rc . __h_data ). Hold ). __h_2_mem )) address ;
+      // ----------
+      ;
+      ({ /* cicili#Let3095 */
+        bool __h_case_result  = (true  &&  (((rc . __h_ctor ) ==  __h_Hold_t  ) &&  ((({ /* cicili#Progn3096 */
+                  (pointer  =  (((rc . __h_data ). Hold ). __h_0_mem ) );
+                  true ;
+                }) &&  ({ /* cicili#Progn3098 */
+                  (count  =  (((rc . __h_data ). Hold ). __h_1_mem ) );
+                  true ;
+                }) ) &&  ({ /* cicili#Progn3100 */
+                (address  =  (((rc . __h_data ). Hold ). __h_2_mem ) );
+                true ;
+              }) ) ) );
+        // ----------
+        
+        ((__h_case_result ) ? ({ /* cicili#Progn3105 */
+            (((pointer  &&  (((size_t)(*pointer )) ==  address  ) &&  ((*count ) >  0 ) )) ? Just_BTree_int_User ((*pointer )) : Nothing_BTree_int_User ());
+          }) : ({ /* cicili#Let3112 */
+            // ----------
+            ;
+            ({ /* cicili#Progn3114 */
+              Nothing_BTree_int_User ();
+            });
+          }));
+      });
+    });
+}
+void free_Rc_BTree_int_User (Rc_BTree_int_User * this ) {
+  { /* cicili#Let3123 */
+    typeof((((this -> __h_data ). Hold ). __h_0_mem )) pointer ;
+    typeof((((this -> __h_data ). Hold ). __h_1_mem )) count ;
+    typeof((((this -> __h_data ). Hold ). __h_2_mem )) address ;
+    // ----------
+    ;
+    ({ /* cicili#Let3125 */
+      bool __h_case_result  = (true  &&  (((this -> __h_ctor ) ==  __h_Hold_t  ) &&  ((({ /* cicili#Progn3126 */
+                (pointer  =  (((this -> __h_data ). Hold ). __h_0_mem ) );
+                true ;
+              }) &&  ({ /* cicili#Progn3128 */
+                (count  =  (((this -> __h_data ). Hold ). __h_1_mem ) );
+                true ;
+              }) ) &&  ({ /* cicili#Progn3130 */
+              (address  =  (((this -> __h_data ). Hold ). __h_2_mem ) );
+              true ;
+            }) ) ) );
+      // ----------
+      
+      if (__h_case_result )
+        { /* cicili#Block3136 */
+          if (((*count ) ==  0 ) &&  ((*pointer ) ==  NULL  ) )
+            { /* cicili#Block3139 */
+              free (((void *)count ));
+              free (((void *)pointer ));
+              (*this ) = Gone_BTree_int_User ();
+            }
+          else
+            {
+            if (pointer  &&  (((size_t)(*pointer )) ==  address  ) )
+              { /* cicili#Block3147 */
                 if ((*count ) ==  1 )
-                  { /* cicili#Block3214 */
+                  { /* cicili#Block3150 */
+                    free_BTree_int_User (pointer );
                     (*count ) = 0;
                     free (((void *)count ));
                     (*pointer ) = NULL ;
@@ -3001,94 +3162,18 @@ Maybe_BTree_int_User take_Rc_BTree_int_User (Rc_BTree_int_User * this ) {
                   }
                 else
                   (--(*count ));
-                result ;
-              }) : Nothing_BTree_int_User ());
-          }) : ({ /* cicili#Let3221 */
-            // ----------
-            
-            ({ /* cicili#Progn3225 */
-              Nothing_BTree_int_User ();
-            });
-          }));
-      });
-    });
-}
-Maybe_BTree_int_User get_Rc_BTree_int_User (Rc_BTree_int_User rc ) {
-  return ({ /* cicili#Let3233 */
-      typeof((((rc . __h_data ). Hold ). __h_0_mem )) pointer ;
-      typeof((((rc . __h_data ). Hold ). __h_1_mem )) count ;
-      typeof((((rc . __h_data ). Hold ). __h_2_mem )) address ;
-      // ----------
-      
-      ({ /* cicili#Let3237 */
-        bool __h_case_result  = (true  &&  (((rc . __h_ctor ) ==  __h_Hold_t  ) &&  ((({ /* cicili#Progn3238 */
-                  (pointer  =  (((rc . __h_data ). Hold ). __h_0_mem ) );
-                  true ;
-                }) &&  ({ /* cicili#Progn3240 */
-                  (count  =  (((rc . __h_data ). Hold ). __h_1_mem ) );
-                  true ;
-                }) ) &&  ({ /* cicili#Progn3242 */
-                (address  =  (((rc . __h_data ). Hold ). __h_2_mem ) );
-                true ;
-              }) ) ) );
-        // ----------
-        ((__h_case_result ) ? ({ /* cicili#Progn3245 */
-            (((pointer  &&  (((size_t)(*pointer )) ==  address  ) &&  ((*count ) >  0 ) )) ? Just_BTree_int_User ((*pointer )) : Nothing_BTree_int_User ());
-          }) : ({ /* cicili#Let3252 */
-            // ----------
-            
-            ({ /* cicili#Progn3256 */
-              Nothing_BTree_int_User ();
-            });
-          }));
-      });
-    });
-}
-void free_Rc_BTree_int_User (Rc_BTree_int_User * this ) {
-  { /* cicili#Let3265 */
-    typeof((((this -> __h_data ). Hold ). __h_0_mem )) pointer ;
-    typeof((((this -> __h_data ). Hold ). __h_1_mem )) count ;
-    typeof((((this -> __h_data ). Hold ). __h_2_mem )) address ;
-    // ----------
-    
-    ({ /* cicili#Let3269 */
-      bool __h_case_result  = (true  &&  (((this -> __h_ctor ) ==  __h_Hold_t  ) &&  ((({ /* cicili#Progn3270 */
-                (pointer  =  (((this -> __h_data ). Hold ). __h_0_mem ) );
-                true ;
-              }) &&  ({ /* cicili#Progn3272 */
-                (count  =  (((this -> __h_data ). Hold ). __h_1_mem ) );
-                true ;
-              }) ) &&  ({ /* cicili#Progn3274 */
-              (address  =  (((this -> __h_data ). Hold ). __h_2_mem ) );
-              true ;
-            }) ) ) );
-      // ----------
-      if (__h_case_result )
-        { /* cicili#Block3278 */
-          if (pointer  &&  (((size_t)(*pointer )) ==  address  ) )
-            { /* cicili#Block3282 */
-              if ((*count ) ==  1 )
-                { /* cicili#Block3285 */
-                  free_BTree_int_User (pointer );
-                  (*count ) = 0;
-                  free (((void *)count ));
-                  (*pointer ) = NULL ;
-                  free (((void *)pointer ));
-                  (*this ) = Gone_BTree_int_User ();
-                }
-              else
-                (--(*count ));
-            }
-        }
+              }
+              }        }
       else
-        { /* cicili#Let3295 */
+        { /* cicili#Let3160 */
           // ----------
-          
-          ({ /* cicili#Let3299 */
+          ;
+          ({ /* cicili#Let3162 */
             bool __h_case_result  = (true  &&  ((this -> __h_ctor ) ==  __h_Gone_t  ) );
             // ----------
+            
             if (__h_case_result )
-              { /* cicili#Block3302 */
+              { /* cicili#Block3167 */
               }
           });
         }
@@ -3100,14 +3185,14 @@ const Rc_BTree_int_User__H_Table * const get_Rc_BTree_int_User__H_Table () {
   return (&table );
 }
 Rc_BTree_int_User __h_Hold_BTree_int_User (BTree_int_User * pointer , int * count , size_t address ) {
-  { /* cicili#Let3313 */
+  { /* cicili#Let3178 */
     Rc_BTree_int_User instance  = ((Rc_BTree_int_User){ get_Rc_BTree_int_User__H_Table (), __h_Hold_t , .__h_data.Hold = { pointer , count , address }});
     // ----------
     return instance ;
   }
 }
 Rc_BTree_int_User Gone_BTree_int_User () {
-  { /* cicili#Let3318 */
+  { /* cicili#Let3183 */
     Rc_BTree_int_User instance  = ((Rc_BTree_int_User){ get_Rc_BTree_int_User__H_Table (), __h___t });
     // ----------
     return instance ;
@@ -3123,14 +3208,14 @@ const Maybe_Rc_BTree_int_User__H_Table * const get_Maybe_Rc_BTree_int_User__H_Ta
   return (&table );
 }
 Maybe_Rc_BTree_int_User Just_Rc_BTree_int_User (Rc_BTree_int_User value ) {
-  { /* cicili#Let3336 */
+  { /* cicili#Let3201 */
     Maybe_Rc_BTree_int_User instance  = ((Maybe_Rc_BTree_int_User){ get_Maybe_Rc_BTree_int_User__H_Table (), __h_Just_t , .__h_data.Just = { value }});
     // ----------
     return instance ;
   }
 }
 Maybe_Rc_BTree_int_User Nothing_Rc_BTree_int_User () {
-  { /* cicili#Let3341 */
+  { /* cicili#Let3206 */
     Maybe_Rc_BTree_int_User instance  = ((Maybe_Rc_BTree_int_User){ get_Maybe_Rc_BTree_int_User__H_Table (), __h___t });
     // ----------
     return instance ;
@@ -3141,32 +3226,33 @@ Maybe_Rc_BTree_int_User Nothing_Rc_BTree_int_User () {
 #define __List_Rc_BTree_int_User__H_IMPL__
 Rc_BTree_int_User * toArray_List_Rc_BTree_int_User (List_Rc_BTree_int_User list , Rc_BTree_int_User term ) {
   Rc_BTree_int_User * array (List_Rc_BTree_int_User list , int count ) {
-    return ({ /* cicili#Let3351 */
+    return ({ /* cicili#Let3216 */
         typeof((((list -> __h_data ). Cons ). __h_0_mem )) head ;
         typeof((((list -> __h_data ). Cons ). __h_1_mem )) tail ;
         // ----------
-        
-        ({ /* cicili#Let3355 */
-          bool __h_case_result  = (true  &&  (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  (({ /* cicili#Progn3356 */
+        ;
+        ({ /* cicili#Let3218 */
+          bool __h_case_result  = (true  &&  (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  (({ /* cicili#Progn3219 */
                   (head  =  (((list -> __h_data ). Cons ). __h_0_mem ) );
                   true ;
-                }) &&  ({ /* cicili#Progn3358 */
+                }) &&  ({ /* cicili#Progn3221 */
                   (tail  =  (((list -> __h_data ). Cons ). __h_1_mem ) );
                   true ;
                 }) ) ) );
           // ----------
-          ((__h_case_result ) ? ({ /* cicili#Progn3361 */
-              ({ /* cicili#Let3363 */
+          
+          ((__h_case_result ) ? ({ /* cicili#Progn3226 */
+              ({ /* cicili#Let3228 */
                 Rc_BTree_int_User * arr  = array (tail , (count  +  1 ));
                 // ----------
                 arr [count ] = head ;
                 arr ;
               });
-            }) : ({ /* cicili#Let3367 */
+            }) : ({ /* cicili#Let3232 */
               // ----------
-              
-              ({ /* cicili#Progn3371 */
-                ({ /* cicili#Let3373 */
+              ;
+              ({ /* cicili#Progn3234 */
+                ({ /* cicili#Let3236 */
                   Rc_BTree_int_User * arr  = calloc (count , sizeof(Rc_BTree_int_User));
                   // ----------
                   arr [(count  -  1 )] = term ;
@@ -3183,78 +3269,82 @@ List_Rc_BTree_int_User wrap_List_Rc_BTree_int_User (const Rc_BTree_int_User item
   return Cons_Rc_BTree_int_User (item , Nil_Rc_BTree_int_User ());
 }
 List_Rc_BTree_int_User pure_List_Rc_BTree_int_User (const Rc_BTree_int_User * buf , int len ) {
-  return (((buf  ==  NULL  )) ? Nil_Rc_BTree_int_User () : ({ /* cicili#Let3384 */
+  return (((buf  ==  NULL  )) ? Nil_Rc_BTree_int_User () : ({ /* cicili#Let3247 */
         Rc_BTree_int_User item  = (*buf );
         // ----------
         (((len  ==  0 )) ? Nil_Rc_BTree_int_User () : Cons_Rc_BTree_int_User (item , pure_List_Rc_BTree_int_User ((++buf ), (--len ))));
       }));
 }
 int show_List_Rc_BTree_int_User (CFile file , List_Rc_BTree_int_User list ) {
-  return ({ /* cicili#Let3394 */
+  return ({ /* cicili#Let3257 */
       typeof((((list -> __h_data ). Cons ). __h_0_mem )) head ;
       typeof((((list -> __h_data ). Cons ). __h_1_mem )) tail ;
       // ----------
-      
-      ({ /* cicili#Let3398 */
-        bool __h_case_result  = (true  &&  (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  (({ /* cicili#Progn3399 */
+      ;
+      ({ /* cicili#Let3259 */
+        bool __h_case_result  = (true  &&  (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  (({ /* cicili#Progn3260 */
                 (head  =  (((list -> __h_data ). Cons ). __h_0_mem ) );
                 true ;
-              }) &&  ({ /* cicili#Progn3401 */
+              }) &&  ({ /* cicili#Progn3262 */
                 (tail  =  (((list -> __h_data ). Cons ). __h_1_mem ) );
                 true ;
               }) ) ) );
         // ----------
-        ((__h_case_result ) ? ({ /* cicili#Progn3404 */
-            (({ /* cicili#Let3408 */
+        
+        ((__h_case_result ) ? ({ /* cicili#Progn3267 */
+            (({ /* cicili#Let3271 */
                 // ----------
-                
-                ({ /* cicili#Let3412 */
+                ;
+                ({ /* cicili#Let3273 */
                   bool __h_case_result  = (true  &&  ((tail -> __h_ctor ) ==  __h_Cons_t  ) );
                   // ----------
-                  ((__h_case_result ) ? ({ /* cicili#Progn3414 */
-                      (({ /* cicili#Let3422 */
-                          __auto_type match3421  = get_Rc_BTree_int_User (head );
-                          typeof((((match3421 . __h_data ). Just ). __h_0_mem )) child ;
+                  
+                  ((__h_case_result ) ? ({ /* cicili#Progn3277 */
+                      (({ /* cicili#Let3285 */
+                          __auto_type match3284  = get_Rc_BTree_int_User (head );
+                          typeof((((match3284 . __h_data ). Just ). __h_0_mem )) child ;
                           // ----------
-                          
-                          ({ /* cicili#Let3427 */
-                            bool __h_case_result  = (true  &&  (((match3421 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn3428 */
-                                  (child  =  (((match3421 . __h_data ). Just ). __h_0_mem ) );
+                          ;
+                          ({ /* cicili#Let3288 */
+                            bool __h_case_result  = (true  &&  (((match3284 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn3289 */
+                                  (child  =  (((match3284 . __h_data ). Just ). __h_0_mem ) );
                                   true ;
                                 }) ) );
                             // ----------
-                            ((__h_case_result ) ? ({ /* cicili#Progn3431 */
+                            
+                            ((__h_case_result ) ? ({ /* cicili#Progn3294 */
                                 show_BTree_int_User (file , child );
-                              }) : ({ /* cicili#Let3436 */
+                              }) : ({ /* cicili#Let3299 */
                                 // ----------
-                                
-                                ({ /* cicili#Progn3440 */
+                                ;
+                                ({ /* cicili#Progn3301 */
                                   0;
                                 });
                               }));
                           });
                         }) +  fprintf (file , "%s", " ") );
-                    }) : ({ /* cicili#Let3444 */
+                    }) : ({ /* cicili#Let3305 */
                       // ----------
-                      
-                      ({ /* cicili#Progn3448 */
-                        ({ /* cicili#Let3456 */
-                          __auto_type match3455  = get_Rc_BTree_int_User (head );
-                          typeof((((match3455 . __h_data ). Just ). __h_0_mem )) child ;
+                      ;
+                      ({ /* cicili#Progn3307 */
+                        ({ /* cicili#Let3315 */
+                          __auto_type match3314  = get_Rc_BTree_int_User (head );
+                          typeof((((match3314 . __h_data ). Just ). __h_0_mem )) child ;
                           // ----------
-                          
-                          ({ /* cicili#Let3461 */
-                            bool __h_case_result  = (true  &&  (((match3455 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn3462 */
-                                  (child  =  (((match3455 . __h_data ). Just ). __h_0_mem ) );
+                          ;
+                          ({ /* cicili#Let3318 */
+                            bool __h_case_result  = (true  &&  (((match3314 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn3319 */
+                                  (child  =  (((match3314 . __h_data ). Just ). __h_0_mem ) );
                                   true ;
                                 }) ) );
                             // ----------
-                            ((__h_case_result ) ? ({ /* cicili#Progn3465 */
+                            
+                            ((__h_case_result ) ? ({ /* cicili#Progn3324 */
                                 show_BTree_int_User (file , child );
-                              }) : ({ /* cicili#Let3470 */
+                              }) : ({ /* cicili#Let3329 */
                                 // ----------
-                                
-                                ({ /* cicili#Progn3474 */
+                                ;
+                                ({ /* cicili#Progn3331 */
                                   0;
                                 });
                               }));
@@ -3264,10 +3354,10 @@ int show_List_Rc_BTree_int_User (CFile file , List_Rc_BTree_int_User list ) {
                     }));
                 });
               }) +  show_List_Rc_BTree_int_User (file , tail ) );
-          }) : ({ /* cicili#Let3479 */
+          }) : ({ /* cicili#Let3336 */
             // ----------
-            
-            ({ /* cicili#Progn3483 */
+            ;
+            ({ /* cicili#Progn3338 */
               0;
             });
           }));
@@ -3275,26 +3365,27 @@ int show_List_Rc_BTree_int_User (CFile file , List_Rc_BTree_int_User list ) {
     });
 }
 List_Rc_BTree_int_User copy_List_Rc_BTree_int_User (List_Rc_BTree_int_User list ) {
-  return ({ /* cicili#Let3489 */
+  return ({ /* cicili#Let3344 */
       typeof((((list -> __h_data ). Cons ). __h_0_mem )) head ;
       typeof((((list -> __h_data ). Cons ). __h_1_mem )) tail ;
       // ----------
-      
-      ({ /* cicili#Let3493 */
-        bool __h_case_result  = (true  &&  (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  (({ /* cicili#Progn3494 */
+      ;
+      ({ /* cicili#Let3346 */
+        bool __h_case_result  = (true  &&  (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  (({ /* cicili#Progn3347 */
                 (head  =  (((list -> __h_data ). Cons ). __h_0_mem ) );
                 true ;
-              }) &&  ({ /* cicili#Progn3496 */
+              }) &&  ({ /* cicili#Progn3349 */
                 (tail  =  (((list -> __h_data ). Cons ). __h_1_mem ) );
                 true ;
               }) ) ) );
         // ----------
-        ((__h_case_result ) ? ({ /* cicili#Progn3499 */
+        
+        ((__h_case_result ) ? ({ /* cicili#Progn3354 */
             Cons_Rc_BTree_int_User (head , copy_List_Rc_BTree_int_User (tail ));
-          }) : ({ /* cicili#Let3505 */
+          }) : ({ /* cicili#Let3360 */
             // ----------
-            
-            ({ /* cicili#Progn3509 */
+            ;
+            ({ /* cicili#Progn3362 */
               Nil_Rc_BTree_int_User ();
             });
           }));
@@ -3302,42 +3393,44 @@ List_Rc_BTree_int_User copy_List_Rc_BTree_int_User (List_Rc_BTree_int_User list 
     });
 }
 List_Rc_BTree_int_User replaceAt_List_Rc_BTree_int_User (List_Rc_BTree_int_User list , Rc_BTree_int_User item , int index ) {
-  return ({ /* cicili#Let3516 */
+  return ({ /* cicili#Let3369 */
       typeof((((list -> __h_data ). Cons ). __h_0_mem )) head ;
       typeof((((list -> __h_data ). Cons ). __h_1_mem )) tail ;
       // ----------
-      
-      ({ /* cicili#Let3520 */
-        bool __h_case_result  = (true  &&  (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  ((({ /* cicili#Progn3521 */
+      ;
+      ({ /* cicili#Let3371 */
+        bool __h_case_result  = (true  &&  (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  ((({ /* cicili#Progn3372 */
                   (head  =  (((list -> __h_data ). Cons ). __h_0_mem ) );
                   true ;
-                }) &&  ({ /* cicili#Progn3523 */
+                }) &&  ({ /* cicili#Progn3374 */
                   (tail  =  (((list -> __h_data ). Cons ). __h_1_mem ) );
                   true ;
                 }) ) &&  (index  >  0 ) ) ) );
         // ----------
-        ((__h_case_result ) ? ({ /* cicili#Progn3526 */
+        
+        ((__h_case_result ) ? ({ /* cicili#Progn3379 */
             Cons_Rc_BTree_int_User (head , replaceAt_List_Rc_BTree_int_User (tail , item , (index  -  1 )));
-          }) : ({ /* cicili#Let3532 */
+          }) : ({ /* cicili#Let3385 */
             // ----------
-            
-            ({ /* cicili#Progn3536 */
-              ({ /* cicili#Let3540 */
+            ;
+            ({ /* cicili#Progn3387 */
+              ({ /* cicili#Let3391 */
                 typeof((((list -> __h_data ). Cons ). __h_1_mem )) taill ;
                 // ----------
-                
-                ({ /* cicili#Let3544 */
-                  bool __h_case_result  = (true  &&  (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  ({ /* cicili#Progn3545 */
+                ;
+                ({ /* cicili#Let3393 */
+                  bool __h_case_result  = (true  &&  (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  ({ /* cicili#Progn3394 */
                         (taill  =  (((list -> __h_data ). Cons ). __h_1_mem ) );
                         true ;
                       }) ) );
                   // ----------
-                  ((__h_case_result ) ? ({ /* cicili#Progn3548 */
+                  
+                  ((__h_case_result ) ? ({ /* cicili#Progn3399 */
                       Cons_Rc_BTree_int_User (item , copy_List_Rc_BTree_int_User (taill ));
-                    }) : ({ /* cicili#Let3554 */
+                    }) : ({ /* cicili#Let3405 */
                       // ----------
-                      
-                      ({ /* cicili#Progn3558 */
+                      ;
+                      ({ /* cicili#Progn3407 */
                         Nil_Rc_BTree_int_User ();
                       });
                     }));
@@ -3349,42 +3442,44 @@ List_Rc_BTree_int_User replaceAt_List_Rc_BTree_int_User (List_Rc_BTree_int_User 
     });
 }
 List_Rc_BTree_int_User deleteAt_List_Rc_BTree_int_User (List_Rc_BTree_int_User list , int index ) {
-  return ({ /* cicili#Let3565 */
+  return ({ /* cicili#Let3414 */
       typeof((((list -> __h_data ). Cons ). __h_0_mem )) head ;
       typeof((((list -> __h_data ). Cons ). __h_1_mem )) tail ;
       // ----------
-      
-      ({ /* cicili#Let3569 */
-        bool __h_case_result  = (true  &&  (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  ((({ /* cicili#Progn3570 */
+      ;
+      ({ /* cicili#Let3416 */
+        bool __h_case_result  = (true  &&  (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  ((({ /* cicili#Progn3417 */
                   (head  =  (((list -> __h_data ). Cons ). __h_0_mem ) );
                   true ;
-                }) &&  ({ /* cicili#Progn3572 */
+                }) &&  ({ /* cicili#Progn3419 */
                   (tail  =  (((list -> __h_data ). Cons ). __h_1_mem ) );
                   true ;
                 }) ) &&  (index  >  0 ) ) ) );
         // ----------
-        ((__h_case_result ) ? ({ /* cicili#Progn3575 */
+        
+        ((__h_case_result ) ? ({ /* cicili#Progn3424 */
             Cons_Rc_BTree_int_User (head , deleteAt_List_Rc_BTree_int_User (tail , (index  -  1 )));
-          }) : ({ /* cicili#Let3581 */
+          }) : ({ /* cicili#Let3430 */
             // ----------
-            
-            ({ /* cicili#Progn3585 */
-              ({ /* cicili#Let3589 */
+            ;
+            ({ /* cicili#Progn3432 */
+              ({ /* cicili#Let3436 */
                 typeof((((list -> __h_data ). Cons ). __h_1_mem )) taill ;
                 // ----------
-                
-                ({ /* cicili#Let3593 */
-                  bool __h_case_result  = (true  &&  (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  ({ /* cicili#Progn3594 */
+                ;
+                ({ /* cicili#Let3438 */
+                  bool __h_case_result  = (true  &&  (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  ({ /* cicili#Progn3439 */
                         (taill  =  (((list -> __h_data ). Cons ). __h_1_mem ) );
                         true ;
                       }) ) );
                   // ----------
-                  ((__h_case_result ) ? ({ /* cicili#Progn3597 */
+                  
+                  ((__h_case_result ) ? ({ /* cicili#Progn3444 */
                       copy_List_Rc_BTree_int_User (taill );
-                    }) : ({ /* cicili#Let3602 */
+                    }) : ({ /* cicili#Let3449 */
                       // ----------
-                      
-                      ({ /* cicili#Progn3606 */
+                      ;
+                      ({ /* cicili#Progn3451 */
                         Nil_Rc_BTree_int_User ();
                       });
                     }));
@@ -3395,70 +3490,73 @@ List_Rc_BTree_int_User deleteAt_List_Rc_BTree_int_User (List_Rc_BTree_int_User l
       });
     });
 }
-List_Rc_BTree_int_User insertAt_List_Rc_BTree_int_User (List_Rc_BTree_int_User llist , Rc_BTree_int_User item , int index ) {
-  return ({ /* cicili#Let3613 */
-      typeof((((llist -> __h_data ). Cons ). __h_0_mem )) head ;
-      typeof((((llist -> __h_data ). Cons ). __h_1_mem )) tail ;
+List_Rc_BTree_int_User insertAt_List_Rc_BTree_int_User (List_Rc_BTree_int_User list , Rc_BTree_int_User item , int index ) {
+  return ({ /* cicili#Let3458 */
+      typeof((((list -> __h_data ). Cons ). __h_0_mem )) head ;
+      typeof((((list -> __h_data ). Cons ). __h_1_mem )) tail ;
       // ----------
-      
-      ({ /* cicili#Let3617 */
-        bool __h_case_result  = (true  &&  (((llist -> __h_ctor ) ==  __h_Cons_t  ) &&  ((({ /* cicili#Progn3618 */
-                  (head  =  (((llist -> __h_data ). Cons ). __h_0_mem ) );
+      ;
+      ({ /* cicili#Let3460 */
+        bool __h_case_result  = (true  &&  (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  ((({ /* cicili#Progn3461 */
+                  (head  =  (((list -> __h_data ). Cons ). __h_0_mem ) );
                   true ;
-                }) &&  ({ /* cicili#Progn3620 */
-                  (tail  =  (((llist -> __h_data ). Cons ). __h_1_mem ) );
+                }) &&  ({ /* cicili#Progn3463 */
+                  (tail  =  (((list -> __h_data ). Cons ). __h_1_mem ) );
                   true ;
                 }) ) &&  (index  >  0 ) ) ) );
         // ----------
-        ((__h_case_result ) ? ({ /* cicili#Progn3623 */
+        
+        ((__h_case_result ) ? ({ /* cicili#Progn3468 */
             Cons_Rc_BTree_int_User (head , insertAt_List_Rc_BTree_int_User (tail , item , (index  -  1 )));
-          }) : ({ /* cicili#Let3629 */
+          }) : ({ /* cicili#Let3474 */
             // ----------
-            
-            ({ /* cicili#Progn3633 */
-              Cons_Rc_BTree_int_User (item , copy_List_Rc_BTree_int_User (llist ));
+            ;
+            ({ /* cicili#Progn3476 */
+              Cons_Rc_BTree_int_User (item , copy_List_Rc_BTree_int_User (list ));
             });
           }));
       });
     });
 }
 List_Rc_BTree_int_User replace_List_Rc_BTree_int_User (List_Rc_BTree_int_User list , Rc_BTree_int_User item , List_Rc_BTree_int_User aimed ) {
-  return ({ /* cicili#Let3641 */
+  return ({ /* cicili#Let3484 */
       typeof((((list -> __h_data ). Cons ). __h_0_mem )) head ;
       typeof((((list -> __h_data ). Cons ). __h_1_mem )) tail ;
       // ----------
-      
-      ({ /* cicili#Let3645 */
-        bool __h_case_result  = (true  &&  (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  ((({ /* cicili#Progn3646 */
+      ;
+      ({ /* cicili#Let3486 */
+        bool __h_case_result  = (true  &&  (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  ((({ /* cicili#Progn3487 */
                   (head  =  (((list -> __h_data ). Cons ). __h_0_mem ) );
                   true ;
-                }) &&  ({ /* cicili#Progn3648 */
+                }) &&  ({ /* cicili#Progn3489 */
                   (tail  =  (((list -> __h_data ). Cons ). __h_1_mem ) );
                   true ;
                 }) ) &&  (list  !=  aimed  ) ) ) );
         // ----------
-        ((__h_case_result ) ? ({ /* cicili#Progn3651 */
+        
+        ((__h_case_result ) ? ({ /* cicili#Progn3494 */
             Cons_Rc_BTree_int_User (head , replace_List_Rc_BTree_int_User (tail , item , aimed ));
-          }) : ({ /* cicili#Let3657 */
+          }) : ({ /* cicili#Let3500 */
             // ----------
-            
-            ({ /* cicili#Progn3661 */
-              ({ /* cicili#Let3665 */
+            ;
+            ({ /* cicili#Progn3502 */
+              ({ /* cicili#Let3506 */
                 typeof((((aimed -> __h_data ). Cons ). __h_1_mem )) taill ;
                 // ----------
-                
-                ({ /* cicili#Let3669 */
-                  bool __h_case_result  = (true  &&  (((aimed -> __h_ctor ) ==  __h_Cons_t  ) &&  ({ /* cicili#Progn3670 */
+                ;
+                ({ /* cicili#Let3508 */
+                  bool __h_case_result  = (true  &&  (((aimed -> __h_ctor ) ==  __h_Cons_t  ) &&  ({ /* cicili#Progn3509 */
                         (taill  =  (((aimed -> __h_data ). Cons ). __h_1_mem ) );
                         true ;
                       }) ) );
                   // ----------
-                  ((__h_case_result ) ? ({ /* cicili#Progn3673 */
+                  
+                  ((__h_case_result ) ? ({ /* cicili#Progn3514 */
                       Cons_Rc_BTree_int_User (item , copy_List_Rc_BTree_int_User (taill ));
-                    }) : ({ /* cicili#Let3679 */
+                    }) : ({ /* cicili#Let3520 */
                       // ----------
-                      
-                      ({ /* cicili#Progn3683 */
+                      ;
+                      ({ /* cicili#Progn3522 */
                         Nil_Rc_BTree_int_User ();
                       });
                     }));
@@ -3470,42 +3568,44 @@ List_Rc_BTree_int_User replace_List_Rc_BTree_int_User (List_Rc_BTree_int_User li
     });
 }
 List_Rc_BTree_int_User delete_List_Rc_BTree_int_User (List_Rc_BTree_int_User list , List_Rc_BTree_int_User aimed ) {
-  return ({ /* cicili#Let3690 */
+  return ({ /* cicili#Let3529 */
       typeof((((list -> __h_data ). Cons ). __h_0_mem )) head ;
       typeof((((list -> __h_data ). Cons ). __h_1_mem )) tail ;
       // ----------
-      
-      ({ /* cicili#Let3694 */
-        bool __h_case_result  = (true  &&  (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  ((({ /* cicili#Progn3695 */
+      ;
+      ({ /* cicili#Let3531 */
+        bool __h_case_result  = (true  &&  (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  ((({ /* cicili#Progn3532 */
                   (head  =  (((list -> __h_data ). Cons ). __h_0_mem ) );
                   true ;
-                }) &&  ({ /* cicili#Progn3697 */
+                }) &&  ({ /* cicili#Progn3534 */
                   (tail  =  (((list -> __h_data ). Cons ). __h_1_mem ) );
                   true ;
                 }) ) &&  (list  !=  aimed  ) ) ) );
         // ----------
-        ((__h_case_result ) ? ({ /* cicili#Progn3700 */
+        
+        ((__h_case_result ) ? ({ /* cicili#Progn3539 */
             Cons_Rc_BTree_int_User (head , delete_List_Rc_BTree_int_User (tail , aimed ));
-          }) : ({ /* cicili#Let3706 */
+          }) : ({ /* cicili#Let3545 */
             // ----------
-            
-            ({ /* cicili#Progn3710 */
-              ({ /* cicili#Let3714 */
+            ;
+            ({ /* cicili#Progn3547 */
+              ({ /* cicili#Let3551 */
                 typeof((((aimed -> __h_data ). Cons ). __h_1_mem )) taill ;
                 // ----------
-                
-                ({ /* cicili#Let3718 */
-                  bool __h_case_result  = (true  &&  (((aimed -> __h_ctor ) ==  __h_Cons_t  ) &&  ({ /* cicili#Progn3719 */
+                ;
+                ({ /* cicili#Let3553 */
+                  bool __h_case_result  = (true  &&  (((aimed -> __h_ctor ) ==  __h_Cons_t  ) &&  ({ /* cicili#Progn3554 */
                         (taill  =  (((aimed -> __h_data ). Cons ). __h_1_mem ) );
                         true ;
                       }) ) );
                   // ----------
-                  ((__h_case_result ) ? ({ /* cicili#Progn3722 */
+                  
+                  ((__h_case_result ) ? ({ /* cicili#Progn3559 */
                       copy_List_Rc_BTree_int_User (taill );
-                    }) : ({ /* cicili#Let3727 */
+                    }) : ({ /* cicili#Let3564 */
                       // ----------
-                      
-                      ({ /* cicili#Progn3731 */
+                      ;
+                      ({ /* cicili#Progn3566 */
                         Nil_Rc_BTree_int_User ();
                       });
                     }));
@@ -3517,26 +3617,27 @@ List_Rc_BTree_int_User delete_List_Rc_BTree_int_User (List_Rc_BTree_int_User lis
     });
 }
 List_Rc_BTree_int_User insert_List_Rc_BTree_int_User (List_Rc_BTree_int_User llist , Rc_BTree_int_User item , List_Rc_BTree_int_User rlist ) {
-  return ({ /* cicili#Let3738 */
+  return ({ /* cicili#Let3573 */
       typeof((((llist -> __h_data ). Cons ). __h_0_mem )) head ;
       typeof((((llist -> __h_data ). Cons ). __h_1_mem )) tail ;
       // ----------
-      
-      ({ /* cicili#Let3742 */
-        bool __h_case_result  = (true  &&  (((llist -> __h_ctor ) ==  __h_Cons_t  ) &&  ((({ /* cicili#Progn3743 */
+      ;
+      ({ /* cicili#Let3575 */
+        bool __h_case_result  = (true  &&  (((llist -> __h_ctor ) ==  __h_Cons_t  ) &&  ((({ /* cicili#Progn3576 */
                   (head  =  (((llist -> __h_data ). Cons ). __h_0_mem ) );
                   true ;
-                }) &&  ({ /* cicili#Progn3745 */
+                }) &&  ({ /* cicili#Progn3578 */
                   (tail  =  (((llist -> __h_data ). Cons ). __h_1_mem ) );
                   true ;
                 }) ) &&  (llist  !=  rlist  ) ) ) );
         // ----------
-        ((__h_case_result ) ? ({ /* cicili#Progn3748 */
+        
+        ((__h_case_result ) ? ({ /* cicili#Progn3583 */
             Cons_Rc_BTree_int_User (head , insert_List_Rc_BTree_int_User (tail , item , rlist ));
-          }) : ({ /* cicili#Let3754 */
+          }) : ({ /* cicili#Let3589 */
             // ----------
-            
-            ({ /* cicili#Progn3758 */
+            ;
+            ({ /* cicili#Progn3591 */
               Cons_Rc_BTree_int_User (item , copy_List_Rc_BTree_int_User (rlist ));
             });
           }));
@@ -3545,52 +3646,54 @@ List_Rc_BTree_int_User insert_List_Rc_BTree_int_User (List_Rc_BTree_int_User lli
 }
 List_Rc_BTree_int_User reverse_List_Rc_BTree_int_User (List_Rc_BTree_int_User list ) {
   List_Rc_BTree_int_User _reverse (List_Rc_BTree_int_User list , List_Rc_BTree_int_User rlist ) {
-    return ({ /* cicili#Let3767 */
+    return ({ /* cicili#Let3600 */
         typeof((((list -> __h_data ). Cons ). __h_0_mem )) head ;
         typeof((((list -> __h_data ). Cons ). __h_1_mem )) tail ;
         // ----------
-        
-        ({ /* cicili#Let3771 */
-          bool __h_case_result  = (true  &&  (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  (({ /* cicili#Progn3772 */
+        ;
+        ({ /* cicili#Let3602 */
+          bool __h_case_result  = (true  &&  (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  (({ /* cicili#Progn3603 */
                   (head  =  (((list -> __h_data ). Cons ). __h_0_mem ) );
                   true ;
-                }) &&  ({ /* cicili#Progn3774 */
+                }) &&  ({ /* cicili#Progn3605 */
                   (tail  =  (((list -> __h_data ). Cons ). __h_1_mem ) );
                   true ;
                 }) ) ) );
           // ----------
-          ((__h_case_result ) ? ({ /* cicili#Progn3777 */
+          
+          ((__h_case_result ) ? ({ /* cicili#Progn3610 */
               _reverse (tail , Cons_Rc_BTree_int_User (head , rlist ));
-            }) : ({ /* cicili#Let3782 */
+            }) : ({ /* cicili#Let3615 */
               // ----------
-              
-              ({ /* cicili#Progn3786 */
+              ;
+              ({ /* cicili#Progn3617 */
                 rlist ;
               });
             }));
         });
       });
   }
-  return ({ /* cicili#Let3790 */
+  return ({ /* cicili#Let3621 */
       typeof((((list -> __h_data ). Cons ). __h_0_mem )) head ;
       typeof((((list -> __h_data ). Cons ). __h_1_mem )) tail ;
       // ----------
-      
-      ({ /* cicili#Let3794 */
-        bool __h_case_result  = (true  &&  (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  (({ /* cicili#Progn3795 */
+      ;
+      ({ /* cicili#Let3623 */
+        bool __h_case_result  = (true  &&  (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  (({ /* cicili#Progn3624 */
                 (head  =  (((list -> __h_data ). Cons ). __h_0_mem ) );
                 true ;
-              }) &&  ({ /* cicili#Progn3797 */
+              }) &&  ({ /* cicili#Progn3626 */
                 (tail  =  (((list -> __h_data ). Cons ). __h_1_mem ) );
                 true ;
               }) ) ) );
         // ----------
-        ((__h_case_result ) ? ({ /* cicili#Progn3800 */
+        
+        ((__h_case_result ) ? ({ /* cicili#Progn3631 */
             _reverse (tail , Cons_Rc_BTree_int_User (head , Nil_Rc_BTree_int_User ()));
-          }) : ({ /* cicili#Let3806 */
+          }) : ({ /* cicili#Let3637 */
             // ----------
-            
-            ({ /* cicili#Progn3810 */
+            ;
+            ({ /* cicili#Progn3639 */
               list ;
             });
           }));
@@ -3598,26 +3701,27 @@ List_Rc_BTree_int_User reverse_List_Rc_BTree_int_User (List_Rc_BTree_int_User li
     });
 }
 List_Rc_BTree_int_User append_List_Rc_BTree_int_User (List_Rc_BTree_int_User llist , List_Rc_BTree_int_User rlist ) {
-  return ({ /* cicili#Let3816 */
+  return ({ /* cicili#Let3645 */
       typeof((((llist -> __h_data ). Cons ). __h_0_mem )) head ;
       typeof((((llist -> __h_data ). Cons ). __h_1_mem )) tail ;
       // ----------
-      
-      ({ /* cicili#Let3820 */
-        bool __h_case_result  = (true  &&  (((llist -> __h_ctor ) ==  __h_Cons_t  ) &&  (({ /* cicili#Progn3821 */
+      ;
+      ({ /* cicili#Let3647 */
+        bool __h_case_result  = (true  &&  (((llist -> __h_ctor ) ==  __h_Cons_t  ) &&  (({ /* cicili#Progn3648 */
                 (head  =  (((llist -> __h_data ). Cons ). __h_0_mem ) );
                 true ;
-              }) &&  ({ /* cicili#Progn3823 */
+              }) &&  ({ /* cicili#Progn3650 */
                 (tail  =  (((llist -> __h_data ). Cons ). __h_1_mem ) );
                 true ;
               }) ) ) );
         // ----------
-        ((__h_case_result ) ? ({ /* cicili#Progn3826 */
+        
+        ((__h_case_result ) ? ({ /* cicili#Progn3655 */
             Cons_Rc_BTree_int_User (head , append_List_Rc_BTree_int_User (tail , rlist ));
-          }) : ({ /* cicili#Let3832 */
+          }) : ({ /* cicili#Let3661 */
             // ----------
-            
-            ({ /* cicili#Progn3836 */
+            ;
+            ({ /* cicili#Progn3663 */
               copy_List_Rc_BTree_int_User (rlist );
             });
           }));
@@ -3628,26 +3732,27 @@ List_Rc_BTree_int_User push_List_Rc_BTree_int_User (Rc_BTree_int_User item , Lis
   return Cons_Rc_BTree_int_User (item , copy_List_Rc_BTree_int_User (list ));
 }
 List_Rc_BTree_int_User take_List_Rc_BTree_int_User (int len , List_Rc_BTree_int_User list ) {
-  return (((len  <=  0 )) ? Nil_Rc_BTree_int_User () : ({ /* cicili#Let3849 */
+  return (((len  <=  0 )) ? Nil_Rc_BTree_int_User () : ({ /* cicili#Let3676 */
         typeof((((list -> __h_data ). Cons ). __h_0_mem )) head ;
         typeof((((list -> __h_data ). Cons ). __h_1_mem )) tail ;
         // ----------
-        
-        ({ /* cicili#Let3853 */
-          bool __h_case_result  = (true  &&  (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  (({ /* cicili#Progn3854 */
+        ;
+        ({ /* cicili#Let3678 */
+          bool __h_case_result  = (true  &&  (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  (({ /* cicili#Progn3679 */
                   (head  =  (((list -> __h_data ). Cons ). __h_0_mem ) );
                   true ;
-                }) &&  ({ /* cicili#Progn3856 */
+                }) &&  ({ /* cicili#Progn3681 */
                   (tail  =  (((list -> __h_data ). Cons ). __h_1_mem ) );
                   true ;
                 }) ) ) );
           // ----------
-          ((__h_case_result ) ? ({ /* cicili#Progn3859 */
+          
+          ((__h_case_result ) ? ({ /* cicili#Progn3686 */
               Cons_Rc_BTree_int_User (head , take_List_Rc_BTree_int_User ((--len ), tail ));
-            }) : ({ /* cicili#Let3865 */
+            }) : ({ /* cicili#Let3692 */
               // ----------
-              
-              ({ /* cicili#Progn3869 */
+              ;
+              ({ /* cicili#Progn3694 */
                 Nil_Rc_BTree_int_User ();
               });
             }));
@@ -3655,38 +3760,40 @@ List_Rc_BTree_int_User take_List_Rc_BTree_int_User (int len , List_Rc_BTree_int_
       }));
 }
 List_Rc_BTree_int_User last_List_Rc_BTree_int_User (List_Rc_BTree_int_User list ) {
-  return ({ /* cicili#Let3876 */
+  return ({ /* cicili#Let3701 */
       typeof((((list -> __h_data ). Cons ). __h_1_mem )) tail ;
       // ----------
-      
-      ({ /* cicili#Let3880 */
-        bool __h_case_result  = (true  &&  (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  ({ /* cicili#Progn3881 */
+      ;
+      ({ /* cicili#Let3703 */
+        bool __h_case_result  = (true  &&  (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  ({ /* cicili#Progn3704 */
               (tail  =  (((list -> __h_data ). Cons ). __h_1_mem ) );
               true ;
             }) ) );
         // ----------
-        ((__h_case_result ) ? ({ /* cicili#Progn3884 */
-            ({ /* cicili#Let3888 */
+        
+        ((__h_case_result ) ? ({ /* cicili#Progn3709 */
+            ({ /* cicili#Let3713 */
               // ----------
-              
-              ({ /* cicili#Let3892 */
+              ;
+              ({ /* cicili#Let3715 */
                 bool __h_case_result  = (true  &&  ((tail -> __h_ctor ) ==  __h_Nil_t  ) );
                 // ----------
-                ((__h_case_result ) ? ({ /* cicili#Progn3894 */
+                
+                ((__h_case_result ) ? ({ /* cicili#Progn3719 */
                     copy_List_Rc_BTree_int_User (list );
-                  }) : ({ /* cicili#Let3899 */
+                  }) : ({ /* cicili#Let3724 */
                     // ----------
-                    
-                    ({ /* cicili#Progn3903 */
+                    ;
+                    ({ /* cicili#Progn3726 */
                       last_List_Rc_BTree_int_User (tail );
                     });
                   }));
               });
             });
-          }) : ({ /* cicili#Let3908 */
+          }) : ({ /* cicili#Let3731 */
             // ----------
-            
-            ({ /* cicili#Progn3912 */
+            ;
+            ({ /* cicili#Progn3733 */
               Nil_Rc_BTree_int_User ();
             });
           }));
@@ -3694,26 +3801,27 @@ List_Rc_BTree_int_User last_List_Rc_BTree_int_User (List_Rc_BTree_int_User list 
     });
 }
 List_Rc_BTree_int_User init_List_Rc_BTree_int_User (List_Rc_BTree_int_User list ) {
-  return ({ /* cicili#Let3920 */
+  return ({ /* cicili#Let3741 */
       typeof((((list -> __h_data ). Cons ). __h_0_mem )) head ;
       typeof((((list -> __h_data ). Cons ). __h_1_mem )) tail ;
       // ----------
-      
-      ({ /* cicili#Let3924 */
-        bool __h_case_result  = (true  &&  (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  ((({ /* cicili#Progn3925 */
+      ;
+      ({ /* cicili#Let3743 */
+        bool __h_case_result  = (true  &&  (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  ((({ /* cicili#Progn3744 */
                   (head  =  (((list -> __h_data ). Cons ). __h_0_mem ) );
                   true ;
-                }) &&  ({ /* cicili#Progn3927 */
+                }) &&  ({ /* cicili#Progn3746 */
                   (tail  =  (((list -> __h_data ). Cons ). __h_1_mem ) );
                   true ;
                 }) ) &&  (true  &&  ((tail -> __h_ctor ) ==  __h_Cons_t  ) ) ) ) );
         // ----------
-        ((__h_case_result ) ? ({ /* cicili#Progn3930 */
+        
+        ((__h_case_result ) ? ({ /* cicili#Progn3751 */
             Cons_Rc_BTree_int_User (head , init_List_Rc_BTree_int_User (tail ));
-          }) : ({ /* cicili#Let3936 */
+          }) : ({ /* cicili#Let3757 */
             // ----------
-            
-            ({ /* cicili#Progn3940 */
+            ;
+            ({ /* cicili#Progn3759 */
               Nil_Rc_BTree_int_User ();
             });
           }));
@@ -3721,22 +3829,23 @@ List_Rc_BTree_int_User init_List_Rc_BTree_int_User (List_Rc_BTree_int_User list 
     });
 }
 int hasLen_List_Rc_BTree_int_User (List_Rc_BTree_int_User list , int desired ) {
-  return ({ /* cicili#Let3947 */
+  return ({ /* cicili#Let3766 */
       typeof((((list -> __h_data ). Cons ). __h_1_mem )) tail ;
       // ----------
-      
-      ({ /* cicili#Let3951 */
-        bool __h_case_result  = (true  &&  (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  ({ /* cicili#Progn3952 */
+      ;
+      ({ /* cicili#Let3768 */
+        bool __h_case_result  = (true  &&  (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  ({ /* cicili#Progn3769 */
               (tail  =  (((list -> __h_data ). Cons ). __h_1_mem ) );
               true ;
             }) ) );
         // ----------
-        ((__h_case_result ) ? ({ /* cicili#Progn3955 */
+        
+        ((__h_case_result ) ? ({ /* cicili#Progn3774 */
             (((desired  ==  1 )) ? 1 : (1 +  hasLen_List_Rc_BTree_int_User (tail , (--desired )) ));
-          }) : ({ /* cicili#Let3961 */
+          }) : ({ /* cicili#Let3780 */
             // ----------
-            
-            ({ /* cicili#Progn3965 */
+            ;
+            ({ /* cicili#Progn3782 */
               0;
             });
           }));
@@ -3744,22 +3853,23 @@ int hasLen_List_Rc_BTree_int_User (List_Rc_BTree_int_User list , int desired ) {
     });
 }
 int len_List_Rc_BTree_int_User (List_Rc_BTree_int_User list ) {
-  return ({ /* cicili#Let3971 */
+  return ({ /* cicili#Let3788 */
       typeof((((list -> __h_data ). Cons ). __h_1_mem )) tail ;
       // ----------
-      
-      ({ /* cicili#Let3975 */
-        bool __h_case_result  = (true  &&  (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  ({ /* cicili#Progn3976 */
+      ;
+      ({ /* cicili#Let3790 */
+        bool __h_case_result  = (true  &&  (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  ({ /* cicili#Progn3791 */
               (tail  =  (((list -> __h_data ). Cons ). __h_1_mem ) );
               true ;
             }) ) );
         // ----------
-        ((__h_case_result ) ? ({ /* cicili#Progn3979 */
+        
+        ((__h_case_result ) ? ({ /* cicili#Progn3796 */
             (1 +  len_List_Rc_BTree_int_User (tail ) );
-          }) : ({ /* cicili#Let3984 */
+          }) : ({ /* cicili#Let3801 */
             // ----------
-            
-            ({ /* cicili#Progn3988 */
+            ;
+            ({ /* cicili#Progn3803 */
               0;
             });
           }));
@@ -3770,22 +3880,23 @@ List_Rc_BTree_int_User tail_List_Rc_BTree_int_User (List_Rc_BTree_int_User list 
   return drop_List_Rc_BTree_int_User (1, list );
 }
 List_Rc_BTree_int_User drop_List_Rc_BTree_int_User (int len , List_Rc_BTree_int_User list ) {
-  return (((len  <=  0 )) ? copy_List_Rc_BTree_int_User (list ) : ({ /* cicili#Let3999 */
+  return (((len  <=  0 )) ? copy_List_Rc_BTree_int_User (list ) : ({ /* cicili#Let3814 */
         typeof((((list -> __h_data ). Cons ). __h_1_mem )) tail ;
         // ----------
-        
-        ({ /* cicili#Let4003 */
-          bool __h_case_result  = (true  &&  (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  ({ /* cicili#Progn4004 */
+        ;
+        ({ /* cicili#Let3816 */
+          bool __h_case_result  = (true  &&  (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  ({ /* cicili#Progn3817 */
                 (tail  =  (((list -> __h_data ). Cons ). __h_1_mem ) );
                 true ;
               }) ) );
           // ----------
-          ((__h_case_result ) ? ({ /* cicili#Progn4007 */
+          
+          ((__h_case_result ) ? ({ /* cicili#Progn3822 */
               drop_List_Rc_BTree_int_User ((--len ), tail );
-            }) : ({ /* cicili#Let4012 */
+            }) : ({ /* cicili#Let3827 */
               // ----------
-              
-              ({ /* cicili#Progn4016 */
+              ;
+              ({ /* cicili#Progn3829 */
                 Nil_Rc_BTree_int_User ();
               });
             }));
@@ -3793,22 +3904,23 @@ List_Rc_BTree_int_User drop_List_Rc_BTree_int_User (int len , List_Rc_BTree_int_
       }));
 }
 Maybe_Rc_BTree_int_User head_List_Rc_BTree_int_User (List_Rc_BTree_int_User list ) {
-  return ({ /* cicili#Let4024 */
+  return ({ /* cicili#Let3837 */
       typeof((((list -> __h_data ). Cons ). __h_0_mem )) head ;
       // ----------
-      
-      ({ /* cicili#Let4028 */
-        bool __h_case_result  = (true  &&  (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  ({ /* cicili#Progn4029 */
+      ;
+      ({ /* cicili#Let3839 */
+        bool __h_case_result  = (true  &&  (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  ({ /* cicili#Progn3840 */
               (head  =  (((list -> __h_data ). Cons ). __h_0_mem ) );
               true ;
             }) ) );
         // ----------
-        ((__h_case_result ) ? ({ /* cicili#Progn4032 */
+        
+        ((__h_case_result ) ? ({ /* cicili#Progn3845 */
             Just_Rc_BTree_int_User (head );
-          }) : ({ /* cicili#Let4037 */
+          }) : ({ /* cicili#Let3850 */
             // ----------
-            
-            ({ /* cicili#Progn4041 */
+            ;
+            ({ /* cicili#Progn3852 */
               Nothing_Rc_BTree_int_User ();
             });
           }));
@@ -3816,22 +3928,23 @@ Maybe_Rc_BTree_int_User head_List_Rc_BTree_int_User (List_Rc_BTree_int_User list
     });
 }
 List_Rc_BTree_int_User nthcdr_List_Rc_BTree_int_User (int index , List_Rc_BTree_int_User list ) {
-  return ({ /* cicili#Let4048 */
+  return ({ /* cicili#Let3859 */
       typeof((((list -> __h_data ). Cons ). __h_1_mem )) tail ;
       // ----------
-      
-      ({ /* cicili#Let4052 */
-        bool __h_case_result  = (true  &&  (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  (({ /* cicili#Progn4053 */
+      ;
+      ({ /* cicili#Let3861 */
+        bool __h_case_result  = (true  &&  (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  (({ /* cicili#Progn3862 */
                 (tail  =  (((list -> __h_data ). Cons ). __h_1_mem ) );
                 true ;
               }) &&  (index  >  0 ) ) ) );
         // ----------
-        ((__h_case_result ) ? ({ /* cicili#Progn4056 */
+        
+        ((__h_case_result ) ? ({ /* cicili#Progn3867 */
             nthcdr_List_Rc_BTree_int_User ((--index ), tail );
-          }) : ({ /* cicili#Let4061 */
+          }) : ({ /* cicili#Let3872 */
             // ----------
-            
-            ({ /* cicili#Progn4065 */
+            ;
+            ({ /* cicili#Progn3874 */
               list ;
             });
           }));
@@ -3839,26 +3952,27 @@ List_Rc_BTree_int_User nthcdr_List_Rc_BTree_int_User (int index , List_Rc_BTree_
     });
 }
 Maybe_Rc_BTree_int_User nth_List_Rc_BTree_int_User (int index , List_Rc_BTree_int_User list ) {
-  return ({ /* cicili#Let4072 */
+  return ({ /* cicili#Let3881 */
       typeof((((list -> __h_data ). Cons ). __h_0_mem )) head ;
       typeof((((list -> __h_data ). Cons ). __h_1_mem )) tail ;
       // ----------
-      
-      ({ /* cicili#Let4076 */
-        bool __h_case_result  = (true  &&  (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  (({ /* cicili#Progn4077 */
+      ;
+      ({ /* cicili#Let3883 */
+        bool __h_case_result  = (true  &&  (((list -> __h_ctor ) ==  __h_Cons_t  ) &&  (({ /* cicili#Progn3884 */
                 (head  =  (((list -> __h_data ). Cons ). __h_0_mem ) );
                 true ;
-              }) &&  ({ /* cicili#Progn4079 */
+              }) &&  ({ /* cicili#Progn3886 */
                 (tail  =  (((list -> __h_data ). Cons ). __h_1_mem ) );
                 true ;
               }) ) ) );
         // ----------
-        ((__h_case_result ) ? ({ /* cicili#Progn4082 */
+        
+        ((__h_case_result ) ? ({ /* cicili#Progn3891 */
             (((index  ==  0 )) ? Just_Rc_BTree_int_User (head ) : (((index  <  0 )) ? Nothing_Rc_BTree_int_User () : nth_List_Rc_BTree_int_User ((--index ), tail )));
-          }) : ({ /* cicili#Let4091 */
+          }) : ({ /* cicili#Let3900 */
             // ----------
-            
-            ({ /* cicili#Progn4095 */
+            ;
+            ({ /* cicili#Progn3902 */
               Nothing_Rc_BTree_int_User ();
             });
           }));
@@ -3866,36 +3980,38 @@ Maybe_Rc_BTree_int_User nth_List_Rc_BTree_int_User (int index , List_Rc_BTree_in
     });
 }
 void free_List_Rc_BTree_int_User (List_Rc_BTree_int_User * this_ptr ) {
-  { /* cicili#Let4100 */
+  { /* cicili#Let3907 */
     __auto_type this  = (*this_ptr );
     // ----------
-    { /* cicili#Let4104 */
+    { /* cicili#Let3911 */
       typeof((((this -> __h_data ). Cons ). __h_1_mem )) tail ;
       // ----------
-      
-      ({ /* cicili#Let4108 */
-        bool __h_case_result  = (true  &&  (((this -> __h_ctor ) ==  __h_Cons_t  ) &&  ({ /* cicili#Progn4109 */
+      ;
+      ({ /* cicili#Let3913 */
+        bool __h_case_result  = (true  &&  (((this -> __h_ctor ) ==  __h_Cons_t  ) &&  ({ /* cicili#Progn3914 */
               (tail  =  (((this -> __h_data ). Cons ). __h_1_mem ) );
               true ;
             }) ) );
         // ----------
+        
         if (__h_case_result )
-          { /* cicili#Block4113 */
-            { /* cicili#Block4115 */
+          { /* cicili#Block3920 */
+            { /* cicili#Block3922 */
               free (this );
               free_List_Rc_BTree_int_User ((&tail ));
             }
           }
         else
-          { /* cicili#Let4123 */
+          { /* cicili#Let3930 */
             // ----------
-            
-            ({ /* cicili#Let4127 */
+            ;
+            ({ /* cicili#Let3932 */
               bool __h_case_result  = (true  &&  ((this -> __h_ctor ) ==  __h_Nil_t  ) );
               // ----------
+              
               if (__h_case_result )
-                { /* cicili#Block4130 */
-                  { /* cicili#Block4132 */
+                { /* cicili#Block3937 */
+                  { /* cicili#Block3939 */
                     free (this );
                   }
                 }
@@ -3910,7 +4026,7 @@ List_Rc_BTree_int_User__H_Table * const get_List_Rc_BTree_int_User__H_Table () {
   return (&table );
 }
 List_Rc_BTree_int_User Cons_Rc_BTree_int_User (Rc_BTree_int_User head , List_Rc_BTree_int_User tail ) {
-  { /* cicili#Let4143 */
+  { /* cicili#Let3950 */
     List_Rc_BTree_int_User instance  = malloc (sizeof(class_List_Rc_BTree_int_User));
     // ----------
     (*instance ) = ((class_List_Rc_BTree_int_User){ get_List_Rc_BTree_int_User__H_Table (), __h_Cons_t , .__h_data.Cons = { head , tail }});
@@ -3918,7 +4034,7 @@ List_Rc_BTree_int_User Cons_Rc_BTree_int_User (Rc_BTree_int_User head , List_Rc_
   }
 }
 List_Rc_BTree_int_User Nil_Rc_BTree_int_User () {
-  { /* cicili#Let4149 */
+  { /* cicili#Let3956 */
     List_Rc_BTree_int_User instance  = malloc (sizeof(class_List_Rc_BTree_int_User));
     // ----------
     (*instance ) = ((class_List_Rc_BTree_int_User){ get_List_Rc_BTree_int_User__H_Table (), __h___t });
@@ -3935,14 +4051,14 @@ const Maybe_List_Rc_BTree_int_User__H_Table * const get_Maybe_List_Rc_BTree_int_
   return (&table );
 }
 Maybe_List_Rc_BTree_int_User Just_List_Rc_BTree_int_User (List_Rc_BTree_int_User value ) {
-  { /* cicili#Let4166 */
+  { /* cicili#Let3973 */
     Maybe_List_Rc_BTree_int_User instance  = ((Maybe_List_Rc_BTree_int_User){ get_Maybe_List_Rc_BTree_int_User__H_Table (), __h_Just_t , .__h_data.Just = { value }});
     // ----------
     return instance ;
   }
 }
 Maybe_List_Rc_BTree_int_User Nothing_List_Rc_BTree_int_User () {
-  { /* cicili#Let4171 */
+  { /* cicili#Let3978 */
     Maybe_List_Rc_BTree_int_User instance  = ((Maybe_List_Rc_BTree_int_User){ get_Maybe_List_Rc_BTree_int_User__H_Table (), __h___t });
     // ----------
     return instance ;
@@ -3952,26 +4068,27 @@ Maybe_List_Rc_BTree_int_User Nothing_List_Rc_BTree_int_User () {
 #ifndef __Functor_List_Rc_BTree_int_User__H_IMPL__
 #define __Functor_List_Rc_BTree_int_User__H_IMPL__
 List_Rc_BTree_int_User fmap_Functor_List_Rc_BTree_int_User (Rc_BTree_int_User_to_Rc_BTree_int_User_t a_b , List_Rc_BTree_int_User input ) {
-  return ({ /* cicili#Let4185 */
+  return ({ /* cicili#Let3992 */
       typeof((((input -> __h_data ). Cons ). __h_0_mem )) head ;
       typeof((((input -> __h_data ). Cons ). __h_1_mem )) tail ;
       // ----------
-      
-      ({ /* cicili#Let4189 */
-        bool __h_case_result  = (true  &&  (((input -> __h_ctor ) ==  __h_Cons_t  ) &&  (({ /* cicili#Progn4190 */
+      ;
+      ({ /* cicili#Let3994 */
+        bool __h_case_result  = (true  &&  (((input -> __h_ctor ) ==  __h_Cons_t  ) &&  (({ /* cicili#Progn3995 */
                 (head  =  (((input -> __h_data ). Cons ). __h_0_mem ) );
                 true ;
-              }) &&  ({ /* cicili#Progn4192 */
+              }) &&  ({ /* cicili#Progn3997 */
                 (tail  =  (((input -> __h_data ). Cons ). __h_1_mem ) );
                 true ;
               }) ) ) );
         // ----------
-        ((__h_case_result ) ? ({ /* cicili#Progn4195 */
+        
+        ((__h_case_result ) ? ({ /* cicili#Progn4002 */
             Cons_Rc_BTree_int_User (a_b (head ), fmap_Functor_List_Rc_BTree_int_User (a_b , tail ));
-          }) : ({ /* cicili#Let4202 */
+          }) : ({ /* cicili#Let4009 */
             // ----------
-            
-            ({ /* cicili#Progn4206 */
+            ;
+            ({ /* cicili#Progn4011 */
               Nil_Rc_BTree_int_User ();
             });
           }));
@@ -3985,7 +4102,7 @@ const Functor_List_Rc_BTree_int_User__H_Table * const get_Functor_List_Rc_BTree_
   return (&table );
 }
 Functor_List_Rc_BTree_int_User Functor_List_Rc_BTree_int_User_ctor () {
-  { /* cicili#Let4220 */
+  { /* cicili#Let4025 */
     Functor_List_Rc_BTree_int_User instance  = ((Functor_List_Rc_BTree_int_User){ get_Functor_List_Rc_BTree_int_User__H_Table (), __h___t });
     // ----------
     return instance ;
@@ -3995,203 +4112,209 @@ Functor_List_Rc_BTree_int_User Functor_List_Rc_BTree_int_User_ctor () {
 Functor_List_Rc_BTree_int_User get_Functor_List_Rc_BTree_int_User () {
   return Functor_List_Rc_BTree_int_User_ctor ();
 }
-int U_BTree_int_User  = 3;
-int L_BTree_int_User  = 2;
+size_t U_BTree_int_User  = 3;
+size_t L_BTree_int_User  = 2;
 BTree_int_User split_BTree_int_User (BTree_int_User tree ) {
-  return ({ /* cicili#Let4238 */
+  return ({ /* cicili#Let4043 */
       typeof((((tree -> __h_data ). Branch ). __h_0_mem )) items ;
       typeof((((tree -> __h_data ). Branch ). __h_1_mem )) children ;
       // ----------
-      
-      ({ /* cicili#Let4242 */
-        bool __h_case_result  = (true  &&  (((tree -> __h_ctor ) ==  __h_Branch_t  ) &&  (({ /* cicili#Progn4243 */
+      ;
+      ({ /* cicili#Let4045 */
+        bool __h_case_result  = (true  &&  (((tree -> __h_ctor ) ==  __h_Branch_t  ) &&  (({ /* cicili#Progn4046 */
                 (items  =  (((tree -> __h_data ). Branch ). __h_0_mem ) );
                 true ;
-              }) &&  ({ /* cicili#Progn4245 */
+              }) &&  ({ /* cicili#Progn4048 */
                 (children  =  (((tree -> __h_data ). Branch ). __h_1_mem ) );
                 true ;
               }) ) ) );
         // ----------
-        ((__h_case_result ) ? ({ /* cicili#Progn4248 */
-            (((len_List_BTree_int_User_pair_t (items ) >=  U_BTree_int_User  )) ? ({ /* cicili#Let4254 */
-                __auto_type tree  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let4256 */
+        
+        ((__h_case_result ) ? ({ /* cicili#Progn4053 */
+            (((len_List_BTree_int_User_pair_t (items ) >=  U_BTree_int_User  )) ? ({ /* cicili#Let4059 */
+                __auto_type tree  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let4061 */
                   __auto_type tree  = tree ;
                   // ----------
                   ((void)(tree -> __h_table -> freeClass ));
                   tree ;
                 });
                 // ----------
-                Branch_BTree_int_User (wrap_List_BTree_int_User_pair_t (({ /* cicili#Let4264 */
-                    __auto_type match4263  = nth_List_BTree_int_User_pair_t ((L_BTree_int_User  -  1 ), items );
-                    typeof((((match4263 . __h_data ). Just ). __h_0_mem )) nitem ;
+                Branch_BTree_int_User (wrap_List_BTree_int_User_pair_t (({ /* cicili#Let4069 */
+                    __auto_type match4068  = nth_List_BTree_int_User_pair_t ((L_BTree_int_User  -  1 ), items );
+                    typeof((((match4068 . __h_data ). Just ). __h_0_mem )) nitem ;
                     // ----------
-                    
-                    ({ /* cicili#Let4270 */
-                      bool __h_case_result  = (true  &&  (((match4263 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn4271 */
-                            (nitem  =  (((match4263 . __h_data ). Just ). __h_0_mem ) );
+                    ;
+                    ({ /* cicili#Let4073 */
+                      bool __h_case_result  = (true  &&  (((match4068 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn4074 */
+                            (nitem  =  (((match4068 . __h_data ). Just ). __h_0_mem ) );
                             true ;
                           }) ) );
                       // ----------
-                      ((__h_case_result ) ? ({ /* cicili#Progn4274 */
+                      
+                      ((__h_case_result ) ? ({ /* cicili#Progn4079 */
                           nitem ;
-                        }) : ({ /* cicili#Let4278 */
+                        }) : ({ /* cicili#Let4083 */
                           // ----------
-                          
-                          ({ /* cicili#Progn4282 */
+                          ;
+                          ({ /* cicili#Progn4085 */
                             ((BTree_int_User_pair_t){ });
                           });
                         }));
                     });
-                  })), pure_List_Rc_BTree_int_User (((Rc_BTree_int_User[]){ new_Rc_BTree_int_User (Internal_BTree_int_User (take_List_BTree_int_User_pair_t ((L_BTree_int_User  -  1 ), items ), ({ /* cicili#Let4293 */
-                      __auto_type r1  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let4295 */
+                  })), pure_List_Rc_BTree_int_User (((Rc_BTree_int_User[]){ new_Rc_BTree_int_User (Internal_BTree_int_User (take_List_BTree_int_User_pair_t ((L_BTree_int_User  -  1 ), items ), ({ /* cicili#Let4096 */
+                      __auto_type r1  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let4098 */
                         __auto_type r1  = take_List_Rc_BTree_int_User (L_BTree_int_User , children );
                         // ----------
                         ((void)(r1 -> __h_table -> freeClass ));
                         r1 ;
                       });
                       // ----------
-                      fmap_Functor_List_Rc_BTree_int_User (({ /* cicili#Progn4305 */
-                          Rc_BTree_int_User __ciciliC_4304 (Rc_BTree_int_User __h_value ) {
+                      fmap_Functor_List_Rc_BTree_int_User (({ /* cicili#Progn4108 */
+                          Rc_BTree_int_User __ciciliC_4107 (Rc_BTree_int_User __h_value ) {
                             return clone_Rc_BTree_int_User (__h_value );
                           }
-                          __ciciliC_4304 ;
+                          __ciciliC_4107 ;
                         }), r1 );
-                    }))), new_Rc_BTree_int_User (Internal_BTree_int_User (drop_List_BTree_int_User_pair_t (L_BTree_int_User , items ), ({ /* cicili#Let4316 */
-                      __auto_type r1  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let4318 */
+                    }))), new_Rc_BTree_int_User (Internal_BTree_int_User (drop_List_BTree_int_User_pair_t (L_BTree_int_User , items ), ({ /* cicili#Let4119 */
+                      __auto_type r1  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let4121 */
                         __auto_type r1  = drop_List_Rc_BTree_int_User (L_BTree_int_User , children );
                         // ----------
                         ((void)(r1 -> __h_table -> freeClass ));
                         r1 ;
                       });
                       // ----------
-                      fmap_Functor_List_Rc_BTree_int_User (({ /* cicili#Progn4328 */
-                          Rc_BTree_int_User __ciciliC_4327 (Rc_BTree_int_User __h_value ) {
+                      fmap_Functor_List_Rc_BTree_int_User (({ /* cicili#Progn4131 */
+                          Rc_BTree_int_User __ciciliC_4130 (Rc_BTree_int_User __h_value ) {
                             return clone_Rc_BTree_int_User (__h_value );
                           }
-                          __ciciliC_4327 ;
+                          __ciciliC_4130 ;
                         }), r1 );
                     })))}), 2));
               }) : tree );
-          }) : ({ /* cicili#Let4335 */
+          }) : ({ /* cicili#Let4138 */
             typeof((((tree -> __h_data ). Internal ). __h_0_mem )) items ;
             typeof((((tree -> __h_data ). Internal ). __h_1_mem )) children ;
             // ----------
-            
-            ({ /* cicili#Let4339 */
-              bool __h_case_result  = (true  &&  (((tree -> __h_ctor ) ==  __h_Internal_t  ) &&  (({ /* cicili#Progn4340 */
+            ;
+            ({ /* cicili#Let4140 */
+              bool __h_case_result  = (true  &&  (((tree -> __h_ctor ) ==  __h_Internal_t  ) &&  (({ /* cicili#Progn4141 */
                       (items  =  (((tree -> __h_data ). Internal ). __h_0_mem ) );
                       true ;
-                    }) &&  ({ /* cicili#Progn4342 */
+                    }) &&  ({ /* cicili#Progn4143 */
                       (children  =  (((tree -> __h_data ). Internal ). __h_1_mem ) );
                       true ;
                     }) ) ) );
               // ----------
-              ((__h_case_result ) ? ({ /* cicili#Progn4345 */
-                  (((len_List_BTree_int_User_pair_t (items ) >=  U_BTree_int_User  )) ? ({ /* cicili#Let4351 */
-                      __auto_type tree  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let4353 */
+              
+              ((__h_case_result ) ? ({ /* cicili#Progn4148 */
+                  (((len_List_BTree_int_User_pair_t (items ) >=  U_BTree_int_User  )) ? ({ /* cicili#Let4154 */
+                      __auto_type tree  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let4156 */
                         __auto_type tree  = tree ;
                         // ----------
                         ((void)(tree -> __h_table -> freeClass ));
                         tree ;
                       });
                       // ----------
-                      Branch_BTree_int_User (wrap_List_BTree_int_User_pair_t (({ /* cicili#Let4361 */
-                          __auto_type match4360  = nth_List_BTree_int_User_pair_t ((L_BTree_int_User  -  1 ), items );
-                          typeof((((match4360 . __h_data ). Just ). __h_0_mem )) nitem ;
+                      Branch_BTree_int_User (wrap_List_BTree_int_User_pair_t (({ /* cicili#Let4164 */
+                          __auto_type match4163  = nth_List_BTree_int_User_pair_t ((L_BTree_int_User  -  1 ), items );
+                          typeof((((match4163 . __h_data ). Just ). __h_0_mem )) nitem ;
                           // ----------
-                          
-                          ({ /* cicili#Let4367 */
-                            bool __h_case_result  = (true  &&  (((match4360 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn4368 */
-                                  (nitem  =  (((match4360 . __h_data ). Just ). __h_0_mem ) );
+                          ;
+                          ({ /* cicili#Let4168 */
+                            bool __h_case_result  = (true  &&  (((match4163 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn4169 */
+                                  (nitem  =  (((match4163 . __h_data ). Just ). __h_0_mem ) );
                                   true ;
                                 }) ) );
                             // ----------
-                            ((__h_case_result ) ? ({ /* cicili#Progn4371 */
+                            
+                            ((__h_case_result ) ? ({ /* cicili#Progn4174 */
                                 nitem ;
-                              }) : ({ /* cicili#Let4375 */
+                              }) : ({ /* cicili#Let4178 */
                                 // ----------
-                                
-                                ({ /* cicili#Progn4379 */
+                                ;
+                                ({ /* cicili#Progn4180 */
                                   ((BTree_int_User_pair_t){ });
                                 });
                               }));
                           });
-                        })), pure_List_Rc_BTree_int_User (((Rc_BTree_int_User[]){ new_Rc_BTree_int_User (Internal_BTree_int_User (take_List_BTree_int_User_pair_t ((L_BTree_int_User  -  1 ), items ), ({ /* cicili#Let4390 */
-                            __auto_type r1  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let4392 */
+                        })), pure_List_Rc_BTree_int_User (((Rc_BTree_int_User[]){ new_Rc_BTree_int_User (Internal_BTree_int_User (take_List_BTree_int_User_pair_t ((L_BTree_int_User  -  1 ), items ), ({ /* cicili#Let4191 */
+                            __auto_type r1  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let4193 */
                               __auto_type r1  = take_List_Rc_BTree_int_User (L_BTree_int_User , children );
                               // ----------
                               ((void)(r1 -> __h_table -> freeClass ));
                               r1 ;
                             });
                             // ----------
-                            fmap_Functor_List_Rc_BTree_int_User (({ /* cicili#Progn4402 */
-                                Rc_BTree_int_User __ciciliC_4401 (Rc_BTree_int_User __h_value ) {
+                            fmap_Functor_List_Rc_BTree_int_User (({ /* cicili#Progn4203 */
+                                Rc_BTree_int_User __ciciliC_4202 (Rc_BTree_int_User __h_value ) {
                                   return clone_Rc_BTree_int_User (__h_value );
                                 }
-                                __ciciliC_4401 ;
+                                __ciciliC_4202 ;
                               }), r1 );
-                          }))), new_Rc_BTree_int_User (Internal_BTree_int_User (drop_List_BTree_int_User_pair_t (L_BTree_int_User , items ), ({ /* cicili#Let4413 */
-                            __auto_type r1  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let4415 */
+                          }))), new_Rc_BTree_int_User (Internal_BTree_int_User (drop_List_BTree_int_User_pair_t (L_BTree_int_User , items ), ({ /* cicili#Let4214 */
+                            __auto_type r1  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let4216 */
                               __auto_type r1  = drop_List_Rc_BTree_int_User (L_BTree_int_User , children );
                               // ----------
                               ((void)(r1 -> __h_table -> freeClass ));
                               r1 ;
                             });
                             // ----------
-                            fmap_Functor_List_Rc_BTree_int_User (({ /* cicili#Progn4425 */
-                                Rc_BTree_int_User __ciciliC_4424 (Rc_BTree_int_User __h_value ) {
+                            fmap_Functor_List_Rc_BTree_int_User (({ /* cicili#Progn4226 */
+                                Rc_BTree_int_User __ciciliC_4225 (Rc_BTree_int_User __h_value ) {
                                   return clone_Rc_BTree_int_User (__h_value );
                                 }
-                                __ciciliC_4424 ;
+                                __ciciliC_4225 ;
                               }), r1 );
                           })))}), 2));
                     }) : tree );
-                }) : ({ /* cicili#Let4432 */
+                }) : ({ /* cicili#Let4233 */
                   typeof((((tree -> __h_data ). Leaf ). __h_0_mem )) items ;
                   // ----------
-                  
-                  ({ /* cicili#Let4436 */
-                    bool __h_case_result  = (true  &&  (((tree -> __h_ctor ) ==  __h_Leaf_t  ) &&  ({ /* cicili#Progn4437 */
+                  ;
+                  ({ /* cicili#Let4235 */
+                    bool __h_case_result  = (true  &&  (((tree -> __h_ctor ) ==  __h_Leaf_t  ) &&  ({ /* cicili#Progn4236 */
                           (items  =  (((tree -> __h_data ). Leaf ). __h_0_mem ) );
                           true ;
                         }) ) );
                     // ----------
-                    ((__h_case_result ) ? ({ /* cicili#Progn4440 */
-                        (((len_List_BTree_int_User_pair_t (items ) >=  U_BTree_int_User  )) ? ({ /* cicili#Let4446 */
-                            __auto_type tree  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let4448 */
+                    
+                    ((__h_case_result ) ? ({ /* cicili#Progn4241 */
+                        (((len_List_BTree_int_User_pair_t (items ) >=  U_BTree_int_User  )) ? ({ /* cicili#Let4247 */
+                            __auto_type tree  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let4249 */
                               __auto_type tree  = tree ;
                               // ----------
                               ((void)(tree -> __h_table -> freeClass ));
                               tree ;
                             });
                             // ----------
-                            Branch_BTree_int_User (wrap_List_BTree_int_User_pair_t (({ /* cicili#Let4456 */
-                                __auto_type match4455  = nth_List_BTree_int_User_pair_t ((L_BTree_int_User  -  1 ), items );
-                                typeof((((match4455 . __h_data ). Just ). __h_0_mem )) nitem ;
+                            Branch_BTree_int_User (wrap_List_BTree_int_User_pair_t (({ /* cicili#Let4257 */
+                                __auto_type match4256  = nth_List_BTree_int_User_pair_t ((L_BTree_int_User  -  1 ), items );
+                                typeof((((match4256 . __h_data ). Just ). __h_0_mem )) nitem ;
                                 // ----------
-                                
-                                ({ /* cicili#Let4462 */
-                                  bool __h_case_result  = (true  &&  (((match4455 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn4463 */
-                                        (nitem  =  (((match4455 . __h_data ). Just ). __h_0_mem ) );
+                                ;
+                                ({ /* cicili#Let4261 */
+                                  bool __h_case_result  = (true  &&  (((match4256 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn4262 */
+                                        (nitem  =  (((match4256 . __h_data ). Just ). __h_0_mem ) );
                                         true ;
                                       }) ) );
                                   // ----------
-                                  ((__h_case_result ) ? ({ /* cicili#Progn4466 */
+                                  
+                                  ((__h_case_result ) ? ({ /* cicili#Progn4267 */
                                       nitem ;
-                                    }) : ({ /* cicili#Let4470 */
+                                    }) : ({ /* cicili#Let4271 */
                                       // ----------
-                                      
-                                      ({ /* cicili#Progn4474 */
+                                      ;
+                                      ({ /* cicili#Progn4273 */
                                         ((BTree_int_User_pair_t){ });
                                       });
                                     }));
                                 });
                               })), pure_List_Rc_BTree_int_User (((Rc_BTree_int_User[]){ new_Rc_BTree_int_User (Leaf_BTree_int_User (take_List_BTree_int_User_pair_t ((L_BTree_int_User  -  1 ), items ))), new_Rc_BTree_int_User (Leaf_BTree_int_User (drop_List_BTree_int_User_pair_t (L_BTree_int_User , items )))}), 2));
                           }) : tree );
-                      }) : ({ /* cicili#Let4491 */
+                      }) : ({ /* cicili#Let4290 */
                         // ----------
-                        
-                        ({ /* cicili#Progn4495 */
+                        ;
+                        ({ /* cicili#Progn4292 */
                           tree ;
                         });
                       }));
@@ -4203,173 +4326,179 @@ BTree_int_User split_BTree_int_User (BTree_int_User tree ) {
     });
 }
 BTree_int_User splitForDelete_BTree_int_User (BTree_int_User tree ) {
-  return ({ /* cicili#Let4501 */
+  return ({ /* cicili#Let4298 */
       typeof((((tree -> __h_data ). Branch ). __h_0_mem )) items ;
       typeof((((tree -> __h_data ). Branch ). __h_1_mem )) children ;
       // ----------
-      
-      ({ /* cicili#Let4505 */
-        bool __h_case_result  = (true  &&  (((tree -> __h_ctor ) ==  __h_Branch_t  ) &&  (({ /* cicili#Progn4506 */
+      ;
+      ({ /* cicili#Let4300 */
+        bool __h_case_result  = (true  &&  (((tree -> __h_ctor ) ==  __h_Branch_t  ) &&  (({ /* cicili#Progn4301 */
                 (items  =  (((tree -> __h_data ). Branch ). __h_0_mem ) );
                 true ;
-              }) &&  ({ /* cicili#Progn4508 */
+              }) &&  ({ /* cicili#Progn4303 */
                 (children  =  (((tree -> __h_data ). Branch ). __h_1_mem ) );
                 true ;
               }) ) ) );
         // ----------
-        ((__h_case_result ) ? ({ /* cicili#Progn4511 */
-            (((len_List_BTree_int_User_pair_t (items ) >=  U_BTree_int_User  )) ? Branch_BTree_int_User (wrap_List_BTree_int_User_pair_t (({ /* cicili#Let4521 */
-                __auto_type match4520  = nth_List_BTree_int_User_pair_t ((L_BTree_int_User  -  1 ), items );
-                typeof((((match4520 . __h_data ). Just ). __h_0_mem )) nitem ;
+        
+        ((__h_case_result ) ? ({ /* cicili#Progn4308 */
+            (((len_List_BTree_int_User_pair_t (items ) >=  U_BTree_int_User  )) ? Branch_BTree_int_User (wrap_List_BTree_int_User_pair_t (({ /* cicili#Let4318 */
+                __auto_type match4317  = nth_List_BTree_int_User_pair_t ((L_BTree_int_User  -  1 ), items );
+                typeof((((match4317 . __h_data ). Just ). __h_0_mem )) nitem ;
                 // ----------
-                
-                ({ /* cicili#Let4527 */
-                  bool __h_case_result  = (true  &&  (((match4520 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn4528 */
-                        (nitem  =  (((match4520 . __h_data ). Just ). __h_0_mem ) );
+                ;
+                ({ /* cicili#Let4322 */
+                  bool __h_case_result  = (true  &&  (((match4317 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn4323 */
+                        (nitem  =  (((match4317 . __h_data ). Just ). __h_0_mem ) );
                         true ;
                       }) ) );
                   // ----------
-                  ((__h_case_result ) ? ({ /* cicili#Progn4531 */
+                  
+                  ((__h_case_result ) ? ({ /* cicili#Progn4328 */
                       nitem ;
-                    }) : ({ /* cicili#Let4535 */
+                    }) : ({ /* cicili#Let4332 */
                       // ----------
-                      
-                      ({ /* cicili#Progn4539 */
+                      ;
+                      ({ /* cicili#Progn4334 */
                         ((BTree_int_User_pair_t){ });
                       });
                     }));
                 });
-              })), pure_List_Rc_BTree_int_User (((Rc_BTree_int_User[]){ new_Rc_BTree_int_User (Internal_BTree_int_User (take_List_BTree_int_User_pair_t ((L_BTree_int_User  -  1 ), items ), ({ /* cicili#Let4550 */
-                  __auto_type r1  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let4552 */
+              })), pure_List_Rc_BTree_int_User (((Rc_BTree_int_User[]){ new_Rc_BTree_int_User (Internal_BTree_int_User (take_List_BTree_int_User_pair_t ((L_BTree_int_User  -  1 ), items ), ({ /* cicili#Let4345 */
+                  __auto_type r1  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let4347 */
                     __auto_type r1  = take_List_Rc_BTree_int_User (L_BTree_int_User , children );
                     // ----------
                     ((void)(r1 -> __h_table -> freeClass ));
                     r1 ;
                   });
                   // ----------
-                  fmap_Functor_List_Rc_BTree_int_User (({ /* cicili#Progn4562 */
-                      Rc_BTree_int_User __ciciliC_4561 (Rc_BTree_int_User __h_value ) {
+                  fmap_Functor_List_Rc_BTree_int_User (({ /* cicili#Progn4357 */
+                      Rc_BTree_int_User __ciciliC_4356 (Rc_BTree_int_User __h_value ) {
                         return clone_Rc_BTree_int_User (__h_value );
                       }
-                      __ciciliC_4561 ;
+                      __ciciliC_4356 ;
                     }), r1 );
-                }))), new_Rc_BTree_int_User (Internal_BTree_int_User (drop_List_BTree_int_User_pair_t (L_BTree_int_User , items ), ({ /* cicili#Let4573 */
-                  __auto_type r1  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let4575 */
+                }))), new_Rc_BTree_int_User (Internal_BTree_int_User (drop_List_BTree_int_User_pair_t (L_BTree_int_User , items ), ({ /* cicili#Let4368 */
+                  __auto_type r1  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let4370 */
                     __auto_type r1  = drop_List_Rc_BTree_int_User (L_BTree_int_User , children );
                     // ----------
                     ((void)(r1 -> __h_table -> freeClass ));
                     r1 ;
                   });
                   // ----------
-                  fmap_Functor_List_Rc_BTree_int_User (({ /* cicili#Progn4585 */
-                      Rc_BTree_int_User __ciciliC_4584 (Rc_BTree_int_User __h_value ) {
+                  fmap_Functor_List_Rc_BTree_int_User (({ /* cicili#Progn4380 */
+                      Rc_BTree_int_User __ciciliC_4379 (Rc_BTree_int_User __h_value ) {
                         return clone_Rc_BTree_int_User (__h_value );
                       }
-                      __ciciliC_4584 ;
+                      __ciciliC_4379 ;
                     }), r1 );
                 })))}), 2)) : tree );
-          }) : ({ /* cicili#Let4592 */
+          }) : ({ /* cicili#Let4387 */
             typeof((((tree -> __h_data ). Internal ). __h_0_mem )) items ;
             typeof((((tree -> __h_data ). Internal ). __h_1_mem )) children ;
             // ----------
-            
-            ({ /* cicili#Let4596 */
-              bool __h_case_result  = (true  &&  (((tree -> __h_ctor ) ==  __h_Internal_t  ) &&  (({ /* cicili#Progn4597 */
+            ;
+            ({ /* cicili#Let4389 */
+              bool __h_case_result  = (true  &&  (((tree -> __h_ctor ) ==  __h_Internal_t  ) &&  (({ /* cicili#Progn4390 */
                       (items  =  (((tree -> __h_data ). Internal ). __h_0_mem ) );
                       true ;
-                    }) &&  ({ /* cicili#Progn4599 */
+                    }) &&  ({ /* cicili#Progn4392 */
                       (children  =  (((tree -> __h_data ). Internal ). __h_1_mem ) );
                       true ;
                     }) ) ) );
               // ----------
-              ((__h_case_result ) ? ({ /* cicili#Progn4602 */
-                  (((len_List_BTree_int_User_pair_t (items ) >=  U_BTree_int_User  )) ? Branch_BTree_int_User (wrap_List_BTree_int_User_pair_t (({ /* cicili#Let4612 */
-                      __auto_type match4611  = nth_List_BTree_int_User_pair_t ((L_BTree_int_User  -  1 ), items );
-                      typeof((((match4611 . __h_data ). Just ). __h_0_mem )) nitem ;
+              
+              ((__h_case_result ) ? ({ /* cicili#Progn4397 */
+                  (((len_List_BTree_int_User_pair_t (items ) >=  U_BTree_int_User  )) ? Branch_BTree_int_User (wrap_List_BTree_int_User_pair_t (({ /* cicili#Let4407 */
+                      __auto_type match4406  = nth_List_BTree_int_User_pair_t ((L_BTree_int_User  -  1 ), items );
+                      typeof((((match4406 . __h_data ). Just ). __h_0_mem )) nitem ;
                       // ----------
-                      
-                      ({ /* cicili#Let4618 */
-                        bool __h_case_result  = (true  &&  (((match4611 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn4619 */
-                              (nitem  =  (((match4611 . __h_data ). Just ). __h_0_mem ) );
+                      ;
+                      ({ /* cicili#Let4411 */
+                        bool __h_case_result  = (true  &&  (((match4406 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn4412 */
+                              (nitem  =  (((match4406 . __h_data ). Just ). __h_0_mem ) );
                               true ;
                             }) ) );
                         // ----------
-                        ((__h_case_result ) ? ({ /* cicili#Progn4622 */
+                        
+                        ((__h_case_result ) ? ({ /* cicili#Progn4417 */
                             nitem ;
-                          }) : ({ /* cicili#Let4626 */
+                          }) : ({ /* cicili#Let4421 */
                             // ----------
-                            
-                            ({ /* cicili#Progn4630 */
+                            ;
+                            ({ /* cicili#Progn4423 */
                               ((BTree_int_User_pair_t){ });
                             });
                           }));
                       });
-                    })), pure_List_Rc_BTree_int_User (((Rc_BTree_int_User[]){ new_Rc_BTree_int_User (Internal_BTree_int_User (take_List_BTree_int_User_pair_t ((L_BTree_int_User  -  1 ), items ), ({ /* cicili#Let4641 */
-                        __auto_type r1  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let4643 */
+                    })), pure_List_Rc_BTree_int_User (((Rc_BTree_int_User[]){ new_Rc_BTree_int_User (Internal_BTree_int_User (take_List_BTree_int_User_pair_t ((L_BTree_int_User  -  1 ), items ), ({ /* cicili#Let4434 */
+                        __auto_type r1  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let4436 */
                           __auto_type r1  = take_List_Rc_BTree_int_User (L_BTree_int_User , children );
                           // ----------
                           ((void)(r1 -> __h_table -> freeClass ));
                           r1 ;
                         });
                         // ----------
-                        fmap_Functor_List_Rc_BTree_int_User (({ /* cicili#Progn4653 */
-                            Rc_BTree_int_User __ciciliC_4652 (Rc_BTree_int_User __h_value ) {
+                        fmap_Functor_List_Rc_BTree_int_User (({ /* cicili#Progn4446 */
+                            Rc_BTree_int_User __ciciliC_4445 (Rc_BTree_int_User __h_value ) {
                               return clone_Rc_BTree_int_User (__h_value );
                             }
-                            __ciciliC_4652 ;
+                            __ciciliC_4445 ;
                           }), r1 );
-                      }))), new_Rc_BTree_int_User (Internal_BTree_int_User (drop_List_BTree_int_User_pair_t (L_BTree_int_User , items ), ({ /* cicili#Let4664 */
-                        __auto_type r1  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let4666 */
+                      }))), new_Rc_BTree_int_User (Internal_BTree_int_User (drop_List_BTree_int_User_pair_t (L_BTree_int_User , items ), ({ /* cicili#Let4457 */
+                        __auto_type r1  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let4459 */
                           __auto_type r1  = drop_List_Rc_BTree_int_User (L_BTree_int_User , children );
                           // ----------
                           ((void)(r1 -> __h_table -> freeClass ));
                           r1 ;
                         });
                         // ----------
-                        fmap_Functor_List_Rc_BTree_int_User (({ /* cicili#Progn4676 */
-                            Rc_BTree_int_User __ciciliC_4675 (Rc_BTree_int_User __h_value ) {
+                        fmap_Functor_List_Rc_BTree_int_User (({ /* cicili#Progn4469 */
+                            Rc_BTree_int_User __ciciliC_4468 (Rc_BTree_int_User __h_value ) {
                               return clone_Rc_BTree_int_User (__h_value );
                             }
-                            __ciciliC_4675 ;
+                            __ciciliC_4468 ;
                           }), r1 );
                       })))}), 2)) : tree );
-                }) : ({ /* cicili#Let4683 */
+                }) : ({ /* cicili#Let4476 */
                   typeof((((tree -> __h_data ). Leaf ). __h_0_mem )) items ;
                   // ----------
-                  
-                  ({ /* cicili#Let4687 */
-                    bool __h_case_result  = (true  &&  (((tree -> __h_ctor ) ==  __h_Leaf_t  ) &&  ({ /* cicili#Progn4688 */
+                  ;
+                  ({ /* cicili#Let4478 */
+                    bool __h_case_result  = (true  &&  (((tree -> __h_ctor ) ==  __h_Leaf_t  ) &&  ({ /* cicili#Progn4479 */
                           (items  =  (((tree -> __h_data ). Leaf ). __h_0_mem ) );
                           true ;
                         }) ) );
                     // ----------
-                    ((__h_case_result ) ? ({ /* cicili#Progn4691 */
-                        (((len_List_BTree_int_User_pair_t (items ) >=  U_BTree_int_User  )) ? Branch_BTree_int_User (wrap_List_BTree_int_User_pair_t (({ /* cicili#Let4701 */
-                            __auto_type match4700  = nth_List_BTree_int_User_pair_t ((L_BTree_int_User  -  1 ), items );
-                            typeof((((match4700 . __h_data ). Just ). __h_0_mem )) nitem ;
+                    
+                    ((__h_case_result ) ? ({ /* cicili#Progn4484 */
+                        (((len_List_BTree_int_User_pair_t (items ) >=  U_BTree_int_User  )) ? Branch_BTree_int_User (wrap_List_BTree_int_User_pair_t (({ /* cicili#Let4494 */
+                            __auto_type match4493  = nth_List_BTree_int_User_pair_t ((L_BTree_int_User  -  1 ), items );
+                            typeof((((match4493 . __h_data ). Just ). __h_0_mem )) nitem ;
                             // ----------
-                            
-                            ({ /* cicili#Let4707 */
-                              bool __h_case_result  = (true  &&  (((match4700 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn4708 */
-                                    (nitem  =  (((match4700 . __h_data ). Just ). __h_0_mem ) );
+                            ;
+                            ({ /* cicili#Let4498 */
+                              bool __h_case_result  = (true  &&  (((match4493 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn4499 */
+                                    (nitem  =  (((match4493 . __h_data ). Just ). __h_0_mem ) );
                                     true ;
                                   }) ) );
                               // ----------
-                              ((__h_case_result ) ? ({ /* cicili#Progn4711 */
+                              
+                              ((__h_case_result ) ? ({ /* cicili#Progn4504 */
                                   nitem ;
-                                }) : ({ /* cicili#Let4715 */
+                                }) : ({ /* cicili#Let4508 */
                                   // ----------
-                                  
-                                  ({ /* cicili#Progn4719 */
+                                  ;
+                                  ({ /* cicili#Progn4510 */
                                     ((BTree_int_User_pair_t){ });
                                   });
                                 }));
                             });
                           })), pure_List_Rc_BTree_int_User (((Rc_BTree_int_User[]){ new_Rc_BTree_int_User (Leaf_BTree_int_User (take_List_BTree_int_User_pair_t ((L_BTree_int_User  -  1 ), items ))), new_Rc_BTree_int_User (Leaf_BTree_int_User (drop_List_BTree_int_User_pair_t (L_BTree_int_User , items )))}), 2)) : tree );
-                      }) : ({ /* cicili#Let4736 */
+                      }) : ({ /* cicili#Let4527 */
                         // ----------
-                        
-                        ({ /* cicili#Progn4740 */
+                        ;
+                        ({ /* cicili#Progn4529 */
                           tree ;
                         });
                       }));
@@ -4380,136 +4509,138 @@ BTree_int_User splitForDelete_BTree_int_User (BTree_int_User tree ) {
       });
     });
 }
-BTree_int_User mergeUp_BTree_int_User (List_BTree_int_User_pair_t items , List_Rc_BTree_int_User children , int pitem_index , int pchild_index , List_BTree_int_User_pair_t left_items , List_Rc_BTree_int_User left_children , List_BTree_int_User_pair_t right_items , List_Rc_BTree_int_User right_children ) {
-  return ({ /* cicili#Let4747 */
-      __auto_type merged  = Internal_BTree_int_User (append_List_BTree_int_User_pair_t (left_items , right_items ), ({ /* cicili#Let4752 */
-        __auto_type r1  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let4754 */
+BTree_int_User mergeUp_BTree_int_User (List_BTree_int_User_pair_t items , List_Rc_BTree_int_User children , size_t pitem_index , size_t pchild_index , List_BTree_int_User_pair_t left_items , List_Rc_BTree_int_User left_children , List_BTree_int_User_pair_t right_items , List_Rc_BTree_int_User right_children ) {
+  return ({ /* cicili#Let4536 */
+      __auto_type merged  = Internal_BTree_int_User (append_List_BTree_int_User_pair_t (left_items , right_items ), ({ /* cicili#Let4541 */
+        __auto_type r1  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let4543 */
           __auto_type r1  = append_List_Rc_BTree_int_User (left_children , right_children );
           // ----------
           ((void)(r1 -> __h_table -> freeClass ));
           r1 ;
         });
         // ----------
-        fmap_Functor_List_Rc_BTree_int_User (({ /* cicili#Progn4763 */
-            Rc_BTree_int_User __ciciliC_4762 (Rc_BTree_int_User __h_value ) {
+        fmap_Functor_List_Rc_BTree_int_User (({ /* cicili#Progn4552 */
+            Rc_BTree_int_User __ciciliC_4551 (Rc_BTree_int_User __h_value ) {
               return clone_Rc_BTree_int_User (__h_value );
             }
-            __ciciliC_4762 ;
+            __ciciliC_4551 ;
           }), r1 );
       }));
       // ----------
-      ({ /* cicili#Let4772 */
+      ({ /* cicili#Let4561 */
         __auto_type tmp_child  = splitForDelete_BTree_int_User (merged );
-        typeof((((tmp_child -> __h_data ). Branch ). __h_0_mem )) __h_match4770_0_arg ;
-        typeof((((__h_match4770_0_arg -> __h_data ). Cons ). __h_0_mem )) head ;
+        typeof((((tmp_child -> __h_data ). Branch ). __h_0_mem )) __h_match4559_0_arg ;
+        typeof((((__h_match4559_0_arg -> __h_data ). Cons ). __h_0_mem )) head ;
         typeof((((tmp_child -> __h_data ). Branch ). __h_1_mem )) tmp_children ;
         // ----------
-        
-        ({ /* cicili#Let4777 */
-          bool __h_case_result  = (true  &&  (((tmp_child -> __h_ctor ) ==  __h_Branch_t  ) &&  ((({ /* cicili#Progn4778 */
-                    (__h_match4770_0_arg  =  (((tmp_child -> __h_data ). Branch ). __h_0_mem ) );
+        ;
+        ({ /* cicili#Let4564 */
+          bool __h_case_result  = (true  &&  (((tmp_child -> __h_ctor ) ==  __h_Branch_t  ) &&  ((({ /* cicili#Progn4565 */
+                    (__h_match4559_0_arg  =  (((tmp_child -> __h_data ). Branch ). __h_0_mem ) );
                     true ;
-                  }) &&  (true  &&  (((__h_match4770_0_arg -> __h_ctor ) ==  __h_Cons_t  ) &&  ({ /* cicili#Progn4780 */
-                        (head  =  (((__h_match4770_0_arg -> __h_data ). Cons ). __h_0_mem ) );
+                  }) &&  (true  &&  (((__h_match4559_0_arg -> __h_ctor ) ==  __h_Cons_t  ) &&  ({ /* cicili#Progn4567 */
+                        (head  =  (((__h_match4559_0_arg -> __h_data ). Cons ). __h_0_mem ) );
                         true ;
-                      }) ) ) ) &&  ({ /* cicili#Progn4782 */
+                      }) ) ) ) &&  ({ /* cicili#Progn4569 */
                   (tmp_children  =  (((tmp_child -> __h_data ). Branch ). __h_1_mem ) );
                   true ;
                 }) ) ) );
           // ----------
-          ((__h_case_result ) ? ({ /* cicili#Progn4785 */
-              ({ /* cicili#Let4788 */
-                __auto_type merged  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let4790 */
+          
+          ((__h_case_result ) ? ({ /* cicili#Progn4574 */
+              ({ /* cicili#Let4577 */
+                __auto_type merged  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let4579 */
                   __auto_type merged  = merged ;
                   // ----------
                   ((void)(merged -> __h_table -> freeClass ));
                   merged ;
                 });
-                __auto_type tmp_child  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let4793 */
+                __auto_type tmp_child  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let4582 */
                   __auto_type tmp_child  = tmp_child ;
                   // ----------
                   ((void)(tmp_child -> __h_table -> freeClass ));
                   tmp_child ;
                 });
                 // ----------
-                Internal_BTree_int_User (replaceAt_List_BTree_int_User_pair_t (items , head , pitem_index ), ({ /* cicili#Let4800 */
-                    __auto_type r1  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let4802 */
+                Internal_BTree_int_User (replaceAt_List_BTree_int_User_pair_t (items , head , pitem_index ), ({ /* cicili#Let4589 */
+                    __auto_type r1  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let4591 */
                       __auto_type r1  = deleteAt_List_Rc_BTree_int_User (children , pchild_index );
                       // ----------
                       ((void)(r1 -> __h_table -> freeClass ));
                       r1 ;
                     });
-                    __auto_type r2  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let4806 */
+                    __auto_type r2  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let4595 */
                       __auto_type r2  = take_List_Rc_BTree_int_User (pchild_index , r1 );
                       // ----------
                       ((void)(r2 -> __h_table -> freeClass ));
                       r2 ;
                     });
-                    __auto_type r3  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let4810 */
+                    __auto_type r3  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let4599 */
                       __auto_type r3  = drop_List_Rc_BTree_int_User ((pchild_index  +  1 ), r1 );
                       // ----------
                       ((void)(r3 -> __h_table -> freeClass ));
                       r3 ;
                     });
-                    __auto_type r4  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let4814 */
+                    __auto_type r4  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let4603 */
                       __auto_type r4  = append_List_Rc_BTree_int_User (tmp_children , r3 );
                       // ----------
                       ((void)(r4 -> __h_table -> freeClass ));
                       r4 ;
                     });
-                    __auto_type r5  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let4818 */
+                    __auto_type r5  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let4607 */
                       __auto_type r5  = append_List_Rc_BTree_int_User (r2 , r4 );
                       // ----------
                       ((void)(r5 -> __h_table -> freeClass ));
                       r5 ;
                     });
                     // ----------
-                    fmap_Functor_List_Rc_BTree_int_User (({ /* cicili#Progn4827 */
-                        Rc_BTree_int_User __ciciliC_4826 (Rc_BTree_int_User __h_value ) {
+                    fmap_Functor_List_Rc_BTree_int_User (({ /* cicili#Progn4616 */
+                        Rc_BTree_int_User __ciciliC_4615 (Rc_BTree_int_User __h_value ) {
                           return clone_Rc_BTree_int_User (__h_value );
                         }
-                        __ciciliC_4826 ;
+                        __ciciliC_4615 ;
                       }), r5 );
                   }));
               });
-            }) : ({ /* cicili#Let4834 */
+            }) : ({ /* cicili#Let4623 */
               // ----------
-              
-              ({ /* cicili#Let4838 */
+              ;
+              ({ /* cicili#Let4625 */
                 bool __h_case_result  = (true  &&  ((tmp_child -> __h_ctor ) ==  __h_Internal_t  ) );
                 // ----------
-                ((__h_case_result ) ? ({ /* cicili#Progn4840 */
-                    Internal_BTree_int_User (deleteAt_List_BTree_int_User_pair_t (items , pitem_index ), ({ /* cicili#Let4846 */
-                        __auto_type r1  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let4848 */
+                
+                ((__h_case_result ) ? ({ /* cicili#Progn4629 */
+                    Internal_BTree_int_User (deleteAt_List_BTree_int_User_pair_t (items , pitem_index ), ({ /* cicili#Let4635 */
+                        __auto_type r1  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let4637 */
                           __auto_type r1  = deleteAt_List_Rc_BTree_int_User (children , pchild_index );
                           // ----------
                           ((void)(r1 -> __h_table -> freeClass ));
                           r1 ;
                         });
-                        __auto_type r2  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let4852 */
+                        __auto_type r2  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let4641 */
                           __auto_type r2  = new_Rc_BTree_int_User (merged );
                           // ----------
                           ((void)((r2 . __h_table )-> freeData ));
                           r2 ;
                         });
-                        __auto_type r3  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let4856 */
+                        __auto_type r3  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let4645 */
                           __auto_type r3  = replaceAt_List_Rc_BTree_int_User (r1 , r2 , pchild_index );
                           // ----------
                           ((void)(r3 -> __h_table -> freeClass ));
                           r3 ;
                         });
                         // ----------
-                        fmap_Functor_List_Rc_BTree_int_User (({ /* cicili#Progn4865 */
-                            Rc_BTree_int_User __ciciliC_4864 (Rc_BTree_int_User __h_value ) {
+                        fmap_Functor_List_Rc_BTree_int_User (({ /* cicili#Progn4654 */
+                            Rc_BTree_int_User __ciciliC_4653 (Rc_BTree_int_User __h_value ) {
                               return clone_Rc_BTree_int_User (__h_value );
                             }
-                            __ciciliC_4864 ;
+                            __ciciliC_4653 ;
                           }), r3 );
                       }));
-                  }) : ({ /* cicili#Let4872 */
+                  }) : ({ /* cicili#Let4661 */
                     // ----------
-                    
-                    ({ /* cicili#Progn4876 */
+                    ;
+                    ({ /* cicili#Progn4663 */
                       Leaf_BTree_int_User (Nil_BTree_int_User_pair_t ());
                     });
                   }));
@@ -4519,111 +4650,115 @@ BTree_int_User mergeUp_BTree_int_User (List_BTree_int_User_pair_t items , List_R
       });
     });
 }
-Either_BTree_int_User_Error_BTree_int_User deleteWithParent_BTree_int_User (Maybe_BTree_int_User wparent , int pitem_index , int pchild_index , BTree_int_User tree , int skey , void (*callback) (BTree_int_User_pair_t item ));
-Either_BTree_int_User_Error_BTree_int_User borrowLeaf_BTree_int_User (List_BTree_int_User_pair_t items , List_Rc_BTree_int_User children , Maybe_List_BTree_int_User_pair_t wleft , List_BTree_int_User_pair_t current , int index , BTree_int_User nchild , void (*callback) (BTree_int_User_pair_t item )) {
+Either_BTree_int_User_Error_BTree_int_User deleteWithParent_BTree_int_User (Maybe_BTree_int_User wparent , size_t pitem_index , size_t pchild_index , BTree_int_User tree , int skey , void (*callback) (BTree_int_User_pair_t item ));
+Either_BTree_int_User_Error_BTree_int_User borrowLeaf_BTree_int_User (List_BTree_int_User_pair_t items , List_Rc_BTree_int_User children , Maybe_List_BTree_int_User_pair_t wleft , List_BTree_int_User_pair_t current , size_t index , BTree_int_User nchild , void (*callback) (BTree_int_User_pair_t item )) {
   Either_BTree_int_User_Error_BTree_int_User borrowRight (List_BTree_int_User_pair_t child_items ) {
-    return ({ /* cicili#Let4903 */
-        __auto_type match4902  = nth_List_Rc_BTree_int_User ((index  +  1 ), children );
-        typeof((((match4902 . __h_data ). Just ). __h_0_mem )) right_child_rc ;
+    return ({ /* cicili#Let4690 */
+        __auto_type match4689  = nth_List_Rc_BTree_int_User ((index  +  1 ), children );
+        typeof((((match4689 . __h_data ). Just ). __h_0_mem )) right_child_rc ;
         // ----------
-        
-        ({ /* cicili#Let4908 */
-          bool __h_case_result  = (true  &&  (((match4902 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn4909 */
-                (right_child_rc  =  (((match4902 . __h_data ). Just ). __h_0_mem ) );
+        ;
+        ({ /* cicili#Let4693 */
+          bool __h_case_result  = (true  &&  (((match4689 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn4694 */
+                (right_child_rc  =  (((match4689 . __h_data ). Just ). __h_0_mem ) );
                 true ;
               }) ) );
           // ----------
-          ((__h_case_result ) ? ({ /* cicili#Progn4912 */
-              ({ /* cicili#Let4915 */
+          
+          ((__h_case_result ) ? ({ /* cicili#Progn4699 */
+              ({ /* cicili#Let4702 */
                 __auto_type __h_matchbox  = right_child_rc ;
                 // ----------
-                ({ /* cicili#Let4919 */
-                  __auto_type match4918  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
-                  typeof((((match4918 . __h_data ). Just ). __h_0_mem )) unboxed ;
+                ({ /* cicili#Let4706 */
+                  __auto_type match4705  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
+                  typeof((((match4705 . __h_data ). Just ). __h_0_mem )) unboxed ;
                   // ----------
-                  
-                  ({ /* cicili#Let4924 */
-                    bool __h_case_result  = (true  &&  (((match4918 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn4925 */
-                          (unboxed  =  (((match4918 . __h_data ). Just ). __h_0_mem ) );
+                  ;
+                  ({ /* cicili#Let4709 */
+                    bool __h_case_result  = (true  &&  (((match4705 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn4710 */
+                          (unboxed  =  (((match4705 . __h_data ). Just ). __h_0_mem ) );
                           true ;
                         }) ) );
                     // ----------
-                    ((__h_case_result ) ? ({ /* cicili#Progn4928 */
-                        ({ /* cicili#Let4932 */
+                    
+                    ((__h_case_result ) ? ({ /* cicili#Progn4715 */
+                        ({ /* cicili#Let4719 */
                           typeof((((unboxed -> __h_data ). Leaf ). __h_0_mem )) right_child_items ;
                           // ----------
-                          
-                          ({ /* cicili#Let4936 */
-                            bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Leaf_t  ) &&  ({ /* cicili#Progn4937 */
+                          ;
+                          ({ /* cicili#Let4721 */
+                            bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Leaf_t  ) &&  ({ /* cicili#Progn4722 */
                                   (right_child_items  =  (((unboxed -> __h_data ). Leaf ). __h_0_mem ) );
                                   true ;
                                 }) ) );
                             // ----------
-                            ((__h_case_result ) ? ({ /* cicili#Progn4940 */
-                                (((hasLen_List_BTree_int_User_pair_t (right_child_items , L_BTree_int_User ) ==  L_BTree_int_User  )) ? ({ /* cicili#Let4948 */
+                            
+                            ((__h_case_result ) ? ({ /* cicili#Progn4727 */
+                                (((hasLen_List_BTree_int_User_pair_t (right_child_items , L_BTree_int_User ) ==  L_BTree_int_User  )) ? ({ /* cicili#Let4735 */
                                     __auto_type first  = right_child_items ;
                                     typeof((((first -> __h_data ). Cons ). __h_0_mem )) first_item ;
                                     typeof((((first -> __h_data ). Cons ). __h_1_mem )) tail ;
                                     // ----------
-                                    
-                                    ({ /* cicili#Let4952 */
-                                      bool __h_case_result  = (true  &&  (((first -> __h_ctor ) ==  __h_Cons_t  ) &&  (({ /* cicili#Progn4953 */
+                                    ;
+                                    ({ /* cicili#Let4737 */
+                                      bool __h_case_result  = (true  &&  (((first -> __h_ctor ) ==  __h_Cons_t  ) &&  (({ /* cicili#Progn4738 */
                                               (first_item  =  (((first -> __h_data ). Cons ). __h_0_mem ) );
                                               true ;
-                                            }) &&  ({ /* cicili#Progn4955 */
+                                            }) &&  ({ /* cicili#Progn4740 */
                                               (tail  =  (((first -> __h_data ). Cons ). __h_1_mem ) );
                                               true ;
                                             }) ) ) );
                                       // ----------
-                                      ((__h_case_result ) ? ({ /* cicili#Progn4958 */
-                                          Right_BTree_int_User_Error_BTree_int_User (Internal_BTree_int_User (replace_List_BTree_int_User_pair_t (items , first_item , current ), ({ /* cicili#Let4966 */
-                                              __auto_type r1  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let4968 */
+                                      
+                                      ((__h_case_result ) ? ({ /* cicili#Progn4745 */
+                                          Right_BTree_int_User_Error_BTree_int_User (Internal_BTree_int_User (replace_List_BTree_int_User_pair_t (items , first_item , current ), ({ /* cicili#Let4753 */
+                                              __auto_type r1  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let4755 */
                                                 __auto_type r1  = take_List_Rc_BTree_int_User (index , children );
                                                 // ----------
                                                 ((void)(r1 -> __h_table -> freeClass ));
                                                 r1 ;
                                               });
-                                              __auto_type r2  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let4972 */
-                                                __auto_type r2  = fmap_Functor_List_Rc_BTree_int_User (({ /* cicili#Progn4978 */
-                                                  Rc_BTree_int_User __ciciliC_4977 (Rc_BTree_int_User __h_value ) {
+                                              __auto_type r2  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let4759 */
+                                                __auto_type r2  = fmap_Functor_List_Rc_BTree_int_User (({ /* cicili#Progn4765 */
+                                                  Rc_BTree_int_User __ciciliC_4764 (Rc_BTree_int_User __h_value ) {
                                                     return clone_Rc_BTree_int_User (__h_value );
                                                   }
-                                                  __ciciliC_4977 ;
+                                                  __ciciliC_4764 ;
                                                 }), r1 );
                                                 // ----------
                                                 ((void)(r2 -> __h_table -> freeClass ));
                                                 r2 ;
                                               });
-                                              __auto_type r3  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let4985 */
+                                              __auto_type r3  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let4772 */
                                                 __auto_type r3  = drop_List_Rc_BTree_int_User ((index  +  2 ), children );
                                                 // ----------
                                                 ((void)(r3 -> __h_table -> freeClass ));
                                                 r3 ;
                                               });
-                                              __auto_type r4  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let4989 */
-                                                __auto_type r4  = fmap_Functor_List_Rc_BTree_int_User (({ /* cicili#Progn4995 */
-                                                  Rc_BTree_int_User __ciciliC_4994 (Rc_BTree_int_User __h_value ) {
+                                              __auto_type r4  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let4776 */
+                                                __auto_type r4  = fmap_Functor_List_Rc_BTree_int_User (({ /* cicili#Progn4782 */
+                                                  Rc_BTree_int_User __ciciliC_4781 (Rc_BTree_int_User __h_value ) {
                                                     return clone_Rc_BTree_int_User (__h_value );
                                                   }
-                                                  __ciciliC_4994 ;
+                                                  __ciciliC_4781 ;
                                                 }), r3 );
                                                 // ----------
                                                 ((void)(r4 -> __h_table -> freeClass ));
                                                 r4 ;
                                               });
-                                              __auto_type r5  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let5002 */
+                                              __auto_type r5  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let4789 */
                                                 __auto_type r5  = take_List_BTree_int_User_pair_t (1, current );
                                                 // ----------
                                                 ((void)(r5 -> __h_table -> freeClass ));
                                                 r5 ;
                                               });
-                                              __auto_type r7  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let5006 */
+                                              __auto_type r7  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let4793 */
                                                 __auto_type r7  = pure_List_Rc_BTree_int_User (((Rc_BTree_int_User[]){ new_Rc_BTree_int_User (Leaf_BTree_int_User (append_List_BTree_int_User_pair_t (child_items , r5 ))), new_Rc_BTree_int_User (Leaf_BTree_int_User (copy_List_BTree_int_User_pair_t (tail )))}), 2);
                                                 // ----------
                                                 ((void)(r7 -> __h_table -> freeClass ));
                                                 r7 ;
                                               });
-                                              __auto_type r6  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let5019 */
+                                              __auto_type r6  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let4806 */
                                                 __auto_type r6  = append_List_Rc_BTree_int_User (r7 , r4 );
                                                 // ----------
                                                 ((void)(r6 -> __h_table -> freeClass ));
@@ -4632,73 +4767,74 @@ Either_BTree_int_User_Error_BTree_int_User borrowLeaf_BTree_int_User (List_BTree
                                               // ----------
                                               append_List_Rc_BTree_int_User (r2 , r6 );
                                             })));
-                                        }) : ({ /* cicili#Let5026 */
+                                        }) : ({ /* cicili#Let4813 */
                                           // ----------
-                                          
-                                          ({ /* cicili#Progn5030 */
+                                          ;
+                                          ({ /* cicili#Progn4815 */
                                             Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_CANT_BORROW ("borrowRight R1"));
                                           });
                                         }));
                                     });
-                                  }) : ({ /* cicili#Let5037 */
+                                  }) : ({ /* cicili#Let4822 */
                                     typeof((((current -> __h_data ). Cons ). __h_0_mem )) head ;
                                     // ----------
-                                    
-                                    ({ /* cicili#Let5041 */
-                                      bool __h_case_result  = (true  &&  (((current -> __h_ctor ) ==  __h_Cons_t  ) &&  ({ /* cicili#Progn5042 */
+                                    ;
+                                    ({ /* cicili#Let4824 */
+                                      bool __h_case_result  = (true  &&  (((current -> __h_ctor ) ==  __h_Cons_t  ) &&  ({ /* cicili#Progn4825 */
                                             (head  =  (((current -> __h_data ). Cons ). __h_0_mem ) );
                                             true ;
                                           }) ) );
                                       // ----------
-                                      ((__h_case_result ) ? ({ /* cicili#Progn5045 */
-                                          Right_BTree_int_User_Error_BTree_int_User (Internal_BTree_int_User (delete_List_BTree_int_User_pair_t (items , current ), ({ /* cicili#Let5053 */
-                                              __auto_type r1  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let5055 */
+                                      
+                                      ((__h_case_result ) ? ({ /* cicili#Progn4830 */
+                                          Right_BTree_int_User_Error_BTree_int_User (Internal_BTree_int_User (delete_List_BTree_int_User_pair_t (items , current ), ({ /* cicili#Let4838 */
+                                              __auto_type r1  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let4840 */
                                                 __auto_type r1  = take_List_Rc_BTree_int_User (index , children );
                                                 // ----------
                                                 ((void)(r1 -> __h_table -> freeClass ));
                                                 r1 ;
                                               });
-                                              __auto_type r2  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let5059 */
-                                                __auto_type r2  = fmap_Functor_List_Rc_BTree_int_User (({ /* cicili#Progn5065 */
-                                                  Rc_BTree_int_User __ciciliC_5064 (Rc_BTree_int_User __h_value ) {
+                                              __auto_type r2  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let4844 */
+                                                __auto_type r2  = fmap_Functor_List_Rc_BTree_int_User (({ /* cicili#Progn4850 */
+                                                  Rc_BTree_int_User __ciciliC_4849 (Rc_BTree_int_User __h_value ) {
                                                     return clone_Rc_BTree_int_User (__h_value );
                                                   }
-                                                  __ciciliC_5064 ;
+                                                  __ciciliC_4849 ;
                                                 }), r1 );
                                                 // ----------
                                                 ((void)(r2 -> __h_table -> freeClass ));
                                                 r2 ;
                                               });
-                                              __auto_type r3  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let5072 */
+                                              __auto_type r3  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let4857 */
                                                 __auto_type r3  = drop_List_Rc_BTree_int_User ((index  +  2 ), children );
                                                 // ----------
                                                 ((void)(r3 -> __h_table -> freeClass ));
                                                 r3 ;
                                               });
-                                              __auto_type r4  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let5076 */
-                                                __auto_type r4  = fmap_Functor_List_Rc_BTree_int_User (({ /* cicili#Progn5082 */
-                                                  Rc_BTree_int_User __ciciliC_5081 (Rc_BTree_int_User __h_value ) {
+                                              __auto_type r4  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let4861 */
+                                                __auto_type r4  = fmap_Functor_List_Rc_BTree_int_User (({ /* cicili#Progn4867 */
+                                                  Rc_BTree_int_User __ciciliC_4866 (Rc_BTree_int_User __h_value ) {
                                                     return clone_Rc_BTree_int_User (__h_value );
                                                   }
-                                                  __ciciliC_5081 ;
+                                                  __ciciliC_4866 ;
                                                 }), r3 );
                                                 // ----------
                                                 ((void)(r4 -> __h_table -> freeClass ));
                                                 r4 ;
                                               });
-                                              __auto_type r5  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let5089 */
+                                              __auto_type r5  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let4874 */
                                                 __auto_type r5  = wrap_List_BTree_int_User_pair_t (head );
                                                 // ----------
                                                 ((void)(r5 -> __h_table -> freeClass ));
                                                 r5 ;
                                               });
-                                              __auto_type r6  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let5093 */
+                                              __auto_type r6  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let4878 */
                                                 __auto_type r6  = append_List_BTree_int_User_pair_t (child_items , r5 );
                                                 // ----------
                                                 ((void)(r6 -> __h_table -> freeClass ));
                                                 r6 ;
                                               });
-                                              __auto_type r8  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let5097 */
+                                              __auto_type r8  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let4882 */
                                                 __auto_type r8  = push_List_Rc_BTree_int_User (new_Rc_BTree_int_User (Leaf_BTree_int_User (append_List_BTree_int_User_pair_t (r6 , right_child_items ))), r4 );
                                                 // ----------
                                                 ((void)(r8 -> __h_table -> freeClass ));
@@ -4707,38 +4843,38 @@ Either_BTree_int_User_Error_BTree_int_User borrowLeaf_BTree_int_User (List_BTree
                                               // ----------
                                               append_List_Rc_BTree_int_User (r2 , r8 );
                                             })));
-                                        }) : ({ /* cicili#Let5108 */
+                                        }) : ({ /* cicili#Let4893 */
                                           // ----------
-                                          
-                                          ({ /* cicili#Progn5112 */
+                                          ;
+                                          ({ /* cicili#Progn4895 */
                                             Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_CANT_BORROW ("borrowRight R2"));
                                           });
                                         }));
                                     });
                                   }));
-                              }) : ({ /* cicili#Let5119 */
+                              }) : ({ /* cicili#Let4902 */
                                 // ----------
-                                
-                                ({ /* cicili#Progn5123 */
+                                ;
+                                ({ /* cicili#Progn4904 */
                                   Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_CANT_BORROW ("borrowRight 3"));
                                 });
                               }));
                           });
                         });
-                      }) : ({ /* cicili#Let5130 */
+                      }) : ({ /* cicili#Let4911 */
                         // ----------
-                        
-                        ({ /* cicili#Progn5134 */
+                        ;
+                        ({ /* cicili#Progn4913 */
                           Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_CANT_BORROW ("borrowRight 3"));
                         });
                       }));
                   });
                 });
               });
-            }) : ({ /* cicili#Let5141 */
+            }) : ({ /* cicili#Let4920 */
               // ----------
-              
-              ({ /* cicili#Progn5145 */
+              ;
+              ({ /* cicili#Progn4922 */
                 Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_CANT_BORROW ("borrowRight 4"));
               });
             }));
@@ -4746,121 +4882,126 @@ Either_BTree_int_User_Error_BTree_int_User borrowLeaf_BTree_int_User (List_BTree
       });
   }
   Either_BTree_int_User_Error_BTree_int_User borrowLeft (List_BTree_int_User_pair_t child_items ) {
-    return ({ /* cicili#Let5158 */
+    return ({ /* cicili#Let4935 */
         typeof((((wleft . __h_data ). Just ). __h_0_mem )) left ;
         typeof((((left -> __h_data ). Cons ). __h_0_mem )) left_item ;
         // ----------
-        
-        ({ /* cicili#Let5162 */
-          bool __h_case_result  = (true  &&  (((wleft . __h_ctor ) ==  __h_Just_t  ) &&  (({ /* cicili#Progn5163 */
+        ;
+        ({ /* cicili#Let4937 */
+          bool __h_case_result  = (true  &&  (((wleft . __h_ctor ) ==  __h_Just_t  ) &&  (({ /* cicili#Progn4938 */
                   (left  =  (((wleft . __h_data ). Just ). __h_0_mem ) );
                   true ;
-                }) &&  (true  &&  (((left -> __h_ctor ) ==  __h_Cons_t  ) &&  ({ /* cicili#Progn5165 */
+                }) &&  (true  &&  (((left -> __h_ctor ) ==  __h_Cons_t  ) &&  ({ /* cicili#Progn4940 */
                       (left_item  =  (((left -> __h_data ). Cons ). __h_0_mem ) );
                       true ;
                     }) ) ) ) ) );
           // ----------
-          ((__h_case_result ) ? ({ /* cicili#Progn5168 */
-              ({ /* cicili#Let5172 */
-                __auto_type match5171  = nth_List_Rc_BTree_int_User ((index  -  1 ), children );
-                typeof((((match5171 . __h_data ). Just ). __h_0_mem )) left_child_rc ;
+          
+          ((__h_case_result ) ? ({ /* cicili#Progn4945 */
+              ({ /* cicili#Let4949 */
+                __auto_type match4948  = nth_List_Rc_BTree_int_User ((index  -  1 ), children );
+                typeof((((match4948 . __h_data ). Just ). __h_0_mem )) left_child_rc ;
                 // ----------
-                
-                ({ /* cicili#Let5177 */
-                  bool __h_case_result  = (true  &&  (((match5171 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn5178 */
-                        (left_child_rc  =  (((match5171 . __h_data ). Just ). __h_0_mem ) );
+                ;
+                ({ /* cicili#Let4952 */
+                  bool __h_case_result  = (true  &&  (((match4948 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn4953 */
+                        (left_child_rc  =  (((match4948 . __h_data ). Just ). __h_0_mem ) );
                         true ;
                       }) ) );
                   // ----------
-                  ((__h_case_result ) ? ({ /* cicili#Progn5181 */
-                      ({ /* cicili#Let5184 */
+                  
+                  ((__h_case_result ) ? ({ /* cicili#Progn4958 */
+                      ({ /* cicili#Let4961 */
                         __auto_type __h_matchbox  = left_child_rc ;
                         // ----------
-                        ({ /* cicili#Let5188 */
-                          __auto_type match5187  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
-                          typeof((((match5187 . __h_data ). Just ). __h_0_mem )) unboxed ;
+                        ({ /* cicili#Let4965 */
+                          __auto_type match4964  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
+                          typeof((((match4964 . __h_data ). Just ). __h_0_mem )) unboxed ;
                           // ----------
-                          
-                          ({ /* cicili#Let5193 */
-                            bool __h_case_result  = (true  &&  (((match5187 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn5194 */
-                                  (unboxed  =  (((match5187 . __h_data ). Just ). __h_0_mem ) );
+                          ;
+                          ({ /* cicili#Let4968 */
+                            bool __h_case_result  = (true  &&  (((match4964 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn4969 */
+                                  (unboxed  =  (((match4964 . __h_data ). Just ). __h_0_mem ) );
                                   true ;
                                 }) ) );
                             // ----------
-                            ((__h_case_result ) ? ({ /* cicili#Progn5197 */
-                                ({ /* cicili#Let5201 */
+                            
+                            ((__h_case_result ) ? ({ /* cicili#Progn4974 */
+                                ({ /* cicili#Let4978 */
                                   typeof((((unboxed -> __h_data ). Leaf ). __h_0_mem )) left_child_items ;
                                   // ----------
-                                  
-                                  ({ /* cicili#Let5205 */
-                                    bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Leaf_t  ) &&  ({ /* cicili#Progn5206 */
+                                  ;
+                                  ({ /* cicili#Let4980 */
+                                    bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Leaf_t  ) &&  ({ /* cicili#Progn4981 */
                                           (left_child_items  =  (((unboxed -> __h_data ). Leaf ). __h_0_mem ) );
                                           true ;
                                         }) ) );
                                     // ----------
-                                    ((__h_case_result ) ? ({ /* cicili#Progn5209 */
-                                        (((hasLen_List_BTree_int_User_pair_t (left_child_items , L_BTree_int_User ) ==  L_BTree_int_User  )) ? ({ /* cicili#Let5217 */
+                                    
+                                    ((__h_case_result ) ? ({ /* cicili#Progn4986 */
+                                        (((hasLen_List_BTree_int_User_pair_t (left_child_items , L_BTree_int_User ) ==  L_BTree_int_User  )) ? ({ /* cicili#Let4994 */
                                             __auto_type last  = last_List_BTree_int_User_pair_t (left_child_items );
                                             typeof((((last -> __h_data ). Cons ). __h_0_mem )) last_item ;
                                             // ----------
-                                            
-                                            ({ /* cicili#Let5222 */
-                                              bool __h_case_result  = (true  &&  (((last -> __h_ctor ) ==  __h_Cons_t  ) &&  ({ /* cicili#Progn5223 */
+                                            ;
+                                            ({ /* cicili#Let4997 */
+                                              bool __h_case_result  = (true  &&  (((last -> __h_ctor ) ==  __h_Cons_t  ) &&  ({ /* cicili#Progn4998 */
                                                     (last_item  =  (((last -> __h_data ). Cons ). __h_0_mem ) );
                                                     true ;
                                                   }) ) );
                                               // ----------
-                                              ((__h_case_result ) ? ({ /* cicili#Progn5226 */
-                                                  ({ /* cicili#Let5229 */
-                                                    __auto_type last  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let5231 */
+                                              
+                                              ((__h_case_result ) ? ({ /* cicili#Progn5003 */
+                                                  ({ /* cicili#Let5006 */
+                                                    __auto_type last  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let5008 */
                                                       __auto_type last  = last ;
                                                       // ----------
                                                       ((void)(last -> __h_table -> freeClass ));
                                                       last ;
                                                     });
                                                     // ----------
-                                                    Right_BTree_int_User_Error_BTree_int_User (Internal_BTree_int_User (replace_List_BTree_int_User_pair_t (items , last_item , left ), ({ /* cicili#Let5240 */
-                                                        __auto_type r1  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let5242 */
+                                                    Right_BTree_int_User_Error_BTree_int_User (Internal_BTree_int_User (replace_List_BTree_int_User_pair_t (items , last_item , left ), ({ /* cicili#Let5017 */
+                                                        __auto_type r1  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let5019 */
                                                           __auto_type r1  = take_List_Rc_BTree_int_User ((index  -  1 ), children );
                                                           // ----------
                                                           ((void)(r1 -> __h_table -> freeClass ));
                                                           r1 ;
                                                         });
-                                                        __auto_type r2  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let5246 */
-                                                          __auto_type r2  = fmap_Functor_List_Rc_BTree_int_User (({ /* cicili#Progn5252 */
-                                                            Rc_BTree_int_User __ciciliC_5251 (Rc_BTree_int_User __h_value ) {
+                                                        __auto_type r2  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let5023 */
+                                                          __auto_type r2  = fmap_Functor_List_Rc_BTree_int_User (({ /* cicili#Progn5029 */
+                                                            Rc_BTree_int_User __ciciliC_5028 (Rc_BTree_int_User __h_value ) {
                                                               return clone_Rc_BTree_int_User (__h_value );
                                                             }
-                                                            __ciciliC_5251 ;
+                                                            __ciciliC_5028 ;
                                                           }), r1 );
                                                           // ----------
                                                           ((void)(r2 -> __h_table -> freeClass ));
                                                           r2 ;
                                                         });
-                                                        __auto_type r3  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let5259 */
+                                                        __auto_type r3  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let5036 */
                                                           __auto_type r3  = drop_List_Rc_BTree_int_User ((index  +  1 ), children );
                                                           // ----------
                                                           ((void)(r3 -> __h_table -> freeClass ));
                                                           r3 ;
                                                         });
-                                                        __auto_type r4  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let5263 */
-                                                          __auto_type r4  = fmap_Functor_List_Rc_BTree_int_User (({ /* cicili#Progn5269 */
-                                                            Rc_BTree_int_User __ciciliC_5268 (Rc_BTree_int_User __h_value ) {
+                                                        __auto_type r4  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let5040 */
+                                                          __auto_type r4  = fmap_Functor_List_Rc_BTree_int_User (({ /* cicili#Progn5046 */
+                                                            Rc_BTree_int_User __ciciliC_5045 (Rc_BTree_int_User __h_value ) {
                                                               return clone_Rc_BTree_int_User (__h_value );
                                                             }
-                                                            __ciciliC_5268 ;
+                                                            __ciciliC_5045 ;
                                                           }), r3 );
                                                           // ----------
                                                           ((void)(r4 -> __h_table -> freeClass ));
                                                           r4 ;
                                                         });
-                                                        __auto_type r5  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let5276 */
+                                                        __auto_type r5  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let5053 */
                                                           __auto_type r5  = pure_List_Rc_BTree_int_User (((Rc_BTree_int_User[]){ new_Rc_BTree_int_User (Leaf_BTree_int_User (init_List_BTree_int_User_pair_t (left_child_items ))), new_Rc_BTree_int_User (Leaf_BTree_int_User (push_List_BTree_int_User_pair_t (left_item , child_items )))}), 2);
                                                           // ----------
                                                           ((void)(r5 -> __h_table -> freeClass ));
                                                           r5 ;
                                                         });
-                                                        __auto_type r7  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let5289 */
+                                                        __auto_type r7  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let5066 */
                                                           __auto_type r7  = append_List_Rc_BTree_int_User (r5 , r4 );
                                                           // ----------
                                                           ((void)(r7 -> __h_table -> freeClass ));
@@ -4870,70 +5011,71 @@ Either_BTree_int_User_Error_BTree_int_User borrowLeaf_BTree_int_User (List_BTree
                                                         append_List_Rc_BTree_int_User (r2 , r7 );
                                                       })));
                                                   });
-                                                }) : ({ /* cicili#Let5296 */
+                                                }) : ({ /* cicili#Let5073 */
                                                   // ----------
-                                                  
-                                                  ({ /* cicili#Progn5300 */
+                                                  ;
+                                                  ({ /* cicili#Progn5075 */
                                                     Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_CANT_BORROW ("borrowLeft 2"));
                                                   });
                                                 }));
                                             });
-                                          }) : ({ /* cicili#Let5307 */
-                                            __auto_type match5306  = borrowRight (child_items );
+                                          }) : ({ /* cicili#Let5082 */
+                                            __auto_type match5081  = borrowRight (child_items );
                                             // ----------
-                                            
-                                            ({ /* cicili#Let5311 */
-                                              bool __h_case_result  = (true  &&  ((match5306 . __h_ctor ) ==  __h_Left_t  ) );
+                                            ;
+                                            ({ /* cicili#Let5084 */
+                                              bool __h_case_result  = (true  &&  ((match5081 . __h_ctor ) ==  __h_Left_t  ) );
                                               // ----------
-                                              ((__h_case_result ) ? ({ /* cicili#Progn5313 */
-                                                  Right_BTree_int_User_Error_BTree_int_User (Internal_BTree_int_User (delete_List_BTree_int_User_pair_t (items , left ), ({ /* cicili#Let5321 */
-                                                      __auto_type r1  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let5323 */
+                                              
+                                              ((__h_case_result ) ? ({ /* cicili#Progn5088 */
+                                                  Right_BTree_int_User_Error_BTree_int_User (Internal_BTree_int_User (delete_List_BTree_int_User_pair_t (items , left ), ({ /* cicili#Let5096 */
+                                                      __auto_type r1  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let5098 */
                                                         __auto_type r1  = take_List_Rc_BTree_int_User ((index  -  1 ), children );
                                                         // ----------
                                                         ((void)(r1 -> __h_table -> freeClass ));
                                                         r1 ;
                                                       });
-                                                      __auto_type r2  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let5327 */
-                                                        __auto_type r2  = fmap_Functor_List_Rc_BTree_int_User (({ /* cicili#Progn5333 */
-                                                          Rc_BTree_int_User __ciciliC_5332 (Rc_BTree_int_User __h_value ) {
+                                                      __auto_type r2  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let5102 */
+                                                        __auto_type r2  = fmap_Functor_List_Rc_BTree_int_User (({ /* cicili#Progn5108 */
+                                                          Rc_BTree_int_User __ciciliC_5107 (Rc_BTree_int_User __h_value ) {
                                                             return clone_Rc_BTree_int_User (__h_value );
                                                           }
-                                                          __ciciliC_5332 ;
+                                                          __ciciliC_5107 ;
                                                         }), r1 );
                                                         // ----------
                                                         ((void)(r2 -> __h_table -> freeClass ));
                                                         r2 ;
                                                       });
-                                                      __auto_type r3  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let5340 */
+                                                      __auto_type r3  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let5115 */
                                                         __auto_type r3  = drop_List_Rc_BTree_int_User ((index  +  1 ), children );
                                                         // ----------
                                                         ((void)(r3 -> __h_table -> freeClass ));
                                                         r3 ;
                                                       });
-                                                      __auto_type r4  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let5344 */
-                                                        __auto_type r4  = fmap_Functor_List_Rc_BTree_int_User (({ /* cicili#Progn5350 */
-                                                          Rc_BTree_int_User __ciciliC_5349 (Rc_BTree_int_User __h_value ) {
+                                                      __auto_type r4  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let5119 */
+                                                        __auto_type r4  = fmap_Functor_List_Rc_BTree_int_User (({ /* cicili#Progn5125 */
+                                                          Rc_BTree_int_User __ciciliC_5124 (Rc_BTree_int_User __h_value ) {
                                                             return clone_Rc_BTree_int_User (__h_value );
                                                           }
-                                                          __ciciliC_5349 ;
+                                                          __ciciliC_5124 ;
                                                         }), r3 );
                                                         // ----------
                                                         ((void)(r4 -> __h_table -> freeClass ));
                                                         r4 ;
                                                       });
-                                                      __auto_type r8  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let5357 */
+                                                      __auto_type r8  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let5132 */
                                                         __auto_type r8  = wrap_List_BTree_int_User_pair_t (left_item );
                                                         // ----------
                                                         ((void)(r8 -> __h_table -> freeClass ));
                                                         r8 ;
                                                       });
-                                                      __auto_type r5  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let5361 */
+                                                      __auto_type r5  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let5136 */
                                                         __auto_type r5  = append_List_BTree_int_User_pair_t (left_child_items , r8 );
                                                         // ----------
                                                         ((void)(r5 -> __h_table -> freeClass ));
                                                         r5 ;
                                                       });
-                                                      __auto_type r7  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let5365 */
+                                                      __auto_type r7  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let5140 */
                                                         __auto_type r7  = push_List_Rc_BTree_int_User (new_Rc_BTree_int_User (Leaf_BTree_int_User (append_List_BTree_int_User_pair_t (r5 , child_items ))), r4 );
                                                         // ----------
                                                         ((void)(r7 -> __h_table -> freeClass ));
@@ -4942,88 +5084,89 @@ Either_BTree_int_User_Error_BTree_int_User borrowLeaf_BTree_int_User (List_BTree
                                                       // ----------
                                                       append_List_Rc_BTree_int_User (r2 , r7 );
                                                     })));
-                                                }) : ({ /* cicili#Let5376 */
-                                                  __auto_type right  = match5306 ;
+                                                }) : ({ /* cicili#Let5151 */
+                                                  __auto_type right  = match5081 ;
                                                   // ----------
-                                                  
-                                                  ({ /* cicili#Progn5380 */
+                                                  ;
+                                                  ({ /* cicili#Progn5153 */
                                                     right ;
                                                   });
                                                 }));
                                             });
                                           }));
-                                      }) : ({ /* cicili#Let5384 */
+                                      }) : ({ /* cicili#Let5157 */
                                         // ----------
-                                        
-                                        ({ /* cicili#Progn5388 */
+                                        ;
+                                        ({ /* cicili#Progn5159 */
                                           Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_CANT_BORROW ("borrowLeft 3"));
                                         });
                                       }));
                                   });
                                 });
-                              }) : ({ /* cicili#Let5395 */
+                              }) : ({ /* cicili#Let5166 */
                                 // ----------
-                                
-                                ({ /* cicili#Progn5399 */
+                                ;
+                                ({ /* cicili#Progn5168 */
                                   Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_CANT_BORROW ("borrowLeft 4"));
                                 });
                               }));
                           });
                         });
                       });
-                    }) : ({ /* cicili#Let5406 */
+                    }) : ({ /* cicili#Let5175 */
                       // ----------
-                      
-                      ({ /* cicili#Progn5410 */
+                      ;
+                      ({ /* cicili#Progn5177 */
                         Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_CANT_BORROW ("borrowLeft 5"));
                       });
                     }));
                 });
               });
-            }) : ({ /* cicili#Let5417 */
+            }) : ({ /* cicili#Let5184 */
               // ----------
-              
-              ({ /* cicili#Progn5421 */
+              ;
+              ({ /* cicili#Progn5186 */
                 borrowRight (child_items );
               });
             }));
         });
       });
   }
-  return ({ /* cicili#Let5425 */
-      __auto_type result  = ({ /* cicili#Let5428 */
+  return ({ /* cicili#Let5190 */
+      __auto_type result  = ({ /* cicili#Let5193 */
         typeof((((nchild -> __h_data ). Branch ). __h_0_mem )) child_items ;
         // ----------
-        
-        ({ /* cicili#Let5432 */
-          bool __h_case_result  = (true  &&  (((nchild -> __h_ctor ) ==  __h_Branch_t  ) &&  ({ /* cicili#Progn5433 */
+        ;
+        ({ /* cicili#Let5195 */
+          bool __h_case_result  = (true  &&  (((nchild -> __h_ctor ) ==  __h_Branch_t  ) &&  ({ /* cicili#Progn5196 */
                 (child_items  =  (((nchild -> __h_data ). Branch ). __h_0_mem ) );
                 true ;
               }) ) );
           // ----------
-          ((__h_case_result ) ? ({ /* cicili#Progn5436 */
-              (((hasLen_List_BTree_int_User_pair_t (child_items , (L_BTree_int_User  -  1 )) ==  (L_BTree_int_User  -  1 ) )) ? Right_BTree_int_User_Error_BTree_int_User (Internal_BTree_int_User (copy_List_BTree_int_User_pair_t (items ), ({ /* cicili#Let5448 */
-                  __auto_type r1  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let5450 */
+          
+          ((__h_case_result ) ? ({ /* cicili#Progn5201 */
+              (((hasLen_List_BTree_int_User_pair_t (child_items , (L_BTree_int_User  -  1 )) ==  (L_BTree_int_User  -  1 ) )) ? Right_BTree_int_User_Error_BTree_int_User (Internal_BTree_int_User (copy_List_BTree_int_User_pair_t (items ), ({ /* cicili#Let5213 */
+                  __auto_type r1  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let5215 */
                     __auto_type r1  = new_Rc_BTree_int_User (nchild );
                     // ----------
                     ((void)((r1 . __h_table )-> freeData ));
                     r1 ;
                   });
-                  __auto_type r2  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let5454 */
+                  __auto_type r2  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let5219 */
                     __auto_type r2  = replaceAt_List_Rc_BTree_int_User (children , r1 , index );
                     // ----------
                     ((void)(r2 -> __h_table -> freeClass ));
                     r2 ;
                   });
                   // ----------
-                  fmap_Functor_List_Rc_BTree_int_User (({ /* cicili#Progn5463 */
-                      Rc_BTree_int_User __ciciliC_5462 (Rc_BTree_int_User __h_value ) {
+                  fmap_Functor_List_Rc_BTree_int_User (({ /* cicili#Progn5228 */
+                      Rc_BTree_int_User __ciciliC_5227 (Rc_BTree_int_User __h_value ) {
                         return clone_Rc_BTree_int_User (__h_value );
                       }
-                      __ciciliC_5462 ;
+                      __ciciliC_5227 ;
                     }), r2 );
-                }))) : ({ /* cicili#Let5469 */
-                  __auto_type nchild  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let5471 */
+                }))) : ({ /* cicili#Let5234 */
+                  __auto_type nchild  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let5236 */
                     __auto_type nchild  = nchild ;
                     // ----------
                     ((void)(nchild -> __h_table -> freeClass ));
@@ -5032,39 +5175,40 @@ Either_BTree_int_User_Error_BTree_int_User borrowLeaf_BTree_int_User (List_BTree
                   // ----------
                   borrowLeft (child_items );
                 }));
-            }) : ({ /* cicili#Let5476 */
+            }) : ({ /* cicili#Let5241 */
               typeof((((nchild -> __h_data ). Internal ). __h_0_mem )) child_items ;
               // ----------
-              
-              ({ /* cicili#Let5480 */
-                bool __h_case_result  = (true  &&  (((nchild -> __h_ctor ) ==  __h_Internal_t  ) &&  ({ /* cicili#Progn5481 */
+              ;
+              ({ /* cicili#Let5243 */
+                bool __h_case_result  = (true  &&  (((nchild -> __h_ctor ) ==  __h_Internal_t  ) &&  ({ /* cicili#Progn5244 */
                       (child_items  =  (((nchild -> __h_data ). Internal ). __h_0_mem ) );
                       true ;
                     }) ) );
                 // ----------
-                ((__h_case_result ) ? ({ /* cicili#Progn5484 */
-                    (((hasLen_List_BTree_int_User_pair_t (child_items , (L_BTree_int_User  -  1 )) ==  (L_BTree_int_User  -  1 ) )) ? Right_BTree_int_User_Error_BTree_int_User (Internal_BTree_int_User (copy_List_BTree_int_User_pair_t (items ), ({ /* cicili#Let5496 */
-                        __auto_type r1  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let5498 */
+                
+                ((__h_case_result ) ? ({ /* cicili#Progn5249 */
+                    (((hasLen_List_BTree_int_User_pair_t (child_items , (L_BTree_int_User  -  1 )) ==  (L_BTree_int_User  -  1 ) )) ? Right_BTree_int_User_Error_BTree_int_User (Internal_BTree_int_User (copy_List_BTree_int_User_pair_t (items ), ({ /* cicili#Let5261 */
+                        __auto_type r1  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let5263 */
                           __auto_type r1  = new_Rc_BTree_int_User (nchild );
                           // ----------
                           ((void)((r1 . __h_table )-> freeData ));
                           r1 ;
                         });
-                        __auto_type r2  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let5502 */
+                        __auto_type r2  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let5267 */
                           __auto_type r2  = replaceAt_List_Rc_BTree_int_User (children , r1 , index );
                           // ----------
                           ((void)(r2 -> __h_table -> freeClass ));
                           r2 ;
                         });
                         // ----------
-                        fmap_Functor_List_Rc_BTree_int_User (({ /* cicili#Progn5511 */
-                            Rc_BTree_int_User __ciciliC_5510 (Rc_BTree_int_User __h_value ) {
+                        fmap_Functor_List_Rc_BTree_int_User (({ /* cicili#Progn5276 */
+                            Rc_BTree_int_User __ciciliC_5275 (Rc_BTree_int_User __h_value ) {
                               return clone_Rc_BTree_int_User (__h_value );
                             }
-                            __ciciliC_5510 ;
+                            __ciciliC_5275 ;
                           }), r2 );
-                      }))) : ({ /* cicili#Let5517 */
-                        __auto_type nchild  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let5519 */
+                      }))) : ({ /* cicili#Let5282 */
+                        __auto_type nchild  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let5284 */
                           __auto_type nchild  = nchild ;
                           // ----------
                           ((void)(nchild -> __h_table -> freeClass ));
@@ -5073,39 +5217,40 @@ Either_BTree_int_User_Error_BTree_int_User borrowLeaf_BTree_int_User (List_BTree
                         // ----------
                         borrowLeft (child_items );
                       }));
-                  }) : ({ /* cicili#Let5524 */
+                  }) : ({ /* cicili#Let5289 */
                     typeof((((nchild -> __h_data ). Leaf ). __h_0_mem )) child_items ;
                     // ----------
-                    
-                    ({ /* cicili#Let5528 */
-                      bool __h_case_result  = (true  &&  (((nchild -> __h_ctor ) ==  __h_Leaf_t  ) &&  ({ /* cicili#Progn5529 */
+                    ;
+                    ({ /* cicili#Let5291 */
+                      bool __h_case_result  = (true  &&  (((nchild -> __h_ctor ) ==  __h_Leaf_t  ) &&  ({ /* cicili#Progn5292 */
                             (child_items  =  (((nchild -> __h_data ). Leaf ). __h_0_mem ) );
                             true ;
                           }) ) );
                       // ----------
-                      ((__h_case_result ) ? ({ /* cicili#Progn5532 */
-                          (((hasLen_List_BTree_int_User_pair_t (child_items , (L_BTree_int_User  -  1 )) ==  (L_BTree_int_User  -  1 ) )) ? Right_BTree_int_User_Error_BTree_int_User (Internal_BTree_int_User (copy_List_BTree_int_User_pair_t (items ), ({ /* cicili#Let5544 */
-                              __auto_type r1  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let5546 */
+                      
+                      ((__h_case_result ) ? ({ /* cicili#Progn5297 */
+                          (((hasLen_List_BTree_int_User_pair_t (child_items , (L_BTree_int_User  -  1 )) ==  (L_BTree_int_User  -  1 ) )) ? Right_BTree_int_User_Error_BTree_int_User (Internal_BTree_int_User (copy_List_BTree_int_User_pair_t (items ), ({ /* cicili#Let5309 */
+                              __auto_type r1  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let5311 */
                                 __auto_type r1  = new_Rc_BTree_int_User (nchild );
                                 // ----------
                                 ((void)((r1 . __h_table )-> freeData ));
                                 r1 ;
                               });
-                              __auto_type r2  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let5550 */
+                              __auto_type r2  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let5315 */
                                 __auto_type r2  = replaceAt_List_Rc_BTree_int_User (children , r1 , index );
                                 // ----------
                                 ((void)(r2 -> __h_table -> freeClass ));
                                 r2 ;
                               });
                               // ----------
-                              fmap_Functor_List_Rc_BTree_int_User (({ /* cicili#Progn5559 */
-                                  Rc_BTree_int_User __ciciliC_5558 (Rc_BTree_int_User __h_value ) {
+                              fmap_Functor_List_Rc_BTree_int_User (({ /* cicili#Progn5324 */
+                                  Rc_BTree_int_User __ciciliC_5323 (Rc_BTree_int_User __h_value ) {
                                     return clone_Rc_BTree_int_User (__h_value );
                                   }
-                                  __ciciliC_5558 ;
+                                  __ciciliC_5323 ;
                                 }), r2 );
-                            }))) : ({ /* cicili#Let5565 */
-                              __auto_type nchild  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let5567 */
+                            }))) : ({ /* cicili#Let5330 */
+                              __auto_type nchild  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let5332 */
                                 __auto_type nchild  = nchild ;
                                 // ----------
                                 ((void)(nchild -> __h_table -> freeClass ));
@@ -5114,10 +5259,10 @@ Either_BTree_int_User_Error_BTree_int_User borrowLeaf_BTree_int_User (List_BTree
                               // ----------
                               borrowLeft (child_items );
                             }));
-                        }) : ({ /* cicili#Let5572 */
+                        }) : ({ /* cicili#Let5337 */
                           // ----------
-                          
-                          ({ /* cicili#Progn5576 */
+                          ;
+                          ({ /* cicili#Progn5339 */
                             Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_CANT_BORROW ("borrow 1"));
                           });
                         }));
@@ -5131,288 +5276,298 @@ Either_BTree_int_User_Error_BTree_int_User borrowLeaf_BTree_int_User (List_BTree
       result ;
     });
 }
-Either_BTree_int_User_Error_BTree_int_User borrowInternal_BTree_int_User (Maybe_BTree_int_User wtree , List_BTree_int_User_pair_t items , List_Rc_BTree_int_User children , List_BTree_int_User_pair_t current , int index , void (*callback) (BTree_int_User_pair_t item )) {
+Either_BTree_int_User_Error_BTree_int_User borrowInternal_BTree_int_User (Maybe_BTree_int_User wtree , List_BTree_int_User_pair_t items , List_Rc_BTree_int_User children , List_BTree_int_User_pair_t current , size_t index , void (*callback) (BTree_int_User_pair_t item )) {
   Either_BTree_int_User_Error_BTree_int_User borrowRightInternal (List_BTree_int_User_pair_t left_child_items , List_Rc_BTree_int_User left_child_children ) {
-    return ({ /* cicili#Let5601 */
-        __auto_type match5600  = nth_List_Rc_BTree_int_User ((index  +  1 ), children );
-        typeof((((match5600 . __h_data ). Just ). __h_0_mem )) right_child_rc ;
+    return ({ /* cicili#Let5364 */
+        __auto_type match5363  = nth_List_Rc_BTree_int_User ((index  +  1 ), children );
+        typeof((((match5363 . __h_data ). Just ). __h_0_mem )) right_child_rc ;
         // ----------
-        
-        ({ /* cicili#Let5606 */
-          bool __h_case_result  = (true  &&  (((match5600 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn5607 */
-                (right_child_rc  =  (((match5600 . __h_data ). Just ). __h_0_mem ) );
+        ;
+        ({ /* cicili#Let5367 */
+          bool __h_case_result  = (true  &&  (((match5363 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn5368 */
+                (right_child_rc  =  (((match5363 . __h_data ). Just ). __h_0_mem ) );
                 true ;
               }) ) );
           // ----------
-          ((__h_case_result ) ? ({ /* cicili#Progn5610 */
-              ({ /* cicili#Let5614 */
-                __auto_type match5613  = get_Rc_BTree_int_User (right_child_rc );
-                typeof((((match5613 . __h_data ). Just ). __h_0_mem )) right_child ;
+          
+          ((__h_case_result ) ? ({ /* cicili#Progn5373 */
+              ({ /* cicili#Let5377 */
+                __auto_type match5376  = get_Rc_BTree_int_User (right_child_rc );
+                typeof((((match5376 . __h_data ). Just ). __h_0_mem )) right_child ;
                 // ----------
-                
-                ({ /* cicili#Let5619 */
-                  bool __h_case_result  = (true  &&  (((match5613 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn5620 */
-                        (right_child  =  (((match5613 . __h_data ). Just ). __h_0_mem ) );
+                ;
+                ({ /* cicili#Let5380 */
+                  bool __h_case_result  = (true  &&  (((match5376 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn5381 */
+                        (right_child  =  (((match5376 . __h_data ). Just ). __h_0_mem ) );
                         true ;
                       }) ) );
                   // ----------
-                  ((__h_case_result ) ? ({ /* cicili#Progn5623 */
-                      ({ /* cicili#Let5627 */
+                  
+                  ((__h_case_result ) ? ({ /* cicili#Progn5386 */
+                      ({ /* cicili#Let5390 */
                         typeof((((right_child -> __h_data ). Branch ). __h_0_mem )) right_child_items ;
                         typeof((((right_child -> __h_data ). Branch ). __h_1_mem )) right_child_children ;
                         // ----------
-                        
-                        ({ /* cicili#Let5631 */
-                          bool __h_case_result  = (true  &&  (((right_child -> __h_ctor ) ==  __h_Branch_t  ) &&  (({ /* cicili#Progn5632 */
+                        ;
+                        ({ /* cicili#Let5392 */
+                          bool __h_case_result  = (true  &&  (((right_child -> __h_ctor ) ==  __h_Branch_t  ) &&  (({ /* cicili#Progn5393 */
                                   (right_child_items  =  (((right_child -> __h_data ). Branch ). __h_0_mem ) );
                                   true ;
-                                }) &&  ({ /* cicili#Progn5634 */
+                                }) &&  ({ /* cicili#Progn5395 */
                                   (right_child_children  =  (((right_child -> __h_data ). Branch ). __h_1_mem ) );
                                   true ;
                                 }) ) ) );
                           // ----------
-                          ((__h_case_result ) ? ({ /* cicili#Progn5637 */
-                              (((hasLen_List_BTree_int_User_pair_t (right_child_items , L_BTree_int_User ) ==  L_BTree_int_User  )) ? ({ /* cicili#Let5646 */
-                                  __auto_type match5644  = min_BTree_int_User (right_child );
-                                  typeof((((match5644 . __h_data ). Just ). __h_0_mem )) min ;
+                          
+                          ((__h_case_result ) ? ({ /* cicili#Progn5400 */
+                              (((hasLen_List_BTree_int_User_pair_t (right_child_items , L_BTree_int_User ) ==  L_BTree_int_User  )) ? ({ /* cicili#Let5409 */
+                                  __auto_type match5407  = min_BTree_int_User (right_child );
+                                  typeof((((match5407 . __h_data ). Just ). __h_0_mem )) min ;
                                   typeof((min . __h_0_mem )) min_key ;
                                   // ----------
-                                  
-                                  ({ /* cicili#Let5651 */
-                                    bool __h_case_result  = (true  &&  (((match5644 . __h_ctor ) ==  __h_Just_t  ) &&  (({ /* cicili#Progn5652 */
-                                            (min  =  (((match5644 . __h_data ). Just ). __h_0_mem ) );
+                                  ;
+                                  ({ /* cicili#Let5412 */
+                                    bool __h_case_result  = (true  &&  (((match5407 . __h_ctor ) ==  __h_Just_t  ) &&  (({ /* cicili#Progn5413 */
+                                            (min  =  (((match5407 . __h_data ). Just ). __h_0_mem ) );
                                             true ;
-                                          }) &&  (true  &&  ({ /* cicili#Progn5654 */
+                                          }) &&  (true  &&  ({ /* cicili#Progn5415 */
                                               (min_key  =  (min . __h_0_mem ) );
                                               true ;
                                             }) ) ) ) );
                                     // ----------
-                                    ((__h_case_result ) ? ({ /* cicili#Progn5657 */
-                                        ({ /* cicili#Let5661 */
-                                          __auto_type match5660  = delete_BTree_int_User (right_child , min_key , NULL );
-                                          typeof((((match5660 . __h_data ). Right ). __h_0_mem )) nchild ;
+                                    
+                                    ((__h_case_result ) ? ({ /* cicili#Progn5420 */
+                                        ({ /* cicili#Let5424 */
+                                          __auto_type match5423  = delete_BTree_int_User (right_child , min_key , NULL );
+                                          typeof((((match5423 . __h_data ). Right ). __h_0_mem )) nchild ;
                                           // ----------
-                                          
-                                          ({ /* cicili#Let5666 */
-                                            bool __h_case_result  = (true  &&  (((match5660 . __h_ctor ) ==  __h_Right_t  ) &&  ({ /* cicili#Progn5667 */
-                                                  (nchild  =  (((match5660 . __h_data ). Right ). __h_0_mem ) );
+                                          ;
+                                          ({ /* cicili#Let5427 */
+                                            bool __h_case_result  = (true  &&  (((match5423 . __h_ctor ) ==  __h_Right_t  ) &&  ({ /* cicili#Progn5428 */
+                                                  (nchild  =  (((match5423 . __h_data ). Right ). __h_0_mem ) );
                                                   true ;
                                                 }) ) );
                                             // ----------
-                                            ((__h_case_result ) ? ({ /* cicili#Progn5670 */
-                                                Right_BTree_int_User_Error_BTree_int_User (Internal_BTree_int_User (replace_List_BTree_int_User_pair_t (items , min , current ), ({ /* cicili#Let5678 */
-                                                    __auto_type r1  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let5680 */
+                                            
+                                            ((__h_case_result ) ? ({ /* cicili#Progn5433 */
+                                                Right_BTree_int_User_Error_BTree_int_User (Internal_BTree_int_User (replace_List_BTree_int_User_pair_t (items , min , current ), ({ /* cicili#Let5441 */
+                                                    __auto_type r1  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let5443 */
                                                       __auto_type r1  = new_Rc_BTree_int_User (nchild );
                                                       // ----------
                                                       ((void)((r1 . __h_table )-> freeData ));
                                                       r1 ;
                                                     });
-                                                    __auto_type r2  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let5684 */
+                                                    __auto_type r2  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let5447 */
                                                       __auto_type r2  = replaceAt_List_Rc_BTree_int_User (children , r1 , (index  +  1 ));
                                                       // ----------
                                                       ((void)(r2 -> __h_table -> freeClass ));
                                                       r2 ;
                                                     });
                                                     // ----------
-                                                    fmap_Functor_List_Rc_BTree_int_User (({ /* cicili#Progn5693 */
-                                                        Rc_BTree_int_User __ciciliC_5692 (Rc_BTree_int_User __h_value ) {
+                                                    fmap_Functor_List_Rc_BTree_int_User (({ /* cicili#Progn5456 */
+                                                        Rc_BTree_int_User __ciciliC_5455 (Rc_BTree_int_User __h_value ) {
                                                           return clone_Rc_BTree_int_User (__h_value );
                                                         }
-                                                        __ciciliC_5692 ;
+                                                        __ciciliC_5455 ;
                                                       }), r2 );
                                                   })));
-                                              }) : ({ /* cicili#Let5700 */
-                                                __auto_type left  = match5660 ;
+                                              }) : ({ /* cicili#Let5463 */
+                                                __auto_type left  = match5423 ;
                                                 // ----------
-                                                
-                                                ({ /* cicili#Progn5704 */
+                                                ;
+                                                ({ /* cicili#Progn5465 */
                                                   left ;
                                                 });
                                               }));
                                           });
                                         });
-                                      }) : ({ /* cicili#Let5708 */
+                                      }) : ({ /* cicili#Let5469 */
                                         // ----------
-                                        
-                                        ({ /* cicili#Progn5712 */
+                                        ;
+                                        ({ /* cicili#Progn5471 */
                                           Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_CANT_BORROW ("borrowRI 1"));
                                         });
                                       }));
                                   });
-                                }) : ({ /* cicili#Let5720 */
+                                }) : ({ /* cicili#Let5479 */
                                   typeof((((current -> __h_data ). Cons ). __h_0_mem )) current_item ;
                                   typeof((current_item . __h_0_mem )) current_key ;
                                   // ----------
-                                  
-                                  ({ /* cicili#Let5724 */
-                                    bool __h_case_result  = (true  &&  (((current -> __h_ctor ) ==  __h_Cons_t  ) &&  (({ /* cicili#Progn5725 */
+                                  ;
+                                  ({ /* cicili#Let5481 */
+                                    bool __h_case_result  = (true  &&  (((current -> __h_ctor ) ==  __h_Cons_t  ) &&  (({ /* cicili#Progn5482 */
                                             (current_item  =  (((current -> __h_data ). Cons ). __h_0_mem ) );
                                             true ;
-                                          }) &&  (true  &&  ({ /* cicili#Progn5727 */
+                                          }) &&  (true  &&  ({ /* cicili#Progn5484 */
                                               (current_key  =  (current_item . __h_0_mem ) );
                                               true ;
                                             }) ) ) ) );
                                     // ----------
-                                    ((__h_case_result ) ? ({ /* cicili#Progn5730 */
-                                        ({ /* cicili#Let5733 */
-                                          __auto_type r1  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let5735 */
+                                    
+                                    ((__h_case_result ) ? ({ /* cicili#Progn5489 */
+                                        ({ /* cicili#Let5492 */
+                                          __auto_type r1  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let5494 */
                                             __auto_type r1  = push_List_BTree_int_User_pair_t (current_item , right_child_items );
                                             // ----------
                                             ((void)(r1 -> __h_table -> freeClass ));
                                             r1 ;
                                           });
-                                          __auto_type r2  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let5739 */
+                                          __auto_type r2  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let5498 */
                                             __auto_type r2  = append_List_Rc_BTree_int_User (left_child_children , right_child_children );
                                             // ----------
                                             ((void)(r2 -> __h_table -> freeClass ));
                                             r2 ;
                                           });
-                                          __auto_type r4  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let5743 */
-                                            __auto_type r4  = Internal_BTree_int_User (append_List_BTree_int_User_pair_t (left_child_items , r1 ), fmap_Functor_List_Rc_BTree_int_User (({ /* cicili#Progn5752 */
-                                              Rc_BTree_int_User __ciciliC_5751 (Rc_BTree_int_User __h_value ) {
+                                          __auto_type r4  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let5502 */
+                                            __auto_type r4  = Internal_BTree_int_User (append_List_BTree_int_User_pair_t (left_child_items , r1 ), fmap_Functor_List_Rc_BTree_int_User (({ /* cicili#Progn5511 */
+                                              Rc_BTree_int_User __ciciliC_5510 (Rc_BTree_int_User __h_value ) {
                                                 return clone_Rc_BTree_int_User (__h_value );
                                               }
-                                              __ciciliC_5751 ;
+                                              __ciciliC_5510 ;
                                             }), r2 ));
                                             // ----------
                                             ((void)(r4 -> __h_table -> freeClass ));
                                             r4 ;
                                           });
-                                          __auto_type r5  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let5759 */
+                                          __auto_type r5  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let5518 */
                                             __auto_type r5  = take_List_Rc_BTree_int_User (index , children );
                                             // ----------
                                             ((void)(r5 -> __h_table -> freeClass ));
                                             r5 ;
                                           });
-                                          __auto_type r7  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let5763 */
+                                          __auto_type r7  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let5522 */
                                             __auto_type r7  = drop_List_Rc_BTree_int_User ((index  +  2 ), children );
                                             // ----------
                                             ((void)(r7 -> __h_table -> freeClass ));
                                             r7 ;
                                           });
                                           // ----------
-                                          ({ /* cicili#Let5769 */
-                                            __auto_type match5768  = delete_BTree_int_User (r4 , current_key , NULL );
-                                            typeof((((match5768 . __h_data ). Right ). __h_0_mem )) ntree ;
+                                          ({ /* cicili#Let5528 */
+                                            __auto_type match5527  = delete_BTree_int_User (r4 , current_key , NULL );
+                                            typeof((((match5527 . __h_data ). Right ). __h_0_mem )) ntree ;
                                             // ----------
-                                            
-                                            ({ /* cicili#Let5774 */
-                                              bool __h_case_result  = (true  &&  (((match5768 . __h_ctor ) ==  __h_Right_t  ) &&  ({ /* cicili#Progn5775 */
-                                                    (ntree  =  (((match5768 . __h_data ). Right ). __h_0_mem ) );
+                                            ;
+                                            ({ /* cicili#Let5531 */
+                                              bool __h_case_result  = (true  &&  (((match5527 . __h_ctor ) ==  __h_Right_t  ) &&  ({ /* cicili#Progn5532 */
+                                                    (ntree  =  (((match5527 . __h_data ). Right ). __h_0_mem ) );
                                                     true ;
                                                   }) ) );
                                               // ----------
-                                              ((__h_case_result ) ? ({ /* cicili#Progn5778 */
-                                                  ({ /* cicili#Let5782 */
+                                              
+                                              ((__h_case_result ) ? ({ /* cicili#Progn5537 */
+                                                  ({ /* cicili#Let5541 */
                                                     __auto_type tmp_result  = splitForDelete_BTree_int_User (ntree );
                                                     typeof((((tmp_result -> __h_data ). Branch ). __h_0_mem )) branch_items ;
                                                     typeof((((tmp_result -> __h_data ). Branch ). __h_1_mem )) branch_children ;
                                                     // ----------
-                                                    
-                                                    ({ /* cicili#Let5787 */
-                                                      bool __h_case_result  = (true  &&  (((tmp_result -> __h_ctor ) ==  __h_Branch_t  ) &&  (({ /* cicili#Progn5788 */
+                                                    ;
+                                                    ({ /* cicili#Let5544 */
+                                                      bool __h_case_result  = (true  &&  (((tmp_result -> __h_ctor ) ==  __h_Branch_t  ) &&  (({ /* cicili#Progn5545 */
                                                               (branch_items  =  (((tmp_result -> __h_data ). Branch ). __h_0_mem ) );
                                                               true ;
-                                                            }) &&  ({ /* cicili#Progn5790 */
+                                                            }) &&  ({ /* cicili#Progn5547 */
                                                               (branch_children  =  (((tmp_result -> __h_data ). Branch ). __h_1_mem ) );
                                                               true ;
                                                             }) ) ) );
                                                       // ----------
-                                                      ((__h_case_result ) ? ({ /* cicili#Progn5793 */
-                                                          ({ /* cicili#Let5797 */
+                                                      
+                                                      ((__h_case_result ) ? ({ /* cicili#Progn5552 */
+                                                          ({ /* cicili#Let5556 */
                                                             typeof((((branch_items -> __h_data ). Cons ). __h_0_mem )) branch_head ;
                                                             // ----------
-                                                            
-                                                            ({ /* cicili#Let5801 */
-                                                              bool __h_case_result  = (true  &&  (((branch_items -> __h_ctor ) ==  __h_Cons_t  ) &&  ({ /* cicili#Progn5802 */
+                                                            ;
+                                                            ({ /* cicili#Let5558 */
+                                                              bool __h_case_result  = (true  &&  (((branch_items -> __h_ctor ) ==  __h_Cons_t  ) &&  ({ /* cicili#Progn5559 */
                                                                     (branch_head  =  (((branch_items -> __h_data ). Cons ). __h_0_mem ) );
                                                                     true ;
                                                                   }) ) );
                                                               // ----------
-                                                              ((__h_case_result ) ? ({ /* cicili#Progn5805 */
-                                                                  ({ /* cicili#Let5808 */
-                                                                    __auto_type ntree  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let5810 */
+                                                              
+                                                              ((__h_case_result ) ? ({ /* cicili#Progn5564 */
+                                                                  ({ /* cicili#Let5567 */
+                                                                    __auto_type ntree  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let5569 */
                                                                       __auto_type ntree  = ntree ;
                                                                       // ----------
                                                                       ((void)(ntree -> __h_table -> freeClass ));
                                                                       ntree ;
                                                                     });
-                                                                    __auto_type tmp_result  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let5813 */
+                                                                    __auto_type tmp_result  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let5572 */
                                                                       __auto_type tmp_result  = tmp_result ;
                                                                       // ----------
                                                                       ((void)(tmp_result -> __h_table -> freeClass ));
                                                                       tmp_result ;
                                                                     });
                                                                     // ----------
-                                                                    Right_BTree_int_User_Error_BTree_int_User (Internal_BTree_int_User (replace_List_BTree_int_User_pair_t (items , branch_head , current ), ({ /* cicili#Let5822 */
-                                                                        __auto_type r10  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let5824 */
+                                                                    Right_BTree_int_User_Error_BTree_int_User (Internal_BTree_int_User (replace_List_BTree_int_User_pair_t (items , branch_head , current ), ({ /* cicili#Let5581 */
+                                                                        __auto_type r10  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let5583 */
                                                                           __auto_type r10  = append_List_Rc_BTree_int_User (branch_children , r7 );
                                                                           // ----------
                                                                           ((void)(r10 -> __h_table -> freeClass ));
                                                                           r10 ;
                                                                         });
-                                                                        __auto_type r11  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let5828 */
+                                                                        __auto_type r11  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let5587 */
                                                                           __auto_type r11  = append_List_Rc_BTree_int_User (r5 , r10 );
                                                                           // ----------
                                                                           ((void)(r11 -> __h_table -> freeClass ));
                                                                           r11 ;
                                                                         });
                                                                         // ----------
-                                                                        fmap_Functor_List_Rc_BTree_int_User (({ /* cicili#Progn5837 */
-                                                                            Rc_BTree_int_User __ciciliC_5836 (Rc_BTree_int_User __h_value ) {
+                                                                        fmap_Functor_List_Rc_BTree_int_User (({ /* cicili#Progn5596 */
+                                                                            Rc_BTree_int_User __ciciliC_5595 (Rc_BTree_int_User __h_value ) {
                                                                               return clone_Rc_BTree_int_User (__h_value );
                                                                             }
-                                                                            __ciciliC_5836 ;
+                                                                            __ciciliC_5595 ;
                                                                           }), r11 );
                                                                       })));
                                                                   });
-                                                                }) : ({ /* cicili#Let5844 */
+                                                                }) : ({ /* cicili#Let5603 */
                                                                   // ----------
-                                                                  
-                                                                  ({ /* cicili#Progn5848 */
+                                                                  ;
+                                                                  ({ /* cicili#Progn5605 */
                                                                     Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_CANT_BORROW ("borrowRI 2"));
                                                                   });
                                                                 }));
                                                             });
                                                           });
-                                                        }) : ({ /* cicili#Let5855 */
+                                                        }) : ({ /* cicili#Let5612 */
                                                           // ----------
-                                                          
-                                                          ({ /* cicili#Let5859 */
+                                                          ;
+                                                          ({ /* cicili#Let5614 */
                                                             bool __h_case_result  = (true  &&  ((tmp_result -> __h_ctor ) ==  __h_Internal_t  ) );
                                                             // ----------
-                                                            ((__h_case_result ) ? ({ /* cicili#Progn5861 */
-                                                                Right_BTree_int_User_Error_BTree_int_User (Internal_BTree_int_User (delete_List_BTree_int_User_pair_t (items , current ), ({ /* cicili#Let5869 */
-                                                                    __auto_type r9  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let5871 */
+                                                            
+                                                            ((__h_case_result ) ? ({ /* cicili#Progn5618 */
+                                                                Right_BTree_int_User_Error_BTree_int_User (Internal_BTree_int_User (delete_List_BTree_int_User_pair_t (items , current ), ({ /* cicili#Let5626 */
+                                                                    __auto_type r9  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let5628 */
                                                                       __auto_type r9  = new_Rc_BTree_int_User (ntree );
                                                                       // ----------
                                                                       ((void)((r9 . __h_table )-> freeData ));
                                                                       r9 ;
                                                                     });
-                                                                    __auto_type r10  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let5875 */
+                                                                    __auto_type r10  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let5632 */
                                                                       __auto_type r10  = push_List_Rc_BTree_int_User (r9 , r7 );
                                                                       // ----------
                                                                       ((void)(r10 -> __h_table -> freeClass ));
                                                                       r10 ;
                                                                     });
-                                                                    __auto_type r11  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let5879 */
+                                                                    __auto_type r11  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let5636 */
                                                                       __auto_type r11  = append_List_Rc_BTree_int_User (r5 , r10 );
                                                                       // ----------
                                                                       ((void)(r11 -> __h_table -> freeClass ));
                                                                       r11 ;
                                                                     });
                                                                     // ----------
-                                                                    fmap_Functor_List_Rc_BTree_int_User (({ /* cicili#Progn5888 */
-                                                                        Rc_BTree_int_User __ciciliC_5887 (Rc_BTree_int_User __h_value ) {
+                                                                    fmap_Functor_List_Rc_BTree_int_User (({ /* cicili#Progn5645 */
+                                                                        Rc_BTree_int_User __ciciliC_5644 (Rc_BTree_int_User __h_value ) {
                                                                           return clone_Rc_BTree_int_User (__h_value );
                                                                         }
-                                                                        __ciciliC_5887 ;
+                                                                        __ciciliC_5644 ;
                                                                       }), r11 );
                                                                   })));
-                                                              }) : ({ /* cicili#Let5895 */
+                                                              }) : ({ /* cicili#Let5652 */
                                                                 // ----------
-                                                                
-                                                                ({ /* cicili#Progn5899 */
+                                                                ;
+                                                                ({ /* cicili#Progn5654 */
                                                                   Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_CANT_BORROW ("borrowRI 3"));
                                                                 });
                                                               }));
@@ -5420,282 +5575,290 @@ Either_BTree_int_User_Error_BTree_int_User borrowInternal_BTree_int_User (Maybe_
                                                         }));
                                                     });
                                                   });
-                                                }) : ({ /* cicili#Let5906 */
-                                                  __auto_type left  = match5768 ;
+                                                }) : ({ /* cicili#Let5661 */
+                                                  __auto_type left  = match5527 ;
                                                   // ----------
-                                                  
-                                                  ({ /* cicili#Progn5910 */
+                                                  ;
+                                                  ({ /* cicili#Progn5663 */
                                                     left ;
                                                   });
                                                 }));
                                             });
                                           });
                                         });
-                                      }) : ({ /* cicili#Let5914 */
+                                      }) : ({ /* cicili#Let5667 */
                                         // ----------
-                                        
-                                        ({ /* cicili#Progn5918 */
+                                        ;
+                                        ({ /* cicili#Progn5669 */
                                           Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_CANT_BORROW ("borrowRI 4"));
                                         });
                                       }));
                                   });
                                 }));
-                            }) : ({ /* cicili#Let5925 */
+                            }) : ({ /* cicili#Let5676 */
                               typeof((((right_child -> __h_data ). Internal ). __h_0_mem )) right_child_items ;
                               typeof((((right_child -> __h_data ). Internal ). __h_1_mem )) right_child_children ;
                               // ----------
-                              
-                              ({ /* cicili#Let5929 */
-                                bool __h_case_result  = (true  &&  (((right_child -> __h_ctor ) ==  __h_Internal_t  ) &&  (({ /* cicili#Progn5930 */
+                              ;
+                              ({ /* cicili#Let5678 */
+                                bool __h_case_result  = (true  &&  (((right_child -> __h_ctor ) ==  __h_Internal_t  ) &&  (({ /* cicili#Progn5679 */
                                         (right_child_items  =  (((right_child -> __h_data ). Internal ). __h_0_mem ) );
                                         true ;
-                                      }) &&  ({ /* cicili#Progn5932 */
+                                      }) &&  ({ /* cicili#Progn5681 */
                                         (right_child_children  =  (((right_child -> __h_data ). Internal ). __h_1_mem ) );
                                         true ;
                                       }) ) ) );
                                 // ----------
-                                ((__h_case_result ) ? ({ /* cicili#Progn5935 */
-                                    (((hasLen_List_BTree_int_User_pair_t (right_child_items , L_BTree_int_User ) ==  L_BTree_int_User  )) ? ({ /* cicili#Let5944 */
-                                        __auto_type match5942  = min_BTree_int_User (right_child );
-                                        typeof((((match5942 . __h_data ). Just ). __h_0_mem )) min ;
+                                
+                                ((__h_case_result ) ? ({ /* cicili#Progn5686 */
+                                    (((hasLen_List_BTree_int_User_pair_t (right_child_items , L_BTree_int_User ) ==  L_BTree_int_User  )) ? ({ /* cicili#Let5695 */
+                                        __auto_type match5693  = min_BTree_int_User (right_child );
+                                        typeof((((match5693 . __h_data ). Just ). __h_0_mem )) min ;
                                         typeof((min . __h_0_mem )) min_key ;
                                         // ----------
-                                        
-                                        ({ /* cicili#Let5949 */
-                                          bool __h_case_result  = (true  &&  (((match5942 . __h_ctor ) ==  __h_Just_t  ) &&  (({ /* cicili#Progn5950 */
-                                                  (min  =  (((match5942 . __h_data ). Just ). __h_0_mem ) );
+                                        ;
+                                        ({ /* cicili#Let5698 */
+                                          bool __h_case_result  = (true  &&  (((match5693 . __h_ctor ) ==  __h_Just_t  ) &&  (({ /* cicili#Progn5699 */
+                                                  (min  =  (((match5693 . __h_data ). Just ). __h_0_mem ) );
                                                   true ;
-                                                }) &&  (true  &&  ({ /* cicili#Progn5952 */
+                                                }) &&  (true  &&  ({ /* cicili#Progn5701 */
                                                     (min_key  =  (min . __h_0_mem ) );
                                                     true ;
                                                   }) ) ) ) );
                                           // ----------
-                                          ((__h_case_result ) ? ({ /* cicili#Progn5955 */
-                                              ({ /* cicili#Let5959 */
-                                                __auto_type match5958  = delete_BTree_int_User (right_child , min_key , NULL );
-                                                typeof((((match5958 . __h_data ). Right ). __h_0_mem )) nchild ;
+                                          
+                                          ((__h_case_result ) ? ({ /* cicili#Progn5706 */
+                                              ({ /* cicili#Let5710 */
+                                                __auto_type match5709  = delete_BTree_int_User (right_child , min_key , NULL );
+                                                typeof((((match5709 . __h_data ). Right ). __h_0_mem )) nchild ;
                                                 // ----------
-                                                
-                                                ({ /* cicili#Let5964 */
-                                                  bool __h_case_result  = (true  &&  (((match5958 . __h_ctor ) ==  __h_Right_t  ) &&  ({ /* cicili#Progn5965 */
-                                                        (nchild  =  (((match5958 . __h_data ). Right ). __h_0_mem ) );
+                                                ;
+                                                ({ /* cicili#Let5713 */
+                                                  bool __h_case_result  = (true  &&  (((match5709 . __h_ctor ) ==  __h_Right_t  ) &&  ({ /* cicili#Progn5714 */
+                                                        (nchild  =  (((match5709 . __h_data ). Right ). __h_0_mem ) );
                                                         true ;
                                                       }) ) );
                                                   // ----------
-                                                  ((__h_case_result ) ? ({ /* cicili#Progn5968 */
-                                                      Right_BTree_int_User_Error_BTree_int_User (Internal_BTree_int_User (replace_List_BTree_int_User_pair_t (items , min , current ), ({ /* cicili#Let5976 */
-                                                          __auto_type r1  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let5978 */
+                                                  
+                                                  ((__h_case_result ) ? ({ /* cicili#Progn5719 */
+                                                      Right_BTree_int_User_Error_BTree_int_User (Internal_BTree_int_User (replace_List_BTree_int_User_pair_t (items , min , current ), ({ /* cicili#Let5727 */
+                                                          __auto_type r1  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let5729 */
                                                             __auto_type r1  = new_Rc_BTree_int_User (nchild );
                                                             // ----------
                                                             ((void)((r1 . __h_table )-> freeData ));
                                                             r1 ;
                                                           });
-                                                          __auto_type r2  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let5982 */
+                                                          __auto_type r2  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let5733 */
                                                             __auto_type r2  = replaceAt_List_Rc_BTree_int_User (children , r1 , (index  +  1 ));
                                                             // ----------
                                                             ((void)(r2 -> __h_table -> freeClass ));
                                                             r2 ;
                                                           });
                                                           // ----------
-                                                          fmap_Functor_List_Rc_BTree_int_User (({ /* cicili#Progn5991 */
-                                                              Rc_BTree_int_User __ciciliC_5990 (Rc_BTree_int_User __h_value ) {
+                                                          fmap_Functor_List_Rc_BTree_int_User (({ /* cicili#Progn5742 */
+                                                              Rc_BTree_int_User __ciciliC_5741 (Rc_BTree_int_User __h_value ) {
                                                                 return clone_Rc_BTree_int_User (__h_value );
                                                               }
-                                                              __ciciliC_5990 ;
+                                                              __ciciliC_5741 ;
                                                             }), r2 );
                                                         })));
-                                                    }) : ({ /* cicili#Let5998 */
-                                                      __auto_type left  = match5958 ;
+                                                    }) : ({ /* cicili#Let5749 */
+                                                      __auto_type left  = match5709 ;
                                                       // ----------
-                                                      
-                                                      ({ /* cicili#Progn6002 */
+                                                      ;
+                                                      ({ /* cicili#Progn5751 */
                                                         left ;
                                                       });
                                                     }));
                                                 });
                                               });
-                                            }) : ({ /* cicili#Let6006 */
+                                            }) : ({ /* cicili#Let5755 */
                                               // ----------
-                                              
-                                              ({ /* cicili#Progn6010 */
+                                              ;
+                                              ({ /* cicili#Progn5757 */
                                                 Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_CANT_BORROW ("borrowRI 1"));
                                               });
                                             }));
                                         });
-                                      }) : ({ /* cicili#Let6018 */
+                                      }) : ({ /* cicili#Let5765 */
                                         typeof((((current -> __h_data ). Cons ). __h_0_mem )) current_item ;
                                         typeof((current_item . __h_0_mem )) current_key ;
                                         // ----------
-                                        
-                                        ({ /* cicili#Let6022 */
-                                          bool __h_case_result  = (true  &&  (((current -> __h_ctor ) ==  __h_Cons_t  ) &&  (({ /* cicili#Progn6023 */
+                                        ;
+                                        ({ /* cicili#Let5767 */
+                                          bool __h_case_result  = (true  &&  (((current -> __h_ctor ) ==  __h_Cons_t  ) &&  (({ /* cicili#Progn5768 */
                                                   (current_item  =  (((current -> __h_data ). Cons ). __h_0_mem ) );
                                                   true ;
-                                                }) &&  (true  &&  ({ /* cicili#Progn6025 */
+                                                }) &&  (true  &&  ({ /* cicili#Progn5770 */
                                                     (current_key  =  (current_item . __h_0_mem ) );
                                                     true ;
                                                   }) ) ) ) );
                                           // ----------
-                                          ((__h_case_result ) ? ({ /* cicili#Progn6028 */
-                                              ({ /* cicili#Let6031 */
-                                                __auto_type r1  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let6033 */
+                                          
+                                          ((__h_case_result ) ? ({ /* cicili#Progn5775 */
+                                              ({ /* cicili#Let5778 */
+                                                __auto_type r1  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let5780 */
                                                   __auto_type r1  = push_List_BTree_int_User_pair_t (current_item , right_child_items );
                                                   // ----------
                                                   ((void)(r1 -> __h_table -> freeClass ));
                                                   r1 ;
                                                 });
-                                                __auto_type r2  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let6037 */
+                                                __auto_type r2  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let5784 */
                                                   __auto_type r2  = append_List_Rc_BTree_int_User (left_child_children , right_child_children );
                                                   // ----------
                                                   ((void)(r2 -> __h_table -> freeClass ));
                                                   r2 ;
                                                 });
-                                                __auto_type r4  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let6041 */
-                                                  __auto_type r4  = Internal_BTree_int_User (append_List_BTree_int_User_pair_t (left_child_items , r1 ), fmap_Functor_List_Rc_BTree_int_User (({ /* cicili#Progn6050 */
-                                                    Rc_BTree_int_User __ciciliC_6049 (Rc_BTree_int_User __h_value ) {
+                                                __auto_type r4  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let5788 */
+                                                  __auto_type r4  = Internal_BTree_int_User (append_List_BTree_int_User_pair_t (left_child_items , r1 ), fmap_Functor_List_Rc_BTree_int_User (({ /* cicili#Progn5797 */
+                                                    Rc_BTree_int_User __ciciliC_5796 (Rc_BTree_int_User __h_value ) {
                                                       return clone_Rc_BTree_int_User (__h_value );
                                                     }
-                                                    __ciciliC_6049 ;
+                                                    __ciciliC_5796 ;
                                                   }), r2 ));
                                                   // ----------
                                                   ((void)(r4 -> __h_table -> freeClass ));
                                                   r4 ;
                                                 });
-                                                __auto_type r5  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let6057 */
+                                                __auto_type r5  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let5804 */
                                                   __auto_type r5  = take_List_Rc_BTree_int_User (index , children );
                                                   // ----------
                                                   ((void)(r5 -> __h_table -> freeClass ));
                                                   r5 ;
                                                 });
-                                                __auto_type r7  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let6061 */
+                                                __auto_type r7  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let5808 */
                                                   __auto_type r7  = drop_List_Rc_BTree_int_User ((index  +  2 ), children );
                                                   // ----------
                                                   ((void)(r7 -> __h_table -> freeClass ));
                                                   r7 ;
                                                 });
                                                 // ----------
-                                                ({ /* cicili#Let6067 */
-                                                  __auto_type match6066  = delete_BTree_int_User (r4 , current_key , NULL );
-                                                  typeof((((match6066 . __h_data ). Right ). __h_0_mem )) ntree ;
+                                                ({ /* cicili#Let5814 */
+                                                  __auto_type match5813  = delete_BTree_int_User (r4 , current_key , NULL );
+                                                  typeof((((match5813 . __h_data ). Right ). __h_0_mem )) ntree ;
                                                   // ----------
-                                                  
-                                                  ({ /* cicili#Let6072 */
-                                                    bool __h_case_result  = (true  &&  (((match6066 . __h_ctor ) ==  __h_Right_t  ) &&  ({ /* cicili#Progn6073 */
-                                                          (ntree  =  (((match6066 . __h_data ). Right ). __h_0_mem ) );
+                                                  ;
+                                                  ({ /* cicili#Let5817 */
+                                                    bool __h_case_result  = (true  &&  (((match5813 . __h_ctor ) ==  __h_Right_t  ) &&  ({ /* cicili#Progn5818 */
+                                                          (ntree  =  (((match5813 . __h_data ). Right ). __h_0_mem ) );
                                                           true ;
                                                         }) ) );
                                                     // ----------
-                                                    ((__h_case_result ) ? ({ /* cicili#Progn6076 */
-                                                        ({ /* cicili#Let6080 */
+                                                    
+                                                    ((__h_case_result ) ? ({ /* cicili#Progn5823 */
+                                                        ({ /* cicili#Let5827 */
                                                           __auto_type tmp_result  = splitForDelete_BTree_int_User (ntree );
                                                           typeof((((tmp_result -> __h_data ). Branch ). __h_0_mem )) branch_items ;
                                                           typeof((((tmp_result -> __h_data ). Branch ). __h_1_mem )) branch_children ;
                                                           // ----------
-                                                          
-                                                          ({ /* cicili#Let6085 */
-                                                            bool __h_case_result  = (true  &&  (((tmp_result -> __h_ctor ) ==  __h_Branch_t  ) &&  (({ /* cicili#Progn6086 */
+                                                          ;
+                                                          ({ /* cicili#Let5830 */
+                                                            bool __h_case_result  = (true  &&  (((tmp_result -> __h_ctor ) ==  __h_Branch_t  ) &&  (({ /* cicili#Progn5831 */
                                                                     (branch_items  =  (((tmp_result -> __h_data ). Branch ). __h_0_mem ) );
                                                                     true ;
-                                                                  }) &&  ({ /* cicili#Progn6088 */
+                                                                  }) &&  ({ /* cicili#Progn5833 */
                                                                     (branch_children  =  (((tmp_result -> __h_data ). Branch ). __h_1_mem ) );
                                                                     true ;
                                                                   }) ) ) );
                                                             // ----------
-                                                            ((__h_case_result ) ? ({ /* cicili#Progn6091 */
-                                                                ({ /* cicili#Let6095 */
+                                                            
+                                                            ((__h_case_result ) ? ({ /* cicili#Progn5838 */
+                                                                ({ /* cicili#Let5842 */
                                                                   typeof((((branch_items -> __h_data ). Cons ). __h_0_mem )) branch_head ;
                                                                   // ----------
-                                                                  
-                                                                  ({ /* cicili#Let6099 */
-                                                                    bool __h_case_result  = (true  &&  (((branch_items -> __h_ctor ) ==  __h_Cons_t  ) &&  ({ /* cicili#Progn6100 */
+                                                                  ;
+                                                                  ({ /* cicili#Let5844 */
+                                                                    bool __h_case_result  = (true  &&  (((branch_items -> __h_ctor ) ==  __h_Cons_t  ) &&  ({ /* cicili#Progn5845 */
                                                                           (branch_head  =  (((branch_items -> __h_data ). Cons ). __h_0_mem ) );
                                                                           true ;
                                                                         }) ) );
                                                                     // ----------
-                                                                    ((__h_case_result ) ? ({ /* cicili#Progn6103 */
-                                                                        ({ /* cicili#Let6106 */
-                                                                          __auto_type ntree  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let6108 */
+                                                                    
+                                                                    ((__h_case_result ) ? ({ /* cicili#Progn5850 */
+                                                                        ({ /* cicili#Let5853 */
+                                                                          __auto_type ntree  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let5855 */
                                                                             __auto_type ntree  = ntree ;
                                                                             // ----------
                                                                             ((void)(ntree -> __h_table -> freeClass ));
                                                                             ntree ;
                                                                           });
-                                                                          __auto_type tmp_result  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let6111 */
+                                                                          __auto_type tmp_result  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let5858 */
                                                                             __auto_type tmp_result  = tmp_result ;
                                                                             // ----------
                                                                             ((void)(tmp_result -> __h_table -> freeClass ));
                                                                             tmp_result ;
                                                                           });
                                                                           // ----------
-                                                                          Right_BTree_int_User_Error_BTree_int_User (Internal_BTree_int_User (replace_List_BTree_int_User_pair_t (items , branch_head , current ), ({ /* cicili#Let6120 */
-                                                                              __auto_type r10  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let6122 */
+                                                                          Right_BTree_int_User_Error_BTree_int_User (Internal_BTree_int_User (replace_List_BTree_int_User_pair_t (items , branch_head , current ), ({ /* cicili#Let5867 */
+                                                                              __auto_type r10  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let5869 */
                                                                                 __auto_type r10  = append_List_Rc_BTree_int_User (branch_children , r7 );
                                                                                 // ----------
                                                                                 ((void)(r10 -> __h_table -> freeClass ));
                                                                                 r10 ;
                                                                               });
-                                                                              __auto_type r11  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let6126 */
+                                                                              __auto_type r11  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let5873 */
                                                                                 __auto_type r11  = append_List_Rc_BTree_int_User (r5 , r10 );
                                                                                 // ----------
                                                                                 ((void)(r11 -> __h_table -> freeClass ));
                                                                                 r11 ;
                                                                               });
                                                                               // ----------
-                                                                              fmap_Functor_List_Rc_BTree_int_User (({ /* cicili#Progn6135 */
-                                                                                  Rc_BTree_int_User __ciciliC_6134 (Rc_BTree_int_User __h_value ) {
+                                                                              fmap_Functor_List_Rc_BTree_int_User (({ /* cicili#Progn5882 */
+                                                                                  Rc_BTree_int_User __ciciliC_5881 (Rc_BTree_int_User __h_value ) {
                                                                                     return clone_Rc_BTree_int_User (__h_value );
                                                                                   }
-                                                                                  __ciciliC_6134 ;
+                                                                                  __ciciliC_5881 ;
                                                                                 }), r11 );
                                                                             })));
                                                                         });
-                                                                      }) : ({ /* cicili#Let6142 */
+                                                                      }) : ({ /* cicili#Let5889 */
                                                                         // ----------
-                                                                        
-                                                                        ({ /* cicili#Progn6146 */
+                                                                        ;
+                                                                        ({ /* cicili#Progn5891 */
                                                                           Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_CANT_BORROW ("borrowRI 2"));
                                                                         });
                                                                       }));
                                                                   });
                                                                 });
-                                                              }) : ({ /* cicili#Let6153 */
+                                                              }) : ({ /* cicili#Let5898 */
                                                                 // ----------
-                                                                
-                                                                ({ /* cicili#Let6157 */
+                                                                ;
+                                                                ({ /* cicili#Let5900 */
                                                                   bool __h_case_result  = (true  &&  ((tmp_result -> __h_ctor ) ==  __h_Internal_t  ) );
                                                                   // ----------
-                                                                  ((__h_case_result ) ? ({ /* cicili#Progn6159 */
-                                                                      Right_BTree_int_User_Error_BTree_int_User (Internal_BTree_int_User (delete_List_BTree_int_User_pair_t (items , current ), ({ /* cicili#Let6167 */
-                                                                          __auto_type r9  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let6169 */
+                                                                  
+                                                                  ((__h_case_result ) ? ({ /* cicili#Progn5904 */
+                                                                      Right_BTree_int_User_Error_BTree_int_User (Internal_BTree_int_User (delete_List_BTree_int_User_pair_t (items , current ), ({ /* cicili#Let5912 */
+                                                                          __auto_type r9  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let5914 */
                                                                             __auto_type r9  = new_Rc_BTree_int_User (ntree );
                                                                             // ----------
                                                                             ((void)((r9 . __h_table )-> freeData ));
                                                                             r9 ;
                                                                           });
-                                                                          __auto_type r10  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let6173 */
+                                                                          __auto_type r10  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let5918 */
                                                                             __auto_type r10  = push_List_Rc_BTree_int_User (r9 , r7 );
                                                                             // ----------
                                                                             ((void)(r10 -> __h_table -> freeClass ));
                                                                             r10 ;
                                                                           });
-                                                                          __auto_type r11  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let6177 */
+                                                                          __auto_type r11  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let5922 */
                                                                             __auto_type r11  = append_List_Rc_BTree_int_User (r5 , r10 );
                                                                             // ----------
                                                                             ((void)(r11 -> __h_table -> freeClass ));
                                                                             r11 ;
                                                                           });
                                                                           // ----------
-                                                                          fmap_Functor_List_Rc_BTree_int_User (({ /* cicili#Progn6186 */
-                                                                              Rc_BTree_int_User __ciciliC_6185 (Rc_BTree_int_User __h_value ) {
+                                                                          fmap_Functor_List_Rc_BTree_int_User (({ /* cicili#Progn5931 */
+                                                                              Rc_BTree_int_User __ciciliC_5930 (Rc_BTree_int_User __h_value ) {
                                                                                 return clone_Rc_BTree_int_User (__h_value );
                                                                               }
-                                                                              __ciciliC_6185 ;
+                                                                              __ciciliC_5930 ;
                                                                             }), r11 );
                                                                         })));
-                                                                    }) : ({ /* cicili#Let6193 */
+                                                                    }) : ({ /* cicili#Let5938 */
                                                                       // ----------
-                                                                      
-                                                                      ({ /* cicili#Progn6197 */
+                                                                      ;
+                                                                      ({ /* cicili#Progn5940 */
                                                                         Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_CANT_BORROW ("borrowRI 3"));
                                                                       });
                                                                     }));
@@ -5703,30 +5866,30 @@ Either_BTree_int_User_Error_BTree_int_User borrowInternal_BTree_int_User (Maybe_
                                                               }));
                                                           });
                                                         });
-                                                      }) : ({ /* cicili#Let6204 */
-                                                        __auto_type left  = match6066 ;
+                                                      }) : ({ /* cicili#Let5947 */
+                                                        __auto_type left  = match5813 ;
                                                         // ----------
-                                                        
-                                                        ({ /* cicili#Progn6208 */
+                                                        ;
+                                                        ({ /* cicili#Progn5949 */
                                                           left ;
                                                         });
                                                       }));
                                                   });
                                                 });
                                               });
-                                            }) : ({ /* cicili#Let6212 */
+                                            }) : ({ /* cicili#Let5953 */
                                               // ----------
-                                              
-                                              ({ /* cicili#Progn6216 */
+                                              ;
+                                              ({ /* cicili#Progn5955 */
                                                 Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_CANT_BORROW ("borrowRI 4"));
                                               });
                                             }));
                                         });
                                       }));
-                                  }) : ({ /* cicili#Let6223 */
+                                  }) : ({ /* cicili#Let5962 */
                                     // ----------
-                                    
-                                    ({ /* cicili#Progn6227 */
+                                    ;
+                                    ({ /* cicili#Progn5964 */
                                       Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_CANT_BORROW ("borrowRI 5"));
                                     });
                                   }));
@@ -5734,19 +5897,19 @@ Either_BTree_int_User_Error_BTree_int_User borrowInternal_BTree_int_User (Maybe_
                             }));
                         });
                       });
-                    }) : ({ /* cicili#Let6234 */
+                    }) : ({ /* cicili#Let5971 */
                       // ----------
-                      
-                      ({ /* cicili#Progn6238 */
+                      ;
+                      ({ /* cicili#Progn5973 */
                         Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_CANT_BORROW ("borrowRI 6"));
                       });
                     }));
                 });
               });
-            }) : ({ /* cicili#Let6245 */
+            }) : ({ /* cicili#Let5980 */
               // ----------
-              
-              ({ /* cicili#Progn6249 */
+              ;
+              ({ /* cicili#Progn5982 */
                 Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_CANT_BORROW ("borrowRI 7"));
               });
             }));
@@ -5754,144 +5917,149 @@ Either_BTree_int_User_Error_BTree_int_User borrowInternal_BTree_int_User (Maybe_
       });
   }
   Either_BTree_int_User_Error_BTree_int_User borrowRightLeaf (List_BTree_int_User_pair_t left_child_items ) {
-    return ({ /* cicili#Let6262 */
-        __auto_type match6261  = nth_List_Rc_BTree_int_User ((index  +  1 ), children );
-        typeof((((match6261 . __h_data ). Just ). __h_0_mem )) right_child_rc ;
+    return ({ /* cicili#Let5995 */
+        __auto_type match5994  = nth_List_Rc_BTree_int_User ((index  +  1 ), children );
+        typeof((((match5994 . __h_data ). Just ). __h_0_mem )) right_child_rc ;
         // ----------
-        
-        ({ /* cicili#Let6267 */
-          bool __h_case_result  = (true  &&  (((match6261 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn6268 */
-                (right_child_rc  =  (((match6261 . __h_data ). Just ). __h_0_mem ) );
+        ;
+        ({ /* cicili#Let5998 */
+          bool __h_case_result  = (true  &&  (((match5994 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn5999 */
+                (right_child_rc  =  (((match5994 . __h_data ). Just ). __h_0_mem ) );
                 true ;
               }) ) );
           // ----------
-          ((__h_case_result ) ? ({ /* cicili#Progn6271 */
-              ({ /* cicili#Let6275 */
-                __auto_type match6274  = get_Rc_BTree_int_User (right_child_rc );
-                typeof((((match6274 . __h_data ). Just ). __h_0_mem )) right_child ;
+          
+          ((__h_case_result ) ? ({ /* cicili#Progn6004 */
+              ({ /* cicili#Let6008 */
+                __auto_type match6007  = get_Rc_BTree_int_User (right_child_rc );
+                typeof((((match6007 . __h_data ). Just ). __h_0_mem )) right_child ;
                 // ----------
-                
-                ({ /* cicili#Let6280 */
-                  bool __h_case_result  = (true  &&  (((match6274 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn6281 */
-                        (right_child  =  (((match6274 . __h_data ). Just ). __h_0_mem ) );
+                ;
+                ({ /* cicili#Let6011 */
+                  bool __h_case_result  = (true  &&  (((match6007 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn6012 */
+                        (right_child  =  (((match6007 . __h_data ). Just ). __h_0_mem ) );
                         true ;
                       }) ) );
                   // ----------
-                  ((__h_case_result ) ? ({ /* cicili#Progn6284 */
-                      ({ /* cicili#Let6288 */
+                  
+                  ((__h_case_result ) ? ({ /* cicili#Progn6017 */
+                      ({ /* cicili#Let6021 */
                         typeof((((right_child -> __h_data ). Leaf ). __h_0_mem )) right_child_items ;
                         // ----------
-                        
-                        ({ /* cicili#Let6292 */
-                          bool __h_case_result  = (true  &&  (((right_child -> __h_ctor ) ==  __h_Leaf_t  ) &&  ({ /* cicili#Progn6293 */
+                        ;
+                        ({ /* cicili#Let6023 */
+                          bool __h_case_result  = (true  &&  (((right_child -> __h_ctor ) ==  __h_Leaf_t  ) &&  ({ /* cicili#Progn6024 */
                                 (right_child_items  =  (((right_child -> __h_data ). Leaf ). __h_0_mem ) );
                                 true ;
                               }) ) );
                           // ----------
-                          ((__h_case_result ) ? ({ /* cicili#Progn6296 */
-                              (((hasLen_List_BTree_int_User_pair_t (right_child_items , L_BTree_int_User ) ==  L_BTree_int_User  )) ? ({ /* cicili#Let6305 */
-                                  __auto_type match6303  = min_BTree_int_User (right_child );
-                                  typeof((((match6303 . __h_data ). Just ). __h_0_mem )) min ;
+                          
+                          ((__h_case_result ) ? ({ /* cicili#Progn6029 */
+                              (((hasLen_List_BTree_int_User_pair_t (right_child_items , L_BTree_int_User ) ==  L_BTree_int_User  )) ? ({ /* cicili#Let6038 */
+                                  __auto_type match6036  = min_BTree_int_User (right_child );
+                                  typeof((((match6036 . __h_data ). Just ). __h_0_mem )) min ;
                                   typeof((min . __h_0_mem )) min_key ;
                                   // ----------
-                                  
-                                  ({ /* cicili#Let6310 */
-                                    bool __h_case_result  = (true  &&  (((match6303 . __h_ctor ) ==  __h_Just_t  ) &&  (({ /* cicili#Progn6311 */
-                                            (min  =  (((match6303 . __h_data ). Just ). __h_0_mem ) );
+                                  ;
+                                  ({ /* cicili#Let6041 */
+                                    bool __h_case_result  = (true  &&  (((match6036 . __h_ctor ) ==  __h_Just_t  ) &&  (({ /* cicili#Progn6042 */
+                                            (min  =  (((match6036 . __h_data ). Just ). __h_0_mem ) );
                                             true ;
-                                          }) &&  (true  &&  ({ /* cicili#Progn6313 */
+                                          }) &&  (true  &&  ({ /* cicili#Progn6044 */
                                               (min_key  =  (min . __h_0_mem ) );
                                               true ;
                                             }) ) ) ) );
                                     // ----------
-                                    ((__h_case_result ) ? ({ /* cicili#Progn6316 */
-                                        ({ /* cicili#Let6320 */
-                                          __auto_type match6319  = delete_BTree_int_User (right_child , min_key , NULL );
-                                          typeof((((match6319 . __h_data ). Right ). __h_0_mem )) nchild ;
+                                    
+                                    ((__h_case_result ) ? ({ /* cicili#Progn6049 */
+                                        ({ /* cicili#Let6053 */
+                                          __auto_type match6052  = delete_BTree_int_User (right_child , min_key , NULL );
+                                          typeof((((match6052 . __h_data ). Right ). __h_0_mem )) nchild ;
                                           // ----------
-                                          
-                                          ({ /* cicili#Let6325 */
-                                            bool __h_case_result  = (true  &&  (((match6319 . __h_ctor ) ==  __h_Right_t  ) &&  ({ /* cicili#Progn6326 */
-                                                  (nchild  =  (((match6319 . __h_data ). Right ). __h_0_mem ) );
+                                          ;
+                                          ({ /* cicili#Let6056 */
+                                            bool __h_case_result  = (true  &&  (((match6052 . __h_ctor ) ==  __h_Right_t  ) &&  ({ /* cicili#Progn6057 */
+                                                  (nchild  =  (((match6052 . __h_data ). Right ). __h_0_mem ) );
                                                   true ;
                                                 }) ) );
                                             // ----------
-                                            ((__h_case_result ) ? ({ /* cicili#Progn6329 */
-                                                Right_BTree_int_User_Error_BTree_int_User (Internal_BTree_int_User (replace_List_BTree_int_User_pair_t (items , min , current ), ({ /* cicili#Let6337 */
-                                                    __auto_type r1  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let6339 */
+                                            
+                                            ((__h_case_result ) ? ({ /* cicili#Progn6062 */
+                                                Right_BTree_int_User_Error_BTree_int_User (Internal_BTree_int_User (replace_List_BTree_int_User_pair_t (items , min , current ), ({ /* cicili#Let6070 */
+                                                    __auto_type r1  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let6072 */
                                                       __auto_type r1  = new_Rc_BTree_int_User (nchild );
                                                       // ----------
                                                       ((void)((r1 . __h_table )-> freeData ));
                                                       r1 ;
                                                     });
-                                                    __auto_type r2  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let6343 */
+                                                    __auto_type r2  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let6076 */
                                                       __auto_type r2  = replaceAt_List_Rc_BTree_int_User (children , r1 , (index  +  1 ));
                                                       // ----------
                                                       ((void)(r2 -> __h_table -> freeClass ));
                                                       r2 ;
                                                     });
                                                     // ----------
-                                                    fmap_Functor_List_Rc_BTree_int_User (({ /* cicili#Progn6352 */
-                                                        Rc_BTree_int_User __ciciliC_6351 (Rc_BTree_int_User __h_value ) {
+                                                    fmap_Functor_List_Rc_BTree_int_User (({ /* cicili#Progn6085 */
+                                                        Rc_BTree_int_User __ciciliC_6084 (Rc_BTree_int_User __h_value ) {
                                                           return clone_Rc_BTree_int_User (__h_value );
                                                         }
-                                                        __ciciliC_6351 ;
+                                                        __ciciliC_6084 ;
                                                       }), r2 );
                                                   })));
-                                              }) : ({ /* cicili#Let6359 */
-                                                __auto_type left  = match6319 ;
+                                              }) : ({ /* cicili#Let6092 */
+                                                __auto_type left  = match6052 ;
                                                 // ----------
-                                                
-                                                ({ /* cicili#Progn6363 */
+                                                ;
+                                                ({ /* cicili#Progn6094 */
                                                   left ;
                                                 });
                                               }));
                                           });
                                         });
-                                      }) : ({ /* cicili#Let6367 */
+                                      }) : ({ /* cicili#Let6098 */
                                         // ----------
-                                        
-                                        ({ /* cicili#Progn6371 */
+                                        ;
+                                        ({ /* cicili#Progn6100 */
                                           Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_CANT_BORROW ("borrowRI 8"));
                                         });
                                       }));
                                   });
-                                }) : Right_BTree_int_User_Error_BTree_int_User (Internal_BTree_int_User (delete_List_BTree_int_User_pair_t (items , current ), ({ /* cicili#Let6382 */
-                                  __auto_type r1  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let6384 */
+                                }) : Right_BTree_int_User_Error_BTree_int_User (Internal_BTree_int_User (delete_List_BTree_int_User_pair_t (items , current ), ({ /* cicili#Let6111 */
+                                  __auto_type r1  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let6113 */
                                     __auto_type r1  = take_List_Rc_BTree_int_User (index , children );
                                     // ----------
                                     ((void)(r1 -> __h_table -> freeClass ));
                                     r1 ;
                                   });
-                                  __auto_type r2  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let6388 */
-                                    __auto_type r2  = fmap_Functor_List_Rc_BTree_int_User (({ /* cicili#Progn6394 */
-                                      Rc_BTree_int_User __ciciliC_6393 (Rc_BTree_int_User __h_value ) {
+                                  __auto_type r2  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let6117 */
+                                    __auto_type r2  = fmap_Functor_List_Rc_BTree_int_User (({ /* cicili#Progn6123 */
+                                      Rc_BTree_int_User __ciciliC_6122 (Rc_BTree_int_User __h_value ) {
                                         return clone_Rc_BTree_int_User (__h_value );
                                       }
-                                      __ciciliC_6393 ;
+                                      __ciciliC_6122 ;
                                     }), r1 );
                                     // ----------
                                     ((void)(r2 -> __h_table -> freeClass ));
                                     r2 ;
                                   });
-                                  __auto_type r3  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let6401 */
+                                  __auto_type r3  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let6130 */
                                     __auto_type r3  = drop_List_Rc_BTree_int_User ((index  +  2 ), children );
                                     // ----------
                                     ((void)(r3 -> __h_table -> freeClass ));
                                     r3 ;
                                   });
-                                  __auto_type r4  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let6405 */
-                                    __auto_type r4  = fmap_Functor_List_Rc_BTree_int_User (({ /* cicili#Progn6411 */
-                                      Rc_BTree_int_User __ciciliC_6410 (Rc_BTree_int_User __h_value ) {
+                                  __auto_type r4  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let6134 */
+                                    __auto_type r4  = fmap_Functor_List_Rc_BTree_int_User (({ /* cicili#Progn6140 */
+                                      Rc_BTree_int_User __ciciliC_6139 (Rc_BTree_int_User __h_value ) {
                                         return clone_Rc_BTree_int_User (__h_value );
                                       }
-                                      __ciciliC_6410 ;
+                                      __ciciliC_6139 ;
                                     }), r3 );
                                     // ----------
                                     ((void)(r4 -> __h_table -> freeClass ));
                                     r4 ;
                                   });
-                                  __auto_type r5  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let6418 */
+                                  __auto_type r5  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let6147 */
                                     __auto_type r5  = push_List_Rc_BTree_int_User (new_Rc_BTree_int_User (Leaf_BTree_int_User (append_List_BTree_int_User_pair_t (left_child_items , right_child_items ))), r4 );
                                     // ----------
                                     ((void)(r5 -> __h_table -> freeClass ));
@@ -5900,308 +6068,319 @@ Either_BTree_int_User_Error_BTree_int_User borrowInternal_BTree_int_User (Maybe_
                                   // ----------
                                   append_List_Rc_BTree_int_User (r2 , r5 );
                                 }))));
-                            }) : ({ /* cicili#Let6429 */
+                            }) : ({ /* cicili#Let6158 */
                               // ----------
-                              
-                              ({ /* cicili#Progn6433 */
+                              ;
+                              ({ /* cicili#Progn6160 */
                                 Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_CANT_BORROW ("borrowRI 9"));
                               });
                             }));
                         });
                       });
-                    }) : ({ /* cicili#Let6440 */
+                    }) : ({ /* cicili#Let6167 */
                       // ----------
-                      
-                      ({ /* cicili#Progn6444 */
+                      ;
+                      ({ /* cicili#Progn6169 */
                         Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_CANT_BORROW ("borrowRI 10"));
                       });
                     }));
                 });
               });
-            }) : ({ /* cicili#Let6451 */
+            }) : ({ /* cicili#Let6176 */
               // ----------
-              
-              ({ /* cicili#Progn6455 */
+              ;
+              ({ /* cicili#Progn6178 */
                 Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_CANT_BORROW ("borrowRI 11"));
               });
             }));
         });
       });
   }
-  return ({ /* cicili#Let6462 */
-      __auto_type result  = ({ /* cicili#Let6465 */
-        __auto_type match6464  = nth_List_Rc_BTree_int_User (index , children );
-        typeof((((match6464 . __h_data ). Just ). __h_0_mem )) left_child_rc ;
+  return ({ /* cicili#Let6185 */
+      __auto_type result  = ({ /* cicili#Let6188 */
+        __auto_type match6187  = nth_List_Rc_BTree_int_User (index , children );
+        typeof((((match6187 . __h_data ). Just ). __h_0_mem )) left_child_rc ;
         // ----------
-        
-        ({ /* cicili#Let6470 */
-          bool __h_case_result  = (true  &&  (((match6464 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn6471 */
-                (left_child_rc  =  (((match6464 . __h_data ). Just ). __h_0_mem ) );
+        ;
+        ({ /* cicili#Let6191 */
+          bool __h_case_result  = (true  &&  (((match6187 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn6192 */
+                (left_child_rc  =  (((match6187 . __h_data ). Just ). __h_0_mem ) );
                 true ;
               }) ) );
           // ----------
-          ((__h_case_result ) ? ({ /* cicili#Progn6474 */
-              ({ /* cicili#Let6478 */
-                __auto_type match6477  = get_Rc_BTree_int_User (left_child_rc );
-                typeof((((match6477 . __h_data ). Just ). __h_0_mem )) left_child ;
+          
+          ((__h_case_result ) ? ({ /* cicili#Progn6197 */
+              ({ /* cicili#Let6201 */
+                __auto_type match6200  = get_Rc_BTree_int_User (left_child_rc );
+                typeof((((match6200 . __h_data ). Just ). __h_0_mem )) left_child ;
                 // ----------
-                
-                ({ /* cicili#Let6483 */
-                  bool __h_case_result  = (true  &&  (((match6477 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn6484 */
-                        (left_child  =  (((match6477 . __h_data ). Just ). __h_0_mem ) );
+                ;
+                ({ /* cicili#Let6204 */
+                  bool __h_case_result  = (true  &&  (((match6200 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn6205 */
+                        (left_child  =  (((match6200 . __h_data ). Just ). __h_0_mem ) );
                         true ;
                       }) ) );
                   // ----------
-                  ((__h_case_result ) ? ({ /* cicili#Progn6487 */
-                      ({ /* cicili#Let6491 */
+                  
+                  ((__h_case_result ) ? ({ /* cicili#Progn6210 */
+                      ({ /* cicili#Let6214 */
                         typeof((((left_child -> __h_data ). Branch ). __h_0_mem )) left_child_items ;
                         typeof((((left_child -> __h_data ). Branch ). __h_1_mem )) left_child_children ;
                         // ----------
-                        
-                        ({ /* cicili#Let6495 */
-                          bool __h_case_result  = (true  &&  (((left_child -> __h_ctor ) ==  __h_Branch_t  ) &&  (({ /* cicili#Progn6496 */
+                        ;
+                        ({ /* cicili#Let6216 */
+                          bool __h_case_result  = (true  &&  (((left_child -> __h_ctor ) ==  __h_Branch_t  ) &&  (({ /* cicili#Progn6217 */
                                   (left_child_items  =  (((left_child -> __h_data ). Branch ). __h_0_mem ) );
                                   true ;
-                                }) &&  ({ /* cicili#Progn6498 */
+                                }) &&  ({ /* cicili#Progn6219 */
                                   (left_child_children  =  (((left_child -> __h_data ). Branch ). __h_1_mem ) );
                                   true ;
                                 }) ) ) );
                           // ----------
-                          ((__h_case_result ) ? ({ /* cicili#Progn6501 */
-                              (((hasLen_List_BTree_int_User_pair_t (left_child_items , L_BTree_int_User ) ==  L_BTree_int_User  )) ? ({ /* cicili#Let6510 */
-                                  __auto_type match6508  = max_BTree_int_User (left_child );
-                                  typeof((((match6508 . __h_data ). Just ). __h_0_mem )) max ;
+                          
+                          ((__h_case_result ) ? ({ /* cicili#Progn6224 */
+                              (((hasLen_List_BTree_int_User_pair_t (left_child_items , L_BTree_int_User ) ==  L_BTree_int_User  )) ? ({ /* cicili#Let6233 */
+                                  __auto_type match6231  = max_BTree_int_User (left_child );
+                                  typeof((((match6231 . __h_data ). Just ). __h_0_mem )) max ;
                                   typeof((max . __h_0_mem )) max_key ;
                                   // ----------
-                                  
-                                  ({ /* cicili#Let6515 */
-                                    bool __h_case_result  = (true  &&  (((match6508 . __h_ctor ) ==  __h_Just_t  ) &&  (({ /* cicili#Progn6516 */
-                                            (max  =  (((match6508 . __h_data ). Just ). __h_0_mem ) );
+                                  ;
+                                  ({ /* cicili#Let6236 */
+                                    bool __h_case_result  = (true  &&  (((match6231 . __h_ctor ) ==  __h_Just_t  ) &&  (({ /* cicili#Progn6237 */
+                                            (max  =  (((match6231 . __h_data ). Just ). __h_0_mem ) );
                                             true ;
-                                          }) &&  (true  &&  ({ /* cicili#Progn6518 */
+                                          }) &&  (true  &&  ({ /* cicili#Progn6239 */
                                               (max_key  =  (max . __h_0_mem ) );
                                               true ;
                                             }) ) ) ) );
                                     // ----------
-                                    ((__h_case_result ) ? ({ /* cicili#Progn6521 */
-                                        ({ /* cicili#Let6525 */
-                                          __auto_type match6524  = delete_BTree_int_User (left_child , max_key , NULL );
-                                          typeof((((match6524 . __h_data ). Right ). __h_0_mem )) nchild ;
+                                    
+                                    ((__h_case_result ) ? ({ /* cicili#Progn6244 */
+                                        ({ /* cicili#Let6248 */
+                                          __auto_type match6247  = delete_BTree_int_User (left_child , max_key , NULL );
+                                          typeof((((match6247 . __h_data ). Right ). __h_0_mem )) nchild ;
                                           // ----------
-                                          
-                                          ({ /* cicili#Let6530 */
-                                            bool __h_case_result  = (true  &&  (((match6524 . __h_ctor ) ==  __h_Right_t  ) &&  ({ /* cicili#Progn6531 */
-                                                  (nchild  =  (((match6524 . __h_data ). Right ). __h_0_mem ) );
+                                          ;
+                                          ({ /* cicili#Let6251 */
+                                            bool __h_case_result  = (true  &&  (((match6247 . __h_ctor ) ==  __h_Right_t  ) &&  ({ /* cicili#Progn6252 */
+                                                  (nchild  =  (((match6247 . __h_data ). Right ). __h_0_mem ) );
                                                   true ;
                                                 }) ) );
                                             // ----------
-                                            ((__h_case_result ) ? ({ /* cicili#Progn6534 */
-                                                Right_BTree_int_User_Error_BTree_int_User (Internal_BTree_int_User (replace_List_BTree_int_User_pair_t (items , max , current ), ({ /* cicili#Let6542 */
-                                                    __auto_type r1  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let6544 */
+                                            
+                                            ((__h_case_result ) ? ({ /* cicili#Progn6257 */
+                                                Right_BTree_int_User_Error_BTree_int_User (Internal_BTree_int_User (replace_List_BTree_int_User_pair_t (items , max , current ), ({ /* cicili#Let6265 */
+                                                    __auto_type r1  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let6267 */
                                                       __auto_type r1  = new_Rc_BTree_int_User (nchild );
                                                       // ----------
                                                       ((void)((r1 . __h_table )-> freeData ));
                                                       r1 ;
                                                     });
-                                                    __auto_type r2  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let6548 */
+                                                    __auto_type r2  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let6271 */
                                                       __auto_type r2  = replaceAt_List_Rc_BTree_int_User (children , r1 , index );
                                                       // ----------
                                                       ((void)(r2 -> __h_table -> freeClass ));
                                                       r2 ;
                                                     });
                                                     // ----------
-                                                    fmap_Functor_List_Rc_BTree_int_User (({ /* cicili#Progn6557 */
-                                                        Rc_BTree_int_User __ciciliC_6556 (Rc_BTree_int_User __h_value ) {
+                                                    fmap_Functor_List_Rc_BTree_int_User (({ /* cicili#Progn6280 */
+                                                        Rc_BTree_int_User __ciciliC_6279 (Rc_BTree_int_User __h_value ) {
                                                           return clone_Rc_BTree_int_User (__h_value );
                                                         }
-                                                        __ciciliC_6556 ;
+                                                        __ciciliC_6279 ;
                                                       }), r2 );
                                                   })));
-                                              }) : ({ /* cicili#Let6564 */
-                                                __auto_type left  = match6524 ;
+                                              }) : ({ /* cicili#Let6287 */
+                                                __auto_type left  = match6247 ;
                                                 // ----------
-                                                
-                                                ({ /* cicili#Progn6568 */
+                                                ;
+                                                ({ /* cicili#Progn6289 */
                                                   left ;
                                                 });
                                               }));
                                           });
                                         });
-                                      }) : ({ /* cicili#Let6572 */
+                                      }) : ({ /* cicili#Let6293 */
                                         // ----------
-                                        
-                                        ({ /* cicili#Progn6576 */
+                                        ;
+                                        ({ /* cicili#Progn6295 */
                                           Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_CANT_BORROW ("borrowRI 12"));
                                         });
                                       }));
                                   });
                                 }) : borrowRightInternal (left_child_items , left_child_children ));
-                            }) : ({ /* cicili#Let6583 */
+                            }) : ({ /* cicili#Let6302 */
                               typeof((((left_child -> __h_data ). Internal ). __h_0_mem )) left_child_items ;
                               typeof((((left_child -> __h_data ). Internal ). __h_1_mem )) left_child_children ;
                               // ----------
-                              
-                              ({ /* cicili#Let6587 */
-                                bool __h_case_result  = (true  &&  (((left_child -> __h_ctor ) ==  __h_Internal_t  ) &&  (({ /* cicili#Progn6588 */
+                              ;
+                              ({ /* cicili#Let6304 */
+                                bool __h_case_result  = (true  &&  (((left_child -> __h_ctor ) ==  __h_Internal_t  ) &&  (({ /* cicili#Progn6305 */
                                         (left_child_items  =  (((left_child -> __h_data ). Internal ). __h_0_mem ) );
                                         true ;
-                                      }) &&  ({ /* cicili#Progn6590 */
+                                      }) &&  ({ /* cicili#Progn6307 */
                                         (left_child_children  =  (((left_child -> __h_data ). Internal ). __h_1_mem ) );
                                         true ;
                                       }) ) ) );
                                 // ----------
-                                ((__h_case_result ) ? ({ /* cicili#Progn6593 */
-                                    (((hasLen_List_BTree_int_User_pair_t (left_child_items , L_BTree_int_User ) ==  L_BTree_int_User  )) ? ({ /* cicili#Let6602 */
-                                        __auto_type match6600  = max_BTree_int_User (left_child );
-                                        typeof((((match6600 . __h_data ). Just ). __h_0_mem )) max ;
+                                
+                                ((__h_case_result ) ? ({ /* cicili#Progn6312 */
+                                    (((hasLen_List_BTree_int_User_pair_t (left_child_items , L_BTree_int_User ) ==  L_BTree_int_User  )) ? ({ /* cicili#Let6321 */
+                                        __auto_type match6319  = max_BTree_int_User (left_child );
+                                        typeof((((match6319 . __h_data ). Just ). __h_0_mem )) max ;
                                         typeof((max . __h_0_mem )) max_key ;
                                         // ----------
-                                        
-                                        ({ /* cicili#Let6607 */
-                                          bool __h_case_result  = (true  &&  (((match6600 . __h_ctor ) ==  __h_Just_t  ) &&  (({ /* cicili#Progn6608 */
-                                                  (max  =  (((match6600 . __h_data ). Just ). __h_0_mem ) );
+                                        ;
+                                        ({ /* cicili#Let6324 */
+                                          bool __h_case_result  = (true  &&  (((match6319 . __h_ctor ) ==  __h_Just_t  ) &&  (({ /* cicili#Progn6325 */
+                                                  (max  =  (((match6319 . __h_data ). Just ). __h_0_mem ) );
                                                   true ;
-                                                }) &&  (true  &&  ({ /* cicili#Progn6610 */
+                                                }) &&  (true  &&  ({ /* cicili#Progn6327 */
                                                     (max_key  =  (max . __h_0_mem ) );
                                                     true ;
                                                   }) ) ) ) );
                                           // ----------
-                                          ((__h_case_result ) ? ({ /* cicili#Progn6613 */
-                                              ({ /* cicili#Let6617 */
-                                                __auto_type match6616  = delete_BTree_int_User (left_child , max_key , NULL );
-                                                typeof((((match6616 . __h_data ). Right ). __h_0_mem )) nchild ;
+                                          
+                                          ((__h_case_result ) ? ({ /* cicili#Progn6332 */
+                                              ({ /* cicili#Let6336 */
+                                                __auto_type match6335  = delete_BTree_int_User (left_child , max_key , NULL );
+                                                typeof((((match6335 . __h_data ). Right ). __h_0_mem )) nchild ;
                                                 // ----------
-                                                
-                                                ({ /* cicili#Let6622 */
-                                                  bool __h_case_result  = (true  &&  (((match6616 . __h_ctor ) ==  __h_Right_t  ) &&  ({ /* cicili#Progn6623 */
-                                                        (nchild  =  (((match6616 . __h_data ). Right ). __h_0_mem ) );
+                                                ;
+                                                ({ /* cicili#Let6339 */
+                                                  bool __h_case_result  = (true  &&  (((match6335 . __h_ctor ) ==  __h_Right_t  ) &&  ({ /* cicili#Progn6340 */
+                                                        (nchild  =  (((match6335 . __h_data ). Right ). __h_0_mem ) );
                                                         true ;
                                                       }) ) );
                                                   // ----------
-                                                  ((__h_case_result ) ? ({ /* cicili#Progn6626 */
-                                                      Right_BTree_int_User_Error_BTree_int_User (Internal_BTree_int_User (replace_List_BTree_int_User_pair_t (items , max , current ), ({ /* cicili#Let6634 */
-                                                          __auto_type r1  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let6636 */
+                                                  
+                                                  ((__h_case_result ) ? ({ /* cicili#Progn6345 */
+                                                      Right_BTree_int_User_Error_BTree_int_User (Internal_BTree_int_User (replace_List_BTree_int_User_pair_t (items , max , current ), ({ /* cicili#Let6353 */
+                                                          __auto_type r1  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let6355 */
                                                             __auto_type r1  = new_Rc_BTree_int_User (nchild );
                                                             // ----------
                                                             ((void)((r1 . __h_table )-> freeData ));
                                                             r1 ;
                                                           });
-                                                          __auto_type r2  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let6640 */
+                                                          __auto_type r2  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let6359 */
                                                             __auto_type r2  = replaceAt_List_Rc_BTree_int_User (children , r1 , index );
                                                             // ----------
                                                             ((void)(r2 -> __h_table -> freeClass ));
                                                             r2 ;
                                                           });
                                                           // ----------
-                                                          fmap_Functor_List_Rc_BTree_int_User (({ /* cicili#Progn6649 */
-                                                              Rc_BTree_int_User __ciciliC_6648 (Rc_BTree_int_User __h_value ) {
+                                                          fmap_Functor_List_Rc_BTree_int_User (({ /* cicili#Progn6368 */
+                                                              Rc_BTree_int_User __ciciliC_6367 (Rc_BTree_int_User __h_value ) {
                                                                 return clone_Rc_BTree_int_User (__h_value );
                                                               }
-                                                              __ciciliC_6648 ;
+                                                              __ciciliC_6367 ;
                                                             }), r2 );
                                                         })));
-                                                    }) : ({ /* cicili#Let6656 */
-                                                      __auto_type left  = match6616 ;
+                                                    }) : ({ /* cicili#Let6375 */
+                                                      __auto_type left  = match6335 ;
                                                       // ----------
-                                                      
-                                                      ({ /* cicili#Progn6660 */
+                                                      ;
+                                                      ({ /* cicili#Progn6377 */
                                                         left ;
                                                       });
                                                     }));
                                                 });
                                               });
-                                            }) : ({ /* cicili#Let6664 */
+                                            }) : ({ /* cicili#Let6381 */
                                               // ----------
-                                              
-                                              ({ /* cicili#Progn6668 */
+                                              ;
+                                              ({ /* cicili#Progn6383 */
                                                 Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_CANT_BORROW ("borrowRI 12"));
                                               });
                                             }));
                                         });
                                       }) : borrowRightInternal (left_child_items , left_child_children ));
-                                  }) : ({ /* cicili#Let6675 */
+                                  }) : ({ /* cicili#Let6390 */
                                     typeof((((left_child -> __h_data ). Leaf ). __h_0_mem )) left_child_items ;
                                     // ----------
-                                    
-                                    ({ /* cicili#Let6679 */
-                                      bool __h_case_result  = (true  &&  (((left_child -> __h_ctor ) ==  __h_Leaf_t  ) &&  ({ /* cicili#Progn6680 */
+                                    ;
+                                    ({ /* cicili#Let6392 */
+                                      bool __h_case_result  = (true  &&  (((left_child -> __h_ctor ) ==  __h_Leaf_t  ) &&  ({ /* cicili#Progn6393 */
                                             (left_child_items  =  (((left_child -> __h_data ). Leaf ). __h_0_mem ) );
                                             true ;
                                           }) ) );
                                       // ----------
-                                      ((__h_case_result ) ? ({ /* cicili#Progn6683 */
-                                          (((hasLen_List_BTree_int_User_pair_t (left_child_items , L_BTree_int_User ) ==  L_BTree_int_User  )) ? ({ /* cicili#Let6692 */
-                                              __auto_type match6690  = max_BTree_int_User (left_child );
-                                              typeof((((match6690 . __h_data ). Just ). __h_0_mem )) max ;
+                                      
+                                      ((__h_case_result ) ? ({ /* cicili#Progn6398 */
+                                          (((hasLen_List_BTree_int_User_pair_t (left_child_items , L_BTree_int_User ) ==  L_BTree_int_User  )) ? ({ /* cicili#Let6407 */
+                                              __auto_type match6405  = max_BTree_int_User (left_child );
+                                              typeof((((match6405 . __h_data ). Just ). __h_0_mem )) max ;
                                               typeof((max . __h_0_mem )) max_key ;
                                               // ----------
-                                              
-                                              ({ /* cicili#Let6697 */
-                                                bool __h_case_result  = (true  &&  (((match6690 . __h_ctor ) ==  __h_Just_t  ) &&  (({ /* cicili#Progn6698 */
-                                                        (max  =  (((match6690 . __h_data ). Just ). __h_0_mem ) );
+                                              ;
+                                              ({ /* cicili#Let6410 */
+                                                bool __h_case_result  = (true  &&  (((match6405 . __h_ctor ) ==  __h_Just_t  ) &&  (({ /* cicili#Progn6411 */
+                                                        (max  =  (((match6405 . __h_data ). Just ). __h_0_mem ) );
                                                         true ;
-                                                      }) &&  (true  &&  ({ /* cicili#Progn6700 */
+                                                      }) &&  (true  &&  ({ /* cicili#Progn6413 */
                                                           (max_key  =  (max . __h_0_mem ) );
                                                           true ;
                                                         }) ) ) ) );
                                                 // ----------
-                                                ((__h_case_result ) ? ({ /* cicili#Progn6703 */
-                                                    ({ /* cicili#Let6707 */
-                                                      __auto_type match6706  = delete_BTree_int_User (left_child , max_key , NULL );
-                                                      typeof((((match6706 . __h_data ). Right ). __h_0_mem )) nchild ;
+                                                
+                                                ((__h_case_result ) ? ({ /* cicili#Progn6418 */
+                                                    ({ /* cicili#Let6422 */
+                                                      __auto_type match6421  = delete_BTree_int_User (left_child , max_key , NULL );
+                                                      typeof((((match6421 . __h_data ). Right ). __h_0_mem )) nchild ;
                                                       // ----------
-                                                      
-                                                      ({ /* cicili#Let6712 */
-                                                        bool __h_case_result  = (true  &&  (((match6706 . __h_ctor ) ==  __h_Right_t  ) &&  ({ /* cicili#Progn6713 */
-                                                              (nchild  =  (((match6706 . __h_data ). Right ). __h_0_mem ) );
+                                                      ;
+                                                      ({ /* cicili#Let6425 */
+                                                        bool __h_case_result  = (true  &&  (((match6421 . __h_ctor ) ==  __h_Right_t  ) &&  ({ /* cicili#Progn6426 */
+                                                              (nchild  =  (((match6421 . __h_data ). Right ). __h_0_mem ) );
                                                               true ;
                                                             }) ) );
                                                         // ----------
-                                                        ((__h_case_result ) ? ({ /* cicili#Progn6716 */
-                                                            Right_BTree_int_User_Error_BTree_int_User (Internal_BTree_int_User (replace_List_BTree_int_User_pair_t (items , max , current ), ({ /* cicili#Let6724 */
-                                                                __auto_type r1  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let6726 */
+                                                        
+                                                        ((__h_case_result ) ? ({ /* cicili#Progn6431 */
+                                                            Right_BTree_int_User_Error_BTree_int_User (Internal_BTree_int_User (replace_List_BTree_int_User_pair_t (items , max , current ), ({ /* cicili#Let6439 */
+                                                                __auto_type r1  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let6441 */
                                                                   __auto_type r1  = new_Rc_BTree_int_User (nchild );
                                                                   // ----------
                                                                   ((void)((r1 . __h_table )-> freeData ));
                                                                   r1 ;
                                                                 });
-                                                                __auto_type r2  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let6730 */
+                                                                __auto_type r2  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let6445 */
                                                                   __auto_type r2  = replaceAt_List_Rc_BTree_int_User (children , r1 , index );
                                                                   // ----------
                                                                   ((void)(r2 -> __h_table -> freeClass ));
                                                                   r2 ;
                                                                 });
                                                                 // ----------
-                                                                fmap_Functor_List_Rc_BTree_int_User (({ /* cicili#Progn6739 */
-                                                                    Rc_BTree_int_User __ciciliC_6738 (Rc_BTree_int_User __h_value ) {
+                                                                fmap_Functor_List_Rc_BTree_int_User (({ /* cicili#Progn6454 */
+                                                                    Rc_BTree_int_User __ciciliC_6453 (Rc_BTree_int_User __h_value ) {
                                                                       return clone_Rc_BTree_int_User (__h_value );
                                                                     }
-                                                                    __ciciliC_6738 ;
+                                                                    __ciciliC_6453 ;
                                                                   }), r2 );
                                                               })));
-                                                          }) : ({ /* cicili#Let6746 */
-                                                            __auto_type left  = match6706 ;
+                                                          }) : ({ /* cicili#Let6461 */
+                                                            __auto_type left  = match6421 ;
                                                             // ----------
-                                                            
-                                                            ({ /* cicili#Progn6750 */
+                                                            ;
+                                                            ({ /* cicili#Progn6463 */
                                                               left ;
                                                             });
                                                           }));
                                                       });
                                                     });
-                                                  }) : ({ /* cicili#Let6754 */
+                                                  }) : ({ /* cicili#Let6467 */
                                                     // ----------
-                                                    
-                                                    ({ /* cicili#Progn6758 */
+                                                    ;
+                                                    ({ /* cicili#Progn6469 */
                                                       Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_CANT_BORROW ("borrowRI 13"));
                                                     });
                                                   }));
                                               });
                                             }) : borrowRightLeaf (left_child_items ));
-                                        }) : ({ /* cicili#Let6765 */
+                                        }) : ({ /* cicili#Let6476 */
                                           // ----------
-                                          
-                                          ({ /* cicili#Progn6769 */
+                                          ;
+                                          ({ /* cicili#Progn6478 */
                                             Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_CANT_BORROW ("borrowRI 14"));
                                           });
                                         }));
@@ -6211,19 +6390,19 @@ Either_BTree_int_User_Error_BTree_int_User borrowInternal_BTree_int_User (Maybe_
                             }));
                         });
                       });
-                    }) : ({ /* cicili#Let6776 */
+                    }) : ({ /* cicili#Let6485 */
                       // ----------
-                      
-                      ({ /* cicili#Progn6780 */
+                      ;
+                      ({ /* cicili#Progn6487 */
                         Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_CANT_BORROW ("borrowRI 15"));
                       });
                     }));
                 });
               });
-            }) : ({ /* cicili#Let6787 */
+            }) : ({ /* cicili#Let6494 */
               // ----------
-              
-              ({ /* cicili#Progn6791 */
+              ;
+              ({ /* cicili#Progn6496 */
                 Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_CANT_BORROW ("borrowRI 16"));
               });
             }));
@@ -6233,138 +6412,148 @@ Either_BTree_int_User_Error_BTree_int_User borrowInternal_BTree_int_User (Maybe_
       result ;
     });
 }
-Either_BTree_int_User_Error_BTree_int_User deleteWithParent_BTree_int_User (Maybe_BTree_int_User wparent , int pitem_index , int pchild_index , BTree_int_User tree , int skey , void (*callback) (BTree_int_User_pair_t item )) {
-  Either_BTree_int_User_Error_BTree_int_User deleteInternal (Maybe_BTree_int_User tree , List_BTree_int_User_pair_t items , List_Rc_BTree_int_User children , Maybe_List_BTree_int_User_pair_t wleft , List_BTree_int_User_pair_t current , int index ) {
-    return ({ /* cicili#Let6819 */
-        __auto_type result  = ({ /* cicili#Let6823 */
+Either_BTree_int_User_Error_BTree_int_User deleteWithParent_BTree_int_User (Maybe_BTree_int_User wparent , size_t pitem_index , size_t pchild_index , BTree_int_User tree , int skey , void (*callback) (BTree_int_User_pair_t item )) {
+  Either_BTree_int_User_Error_BTree_int_User deleteInternal (Maybe_BTree_int_User tree , List_BTree_int_User_pair_t items , List_Rc_BTree_int_User children , Maybe_List_BTree_int_User_pair_t wleft , List_BTree_int_User_pair_t current , size_t index ) {
+    return ({ /* cicili#Let6524 */
+        __auto_type result  = ({ /* cicili#Let6528 */
           typeof((((current -> __h_data ). Cons ). __h_0_mem )) head ;
           typeof((head . __h_0_mem )) key ;
           typeof((((current -> __h_data ). Cons ). __h_1_mem )) tail ;
           // ----------
-          
-          ({ /* cicili#Let6827 */
-            bool __h_case_result  = (true  &&  (((current -> __h_ctor ) ==  __h_Cons_t  ) &&  ((({ /* cicili#Progn6828 */
+          ;
+          ({ /* cicili#Let6530 */
+            bool __h_case_result  = (true  &&  (((current -> __h_ctor ) ==  __h_Cons_t  ) &&  ((({ /* cicili#Progn6531 */
                       (head  =  (((current -> __h_data ). Cons ). __h_0_mem ) );
                       true ;
-                    }) &&  (true  &&  ({ /* cicili#Progn6830 */
+                    }) &&  (true  &&  ({ /* cicili#Progn6533 */
                         (key  =  (head . __h_0_mem ) );
                         true ;
-                      }) ) ) &&  ({ /* cicili#Progn6832 */
+                      }) ) ) &&  ({ /* cicili#Progn6535 */
                     (tail  =  (((current -> __h_data ). Cons ). __h_1_mem ) );
                     true ;
                   }) ) ) );
             // ----------
-            ((__h_case_result ) ? ({ /* cicili#Progn6835 */
-                ({ /* cicili#Let6839 */
-                  __auto_type match6838  = compareKey (skey , key );
+            
+            ((__h_case_result ) ? ({ /* cicili#Progn6540 */
+                ({ /* cicili#Let6544 */
+                  __auto_type match6543  = compareKey (skey , key );
                   // ----------
-                  
-                  ({ /* cicili#Let6843 */
-                    bool __h_case_result  = (true  &&  ((match6838 . __h_ctor ) ==  __h_LT_t  ) );
+                  ;
+                  ({ /* cicili#Let6546 */
+                    bool __h_case_result  = (true  &&  ((match6543 . __h_ctor ) ==  __h_LT_t  ) );
                     // ----------
-                    ((__h_case_result ) ? ({ /* cicili#Progn6845 */
-                        ({ /* cicili#Let6849 */
-                          __auto_type match6848  = nth_List_Rc_BTree_int_User (index , children );
-                          typeof((((match6848 . __h_data ). Just ). __h_0_mem )) child ;
+                    
+                    ((__h_case_result ) ? ({ /* cicili#Progn6550 */
+                        ({ /* cicili#Let6554 */
+                          __auto_type match6553  = nth_List_Rc_BTree_int_User (index , children );
+                          typeof((((match6553 . __h_data ). Just ). __h_0_mem )) child ;
                           // ----------
-                          
-                          ({ /* cicili#Let6854 */
-                            bool __h_case_result  = (true  &&  (((match6848 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn6855 */
-                                  (child  =  (((match6848 . __h_data ). Just ). __h_0_mem ) );
+                          ;
+                          ({ /* cicili#Let6557 */
+                            bool __h_case_result  = (true  &&  (((match6553 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn6558 */
+                                  (child  =  (((match6553 . __h_data ). Just ). __h_0_mem ) );
                                   true ;
                                 }) ) );
                             // ----------
-                            ((__h_case_result ) ? ({ /* cicili#Progn6858 */
-                                ({ /* cicili#Let6862 */
-                                  __auto_type match6861  = get_Rc_BTree_int_User (child );
-                                  typeof((((match6861 . __h_data ). Just ). __h_0_mem )) tr ;
+                            
+                            ((__h_case_result ) ? ({ /* cicili#Progn6563 */
+                                ({ /* cicili#Let6567 */
+                                  __auto_type match6566  = get_Rc_BTree_int_User (child );
+                                  typeof((((match6566 . __h_data ). Just ). __h_0_mem )) tr ;
                                   // ----------
-                                  
-                                  ({ /* cicili#Let6867 */
-                                    bool __h_case_result  = (true  &&  (((match6861 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn6868 */
-                                          (tr  =  (((match6861 . __h_data ). Just ). __h_0_mem ) );
+                                  ;
+                                  ({ /* cicili#Let6570 */
+                                    bool __h_case_result  = (true  &&  (((match6566 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn6571 */
+                                          (tr  =  (((match6566 . __h_data ). Just ). __h_0_mem ) );
                                           true ;
                                         }) ) );
                                     // ----------
-                                    ((__h_case_result ) ? ({ /* cicili#Progn6871 */
-                                        ({ /* cicili#Let6875 */
+                                    
+                                    ((__h_case_result ) ? ({ /* cicili#Progn6576 */
+                                        ({ /* cicili#Let6580 */
                                           // ----------
-                                          
-                                          ({ /* cicili#Let6879 */
+                                          ;
+                                          ({ /* cicili#Let6582 */
                                             bool __h_case_result  = (true  &&  ((tr -> __h_ctor ) ==  __h_Branch_t  ) );
                                             // ----------
-                                            ((__h_case_result ) ? ({ /* cicili#Progn6881 */
-                                                ({ /* cicili#Let6885 */
-                                                  __auto_type match6884  = deleteWithParent_BTree_int_User (tree , (((index  >  0 )) ? (index  -  1 ) : index ), index , tr , skey , callback );
-                                                  typeof((((match6884 . __h_data ). Right ). __h_0_mem )) nchild ;
+                                            
+                                            ((__h_case_result ) ? ({ /* cicili#Progn6586 */
+                                                ({ /* cicili#Let6590 */
+                                                  __auto_type match6589  = deleteWithParent_BTree_int_User (tree , (((index  >  0 )) ? (index  -  1 ) : index ), index , tr , skey , callback );
+                                                  typeof((((match6589 . __h_data ). Right ). __h_0_mem )) nchild ;
                                                   // ----------
-                                                  
-                                                  ({ /* cicili#Let6890 */
-                                                    bool __h_case_result  = (true  &&  (((match6884 . __h_ctor ) ==  __h_Right_t  ) &&  ({ /* cicili#Progn6891 */
-                                                          (nchild  =  (((match6884 . __h_data ). Right ). __h_0_mem ) );
+                                                  ;
+                                                  ({ /* cicili#Let6593 */
+                                                    bool __h_case_result  = (true  &&  (((match6589 . __h_ctor ) ==  __h_Right_t  ) &&  ({ /* cicili#Progn6594 */
+                                                          (nchild  =  (((match6589 . __h_data ). Right ). __h_0_mem ) );
                                                           true ;
                                                         }) ) );
                                                     // ----------
-                                                    ((__h_case_result ) ? ({ /* cicili#Progn6894 */
-                                                        ({ /* cicili#Let6898 */
+                                                    
+                                                    ((__h_case_result ) ? ({ /* cicili#Progn6599 */
+                                                        ({ /* cicili#Let6603 */
                                                           typeof((((nchild -> __h_data ). Branch ). __h_0_mem )) child_items ;
                                                           typeof((((nchild -> __h_data ). Branch ). __h_1_mem )) child_children ;
                                                           // ----------
-                                                          
-                                                          ({ /* cicili#Let6902 */
-                                                            bool __h_case_result  = (true  &&  (((nchild -> __h_ctor ) ==  __h_Branch_t  ) &&  (({ /* cicili#Progn6903 */
+                                                          ;
+                                                          ({ /* cicili#Let6605 */
+                                                            bool __h_case_result  = (true  &&  (((nchild -> __h_ctor ) ==  __h_Branch_t  ) &&  (({ /* cicili#Progn6606 */
                                                                     (child_items  =  (((nchild -> __h_data ). Branch ). __h_0_mem ) );
                                                                     true ;
-                                                                  }) &&  ({ /* cicili#Progn6905 */
+                                                                  }) &&  ({ /* cicili#Progn6608 */
                                                                     (child_children  =  (((nchild -> __h_data ). Branch ). __h_1_mem ) );
                                                                     true ;
                                                                   }) ) ) );
                                                             // ----------
-                                                            ((__h_case_result ) ? ({ /* cicili#Progn6908 */
-                                                                ({ /* cicili#Let6912 */
-                                                                  __auto_type match6911  = nth_List_Rc_BTree_int_User ((index  -  1 ), children );
-                                                                  typeof((((match6911 . __h_data ). Just ). __h_0_mem )) wleft ;
+                                                            
+                                                            ((__h_case_result ) ? ({ /* cicili#Progn6613 */
+                                                                ({ /* cicili#Let6617 */
+                                                                  __auto_type match6616  = nth_List_Rc_BTree_int_User ((index  -  1 ), children );
+                                                                  typeof((((match6616 . __h_data ). Just ). __h_0_mem )) wleft ;
                                                                   // ----------
-                                                                  
-                                                                  ({ /* cicili#Let6917 */
-                                                                    bool __h_case_result  = (true  &&  (((match6911 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn6918 */
-                                                                          (wleft  =  (((match6911 . __h_data ). Just ). __h_0_mem ) );
+                                                                  ;
+                                                                  ({ /* cicili#Let6620 */
+                                                                    bool __h_case_result  = (true  &&  (((match6616 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn6621 */
+                                                                          (wleft  =  (((match6616 . __h_data ). Just ). __h_0_mem ) );
                                                                           true ;
                                                                         }) ) );
                                                                     // ----------
-                                                                    ((__h_case_result ) ? ({ /* cicili#Progn6921 */
-                                                                        ({ /* cicili#Let6924 */
+                                                                    
+                                                                    ((__h_case_result ) ? ({ /* cicili#Progn6626 */
+                                                                        ({ /* cicili#Let6629 */
                                                                           __auto_type __h_matchbox  = wleft ;
                                                                           // ----------
-                                                                          ({ /* cicili#Let6928 */
-                                                                            __auto_type match6927  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
-                                                                            typeof((((match6927 . __h_data ). Just ). __h_0_mem )) unboxed ;
+                                                                          ({ /* cicili#Let6633 */
+                                                                            __auto_type match6632  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
+                                                                            typeof((((match6632 . __h_data ). Just ). __h_0_mem )) unboxed ;
                                                                             // ----------
-                                                                            
-                                                                            ({ /* cicili#Let6933 */
-                                                                              bool __h_case_result  = (true  &&  (((match6927 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn6934 */
-                                                                                    (unboxed  =  (((match6927 . __h_data ). Just ). __h_0_mem ) );
+                                                                            ;
+                                                                            ({ /* cicili#Let6636 */
+                                                                              bool __h_case_result  = (true  &&  (((match6632 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn6637 */
+                                                                                    (unboxed  =  (((match6632 . __h_data ). Just ). __h_0_mem ) );
                                                                                     true ;
                                                                                   }) ) );
                                                                               // ----------
-                                                                              ((__h_case_result ) ? ({ /* cicili#Progn6937 */
-                                                                                  ({ /* cicili#Let6941 */
+                                                                              
+                                                                              ((__h_case_result ) ? ({ /* cicili#Progn6642 */
+                                                                                  ({ /* cicili#Let6646 */
                                                                                     typeof((((unboxed -> __h_data ). Branch ). __h_0_mem )) left_items ;
                                                                                     typeof((((unboxed -> __h_data ). Branch ). __h_1_mem )) left_children ;
                                                                                     // ----------
-                                                                                    
-                                                                                    ({ /* cicili#Let6945 */
-                                                                                      bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Branch_t  ) &&  (({ /* cicili#Progn6946 */
+                                                                                    ;
+                                                                                    ({ /* cicili#Let6648 */
+                                                                                      bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Branch_t  ) &&  (({ /* cicili#Progn6649 */
                                                                                               (left_items  =  (((unboxed -> __h_data ). Branch ). __h_0_mem ) );
                                                                                               true ;
-                                                                                            }) &&  ({ /* cicili#Progn6948 */
+                                                                                            }) &&  ({ /* cicili#Progn6651 */
                                                                                               (left_children  =  (((unboxed -> __h_data ). Branch ). __h_1_mem ) );
                                                                                               true ;
                                                                                             }) ) ) );
                                                                                       // ----------
-                                                                                      ((__h_case_result ) ? ({ /* cicili#Progn6951 */
-                                                                                          ({ /* cicili#Let6954 */
-                                                                                            __auto_type nchild  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let6956 */
+                                                                                      
+                                                                                      ((__h_case_result ) ? ({ /* cicili#Progn6656 */
+                                                                                          ({ /* cicili#Let6659 */
+                                                                                            __auto_type nchild  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let6661 */
                                                                                               __auto_type nchild  = nchild ;
                                                                                               // ----------
                                                                                               ((void)(nchild -> __h_table -> freeClass ));
@@ -6373,23 +6562,24 @@ Either_BTree_int_User_Error_BTree_int_User deleteWithParent_BTree_int_User (Mayb
                                                                                             // ----------
                                                                                             Right_BTree_int_User_Error_BTree_int_User (mergeUp_BTree_int_User (items , children , (((index  >  0 )) ? (index  -  1 ) : index ), (((index  >  0 )) ? (index  -  1 ) : index ), left_items , left_children , child_items , child_children ));
                                                                                           });
-                                                                                        }) : ({ /* cicili#Let6964 */
+                                                                                        }) : ({ /* cicili#Let6669 */
                                                                                           typeof((((unboxed -> __h_data ). Internal ). __h_0_mem )) left_items ;
                                                                                           typeof((((unboxed -> __h_data ). Internal ). __h_1_mem )) left_children ;
                                                                                           // ----------
-                                                                                          
-                                                                                          ({ /* cicili#Let6968 */
-                                                                                            bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Internal_t  ) &&  (({ /* cicili#Progn6969 */
+                                                                                          ;
+                                                                                          ({ /* cicili#Let6671 */
+                                                                                            bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Internal_t  ) &&  (({ /* cicili#Progn6672 */
                                                                                                     (left_items  =  (((unboxed -> __h_data ). Internal ). __h_0_mem ) );
                                                                                                     true ;
-                                                                                                  }) &&  ({ /* cicili#Progn6971 */
+                                                                                                  }) &&  ({ /* cicili#Progn6674 */
                                                                                                     (left_children  =  (((unboxed -> __h_data ). Internal ). __h_1_mem ) );
                                                                                                     true ;
                                                                                                   }) ) ) );
                                                                                             // ----------
-                                                                                            ((__h_case_result ) ? ({ /* cicili#Progn6974 */
-                                                                                                ({ /* cicili#Let6977 */
-                                                                                                  __auto_type nchild  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let6979 */
+                                                                                            
+                                                                                            ((__h_case_result ) ? ({ /* cicili#Progn6679 */
+                                                                                                ({ /* cicili#Let6682 */
+                                                                                                  __auto_type nchild  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let6684 */
                                                                                                     __auto_type nchild  = nchild ;
                                                                                                     // ----------
                                                                                                     ((void)(nchild -> __h_table -> freeClass ));
@@ -6398,10 +6588,10 @@ Either_BTree_int_User_Error_BTree_int_User deleteWithParent_BTree_int_User (Mayb
                                                                                                   // ----------
                                                                                                   Right_BTree_int_User_Error_BTree_int_User (mergeUp_BTree_int_User (items , children , (((index  >  0 )) ? (index  -  1 ) : index ), (((index  >  0 )) ? (index  -  1 ) : index ), left_items , left_children , child_items , child_children ));
                                                                                                 });
-                                                                                              }) : ({ /* cicili#Let6987 */
+                                                                                              }) : ({ /* cicili#Let6692 */
                                                                                                 // ----------
-                                                                                                
-                                                                                                ({ /* cicili#Progn6991 */
+                                                                                                ;
+                                                                                                ({ /* cicili#Progn6694 */
                                                                                                   Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_CANT_BORROW ("BWPL1-1"));
                                                                                                 });
                                                                                               }));
@@ -6409,64 +6599,67 @@ Either_BTree_int_User_Error_BTree_int_User deleteWithParent_BTree_int_User (Mayb
                                                                                         }));
                                                                                     });
                                                                                   });
-                                                                                }) : ({ /* cicili#Let6998 */
+                                                                                }) : ({ /* cicili#Let6701 */
                                                                                   // ----------
-                                                                                  
-                                                                                  ({ /* cicili#Progn7002 */
+                                                                                  ;
+                                                                                  ({ /* cicili#Progn6703 */
                                                                                     Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_CANT_BORROW ("BWPL1"));
                                                                                   });
                                                                                 }));
                                                                             });
                                                                           });
                                                                         });
-                                                                      }) : ({ /* cicili#Let7009 */
+                                                                      }) : ({ /* cicili#Let6710 */
                                                                         // ----------
-                                                                        
-                                                                        ({ /* cicili#Progn7013 */
-                                                                          ({ /* cicili#Let7017 */
-                                                                            __auto_type match7016  = nth_List_Rc_BTree_int_User ((index  +  1 ), children );
-                                                                            typeof((((match7016 . __h_data ). Just ). __h_0_mem )) wright ;
+                                                                        ;
+                                                                        ({ /* cicili#Progn6712 */
+                                                                          ({ /* cicili#Let6716 */
+                                                                            __auto_type match6715  = nth_List_Rc_BTree_int_User ((index  +  1 ), children );
+                                                                            typeof((((match6715 . __h_data ). Just ). __h_0_mem )) wright ;
                                                                             // ----------
-                                                                            
-                                                                            ({ /* cicili#Let7022 */
-                                                                              bool __h_case_result  = (true  &&  (((match7016 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn7023 */
-                                                                                    (wright  =  (((match7016 . __h_data ). Just ). __h_0_mem ) );
+                                                                            ;
+                                                                            ({ /* cicili#Let6719 */
+                                                                              bool __h_case_result  = (true  &&  (((match6715 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn6720 */
+                                                                                    (wright  =  (((match6715 . __h_data ). Just ). __h_0_mem ) );
                                                                                     true ;
                                                                                   }) ) );
                                                                               // ----------
-                                                                              ((__h_case_result ) ? ({ /* cicili#Progn7026 */
-                                                                                  ({ /* cicili#Let7029 */
+                                                                              
+                                                                              ((__h_case_result ) ? ({ /* cicili#Progn6725 */
+                                                                                  ({ /* cicili#Let6728 */
                                                                                     __auto_type __h_matchbox  = wright ;
                                                                                     // ----------
-                                                                                    ({ /* cicili#Let7033 */
-                                                                                      __auto_type match7032  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
-                                                                                      typeof((((match7032 . __h_data ). Just ). __h_0_mem )) unboxed ;
+                                                                                    ({ /* cicili#Let6732 */
+                                                                                      __auto_type match6731  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
+                                                                                      typeof((((match6731 . __h_data ). Just ). __h_0_mem )) unboxed ;
                                                                                       // ----------
-                                                                                      
-                                                                                      ({ /* cicili#Let7038 */
-                                                                                        bool __h_case_result  = (true  &&  (((match7032 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn7039 */
-                                                                                              (unboxed  =  (((match7032 . __h_data ). Just ). __h_0_mem ) );
+                                                                                      ;
+                                                                                      ({ /* cicili#Let6735 */
+                                                                                        bool __h_case_result  = (true  &&  (((match6731 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn6736 */
+                                                                                              (unboxed  =  (((match6731 . __h_data ). Just ). __h_0_mem ) );
                                                                                               true ;
                                                                                             }) ) );
                                                                                         // ----------
-                                                                                        ((__h_case_result ) ? ({ /* cicili#Progn7042 */
-                                                                                            ({ /* cicili#Let7046 */
+                                                                                        
+                                                                                        ((__h_case_result ) ? ({ /* cicili#Progn6741 */
+                                                                                            ({ /* cicili#Let6745 */
                                                                                               typeof((((unboxed -> __h_data ). Branch ). __h_0_mem )) right_items ;
                                                                                               typeof((((unboxed -> __h_data ). Branch ). __h_1_mem )) right_children ;
                                                                                               // ----------
-                                                                                              
-                                                                                              ({ /* cicili#Let7050 */
-                                                                                                bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Branch_t  ) &&  (({ /* cicili#Progn7051 */
+                                                                                              ;
+                                                                                              ({ /* cicili#Let6747 */
+                                                                                                bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Branch_t  ) &&  (({ /* cicili#Progn6748 */
                                                                                                         (right_items  =  (((unboxed -> __h_data ). Branch ). __h_0_mem ) );
                                                                                                         true ;
-                                                                                                      }) &&  ({ /* cicili#Progn7053 */
+                                                                                                      }) &&  ({ /* cicili#Progn6750 */
                                                                                                         (right_children  =  (((unboxed -> __h_data ). Branch ). __h_1_mem ) );
                                                                                                         true ;
                                                                                                       }) ) ) );
                                                                                                 // ----------
-                                                                                                ((__h_case_result ) ? ({ /* cicili#Progn7056 */
-                                                                                                    ({ /* cicili#Let7059 */
-                                                                                                      __auto_type nchild  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let7061 */
+                                                                                                
+                                                                                                ((__h_case_result ) ? ({ /* cicili#Progn6755 */
+                                                                                                    ({ /* cicili#Let6758 */
+                                                                                                      __auto_type nchild  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let6760 */
                                                                                                         __auto_type nchild  = nchild ;
                                                                                                         // ----------
                                                                                                         ((void)(nchild -> __h_table -> freeClass ));
@@ -6475,23 +6668,24 @@ Either_BTree_int_User_Error_BTree_int_User deleteWithParent_BTree_int_User (Mayb
                                                                                                       // ----------
                                                                                                       Right_BTree_int_User_Error_BTree_int_User (mergeUp_BTree_int_User (items , children , (((index  >  0 )) ? (index  -  1 ) : index ), index , child_items , child_children , right_items , right_children ));
                                                                                                     });
-                                                                                                  }) : ({ /* cicili#Let7069 */
+                                                                                                  }) : ({ /* cicili#Let6768 */
                                                                                                     typeof((((unboxed -> __h_data ). Internal ). __h_0_mem )) right_items ;
                                                                                                     typeof((((unboxed -> __h_data ). Internal ). __h_1_mem )) right_children ;
                                                                                                     // ----------
-                                                                                                    
-                                                                                                    ({ /* cicili#Let7073 */
-                                                                                                      bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Internal_t  ) &&  (({ /* cicili#Progn7074 */
+                                                                                                    ;
+                                                                                                    ({ /* cicili#Let6770 */
+                                                                                                      bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Internal_t  ) &&  (({ /* cicili#Progn6771 */
                                                                                                               (right_items  =  (((unboxed -> __h_data ). Internal ). __h_0_mem ) );
                                                                                                               true ;
-                                                                                                            }) &&  ({ /* cicili#Progn7076 */
+                                                                                                            }) &&  ({ /* cicili#Progn6773 */
                                                                                                               (right_children  =  (((unboxed -> __h_data ). Internal ). __h_1_mem ) );
                                                                                                               true ;
                                                                                                             }) ) ) );
                                                                                                       // ----------
-                                                                                                      ((__h_case_result ) ? ({ /* cicili#Progn7079 */
-                                                                                                          ({ /* cicili#Let7082 */
-                                                                                                            __auto_type nchild  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let7084 */
+                                                                                                      
+                                                                                                      ((__h_case_result ) ? ({ /* cicili#Progn6778 */
+                                                                                                          ({ /* cicili#Let6781 */
+                                                                                                            __auto_type nchild  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let6783 */
                                                                                                               __auto_type nchild  = nchild ;
                                                                                                               // ----------
                                                                                                               ((void)(nchild -> __h_table -> freeClass ));
@@ -6500,10 +6694,10 @@ Either_BTree_int_User_Error_BTree_int_User deleteWithParent_BTree_int_User (Mayb
                                                                                                             // ----------
                                                                                                             Right_BTree_int_User_Error_BTree_int_User (mergeUp_BTree_int_User (items , children , (((index  >  0 )) ? (index  -  1 ) : index ), index , child_items , child_children , right_items , right_children ));
                                                                                                           });
-                                                                                                        }) : ({ /* cicili#Let7092 */
+                                                                                                        }) : ({ /* cicili#Let6791 */
                                                                                                           // ----------
-                                                                                                          
-                                                                                                          ({ /* cicili#Progn7096 */
+                                                                                                          ;
+                                                                                                          ({ /* cicili#Progn6793 */
                                                                                                             Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_CANT_BORROW ("BWPR2-1"));
                                                                                                           });
                                                                                                         }));
@@ -6511,20 +6705,20 @@ Either_BTree_int_User_Error_BTree_int_User deleteWithParent_BTree_int_User (Mayb
                                                                                                   }));
                                                                                               });
                                                                                             });
-                                                                                          }) : ({ /* cicili#Let7103 */
+                                                                                          }) : ({ /* cicili#Let6800 */
                                                                                             // ----------
-                                                                                            
-                                                                                            ({ /* cicili#Progn7107 */
+                                                                                            ;
+                                                                                            ({ /* cicili#Progn6802 */
                                                                                               Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_CANT_BORROW ("BWPR2"));
                                                                                             });
                                                                                           }));
                                                                                       });
                                                                                     });
                                                                                   });
-                                                                                }) : ({ /* cicili#Let7114 */
+                                                                                }) : ({ /* cicili#Let6809 */
                                                                                   // ----------
-                                                                                  
-                                                                                  ({ /* cicili#Progn7118 */
+                                                                                  ;
+                                                                                  ({ /* cicili#Progn6811 */
                                                                                     Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_CANT_BORROW ("BWPR1"));
                                                                                   });
                                                                                 }));
@@ -6534,123 +6728,129 @@ Either_BTree_int_User_Error_BTree_int_User deleteWithParent_BTree_int_User (Mayb
                                                                       }));
                                                                   });
                                                                 });
-                                                              }) : ({ /* cicili#Let7125 */
+                                                              }) : ({ /* cicili#Let6818 */
                                                                 // ----------
-                                                                
-                                                                ({ /* cicili#Progn7129 */
-                                                                  Right_BTree_int_User_Error_BTree_int_User (Internal_BTree_int_User (copy_List_BTree_int_User_pair_t (items ), ({ /* cicili#Let7137 */
-                                                                      __auto_type r1  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let7139 */
+                                                                ;
+                                                                ({ /* cicili#Progn6820 */
+                                                                  Right_BTree_int_User_Error_BTree_int_User (Internal_BTree_int_User (copy_List_BTree_int_User_pair_t (items ), ({ /* cicili#Let6828 */
+                                                                      __auto_type r1  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let6830 */
                                                                         __auto_type r1  = new_Rc_BTree_int_User (nchild );
                                                                         // ----------
                                                                         ((void)((r1 . __h_table )-> freeData ));
                                                                         r1 ;
                                                                       });
-                                                                      __auto_type r2  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let7143 */
+                                                                      __auto_type r2  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let6834 */
                                                                         __auto_type r2  = replaceAt_List_Rc_BTree_int_User (children , r1 , index );
                                                                         // ----------
                                                                         ((void)(r2 -> __h_table -> freeClass ));
                                                                         r2 ;
                                                                       });
                                                                       // ----------
-                                                                      fmap_Functor_List_Rc_BTree_int_User (({ /* cicili#Progn7152 */
-                                                                          Rc_BTree_int_User __ciciliC_7151 (Rc_BTree_int_User __h_value ) {
+                                                                      fmap_Functor_List_Rc_BTree_int_User (({ /* cicili#Progn6843 */
+                                                                          Rc_BTree_int_User __ciciliC_6842 (Rc_BTree_int_User __h_value ) {
                                                                             return clone_Rc_BTree_int_User (__h_value );
                                                                           }
-                                                                          __ciciliC_7151 ;
+                                                                          __ciciliC_6842 ;
                                                                         }), r2 );
                                                                     })));
                                                                 });
                                                               }));
                                                           });
                                                         });
-                                                      }) : ({ /* cicili#Let7159 */
-                                                        __auto_type left  = match6884 ;
+                                                      }) : ({ /* cicili#Let6850 */
+                                                        __auto_type left  = match6589 ;
                                                         // ----------
-                                                        
-                                                        ({ /* cicili#Progn7163 */
+                                                        ;
+                                                        ({ /* cicili#Progn6852 */
                                                           left ;
                                                         });
                                                       }));
                                                   });
                                                 });
-                                              }) : ({ /* cicili#Let7167 */
+                                              }) : ({ /* cicili#Let6856 */
                                                 // ----------
-                                                
-                                                ({ /* cicili#Let7171 */
+                                                ;
+                                                ({ /* cicili#Let6858 */
                                                   bool __h_case_result  = (true  &&  ((tr -> __h_ctor ) ==  __h_Internal_t  ) );
                                                   // ----------
-                                                  ((__h_case_result ) ? ({ /* cicili#Progn7173 */
-                                                      ({ /* cicili#Let7177 */
-                                                        __auto_type match7176  = deleteWithParent_BTree_int_User (tree , (((index  >  0 )) ? (index  -  1 ) : index ), index , tr , skey , callback );
-                                                        typeof((((match7176 . __h_data ). Right ). __h_0_mem )) nchild ;
+                                                  
+                                                  ((__h_case_result ) ? ({ /* cicili#Progn6862 */
+                                                      ({ /* cicili#Let6866 */
+                                                        __auto_type match6865  = deleteWithParent_BTree_int_User (tree , (((index  >  0 )) ? (index  -  1 ) : index ), index , tr , skey , callback );
+                                                        typeof((((match6865 . __h_data ). Right ). __h_0_mem )) nchild ;
                                                         // ----------
-                                                        
-                                                        ({ /* cicili#Let7182 */
-                                                          bool __h_case_result  = (true  &&  (((match7176 . __h_ctor ) ==  __h_Right_t  ) &&  ({ /* cicili#Progn7183 */
-                                                                (nchild  =  (((match7176 . __h_data ). Right ). __h_0_mem ) );
+                                                        ;
+                                                        ({ /* cicili#Let6869 */
+                                                          bool __h_case_result  = (true  &&  (((match6865 . __h_ctor ) ==  __h_Right_t  ) &&  ({ /* cicili#Progn6870 */
+                                                                (nchild  =  (((match6865 . __h_data ). Right ). __h_0_mem ) );
                                                                 true ;
                                                               }) ) );
                                                           // ----------
-                                                          ((__h_case_result ) ? ({ /* cicili#Progn7186 */
-                                                              ({ /* cicili#Let7190 */
+                                                          
+                                                          ((__h_case_result ) ? ({ /* cicili#Progn6875 */
+                                                              ({ /* cicili#Let6879 */
                                                                 typeof((((nchild -> __h_data ). Branch ). __h_0_mem )) child_items ;
                                                                 typeof((((nchild -> __h_data ). Branch ). __h_1_mem )) child_children ;
                                                                 // ----------
-                                                                
-                                                                ({ /* cicili#Let7194 */
-                                                                  bool __h_case_result  = (true  &&  (((nchild -> __h_ctor ) ==  __h_Branch_t  ) &&  (({ /* cicili#Progn7195 */
+                                                                ;
+                                                                ({ /* cicili#Let6881 */
+                                                                  bool __h_case_result  = (true  &&  (((nchild -> __h_ctor ) ==  __h_Branch_t  ) &&  (({ /* cicili#Progn6882 */
                                                                           (child_items  =  (((nchild -> __h_data ). Branch ). __h_0_mem ) );
                                                                           true ;
-                                                                        }) &&  ({ /* cicili#Progn7197 */
+                                                                        }) &&  ({ /* cicili#Progn6884 */
                                                                           (child_children  =  (((nchild -> __h_data ). Branch ). __h_1_mem ) );
                                                                           true ;
                                                                         }) ) ) );
                                                                   // ----------
-                                                                  ((__h_case_result ) ? ({ /* cicili#Progn7200 */
-                                                                      ({ /* cicili#Let7204 */
-                                                                        __auto_type match7203  = nth_List_Rc_BTree_int_User ((index  -  1 ), children );
-                                                                        typeof((((match7203 . __h_data ). Just ). __h_0_mem )) wleft ;
+                                                                  
+                                                                  ((__h_case_result ) ? ({ /* cicili#Progn6889 */
+                                                                      ({ /* cicili#Let6893 */
+                                                                        __auto_type match6892  = nth_List_Rc_BTree_int_User ((index  -  1 ), children );
+                                                                        typeof((((match6892 . __h_data ). Just ). __h_0_mem )) wleft ;
                                                                         // ----------
-                                                                        
-                                                                        ({ /* cicili#Let7209 */
-                                                                          bool __h_case_result  = (true  &&  (((match7203 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn7210 */
-                                                                                (wleft  =  (((match7203 . __h_data ). Just ). __h_0_mem ) );
+                                                                        ;
+                                                                        ({ /* cicili#Let6896 */
+                                                                          bool __h_case_result  = (true  &&  (((match6892 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn6897 */
+                                                                                (wleft  =  (((match6892 . __h_data ). Just ). __h_0_mem ) );
                                                                                 true ;
                                                                               }) ) );
                                                                           // ----------
-                                                                          ((__h_case_result ) ? ({ /* cicili#Progn7213 */
-                                                                              ({ /* cicili#Let7216 */
+                                                                          
+                                                                          ((__h_case_result ) ? ({ /* cicili#Progn6902 */
+                                                                              ({ /* cicili#Let6905 */
                                                                                 __auto_type __h_matchbox  = wleft ;
                                                                                 // ----------
-                                                                                ({ /* cicili#Let7220 */
-                                                                                  __auto_type match7219  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
-                                                                                  typeof((((match7219 . __h_data ). Just ). __h_0_mem )) unboxed ;
+                                                                                ({ /* cicili#Let6909 */
+                                                                                  __auto_type match6908  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
+                                                                                  typeof((((match6908 . __h_data ). Just ). __h_0_mem )) unboxed ;
                                                                                   // ----------
-                                                                                  
-                                                                                  ({ /* cicili#Let7225 */
-                                                                                    bool __h_case_result  = (true  &&  (((match7219 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn7226 */
-                                                                                          (unboxed  =  (((match7219 . __h_data ). Just ). __h_0_mem ) );
+                                                                                  ;
+                                                                                  ({ /* cicili#Let6912 */
+                                                                                    bool __h_case_result  = (true  &&  (((match6908 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn6913 */
+                                                                                          (unboxed  =  (((match6908 . __h_data ). Just ). __h_0_mem ) );
                                                                                           true ;
                                                                                         }) ) );
                                                                                     // ----------
-                                                                                    ((__h_case_result ) ? ({ /* cicili#Progn7229 */
-                                                                                        ({ /* cicili#Let7233 */
+                                                                                    
+                                                                                    ((__h_case_result ) ? ({ /* cicili#Progn6918 */
+                                                                                        ({ /* cicili#Let6922 */
                                                                                           typeof((((unboxed -> __h_data ). Branch ). __h_0_mem )) left_items ;
                                                                                           typeof((((unboxed -> __h_data ). Branch ). __h_1_mem )) left_children ;
                                                                                           // ----------
-                                                                                          
-                                                                                          ({ /* cicili#Let7237 */
-                                                                                            bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Branch_t  ) &&  (({ /* cicili#Progn7238 */
+                                                                                          ;
+                                                                                          ({ /* cicili#Let6924 */
+                                                                                            bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Branch_t  ) &&  (({ /* cicili#Progn6925 */
                                                                                                     (left_items  =  (((unboxed -> __h_data ). Branch ). __h_0_mem ) );
                                                                                                     true ;
-                                                                                                  }) &&  ({ /* cicili#Progn7240 */
+                                                                                                  }) &&  ({ /* cicili#Progn6927 */
                                                                                                     (left_children  =  (((unboxed -> __h_data ). Branch ). __h_1_mem ) );
                                                                                                     true ;
                                                                                                   }) ) ) );
                                                                                             // ----------
-                                                                                            ((__h_case_result ) ? ({ /* cicili#Progn7243 */
-                                                                                                ({ /* cicili#Let7246 */
-                                                                                                  __auto_type nchild  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let7248 */
+                                                                                            
+                                                                                            ((__h_case_result ) ? ({ /* cicili#Progn6932 */
+                                                                                                ({ /* cicili#Let6935 */
+                                                                                                  __auto_type nchild  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let6937 */
                                                                                                     __auto_type nchild  = nchild ;
                                                                                                     // ----------
                                                                                                     ((void)(nchild -> __h_table -> freeClass ));
@@ -6659,23 +6859,24 @@ Either_BTree_int_User_Error_BTree_int_User deleteWithParent_BTree_int_User (Mayb
                                                                                                   // ----------
                                                                                                   Right_BTree_int_User_Error_BTree_int_User (mergeUp_BTree_int_User (items , children , (((index  >  0 )) ? (index  -  1 ) : index ), (((index  >  0 )) ? (index  -  1 ) : index ), left_items , left_children , child_items , child_children ));
                                                                                                 });
-                                                                                              }) : ({ /* cicili#Let7256 */
+                                                                                              }) : ({ /* cicili#Let6945 */
                                                                                                 typeof((((unboxed -> __h_data ). Internal ). __h_0_mem )) left_items ;
                                                                                                 typeof((((unboxed -> __h_data ). Internal ). __h_1_mem )) left_children ;
                                                                                                 // ----------
-                                                                                                
-                                                                                                ({ /* cicili#Let7260 */
-                                                                                                  bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Internal_t  ) &&  (({ /* cicili#Progn7261 */
+                                                                                                ;
+                                                                                                ({ /* cicili#Let6947 */
+                                                                                                  bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Internal_t  ) &&  (({ /* cicili#Progn6948 */
                                                                                                           (left_items  =  (((unboxed -> __h_data ). Internal ). __h_0_mem ) );
                                                                                                           true ;
-                                                                                                        }) &&  ({ /* cicili#Progn7263 */
+                                                                                                        }) &&  ({ /* cicili#Progn6950 */
                                                                                                           (left_children  =  (((unboxed -> __h_data ). Internal ). __h_1_mem ) );
                                                                                                           true ;
                                                                                                         }) ) ) );
                                                                                                   // ----------
-                                                                                                  ((__h_case_result ) ? ({ /* cicili#Progn7266 */
-                                                                                                      ({ /* cicili#Let7269 */
-                                                                                                        __auto_type nchild  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let7271 */
+                                                                                                  
+                                                                                                  ((__h_case_result ) ? ({ /* cicili#Progn6955 */
+                                                                                                      ({ /* cicili#Let6958 */
+                                                                                                        __auto_type nchild  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let6960 */
                                                                                                           __auto_type nchild  = nchild ;
                                                                                                           // ----------
                                                                                                           ((void)(nchild -> __h_table -> freeClass ));
@@ -6684,10 +6885,10 @@ Either_BTree_int_User_Error_BTree_int_User deleteWithParent_BTree_int_User (Mayb
                                                                                                         // ----------
                                                                                                         Right_BTree_int_User_Error_BTree_int_User (mergeUp_BTree_int_User (items , children , (((index  >  0 )) ? (index  -  1 ) : index ), (((index  >  0 )) ? (index  -  1 ) : index ), left_items , left_children , child_items , child_children ));
                                                                                                       });
-                                                                                                    }) : ({ /* cicili#Let7279 */
+                                                                                                    }) : ({ /* cicili#Let6968 */
                                                                                                       // ----------
-                                                                                                      
-                                                                                                      ({ /* cicili#Progn7283 */
+                                                                                                      ;
+                                                                                                      ({ /* cicili#Progn6970 */
                                                                                                         Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_CANT_BORROW ("BWPL1-1"));
                                                                                                       });
                                                                                                     }));
@@ -6695,64 +6896,67 @@ Either_BTree_int_User_Error_BTree_int_User deleteWithParent_BTree_int_User (Mayb
                                                                                               }));
                                                                                           });
                                                                                         });
-                                                                                      }) : ({ /* cicili#Let7290 */
+                                                                                      }) : ({ /* cicili#Let6977 */
                                                                                         // ----------
-                                                                                        
-                                                                                        ({ /* cicili#Progn7294 */
+                                                                                        ;
+                                                                                        ({ /* cicili#Progn6979 */
                                                                                           Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_CANT_BORROW ("BWPL1"));
                                                                                         });
                                                                                       }));
                                                                                   });
                                                                                 });
                                                                               });
-                                                                            }) : ({ /* cicili#Let7301 */
+                                                                            }) : ({ /* cicili#Let6986 */
                                                                               // ----------
-                                                                              
-                                                                              ({ /* cicili#Progn7305 */
-                                                                                ({ /* cicili#Let7309 */
-                                                                                  __auto_type match7308  = nth_List_Rc_BTree_int_User ((index  +  1 ), children );
-                                                                                  typeof((((match7308 . __h_data ). Just ). __h_0_mem )) wright ;
+                                                                              ;
+                                                                              ({ /* cicili#Progn6988 */
+                                                                                ({ /* cicili#Let6992 */
+                                                                                  __auto_type match6991  = nth_List_Rc_BTree_int_User ((index  +  1 ), children );
+                                                                                  typeof((((match6991 . __h_data ). Just ). __h_0_mem )) wright ;
                                                                                   // ----------
-                                                                                  
-                                                                                  ({ /* cicili#Let7314 */
-                                                                                    bool __h_case_result  = (true  &&  (((match7308 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn7315 */
-                                                                                          (wright  =  (((match7308 . __h_data ). Just ). __h_0_mem ) );
+                                                                                  ;
+                                                                                  ({ /* cicili#Let6995 */
+                                                                                    bool __h_case_result  = (true  &&  (((match6991 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn6996 */
+                                                                                          (wright  =  (((match6991 . __h_data ). Just ). __h_0_mem ) );
                                                                                           true ;
                                                                                         }) ) );
                                                                                     // ----------
-                                                                                    ((__h_case_result ) ? ({ /* cicili#Progn7318 */
-                                                                                        ({ /* cicili#Let7321 */
+                                                                                    
+                                                                                    ((__h_case_result ) ? ({ /* cicili#Progn7001 */
+                                                                                        ({ /* cicili#Let7004 */
                                                                                           __auto_type __h_matchbox  = wright ;
                                                                                           // ----------
-                                                                                          ({ /* cicili#Let7325 */
-                                                                                            __auto_type match7324  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
-                                                                                            typeof((((match7324 . __h_data ). Just ). __h_0_mem )) unboxed ;
+                                                                                          ({ /* cicili#Let7008 */
+                                                                                            __auto_type match7007  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
+                                                                                            typeof((((match7007 . __h_data ). Just ). __h_0_mem )) unboxed ;
                                                                                             // ----------
-                                                                                            
-                                                                                            ({ /* cicili#Let7330 */
-                                                                                              bool __h_case_result  = (true  &&  (((match7324 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn7331 */
-                                                                                                    (unboxed  =  (((match7324 . __h_data ). Just ). __h_0_mem ) );
+                                                                                            ;
+                                                                                            ({ /* cicili#Let7011 */
+                                                                                              bool __h_case_result  = (true  &&  (((match7007 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn7012 */
+                                                                                                    (unboxed  =  (((match7007 . __h_data ). Just ). __h_0_mem ) );
                                                                                                     true ;
                                                                                                   }) ) );
                                                                                               // ----------
-                                                                                              ((__h_case_result ) ? ({ /* cicili#Progn7334 */
-                                                                                                  ({ /* cicili#Let7338 */
+                                                                                              
+                                                                                              ((__h_case_result ) ? ({ /* cicili#Progn7017 */
+                                                                                                  ({ /* cicili#Let7021 */
                                                                                                     typeof((((unboxed -> __h_data ). Branch ). __h_0_mem )) right_items ;
                                                                                                     typeof((((unboxed -> __h_data ). Branch ). __h_1_mem )) right_children ;
                                                                                                     // ----------
-                                                                                                    
-                                                                                                    ({ /* cicili#Let7342 */
-                                                                                                      bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Branch_t  ) &&  (({ /* cicili#Progn7343 */
+                                                                                                    ;
+                                                                                                    ({ /* cicili#Let7023 */
+                                                                                                      bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Branch_t  ) &&  (({ /* cicili#Progn7024 */
                                                                                                               (right_items  =  (((unboxed -> __h_data ). Branch ). __h_0_mem ) );
                                                                                                               true ;
-                                                                                                            }) &&  ({ /* cicili#Progn7345 */
+                                                                                                            }) &&  ({ /* cicili#Progn7026 */
                                                                                                               (right_children  =  (((unboxed -> __h_data ). Branch ). __h_1_mem ) );
                                                                                                               true ;
                                                                                                             }) ) ) );
                                                                                                       // ----------
-                                                                                                      ((__h_case_result ) ? ({ /* cicili#Progn7348 */
-                                                                                                          ({ /* cicili#Let7351 */
-                                                                                                            __auto_type nchild  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let7353 */
+                                                                                                      
+                                                                                                      ((__h_case_result ) ? ({ /* cicili#Progn7031 */
+                                                                                                          ({ /* cicili#Let7034 */
+                                                                                                            __auto_type nchild  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let7036 */
                                                                                                               __auto_type nchild  = nchild ;
                                                                                                               // ----------
                                                                                                               ((void)(nchild -> __h_table -> freeClass ));
@@ -6761,23 +6965,24 @@ Either_BTree_int_User_Error_BTree_int_User deleteWithParent_BTree_int_User (Mayb
                                                                                                             // ----------
                                                                                                             Right_BTree_int_User_Error_BTree_int_User (mergeUp_BTree_int_User (items , children , (((index  >  0 )) ? (index  -  1 ) : index ), index , child_items , child_children , right_items , right_children ));
                                                                                                           });
-                                                                                                        }) : ({ /* cicili#Let7361 */
+                                                                                                        }) : ({ /* cicili#Let7044 */
                                                                                                           typeof((((unboxed -> __h_data ). Internal ). __h_0_mem )) right_items ;
                                                                                                           typeof((((unboxed -> __h_data ). Internal ). __h_1_mem )) right_children ;
                                                                                                           // ----------
-                                                                                                          
-                                                                                                          ({ /* cicili#Let7365 */
-                                                                                                            bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Internal_t  ) &&  (({ /* cicili#Progn7366 */
+                                                                                                          ;
+                                                                                                          ({ /* cicili#Let7046 */
+                                                                                                            bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Internal_t  ) &&  (({ /* cicili#Progn7047 */
                                                                                                                     (right_items  =  (((unboxed -> __h_data ). Internal ). __h_0_mem ) );
                                                                                                                     true ;
-                                                                                                                  }) &&  ({ /* cicili#Progn7368 */
+                                                                                                                  }) &&  ({ /* cicili#Progn7049 */
                                                                                                                     (right_children  =  (((unboxed -> __h_data ). Internal ). __h_1_mem ) );
                                                                                                                     true ;
                                                                                                                   }) ) ) );
                                                                                                             // ----------
-                                                                                                            ((__h_case_result ) ? ({ /* cicili#Progn7371 */
-                                                                                                                ({ /* cicili#Let7374 */
-                                                                                                                  __auto_type nchild  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let7376 */
+                                                                                                            
+                                                                                                            ((__h_case_result ) ? ({ /* cicili#Progn7054 */
+                                                                                                                ({ /* cicili#Let7057 */
+                                                                                                                  __auto_type nchild  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let7059 */
                                                                                                                     __auto_type nchild  = nchild ;
                                                                                                                     // ----------
                                                                                                                     ((void)(nchild -> __h_table -> freeClass ));
@@ -6786,10 +6991,10 @@ Either_BTree_int_User_Error_BTree_int_User deleteWithParent_BTree_int_User (Mayb
                                                                                                                   // ----------
                                                                                                                   Right_BTree_int_User_Error_BTree_int_User (mergeUp_BTree_int_User (items , children , (((index  >  0 )) ? (index  -  1 ) : index ), index , child_items , child_children , right_items , right_children ));
                                                                                                                 });
-                                                                                                              }) : ({ /* cicili#Let7384 */
+                                                                                                              }) : ({ /* cicili#Let7067 */
                                                                                                                 // ----------
-                                                                                                                
-                                                                                                                ({ /* cicili#Progn7388 */
+                                                                                                                ;
+                                                                                                                ({ /* cicili#Progn7069 */
                                                                                                                   Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_CANT_BORROW ("BWPR2-1"));
                                                                                                                 });
                                                                                                               }));
@@ -6797,20 +7002,20 @@ Either_BTree_int_User_Error_BTree_int_User deleteWithParent_BTree_int_User (Mayb
                                                                                                         }));
                                                                                                     });
                                                                                                   });
-                                                                                                }) : ({ /* cicili#Let7395 */
+                                                                                                }) : ({ /* cicili#Let7076 */
                                                                                                   // ----------
-                                                                                                  
-                                                                                                  ({ /* cicili#Progn7399 */
+                                                                                                  ;
+                                                                                                  ({ /* cicili#Progn7078 */
                                                                                                     Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_CANT_BORROW ("BWPR2"));
                                                                                                   });
                                                                                                 }));
                                                                                             });
                                                                                           });
                                                                                         });
-                                                                                      }) : ({ /* cicili#Let7406 */
+                                                                                      }) : ({ /* cicili#Let7085 */
                                                                                         // ----------
-                                                                                        
-                                                                                        ({ /* cicili#Progn7410 */
+                                                                                        ;
+                                                                                        ({ /* cicili#Progn7087 */
                                                                                           Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_CANT_BORROW ("BWPR1"));
                                                                                         });
                                                                                       }));
@@ -6820,67 +7025,68 @@ Either_BTree_int_User_Error_BTree_int_User deleteWithParent_BTree_int_User (Mayb
                                                                             }));
                                                                         });
                                                                       });
-                                                                    }) : ({ /* cicili#Let7417 */
+                                                                    }) : ({ /* cicili#Let7094 */
                                                                       // ----------
-                                                                      
-                                                                      ({ /* cicili#Progn7421 */
-                                                                        Right_BTree_int_User_Error_BTree_int_User (Internal_BTree_int_User (copy_List_BTree_int_User_pair_t (items ), ({ /* cicili#Let7429 */
-                                                                            __auto_type r1  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let7431 */
+                                                                      ;
+                                                                      ({ /* cicili#Progn7096 */
+                                                                        Right_BTree_int_User_Error_BTree_int_User (Internal_BTree_int_User (copy_List_BTree_int_User_pair_t (items ), ({ /* cicili#Let7104 */
+                                                                            __auto_type r1  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let7106 */
                                                                               __auto_type r1  = new_Rc_BTree_int_User (nchild );
                                                                               // ----------
                                                                               ((void)((r1 . __h_table )-> freeData ));
                                                                               r1 ;
                                                                             });
-                                                                            __auto_type r2  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let7435 */
+                                                                            __auto_type r2  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let7110 */
                                                                               __auto_type r2  = replaceAt_List_Rc_BTree_int_User (children , r1 , index );
                                                                               // ----------
                                                                               ((void)(r2 -> __h_table -> freeClass ));
                                                                               r2 ;
                                                                             });
                                                                             // ----------
-                                                                            fmap_Functor_List_Rc_BTree_int_User (({ /* cicili#Progn7444 */
-                                                                                Rc_BTree_int_User __ciciliC_7443 (Rc_BTree_int_User __h_value ) {
+                                                                            fmap_Functor_List_Rc_BTree_int_User (({ /* cicili#Progn7119 */
+                                                                                Rc_BTree_int_User __ciciliC_7118 (Rc_BTree_int_User __h_value ) {
                                                                                   return clone_Rc_BTree_int_User (__h_value );
                                                                                 }
-                                                                                __ciciliC_7443 ;
+                                                                                __ciciliC_7118 ;
                                                                               }), r2 );
                                                                           })));
                                                                       });
                                                                     }));
                                                                 });
                                                               });
-                                                            }) : ({ /* cicili#Let7451 */
-                                                              __auto_type left  = match7176 ;
+                                                            }) : ({ /* cicili#Let7126 */
+                                                              __auto_type left  = match6865 ;
                                                               // ----------
-                                                              
-                                                              ({ /* cicili#Progn7455 */
+                                                              ;
+                                                              ({ /* cicili#Progn7128 */
                                                                 left ;
                                                               });
                                                             }));
                                                         });
                                                       });
-                                                    }) : ({ /* cicili#Let7459 */
+                                                    }) : ({ /* cicili#Let7132 */
                                                       // ----------
-                                                      
-                                                      ({ /* cicili#Progn7463 */
-                                                        ({ /* cicili#Let7467 */
-                                                          __auto_type match7466  = deleteWithParent_BTree_int_User (tree , (((index  >  0 )) ? (index  -  1 ) : index ), index , tr , skey , callback );
-                                                          typeof((((match7466 . __h_data ). Right ). __h_0_mem )) nchild ;
+                                                      ;
+                                                      ({ /* cicili#Progn7134 */
+                                                        ({ /* cicili#Let7138 */
+                                                          __auto_type match7137  = deleteWithParent_BTree_int_User (tree , (((index  >  0 )) ? (index  -  1 ) : index ), index , tr , skey , callback );
+                                                          typeof((((match7137 . __h_data ). Right ). __h_0_mem )) nchild ;
                                                           // ----------
-                                                          
-                                                          ({ /* cicili#Let7472 */
-                                                            bool __h_case_result  = (true  &&  (((match7466 . __h_ctor ) ==  __h_Right_t  ) &&  ({ /* cicili#Progn7473 */
-                                                                  (nchild  =  (((match7466 . __h_data ). Right ). __h_0_mem ) );
+                                                          ;
+                                                          ({ /* cicili#Let7141 */
+                                                            bool __h_case_result  = (true  &&  (((match7137 . __h_ctor ) ==  __h_Right_t  ) &&  ({ /* cicili#Progn7142 */
+                                                                  (nchild  =  (((match7137 . __h_data ). Right ). __h_0_mem ) );
                                                                   true ;
                                                                 }) ) );
                                                             // ----------
-                                                            ((__h_case_result ) ? ({ /* cicili#Progn7476 */
+                                                            
+                                                            ((__h_case_result ) ? ({ /* cicili#Progn7147 */
                                                                 borrowLeaf_BTree_int_User (items , children , wleft , current , index , nchild , callback );
-                                                              }) : ({ /* cicili#Let7481 */
-                                                                __auto_type left  = match7466 ;
+                                                              }) : ({ /* cicili#Let7152 */
+                                                                __auto_type left  = match7137 ;
                                                                 // ----------
-                                                                
-                                                                ({ /* cicili#Progn7485 */
+                                                                ;
+                                                                ({ /* cicili#Progn7154 */
                                                                   left ;
                                                                 });
                                                               }));
@@ -6892,44 +7098,46 @@ Either_BTree_int_User_Error_BTree_int_User deleteWithParent_BTree_int_User (Mayb
                                               }));
                                           });
                                         });
-                                      }) : ({ /* cicili#Let7489 */
+                                      }) : ({ /* cicili#Let7158 */
                                         // ----------
-                                        
-                                        ({ /* cicili#Progn7493 */
+                                        ;
+                                        ({ /* cicili#Progn7160 */
                                           Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_ACCESS_DEAD_CHILD (head , index ));
                                         });
                                       }));
                                   });
                                 });
-                              }) : ({ /* cicili#Let7500 */
+                              }) : ({ /* cicili#Let7167 */
                                 // ----------
-                                
-                                ({ /* cicili#Progn7504 */
+                                ;
+                                ({ /* cicili#Progn7169 */
                                   Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_NOT_FOUND (skey ));
                                 });
                               }));
                           });
                         });
-                      }) : ({ /* cicili#Let7511 */
+                      }) : ({ /* cicili#Let7176 */
                         // ----------
-                        
-                        ({ /* cicili#Let7515 */
-                          bool __h_case_result  = (true  &&  ((match6838 . __h_ctor ) ==  __h_EQ_t  ) );
+                        ;
+                        ({ /* cicili#Let7178 */
+                          bool __h_case_result  = (true  &&  ((match6543 . __h_ctor ) ==  __h_EQ_t  ) );
                           // ----------
-                          ((__h_case_result ) ? ({ /* cicili#Progn7517 */
-                              ({ /* cicili#Let7520 */
+                          
+                          ((__h_case_result ) ? ({ /* cicili#Progn7182 */
+                              ({ /* cicili#Let7185 */
                                 __auto_type result  = borrowInternal_BTree_int_User (tree , items , children , current , index , callback );
                                 // ----------
-                                { /* cicili#Let7525 */
+                                { /* cicili#Let7190 */
                                   // ----------
-                                  
-                                  ({ /* cicili#Let7529 */
+                                  ;
+                                  ({ /* cicili#Let7192 */
                                     bool __h_case_result  = (true  &&  ((result . __h_ctor ) ==  __h_Right_t  ) );
                                     // ----------
+                                    
                                     if (__h_case_result )
-                                      { /* cicili#Block7532 */
+                                      { /* cicili#Block7197 */
                                         if (callback )
-                                          { /* cicili#Block7536 */
+                                          { /* cicili#Block7201 */
                                             callback (head );
                                           }
                                       }
@@ -6937,10 +7145,10 @@ Either_BTree_int_User_Error_BTree_int_User deleteWithParent_BTree_int_User (Mayb
                                 }
                                 result ;
                               });
-                            }) : ({ /* cicili#Let7540 */
+                            }) : ({ /* cicili#Let7205 */
                               // ----------
-                              
-                              ({ /* cicili#Progn7544 */
+                              ;
+                              ({ /* cicili#Progn7207 */
                                 deleteInternal (tree , items , children , Just_List_BTree_int_User_pair_t (current ), tail , (index  +  1 ));
                               });
                             }));
@@ -6948,112 +7156,120 @@ Either_BTree_int_User_Error_BTree_int_User deleteWithParent_BTree_int_User (Mayb
                       }));
                   });
                 });
-              }) : ({ /* cicili#Let7549 */
+              }) : ({ /* cicili#Let7212 */
                 // ----------
-                
-                ({ /* cicili#Progn7553 */
-                  ({ /* cicili#Let7557 */
-                    __auto_type match7556  = nth_List_Rc_BTree_int_User (index , children );
-                    typeof((((match7556 . __h_data ). Just ). __h_0_mem )) child ;
+                ;
+                ({ /* cicili#Progn7214 */
+                  ({ /* cicili#Let7218 */
+                    __auto_type match7217  = nth_List_Rc_BTree_int_User (index , children );
+                    typeof((((match7217 . __h_data ). Just ). __h_0_mem )) child ;
                     // ----------
-                    
-                    ({ /* cicili#Let7562 */
-                      bool __h_case_result  = (true  &&  (((match7556 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn7563 */
-                            (child  =  (((match7556 . __h_data ). Just ). __h_0_mem ) );
+                    ;
+                    ({ /* cicili#Let7221 */
+                      bool __h_case_result  = (true  &&  (((match7217 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn7222 */
+                            (child  =  (((match7217 . __h_data ). Just ). __h_0_mem ) );
                             true ;
                           }) ) );
                       // ----------
-                      ((__h_case_result ) ? ({ /* cicili#Progn7566 */
-                          ({ /* cicili#Let7570 */
-                            __auto_type match7569  = get_Rc_BTree_int_User (child );
-                            typeof((((match7569 . __h_data ). Just ). __h_0_mem )) tr ;
+                      
+                      ((__h_case_result ) ? ({ /* cicili#Progn7227 */
+                          ({ /* cicili#Let7231 */
+                            __auto_type match7230  = get_Rc_BTree_int_User (child );
+                            typeof((((match7230 . __h_data ). Just ). __h_0_mem )) tr ;
                             // ----------
-                            
-                            ({ /* cicili#Let7575 */
-                              bool __h_case_result  = (true  &&  (((match7569 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn7576 */
-                                    (tr  =  (((match7569 . __h_data ). Just ). __h_0_mem ) );
+                            ;
+                            ({ /* cicili#Let7234 */
+                              bool __h_case_result  = (true  &&  (((match7230 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn7235 */
+                                    (tr  =  (((match7230 . __h_data ). Just ). __h_0_mem ) );
                                     true ;
                                   }) ) );
                               // ----------
-                              ((__h_case_result ) ? ({ /* cicili#Progn7579 */
-                                  ({ /* cicili#Let7583 */
+                              
+                              ((__h_case_result ) ? ({ /* cicili#Progn7240 */
+                                  ({ /* cicili#Let7244 */
                                     // ----------
-                                    
-                                    ({ /* cicili#Let7587 */
+                                    ;
+                                    ({ /* cicili#Let7246 */
                                       bool __h_case_result  = (true  &&  ((tr -> __h_ctor ) ==  __h_Branch_t  ) );
                                       // ----------
-                                      ((__h_case_result ) ? ({ /* cicili#Progn7589 */
-                                          ({ /* cicili#Let7593 */
-                                            __auto_type match7592  = deleteWithParent_BTree_int_User (tree , (index  -  1 ), index , tr , skey , callback );
-                                            typeof((((match7592 . __h_data ). Right ). __h_0_mem )) nchild ;
+                                      
+                                      ((__h_case_result ) ? ({ /* cicili#Progn7250 */
+                                          ({ /* cicili#Let7254 */
+                                            __auto_type match7253  = deleteWithParent_BTree_int_User (tree , (index  -  1 ), index , tr , skey , callback );
+                                            typeof((((match7253 . __h_data ). Right ). __h_0_mem )) nchild ;
                                             // ----------
-                                            
-                                            ({ /* cicili#Let7598 */
-                                              bool __h_case_result  = (true  &&  (((match7592 . __h_ctor ) ==  __h_Right_t  ) &&  ({ /* cicili#Progn7599 */
-                                                    (nchild  =  (((match7592 . __h_data ). Right ). __h_0_mem ) );
+                                            ;
+                                            ({ /* cicili#Let7257 */
+                                              bool __h_case_result  = (true  &&  (((match7253 . __h_ctor ) ==  __h_Right_t  ) &&  ({ /* cicili#Progn7258 */
+                                                    (nchild  =  (((match7253 . __h_data ). Right ). __h_0_mem ) );
                                                     true ;
                                                   }) ) );
                                               // ----------
-                                              ((__h_case_result ) ? ({ /* cicili#Progn7602 */
-                                                  ({ /* cicili#Let7606 */
+                                              
+                                              ((__h_case_result ) ? ({ /* cicili#Progn7263 */
+                                                  ({ /* cicili#Let7267 */
                                                     typeof((((nchild -> __h_data ). Branch ). __h_0_mem )) child_items ;
                                                     typeof((((nchild -> __h_data ). Branch ). __h_1_mem )) child_children ;
                                                     // ----------
-                                                    
-                                                    ({ /* cicili#Let7610 */
-                                                      bool __h_case_result  = (true  &&  (((nchild -> __h_ctor ) ==  __h_Branch_t  ) &&  (({ /* cicili#Progn7611 */
+                                                    ;
+                                                    ({ /* cicili#Let7269 */
+                                                      bool __h_case_result  = (true  &&  (((nchild -> __h_ctor ) ==  __h_Branch_t  ) &&  (({ /* cicili#Progn7270 */
                                                               (child_items  =  (((nchild -> __h_data ). Branch ). __h_0_mem ) );
                                                               true ;
-                                                            }) &&  ({ /* cicili#Progn7613 */
+                                                            }) &&  ({ /* cicili#Progn7272 */
                                                               (child_children  =  (((nchild -> __h_data ). Branch ). __h_1_mem ) );
                                                               true ;
                                                             }) ) ) );
                                                       // ----------
-                                                      ((__h_case_result ) ? ({ /* cicili#Progn7616 */
-                                                          ({ /* cicili#Let7620 */
-                                                            __auto_type match7619  = nth_List_Rc_BTree_int_User ((index  -  1 ), children );
-                                                            typeof((((match7619 . __h_data ). Just ). __h_0_mem )) wleft ;
+                                                      
+                                                      ((__h_case_result ) ? ({ /* cicili#Progn7277 */
+                                                          ({ /* cicili#Let7281 */
+                                                            __auto_type match7280  = nth_List_Rc_BTree_int_User ((index  -  1 ), children );
+                                                            typeof((((match7280 . __h_data ). Just ). __h_0_mem )) wleft ;
                                                             // ----------
-                                                            
-                                                            ({ /* cicili#Let7625 */
-                                                              bool __h_case_result  = (true  &&  (((match7619 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn7626 */
-                                                                    (wleft  =  (((match7619 . __h_data ). Just ). __h_0_mem ) );
+                                                            ;
+                                                            ({ /* cicili#Let7284 */
+                                                              bool __h_case_result  = (true  &&  (((match7280 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn7285 */
+                                                                    (wleft  =  (((match7280 . __h_data ). Just ). __h_0_mem ) );
                                                                     true ;
                                                                   }) ) );
                                                               // ----------
-                                                              ((__h_case_result ) ? ({ /* cicili#Progn7629 */
-                                                                  ({ /* cicili#Let7632 */
+                                                              
+                                                              ((__h_case_result ) ? ({ /* cicili#Progn7290 */
+                                                                  ({ /* cicili#Let7293 */
                                                                     __auto_type __h_matchbox  = wleft ;
                                                                     // ----------
-                                                                    ({ /* cicili#Let7636 */
-                                                                      __auto_type match7635  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
-                                                                      typeof((((match7635 . __h_data ). Just ). __h_0_mem )) unboxed ;
+                                                                    ({ /* cicili#Let7297 */
+                                                                      __auto_type match7296  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
+                                                                      typeof((((match7296 . __h_data ). Just ). __h_0_mem )) unboxed ;
                                                                       // ----------
-                                                                      
-                                                                      ({ /* cicili#Let7641 */
-                                                                        bool __h_case_result  = (true  &&  (((match7635 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn7642 */
-                                                                              (unboxed  =  (((match7635 . __h_data ). Just ). __h_0_mem ) );
+                                                                      ;
+                                                                      ({ /* cicili#Let7300 */
+                                                                        bool __h_case_result  = (true  &&  (((match7296 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn7301 */
+                                                                              (unboxed  =  (((match7296 . __h_data ). Just ). __h_0_mem ) );
                                                                               true ;
                                                                             }) ) );
                                                                         // ----------
-                                                                        ((__h_case_result ) ? ({ /* cicili#Progn7645 */
-                                                                            ({ /* cicili#Let7649 */
+                                                                        
+                                                                        ((__h_case_result ) ? ({ /* cicili#Progn7306 */
+                                                                            ({ /* cicili#Let7310 */
                                                                               typeof((((unboxed -> __h_data ). Branch ). __h_0_mem )) left_items ;
                                                                               typeof((((unboxed -> __h_data ). Branch ). __h_1_mem )) left_children ;
                                                                               // ----------
-                                                                              
-                                                                              ({ /* cicili#Let7653 */
-                                                                                bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Branch_t  ) &&  (({ /* cicili#Progn7654 */
+                                                                              ;
+                                                                              ({ /* cicili#Let7312 */
+                                                                                bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Branch_t  ) &&  (({ /* cicili#Progn7313 */
                                                                                         (left_items  =  (((unboxed -> __h_data ). Branch ). __h_0_mem ) );
                                                                                         true ;
-                                                                                      }) &&  ({ /* cicili#Progn7656 */
+                                                                                      }) &&  ({ /* cicili#Progn7315 */
                                                                                         (left_children  =  (((unboxed -> __h_data ). Branch ). __h_1_mem ) );
                                                                                         true ;
                                                                                       }) ) ) );
                                                                                 // ----------
-                                                                                ((__h_case_result ) ? ({ /* cicili#Progn7659 */
-                                                                                    ({ /* cicili#Let7662 */
-                                                                                      __auto_type nchild  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let7664 */
+                                                                                
+                                                                                ((__h_case_result ) ? ({ /* cicili#Progn7320 */
+                                                                                    ({ /* cicili#Let7323 */
+                                                                                      __auto_type nchild  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let7325 */
                                                                                         __auto_type nchild  = nchild ;
                                                                                         // ----------
                                                                                         ((void)(nchild -> __h_table -> freeClass ));
@@ -7062,23 +7278,24 @@ Either_BTree_int_User_Error_BTree_int_User deleteWithParent_BTree_int_User (Mayb
                                                                                       // ----------
                                                                                       Right_BTree_int_User_Error_BTree_int_User (mergeUp_BTree_int_User (items , children , (index  -  1 ), (index  -  1 ), left_items , left_children , child_items , child_children ));
                                                                                     });
-                                                                                  }) : ({ /* cicili#Let7672 */
+                                                                                  }) : ({ /* cicili#Let7333 */
                                                                                     typeof((((unboxed -> __h_data ). Internal ). __h_0_mem )) left_items ;
                                                                                     typeof((((unboxed -> __h_data ). Internal ). __h_1_mem )) left_children ;
                                                                                     // ----------
-                                                                                    
-                                                                                    ({ /* cicili#Let7676 */
-                                                                                      bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Internal_t  ) &&  (({ /* cicili#Progn7677 */
+                                                                                    ;
+                                                                                    ({ /* cicili#Let7335 */
+                                                                                      bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Internal_t  ) &&  (({ /* cicili#Progn7336 */
                                                                                               (left_items  =  (((unboxed -> __h_data ). Internal ). __h_0_mem ) );
                                                                                               true ;
-                                                                                            }) &&  ({ /* cicili#Progn7679 */
+                                                                                            }) &&  ({ /* cicili#Progn7338 */
                                                                                               (left_children  =  (((unboxed -> __h_data ). Internal ). __h_1_mem ) );
                                                                                               true ;
                                                                                             }) ) ) );
                                                                                       // ----------
-                                                                                      ((__h_case_result ) ? ({ /* cicili#Progn7682 */
-                                                                                          ({ /* cicili#Let7685 */
-                                                                                            __auto_type nchild  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let7687 */
+                                                                                      
+                                                                                      ((__h_case_result ) ? ({ /* cicili#Progn7343 */
+                                                                                          ({ /* cicili#Let7346 */
+                                                                                            __auto_type nchild  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let7348 */
                                                                                               __auto_type nchild  = nchild ;
                                                                                               // ----------
                                                                                               ((void)(nchild -> __h_table -> freeClass ));
@@ -7087,10 +7304,10 @@ Either_BTree_int_User_Error_BTree_int_User deleteWithParent_BTree_int_User (Mayb
                                                                                             // ----------
                                                                                             Right_BTree_int_User_Error_BTree_int_User (mergeUp_BTree_int_User (items , children , (index  -  1 ), (index  -  1 ), left_items , left_children , child_items , child_children ));
                                                                                           });
-                                                                                        }) : ({ /* cicili#Let7695 */
+                                                                                        }) : ({ /* cicili#Let7356 */
                                                                                           // ----------
-                                                                                          
-                                                                                          ({ /* cicili#Progn7699 */
+                                                                                          ;
+                                                                                          ({ /* cicili#Progn7358 */
                                                                                             Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_CANT_BORROW ("BWPL111"));
                                                                                           });
                                                                                         }));
@@ -7098,64 +7315,67 @@ Either_BTree_int_User_Error_BTree_int_User deleteWithParent_BTree_int_User (Mayb
                                                                                   }));
                                                                               });
                                                                             });
-                                                                          }) : ({ /* cicili#Let7706 */
+                                                                          }) : ({ /* cicili#Let7365 */
                                                                             // ----------
-                                                                            
-                                                                            ({ /* cicili#Progn7710 */
+                                                                            ;
+                                                                            ({ /* cicili#Progn7367 */
                                                                               Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_CANT_BORROW ("BWPL11"));
                                                                             });
                                                                           }));
                                                                       });
                                                                     });
                                                                   });
-                                                                }) : ({ /* cicili#Let7717 */
+                                                                }) : ({ /* cicili#Let7374 */
                                                                   // ----------
-                                                                  
-                                                                  ({ /* cicili#Progn7721 */
-                                                                    ({ /* cicili#Let7725 */
-                                                                      __auto_type match7724  = nth_List_Rc_BTree_int_User ((index  +  1 ), children );
-                                                                      typeof((((match7724 . __h_data ). Just ). __h_0_mem )) wright ;
+                                                                  ;
+                                                                  ({ /* cicili#Progn7376 */
+                                                                    ({ /* cicili#Let7380 */
+                                                                      __auto_type match7379  = nth_List_Rc_BTree_int_User ((index  +  1 ), children );
+                                                                      typeof((((match7379 . __h_data ). Just ). __h_0_mem )) wright ;
                                                                       // ----------
-                                                                      
-                                                                      ({ /* cicili#Let7730 */
-                                                                        bool __h_case_result  = (true  &&  (((match7724 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn7731 */
-                                                                              (wright  =  (((match7724 . __h_data ). Just ). __h_0_mem ) );
+                                                                      ;
+                                                                      ({ /* cicili#Let7383 */
+                                                                        bool __h_case_result  = (true  &&  (((match7379 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn7384 */
+                                                                              (wright  =  (((match7379 . __h_data ). Just ). __h_0_mem ) );
                                                                               true ;
                                                                             }) ) );
                                                                         // ----------
-                                                                        ((__h_case_result ) ? ({ /* cicili#Progn7734 */
-                                                                            ({ /* cicili#Let7737 */
+                                                                        
+                                                                        ((__h_case_result ) ? ({ /* cicili#Progn7389 */
+                                                                            ({ /* cicili#Let7392 */
                                                                               __auto_type __h_matchbox  = wright ;
                                                                               // ----------
-                                                                              ({ /* cicili#Let7741 */
-                                                                                __auto_type match7740  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
-                                                                                typeof((((match7740 . __h_data ). Just ). __h_0_mem )) unboxed ;
+                                                                              ({ /* cicili#Let7396 */
+                                                                                __auto_type match7395  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
+                                                                                typeof((((match7395 . __h_data ). Just ). __h_0_mem )) unboxed ;
                                                                                 // ----------
-                                                                                
-                                                                                ({ /* cicili#Let7746 */
-                                                                                  bool __h_case_result  = (true  &&  (((match7740 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn7747 */
-                                                                                        (unboxed  =  (((match7740 . __h_data ). Just ). __h_0_mem ) );
+                                                                                ;
+                                                                                ({ /* cicili#Let7399 */
+                                                                                  bool __h_case_result  = (true  &&  (((match7395 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn7400 */
+                                                                                        (unboxed  =  (((match7395 . __h_data ). Just ). __h_0_mem ) );
                                                                                         true ;
                                                                                       }) ) );
                                                                                   // ----------
-                                                                                  ((__h_case_result ) ? ({ /* cicili#Progn7750 */
-                                                                                      ({ /* cicili#Let7754 */
+                                                                                  
+                                                                                  ((__h_case_result ) ? ({ /* cicili#Progn7405 */
+                                                                                      ({ /* cicili#Let7409 */
                                                                                         typeof((((unboxed -> __h_data ). Branch ). __h_0_mem )) right_items ;
                                                                                         typeof((((unboxed -> __h_data ). Branch ). __h_1_mem )) right_children ;
                                                                                         // ----------
-                                                                                        
-                                                                                        ({ /* cicili#Let7758 */
-                                                                                          bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Branch_t  ) &&  (({ /* cicili#Progn7759 */
+                                                                                        ;
+                                                                                        ({ /* cicili#Let7411 */
+                                                                                          bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Branch_t  ) &&  (({ /* cicili#Progn7412 */
                                                                                                   (right_items  =  (((unboxed -> __h_data ). Branch ). __h_0_mem ) );
                                                                                                   true ;
-                                                                                                }) &&  ({ /* cicili#Progn7761 */
+                                                                                                }) &&  ({ /* cicili#Progn7414 */
                                                                                                   (right_children  =  (((unboxed -> __h_data ). Branch ). __h_1_mem ) );
                                                                                                   true ;
                                                                                                 }) ) ) );
                                                                                           // ----------
-                                                                                          ((__h_case_result ) ? ({ /* cicili#Progn7764 */
-                                                                                              ({ /* cicili#Let7767 */
-                                                                                                __auto_type nchild  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let7769 */
+                                                                                          
+                                                                                          ((__h_case_result ) ? ({ /* cicili#Progn7419 */
+                                                                                              ({ /* cicili#Let7422 */
+                                                                                                __auto_type nchild  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let7424 */
                                                                                                   __auto_type nchild  = nchild ;
                                                                                                   // ----------
                                                                                                   ((void)(nchild -> __h_table -> freeClass ));
@@ -7164,23 +7384,24 @@ Either_BTree_int_User_Error_BTree_int_User deleteWithParent_BTree_int_User (Mayb
                                                                                                 // ----------
                                                                                                 Right_BTree_int_User_Error_BTree_int_User (mergeUp_BTree_int_User (items , children , (index  -  1 ), index , child_items , child_children , right_items , right_children ));
                                                                                               });
-                                                                                            }) : ({ /* cicili#Let7777 */
+                                                                                            }) : ({ /* cicili#Let7432 */
                                                                                               typeof((((unboxed -> __h_data ). Internal ). __h_0_mem )) right_items ;
                                                                                               typeof((((unboxed -> __h_data ). Internal ). __h_1_mem )) right_children ;
                                                                                               // ----------
-                                                                                              
-                                                                                              ({ /* cicili#Let7781 */
-                                                                                                bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Internal_t  ) &&  (({ /* cicili#Progn7782 */
+                                                                                              ;
+                                                                                              ({ /* cicili#Let7434 */
+                                                                                                bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Internal_t  ) &&  (({ /* cicili#Progn7435 */
                                                                                                         (right_items  =  (((unboxed -> __h_data ). Internal ). __h_0_mem ) );
                                                                                                         true ;
-                                                                                                      }) &&  ({ /* cicili#Progn7784 */
+                                                                                                      }) &&  ({ /* cicili#Progn7437 */
                                                                                                         (right_children  =  (((unboxed -> __h_data ). Internal ). __h_1_mem ) );
                                                                                                         true ;
                                                                                                       }) ) ) );
                                                                                                 // ----------
-                                                                                                ((__h_case_result ) ? ({ /* cicili#Progn7787 */
-                                                                                                    ({ /* cicili#Let7790 */
-                                                                                                      __auto_type nchild  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let7792 */
+                                                                                                
+                                                                                                ((__h_case_result ) ? ({ /* cicili#Progn7442 */
+                                                                                                    ({ /* cicili#Let7445 */
+                                                                                                      __auto_type nchild  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let7447 */
                                                                                                         __auto_type nchild  = nchild ;
                                                                                                         // ----------
                                                                                                         ((void)(nchild -> __h_table -> freeClass ));
@@ -7189,10 +7410,10 @@ Either_BTree_int_User_Error_BTree_int_User deleteWithParent_BTree_int_User (Mayb
                                                                                                       // ----------
                                                                                                       Right_BTree_int_User_Error_BTree_int_User (mergeUp_BTree_int_User (items , children , (index  -  1 ), index , child_items , child_children , right_items , right_children ));
                                                                                                     });
-                                                                                                  }) : ({ /* cicili#Let7800 */
+                                                                                                  }) : ({ /* cicili#Let7455 */
                                                                                                     // ----------
-                                                                                                    
-                                                                                                    ({ /* cicili#Progn7804 */
+                                                                                                    ;
+                                                                                                    ({ /* cicili#Progn7457 */
                                                                                                       Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_CANT_BORROW ("BWPR222"));
                                                                                                     });
                                                                                                   }));
@@ -7200,20 +7421,20 @@ Either_BTree_int_User_Error_BTree_int_User deleteWithParent_BTree_int_User (Mayb
                                                                                             }));
                                                                                         });
                                                                                       });
-                                                                                    }) : ({ /* cicili#Let7811 */
+                                                                                    }) : ({ /* cicili#Let7464 */
                                                                                       // ----------
-                                                                                      
-                                                                                      ({ /* cicili#Progn7815 */
+                                                                                      ;
+                                                                                      ({ /* cicili#Progn7466 */
                                                                                         Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_CANT_BORROW ("BWPR22"));
                                                                                       });
                                                                                     }));
                                                                                 });
                                                                               });
                                                                             });
-                                                                          }) : ({ /* cicili#Let7822 */
+                                                                          }) : ({ /* cicili#Let7473 */
                                                                             // ----------
-                                                                            
-                                                                            ({ /* cicili#Progn7826 */
+                                                                            ;
+                                                                            ({ /* cicili#Progn7475 */
                                                                               Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_CANT_BORROW ("BWPR221"));
                                                                             });
                                                                           }));
@@ -7223,123 +7444,129 @@ Either_BTree_int_User_Error_BTree_int_User deleteWithParent_BTree_int_User (Mayb
                                                                 }));
                                                             });
                                                           });
-                                                        }) : ({ /* cicili#Let7833 */
+                                                        }) : ({ /* cicili#Let7482 */
                                                           // ----------
-                                                          
-                                                          ({ /* cicili#Progn7837 */
-                                                            Right_BTree_int_User_Error_BTree_int_User (Internal_BTree_int_User (copy_List_BTree_int_User_pair_t (items ), ({ /* cicili#Let7845 */
-                                                                __auto_type r1  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let7847 */
+                                                          ;
+                                                          ({ /* cicili#Progn7484 */
+                                                            Right_BTree_int_User_Error_BTree_int_User (Internal_BTree_int_User (copy_List_BTree_int_User_pair_t (items ), ({ /* cicili#Let7492 */
+                                                                __auto_type r1  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let7494 */
                                                                   __auto_type r1  = new_Rc_BTree_int_User (nchild );
                                                                   // ----------
                                                                   ((void)((r1 . __h_table )-> freeData ));
                                                                   r1 ;
                                                                 });
-                                                                __auto_type r2  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let7851 */
+                                                                __auto_type r2  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let7498 */
                                                                   __auto_type r2  = replaceAt_List_Rc_BTree_int_User (children , r1 , index );
                                                                   // ----------
                                                                   ((void)(r2 -> __h_table -> freeClass ));
                                                                   r2 ;
                                                                 });
                                                                 // ----------
-                                                                fmap_Functor_List_Rc_BTree_int_User (({ /* cicili#Progn7860 */
-                                                                    Rc_BTree_int_User __ciciliC_7859 (Rc_BTree_int_User __h_value ) {
+                                                                fmap_Functor_List_Rc_BTree_int_User (({ /* cicili#Progn7507 */
+                                                                    Rc_BTree_int_User __ciciliC_7506 (Rc_BTree_int_User __h_value ) {
                                                                       return clone_Rc_BTree_int_User (__h_value );
                                                                     }
-                                                                    __ciciliC_7859 ;
+                                                                    __ciciliC_7506 ;
                                                                   }), r2 );
                                                               })));
                                                           });
                                                         }));
                                                     });
                                                   });
-                                                }) : ({ /* cicili#Let7867 */
-                                                  __auto_type left  = match7592 ;
+                                                }) : ({ /* cicili#Let7514 */
+                                                  __auto_type left  = match7253 ;
                                                   // ----------
-                                                  
-                                                  ({ /* cicili#Progn7871 */
+                                                  ;
+                                                  ({ /* cicili#Progn7516 */
                                                     left ;
                                                   });
                                                 }));
                                             });
                                           });
-                                        }) : ({ /* cicili#Let7875 */
+                                        }) : ({ /* cicili#Let7520 */
                                           // ----------
-                                          
-                                          ({ /* cicili#Let7879 */
+                                          ;
+                                          ({ /* cicili#Let7522 */
                                             bool __h_case_result  = (true  &&  ((tr -> __h_ctor ) ==  __h_Internal_t  ) );
                                             // ----------
-                                            ((__h_case_result ) ? ({ /* cicili#Progn7881 */
-                                                ({ /* cicili#Let7885 */
-                                                  __auto_type match7884  = deleteWithParent_BTree_int_User (tree , (index  -  1 ), index , tr , skey , callback );
-                                                  typeof((((match7884 . __h_data ). Right ). __h_0_mem )) nchild ;
+                                            
+                                            ((__h_case_result ) ? ({ /* cicili#Progn7526 */
+                                                ({ /* cicili#Let7530 */
+                                                  __auto_type match7529  = deleteWithParent_BTree_int_User (tree , (index  -  1 ), index , tr , skey , callback );
+                                                  typeof((((match7529 . __h_data ). Right ). __h_0_mem )) nchild ;
                                                   // ----------
-                                                  
-                                                  ({ /* cicili#Let7890 */
-                                                    bool __h_case_result  = (true  &&  (((match7884 . __h_ctor ) ==  __h_Right_t  ) &&  ({ /* cicili#Progn7891 */
-                                                          (nchild  =  (((match7884 . __h_data ). Right ). __h_0_mem ) );
+                                                  ;
+                                                  ({ /* cicili#Let7533 */
+                                                    bool __h_case_result  = (true  &&  (((match7529 . __h_ctor ) ==  __h_Right_t  ) &&  ({ /* cicili#Progn7534 */
+                                                          (nchild  =  (((match7529 . __h_data ). Right ). __h_0_mem ) );
                                                           true ;
                                                         }) ) );
                                                     // ----------
-                                                    ((__h_case_result ) ? ({ /* cicili#Progn7894 */
-                                                        ({ /* cicili#Let7898 */
+                                                    
+                                                    ((__h_case_result ) ? ({ /* cicili#Progn7539 */
+                                                        ({ /* cicili#Let7543 */
                                                           typeof((((nchild -> __h_data ). Branch ). __h_0_mem )) child_items ;
                                                           typeof((((nchild -> __h_data ). Branch ). __h_1_mem )) child_children ;
                                                           // ----------
-                                                          
-                                                          ({ /* cicili#Let7902 */
-                                                            bool __h_case_result  = (true  &&  (((nchild -> __h_ctor ) ==  __h_Branch_t  ) &&  (({ /* cicili#Progn7903 */
+                                                          ;
+                                                          ({ /* cicili#Let7545 */
+                                                            bool __h_case_result  = (true  &&  (((nchild -> __h_ctor ) ==  __h_Branch_t  ) &&  (({ /* cicili#Progn7546 */
                                                                     (child_items  =  (((nchild -> __h_data ). Branch ). __h_0_mem ) );
                                                                     true ;
-                                                                  }) &&  ({ /* cicili#Progn7905 */
+                                                                  }) &&  ({ /* cicili#Progn7548 */
                                                                     (child_children  =  (((nchild -> __h_data ). Branch ). __h_1_mem ) );
                                                                     true ;
                                                                   }) ) ) );
                                                             // ----------
-                                                            ((__h_case_result ) ? ({ /* cicili#Progn7908 */
-                                                                ({ /* cicili#Let7912 */
-                                                                  __auto_type match7911  = nth_List_Rc_BTree_int_User ((index  -  1 ), children );
-                                                                  typeof((((match7911 . __h_data ). Just ). __h_0_mem )) wleft ;
+                                                            
+                                                            ((__h_case_result ) ? ({ /* cicili#Progn7553 */
+                                                                ({ /* cicili#Let7557 */
+                                                                  __auto_type match7556  = nth_List_Rc_BTree_int_User ((index  -  1 ), children );
+                                                                  typeof((((match7556 . __h_data ). Just ). __h_0_mem )) wleft ;
                                                                   // ----------
-                                                                  
-                                                                  ({ /* cicili#Let7917 */
-                                                                    bool __h_case_result  = (true  &&  (((match7911 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn7918 */
-                                                                          (wleft  =  (((match7911 . __h_data ). Just ). __h_0_mem ) );
+                                                                  ;
+                                                                  ({ /* cicili#Let7560 */
+                                                                    bool __h_case_result  = (true  &&  (((match7556 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn7561 */
+                                                                          (wleft  =  (((match7556 . __h_data ). Just ). __h_0_mem ) );
                                                                           true ;
                                                                         }) ) );
                                                                     // ----------
-                                                                    ((__h_case_result ) ? ({ /* cicili#Progn7921 */
-                                                                        ({ /* cicili#Let7924 */
+                                                                    
+                                                                    ((__h_case_result ) ? ({ /* cicili#Progn7566 */
+                                                                        ({ /* cicili#Let7569 */
                                                                           __auto_type __h_matchbox  = wleft ;
                                                                           // ----------
-                                                                          ({ /* cicili#Let7928 */
-                                                                            __auto_type match7927  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
-                                                                            typeof((((match7927 . __h_data ). Just ). __h_0_mem )) unboxed ;
+                                                                          ({ /* cicili#Let7573 */
+                                                                            __auto_type match7572  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
+                                                                            typeof((((match7572 . __h_data ). Just ). __h_0_mem )) unboxed ;
                                                                             // ----------
-                                                                            
-                                                                            ({ /* cicili#Let7933 */
-                                                                              bool __h_case_result  = (true  &&  (((match7927 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn7934 */
-                                                                                    (unboxed  =  (((match7927 . __h_data ). Just ). __h_0_mem ) );
+                                                                            ;
+                                                                            ({ /* cicili#Let7576 */
+                                                                              bool __h_case_result  = (true  &&  (((match7572 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn7577 */
+                                                                                    (unboxed  =  (((match7572 . __h_data ). Just ). __h_0_mem ) );
                                                                                     true ;
                                                                                   }) ) );
                                                                               // ----------
-                                                                              ((__h_case_result ) ? ({ /* cicili#Progn7937 */
-                                                                                  ({ /* cicili#Let7941 */
+                                                                              
+                                                                              ((__h_case_result ) ? ({ /* cicili#Progn7582 */
+                                                                                  ({ /* cicili#Let7586 */
                                                                                     typeof((((unboxed -> __h_data ). Branch ). __h_0_mem )) left_items ;
                                                                                     typeof((((unboxed -> __h_data ). Branch ). __h_1_mem )) left_children ;
                                                                                     // ----------
-                                                                                    
-                                                                                    ({ /* cicili#Let7945 */
-                                                                                      bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Branch_t  ) &&  (({ /* cicili#Progn7946 */
+                                                                                    ;
+                                                                                    ({ /* cicili#Let7588 */
+                                                                                      bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Branch_t  ) &&  (({ /* cicili#Progn7589 */
                                                                                               (left_items  =  (((unboxed -> __h_data ). Branch ). __h_0_mem ) );
                                                                                               true ;
-                                                                                            }) &&  ({ /* cicili#Progn7948 */
+                                                                                            }) &&  ({ /* cicili#Progn7591 */
                                                                                               (left_children  =  (((unboxed -> __h_data ). Branch ). __h_1_mem ) );
                                                                                               true ;
                                                                                             }) ) ) );
                                                                                       // ----------
-                                                                                      ((__h_case_result ) ? ({ /* cicili#Progn7951 */
-                                                                                          ({ /* cicili#Let7954 */
-                                                                                            __auto_type nchild  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let7956 */
+                                                                                      
+                                                                                      ((__h_case_result ) ? ({ /* cicili#Progn7596 */
+                                                                                          ({ /* cicili#Let7599 */
+                                                                                            __auto_type nchild  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let7601 */
                                                                                               __auto_type nchild  = nchild ;
                                                                                               // ----------
                                                                                               ((void)(nchild -> __h_table -> freeClass ));
@@ -7348,23 +7575,24 @@ Either_BTree_int_User_Error_BTree_int_User deleteWithParent_BTree_int_User (Mayb
                                                                                             // ----------
                                                                                             Right_BTree_int_User_Error_BTree_int_User (mergeUp_BTree_int_User (items , children , (index  -  1 ), (index  -  1 ), left_items , left_children , child_items , child_children ));
                                                                                           });
-                                                                                        }) : ({ /* cicili#Let7964 */
+                                                                                        }) : ({ /* cicili#Let7609 */
                                                                                           typeof((((unboxed -> __h_data ). Internal ). __h_0_mem )) left_items ;
                                                                                           typeof((((unboxed -> __h_data ). Internal ). __h_1_mem )) left_children ;
                                                                                           // ----------
-                                                                                          
-                                                                                          ({ /* cicili#Let7968 */
-                                                                                            bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Internal_t  ) &&  (({ /* cicili#Progn7969 */
+                                                                                          ;
+                                                                                          ({ /* cicili#Let7611 */
+                                                                                            bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Internal_t  ) &&  (({ /* cicili#Progn7612 */
                                                                                                     (left_items  =  (((unboxed -> __h_data ). Internal ). __h_0_mem ) );
                                                                                                     true ;
-                                                                                                  }) &&  ({ /* cicili#Progn7971 */
+                                                                                                  }) &&  ({ /* cicili#Progn7614 */
                                                                                                     (left_children  =  (((unboxed -> __h_data ). Internal ). __h_1_mem ) );
                                                                                                     true ;
                                                                                                   }) ) ) );
                                                                                             // ----------
-                                                                                            ((__h_case_result ) ? ({ /* cicili#Progn7974 */
-                                                                                                ({ /* cicili#Let7977 */
-                                                                                                  __auto_type nchild  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let7979 */
+                                                                                            
+                                                                                            ((__h_case_result ) ? ({ /* cicili#Progn7619 */
+                                                                                                ({ /* cicili#Let7622 */
+                                                                                                  __auto_type nchild  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let7624 */
                                                                                                     __auto_type nchild  = nchild ;
                                                                                                     // ----------
                                                                                                     ((void)(nchild -> __h_table -> freeClass ));
@@ -7373,10 +7601,10 @@ Either_BTree_int_User_Error_BTree_int_User deleteWithParent_BTree_int_User (Mayb
                                                                                                   // ----------
                                                                                                   Right_BTree_int_User_Error_BTree_int_User (mergeUp_BTree_int_User (items , children , (index  -  1 ), (index  -  1 ), left_items , left_children , child_items , child_children ));
                                                                                                 });
-                                                                                              }) : ({ /* cicili#Let7987 */
+                                                                                              }) : ({ /* cicili#Let7632 */
                                                                                                 // ----------
-                                                                                                
-                                                                                                ({ /* cicili#Progn7991 */
+                                                                                                ;
+                                                                                                ({ /* cicili#Progn7634 */
                                                                                                   Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_CANT_BORROW ("BWPL111"));
                                                                                                 });
                                                                                               }));
@@ -7384,64 +7612,67 @@ Either_BTree_int_User_Error_BTree_int_User deleteWithParent_BTree_int_User (Mayb
                                                                                         }));
                                                                                     });
                                                                                   });
-                                                                                }) : ({ /* cicili#Let7998 */
+                                                                                }) : ({ /* cicili#Let7641 */
                                                                                   // ----------
-                                                                                  
-                                                                                  ({ /* cicili#Progn8002 */
+                                                                                  ;
+                                                                                  ({ /* cicili#Progn7643 */
                                                                                     Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_CANT_BORROW ("BWPL11"));
                                                                                   });
                                                                                 }));
                                                                             });
                                                                           });
                                                                         });
-                                                                      }) : ({ /* cicili#Let8009 */
+                                                                      }) : ({ /* cicili#Let7650 */
                                                                         // ----------
-                                                                        
-                                                                        ({ /* cicili#Progn8013 */
-                                                                          ({ /* cicili#Let8017 */
-                                                                            __auto_type match8016  = nth_List_Rc_BTree_int_User ((index  +  1 ), children );
-                                                                            typeof((((match8016 . __h_data ). Just ). __h_0_mem )) wright ;
+                                                                        ;
+                                                                        ({ /* cicili#Progn7652 */
+                                                                          ({ /* cicili#Let7656 */
+                                                                            __auto_type match7655  = nth_List_Rc_BTree_int_User ((index  +  1 ), children );
+                                                                            typeof((((match7655 . __h_data ). Just ). __h_0_mem )) wright ;
                                                                             // ----------
-                                                                            
-                                                                            ({ /* cicili#Let8022 */
-                                                                              bool __h_case_result  = (true  &&  (((match8016 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn8023 */
-                                                                                    (wright  =  (((match8016 . __h_data ). Just ). __h_0_mem ) );
+                                                                            ;
+                                                                            ({ /* cicili#Let7659 */
+                                                                              bool __h_case_result  = (true  &&  (((match7655 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn7660 */
+                                                                                    (wright  =  (((match7655 . __h_data ). Just ). __h_0_mem ) );
                                                                                     true ;
                                                                                   }) ) );
                                                                               // ----------
-                                                                              ((__h_case_result ) ? ({ /* cicili#Progn8026 */
-                                                                                  ({ /* cicili#Let8029 */
+                                                                              
+                                                                              ((__h_case_result ) ? ({ /* cicili#Progn7665 */
+                                                                                  ({ /* cicili#Let7668 */
                                                                                     __auto_type __h_matchbox  = wright ;
                                                                                     // ----------
-                                                                                    ({ /* cicili#Let8033 */
-                                                                                      __auto_type match8032  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
-                                                                                      typeof((((match8032 . __h_data ). Just ). __h_0_mem )) unboxed ;
+                                                                                    ({ /* cicili#Let7672 */
+                                                                                      __auto_type match7671  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
+                                                                                      typeof((((match7671 . __h_data ). Just ). __h_0_mem )) unboxed ;
                                                                                       // ----------
-                                                                                      
-                                                                                      ({ /* cicili#Let8038 */
-                                                                                        bool __h_case_result  = (true  &&  (((match8032 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn8039 */
-                                                                                              (unboxed  =  (((match8032 . __h_data ). Just ). __h_0_mem ) );
+                                                                                      ;
+                                                                                      ({ /* cicili#Let7675 */
+                                                                                        bool __h_case_result  = (true  &&  (((match7671 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn7676 */
+                                                                                              (unboxed  =  (((match7671 . __h_data ). Just ). __h_0_mem ) );
                                                                                               true ;
                                                                                             }) ) );
                                                                                         // ----------
-                                                                                        ((__h_case_result ) ? ({ /* cicili#Progn8042 */
-                                                                                            ({ /* cicili#Let8046 */
+                                                                                        
+                                                                                        ((__h_case_result ) ? ({ /* cicili#Progn7681 */
+                                                                                            ({ /* cicili#Let7685 */
                                                                                               typeof((((unboxed -> __h_data ). Branch ). __h_0_mem )) right_items ;
                                                                                               typeof((((unboxed -> __h_data ). Branch ). __h_1_mem )) right_children ;
                                                                                               // ----------
-                                                                                              
-                                                                                              ({ /* cicili#Let8050 */
-                                                                                                bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Branch_t  ) &&  (({ /* cicili#Progn8051 */
+                                                                                              ;
+                                                                                              ({ /* cicili#Let7687 */
+                                                                                                bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Branch_t  ) &&  (({ /* cicili#Progn7688 */
                                                                                                         (right_items  =  (((unboxed -> __h_data ). Branch ). __h_0_mem ) );
                                                                                                         true ;
-                                                                                                      }) &&  ({ /* cicili#Progn8053 */
+                                                                                                      }) &&  ({ /* cicili#Progn7690 */
                                                                                                         (right_children  =  (((unboxed -> __h_data ). Branch ). __h_1_mem ) );
                                                                                                         true ;
                                                                                                       }) ) ) );
                                                                                                 // ----------
-                                                                                                ((__h_case_result ) ? ({ /* cicili#Progn8056 */
-                                                                                                    ({ /* cicili#Let8059 */
-                                                                                                      __auto_type nchild  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let8061 */
+                                                                                                
+                                                                                                ((__h_case_result ) ? ({ /* cicili#Progn7695 */
+                                                                                                    ({ /* cicili#Let7698 */
+                                                                                                      __auto_type nchild  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let7700 */
                                                                                                         __auto_type nchild  = nchild ;
                                                                                                         // ----------
                                                                                                         ((void)(nchild -> __h_table -> freeClass ));
@@ -7450,23 +7681,24 @@ Either_BTree_int_User_Error_BTree_int_User deleteWithParent_BTree_int_User (Mayb
                                                                                                       // ----------
                                                                                                       Right_BTree_int_User_Error_BTree_int_User (mergeUp_BTree_int_User (items , children , (index  -  1 ), index , child_items , child_children , right_items , right_children ));
                                                                                                     });
-                                                                                                  }) : ({ /* cicili#Let8069 */
+                                                                                                  }) : ({ /* cicili#Let7708 */
                                                                                                     typeof((((unboxed -> __h_data ). Internal ). __h_0_mem )) right_items ;
                                                                                                     typeof((((unboxed -> __h_data ). Internal ). __h_1_mem )) right_children ;
                                                                                                     // ----------
-                                                                                                    
-                                                                                                    ({ /* cicili#Let8073 */
-                                                                                                      bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Internal_t  ) &&  (({ /* cicili#Progn8074 */
+                                                                                                    ;
+                                                                                                    ({ /* cicili#Let7710 */
+                                                                                                      bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Internal_t  ) &&  (({ /* cicili#Progn7711 */
                                                                                                               (right_items  =  (((unboxed -> __h_data ). Internal ). __h_0_mem ) );
                                                                                                               true ;
-                                                                                                            }) &&  ({ /* cicili#Progn8076 */
+                                                                                                            }) &&  ({ /* cicili#Progn7713 */
                                                                                                               (right_children  =  (((unboxed -> __h_data ). Internal ). __h_1_mem ) );
                                                                                                               true ;
                                                                                                             }) ) ) );
                                                                                                       // ----------
-                                                                                                      ((__h_case_result ) ? ({ /* cicili#Progn8079 */
-                                                                                                          ({ /* cicili#Let8082 */
-                                                                                                            __auto_type nchild  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let8084 */
+                                                                                                      
+                                                                                                      ((__h_case_result ) ? ({ /* cicili#Progn7718 */
+                                                                                                          ({ /* cicili#Let7721 */
+                                                                                                            __auto_type nchild  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let7723 */
                                                                                                               __auto_type nchild  = nchild ;
                                                                                                               // ----------
                                                                                                               ((void)(nchild -> __h_table -> freeClass ));
@@ -7475,10 +7707,10 @@ Either_BTree_int_User_Error_BTree_int_User deleteWithParent_BTree_int_User (Mayb
                                                                                                             // ----------
                                                                                                             Right_BTree_int_User_Error_BTree_int_User (mergeUp_BTree_int_User (items , children , (index  -  1 ), index , child_items , child_children , right_items , right_children ));
                                                                                                           });
-                                                                                                        }) : ({ /* cicili#Let8092 */
+                                                                                                        }) : ({ /* cicili#Let7731 */
                                                                                                           // ----------
-                                                                                                          
-                                                                                                          ({ /* cicili#Progn8096 */
+                                                                                                          ;
+                                                                                                          ({ /* cicili#Progn7733 */
                                                                                                             Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_CANT_BORROW ("BWPR222"));
                                                                                                           });
                                                                                                         }));
@@ -7486,20 +7718,20 @@ Either_BTree_int_User_Error_BTree_int_User deleteWithParent_BTree_int_User (Mayb
                                                                                                   }));
                                                                                               });
                                                                                             });
-                                                                                          }) : ({ /* cicili#Let8103 */
+                                                                                          }) : ({ /* cicili#Let7740 */
                                                                                             // ----------
-                                                                                            
-                                                                                            ({ /* cicili#Progn8107 */
+                                                                                            ;
+                                                                                            ({ /* cicili#Progn7742 */
                                                                                               Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_CANT_BORROW ("BWPR22"));
                                                                                             });
                                                                                           }));
                                                                                       });
                                                                                     });
                                                                                   });
-                                                                                }) : ({ /* cicili#Let8114 */
+                                                                                }) : ({ /* cicili#Let7749 */
                                                                                   // ----------
-                                                                                  
-                                                                                  ({ /* cicili#Progn8118 */
+                                                                                  ;
+                                                                                  ({ /* cicili#Progn7751 */
                                                                                     Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_CANT_BORROW ("BWPR221"));
                                                                                   });
                                                                                 }));
@@ -7509,67 +7741,68 @@ Either_BTree_int_User_Error_BTree_int_User deleteWithParent_BTree_int_User (Mayb
                                                                       }));
                                                                   });
                                                                 });
-                                                              }) : ({ /* cicili#Let8125 */
+                                                              }) : ({ /* cicili#Let7758 */
                                                                 // ----------
-                                                                
-                                                                ({ /* cicili#Progn8129 */
-                                                                  Right_BTree_int_User_Error_BTree_int_User (Internal_BTree_int_User (copy_List_BTree_int_User_pair_t (items ), ({ /* cicili#Let8137 */
-                                                                      __auto_type r1  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let8139 */
+                                                                ;
+                                                                ({ /* cicili#Progn7760 */
+                                                                  Right_BTree_int_User_Error_BTree_int_User (Internal_BTree_int_User (copy_List_BTree_int_User_pair_t (items ), ({ /* cicili#Let7768 */
+                                                                      __auto_type r1  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let7770 */
                                                                         __auto_type r1  = new_Rc_BTree_int_User (nchild );
                                                                         // ----------
                                                                         ((void)((r1 . __h_table )-> freeData ));
                                                                         r1 ;
                                                                       });
-                                                                      __auto_type r2  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let8143 */
+                                                                      __auto_type r2  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let7774 */
                                                                         __auto_type r2  = replaceAt_List_Rc_BTree_int_User (children , r1 , index );
                                                                         // ----------
                                                                         ((void)(r2 -> __h_table -> freeClass ));
                                                                         r2 ;
                                                                       });
                                                                       // ----------
-                                                                      fmap_Functor_List_Rc_BTree_int_User (({ /* cicili#Progn8152 */
-                                                                          Rc_BTree_int_User __ciciliC_8151 (Rc_BTree_int_User __h_value ) {
+                                                                      fmap_Functor_List_Rc_BTree_int_User (({ /* cicili#Progn7783 */
+                                                                          Rc_BTree_int_User __ciciliC_7782 (Rc_BTree_int_User __h_value ) {
                                                                             return clone_Rc_BTree_int_User (__h_value );
                                                                           }
-                                                                          __ciciliC_8151 ;
+                                                                          __ciciliC_7782 ;
                                                                         }), r2 );
                                                                     })));
                                                                 });
                                                               }));
                                                           });
                                                         });
-                                                      }) : ({ /* cicili#Let8159 */
-                                                        __auto_type left  = match7884 ;
+                                                      }) : ({ /* cicili#Let7790 */
+                                                        __auto_type left  = match7529 ;
                                                         // ----------
-                                                        
-                                                        ({ /* cicili#Progn8163 */
+                                                        ;
+                                                        ({ /* cicili#Progn7792 */
                                                           left ;
                                                         });
                                                       }));
                                                   });
                                                 });
-                                              }) : ({ /* cicili#Let8167 */
+                                              }) : ({ /* cicili#Let7796 */
                                                 // ----------
-                                                
-                                                ({ /* cicili#Progn8171 */
-                                                  ({ /* cicili#Let8175 */
-                                                    __auto_type match8174  = deleteWithParent_BTree_int_User (tree , (index  -  1 ), index , tr , skey , callback );
-                                                    typeof((((match8174 . __h_data ). Right ). __h_0_mem )) nchild ;
+                                                ;
+                                                ({ /* cicili#Progn7798 */
+                                                  ({ /* cicili#Let7802 */
+                                                    __auto_type match7801  = deleteWithParent_BTree_int_User (tree , (index  -  1 ), index , tr , skey , callback );
+                                                    typeof((((match7801 . __h_data ). Right ). __h_0_mem )) nchild ;
                                                     // ----------
-                                                    
-                                                    ({ /* cicili#Let8180 */
-                                                      bool __h_case_result  = (true  &&  (((match8174 . __h_ctor ) ==  __h_Right_t  ) &&  ({ /* cicili#Progn8181 */
-                                                            (nchild  =  (((match8174 . __h_data ). Right ). __h_0_mem ) );
+                                                    ;
+                                                    ({ /* cicili#Let7805 */
+                                                      bool __h_case_result  = (true  &&  (((match7801 . __h_ctor ) ==  __h_Right_t  ) &&  ({ /* cicili#Progn7806 */
+                                                            (nchild  =  (((match7801 . __h_data ). Right ). __h_0_mem ) );
                                                             true ;
                                                           }) ) );
                                                       // ----------
-                                                      ((__h_case_result ) ? ({ /* cicili#Progn8184 */
+                                                      
+                                                      ((__h_case_result ) ? ({ /* cicili#Progn7811 */
                                                           borrowLeaf_BTree_int_User (items , children , wleft , current , index , nchild , callback );
-                                                        }) : ({ /* cicili#Let8189 */
-                                                          __auto_type left  = match8174 ;
+                                                        }) : ({ /* cicili#Let7816 */
+                                                          __auto_type left  = match7801 ;
                                                           // ----------
-                                                          
-                                                          ({ /* cicili#Progn8193 */
+                                                          ;
+                                                          ({ /* cicili#Progn7818 */
                                                             left ;
                                                           });
                                                         }));
@@ -7581,19 +7814,19 @@ Either_BTree_int_User_Error_BTree_int_User deleteWithParent_BTree_int_User (Mayb
                                         }));
                                     });
                                   });
-                                }) : ({ /* cicili#Let8197 */
+                                }) : ({ /* cicili#Let7822 */
                                   // ----------
-                                  
-                                  ({ /* cicili#Progn8201 */
+                                  ;
+                                  ({ /* cicili#Progn7824 */
                                     Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_ACCESS_DEAD_CHILD (head , index ));
                                   });
                                 }));
                             });
                           });
-                        }) : ({ /* cicili#Let8208 */
+                        }) : ({ /* cicili#Let7831 */
                           // ----------
-                          
-                          ({ /* cicili#Progn8212 */
+                          ;
+                          ({ /* cicili#Progn7833 */
                             Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_NOT_FOUND (skey ));
                           });
                         }));
@@ -7604,145 +7837,152 @@ Either_BTree_int_User_Error_BTree_int_User deleteWithParent_BTree_int_User (Mayb
           });
         });
         // ----------
-        ({ /* cicili#Let8221 */
-          __auto_type rs  = ({ /* cicili#Let8224 */
+        ({ /* cicili#Let7842 */
+          __auto_type rs  = ({ /* cicili#Let7845 */
             typeof((((result . __h_data ). Right ). __h_0_mem )) ntr ;
             // ----------
-            
-            ({ /* cicili#Let8228 */
-              bool __h_case_result  = (true  &&  (((result . __h_ctor ) ==  __h_Right_t  ) &&  ({ /* cicili#Progn8229 */
+            ;
+            ({ /* cicili#Let7847 */
+              bool __h_case_result  = (true  &&  (((result . __h_ctor ) ==  __h_Right_t  ) &&  ({ /* cicili#Progn7848 */
                     (ntr  =  (((result . __h_data ). Right ). __h_0_mem ) );
                     true ;
                   }) ) );
               // ----------
-              ((__h_case_result ) ? ({ /* cicili#Progn8232 */
-                  ({ /* cicili#Let8236 */
+              
+              ((__h_case_result ) ? ({ /* cicili#Progn7853 */
+                  ({ /* cicili#Let7857 */
                     typeof((((ntr -> __h_data ). Branch ). __h_0_mem )) items ;
                     typeof((((ntr -> __h_data ). Branch ). __h_1_mem )) children ;
                     // ----------
-                    
-                    ({ /* cicili#Let8240 */
-                      bool __h_case_result  = (true  &&  (((ntr -> __h_ctor ) ==  __h_Branch_t  ) &&  (({ /* cicili#Progn8241 */
+                    ;
+                    ({ /* cicili#Let7859 */
+                      bool __h_case_result  = (true  &&  (((ntr -> __h_ctor ) ==  __h_Branch_t  ) &&  (({ /* cicili#Progn7860 */
                               (items  =  (((ntr -> __h_data ). Branch ). __h_0_mem ) );
                               true ;
-                            }) &&  ({ /* cicili#Progn8243 */
+                            }) &&  ({ /* cicili#Progn7862 */
                               (children  =  (((ntr -> __h_data ). Branch ). __h_1_mem ) );
                               true ;
                             }) ) ) );
                       // ----------
-                      ((__h_case_result ) ? ({ /* cicili#Progn8246 */
-                          ({ /* cicili#Let8249 */
+                      
+                      ((__h_case_result ) ? ({ /* cicili#Progn7867 */
+                          ({ /* cicili#Let7870 */
                             __auto_type items_len  = hasLen_List_BTree_int_User_pair_t (items , (L_BTree_int_User  -  1 ));
                             // ----------
-                            (((items_len  ==  (L_BTree_int_User  -  1 ) )) ? result  : ({ /* cicili#Let8257 */
+                            (((items_len  ==  (L_BTree_int_User  -  1 ) )) ? result  : ({ /* cicili#Let7878 */
                                 typeof((((wparent . __h_data ). Just ). __h_0_mem )) ptree ;
                                 // ----------
-                                
-                                ({ /* cicili#Let8261 */
-                                  bool __h_case_result  = (true  &&  (((wparent . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn8262 */
+                                ;
+                                ({ /* cicili#Let7880 */
+                                  bool __h_case_result  = (true  &&  (((wparent . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn7881 */
                                         (ptree  =  (((wparent . __h_data ). Just ). __h_0_mem ) );
                                         true ;
                                       }) ) );
                                   // ----------
-                                  ((__h_case_result ) ? ({ /* cicili#Progn8265 */
-                                      ({ /* cicili#Let8269 */
+                                  
+                                  ((__h_case_result ) ? ({ /* cicili#Progn7886 */
+                                      ({ /* cicili#Let7890 */
                                         typeof((((ptree -> __h_data ). Branch ). __h_0_mem )) pitems ;
                                         // ----------
-                                        
-                                        ({ /* cicili#Let8273 */
-                                          bool __h_case_result  = (true  &&  (((ptree -> __h_ctor ) ==  __h_Branch_t  ) &&  ({ /* cicili#Progn8274 */
+                                        ;
+                                        ({ /* cicili#Let7892 */
+                                          bool __h_case_result  = (true  &&  (((ptree -> __h_ctor ) ==  __h_Branch_t  ) &&  ({ /* cicili#Progn7893 */
                                                 (pitems  =  (((ptree -> __h_data ). Branch ). __h_0_mem ) );
                                                 true ;
                                               }) ) );
                                           // ----------
-                                          ((__h_case_result ) ? ({ /* cicili#Progn8277 */
-                                              ({ /* cicili#Let8281 */
-                                                __auto_type match8280  = nth_List_BTree_int_User_pair_t (pitem_index , pitems );
-                                                typeof((((match8280 . __h_data ). Just ). __h_0_mem )) bitem ;
+                                          
+                                          ((__h_case_result ) ? ({ /* cicili#Progn7898 */
+                                              ({ /* cicili#Let7902 */
+                                                __auto_type match7901  = nth_List_BTree_int_User_pair_t (pitem_index , pitems );
+                                                typeof((((match7901 . __h_data ). Just ). __h_0_mem )) bitem ;
                                                 // ----------
-                                                
-                                                ({ /* cicili#Let8286 */
-                                                  bool __h_case_result  = (true  &&  (((match8280 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn8287 */
-                                                        (bitem  =  (((match8280 . __h_data ). Just ). __h_0_mem ) );
+                                                ;
+                                                ({ /* cicili#Let7905 */
+                                                  bool __h_case_result  = (true  &&  (((match7901 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn7906 */
+                                                        (bitem  =  (((match7901 . __h_data ). Just ). __h_0_mem ) );
                                                         true ;
                                                       }) ) );
                                                   // ----------
-                                                  ((__h_case_result ) ? ({ /* cicili#Progn8290 */
-                                                      ({ /* cicili#Let8293 */
-                                                        __auto_type ntr  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let8295 */
+                                                  
+                                                  ((__h_case_result ) ? ({ /* cicili#Progn7911 */
+                                                      ({ /* cicili#Let7914 */
+                                                        __auto_type ntr  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let7916 */
                                                           __auto_type ntr  = ntr ;
                                                           // ----------
                                                           ((void)(ntr -> __h_table -> freeClass ));
                                                           ntr ;
                                                         });
                                                         // ----------
-                                                        Right_BTree_int_User_Error_BTree_int_User (Branch_BTree_int_User (insertAt_List_BTree_int_User_pair_t (items , bitem , index ), fmap_Functor_List_Rc_BTree_int_User (({ /* cicili#Progn8308 */
-                                                            Rc_BTree_int_User __ciciliC_8307 (Rc_BTree_int_User __h_value ) {
+                                                        Right_BTree_int_User_Error_BTree_int_User (Branch_BTree_int_User (insertAt_List_BTree_int_User_pair_t (items , bitem , index ), fmap_Functor_List_Rc_BTree_int_User (({ /* cicili#Progn7929 */
+                                                            Rc_BTree_int_User __ciciliC_7928 (Rc_BTree_int_User __h_value ) {
                                                               return clone_Rc_BTree_int_User (__h_value );
                                                             }
-                                                            __ciciliC_8307 ;
+                                                            __ciciliC_7928 ;
                                                           }), children )));
                                                       });
-                                                    }) : ({ /* cicili#Let8315 */
+                                                    }) : ({ /* cicili#Let7936 */
                                                       // ----------
-                                                      
-                                                      ({ /* cicili#Progn8319 */
+                                                      ;
+                                                      ({ /* cicili#Progn7938 */
                                                         Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_CANT_BORROW ("parent borrow 2"));
                                                       });
                                                     }));
                                                 });
                                               });
-                                            }) : ({ /* cicili#Let8326 */
+                                            }) : ({ /* cicili#Let7945 */
                                               typeof((((ptree -> __h_data ). Internal ). __h_0_mem )) pitems ;
                                               // ----------
-                                              
-                                              ({ /* cicili#Let8330 */
-                                                bool __h_case_result  = (true  &&  (((ptree -> __h_ctor ) ==  __h_Internal_t  ) &&  ({ /* cicili#Progn8331 */
+                                              ;
+                                              ({ /* cicili#Let7947 */
+                                                bool __h_case_result  = (true  &&  (((ptree -> __h_ctor ) ==  __h_Internal_t  ) &&  ({ /* cicili#Progn7948 */
                                                       (pitems  =  (((ptree -> __h_data ). Internal ). __h_0_mem ) );
                                                       true ;
                                                     }) ) );
                                                 // ----------
-                                                ((__h_case_result ) ? ({ /* cicili#Progn8334 */
-                                                    ({ /* cicili#Let8338 */
-                                                      __auto_type match8337  = nth_List_BTree_int_User_pair_t (pitem_index , pitems );
-                                                      typeof((((match8337 . __h_data ). Just ). __h_0_mem )) bitem ;
+                                                
+                                                ((__h_case_result ) ? ({ /* cicili#Progn7953 */
+                                                    ({ /* cicili#Let7957 */
+                                                      __auto_type match7956  = nth_List_BTree_int_User_pair_t (pitem_index , pitems );
+                                                      typeof((((match7956 . __h_data ). Just ). __h_0_mem )) bitem ;
                                                       // ----------
-                                                      
-                                                      ({ /* cicili#Let8343 */
-                                                        bool __h_case_result  = (true  &&  (((match8337 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn8344 */
-                                                              (bitem  =  (((match8337 . __h_data ). Just ). __h_0_mem ) );
+                                                      ;
+                                                      ({ /* cicili#Let7960 */
+                                                        bool __h_case_result  = (true  &&  (((match7956 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn7961 */
+                                                              (bitem  =  (((match7956 . __h_data ). Just ). __h_0_mem ) );
                                                               true ;
                                                             }) ) );
                                                         // ----------
-                                                        ((__h_case_result ) ? ({ /* cicili#Progn8347 */
-                                                            ({ /* cicili#Let8350 */
-                                                              __auto_type ntr  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let8352 */
+                                                        
+                                                        ((__h_case_result ) ? ({ /* cicili#Progn7966 */
+                                                            ({ /* cicili#Let7969 */
+                                                              __auto_type ntr  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let7971 */
                                                                 __auto_type ntr  = ntr ;
                                                                 // ----------
                                                                 ((void)(ntr -> __h_table -> freeClass ));
                                                                 ntr ;
                                                               });
                                                               // ----------
-                                                              Right_BTree_int_User_Error_BTree_int_User (Branch_BTree_int_User (insertAt_List_BTree_int_User_pair_t (items , bitem , index ), fmap_Functor_List_Rc_BTree_int_User (({ /* cicili#Progn8365 */
-                                                                  Rc_BTree_int_User __ciciliC_8364 (Rc_BTree_int_User __h_value ) {
+                                                              Right_BTree_int_User_Error_BTree_int_User (Branch_BTree_int_User (insertAt_List_BTree_int_User_pair_t (items , bitem , index ), fmap_Functor_List_Rc_BTree_int_User (({ /* cicili#Progn7984 */
+                                                                  Rc_BTree_int_User __ciciliC_7983 (Rc_BTree_int_User __h_value ) {
                                                                     return clone_Rc_BTree_int_User (__h_value );
                                                                   }
-                                                                  __ciciliC_8364 ;
+                                                                  __ciciliC_7983 ;
                                                                 }), children )));
                                                             });
-                                                          }) : ({ /* cicili#Let8372 */
+                                                          }) : ({ /* cicili#Let7991 */
                                                             // ----------
-                                                            
-                                                            ({ /* cicili#Progn8376 */
+                                                            ;
+                                                            ({ /* cicili#Progn7993 */
                                                               Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_CANT_BORROW ("parent borrow 2"));
                                                             });
                                                           }));
                                                       });
                                                     });
-                                                  }) : ({ /* cicili#Let8383 */
+                                                  }) : ({ /* cicili#Let8000 */
                                                     // ----------
-                                                    
-                                                    ({ /* cicili#Progn8387 */
+                                                    ;
+                                                    ({ /* cicili#Progn8002 */
                                                       Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_CANT_BORROW ("parent borrow 1"));
                                                     });
                                                   }));
@@ -7750,43 +7990,45 @@ Either_BTree_int_User_Error_BTree_int_User deleteWithParent_BTree_int_User (Mayb
                                             }));
                                         });
                                       });
-                                    }) : ({ /* cicili#Let8394 */
+                                    }) : ({ /* cicili#Let8009 */
                                       // ----------
-                                      
-                                      ({ /* cicili#Progn8398 */
-                                        (((items_len  ==  0 )) ? ({ /* cicili#Let8403 */
+                                      ;
+                                      ({ /* cicili#Progn8011 */
+                                        (((items_len  ==  0 )) ? ({ /* cicili#Let8016 */
                                             typeof((((children -> __h_data ). Cons ). __h_0_mem )) head ;
                                             // ----------
-                                            
-                                            ({ /* cicili#Let8407 */
-                                              bool __h_case_result  = (true  &&  (((children -> __h_ctor ) ==  __h_Cons_t  ) &&  ({ /* cicili#Progn8408 */
+                                            ;
+                                            ({ /* cicili#Let8018 */
+                                              bool __h_case_result  = (true  &&  (((children -> __h_ctor ) ==  __h_Cons_t  ) &&  ({ /* cicili#Progn8019 */
                                                     (head  =  (((children -> __h_data ). Cons ). __h_0_mem ) );
                                                     true ;
                                                   }) ) );
                                               // ----------
-                                              ((__h_case_result ) ? ({ /* cicili#Progn8411 */
-                                                  ({ /* cicili#Let8414 */
+                                              
+                                              ((__h_case_result ) ? ({ /* cicili#Progn8024 */
+                                                  ({ /* cicili#Let8027 */
                                                     __auto_type __h_matchbox  = clone_Rc_BTree_int_User (head );
                                                     // ----------
-                                                    ({ /* cicili#Let8419 */
-                                                      __auto_type match8418  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
-                                                      typeof((((match8418 . __h_data ). Just ). __h_0_mem )) unboxed ;
+                                                    ({ /* cicili#Let8032 */
+                                                      __auto_type match8031  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
+                                                      typeof((((match8031 . __h_data ). Just ). __h_0_mem )) unboxed ;
                                                       // ----------
-                                                      
-                                                      ({ /* cicili#Let8424 */
-                                                        bool __h_case_result  = (true  &&  (((match8418 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn8425 */
-                                                              (unboxed  =  (((match8418 . __h_data ). Just ). __h_0_mem ) );
+                                                      ;
+                                                      ({ /* cicili#Let8035 */
+                                                        bool __h_case_result  = (true  &&  (((match8031 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn8036 */
+                                                              (unboxed  =  (((match8031 . __h_data ). Just ). __h_0_mem ) );
                                                               true ;
                                                             }) ) );
                                                         // ----------
-                                                        ((__h_case_result ) ? ({ /* cicili#Progn8428 */
-                                                            ({ /* cicili#Let8432 */
+                                                        
+                                                        ((__h_case_result ) ? ({ /* cicili#Progn8041 */
+                                                            ({ /* cicili#Let8045 */
                                                               __auto_type chtr  = unboxed ;
                                                               // ----------
-                                                              
-                                                              ({ /* cicili#Progn8436 */
-                                                                ({ /* cicili#Let8439 */
-                                                                  __auto_type ntr  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let8441 */
+                                                              ;
+                                                              ({ /* cicili#Progn8047 */
+                                                                ({ /* cicili#Let8050 */
+                                                                  __auto_type ntr  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let8052 */
                                                                     __auto_type ntr  = ntr ;
                                                                     // ----------
                                                                     ((void)(ntr -> __h_table -> freeClass ));
@@ -7797,20 +8039,20 @@ Either_BTree_int_User_Error_BTree_int_User deleteWithParent_BTree_int_User (Mayb
                                                                 });
                                                               });
                                                             });
-                                                          }) : ({ /* cicili#Let8448 */
+                                                          }) : ({ /* cicili#Let8059 */
                                                             // ----------
-                                                            
-                                                            ({ /* cicili#Progn8452 */
+                                                            ;
+                                                            ({ /* cicili#Progn8061 */
                                                               Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_CANT_BORROW ("parent borrow 3"));
                                                             });
                                                           }));
                                                       });
                                                     });
                                                   });
-                                                }) : ({ /* cicili#Let8459 */
+                                                }) : ({ /* cicili#Let8068 */
                                                   // ----------
-                                                  
-                                                  ({ /* cicili#Progn8463 */
+                                                  ;
+                                                  ({ /* cicili#Progn8070 */
                                                     result ;
                                                   });
                                                 }));
@@ -7821,133 +8063,139 @@ Either_BTree_int_User_Error_BTree_int_User deleteWithParent_BTree_int_User (Mayb
                                 });
                               }));
                           });
-                        }) : ({ /* cicili#Let8467 */
+                        }) : ({ /* cicili#Let8074 */
                           typeof((((ntr -> __h_data ). Internal ). __h_0_mem )) items ;
                           typeof((((ntr -> __h_data ). Internal ). __h_1_mem )) children ;
                           // ----------
-                          
-                          ({ /* cicili#Let8471 */
-                            bool __h_case_result  = (true  &&  (((ntr -> __h_ctor ) ==  __h_Internal_t  ) &&  (({ /* cicili#Progn8472 */
+                          ;
+                          ({ /* cicili#Let8076 */
+                            bool __h_case_result  = (true  &&  (((ntr -> __h_ctor ) ==  __h_Internal_t  ) &&  (({ /* cicili#Progn8077 */
                                     (items  =  (((ntr -> __h_data ). Internal ). __h_0_mem ) );
                                     true ;
-                                  }) &&  ({ /* cicili#Progn8474 */
+                                  }) &&  ({ /* cicili#Progn8079 */
                                     (children  =  (((ntr -> __h_data ). Internal ). __h_1_mem ) );
                                     true ;
                                   }) ) ) );
                             // ----------
-                            ((__h_case_result ) ? ({ /* cicili#Progn8477 */
-                                ({ /* cicili#Let8480 */
+                            
+                            ((__h_case_result ) ? ({ /* cicili#Progn8084 */
+                                ({ /* cicili#Let8087 */
                                   __auto_type items_len  = hasLen_List_BTree_int_User_pair_t (items , (L_BTree_int_User  -  1 ));
                                   // ----------
-                                  (((items_len  ==  (L_BTree_int_User  -  1 ) )) ? result  : ({ /* cicili#Let8488 */
+                                  (((items_len  ==  (L_BTree_int_User  -  1 ) )) ? result  : ({ /* cicili#Let8095 */
                                       typeof((((wparent . __h_data ). Just ). __h_0_mem )) ptree ;
                                       // ----------
-                                      
-                                      ({ /* cicili#Let8492 */
-                                        bool __h_case_result  = (true  &&  (((wparent . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn8493 */
+                                      ;
+                                      ({ /* cicili#Let8097 */
+                                        bool __h_case_result  = (true  &&  (((wparent . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn8098 */
                                               (ptree  =  (((wparent . __h_data ). Just ). __h_0_mem ) );
                                               true ;
                                             }) ) );
                                         // ----------
-                                        ((__h_case_result ) ? ({ /* cicili#Progn8496 */
-                                            ({ /* cicili#Let8500 */
+                                        
+                                        ((__h_case_result ) ? ({ /* cicili#Progn8103 */
+                                            ({ /* cicili#Let8107 */
                                               typeof((((ptree -> __h_data ). Branch ). __h_0_mem )) pitems ;
                                               // ----------
-                                              
-                                              ({ /* cicili#Let8504 */
-                                                bool __h_case_result  = (true  &&  (((ptree -> __h_ctor ) ==  __h_Branch_t  ) &&  ({ /* cicili#Progn8505 */
+                                              ;
+                                              ({ /* cicili#Let8109 */
+                                                bool __h_case_result  = (true  &&  (((ptree -> __h_ctor ) ==  __h_Branch_t  ) &&  ({ /* cicili#Progn8110 */
                                                       (pitems  =  (((ptree -> __h_data ). Branch ). __h_0_mem ) );
                                                       true ;
                                                     }) ) );
                                                 // ----------
-                                                ((__h_case_result ) ? ({ /* cicili#Progn8508 */
-                                                    ({ /* cicili#Let8512 */
-                                                      __auto_type match8511  = nth_List_BTree_int_User_pair_t (pitem_index , pitems );
-                                                      typeof((((match8511 . __h_data ). Just ). __h_0_mem )) bitem ;
+                                                
+                                                ((__h_case_result ) ? ({ /* cicili#Progn8115 */
+                                                    ({ /* cicili#Let8119 */
+                                                      __auto_type match8118  = nth_List_BTree_int_User_pair_t (pitem_index , pitems );
+                                                      typeof((((match8118 . __h_data ). Just ). __h_0_mem )) bitem ;
                                                       // ----------
-                                                      
-                                                      ({ /* cicili#Let8517 */
-                                                        bool __h_case_result  = (true  &&  (((match8511 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn8518 */
-                                                              (bitem  =  (((match8511 . __h_data ). Just ). __h_0_mem ) );
+                                                      ;
+                                                      ({ /* cicili#Let8122 */
+                                                        bool __h_case_result  = (true  &&  (((match8118 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn8123 */
+                                                              (bitem  =  (((match8118 . __h_data ). Just ). __h_0_mem ) );
                                                               true ;
                                                             }) ) );
                                                         // ----------
-                                                        ((__h_case_result ) ? ({ /* cicili#Progn8521 */
-                                                            ({ /* cicili#Let8524 */
-                                                              __auto_type ntr  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let8526 */
+                                                        
+                                                        ((__h_case_result ) ? ({ /* cicili#Progn8128 */
+                                                            ({ /* cicili#Let8131 */
+                                                              __auto_type ntr  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let8133 */
                                                                 __auto_type ntr  = ntr ;
                                                                 // ----------
                                                                 ((void)(ntr -> __h_table -> freeClass ));
                                                                 ntr ;
                                                               });
                                                               // ----------
-                                                              Right_BTree_int_User_Error_BTree_int_User (Branch_BTree_int_User (insertAt_List_BTree_int_User_pair_t (items , bitem , index ), fmap_Functor_List_Rc_BTree_int_User (({ /* cicili#Progn8539 */
-                                                                  Rc_BTree_int_User __ciciliC_8538 (Rc_BTree_int_User __h_value ) {
+                                                              Right_BTree_int_User_Error_BTree_int_User (Branch_BTree_int_User (insertAt_List_BTree_int_User_pair_t (items , bitem , index ), fmap_Functor_List_Rc_BTree_int_User (({ /* cicili#Progn8146 */
+                                                                  Rc_BTree_int_User __ciciliC_8145 (Rc_BTree_int_User __h_value ) {
                                                                     return clone_Rc_BTree_int_User (__h_value );
                                                                   }
-                                                                  __ciciliC_8538 ;
+                                                                  __ciciliC_8145 ;
                                                                 }), children )));
                                                             });
-                                                          }) : ({ /* cicili#Let8546 */
+                                                          }) : ({ /* cicili#Let8153 */
                                                             // ----------
-                                                            
-                                                            ({ /* cicili#Progn8550 */
+                                                            ;
+                                                            ({ /* cicili#Progn8155 */
                                                               Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_CANT_BORROW ("parent borrow 2"));
                                                             });
                                                           }));
                                                       });
                                                     });
-                                                  }) : ({ /* cicili#Let8557 */
+                                                  }) : ({ /* cicili#Let8162 */
                                                     typeof((((ptree -> __h_data ). Internal ). __h_0_mem )) pitems ;
                                                     // ----------
-                                                    
-                                                    ({ /* cicili#Let8561 */
-                                                      bool __h_case_result  = (true  &&  (((ptree -> __h_ctor ) ==  __h_Internal_t  ) &&  ({ /* cicili#Progn8562 */
+                                                    ;
+                                                    ({ /* cicili#Let8164 */
+                                                      bool __h_case_result  = (true  &&  (((ptree -> __h_ctor ) ==  __h_Internal_t  ) &&  ({ /* cicili#Progn8165 */
                                                             (pitems  =  (((ptree -> __h_data ). Internal ). __h_0_mem ) );
                                                             true ;
                                                           }) ) );
                                                       // ----------
-                                                      ((__h_case_result ) ? ({ /* cicili#Progn8565 */
-                                                          ({ /* cicili#Let8569 */
-                                                            __auto_type match8568  = nth_List_BTree_int_User_pair_t (pitem_index , pitems );
-                                                            typeof((((match8568 . __h_data ). Just ). __h_0_mem )) bitem ;
+                                                      
+                                                      ((__h_case_result ) ? ({ /* cicili#Progn8170 */
+                                                          ({ /* cicili#Let8174 */
+                                                            __auto_type match8173  = nth_List_BTree_int_User_pair_t (pitem_index , pitems );
+                                                            typeof((((match8173 . __h_data ). Just ). __h_0_mem )) bitem ;
                                                             // ----------
-                                                            
-                                                            ({ /* cicili#Let8574 */
-                                                              bool __h_case_result  = (true  &&  (((match8568 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn8575 */
-                                                                    (bitem  =  (((match8568 . __h_data ). Just ). __h_0_mem ) );
+                                                            ;
+                                                            ({ /* cicili#Let8177 */
+                                                              bool __h_case_result  = (true  &&  (((match8173 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn8178 */
+                                                                    (bitem  =  (((match8173 . __h_data ). Just ). __h_0_mem ) );
                                                                     true ;
                                                                   }) ) );
                                                               // ----------
-                                                              ((__h_case_result ) ? ({ /* cicili#Progn8578 */
-                                                                  ({ /* cicili#Let8581 */
-                                                                    __auto_type ntr  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let8583 */
+                                                              
+                                                              ((__h_case_result ) ? ({ /* cicili#Progn8183 */
+                                                                  ({ /* cicili#Let8186 */
+                                                                    __auto_type ntr  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let8188 */
                                                                       __auto_type ntr  = ntr ;
                                                                       // ----------
                                                                       ((void)(ntr -> __h_table -> freeClass ));
                                                                       ntr ;
                                                                     });
                                                                     // ----------
-                                                                    Right_BTree_int_User_Error_BTree_int_User (Branch_BTree_int_User (insertAt_List_BTree_int_User_pair_t (items , bitem , index ), fmap_Functor_List_Rc_BTree_int_User (({ /* cicili#Progn8596 */
-                                                                        Rc_BTree_int_User __ciciliC_8595 (Rc_BTree_int_User __h_value ) {
+                                                                    Right_BTree_int_User_Error_BTree_int_User (Branch_BTree_int_User (insertAt_List_BTree_int_User_pair_t (items , bitem , index ), fmap_Functor_List_Rc_BTree_int_User (({ /* cicili#Progn8201 */
+                                                                        Rc_BTree_int_User __ciciliC_8200 (Rc_BTree_int_User __h_value ) {
                                                                           return clone_Rc_BTree_int_User (__h_value );
                                                                         }
-                                                                        __ciciliC_8595 ;
+                                                                        __ciciliC_8200 ;
                                                                       }), children )));
                                                                   });
-                                                                }) : ({ /* cicili#Let8603 */
+                                                                }) : ({ /* cicili#Let8208 */
                                                                   // ----------
-                                                                  
-                                                                  ({ /* cicili#Progn8607 */
+                                                                  ;
+                                                                  ({ /* cicili#Progn8210 */
                                                                     Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_CANT_BORROW ("parent borrow 2"));
                                                                   });
                                                                 }));
                                                             });
                                                           });
-                                                        }) : ({ /* cicili#Let8614 */
+                                                        }) : ({ /* cicili#Let8217 */
                                                           // ----------
-                                                          
-                                                          ({ /* cicili#Progn8618 */
+                                                          ;
+                                                          ({ /* cicili#Progn8219 */
                                                             Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_CANT_BORROW ("parent borrow 1"));
                                                           });
                                                         }));
@@ -7955,43 +8203,45 @@ Either_BTree_int_User_Error_BTree_int_User deleteWithParent_BTree_int_User (Mayb
                                                   }));
                                               });
                                             });
-                                          }) : ({ /* cicili#Let8625 */
+                                          }) : ({ /* cicili#Let8226 */
                                             // ----------
-                                            
-                                            ({ /* cicili#Progn8629 */
-                                              (((items_len  ==  0 )) ? ({ /* cicili#Let8634 */
+                                            ;
+                                            ({ /* cicili#Progn8228 */
+                                              (((items_len  ==  0 )) ? ({ /* cicili#Let8233 */
                                                   typeof((((children -> __h_data ). Cons ). __h_0_mem )) head ;
                                                   // ----------
-                                                  
-                                                  ({ /* cicili#Let8638 */
-                                                    bool __h_case_result  = (true  &&  (((children -> __h_ctor ) ==  __h_Cons_t  ) &&  ({ /* cicili#Progn8639 */
+                                                  ;
+                                                  ({ /* cicili#Let8235 */
+                                                    bool __h_case_result  = (true  &&  (((children -> __h_ctor ) ==  __h_Cons_t  ) &&  ({ /* cicili#Progn8236 */
                                                           (head  =  (((children -> __h_data ). Cons ). __h_0_mem ) );
                                                           true ;
                                                         }) ) );
                                                     // ----------
-                                                    ((__h_case_result ) ? ({ /* cicili#Progn8642 */
-                                                        ({ /* cicili#Let8645 */
+                                                    
+                                                    ((__h_case_result ) ? ({ /* cicili#Progn8241 */
+                                                        ({ /* cicili#Let8244 */
                                                           __auto_type __h_matchbox  = clone_Rc_BTree_int_User (head );
                                                           // ----------
-                                                          ({ /* cicili#Let8650 */
-                                                            __auto_type match8649  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
-                                                            typeof((((match8649 . __h_data ). Just ). __h_0_mem )) unboxed ;
+                                                          ({ /* cicili#Let8249 */
+                                                            __auto_type match8248  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
+                                                            typeof((((match8248 . __h_data ). Just ). __h_0_mem )) unboxed ;
                                                             // ----------
-                                                            
-                                                            ({ /* cicili#Let8655 */
-                                                              bool __h_case_result  = (true  &&  (((match8649 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn8656 */
-                                                                    (unboxed  =  (((match8649 . __h_data ). Just ). __h_0_mem ) );
+                                                            ;
+                                                            ({ /* cicili#Let8252 */
+                                                              bool __h_case_result  = (true  &&  (((match8248 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn8253 */
+                                                                    (unboxed  =  (((match8248 . __h_data ). Just ). __h_0_mem ) );
                                                                     true ;
                                                                   }) ) );
                                                               // ----------
-                                                              ((__h_case_result ) ? ({ /* cicili#Progn8659 */
-                                                                  ({ /* cicili#Let8663 */
+                                                              
+                                                              ((__h_case_result ) ? ({ /* cicili#Progn8258 */
+                                                                  ({ /* cicili#Let8262 */
                                                                     __auto_type chtr  = unboxed ;
                                                                     // ----------
-                                                                    
-                                                                    ({ /* cicili#Progn8667 */
-                                                                      ({ /* cicili#Let8670 */
-                                                                        __auto_type ntr  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let8672 */
+                                                                    ;
+                                                                    ({ /* cicili#Progn8264 */
+                                                                      ({ /* cicili#Let8267 */
+                                                                        __auto_type ntr  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let8269 */
                                                                           __auto_type ntr  = ntr ;
                                                                           // ----------
                                                                           ((void)(ntr -> __h_table -> freeClass ));
@@ -8002,20 +8252,20 @@ Either_BTree_int_User_Error_BTree_int_User deleteWithParent_BTree_int_User (Mayb
                                                                       });
                                                                     });
                                                                   });
-                                                                }) : ({ /* cicili#Let8679 */
+                                                                }) : ({ /* cicili#Let8276 */
                                                                   // ----------
-                                                                  
-                                                                  ({ /* cicili#Progn8683 */
+                                                                  ;
+                                                                  ({ /* cicili#Progn8278 */
                                                                     Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_CANT_BORROW ("parent borrow 3"));
                                                                   });
                                                                 }));
                                                             });
                                                           });
                                                         });
-                                                      }) : ({ /* cicili#Let8690 */
+                                                      }) : ({ /* cicili#Let8285 */
                                                         // ----------
-                                                        
-                                                        ({ /* cicili#Progn8694 */
+                                                        ;
+                                                        ({ /* cicili#Progn8287 */
                                                           result ;
                                                         });
                                                       }));
@@ -8026,10 +8276,10 @@ Either_BTree_int_User_Error_BTree_int_User deleteWithParent_BTree_int_User (Mayb
                                       });
                                     }));
                                 });
-                              }) : ({ /* cicili#Let8698 */
+                              }) : ({ /* cicili#Let8291 */
                                 // ----------
-                                
-                                ({ /* cicili#Progn8702 */
+                                ;
+                                ({ /* cicili#Progn8293 */
                                   result ;
                                 });
                               }));
@@ -8037,10 +8287,10 @@ Either_BTree_int_User_Error_BTree_int_User deleteWithParent_BTree_int_User (Mayb
                         }));
                     });
                   });
-                }) : ({ /* cicili#Let8706 */
+                }) : ({ /* cicili#Let8297 */
                   // ----------
-                  
-                  ({ /* cicili#Progn8710 */
+                  ;
+                  ({ /* cicili#Progn8299 */
                     result ;
                   });
                 }));
@@ -8051,55 +8301,59 @@ Either_BTree_int_User_Error_BTree_int_User deleteWithParent_BTree_int_User (Mayb
         });
       });
   }
-  Either_BTree_int_User_Error_BTree_int_User deleteLeaf (List_BTree_int_User_pair_t items , List_BTree_int_User_pair_t current , int index ) {
-    return ({ /* cicili#Let8727 */
+  Either_BTree_int_User_Error_BTree_int_User deleteLeaf (List_BTree_int_User_pair_t items , List_BTree_int_User_pair_t current , size_t index ) {
+    return ({ /* cicili#Let8316 */
         typeof((((current -> __h_data ). Cons ). __h_0_mem )) head ;
         typeof((head . __h_0_mem )) key ;
         typeof((((current -> __h_data ). Cons ). __h_1_mem )) tail ;
         // ----------
-        
-        ({ /* cicili#Let8731 */
-          bool __h_case_result  = (true  &&  (((current -> __h_ctor ) ==  __h_Cons_t  ) &&  ((({ /* cicili#Progn8732 */
+        ;
+        ({ /* cicili#Let8318 */
+          bool __h_case_result  = (true  &&  (((current -> __h_ctor ) ==  __h_Cons_t  ) &&  ((({ /* cicili#Progn8319 */
                     (head  =  (((current -> __h_data ). Cons ). __h_0_mem ) );
                     true ;
-                  }) &&  (true  &&  ({ /* cicili#Progn8734 */
+                  }) &&  (true  &&  ({ /* cicili#Progn8321 */
                       (key  =  (head . __h_0_mem ) );
                       true ;
-                    }) ) ) &&  ({ /* cicili#Progn8736 */
+                    }) ) ) &&  ({ /* cicili#Progn8323 */
                   (tail  =  (((current -> __h_data ). Cons ). __h_1_mem ) );
                   true ;
                 }) ) ) );
           // ----------
-          ((__h_case_result ) ? ({ /* cicili#Progn8739 */
-              ({ /* cicili#Let8743 */
-                __auto_type match8742  = compareKey (skey , key );
+          
+          ((__h_case_result ) ? ({ /* cicili#Progn8328 */
+              ({ /* cicili#Let8332 */
+                __auto_type match8331  = compareKey (skey , key );
                 // ----------
-                
-                ({ /* cicili#Let8747 */
-                  bool __h_case_result  = (true  &&  ((match8742 . __h_ctor ) ==  __h_LT_t  ) );
+                ;
+                ({ /* cicili#Let8334 */
+                  bool __h_case_result  = (true  &&  ((match8331 . __h_ctor ) ==  __h_LT_t  ) );
                   // ----------
-                  ((__h_case_result ) ? ({ /* cicili#Progn8749 */
+                  
+                  ((__h_case_result ) ? ({ /* cicili#Progn8338 */
                       Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_NOT_FOUND (skey ));
-                    }) : ({ /* cicili#Let8756 */
+                    }) : ({ /* cicili#Let8345 */
                       // ----------
-                      
-                      ({ /* cicili#Let8760 */
-                        bool __h_case_result  = (true  &&  ((match8742 . __h_ctor ) ==  __h_EQ_t  ) );
+                      ;
+                      ({ /* cicili#Let8347 */
+                        bool __h_case_result  = (true  &&  ((match8331 . __h_ctor ) ==  __h_EQ_t  ) );
                         // ----------
-                        ((__h_case_result ) ? ({ /* cicili#Progn8762 */
-                            ({ /* cicili#Let8765 */
+                        
+                        ((__h_case_result ) ? ({ /* cicili#Progn8351 */
+                            ({ /* cicili#Let8354 */
                               __auto_type result  = Right_BTree_int_User_Error_BTree_int_User (Leaf_BTree_int_User (delete_List_BTree_int_User_pair_t (items , current )));
                               // ----------
-                              { /* cicili#Let8774 */
+                              { /* cicili#Let8363 */
                                 // ----------
-                                
-                                ({ /* cicili#Let8778 */
+                                ;
+                                ({ /* cicili#Let8365 */
                                   bool __h_case_result  = (true  &&  ((result . __h_ctor ) ==  __h_Right_t  ) );
                                   // ----------
+                                  
                                   if (__h_case_result )
-                                    { /* cicili#Block8781 */
+                                    { /* cicili#Block8370 */
                                       if (callback )
-                                        { /* cicili#Block8785 */
+                                        { /* cicili#Block8374 */
                                           callback (head );
                                         }
                                     }
@@ -8107,10 +8361,10 @@ Either_BTree_int_User_Error_BTree_int_User deleteWithParent_BTree_int_User (Mayb
                               }
                               result ;
                             });
-                          }) : ({ /* cicili#Let8789 */
+                          }) : ({ /* cicili#Let8378 */
                             // ----------
-                            
-                            ({ /* cicili#Progn8793 */
+                            ;
+                            ({ /* cicili#Progn8380 */
                               deleteLeaf (items , tail , (index  +  1 ));
                             });
                           }));
@@ -8118,65 +8372,68 @@ Either_BTree_int_User_Error_BTree_int_User deleteWithParent_BTree_int_User (Mayb
                     }));
                 });
               });
-            }) : ({ /* cicili#Let8797 */
+            }) : ({ /* cicili#Let8384 */
               // ----------
-              
-              ({ /* cicili#Progn8801 */
+              ;
+              ({ /* cicili#Progn8386 */
                 Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_NOT_FOUND (skey ));
               });
             }));
         });
       });
   }
-  return ({ /* cicili#Let8809 */
-      __auto_type result  = ({ /* cicili#Let8812 */
+  return ({ /* cicili#Let8394 */
+      __auto_type result  = ({ /* cicili#Let8397 */
         typeof((((tree -> __h_data ). Branch ). __h_0_mem )) items ;
         typeof((((tree -> __h_data ). Branch ). __h_1_mem )) children ;
         // ----------
-        
-        ({ /* cicili#Let8816 */
-          bool __h_case_result  = (true  &&  (((tree -> __h_ctor ) ==  __h_Branch_t  ) &&  (({ /* cicili#Progn8817 */
+        ;
+        ({ /* cicili#Let8399 */
+          bool __h_case_result  = (true  &&  (((tree -> __h_ctor ) ==  __h_Branch_t  ) &&  (({ /* cicili#Progn8400 */
                   (items  =  (((tree -> __h_data ). Branch ). __h_0_mem ) );
                   true ;
-                }) &&  ({ /* cicili#Progn8819 */
+                }) &&  ({ /* cicili#Progn8402 */
                   (children  =  (((tree -> __h_data ). Branch ). __h_1_mem ) );
                   true ;
                 }) ) ) );
           // ----------
-          ((__h_case_result ) ? ({ /* cicili#Progn8822 */
+          
+          ((__h_case_result ) ? ({ /* cicili#Progn8407 */
               deleteInternal (Just_BTree_int_User (tree ), items , children , Nothing_List_BTree_int_User_pair_t (), items , 0);
-            }) : ({ /* cicili#Let8828 */
+            }) : ({ /* cicili#Let8413 */
               typeof((((tree -> __h_data ). Internal ). __h_0_mem )) items ;
               typeof((((tree -> __h_data ). Internal ). __h_1_mem )) children ;
               // ----------
-              
-              ({ /* cicili#Let8832 */
-                bool __h_case_result  = (true  &&  (((tree -> __h_ctor ) ==  __h_Internal_t  ) &&  (({ /* cicili#Progn8833 */
+              ;
+              ({ /* cicili#Let8415 */
+                bool __h_case_result  = (true  &&  (((tree -> __h_ctor ) ==  __h_Internal_t  ) &&  (({ /* cicili#Progn8416 */
                         (items  =  (((tree -> __h_data ). Internal ). __h_0_mem ) );
                         true ;
-                      }) &&  ({ /* cicili#Progn8835 */
+                      }) &&  ({ /* cicili#Progn8418 */
                         (children  =  (((tree -> __h_data ). Internal ). __h_1_mem ) );
                         true ;
                       }) ) ) );
                 // ----------
-                ((__h_case_result ) ? ({ /* cicili#Progn8838 */
+                
+                ((__h_case_result ) ? ({ /* cicili#Progn8423 */
                     deleteInternal (Just_BTree_int_User (tree ), items , children , Nothing_List_BTree_int_User_pair_t (), items , 0);
-                  }) : ({ /* cicili#Let8844 */
+                  }) : ({ /* cicili#Let8429 */
                     typeof((((tree -> __h_data ). Leaf ). __h_0_mem )) items ;
                     // ----------
-                    
-                    ({ /* cicili#Let8848 */
-                      bool __h_case_result  = (true  &&  (((tree -> __h_ctor ) ==  __h_Leaf_t  ) &&  ({ /* cicili#Progn8849 */
+                    ;
+                    ({ /* cicili#Let8431 */
+                      bool __h_case_result  = (true  &&  (((tree -> __h_ctor ) ==  __h_Leaf_t  ) &&  ({ /* cicili#Progn8432 */
                             (items  =  (((tree -> __h_data ). Leaf ). __h_0_mem ) );
                             true ;
                           }) ) );
                       // ----------
-                      ((__h_case_result ) ? ({ /* cicili#Progn8852 */
+                      
+                      ((__h_case_result ) ? ({ /* cicili#Progn8437 */
                           deleteLeaf (items , items , 0);
-                        }) : ({ /* cicili#Let8856 */
+                        }) : ({ /* cicili#Let8441 */
                           // ----------
-                          
-                          ({ /* cicili#Progn8860 */
+                          ;
+                          ({ /* cicili#Progn8443 */
                             Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_INVALID_OBJECT ());
                           });
                         }));
@@ -8193,57 +8450,60 @@ Either_BTree_int_User_Error_BTree_int_User deleteWithParent_BTree_int_User (Mayb
 #ifndef __BTree_int_User__H_IMPL__
 #define __BTree_int_User__H_IMPL__
 Either_BTree_int_User_Error_BTree_int_User fromLists_BTree_int_User (List_int keys , List_User values ) {
-  return ({ /* cicili#Let8883 */
+  return ({ /* cicili#Let8466 */
       typeof((((keys -> __h_data ). Cons ). __h_0_mem )) khead ;
       typeof((((keys -> __h_data ). Cons ). __h_1_mem )) ktail ;
       // ----------
-      
-      ({ /* cicili#Let8887 */
-        bool __h_case_result  = (true  &&  (((keys -> __h_ctor ) ==  __h_Cons_t  ) &&  (({ /* cicili#Progn8888 */
+      ;
+      ({ /* cicili#Let8468 */
+        bool __h_case_result  = (true  &&  (((keys -> __h_ctor ) ==  __h_Cons_t  ) &&  (({ /* cicili#Progn8469 */
                 (khead  =  (((keys -> __h_data ). Cons ). __h_0_mem ) );
                 true ;
-              }) &&  ({ /* cicili#Progn8890 */
+              }) &&  ({ /* cicili#Progn8471 */
                 (ktail  =  (((keys -> __h_data ). Cons ). __h_1_mem ) );
                 true ;
               }) ) ) );
         // ----------
-        ((__h_case_result ) ? ({ /* cicili#Progn8893 */
-            ({ /* cicili#Let8897 */
+        
+        ((__h_case_result ) ? ({ /* cicili#Progn8476 */
+            ({ /* cicili#Let8480 */
               typeof((((values -> __h_data ). Cons ). __h_0_mem )) vhead ;
               typeof((((values -> __h_data ). Cons ). __h_1_mem )) vtail ;
               // ----------
-              
-              ({ /* cicili#Let8901 */
-                bool __h_case_result  = (true  &&  (((values -> __h_ctor ) ==  __h_Cons_t  ) &&  (({ /* cicili#Progn8902 */
+              ;
+              ({ /* cicili#Let8482 */
+                bool __h_case_result  = (true  &&  (((values -> __h_ctor ) ==  __h_Cons_t  ) &&  (({ /* cicili#Progn8483 */
                         (vhead  =  (((values -> __h_data ). Cons ). __h_0_mem ) );
                         true ;
-                      }) &&  ({ /* cicili#Progn8904 */
+                      }) &&  ({ /* cicili#Progn8485 */
                         (vtail  =  (((values -> __h_data ). Cons ). __h_1_mem ) );
                         true ;
                       }) ) ) );
                 // ----------
-                ((__h_case_result ) ? ({ /* cicili#Progn8907 */
-                    ({ /* cicili#Let8910 */
-                      __auto_type etree  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let8912 */
+                
+                ((__h_case_result ) ? ({ /* cicili#Progn8490 */
+                    ({ /* cicili#Let8493 */
+                      __auto_type etree  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let8495 */
                         __auto_type etree  = fromLists_BTree_int_User (ktail , vtail );
                         // ----------
                         ((void)((etree . __h_table )-> freeData ));
                         etree ;
                       });
                       // ----------
-                      ({ /* cicili#Let8918 */
+                      ({ /* cicili#Let8501 */
                         typeof((((etree . __h_data ). Right ). __h_0_mem )) tree ;
                         // ----------
-                        
-                        ({ /* cicili#Let8922 */
-                          bool __h_case_result  = (true  &&  (((etree . __h_ctor ) ==  __h_Right_t  ) &&  ({ /* cicili#Progn8923 */
+                        ;
+                        ({ /* cicili#Let8503 */
+                          bool __h_case_result  = (true  &&  (((etree . __h_ctor ) ==  __h_Right_t  ) &&  ({ /* cicili#Progn8504 */
                                 (tree  =  (((etree . __h_data ). Right ). __h_0_mem ) );
                                 true ;
                               }) ) );
                           // ----------
-                          ((__h_case_result ) ? ({ /* cicili#Progn8926 */
-                              ({ /* cicili#Let8929 */
-                                __auto_type tree  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let8931 */
+                          
+                          ((__h_case_result ) ? ({ /* cicili#Progn8509 */
+                              ({ /* cicili#Let8512 */
+                                __auto_type tree  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let8514 */
                                   __auto_type tree  = tree ;
                                   // ----------
                                   ((void)(tree -> __h_table -> freeClass ));
@@ -8252,64 +8512,65 @@ Either_BTree_int_User_Error_BTree_int_User fromLists_BTree_int_User (List_int ke
                                 // ----------
                                 insert_BTree_int_User (tree , khead , vhead );
                               });
-                            }) : ({ /* cicili#Let8937 */
+                            }) : ({ /* cicili#Let8520 */
                               // ----------
-                              
-                              ({ /* cicili#Progn8941 */
+                              ;
+                              ({ /* cicili#Progn8522 */
                                 etree ;
                               });
                             }));
                         });
                       });
                     });
-                  }) : ({ /* cicili#Let8945 */
+                  }) : ({ /* cicili#Let8526 */
                     // ----------
-                    
-                    ({ /* cicili#Progn8949 */
+                    ;
+                    ({ /* cicili#Progn8528 */
                       Right_BTree_int_User_Error_BTree_int_User (Leaf_BTree_int_User (Nil_BTree_int_User_pair_t ()));
                     });
                   }));
               });
             });
-          }) : ({ /* cicili#Let8957 */
+          }) : ({ /* cicili#Let8536 */
             // ----------
-            
-            ({ /* cicili#Progn8961 */
+            ;
+            ({ /* cicili#Progn8538 */
               Right_BTree_int_User_Error_BTree_int_User (Leaf_BTree_int_User (Nil_BTree_int_User_pair_t ()));
             });
           }));
       });
     });
 }
-Either_BTree_int_User_Error_BTree_int_User pure_BTree_int_User (int keys [], User values [], int len ) {
-  return ({ /* cicili#Let8972 */
+Either_BTree_int_User_Error_BTree_int_User pure_BTree_int_User (int keys [], User values [], size_t len ) {
+  return ({ /* cicili#Let8549 */
       BTree_int_User tree  = Leaf_BTree_int_User (Nil_BTree_int_User_pair_t ());
       // ----------
-      for (int i  = 0; (i  <  len  ); (++i )) {
-          { /* cicili#Let8980 */
-            __auto_type match8979  = insert_BTree_int_User (tree , keys [i ], values [i ]);
-            typeof((((match8979 . __h_data ). Right ). __h_0_mem )) new_tree ;
+      for (size_t i  = 0; (i  <  len  ); (++i )) {
+          { /* cicili#Let8557 */
+            __auto_type match8556  = insert_BTree_int_User (tree , keys [i ], values [i ]);
+            typeof((((match8556 . __h_data ). Right ). __h_0_mem )) new_tree ;
             // ----------
-            
-            ({ /* cicili#Let8985 */
-              bool __h_case_result  = (true  &&  (((match8979 . __h_ctor ) ==  __h_Right_t  ) &&  ({ /* cicili#Progn8986 */
-                    (new_tree  =  (((match8979 . __h_data ). Right ). __h_0_mem ) );
+            ;
+            ({ /* cicili#Let8560 */
+              bool __h_case_result  = (true  &&  (((match8556 . __h_ctor ) ==  __h_Right_t  ) &&  ({ /* cicili#Progn8561 */
+                    (new_tree  =  (((match8556 . __h_data ). Right ). __h_0_mem ) );
                     true ;
                   }) ) );
               // ----------
+              
               if (__h_case_result )
-                { /* cicili#Block8990 */
-                  { /* cicili#Block8992 */
+                { /* cicili#Block8567 */
+                  { /* cicili#Block8569 */
                     free_BTree_int_User ((&tree ));
                     tree  = new_tree ;
                   }
                 }
               else
-                { /* cicili#Let8998 */
-                  __auto_type left  = match8979 ;
+                { /* cicili#Let8575 */
+                  __auto_type left  = match8556 ;
                   // ----------
-                  
-                  { /* cicili#Block9002 */
+                  ;
+                  { /* cicili#Block8577 */
                     return left ;
                   }
                 }
@@ -8319,74 +8580,78 @@ Either_BTree_int_User_Error_BTree_int_User pure_BTree_int_User (int keys [], Use
       Right_BTree_int_User_Error_BTree_int_User (tree );
     });
 }
-int show_BTree_int_User (CFile file , BTree_int_User tree ) {
-  auto int showTree (int indent , BTree_int_User tree );
-  int showChildren (int indent , List_Rc_BTree_int_User children ) {
-    return ({ /* cicili#Let9012 */
+size_t show_BTree_int_User (CFile file , BTree_int_User tree ) {
+  auto size_t showTree (int indent , BTree_int_User tree );
+  size_t showChildren (int indent , List_Rc_BTree_int_User children ) {
+    return ({ /* cicili#Let8587 */
         typeof((((children -> __h_data ). Cons ). __h_0_mem )) head ;
         typeof((((children -> __h_data ). Cons ). __h_1_mem )) tail ;
         // ----------
-        
-        ({ /* cicili#Let9016 */
-          bool __h_case_result  = (true  &&  (((children -> __h_ctor ) ==  __h_Cons_t  ) &&  (({ /* cicili#Progn9017 */
+        ;
+        ({ /* cicili#Let8589 */
+          bool __h_case_result  = (true  &&  (((children -> __h_ctor ) ==  __h_Cons_t  ) &&  (({ /* cicili#Progn8590 */
                   (head  =  (((children -> __h_data ). Cons ). __h_0_mem ) );
                   true ;
-                }) &&  ({ /* cicili#Progn9019 */
+                }) &&  ({ /* cicili#Progn8592 */
                   (tail  =  (((children -> __h_data ). Cons ). __h_1_mem ) );
                   true ;
                 }) ) ) );
           // ----------
-          ((__h_case_result ) ? ({ /* cicili#Progn9022 */
-              (({ /* cicili#Let9026 */
+          
+          ((__h_case_result ) ? ({ /* cicili#Progn8597 */
+              (({ /* cicili#Let8601 */
                   // ----------
-                  
-                  ({ /* cicili#Let9030 */
+                  ;
+                  ({ /* cicili#Let8603 */
                     bool __h_case_result  = (true  &&  ((tail -> __h_ctor ) ==  __h_Cons_t  ) );
                     // ----------
-                    ((__h_case_result ) ? ({ /* cicili#Progn9032 */
-                        ({ /* cicili#Let9036 */
-                          __auto_type match9035  = get_Rc_BTree_int_User (head );
-                          typeof((((match9035 . __h_data ). Just ). __h_0_mem )) tr ;
+                    
+                    ((__h_case_result ) ? ({ /* cicili#Progn8607 */
+                        ({ /* cicili#Let8611 */
+                          __auto_type match8610  = get_Rc_BTree_int_User (head );
+                          typeof((((match8610 . __h_data ). Just ). __h_0_mem )) tr ;
                           // ----------
-                          
-                          ({ /* cicili#Let9041 */
-                            bool __h_case_result  = (true  &&  (((match9035 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn9042 */
-                                  (tr  =  (((match9035 . __h_data ). Just ). __h_0_mem ) );
+                          ;
+                          ({ /* cicili#Let8614 */
+                            bool __h_case_result  = (true  &&  (((match8610 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn8615 */
+                                  (tr  =  (((match8610 . __h_data ). Just ). __h_0_mem ) );
                                   true ;
                                 }) ) );
                             // ----------
-                            ((__h_case_result ) ? ({ /* cicili#Progn9045 */
+                            
+                            ((__h_case_result ) ? ({ /* cicili#Progn8620 */
                                 (showTree (indent , tr ) +  fprintf (file , "\n") );
-                              }) : ({ /* cicili#Let9049 */
+                              }) : ({ /* cicili#Let8624 */
                                 // ----------
-                                
-                                ({ /* cicili#Progn9053 */
+                                ;
+                                ({ /* cicili#Progn8626 */
                                   0;
                                 });
                               }));
                           });
                         });
-                      }) : ({ /* cicili#Let9057 */
+                      }) : ({ /* cicili#Let8630 */
                         // ----------
-                        
-                        ({ /* cicili#Progn9061 */
-                          ({ /* cicili#Let9065 */
-                            __auto_type match9064  = get_Rc_BTree_int_User (head );
-                            typeof((((match9064 . __h_data ). Just ). __h_0_mem )) tr ;
+                        ;
+                        ({ /* cicili#Progn8632 */
+                          ({ /* cicili#Let8636 */
+                            __auto_type match8635  = get_Rc_BTree_int_User (head );
+                            typeof((((match8635 . __h_data ). Just ). __h_0_mem )) tr ;
                             // ----------
-                            
-                            ({ /* cicili#Let9070 */
-                              bool __h_case_result  = (true  &&  (((match9064 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn9071 */
-                                    (tr  =  (((match9064 . __h_data ). Just ). __h_0_mem ) );
+                            ;
+                            ({ /* cicili#Let8639 */
+                              bool __h_case_result  = (true  &&  (((match8635 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn8640 */
+                                    (tr  =  (((match8635 . __h_data ). Just ). __h_0_mem ) );
                                     true ;
                                   }) ) );
                               // ----------
-                              ((__h_case_result ) ? ({ /* cicili#Progn9074 */
+                              
+                              ((__h_case_result ) ? ({ /* cicili#Progn8645 */
                                   showTree (indent , tr );
-                                }) : ({ /* cicili#Let9078 */
+                                }) : ({ /* cicili#Let8649 */
                                   // ----------
-                                  
-                                  ({ /* cicili#Progn9082 */
+                                  ;
+                                  ({ /* cicili#Progn8651 */
                                     0;
                                   });
                                 }));
@@ -8396,97 +8661,102 @@ int show_BTree_int_User (CFile file , BTree_int_User tree ) {
                       }));
                   });
                 }) +  showChildren (indent , tail ) );
-            }) : ({ /* cicili#Let9086 */
+            }) : ({ /* cicili#Let8655 */
               // ----------
-              
-              ({ /* cicili#Progn9090 */
+              ;
+              ({ /* cicili#Progn8657 */
                 0;
               });
             }));
         });
       });
   }
-  int showTree (int indent , BTree_int_User tree ) {
-    return (fprintf (file , "%d%*c", indent , (indent  *  2 ), ' ') +  ({ /* cicili#Let9096 */
+  size_t showTree (int indent , BTree_int_User tree ) {
+    return (fprintf (file , "%d%*c", indent , (indent  *  2 ), ' ') +  ({ /* cicili#Let8663 */
           typeof((((tree -> __h_data ). Branch ). __h_0_mem )) items ;
           typeof((((tree -> __h_data ). Branch ). __h_1_mem )) children ;
           // ----------
-          
-          ({ /* cicili#Let9100 */
-            bool __h_case_result  = (true  &&  (((tree -> __h_ctor ) ==  __h_Branch_t  ) &&  (({ /* cicili#Progn9101 */
+          ;
+          ({ /* cicili#Let8665 */
+            bool __h_case_result  = (true  &&  (((tree -> __h_ctor ) ==  __h_Branch_t  ) &&  (({ /* cicili#Progn8666 */
                     (items  =  (((tree -> __h_data ). Branch ). __h_0_mem ) );
                     true ;
-                  }) &&  ({ /* cicili#Progn9103 */
+                  }) &&  ({ /* cicili#Progn8668 */
                     (children  =  (((tree -> __h_data ). Branch ). __h_1_mem ) );
                     true ;
                   }) ) ) );
             // ----------
-            ((__h_case_result ) ? ({ /* cicili#Progn9106 */
-                (show_List_BTree_int_User_pair_t (file , items ) +  ({ /* cicili#Let9111 */
+            
+            ((__h_case_result ) ? ({ /* cicili#Progn8673 */
+                (show_List_BTree_int_User_pair_t (file , items ) +  ({ /* cicili#Let8678 */
                     // ----------
-                    
-                    ({ /* cicili#Let9115 */
+                    ;
+                    ({ /* cicili#Let8680 */
                       bool __h_case_result  = (true  &&  ((children -> __h_ctor ) ==  __h_Cons_t  ) );
                       // ----------
-                      ((__h_case_result ) ? ({ /* cicili#Progn9117 */
+                      
+                      ((__h_case_result ) ? ({ /* cicili#Progn8684 */
                           (fprintf (file , "\n") +  showChildren ((indent  +  1 ), children ) );
-                        }) : ({ /* cicili#Let9121 */
+                        }) : ({ /* cicili#Let8688 */
                           // ----------
-                          
-                          ({ /* cicili#Progn9125 */
+                          ;
+                          ({ /* cicili#Progn8690 */
                             0;
                           });
                         }));
                     });
                   }) );
-              }) : ({ /* cicili#Let9129 */
+              }) : ({ /* cicili#Let8694 */
                 typeof((((tree -> __h_data ). Internal ). __h_0_mem )) items ;
                 typeof((((tree -> __h_data ). Internal ). __h_1_mem )) children ;
                 // ----------
-                
-                ({ /* cicili#Let9133 */
-                  bool __h_case_result  = (true  &&  (((tree -> __h_ctor ) ==  __h_Internal_t  ) &&  (({ /* cicili#Progn9134 */
+                ;
+                ({ /* cicili#Let8696 */
+                  bool __h_case_result  = (true  &&  (((tree -> __h_ctor ) ==  __h_Internal_t  ) &&  (({ /* cicili#Progn8697 */
                           (items  =  (((tree -> __h_data ). Internal ). __h_0_mem ) );
                           true ;
-                        }) &&  ({ /* cicili#Progn9136 */
+                        }) &&  ({ /* cicili#Progn8699 */
                           (children  =  (((tree -> __h_data ). Internal ). __h_1_mem ) );
                           true ;
                         }) ) ) );
                   // ----------
-                  ((__h_case_result ) ? ({ /* cicili#Progn9139 */
-                      (show_List_BTree_int_User_pair_t (file , items ) +  ({ /* cicili#Let9144 */
+                  
+                  ((__h_case_result ) ? ({ /* cicili#Progn8704 */
+                      (show_List_BTree_int_User_pair_t (file , items ) +  ({ /* cicili#Let8709 */
                           // ----------
-                          
-                          ({ /* cicili#Let9148 */
+                          ;
+                          ({ /* cicili#Let8711 */
                             bool __h_case_result  = (true  &&  ((children -> __h_ctor ) ==  __h_Cons_t  ) );
                             // ----------
-                            ((__h_case_result ) ? ({ /* cicili#Progn9150 */
+                            
+                            ((__h_case_result ) ? ({ /* cicili#Progn8715 */
                                 (fprintf (file , "\n") +  showChildren ((indent  +  1 ), children ) );
-                              }) : ({ /* cicili#Let9154 */
+                              }) : ({ /* cicili#Let8719 */
                                 // ----------
-                                
-                                ({ /* cicili#Progn9158 */
+                                ;
+                                ({ /* cicili#Progn8721 */
                                   0;
                                 });
                               }));
                           });
                         }) );
-                    }) : ({ /* cicili#Let9162 */
+                    }) : ({ /* cicili#Let8725 */
                       typeof((((tree -> __h_data ). Leaf ). __h_0_mem )) items ;
                       // ----------
-                      
-                      ({ /* cicili#Let9166 */
-                        bool __h_case_result  = (true  &&  (((tree -> __h_ctor ) ==  __h_Leaf_t  ) &&  ({ /* cicili#Progn9167 */
+                      ;
+                      ({ /* cicili#Let8727 */
+                        bool __h_case_result  = (true  &&  (((tree -> __h_ctor ) ==  __h_Leaf_t  ) &&  ({ /* cicili#Progn8728 */
                               (items  =  (((tree -> __h_data ). Leaf ). __h_0_mem ) );
                               true ;
                             }) ) );
                         // ----------
-                        ((__h_case_result ) ? ({ /* cicili#Progn9170 */
+                        
+                        ((__h_case_result ) ? ({ /* cicili#Progn8733 */
                             show_List_BTree_int_User_pair_t (file , items );
-                          }) : ({ /* cicili#Let9175 */
+                          }) : ({ /* cicili#Let8738 */
                             // ----------
-                            
-                            ({ /* cicili#Progn9179 */
+                            ;
+                            ({ /* cicili#Progn8740 */
                               0;
                             });
                           }));
@@ -8502,94 +8772,100 @@ int show_BTree_int_User (CFile file , BTree_int_User tree ) {
 void traverse_BTree_int_User (BTree_int_User tree , void (*callback) (BTree_int_User_pair_t item , Bool hasNext )) {
   auto void traverseLeaf (List_BTree_int_User_pair_t current , Bool hasNextLeaf );
   void traverseInternal (List_BTree_int_User_pair_t currentItem , List_Rc_BTree_int_User currentChild ) {
-    { /* cicili#Let9188 */
+    { /* cicili#Let8749 */
       typeof((((currentChild -> __h_data ). Cons ). __h_0_mem )) wheadC ;
       typeof((((currentChild -> __h_data ). Cons ). __h_1_mem )) tailC ;
       // ----------
-      
-      ({ /* cicili#Let9192 */
-        bool __h_case_result  = (true  &&  (((currentChild -> __h_ctor ) ==  __h_Cons_t  ) &&  (({ /* cicili#Progn9193 */
+      ;
+      ({ /* cicili#Let8751 */
+        bool __h_case_result  = (true  &&  (((currentChild -> __h_ctor ) ==  __h_Cons_t  ) &&  (({ /* cicili#Progn8752 */
                 (wheadC  =  (((currentChild -> __h_data ). Cons ). __h_0_mem ) );
                 true ;
-              }) &&  ({ /* cicili#Progn9195 */
+              }) &&  ({ /* cicili#Progn8754 */
                 (tailC  =  (((currentChild -> __h_data ). Cons ). __h_1_mem ) );
                 true ;
               }) ) ) );
         // ----------
+        
         if (__h_case_result )
-          { /* cicili#Block9199 */
-            { /* cicili#Let9203 */
-              __auto_type match9202  = get_Rc_BTree_int_User (wheadC );
-              typeof((((match9202 . __h_data ). Just ). __h_0_mem )) headC ;
+          { /* cicili#Block8760 */
+            { /* cicili#Let8764 */
+              __auto_type match8763  = get_Rc_BTree_int_User (wheadC );
+              typeof((((match8763 . __h_data ). Just ). __h_0_mem )) headC ;
               // ----------
-              
-              ({ /* cicili#Let9208 */
-                bool __h_case_result  = (true  &&  (((match9202 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn9209 */
-                      (headC  =  (((match9202 . __h_data ). Just ). __h_0_mem ) );
+              ;
+              ({ /* cicili#Let8767 */
+                bool __h_case_result  = (true  &&  (((match8763 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn8768 */
+                      (headC  =  (((match8763 . __h_data ). Just ). __h_0_mem ) );
                       true ;
                     }) ) );
                 // ----------
+                
                 if (__h_case_result )
-                  { /* cicili#Block9213 */
-                    { /* cicili#Let9217 */
+                  { /* cicili#Block8774 */
+                    { /* cicili#Let8778 */
                       // ----------
-                      
-                      ({ /* cicili#Let9221 */
+                      ;
+                      ({ /* cicili#Let8780 */
                         bool __h_case_result  = (true  &&  ((tailC -> __h_ctor ) ==  __h_Cons_t  ) );
                         // ----------
+                        
                         if (__h_case_result )
-                          { /* cicili#Block9224 */
-                            { /* cicili#Block9226 */
-                              { /* cicili#Let9230 */
+                          { /* cicili#Block8785 */
+                            { /* cicili#Block8787 */
+                              { /* cicili#Let8791 */
                                 typeof((((headC -> __h_data ). Branch ). __h_0_mem )) items ;
                                 typeof((((headC -> __h_data ). Branch ). __h_1_mem )) children ;
                                 // ----------
-                                
-                                ({ /* cicili#Let9234 */
-                                  bool __h_case_result  = (true  &&  (((headC -> __h_ctor ) ==  __h_Branch_t  ) &&  (({ /* cicili#Progn9235 */
+                                ;
+                                ({ /* cicili#Let8793 */
+                                  bool __h_case_result  = (true  &&  (((headC -> __h_ctor ) ==  __h_Branch_t  ) &&  (({ /* cicili#Progn8794 */
                                           (items  =  (((headC -> __h_data ). Branch ). __h_0_mem ) );
                                           true ;
-                                        }) &&  ({ /* cicili#Progn9237 */
+                                        }) &&  ({ /* cicili#Progn8796 */
                                           (children  =  (((headC -> __h_data ). Branch ). __h_1_mem ) );
                                           true ;
                                         }) ) ) );
                                   // ----------
+                                  
                                   if (__h_case_result )
-                                    { /* cicili#Block9241 */
+                                    { /* cicili#Block8802 */
                                       traverseInternal (items , children );
                                     }
                                   else
-                                    { /* cicili#Let9246 */
+                                    { /* cicili#Let8807 */
                                       typeof((((headC -> __h_data ). Internal ). __h_0_mem )) items ;
                                       typeof((((headC -> __h_data ). Internal ). __h_1_mem )) children ;
                                       // ----------
-                                      
-                                      ({ /* cicili#Let9250 */
-                                        bool __h_case_result  = (true  &&  (((headC -> __h_ctor ) ==  __h_Internal_t  ) &&  (({ /* cicili#Progn9251 */
+                                      ;
+                                      ({ /* cicili#Let8809 */
+                                        bool __h_case_result  = (true  &&  (((headC -> __h_ctor ) ==  __h_Internal_t  ) &&  (({ /* cicili#Progn8810 */
                                                 (items  =  (((headC -> __h_data ). Internal ). __h_0_mem ) );
                                                 true ;
-                                              }) &&  ({ /* cicili#Progn9253 */
+                                              }) &&  ({ /* cicili#Progn8812 */
                                                 (children  =  (((headC -> __h_data ). Internal ). __h_1_mem ) );
                                                 true ;
                                               }) ) ) );
                                         // ----------
+                                        
                                         if (__h_case_result )
-                                          { /* cicili#Block9257 */
+                                          { /* cicili#Block8818 */
                                             traverseInternal (items , children );
                                           }
                                         else
-                                          { /* cicili#Let9262 */
+                                          { /* cicili#Let8823 */
                                             typeof((((headC -> __h_data ). Leaf ). __h_0_mem )) items ;
                                             // ----------
-                                            
-                                            ({ /* cicili#Let9266 */
-                                              bool __h_case_result  = (true  &&  (((headC -> __h_ctor ) ==  __h_Leaf_t  ) &&  ({ /* cicili#Progn9267 */
+                                            ;
+                                            ({ /* cicili#Let8825 */
+                                              bool __h_case_result  = (true  &&  (((headC -> __h_ctor ) ==  __h_Leaf_t  ) &&  ({ /* cicili#Progn8826 */
                                                     (items  =  (((headC -> __h_data ). Leaf ). __h_0_mem ) );
                                                     true ;
                                                   }) ) );
                                               // ----------
+                                              
                                               if (__h_case_result )
-                                                { /* cicili#Block9271 */
+                                                { /* cicili#Block8832 */
                                                   traverseLeaf (items , True ());
                                                 }
                                             });
@@ -8598,23 +8874,24 @@ void traverse_BTree_int_User (BTree_int_User tree , void (*callback) (BTree_int_
                                     }
                                 });
                               }
-                              { /* cicili#Let9275 */
+                              { /* cicili#Let8836 */
                                 typeof((((currentItem -> __h_data ). Cons ). __h_0_mem )) headI ;
                                 typeof((((currentItem -> __h_data ). Cons ). __h_1_mem )) tailI ;
                                 // ----------
-                                
-                                ({ /* cicili#Let9279 */
-                                  bool __h_case_result  = (true  &&  (((currentItem -> __h_ctor ) ==  __h_Cons_t  ) &&  (({ /* cicili#Progn9280 */
+                                ;
+                                ({ /* cicili#Let8838 */
+                                  bool __h_case_result  = (true  &&  (((currentItem -> __h_ctor ) ==  __h_Cons_t  ) &&  (({ /* cicili#Progn8839 */
                                           (headI  =  (((currentItem -> __h_data ). Cons ). __h_0_mem ) );
                                           true ;
-                                        }) &&  ({ /* cicili#Progn9282 */
+                                        }) &&  ({ /* cicili#Progn8841 */
                                           (tailI  =  (((currentItem -> __h_data ). Cons ). __h_1_mem ) );
                                           true ;
                                         }) ) ) );
                                   // ----------
+                                  
                                   if (__h_case_result )
-                                    { /* cicili#Block9286 */
-                                      { /* cicili#Block9288 */
+                                    { /* cicili#Block8847 */
+                                      { /* cicili#Block8849 */
                                         callback (headI , True ());
                                         traverseInternal (tailI , tailC );
                                       }
@@ -8624,61 +8901,64 @@ void traverse_BTree_int_User (BTree_int_User tree , void (*callback) (BTree_int_
                             }
                           }
                         else
-                          { /* cicili#Let9293 */
+                          { /* cicili#Let8854 */
                             // ----------
-                            
-                            { /* cicili#Block9297 */
-                              { /* cicili#Block9299 */
-                                { /* cicili#Let9303 */
+                            ;
+                            { /* cicili#Block8856 */
+                              { /* cicili#Block8858 */
+                                { /* cicili#Let8862 */
                                   typeof((((headC -> __h_data ). Branch ). __h_0_mem )) items ;
                                   typeof((((headC -> __h_data ). Branch ). __h_1_mem )) children ;
                                   // ----------
-                                  
-                                  ({ /* cicili#Let9307 */
-                                    bool __h_case_result  = (true  &&  (((headC -> __h_ctor ) ==  __h_Branch_t  ) &&  (({ /* cicili#Progn9308 */
+                                  ;
+                                  ({ /* cicili#Let8864 */
+                                    bool __h_case_result  = (true  &&  (((headC -> __h_ctor ) ==  __h_Branch_t  ) &&  (({ /* cicili#Progn8865 */
                                             (items  =  (((headC -> __h_data ). Branch ). __h_0_mem ) );
                                             true ;
-                                          }) &&  ({ /* cicili#Progn9310 */
+                                          }) &&  ({ /* cicili#Progn8867 */
                                             (children  =  (((headC -> __h_data ). Branch ). __h_1_mem ) );
                                             true ;
                                           }) ) ) );
                                     // ----------
+                                    
                                     if (__h_case_result )
-                                      { /* cicili#Block9314 */
+                                      { /* cicili#Block8873 */
                                         traverseInternal (items , children );
                                       }
                                     else
-                                      { /* cicili#Let9319 */
+                                      { /* cicili#Let8878 */
                                         typeof((((headC -> __h_data ). Internal ). __h_0_mem )) items ;
                                         typeof((((headC -> __h_data ). Internal ). __h_1_mem )) children ;
                                         // ----------
-                                        
-                                        ({ /* cicili#Let9323 */
-                                          bool __h_case_result  = (true  &&  (((headC -> __h_ctor ) ==  __h_Internal_t  ) &&  (({ /* cicili#Progn9324 */
+                                        ;
+                                        ({ /* cicili#Let8880 */
+                                          bool __h_case_result  = (true  &&  (((headC -> __h_ctor ) ==  __h_Internal_t  ) &&  (({ /* cicili#Progn8881 */
                                                   (items  =  (((headC -> __h_data ). Internal ). __h_0_mem ) );
                                                   true ;
-                                                }) &&  ({ /* cicili#Progn9326 */
+                                                }) &&  ({ /* cicili#Progn8883 */
                                                   (children  =  (((headC -> __h_data ). Internal ). __h_1_mem ) );
                                                   true ;
                                                 }) ) ) );
                                           // ----------
+                                          
                                           if (__h_case_result )
-                                            { /* cicili#Block9330 */
+                                            { /* cicili#Block8889 */
                                               traverseInternal (items , children );
                                             }
                                           else
-                                            { /* cicili#Let9335 */
+                                            { /* cicili#Let8894 */
                                               typeof((((headC -> __h_data ). Leaf ). __h_0_mem )) items ;
                                               // ----------
-                                              
-                                              ({ /* cicili#Let9339 */
-                                                bool __h_case_result  = (true  &&  (((headC -> __h_ctor ) ==  __h_Leaf_t  ) &&  ({ /* cicili#Progn9340 */
+                                              ;
+                                              ({ /* cicili#Let8896 */
+                                                bool __h_case_result  = (true  &&  (((headC -> __h_ctor ) ==  __h_Leaf_t  ) &&  ({ /* cicili#Progn8897 */
                                                       (items  =  (((headC -> __h_data ). Leaf ). __h_0_mem ) );
                                                       true ;
                                                     }) ) );
                                                 // ----------
+                                                
                                                 if (__h_case_result )
-                                                  { /* cicili#Block9344 */
+                                                  { /* cicili#Block8903 */
                                                     traverseLeaf (items , False ());
                                                   }
                                               });
@@ -8687,23 +8967,24 @@ void traverse_BTree_int_User (BTree_int_User tree , void (*callback) (BTree_int_
                                       }
                                   });
                                 }
-                                { /* cicili#Let9348 */
+                                { /* cicili#Let8907 */
                                   typeof((((currentItem -> __h_data ). Cons ). __h_0_mem )) headI ;
                                   typeof((((currentItem -> __h_data ). Cons ). __h_1_mem )) tailI ;
                                   // ----------
-                                  
-                                  ({ /* cicili#Let9352 */
-                                    bool __h_case_result  = (true  &&  (((currentItem -> __h_ctor ) ==  __h_Cons_t  ) &&  (({ /* cicili#Progn9353 */
+                                  ;
+                                  ({ /* cicili#Let8909 */
+                                    bool __h_case_result  = (true  &&  (((currentItem -> __h_ctor ) ==  __h_Cons_t  ) &&  (({ /* cicili#Progn8910 */
                                             (headI  =  (((currentItem -> __h_data ). Cons ). __h_0_mem ) );
                                             true ;
-                                          }) &&  ({ /* cicili#Progn9355 */
+                                          }) &&  ({ /* cicili#Progn8912 */
                                             (tailI  =  (((currentItem -> __h_data ). Cons ). __h_1_mem ) );
                                             true ;
                                           }) ) ) );
                                     // ----------
+                                    
                                     if (__h_case_result )
-                                      { /* cicili#Block9359 */
-                                        { /* cicili#Block9361 */
+                                      { /* cicili#Block8918 */
+                                        { /* cicili#Block8920 */
                                           callback (headI , False ());
                                           traverseInternal (tailI , tailC );
                                         }
@@ -8723,47 +9004,50 @@ void traverse_BTree_int_User (BTree_int_User tree , void (*callback) (BTree_int_
     }
   }
   void traverseLeaf (List_BTree_int_User_pair_t current , Bool hasNextLeaf ) {
-    { /* cicili#Let9368 */
+    { /* cicili#Let8927 */
       typeof((((current -> __h_data ). Cons ). __h_0_mem )) head ;
       typeof((((current -> __h_data ). Cons ). __h_1_mem )) tail ;
       // ----------
-      
-      ({ /* cicili#Let9372 */
-        bool __h_case_result  = (true  &&  (((current -> __h_ctor ) ==  __h_Cons_t  ) &&  (({ /* cicili#Progn9373 */
+      ;
+      ({ /* cicili#Let8929 */
+        bool __h_case_result  = (true  &&  (((current -> __h_ctor ) ==  __h_Cons_t  ) &&  (({ /* cicili#Progn8930 */
                 (head  =  (((current -> __h_data ). Cons ). __h_0_mem ) );
                 true ;
-              }) &&  ({ /* cicili#Progn9375 */
+              }) &&  ({ /* cicili#Progn8932 */
                 (tail  =  (((current -> __h_data ). Cons ). __h_1_mem ) );
                 true ;
               }) ) ) );
         // ----------
+        
         if (__h_case_result )
-          { /* cicili#Block9379 */
-            { /* cicili#Block9381 */
-              callback (head , ({ /* cicili#Let9385 */
+          { /* cicili#Block8938 */
+            { /* cicili#Block8940 */
+              callback (head , ({ /* cicili#Let8944 */
                   // ----------
-                  
-                  ({ /* cicili#Let9389 */
+                  ;
+                  ({ /* cicili#Let8946 */
                     bool __h_case_result  = (true  &&  ((hasNextLeaf . __h_ctor ) ==  __h_True_t  ) );
                     // ----------
-                    ((__h_case_result ) ? ({ /* cicili#Progn9391 */
+                    
+                    ((__h_case_result ) ? ({ /* cicili#Progn8950 */
                         hasNextLeaf ;
-                      }) : ({ /* cicili#Let9395 */
+                      }) : ({ /* cicili#Let8954 */
                         // ----------
-                        
-                        ({ /* cicili#Progn9399 */
-                          ({ /* cicili#Let9403 */
+                        ;
+                        ({ /* cicili#Progn8956 */
+                          ({ /* cicili#Let8960 */
                             // ----------
-                            
-                            ({ /* cicili#Let9407 */
+                            ;
+                            ({ /* cicili#Let8962 */
                               bool __h_case_result  = (true  &&  ((tail -> __h_ctor ) ==  __h_Cons_t  ) );
                               // ----------
-                              ((__h_case_result ) ? ({ /* cicili#Progn9409 */
+                              
+                              ((__h_case_result ) ? ({ /* cicili#Progn8966 */
                                   True ();
-                                }) : ({ /* cicili#Let9413 */
+                                }) : ({ /* cicili#Let8970 */
                                   // ----------
-                                  
-                                  ({ /* cicili#Progn9417 */
+                                  ;
+                                  ({ /* cicili#Progn8972 */
                                     False ();
                                   });
                                 }));
@@ -8779,56 +9063,59 @@ void traverse_BTree_int_User (BTree_int_User tree , void (*callback) (BTree_int_
       });
     }
   }
-  { /* cicili#Let9422 */
+  { /* cicili#Let8977 */
     typeof((((tree -> __h_data ). Branch ). __h_0_mem )) items ;
     typeof((((tree -> __h_data ). Branch ). __h_1_mem )) children ;
     // ----------
-    
-    ({ /* cicili#Let9426 */
-      bool __h_case_result  = (true  &&  (((tree -> __h_ctor ) ==  __h_Branch_t  ) &&  (({ /* cicili#Progn9427 */
+    ;
+    ({ /* cicili#Let8979 */
+      bool __h_case_result  = (true  &&  (((tree -> __h_ctor ) ==  __h_Branch_t  ) &&  (({ /* cicili#Progn8980 */
               (items  =  (((tree -> __h_data ). Branch ). __h_0_mem ) );
               true ;
-            }) &&  ({ /* cicili#Progn9429 */
+            }) &&  ({ /* cicili#Progn8982 */
               (children  =  (((tree -> __h_data ). Branch ). __h_1_mem ) );
               true ;
             }) ) ) );
       // ----------
+      
       if (__h_case_result )
-        { /* cicili#Block9433 */
+        { /* cicili#Block8988 */
           traverseInternal (items , children );
         }
       else
-        { /* cicili#Let9438 */
+        { /* cicili#Let8993 */
           typeof((((tree -> __h_data ). Internal ). __h_0_mem )) items ;
           typeof((((tree -> __h_data ). Internal ). __h_1_mem )) children ;
           // ----------
-          
-          ({ /* cicili#Let9442 */
-            bool __h_case_result  = (true  &&  (((tree -> __h_ctor ) ==  __h_Internal_t  ) &&  (({ /* cicili#Progn9443 */
+          ;
+          ({ /* cicili#Let8995 */
+            bool __h_case_result  = (true  &&  (((tree -> __h_ctor ) ==  __h_Internal_t  ) &&  (({ /* cicili#Progn8996 */
                     (items  =  (((tree -> __h_data ). Internal ). __h_0_mem ) );
                     true ;
-                  }) &&  ({ /* cicili#Progn9445 */
+                  }) &&  ({ /* cicili#Progn8998 */
                     (children  =  (((tree -> __h_data ). Internal ). __h_1_mem ) );
                     true ;
                   }) ) ) );
             // ----------
+            
             if (__h_case_result )
-              { /* cicili#Block9449 */
+              { /* cicili#Block9004 */
                 traverseInternal (items , children );
               }
             else
-              { /* cicili#Let9454 */
+              { /* cicili#Let9009 */
                 typeof((((tree -> __h_data ). Leaf ). __h_0_mem )) items ;
                 // ----------
-                
-                ({ /* cicili#Let9458 */
-                  bool __h_case_result  = (true  &&  (((tree -> __h_ctor ) ==  __h_Leaf_t  ) &&  ({ /* cicili#Progn9459 */
+                ;
+                ({ /* cicili#Let9011 */
+                  bool __h_case_result  = (true  &&  (((tree -> __h_ctor ) ==  __h_Leaf_t  ) &&  ({ /* cicili#Progn9012 */
                         (items  =  (((tree -> __h_data ). Leaf ). __h_0_mem ) );
                         true ;
                       }) ) );
                   // ----------
+                  
                   if (__h_case_result )
-                    { /* cicili#Block9463 */
+                    { /* cicili#Block9018 */
                       traverseLeaf (items , False ());
                     }
                 });
@@ -8841,80 +9128,86 @@ void traverse_BTree_int_User (BTree_int_User tree , void (*callback) (BTree_int_
 Maybe_BTree_int_User_pair_t max_BTree_int_User (BTree_int_User tree ) {
   auto Maybe_BTree_int_User_pair_t maxLeaf (List_BTree_int_User_pair_t current );
   Maybe_BTree_int_User_pair_t maxInternal (List_Rc_BTree_int_User current ) {
-    return ({ /* cicili#Let9479 */
+    return ({ /* cicili#Let9034 */
         typeof((((current -> __h_data ). Cons ). __h_0_mem )) head ;
         typeof((((current -> __h_data ). Cons ). __h_1_mem )) tail ;
         // ----------
-        
-        ({ /* cicili#Let9483 */
-          bool __h_case_result  = (true  &&  (((current -> __h_ctor ) ==  __h_Cons_t  ) &&  (({ /* cicili#Progn9484 */
+        ;
+        ({ /* cicili#Let9036 */
+          bool __h_case_result  = (true  &&  (((current -> __h_ctor ) ==  __h_Cons_t  ) &&  (({ /* cicili#Progn9037 */
                   (head  =  (((current -> __h_data ). Cons ). __h_0_mem ) );
                   true ;
-                }) &&  ({ /* cicili#Progn9486 */
+                }) &&  ({ /* cicili#Progn9039 */
                   (tail  =  (((current -> __h_data ). Cons ). __h_1_mem ) );
                   true ;
                 }) ) ) );
           // ----------
-          ((__h_case_result ) ? ({ /* cicili#Progn9489 */
-              ({ /* cicili#Let9493 */
+          
+          ((__h_case_result ) ? ({ /* cicili#Progn9044 */
+              ({ /* cicili#Let9048 */
                 // ----------
-                
-                ({ /* cicili#Let9497 */
+                ;
+                ({ /* cicili#Let9050 */
                   bool __h_case_result  = (true  &&  ((tail -> __h_ctor ) ==  __h_Nil_t  ) );
                   // ----------
-                  ((__h_case_result ) ? ({ /* cicili#Progn9499 */
-                      ({ /* cicili#Let9503 */
-                        __auto_type match9502  = get_Rc_BTree_int_User (head );
-                        typeof((((match9502 . __h_data ). Just ). __h_0_mem )) child ;
+                  
+                  ((__h_case_result ) ? ({ /* cicili#Progn9054 */
+                      ({ /* cicili#Let9058 */
+                        __auto_type match9057  = get_Rc_BTree_int_User (head );
+                        typeof((((match9057 . __h_data ). Just ). __h_0_mem )) child ;
                         // ----------
-                        
-                        ({ /* cicili#Let9508 */
-                          bool __h_case_result  = (true  &&  (((match9502 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn9509 */
-                                (child  =  (((match9502 . __h_data ). Just ). __h_0_mem ) );
+                        ;
+                        ({ /* cicili#Let9061 */
+                          bool __h_case_result  = (true  &&  (((match9057 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn9062 */
+                                (child  =  (((match9057 . __h_data ). Just ). __h_0_mem ) );
                                 true ;
                               }) ) );
                           // ----------
-                          ((__h_case_result ) ? ({ /* cicili#Progn9512 */
-                              ({ /* cicili#Let9516 */
+                          
+                          ((__h_case_result ) ? ({ /* cicili#Progn9067 */
+                              ({ /* cicili#Let9071 */
                                 typeof((((child -> __h_data ). Branch ). __h_1_mem )) nchildren ;
                                 // ----------
-                                
-                                ({ /* cicili#Let9520 */
-                                  bool __h_case_result  = (true  &&  (((child -> __h_ctor ) ==  __h_Branch_t  ) &&  ({ /* cicili#Progn9521 */
+                                ;
+                                ({ /* cicili#Let9073 */
+                                  bool __h_case_result  = (true  &&  (((child -> __h_ctor ) ==  __h_Branch_t  ) &&  ({ /* cicili#Progn9074 */
                                         (nchildren  =  (((child -> __h_data ). Branch ). __h_1_mem ) );
                                         true ;
                                       }) ) );
                                   // ----------
-                                  ((__h_case_result ) ? ({ /* cicili#Progn9524 */
+                                  
+                                  ((__h_case_result ) ? ({ /* cicili#Progn9079 */
                                       maxInternal (nchildren );
-                                    }) : ({ /* cicili#Let9528 */
+                                    }) : ({ /* cicili#Let9083 */
                                       typeof((((child -> __h_data ). Internal ). __h_1_mem )) nchildren ;
                                       // ----------
-                                      
-                                      ({ /* cicili#Let9532 */
-                                        bool __h_case_result  = (true  &&  (((child -> __h_ctor ) ==  __h_Internal_t  ) &&  ({ /* cicili#Progn9533 */
+                                      ;
+                                      ({ /* cicili#Let9085 */
+                                        bool __h_case_result  = (true  &&  (((child -> __h_ctor ) ==  __h_Internal_t  ) &&  ({ /* cicili#Progn9086 */
                                               (nchildren  =  (((child -> __h_data ). Internal ). __h_1_mem ) );
                                               true ;
                                             }) ) );
                                         // ----------
-                                        ((__h_case_result ) ? ({ /* cicili#Progn9536 */
+                                        
+                                        ((__h_case_result ) ? ({ /* cicili#Progn9091 */
                                             maxInternal (nchildren );
-                                          }) : ({ /* cicili#Let9540 */
+                                          }) : ({ /* cicili#Let9095 */
                                             typeof((((child -> __h_data ). Leaf ). __h_0_mem )) items ;
                                             // ----------
-                                            
-                                            ({ /* cicili#Let9544 */
-                                              bool __h_case_result  = (true  &&  (((child -> __h_ctor ) ==  __h_Leaf_t  ) &&  ({ /* cicili#Progn9545 */
+                                            ;
+                                            ({ /* cicili#Let9097 */
+                                              bool __h_case_result  = (true  &&  (((child -> __h_ctor ) ==  __h_Leaf_t  ) &&  ({ /* cicili#Progn9098 */
                                                     (items  =  (((child -> __h_data ). Leaf ). __h_0_mem ) );
                                                     true ;
                                                   }) ) );
                                               // ----------
-                                              ((__h_case_result ) ? ({ /* cicili#Progn9548 */
+                                              
+                                              ((__h_case_result ) ? ({ /* cicili#Progn9103 */
                                                   maxLeaf (items );
-                                                }) : ({ /* cicili#Let9552 */
+                                                }) : ({ /* cicili#Let9107 */
                                                   // ----------
-                                                  
-                                                  ({ /* cicili#Progn9556 */
+                                                  ;
+                                                  ({ /* cicili#Progn9109 */
                                                     Nothing_BTree_int_User_pair_t ();
                                                   });
                                                 }));
@@ -8924,28 +9217,28 @@ Maybe_BTree_int_User_pair_t max_BTree_int_User (BTree_int_User tree ) {
                                     }));
                                 });
                               });
-                            }) : ({ /* cicili#Let9561 */
+                            }) : ({ /* cicili#Let9114 */
                               // ----------
-                              
-                              ({ /* cicili#Progn9565 */
+                              ;
+                              ({ /* cicili#Progn9116 */
                                 Nothing_BTree_int_User_pair_t ();
                               });
                             }));
                         });
                       });
-                    }) : ({ /* cicili#Let9570 */
+                    }) : ({ /* cicili#Let9121 */
                       // ----------
-                      
-                      ({ /* cicili#Progn9574 */
+                      ;
+                      ({ /* cicili#Progn9123 */
                         maxInternal (tail );
                       });
                     }));
                 });
               });
-            }) : ({ /* cicili#Let9578 */
+            }) : ({ /* cicili#Let9127 */
               // ----------
-              
-              ({ /* cicili#Progn9582 */
+              ;
+              ({ /* cicili#Progn9129 */
                 Nothing_BTree_int_User_pair_t ();
               });
             }));
@@ -8953,88 +9246,93 @@ Maybe_BTree_int_User_pair_t max_BTree_int_User (BTree_int_User tree ) {
       });
   }
   Maybe_BTree_int_User_pair_t maxLeaf (List_BTree_int_User_pair_t current ) {
-    return ({ /* cicili#Let9590 */
+    return ({ /* cicili#Let9137 */
         typeof((((current -> __h_data ). Cons ). __h_0_mem )) head ;
         typeof((((current -> __h_data ). Cons ). __h_1_mem )) tail ;
         // ----------
-        
-        ({ /* cicili#Let9594 */
-          bool __h_case_result  = (true  &&  (((current -> __h_ctor ) ==  __h_Cons_t  ) &&  (({ /* cicili#Progn9595 */
+        ;
+        ({ /* cicili#Let9139 */
+          bool __h_case_result  = (true  &&  (((current -> __h_ctor ) ==  __h_Cons_t  ) &&  (({ /* cicili#Progn9140 */
                   (head  =  (((current -> __h_data ). Cons ). __h_0_mem ) );
                   true ;
-                }) &&  ({ /* cicili#Progn9597 */
+                }) &&  ({ /* cicili#Progn9142 */
                   (tail  =  (((current -> __h_data ). Cons ). __h_1_mem ) );
                   true ;
                 }) ) ) );
           // ----------
-          ((__h_case_result ) ? ({ /* cicili#Progn9600 */
-              ({ /* cicili#Let9604 */
+          
+          ((__h_case_result ) ? ({ /* cicili#Progn9147 */
+              ({ /* cicili#Let9151 */
                 // ----------
-                
-                ({ /* cicili#Let9608 */
+                ;
+                ({ /* cicili#Let9153 */
                   bool __h_case_result  = (true  &&  ((tail -> __h_ctor ) ==  __h_Nil_t  ) );
                   // ----------
-                  ((__h_case_result ) ? ({ /* cicili#Progn9610 */
+                  
+                  ((__h_case_result ) ? ({ /* cicili#Progn9157 */
                       Just_BTree_int_User_pair_t (head );
-                    }) : ({ /* cicili#Let9615 */
+                    }) : ({ /* cicili#Let9162 */
                       // ----------
-                      
-                      ({ /* cicili#Progn9619 */
+                      ;
+                      ({ /* cicili#Progn9164 */
                         maxLeaf (tail );
                       });
                     }));
                 });
               });
-            }) : ({ /* cicili#Let9623 */
+            }) : ({ /* cicili#Let9168 */
               // ----------
-              
-              ({ /* cicili#Progn9627 */
+              ;
+              ({ /* cicili#Progn9170 */
                 Nothing_BTree_int_User_pair_t ();
               });
             }));
         });
       });
   }
-  return ({ /* cicili#Let9633 */
+  return ({ /* cicili#Let9176 */
       typeof((((tree -> __h_data ). Branch ). __h_1_mem )) children ;
       // ----------
-      
-      ({ /* cicili#Let9637 */
-        bool __h_case_result  = (true  &&  (((tree -> __h_ctor ) ==  __h_Branch_t  ) &&  ({ /* cicili#Progn9638 */
+      ;
+      ({ /* cicili#Let9178 */
+        bool __h_case_result  = (true  &&  (((tree -> __h_ctor ) ==  __h_Branch_t  ) &&  ({ /* cicili#Progn9179 */
               (children  =  (((tree -> __h_data ). Branch ). __h_1_mem ) );
               true ;
             }) ) );
         // ----------
-        ((__h_case_result ) ? ({ /* cicili#Progn9641 */
+        
+        ((__h_case_result ) ? ({ /* cicili#Progn9184 */
             maxInternal (children );
-          }) : ({ /* cicili#Let9645 */
+          }) : ({ /* cicili#Let9188 */
             typeof((((tree -> __h_data ). Internal ). __h_1_mem )) children ;
             // ----------
-            
-            ({ /* cicili#Let9649 */
-              bool __h_case_result  = (true  &&  (((tree -> __h_ctor ) ==  __h_Internal_t  ) &&  ({ /* cicili#Progn9650 */
+            ;
+            ({ /* cicili#Let9190 */
+              bool __h_case_result  = (true  &&  (((tree -> __h_ctor ) ==  __h_Internal_t  ) &&  ({ /* cicili#Progn9191 */
                     (children  =  (((tree -> __h_data ). Internal ). __h_1_mem ) );
                     true ;
                   }) ) );
               // ----------
-              ((__h_case_result ) ? ({ /* cicili#Progn9653 */
+              
+              ((__h_case_result ) ? ({ /* cicili#Progn9196 */
                   maxInternal (children );
-                }) : ({ /* cicili#Let9657 */
+                }) : ({ /* cicili#Let9200 */
                   typeof((((tree -> __h_data ). Leaf ). __h_0_mem )) items ;
                   // ----------
-                  
-                  ({ /* cicili#Let9661 */
-                    bool __h_case_result  = (true  &&  (((tree -> __h_ctor ) ==  __h_Leaf_t  ) &&  ({ /* cicili#Progn9662 */
+                  ;
+                  ({ /* cicili#Let9202 */
+                    bool __h_case_result  = (true  &&  (((tree -> __h_ctor ) ==  __h_Leaf_t  ) &&  ({ /* cicili#Progn9203 */
                           (items  =  (((tree -> __h_data ). Leaf ). __h_0_mem ) );
                           true ;
                         }) ) );
                     // ----------
-                    ((__h_case_result ) ? ({ /* cicili#Progn9665 */
+                    
+                    ((__h_case_result ) ? ({ /* cicili#Progn9208 */
                         maxLeaf (items );
-                      }) : ({ /* cicili#Let9669 */
+                      }) : ({ /* cicili#Let9212 */
                         // ----------
-                        
-                        ({ /* cicili#Progn9673 */
+                        ;
+                        ({ /* cicili#Progn9214 */
                           Nothing_BTree_int_User_pair_t ();
                         });
                       }));
@@ -9048,69 +9346,74 @@ Maybe_BTree_int_User_pair_t max_BTree_int_User (BTree_int_User tree ) {
 Maybe_BTree_int_User_pair_t min_BTree_int_User (BTree_int_User tree ) {
   auto Maybe_BTree_int_User_pair_t minLeaf (List_BTree_int_User_pair_t first );
   Maybe_BTree_int_User_pair_t minInternal (List_Rc_BTree_int_User first ) {
-    return ({ /* cicili#Let9688 */
+    return ({ /* cicili#Let9229 */
         typeof((((first -> __h_data ). Cons ). __h_0_mem )) head ;
         // ----------
-        
-        ({ /* cicili#Let9692 */
-          bool __h_case_result  = (true  &&  (((first -> __h_ctor ) ==  __h_Cons_t  ) &&  ({ /* cicili#Progn9693 */
+        ;
+        ({ /* cicili#Let9231 */
+          bool __h_case_result  = (true  &&  (((first -> __h_ctor ) ==  __h_Cons_t  ) &&  ({ /* cicili#Progn9232 */
                 (head  =  (((first -> __h_data ). Cons ). __h_0_mem ) );
                 true ;
               }) ) );
           // ----------
-          ((__h_case_result ) ? ({ /* cicili#Progn9696 */
-              ({ /* cicili#Let9700 */
-                __auto_type match9699  = get_Rc_BTree_int_User (head );
-                typeof((((match9699 . __h_data ). Just ). __h_0_mem )) child ;
+          
+          ((__h_case_result ) ? ({ /* cicili#Progn9237 */
+              ({ /* cicili#Let9241 */
+                __auto_type match9240  = get_Rc_BTree_int_User (head );
+                typeof((((match9240 . __h_data ). Just ). __h_0_mem )) child ;
                 // ----------
-                
-                ({ /* cicili#Let9705 */
-                  bool __h_case_result  = (true  &&  (((match9699 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn9706 */
-                        (child  =  (((match9699 . __h_data ). Just ). __h_0_mem ) );
+                ;
+                ({ /* cicili#Let9244 */
+                  bool __h_case_result  = (true  &&  (((match9240 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn9245 */
+                        (child  =  (((match9240 . __h_data ). Just ). __h_0_mem ) );
                         true ;
                       }) ) );
                   // ----------
-                  ((__h_case_result ) ? ({ /* cicili#Progn9709 */
-                      ({ /* cicili#Let9713 */
+                  
+                  ((__h_case_result ) ? ({ /* cicili#Progn9250 */
+                      ({ /* cicili#Let9254 */
                         typeof((((child -> __h_data ). Branch ). __h_1_mem )) nchildren ;
                         // ----------
-                        
-                        ({ /* cicili#Let9717 */
-                          bool __h_case_result  = (true  &&  (((child -> __h_ctor ) ==  __h_Branch_t  ) &&  ({ /* cicili#Progn9718 */
+                        ;
+                        ({ /* cicili#Let9256 */
+                          bool __h_case_result  = (true  &&  (((child -> __h_ctor ) ==  __h_Branch_t  ) &&  ({ /* cicili#Progn9257 */
                                 (nchildren  =  (((child -> __h_data ). Branch ). __h_1_mem ) );
                                 true ;
                               }) ) );
                           // ----------
-                          ((__h_case_result ) ? ({ /* cicili#Progn9721 */
+                          
+                          ((__h_case_result ) ? ({ /* cicili#Progn9262 */
                               minInternal (nchildren );
-                            }) : ({ /* cicili#Let9725 */
+                            }) : ({ /* cicili#Let9266 */
                               typeof((((child -> __h_data ). Internal ). __h_1_mem )) nchildren ;
                               // ----------
-                              
-                              ({ /* cicili#Let9729 */
-                                bool __h_case_result  = (true  &&  (((child -> __h_ctor ) ==  __h_Internal_t  ) &&  ({ /* cicili#Progn9730 */
+                              ;
+                              ({ /* cicili#Let9268 */
+                                bool __h_case_result  = (true  &&  (((child -> __h_ctor ) ==  __h_Internal_t  ) &&  ({ /* cicili#Progn9269 */
                                       (nchildren  =  (((child -> __h_data ). Internal ). __h_1_mem ) );
                                       true ;
                                     }) ) );
                                 // ----------
-                                ((__h_case_result ) ? ({ /* cicili#Progn9733 */
+                                
+                                ((__h_case_result ) ? ({ /* cicili#Progn9274 */
                                     minInternal (nchildren );
-                                  }) : ({ /* cicili#Let9737 */
+                                  }) : ({ /* cicili#Let9278 */
                                     typeof((((child -> __h_data ). Leaf ). __h_0_mem )) items ;
                                     // ----------
-                                    
-                                    ({ /* cicili#Let9741 */
-                                      bool __h_case_result  = (true  &&  (((child -> __h_ctor ) ==  __h_Leaf_t  ) &&  ({ /* cicili#Progn9742 */
+                                    ;
+                                    ({ /* cicili#Let9280 */
+                                      bool __h_case_result  = (true  &&  (((child -> __h_ctor ) ==  __h_Leaf_t  ) &&  ({ /* cicili#Progn9281 */
                                             (items  =  (((child -> __h_data ). Leaf ). __h_0_mem ) );
                                             true ;
                                           }) ) );
                                       // ----------
-                                      ((__h_case_result ) ? ({ /* cicili#Progn9745 */
+                                      
+                                      ((__h_case_result ) ? ({ /* cicili#Progn9286 */
                                           minLeaf (items );
-                                        }) : ({ /* cicili#Let9749 */
+                                        }) : ({ /* cicili#Let9290 */
                                           // ----------
-                                          
-                                          ({ /* cicili#Progn9753 */
+                                          ;
+                                          ({ /* cicili#Progn9292 */
                                             Nothing_BTree_int_User_pair_t ();
                                           });
                                         }));
@@ -9120,19 +9423,19 @@ Maybe_BTree_int_User_pair_t min_BTree_int_User (BTree_int_User tree ) {
                             }));
                         });
                       });
-                    }) : ({ /* cicili#Let9758 */
+                    }) : ({ /* cicili#Let9297 */
                       // ----------
-                      
-                      ({ /* cicili#Progn9762 */
+                      ;
+                      ({ /* cicili#Progn9299 */
                         Nothing_BTree_int_User_pair_t ();
                       });
                     }));
                 });
               });
-            }) : ({ /* cicili#Let9767 */
+            }) : ({ /* cicili#Let9304 */
               // ----------
-              
-              ({ /* cicili#Progn9771 */
+              ;
+              ({ /* cicili#Progn9306 */
                 Nothing_BTree_int_User_pair_t ();
               });
             }));
@@ -9140,68 +9443,72 @@ Maybe_BTree_int_User_pair_t min_BTree_int_User (BTree_int_User tree ) {
       });
   }
   Maybe_BTree_int_User_pair_t minLeaf (List_BTree_int_User_pair_t first ) {
-    return ({ /* cicili#Let9779 */
+    return ({ /* cicili#Let9314 */
         typeof((((first -> __h_data ). Cons ). __h_0_mem )) head ;
         // ----------
-        
-        ({ /* cicili#Let9783 */
-          bool __h_case_result  = (true  &&  (((first -> __h_ctor ) ==  __h_Cons_t  ) &&  ({ /* cicili#Progn9784 */
+        ;
+        ({ /* cicili#Let9316 */
+          bool __h_case_result  = (true  &&  (((first -> __h_ctor ) ==  __h_Cons_t  ) &&  ({ /* cicili#Progn9317 */
                 (head  =  (((first -> __h_data ). Cons ). __h_0_mem ) );
                 true ;
               }) ) );
           // ----------
-          ((__h_case_result ) ? ({ /* cicili#Progn9787 */
+          
+          ((__h_case_result ) ? ({ /* cicili#Progn9322 */
               Just_BTree_int_User_pair_t (head );
-            }) : ({ /* cicili#Let9792 */
+            }) : ({ /* cicili#Let9327 */
               // ----------
-              
-              ({ /* cicili#Progn9796 */
+              ;
+              ({ /* cicili#Progn9329 */
                 Nothing_BTree_int_User_pair_t ();
               });
             }));
         });
       });
   }
-  return ({ /* cicili#Let9802 */
+  return ({ /* cicili#Let9335 */
       typeof((((tree -> __h_data ). Branch ). __h_1_mem )) children ;
       // ----------
-      
-      ({ /* cicili#Let9806 */
-        bool __h_case_result  = (true  &&  (((tree -> __h_ctor ) ==  __h_Branch_t  ) &&  ({ /* cicili#Progn9807 */
+      ;
+      ({ /* cicili#Let9337 */
+        bool __h_case_result  = (true  &&  (((tree -> __h_ctor ) ==  __h_Branch_t  ) &&  ({ /* cicili#Progn9338 */
               (children  =  (((tree -> __h_data ). Branch ). __h_1_mem ) );
               true ;
             }) ) );
         // ----------
-        ((__h_case_result ) ? ({ /* cicili#Progn9810 */
+        
+        ((__h_case_result ) ? ({ /* cicili#Progn9343 */
             minInternal (children );
-          }) : ({ /* cicili#Let9814 */
+          }) : ({ /* cicili#Let9347 */
             typeof((((tree -> __h_data ). Internal ). __h_1_mem )) children ;
             // ----------
-            
-            ({ /* cicili#Let9818 */
-              bool __h_case_result  = (true  &&  (((tree -> __h_ctor ) ==  __h_Internal_t  ) &&  ({ /* cicili#Progn9819 */
+            ;
+            ({ /* cicili#Let9349 */
+              bool __h_case_result  = (true  &&  (((tree -> __h_ctor ) ==  __h_Internal_t  ) &&  ({ /* cicili#Progn9350 */
                     (children  =  (((tree -> __h_data ). Internal ). __h_1_mem ) );
                     true ;
                   }) ) );
               // ----------
-              ((__h_case_result ) ? ({ /* cicili#Progn9822 */
+              
+              ((__h_case_result ) ? ({ /* cicili#Progn9355 */
                   minInternal (children );
-                }) : ({ /* cicili#Let9826 */
+                }) : ({ /* cicili#Let9359 */
                   typeof((((tree -> __h_data ). Leaf ). __h_0_mem )) items ;
                   // ----------
-                  
-                  ({ /* cicili#Let9830 */
-                    bool __h_case_result  = (true  &&  (((tree -> __h_ctor ) ==  __h_Leaf_t  ) &&  ({ /* cicili#Progn9831 */
+                  ;
+                  ({ /* cicili#Let9361 */
+                    bool __h_case_result  = (true  &&  (((tree -> __h_ctor ) ==  __h_Leaf_t  ) &&  ({ /* cicili#Progn9362 */
                           (items  =  (((tree -> __h_data ). Leaf ). __h_0_mem ) );
                           true ;
                         }) ) );
                     // ----------
-                    ((__h_case_result ) ? ({ /* cicili#Progn9834 */
+                    
+                    ((__h_case_result ) ? ({ /* cicili#Progn9367 */
                         minLeaf (items );
-                      }) : ({ /* cicili#Let9838 */
+                      }) : ({ /* cicili#Let9371 */
                         // ----------
-                        
-                        ({ /* cicili#Progn9842 */
+                        ;
+                        ({ /* cicili#Progn9373 */
                           Nothing_BTree_int_User_pair_t ();
                         });
                       }));
@@ -9216,143 +9523,151 @@ Either_BTree_int_User_Error_BTree_int_User delete_BTree_int_User (BTree_int_User
   return deleteWithParent_BTree_int_User (Nothing_BTree_int_User (), 0, 0, tree , skey , callback );
 }
 Maybe_BTree_int_User_pair_t search_BTree_int_User (BTree_int_User tree , int skey ) {
-  Maybe_BTree_int_User_pair_t searchInternal (List_Rc_BTree_int_User children , List_BTree_int_User_pair_t current , int index ) {
-    return ({ /* cicili#Let9860 */
+  Maybe_BTree_int_User_pair_t searchInternal (List_Rc_BTree_int_User children , List_BTree_int_User_pair_t current , size_t index ) {
+    return ({ /* cicili#Let9391 */
         typeof((((current -> __h_data ). Cons ). __h_0_mem )) head ;
         typeof((head . __h_0_mem )) key ;
         typeof((((current -> __h_data ). Cons ). __h_1_mem )) tail ;
         // ----------
-        
-        ({ /* cicili#Let9864 */
-          bool __h_case_result  = (true  &&  (((current -> __h_ctor ) ==  __h_Cons_t  ) &&  ((({ /* cicili#Progn9865 */
+        ;
+        ({ /* cicili#Let9393 */
+          bool __h_case_result  = (true  &&  (((current -> __h_ctor ) ==  __h_Cons_t  ) &&  ((({ /* cicili#Progn9394 */
                     (head  =  (((current -> __h_data ). Cons ). __h_0_mem ) );
                     true ;
-                  }) &&  (true  &&  ({ /* cicili#Progn9867 */
+                  }) &&  (true  &&  ({ /* cicili#Progn9396 */
                       (key  =  (head . __h_0_mem ) );
                       true ;
-                    }) ) ) &&  ({ /* cicili#Progn9869 */
+                    }) ) ) &&  ({ /* cicili#Progn9398 */
                   (tail  =  (((current -> __h_data ). Cons ). __h_1_mem ) );
                   true ;
                 }) ) ) );
           // ----------
-          ((__h_case_result ) ? ({ /* cicili#Progn9872 */
-              ({ /* cicili#Let9876 */
-                __auto_type match9875  = compareKey (skey , key );
+          
+          ((__h_case_result ) ? ({ /* cicili#Progn9403 */
+              ({ /* cicili#Let9407 */
+                __auto_type match9406  = compareKey (skey , key );
                 // ----------
-                
-                ({ /* cicili#Let9880 */
-                  bool __h_case_result  = (true  &&  ((match9875 . __h_ctor ) ==  __h_LT_t  ) );
+                ;
+                ({ /* cicili#Let9409 */
+                  bool __h_case_result  = (true  &&  ((match9406 . __h_ctor ) ==  __h_LT_t  ) );
                   // ----------
-                  ((__h_case_result ) ? ({ /* cicili#Progn9882 */
-                      ({ /* cicili#Let9886 */
-                        __auto_type match9885  = nth_List_Rc_BTree_int_User (index , children );
-                        typeof((((match9885 . __h_data ). Just ). __h_0_mem )) node ;
+                  
+                  ((__h_case_result ) ? ({ /* cicili#Progn9413 */
+                      ({ /* cicili#Let9417 */
+                        __auto_type match9416  = nth_List_Rc_BTree_int_User (index , children );
+                        typeof((((match9416 . __h_data ). Just ). __h_0_mem )) node ;
                         // ----------
-                        
-                        ({ /* cicili#Let9891 */
-                          bool __h_case_result  = (true  &&  (((match9885 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn9892 */
-                                (node  =  (((match9885 . __h_data ). Just ). __h_0_mem ) );
+                        ;
+                        ({ /* cicili#Let9420 */
+                          bool __h_case_result  = (true  &&  (((match9416 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn9421 */
+                                (node  =  (((match9416 . __h_data ). Just ). __h_0_mem ) );
                                 true ;
                               }) ) );
                           // ----------
-                          ((__h_case_result ) ? ({ /* cicili#Progn9895 */
-                              ({ /* cicili#Let9899 */
-                                __auto_type match9898  = get_Rc_BTree_int_User (node );
-                                typeof((((match9898 . __h_data ). Just ). __h_0_mem )) tr ;
+                          
+                          ((__h_case_result ) ? ({ /* cicili#Progn9426 */
+                              ({ /* cicili#Let9430 */
+                                __auto_type match9429  = get_Rc_BTree_int_User (node );
+                                typeof((((match9429 . __h_data ). Just ). __h_0_mem )) tr ;
                                 // ----------
-                                
-                                ({ /* cicili#Let9904 */
-                                  bool __h_case_result  = (true  &&  (((match9898 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn9905 */
-                                        (tr  =  (((match9898 . __h_data ). Just ). __h_0_mem ) );
+                                ;
+                                ({ /* cicili#Let9433 */
+                                  bool __h_case_result  = (true  &&  (((match9429 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn9434 */
+                                        (tr  =  (((match9429 . __h_data ). Just ). __h_0_mem ) );
                                         true ;
                                       }) ) );
                                   // ----------
-                                  ((__h_case_result ) ? ({ /* cicili#Progn9908 */
+                                  
+                                  ((__h_case_result ) ? ({ /* cicili#Progn9439 */
                                       search_BTree_int_User (tr , skey );
-                                    }) : ({ /* cicili#Let9913 */
+                                    }) : ({ /* cicili#Let9444 */
                                       // ----------
-                                      
-                                      ({ /* cicili#Progn9917 */
+                                      ;
+                                      ({ /* cicili#Progn9446 */
                                         Nothing_BTree_int_User_pair_t ();
                                       });
                                     }));
                                 });
                               });
-                            }) : ({ /* cicili#Let9922 */
+                            }) : ({ /* cicili#Let9451 */
                               // ----------
-                              
-                              ({ /* cicili#Progn9926 */
+                              ;
+                              ({ /* cicili#Progn9453 */
                                 Nothing_BTree_int_User_pair_t ();
                               });
                             }));
                         });
                       });
-                    }) : ({ /* cicili#Let9931 */
+                    }) : ({ /* cicili#Let9458 */
                       // ----------
-                      
-                      ({ /* cicili#Let9935 */
-                        bool __h_case_result  = (true  &&  ((match9875 . __h_ctor ) ==  __h_EQ_t  ) );
+                      ;
+                      ({ /* cicili#Let9460 */
+                        bool __h_case_result  = (true  &&  ((match9406 . __h_ctor ) ==  __h_EQ_t  ) );
                         // ----------
-                        ((__h_case_result ) ? ({ /* cicili#Progn9937 */
+                        
+                        ((__h_case_result ) ? ({ /* cicili#Progn9464 */
                             Just_BTree_int_User_pair_t (head );
-                          }) : ({ /* cicili#Let9942 */
+                          }) : ({ /* cicili#Let9469 */
                             // ----------
-                            
-                            ({ /* cicili#Progn9946 */
-                              ({ /* cicili#Let9950 */
+                            ;
+                            ({ /* cicili#Progn9471 */
+                              ({ /* cicili#Let9475 */
                                 // ----------
-                                
-                                ({ /* cicili#Let9954 */
+                                ;
+                                ({ /* cicili#Let9477 */
                                   bool __h_case_result  = (true  &&  ((tail -> __h_ctor ) ==  __h_Nil_t  ) );
                                   // ----------
-                                  ((__h_case_result ) ? ({ /* cicili#Progn9956 */
-                                      ({ /* cicili#Let9960 */
-                                        __auto_type match9959  = nth_List_Rc_BTree_int_User ((index  +  1 ), children );
-                                        typeof((((match9959 . __h_data ). Just ). __h_0_mem )) node ;
+                                  
+                                  ((__h_case_result ) ? ({ /* cicili#Progn9481 */
+                                      ({ /* cicili#Let9485 */
+                                        __auto_type match9484  = nth_List_Rc_BTree_int_User ((index  +  1 ), children );
+                                        typeof((((match9484 . __h_data ). Just ). __h_0_mem )) node ;
                                         // ----------
-                                        
-                                        ({ /* cicili#Let9965 */
-                                          bool __h_case_result  = (true  &&  (((match9959 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn9966 */
-                                                (node  =  (((match9959 . __h_data ). Just ). __h_0_mem ) );
+                                        ;
+                                        ({ /* cicili#Let9488 */
+                                          bool __h_case_result  = (true  &&  (((match9484 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn9489 */
+                                                (node  =  (((match9484 . __h_data ). Just ). __h_0_mem ) );
                                                 true ;
                                               }) ) );
                                           // ----------
-                                          ((__h_case_result ) ? ({ /* cicili#Progn9969 */
-                                              ({ /* cicili#Let9973 */
-                                                __auto_type match9972  = get_Rc_BTree_int_User (node );
-                                                typeof((((match9972 . __h_data ). Just ). __h_0_mem )) tr ;
+                                          
+                                          ((__h_case_result ) ? ({ /* cicili#Progn9494 */
+                                              ({ /* cicili#Let9498 */
+                                                __auto_type match9497  = get_Rc_BTree_int_User (node );
+                                                typeof((((match9497 . __h_data ). Just ). __h_0_mem )) tr ;
                                                 // ----------
-                                                
-                                                ({ /* cicili#Let9978 */
-                                                  bool __h_case_result  = (true  &&  (((match9972 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn9979 */
-                                                        (tr  =  (((match9972 . __h_data ). Just ). __h_0_mem ) );
+                                                ;
+                                                ({ /* cicili#Let9501 */
+                                                  bool __h_case_result  = (true  &&  (((match9497 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn9502 */
+                                                        (tr  =  (((match9497 . __h_data ). Just ). __h_0_mem ) );
                                                         true ;
                                                       }) ) );
                                                   // ----------
-                                                  ((__h_case_result ) ? ({ /* cicili#Progn9982 */
+                                                  
+                                                  ((__h_case_result ) ? ({ /* cicili#Progn9507 */
                                                       search_BTree_int_User (tr , skey );
-                                                    }) : ({ /* cicili#Let9987 */
+                                                    }) : ({ /* cicili#Let9512 */
                                                       // ----------
-                                                      
-                                                      ({ /* cicili#Progn9991 */
+                                                      ;
+                                                      ({ /* cicili#Progn9514 */
                                                         Nothing_BTree_int_User_pair_t ();
                                                       });
                                                     }));
                                                 });
                                               });
-                                            }) : ({ /* cicili#Let9996 */
+                                            }) : ({ /* cicili#Let9519 */
                                               // ----------
-                                              
-                                              ({ /* cicili#Progn10000 */
+                                              ;
+                                              ({ /* cicili#Progn9521 */
                                                 Nothing_BTree_int_User_pair_t ();
                                               });
                                             }));
                                         });
                                       });
-                                    }) : ({ /* cicili#Let10005 */
+                                    }) : ({ /* cicili#Let9526 */
                                       // ----------
-                                      
-                                      ({ /* cicili#Progn10009 */
+                                      ;
+                                      ({ /* cicili#Progn9528 */
                                         searchInternal (children , tail , (index  +  1 ));
                                       });
                                     }));
@@ -9364,61 +9679,64 @@ Maybe_BTree_int_User_pair_t search_BTree_int_User (BTree_int_User tree , int ske
                     }));
                 });
               });
-            }) : ({ /* cicili#Let10013 */
+            }) : ({ /* cicili#Let9532 */
               // ----------
-              
-              ({ /* cicili#Progn10017 */
+              ;
+              ({ /* cicili#Progn9534 */
                 Nothing_BTree_int_User_pair_t ();
               });
             }));
         });
       });
   }
-  Maybe_BTree_int_User_pair_t searchLeaf (List_BTree_int_User_pair_t current , int index ) {
-    return ({ /* cicili#Let10027 */
+  Maybe_BTree_int_User_pair_t searchLeaf (List_BTree_int_User_pair_t current , size_t index ) {
+    return ({ /* cicili#Let9544 */
         typeof((((current -> __h_data ). Cons ). __h_0_mem )) head ;
         typeof((head . __h_0_mem )) key ;
         typeof((((current -> __h_data ). Cons ). __h_1_mem )) tail ;
         // ----------
-        
-        ({ /* cicili#Let10031 */
-          bool __h_case_result  = (true  &&  (((current -> __h_ctor ) ==  __h_Cons_t  ) &&  ((({ /* cicili#Progn10032 */
+        ;
+        ({ /* cicili#Let9546 */
+          bool __h_case_result  = (true  &&  (((current -> __h_ctor ) ==  __h_Cons_t  ) &&  ((({ /* cicili#Progn9547 */
                     (head  =  (((current -> __h_data ). Cons ). __h_0_mem ) );
                     true ;
-                  }) &&  (true  &&  ({ /* cicili#Progn10034 */
+                  }) &&  (true  &&  ({ /* cicili#Progn9549 */
                       (key  =  (head . __h_0_mem ) );
                       true ;
-                    }) ) ) &&  ({ /* cicili#Progn10036 */
+                    }) ) ) &&  ({ /* cicili#Progn9551 */
                   (tail  =  (((current -> __h_data ). Cons ). __h_1_mem ) );
                   true ;
                 }) ) ) );
           // ----------
-          ((__h_case_result ) ? ({ /* cicili#Progn10039 */
-              ({ /* cicili#Let10043 */
-                __auto_type match10042  = compareKey (skey , key );
+          
+          ((__h_case_result ) ? ({ /* cicili#Progn9556 */
+              ({ /* cicili#Let9560 */
+                __auto_type match9559  = compareKey (skey , key );
                 // ----------
-                
-                ({ /* cicili#Let10047 */
-                  bool __h_case_result  = (true  &&  ((match10042 . __h_ctor ) ==  __h_EQ_t  ) );
+                ;
+                ({ /* cicili#Let9562 */
+                  bool __h_case_result  = (true  &&  ((match9559 . __h_ctor ) ==  __h_EQ_t  ) );
                   // ----------
-                  ((__h_case_result ) ? ({ /* cicili#Progn10049 */
+                  
+                  ((__h_case_result ) ? ({ /* cicili#Progn9566 */
                       Just_BTree_int_User_pair_t (head );
-                    }) : ({ /* cicili#Let10054 */
+                    }) : ({ /* cicili#Let9571 */
                       // ----------
-                      
-                      ({ /* cicili#Progn10058 */
-                        ({ /* cicili#Let10062 */
+                      ;
+                      ({ /* cicili#Progn9573 */
+                        ({ /* cicili#Let9577 */
                           // ----------
-                          
-                          ({ /* cicili#Let10066 */
+                          ;
+                          ({ /* cicili#Let9579 */
                             bool __h_case_result  = (true  &&  ((tail -> __h_ctor ) ==  __h_Nil_t  ) );
                             // ----------
-                            ((__h_case_result ) ? ({ /* cicili#Progn10068 */
+                            
+                            ((__h_case_result ) ? ({ /* cicili#Progn9583 */
                                 Nothing_BTree_int_User_pair_t ();
-                              }) : ({ /* cicili#Let10073 */
+                              }) : ({ /* cicili#Let9588 */
                                 // ----------
-                                
-                                ({ /* cicili#Progn10077 */
+                                ;
+                                ({ /* cicili#Progn9590 */
                                   searchLeaf (tail , (index  +  1 ));
                                 });
                               }));
@@ -9428,64 +9746,67 @@ Maybe_BTree_int_User_pair_t search_BTree_int_User (BTree_int_User tree , int ske
                     }));
                 });
               });
-            }) : ({ /* cicili#Let10081 */
+            }) : ({ /* cicili#Let9594 */
               // ----------
-              
-              ({ /* cicili#Progn10085 */
+              ;
+              ({ /* cicili#Progn9596 */
                 Nothing_BTree_int_User_pair_t ();
               });
             }));
         });
       });
   }
-  return ({ /* cicili#Let10091 */
+  return ({ /* cicili#Let9602 */
       typeof((((tree -> __h_data ). Branch ). __h_0_mem )) items ;
       typeof((((tree -> __h_data ). Branch ). __h_1_mem )) children ;
       // ----------
-      
-      ({ /* cicili#Let10095 */
-        bool __h_case_result  = (true  &&  (((tree -> __h_ctor ) ==  __h_Branch_t  ) &&  (({ /* cicili#Progn10096 */
+      ;
+      ({ /* cicili#Let9604 */
+        bool __h_case_result  = (true  &&  (((tree -> __h_ctor ) ==  __h_Branch_t  ) &&  (({ /* cicili#Progn9605 */
                 (items  =  (((tree -> __h_data ). Branch ). __h_0_mem ) );
                 true ;
-              }) &&  ({ /* cicili#Progn10098 */
+              }) &&  ({ /* cicili#Progn9607 */
                 (children  =  (((tree -> __h_data ). Branch ). __h_1_mem ) );
                 true ;
               }) ) ) );
         // ----------
-        ((__h_case_result ) ? ({ /* cicili#Progn10101 */
+        
+        ((__h_case_result ) ? ({ /* cicili#Progn9612 */
             searchInternal (children , items , 0);
-          }) : ({ /* cicili#Let10105 */
+          }) : ({ /* cicili#Let9616 */
             typeof((((tree -> __h_data ). Internal ). __h_0_mem )) items ;
             typeof((((tree -> __h_data ). Internal ). __h_1_mem )) children ;
             // ----------
-            
-            ({ /* cicili#Let10109 */
-              bool __h_case_result  = (true  &&  (((tree -> __h_ctor ) ==  __h_Internal_t  ) &&  (({ /* cicili#Progn10110 */
+            ;
+            ({ /* cicili#Let9618 */
+              bool __h_case_result  = (true  &&  (((tree -> __h_ctor ) ==  __h_Internal_t  ) &&  (({ /* cicili#Progn9619 */
                       (items  =  (((tree -> __h_data ). Internal ). __h_0_mem ) );
                       true ;
-                    }) &&  ({ /* cicili#Progn10112 */
+                    }) &&  ({ /* cicili#Progn9621 */
                       (children  =  (((tree -> __h_data ). Internal ). __h_1_mem ) );
                       true ;
                     }) ) ) );
               // ----------
-              ((__h_case_result ) ? ({ /* cicili#Progn10115 */
+              
+              ((__h_case_result ) ? ({ /* cicili#Progn9626 */
                   searchInternal (children , items , 0);
-                }) : ({ /* cicili#Let10119 */
+                }) : ({ /* cicili#Let9630 */
                   typeof((((tree -> __h_data ). Leaf ). __h_0_mem )) items ;
                   // ----------
-                  
-                  ({ /* cicili#Let10123 */
-                    bool __h_case_result  = (true  &&  (((tree -> __h_ctor ) ==  __h_Leaf_t  ) &&  ({ /* cicili#Progn10124 */
+                  ;
+                  ({ /* cicili#Let9632 */
+                    bool __h_case_result  = (true  &&  (((tree -> __h_ctor ) ==  __h_Leaf_t  ) &&  ({ /* cicili#Progn9633 */
                           (items  =  (((tree -> __h_data ). Leaf ). __h_0_mem ) );
                           true ;
                         }) ) );
                     // ----------
-                    ((__h_case_result ) ? ({ /* cicili#Progn10127 */
+                    
+                    ((__h_case_result ) ? ({ /* cicili#Progn9638 */
                         searchLeaf (items , 0);
-                      }) : ({ /* cicili#Let10131 */
+                      }) : ({ /* cicili#Let9642 */
                         // ----------
-                        
-                        ({ /* cicili#Progn10135 */
+                        ;
+                        ({ /* cicili#Progn9644 */
                           Nothing_BTree_int_User_pair_t ();
                         });
                       }));
@@ -9498,197 +9819,205 @@ Maybe_BTree_int_User_pair_t search_BTree_int_User (BTree_int_User tree , int ske
 }
 Either_BTree_int_User_Error_BTree_int_User insert_BTree_int_User (BTree_int_User tree , int skey , User svalue ) {
   if (3 <  3 )
-    { /* cicili#Block10147 */
+    { /* cicili#Block9656 */
       return Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_INVALID_ORDER (3));
     }
-  Either_BTree_int_User_Error_BTree_int_User insertInternal (List_BTree_int_User_pair_t items , List_Rc_BTree_int_User children , List_BTree_int_User_pair_t current , int index ) {
-    return ({ /* cicili#Let10159 */
+  Either_BTree_int_User_Error_BTree_int_User insertInternal (List_BTree_int_User_pair_t items , List_Rc_BTree_int_User children , List_BTree_int_User_pair_t current , size_t index ) {
+    return ({ /* cicili#Let9668 */
         typeof((((current -> __h_data ). Cons ). __h_0_mem )) head ;
         typeof((head . __h_0_mem )) key ;
         typeof((((current -> __h_data ). Cons ). __h_1_mem )) tail ;
         // ----------
-        
-        ({ /* cicili#Let10163 */
-          bool __h_case_result  = (true  &&  (((current -> __h_ctor ) ==  __h_Cons_t  ) &&  ((({ /* cicili#Progn10164 */
+        ;
+        ({ /* cicili#Let9670 */
+          bool __h_case_result  = (true  &&  (((current -> __h_ctor ) ==  __h_Cons_t  ) &&  ((({ /* cicili#Progn9671 */
                     (head  =  (((current -> __h_data ). Cons ). __h_0_mem ) );
                     true ;
-                  }) &&  (true  &&  ({ /* cicili#Progn10166 */
+                  }) &&  (true  &&  ({ /* cicili#Progn9673 */
                       (key  =  (head . __h_0_mem ) );
                       true ;
-                    }) ) ) &&  ({ /* cicili#Progn10168 */
+                    }) ) ) &&  ({ /* cicili#Progn9675 */
                   (tail  =  (((current -> __h_data ). Cons ). __h_1_mem ) );
                   true ;
                 }) ) ) );
           // ----------
-          ((__h_case_result ) ? ({ /* cicili#Progn10171 */
-              ({ /* cicili#Let10175 */
-                __auto_type match10174  = compareKey (skey , key );
+          
+          ((__h_case_result ) ? ({ /* cicili#Progn9680 */
+              ({ /* cicili#Let9684 */
+                __auto_type match9683  = compareKey (skey , key );
                 // ----------
-                
-                ({ /* cicili#Let10179 */
-                  bool __h_case_result  = (true  &&  ((match10174 . __h_ctor ) ==  __h_LT_t  ) );
+                ;
+                ({ /* cicili#Let9686 */
+                  bool __h_case_result  = (true  &&  ((match9683 . __h_ctor ) ==  __h_LT_t  ) );
                   // ----------
-                  ((__h_case_result ) ? ({ /* cicili#Progn10181 */
-                      ({ /* cicili#Let10185 */
-                        __auto_type match10184  = nth_List_Rc_BTree_int_User (index , children );
-                        typeof((((match10184 . __h_data ). Just ). __h_0_mem )) child ;
+                  
+                  ((__h_case_result ) ? ({ /* cicili#Progn9690 */
+                      ({ /* cicili#Let9694 */
+                        __auto_type match9693  = nth_List_Rc_BTree_int_User (index , children );
+                        typeof((((match9693 . __h_data ). Just ). __h_0_mem )) child ;
                         // ----------
-                        
-                        ({ /* cicili#Let10190 */
-                          bool __h_case_result  = (true  &&  (((match10184 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn10191 */
-                                (child  =  (((match10184 . __h_data ). Just ). __h_0_mem ) );
+                        ;
+                        ({ /* cicili#Let9697 */
+                          bool __h_case_result  = (true  &&  (((match9693 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn9698 */
+                                (child  =  (((match9693 . __h_data ). Just ). __h_0_mem ) );
                                 true ;
                               }) ) );
                           // ----------
-                          ((__h_case_result ) ? ({ /* cicili#Progn10194 */
-                              ({ /* cicili#Let10198 */
-                                __auto_type match10197  = get_Rc_BTree_int_User (child );
-                                typeof((((match10197 . __h_data ). Just ). __h_0_mem )) tr ;
+                          
+                          ((__h_case_result ) ? ({ /* cicili#Progn9703 */
+                              ({ /* cicili#Let9707 */
+                                __auto_type match9706  = get_Rc_BTree_int_User (child );
+                                typeof((((match9706 . __h_data ). Just ). __h_0_mem )) tr ;
                                 // ----------
-                                
-                                ({ /* cicili#Let10203 */
-                                  bool __h_case_result  = (true  &&  (((match10197 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn10204 */
-                                        (tr  =  (((match10197 . __h_data ). Just ). __h_0_mem ) );
+                                ;
+                                ({ /* cicili#Let9710 */
+                                  bool __h_case_result  = (true  &&  (((match9706 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn9711 */
+                                        (tr  =  (((match9706 . __h_data ). Just ). __h_0_mem ) );
                                         true ;
                                       }) ) );
                                   // ----------
-                                  ((__h_case_result ) ? ({ /* cicili#Progn10207 */
-                                      ({ /* cicili#Let10211 */
-                                        __auto_type match10210  = insert_BTree_int_User (tr , skey , svalue );
-                                        typeof((((match10210 . __h_data ). Right ). __h_0_mem )) child_tree ;
+                                  
+                                  ((__h_case_result ) ? ({ /* cicili#Progn9716 */
+                                      ({ /* cicili#Let9720 */
+                                        __auto_type match9719  = insert_BTree_int_User (tr , skey , svalue );
+                                        typeof((((match9719 . __h_data ). Right ). __h_0_mem )) child_tree ;
                                         // ----------
-                                        
-                                        ({ /* cicili#Let10216 */
-                                          bool __h_case_result  = (true  &&  (((match10210 . __h_ctor ) ==  __h_Right_t  ) &&  ({ /* cicili#Progn10217 */
-                                                (child_tree  =  (((match10210 . __h_data ). Right ). __h_0_mem ) );
+                                        ;
+                                        ({ /* cicili#Let9723 */
+                                          bool __h_case_result  = (true  &&  (((match9719 . __h_ctor ) ==  __h_Right_t  ) &&  ({ /* cicili#Progn9724 */
+                                                (child_tree  =  (((match9719 . __h_data ). Right ). __h_0_mem ) );
                                                 true ;
                                               }) ) );
                                           // ----------
-                                          ((__h_case_result ) ? ({ /* cicili#Progn10220 */
-                                              ({ /* cicili#Let10224 */
+                                          
+                                          ((__h_case_result ) ? ({ /* cicili#Progn9729 */
+                                              ({ /* cicili#Let9733 */
                                                 typeof((((child_tree -> __h_data ). Branch ). __h_0_mem )) child_items ;
                                                 typeof((((child_tree -> __h_data ). Branch ). __h_1_mem )) child_children ;
                                                 // ----------
-                                                
-                                                ({ /* cicili#Let10228 */
-                                                  bool __h_case_result  = (true  &&  (((child_tree -> __h_ctor ) ==  __h_Branch_t  ) &&  (({ /* cicili#Progn10229 */
+                                                ;
+                                                ({ /* cicili#Let9735 */
+                                                  bool __h_case_result  = (true  &&  (((child_tree -> __h_ctor ) ==  __h_Branch_t  ) &&  (({ /* cicili#Progn9736 */
                                                           (child_items  =  (((child_tree -> __h_data ). Branch ). __h_0_mem ) );
                                                           true ;
-                                                        }) &&  ({ /* cicili#Progn10231 */
+                                                        }) &&  ({ /* cicili#Progn9738 */
                                                           (child_children  =  (((child_tree -> __h_data ). Branch ). __h_1_mem ) );
                                                           true ;
                                                         }) ) ) );
                                                   // ----------
-                                                  ((__h_case_result ) ? ({ /* cicili#Progn10234 */
-                                                      ({ /* cicili#Let10239 */
+                                                  
+                                                  ((__h_case_result ) ? ({ /* cicili#Progn9743 */
+                                                      ({ /* cicili#Let9748 */
                                                         typeof((((child_items -> __h_data ). Cons ). __h_0_mem )) single_item ;
-                                                        typeof((((child_items -> __h_data ). Cons ). __h_1_mem )) __h_match10237_1_arg ;
+                                                        typeof((((child_items -> __h_data ). Cons ). __h_1_mem )) __h_match9746_1_arg ;
                                                         // ----------
-                                                        
-                                                        ({ /* cicili#Let10243 */
-                                                          bool __h_case_result  = (true  &&  (((child_items -> __h_ctor ) ==  __h_Cons_t  ) &&  ((({ /* cicili#Progn10244 */
+                                                        ;
+                                                        ({ /* cicili#Let9750 */
+                                                          bool __h_case_result  = (true  &&  (((child_items -> __h_ctor ) ==  __h_Cons_t  ) &&  ((({ /* cicili#Progn9751 */
                                                                     (single_item  =  (((child_items -> __h_data ). Cons ). __h_0_mem ) );
                                                                     true ;
-                                                                  }) &&  ({ /* cicili#Progn10246 */
-                                                                    (__h_match10237_1_arg  =  (((child_items -> __h_data ). Cons ). __h_1_mem ) );
+                                                                  }) &&  ({ /* cicili#Progn9753 */
+                                                                    (__h_match9746_1_arg  =  (((child_items -> __h_data ). Cons ). __h_1_mem ) );
                                                                     true ;
-                                                                  }) ) &&  (true  &&  ((__h_match10237_1_arg -> __h_ctor ) ==  __h_Nil_t  ) ) ) ) );
+                                                                  }) ) &&  (true  &&  ((__h_match9746_1_arg -> __h_ctor ) ==  __h_Nil_t  ) ) ) ) );
                                                           // ----------
-                                                          ((__h_case_result ) ? ({ /* cicili#Progn10249 */
-                                                              ({ /* cicili#Let10252 */
-                                                                __auto_type child_tree  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let10254 */
+                                                          
+                                                          ((__h_case_result ) ? ({ /* cicili#Progn9758 */
+                                                              ({ /* cicili#Let9761 */
+                                                                __auto_type child_tree  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let9763 */
                                                                   __auto_type child_tree  = child_tree ;
                                                                   // ----------
                                                                   ((void)(child_tree -> __h_table -> freeClass ));
                                                                   child_tree ;
                                                                 });
                                                                 // ----------
-                                                                Right_BTree_int_User_Error_BTree_int_User (Internal_BTree_int_User (insert_List_BTree_int_User_pair_t (items , single_item , current ), ({ /* cicili#Let10263 */
-                                                                    __auto_type r1  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let10265 */
+                                                                Right_BTree_int_User_Error_BTree_int_User (Internal_BTree_int_User (insert_List_BTree_int_User_pair_t (items , single_item , current ), ({ /* cicili#Let9772 */
+                                                                    __auto_type r1  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let9774 */
                                                                       __auto_type r1  = take_List_Rc_BTree_int_User (index , children );
                                                                       // ----------
                                                                       ((void)(r1 -> __h_table -> freeClass ));
                                                                       r1 ;
                                                                     });
-                                                                    __auto_type r2  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let10269 */
+                                                                    __auto_type r2  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let9778 */
                                                                       __auto_type r2  = drop_List_Rc_BTree_int_User ((index  +  1 ), children );
                                                                       // ----------
                                                                       ((void)(r2 -> __h_table -> freeClass ));
                                                                       r2 ;
                                                                     });
-                                                                    __auto_type r3  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let10273 */
+                                                                    __auto_type r3  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let9782 */
                                                                       __auto_type r3  = append_List_Rc_BTree_int_User (child_children , r2 );
                                                                       // ----------
                                                                       ((void)(r3 -> __h_table -> freeClass ));
                                                                       r3 ;
                                                                     });
-                                                                    __auto_type r4  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let10277 */
+                                                                    __auto_type r4  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let9786 */
                                                                       __auto_type r4  = append_List_Rc_BTree_int_User (r1 , r3 );
                                                                       // ----------
                                                                       ((void)(r4 -> __h_table -> freeClass ));
                                                                       r4 ;
                                                                     });
                                                                     // ----------
-                                                                    fmap_Functor_List_Rc_BTree_int_User (({ /* cicili#Progn10286 */
-                                                                        Rc_BTree_int_User __ciciliC_10285 (Rc_BTree_int_User __h_value ) {
+                                                                    fmap_Functor_List_Rc_BTree_int_User (({ /* cicili#Progn9795 */
+                                                                        Rc_BTree_int_User __ciciliC_9794 (Rc_BTree_int_User __h_value ) {
                                                                           return clone_Rc_BTree_int_User (__h_value );
                                                                         }
-                                                                        __ciciliC_10285 ;
+                                                                        __ciciliC_9794 ;
                                                                       }), r4 );
                                                                   })));
                                                               });
-                                                            }) : ({ /* cicili#Let10293 */
+                                                            }) : ({ /* cicili#Let9802 */
                                                               // ----------
-                                                              
-                                                              ({ /* cicili#Progn10297 */
+                                                              ;
+                                                              ({ /* cicili#Progn9804 */
                                                                 Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_INVALID_BRANCH (child_tree ));
                                                               });
                                                             }));
                                                         });
                                                       });
-                                                    }) : ({ /* cicili#Let10304 */
+                                                    }) : ({ /* cicili#Let9811 */
                                                       // ----------
-                                                      
-                                                      ({ /* cicili#Let10308 */
+                                                      ;
+                                                      ({ /* cicili#Let9813 */
                                                         bool __h_case_result  = (true  &&  ((child_tree -> __h_ctor ) ==  __h_Internal_t  ) );
                                                         // ----------
-                                                        ((__h_case_result ) ? ({ /* cicili#Progn10310 */
-                                                            Right_BTree_int_User_Error_BTree_int_User (Internal_BTree_int_User (copy_List_BTree_int_User_pair_t (items ), ({ /* cicili#Let10318 */
-                                                                __auto_type r1  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let10320 */
+                                                        
+                                                        ((__h_case_result ) ? ({ /* cicili#Progn9817 */
+                                                            Right_BTree_int_User_Error_BTree_int_User (Internal_BTree_int_User (copy_List_BTree_int_User_pair_t (items ), ({ /* cicili#Let9825 */
+                                                                __auto_type r1  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let9827 */
                                                                   __auto_type r1  = take_List_Rc_BTree_int_User (index , children );
                                                                   // ----------
                                                                   ((void)(r1 -> __h_table -> freeClass ));
                                                                   r1 ;
                                                                 });
-                                                                __auto_type r2  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let10324 */
-                                                                  __auto_type r2  = fmap_Functor_List_Rc_BTree_int_User (({ /* cicili#Progn10330 */
-                                                                    Rc_BTree_int_User __ciciliC_10329 (Rc_BTree_int_User __h_value ) {
+                                                                __auto_type r2  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let9831 */
+                                                                  __auto_type r2  = fmap_Functor_List_Rc_BTree_int_User (({ /* cicili#Progn9837 */
+                                                                    Rc_BTree_int_User __ciciliC_9836 (Rc_BTree_int_User __h_value ) {
                                                                       return clone_Rc_BTree_int_User (__h_value );
                                                                     }
-                                                                    __ciciliC_10329 ;
+                                                                    __ciciliC_9836 ;
                                                                   }), r1 );
                                                                   // ----------
                                                                   ((void)(r2 -> __h_table -> freeClass ));
                                                                   r2 ;
                                                                 });
-                                                                __auto_type r3  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let10337 */
+                                                                __auto_type r3  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let9844 */
                                                                   __auto_type r3  = drop_List_Rc_BTree_int_User ((index  +  1 ), children );
                                                                   // ----------
                                                                   ((void)(r3 -> __h_table -> freeClass ));
                                                                   r3 ;
                                                                 });
-                                                                __auto_type r4  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let10341 */
-                                                                  __auto_type r4  = fmap_Functor_List_Rc_BTree_int_User (({ /* cicili#Progn10347 */
-                                                                    Rc_BTree_int_User __ciciliC_10346 (Rc_BTree_int_User __h_value ) {
+                                                                __auto_type r4  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let9848 */
+                                                                  __auto_type r4  = fmap_Functor_List_Rc_BTree_int_User (({ /* cicili#Progn9854 */
+                                                                    Rc_BTree_int_User __ciciliC_9853 (Rc_BTree_int_User __h_value ) {
                                                                       return clone_Rc_BTree_int_User (__h_value );
                                                                     }
-                                                                    __ciciliC_10346 ;
+                                                                    __ciciliC_9853 ;
                                                                   }), r3 );
                                                                   // ----------
                                                                   ((void)(r4 -> __h_table -> freeClass ));
                                                                   r4 ;
                                                                 });
-                                                                __auto_type r5  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let10354 */
+                                                                __auto_type r5  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let9861 */
                                                                   __auto_type r5  = push_List_Rc_BTree_int_User (new_Rc_BTree_int_User (child_tree ), r4 );
                                                                   // ----------
                                                                   ((void)(r5 -> __h_table -> freeClass ));
@@ -9697,46 +10026,46 @@ Either_BTree_int_User_Error_BTree_int_User insert_BTree_int_User (BTree_int_User
                                                                 // ----------
                                                                 append_List_Rc_BTree_int_User (r2 , r5 );
                                                               })));
-                                                          }) : ({ /* cicili#Let10362 */
+                                                          }) : ({ /* cicili#Let9869 */
                                                             // ----------
-                                                            
-                                                            ({ /* cicili#Progn10366 */
-                                                              Right_BTree_int_User_Error_BTree_int_User (Internal_BTree_int_User (copy_List_BTree_int_User_pair_t (items ), ({ /* cicili#Let10374 */
-                                                                  __auto_type r1  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let10376 */
+                                                            ;
+                                                            ({ /* cicili#Progn9871 */
+                                                              Right_BTree_int_User_Error_BTree_int_User (Internal_BTree_int_User (copy_List_BTree_int_User_pair_t (items ), ({ /* cicili#Let9879 */
+                                                                  __auto_type r1  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let9881 */
                                                                     __auto_type r1  = take_List_Rc_BTree_int_User (index , children );
                                                                     // ----------
                                                                     ((void)(r1 -> __h_table -> freeClass ));
                                                                     r1 ;
                                                                   });
-                                                                  __auto_type r2  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let10380 */
-                                                                    __auto_type r2  = fmap_Functor_List_Rc_BTree_int_User (({ /* cicili#Progn10386 */
-                                                                      Rc_BTree_int_User __ciciliC_10385 (Rc_BTree_int_User __h_value ) {
+                                                                  __auto_type r2  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let9885 */
+                                                                    __auto_type r2  = fmap_Functor_List_Rc_BTree_int_User (({ /* cicili#Progn9891 */
+                                                                      Rc_BTree_int_User __ciciliC_9890 (Rc_BTree_int_User __h_value ) {
                                                                         return clone_Rc_BTree_int_User (__h_value );
                                                                       }
-                                                                      __ciciliC_10385 ;
+                                                                      __ciciliC_9890 ;
                                                                     }), r1 );
                                                                     // ----------
                                                                     ((void)(r2 -> __h_table -> freeClass ));
                                                                     r2 ;
                                                                   });
-                                                                  __auto_type r3  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let10393 */
+                                                                  __auto_type r3  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let9898 */
                                                                     __auto_type r3  = drop_List_Rc_BTree_int_User ((index  +  1 ), children );
                                                                     // ----------
                                                                     ((void)(r3 -> __h_table -> freeClass ));
                                                                     r3 ;
                                                                   });
-                                                                  __auto_type r4  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let10397 */
-                                                                    __auto_type r4  = fmap_Functor_List_Rc_BTree_int_User (({ /* cicili#Progn10403 */
-                                                                      Rc_BTree_int_User __ciciliC_10402 (Rc_BTree_int_User __h_value ) {
+                                                                  __auto_type r4  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let9902 */
+                                                                    __auto_type r4  = fmap_Functor_List_Rc_BTree_int_User (({ /* cicili#Progn9908 */
+                                                                      Rc_BTree_int_User __ciciliC_9907 (Rc_BTree_int_User __h_value ) {
                                                                         return clone_Rc_BTree_int_User (__h_value );
                                                                       }
-                                                                      __ciciliC_10402 ;
+                                                                      __ciciliC_9907 ;
                                                                     }), r3 );
                                                                     // ----------
                                                                     ((void)(r4 -> __h_table -> freeClass ));
                                                                     r4 ;
                                                                   });
-                                                                  __auto_type r5  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let10410 */
+                                                                  __auto_type r5  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let9915 */
                                                                     __auto_type r5  = push_List_Rc_BTree_int_User (new_Rc_BTree_int_User (child_tree ), r4 );
                                                                     // ----------
                                                                     ((void)(r5 -> __h_table -> freeClass ));
@@ -9751,46 +10080,47 @@ Either_BTree_int_User_Error_BTree_int_User insert_BTree_int_User (BTree_int_User
                                                     }));
                                                 });
                                               });
-                                            }) : ({ /* cicili#Let10418 */
-                                              __auto_type left  = match10210 ;
+                                            }) : ({ /* cicili#Let9923 */
+                                              __auto_type left  = match9719 ;
                                               // ----------
-                                              
-                                              ({ /* cicili#Progn10422 */
+                                              ;
+                                              ({ /* cicili#Progn9925 */
                                                 left ;
                                               });
                                             }));
                                         });
                                       });
-                                    }) : ({ /* cicili#Let10426 */
+                                    }) : ({ /* cicili#Let9929 */
                                       // ----------
-                                      
-                                      ({ /* cicili#Progn10430 */
+                                      ;
+                                      ({ /* cicili#Progn9931 */
                                         Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_ACCESS_DEAD_CHILD (head , index ));
                                       });
                                     }));
                                 });
                               });
-                            }) : ({ /* cicili#Let10437 */
+                            }) : ({ /* cicili#Let9938 */
                               // ----------
-                              
-                              ({ /* cicili#Progn10441 */
+                              ;
+                              ({ /* cicili#Progn9940 */
                                 Right_BTree_int_User_Error_BTree_int_User (Leaf_BTree_int_User (insert_List_BTree_int_User_pair_t (items , ((BTree_int_User_pair_t){ skey , svalue }), current )));
                               });
                             }));
                         });
                       });
-                    }) : ({ /* cicili#Let10451 */
+                    }) : ({ /* cicili#Let9950 */
                       // ----------
-                      
-                      ({ /* cicili#Let10455 */
-                        bool __h_case_result  = (true  &&  ((match10174 . __h_ctor ) ==  __h_EQ_t  ) );
+                      ;
+                      ({ /* cicili#Let9952 */
+                        bool __h_case_result  = (true  &&  ((match9683 . __h_ctor ) ==  __h_EQ_t  ) );
                         // ----------
-                        ((__h_case_result ) ? ({ /* cicili#Progn10457 */
+                        
+                        ((__h_case_result ) ? ({ /* cicili#Progn9956 */
                             Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_UNIQUE_KEY (head ));
-                          }) : ({ /* cicili#Let10464 */
+                          }) : ({ /* cicili#Let9963 */
                             // ----------
-                            
-                            ({ /* cicili#Progn10468 */
+                            ;
+                            ({ /* cicili#Progn9965 */
                               insertInternal (items , children , tail , (index  +  1 ));
                             });
                           }));
@@ -9798,153 +10128,159 @@ Either_BTree_int_User_Error_BTree_int_User insert_BTree_int_User (BTree_int_User
                     }));
                 });
               });
-            }) : ({ /* cicili#Let10472 */
+            }) : ({ /* cicili#Let9969 */
               // ----------
-              
-              ({ /* cicili#Progn10476 */
-                ({ /* cicili#Let10480 */
-                  __auto_type match10479  = nth_List_Rc_BTree_int_User (index , children );
-                  typeof((((match10479 . __h_data ). Just ). __h_0_mem )) child ;
+              ;
+              ({ /* cicili#Progn9971 */
+                ({ /* cicili#Let9975 */
+                  __auto_type match9974  = nth_List_Rc_BTree_int_User (index , children );
+                  typeof((((match9974 . __h_data ). Just ). __h_0_mem )) child ;
                   // ----------
-                  
-                  ({ /* cicili#Let10485 */
-                    bool __h_case_result  = (true  &&  (((match10479 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn10486 */
-                          (child  =  (((match10479 . __h_data ). Just ). __h_0_mem ) );
+                  ;
+                  ({ /* cicili#Let9978 */
+                    bool __h_case_result  = (true  &&  (((match9974 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn9979 */
+                          (child  =  (((match9974 . __h_data ). Just ). __h_0_mem ) );
                           true ;
                         }) ) );
                     // ----------
-                    ((__h_case_result ) ? ({ /* cicili#Progn10489 */
-                        ({ /* cicili#Let10493 */
-                          __auto_type match10492  = get_Rc_BTree_int_User (child );
-                          typeof((((match10492 . __h_data ). Just ). __h_0_mem )) tr ;
+                    
+                    ((__h_case_result ) ? ({ /* cicili#Progn9984 */
+                        ({ /* cicili#Let9988 */
+                          __auto_type match9987  = get_Rc_BTree_int_User (child );
+                          typeof((((match9987 . __h_data ). Just ). __h_0_mem )) tr ;
                           // ----------
-                          
-                          ({ /* cicili#Let10498 */
-                            bool __h_case_result  = (true  &&  (((match10492 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn10499 */
-                                  (tr  =  (((match10492 . __h_data ). Just ). __h_0_mem ) );
+                          ;
+                          ({ /* cicili#Let9991 */
+                            bool __h_case_result  = (true  &&  (((match9987 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn9992 */
+                                  (tr  =  (((match9987 . __h_data ). Just ). __h_0_mem ) );
                                   true ;
                                 }) ) );
                             // ----------
-                            ((__h_case_result ) ? ({ /* cicili#Progn10502 */
-                                ({ /* cicili#Let10506 */
-                                  __auto_type match10505  = insert_BTree_int_User (tr , skey , svalue );
-                                  typeof((((match10505 . __h_data ). Right ). __h_0_mem )) child_tree ;
+                            
+                            ((__h_case_result ) ? ({ /* cicili#Progn9997 */
+                                ({ /* cicili#Let10001 */
+                                  __auto_type match10000  = insert_BTree_int_User (tr , skey , svalue );
+                                  typeof((((match10000 . __h_data ). Right ). __h_0_mem )) child_tree ;
                                   // ----------
-                                  
-                                  ({ /* cicili#Let10511 */
-                                    bool __h_case_result  = (true  &&  (((match10505 . __h_ctor ) ==  __h_Right_t  ) &&  ({ /* cicili#Progn10512 */
-                                          (child_tree  =  (((match10505 . __h_data ). Right ). __h_0_mem ) );
+                                  ;
+                                  ({ /* cicili#Let10004 */
+                                    bool __h_case_result  = (true  &&  (((match10000 . __h_ctor ) ==  __h_Right_t  ) &&  ({ /* cicili#Progn10005 */
+                                          (child_tree  =  (((match10000 . __h_data ). Right ). __h_0_mem ) );
                                           true ;
                                         }) ) );
                                     // ----------
-                                    ((__h_case_result ) ? ({ /* cicili#Progn10515 */
-                                        ({ /* cicili#Let10519 */
+                                    
+                                    ((__h_case_result ) ? ({ /* cicili#Progn10010 */
+                                        ({ /* cicili#Let10014 */
                                           typeof((((child_tree -> __h_data ). Branch ). __h_0_mem )) child_items ;
                                           typeof((((child_tree -> __h_data ). Branch ). __h_1_mem )) child_children ;
                                           // ----------
-                                          
-                                          ({ /* cicili#Let10523 */
-                                            bool __h_case_result  = (true  &&  (((child_tree -> __h_ctor ) ==  __h_Branch_t  ) &&  (({ /* cicili#Progn10524 */
+                                          ;
+                                          ({ /* cicili#Let10016 */
+                                            bool __h_case_result  = (true  &&  (((child_tree -> __h_ctor ) ==  __h_Branch_t  ) &&  (({ /* cicili#Progn10017 */
                                                     (child_items  =  (((child_tree -> __h_data ). Branch ). __h_0_mem ) );
                                                     true ;
-                                                  }) &&  ({ /* cicili#Progn10526 */
+                                                  }) &&  ({ /* cicili#Progn10019 */
                                                     (child_children  =  (((child_tree -> __h_data ). Branch ). __h_1_mem ) );
                                                     true ;
                                                   }) ) ) );
                                             // ----------
-                                            ((__h_case_result ) ? ({ /* cicili#Progn10529 */
-                                                ({ /* cicili#Let10534 */
+                                            
+                                            ((__h_case_result ) ? ({ /* cicili#Progn10024 */
+                                                ({ /* cicili#Let10029 */
                                                   typeof((((child_items -> __h_data ). Cons ). __h_0_mem )) single_item ;
-                                                  typeof((((child_items -> __h_data ). Cons ). __h_1_mem )) __h_match10532_1_arg ;
+                                                  typeof((((child_items -> __h_data ). Cons ). __h_1_mem )) __h_match10027_1_arg ;
                                                   // ----------
-                                                  
-                                                  ({ /* cicili#Let10538 */
-                                                    bool __h_case_result  = (true  &&  (((child_items -> __h_ctor ) ==  __h_Cons_t  ) &&  ((({ /* cicili#Progn10539 */
+                                                  ;
+                                                  ({ /* cicili#Let10031 */
+                                                    bool __h_case_result  = (true  &&  (((child_items -> __h_ctor ) ==  __h_Cons_t  ) &&  ((({ /* cicili#Progn10032 */
                                                               (single_item  =  (((child_items -> __h_data ). Cons ). __h_0_mem ) );
                                                               true ;
-                                                            }) &&  ({ /* cicili#Progn10541 */
-                                                              (__h_match10532_1_arg  =  (((child_items -> __h_data ). Cons ). __h_1_mem ) );
+                                                            }) &&  ({ /* cicili#Progn10034 */
+                                                              (__h_match10027_1_arg  =  (((child_items -> __h_data ). Cons ). __h_1_mem ) );
                                                               true ;
-                                                            }) ) &&  (true  &&  ((__h_match10532_1_arg -> __h_ctor ) ==  __h_Nil_t  ) ) ) ) );
+                                                            }) ) &&  (true  &&  ((__h_match10027_1_arg -> __h_ctor ) ==  __h_Nil_t  ) ) ) ) );
                                                     // ----------
-                                                    ((__h_case_result ) ? ({ /* cicili#Progn10544 */
-                                                        ({ /* cicili#Let10547 */
-                                                          __auto_type child_tree  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let10549 */
+                                                    
+                                                    ((__h_case_result ) ? ({ /* cicili#Progn10039 */
+                                                        ({ /* cicili#Let10042 */
+                                                          __auto_type child_tree  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let10044 */
                                                             __auto_type child_tree  = child_tree ;
                                                             // ----------
                                                             ((void)(child_tree -> __h_table -> freeClass ));
                                                             child_tree ;
                                                           });
                                                           // ----------
-                                                          Right_BTree_int_User_Error_BTree_int_User (Internal_BTree_int_User (insert_List_BTree_int_User_pair_t (items , single_item , current ), ({ /* cicili#Let10558 */
-                                                              __auto_type r1  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let10560 */
+                                                          Right_BTree_int_User_Error_BTree_int_User (Internal_BTree_int_User (insert_List_BTree_int_User_pair_t (items , single_item , current ), ({ /* cicili#Let10053 */
+                                                              __auto_type r1  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let10055 */
                                                                 __auto_type r1  = take_List_Rc_BTree_int_User (index , children );
                                                                 // ----------
                                                                 ((void)(r1 -> __h_table -> freeClass ));
                                                                 r1 ;
                                                               });
-                                                              __auto_type r2  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let10564 */
+                                                              __auto_type r2  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let10059 */
                                                                 __auto_type r2  = drop_List_Rc_BTree_int_User ((index  +  1 ), children );
                                                                 // ----------
                                                                 ((void)(r2 -> __h_table -> freeClass ));
                                                                 r2 ;
                                                               });
-                                                              __auto_type r3  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let10568 */
+                                                              __auto_type r3  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let10063 */
                                                                 __auto_type r3  = append_List_Rc_BTree_int_User (child_children , r2 );
                                                                 // ----------
                                                                 ((void)(r3 -> __h_table -> freeClass ));
                                                                 r3 ;
                                                               });
-                                                              __auto_type r4  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let10572 */
+                                                              __auto_type r4  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let10067 */
                                                                 __auto_type r4  = append_List_Rc_BTree_int_User (r1 , r3 );
                                                                 // ----------
                                                                 ((void)(r4 -> __h_table -> freeClass ));
                                                                 r4 ;
                                                               });
                                                               // ----------
-                                                              fmap_Functor_List_Rc_BTree_int_User (({ /* cicili#Progn10581 */
-                                                                  Rc_BTree_int_User __ciciliC_10580 (Rc_BTree_int_User __h_value ) {
+                                                              fmap_Functor_List_Rc_BTree_int_User (({ /* cicili#Progn10076 */
+                                                                  Rc_BTree_int_User __ciciliC_10075 (Rc_BTree_int_User __h_value ) {
                                                                     return clone_Rc_BTree_int_User (__h_value );
                                                                   }
-                                                                  __ciciliC_10580 ;
+                                                                  __ciciliC_10075 ;
                                                                 }), r4 );
                                                             })));
                                                         });
-                                                      }) : ({ /* cicili#Let10588 */
+                                                      }) : ({ /* cicili#Let10083 */
                                                         // ----------
-                                                        
-                                                        ({ /* cicili#Progn10592 */
+                                                        ;
+                                                        ({ /* cicili#Progn10085 */
                                                           Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_INVALID_BRANCH (child_tree ));
                                                         });
                                                       }));
                                                   });
                                                 });
-                                              }) : ({ /* cicili#Let10599 */
+                                              }) : ({ /* cicili#Let10092 */
                                                 // ----------
-                                                
-                                                ({ /* cicili#Let10603 */
+                                                ;
+                                                ({ /* cicili#Let10094 */
                                                   bool __h_case_result  = (true  &&  ((child_tree -> __h_ctor ) ==  __h_Internal_t  ) );
                                                   // ----------
-                                                  ((__h_case_result ) ? ({ /* cicili#Progn10605 */
-                                                      Right_BTree_int_User_Error_BTree_int_User (Internal_BTree_int_User (copy_List_BTree_int_User_pair_t (items ), ({ /* cicili#Let10613 */
-                                                          __auto_type r1  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let10615 */
+                                                  
+                                                  ((__h_case_result ) ? ({ /* cicili#Progn10098 */
+                                                      Right_BTree_int_User_Error_BTree_int_User (Internal_BTree_int_User (copy_List_BTree_int_User_pair_t (items ), ({ /* cicili#Let10106 */
+                                                          __auto_type r1  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let10108 */
                                                             __auto_type r1  = take_List_Rc_BTree_int_User (index , children );
                                                             // ----------
                                                             ((void)(r1 -> __h_table -> freeClass ));
                                                             r1 ;
                                                           });
-                                                          __auto_type r2  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let10619 */
-                                                            __auto_type r2  = fmap_Functor_List_Rc_BTree_int_User (({ /* cicili#Progn10625 */
-                                                              Rc_BTree_int_User __ciciliC_10624 (Rc_BTree_int_User __h_value ) {
+                                                          __auto_type r2  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let10112 */
+                                                            __auto_type r2  = fmap_Functor_List_Rc_BTree_int_User (({ /* cicili#Progn10118 */
+                                                              Rc_BTree_int_User __ciciliC_10117 (Rc_BTree_int_User __h_value ) {
                                                                 return clone_Rc_BTree_int_User (__h_value );
                                                               }
-                                                              __ciciliC_10624 ;
+                                                              __ciciliC_10117 ;
                                                             }), r1 );
                                                             // ----------
                                                             ((void)(r2 -> __h_table -> freeClass ));
                                                             r2 ;
                                                           });
-                                                          __auto_type r3  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let10632 */
+                                                          __auto_type r3  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let10125 */
                                                             __auto_type r3  = wrap_List_Rc_BTree_int_User (new_Rc_BTree_int_User (child_tree ));
                                                             // ----------
                                                             ((void)(r3 -> __h_table -> freeClass ));
@@ -9953,29 +10289,29 @@ Either_BTree_int_User_Error_BTree_int_User insert_BTree_int_User (BTree_int_User
                                                           // ----------
                                                           append_List_Rc_BTree_int_User (r2 , r3 );
                                                         })));
-                                                    }) : ({ /* cicili#Let10640 */
+                                                    }) : ({ /* cicili#Let10133 */
                                                       // ----------
-                                                      
-                                                      ({ /* cicili#Progn10644 */
-                                                        Right_BTree_int_User_Error_BTree_int_User (Internal_BTree_int_User (copy_List_BTree_int_User_pair_t (items ), ({ /* cicili#Let10652 */
-                                                            __auto_type r1  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let10654 */
+                                                      ;
+                                                      ({ /* cicili#Progn10135 */
+                                                        Right_BTree_int_User_Error_BTree_int_User (Internal_BTree_int_User (copy_List_BTree_int_User_pair_t (items ), ({ /* cicili#Let10143 */
+                                                            __auto_type r1  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let10145 */
                                                               __auto_type r1  = take_List_Rc_BTree_int_User (index , children );
                                                               // ----------
                                                               ((void)(r1 -> __h_table -> freeClass ));
                                                               r1 ;
                                                             });
-                                                            __auto_type r2  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let10658 */
-                                                              __auto_type r2  = fmap_Functor_List_Rc_BTree_int_User (({ /* cicili#Progn10664 */
-                                                                Rc_BTree_int_User __ciciliC_10663 (Rc_BTree_int_User __h_value ) {
+                                                            __auto_type r2  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let10149 */
+                                                              __auto_type r2  = fmap_Functor_List_Rc_BTree_int_User (({ /* cicili#Progn10155 */
+                                                                Rc_BTree_int_User __ciciliC_10154 (Rc_BTree_int_User __h_value ) {
                                                                   return clone_Rc_BTree_int_User (__h_value );
                                                                 }
-                                                                __ciciliC_10663 ;
+                                                                __ciciliC_10154 ;
                                                               }), r1 );
                                                               // ----------
                                                               ((void)(r2 -> __h_table -> freeClass ));
                                                               r2 ;
                                                             });
-                                                            __auto_type r3  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let10671 */
+                                                            __auto_type r3  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let10162 */
                                                               __auto_type r3  = wrap_List_Rc_BTree_int_User (new_Rc_BTree_int_User (child_tree ));
                                                               // ----------
                                                               ((void)(r3 -> __h_table -> freeClass ));
@@ -9990,31 +10326,31 @@ Either_BTree_int_User_Error_BTree_int_User insert_BTree_int_User (BTree_int_User
                                               }));
                                           });
                                         });
-                                      }) : ({ /* cicili#Let10679 */
-                                        __auto_type left  = match10505 ;
+                                      }) : ({ /* cicili#Let10170 */
+                                        __auto_type left  = match10000 ;
                                         // ----------
-                                        
-                                        ({ /* cicili#Progn10683 */
+                                        ;
+                                        ({ /* cicili#Progn10172 */
                                           left ;
                                         });
                                       }));
                                   });
                                 });
-                              }) : ({ /* cicili#Let10687 */
+                              }) : ({ /* cicili#Let10176 */
                                 // ----------
-                                
-                                ({ /* cicili#Progn10691 */
+                                ;
+                                ({ /* cicili#Progn10178 */
                                   Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_ACCESS_DEAD_CHILD (head , index ));
                                 });
                               }));
                           });
                         });
-                      }) : ({ /* cicili#Let10698 */
+                      }) : ({ /* cicili#Let10185 */
                         // ----------
-                        
-                        ({ /* cicili#Progn10702 */
-                          Right_BTree_int_User_Error_BTree_int_User (Leaf_BTree_int_User (({ /* cicili#Let10709 */
-                              __auto_type r1  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let10711 */
+                        ;
+                        ({ /* cicili#Progn10187 */
+                          Right_BTree_int_User_Error_BTree_int_User (Leaf_BTree_int_User (({ /* cicili#Let10194 */
+                              __auto_type r1  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let10196 */
                                 __auto_type r1  = wrap_List_BTree_int_User_pair_t (((BTree_int_User_pair_t){ skey , svalue }));
                                 // ----------
                                 ((void)(r1 -> __h_table -> freeClass ));
@@ -10032,47 +10368,50 @@ Either_BTree_int_User_Error_BTree_int_User insert_BTree_int_User (BTree_int_User
         });
       });
   }
-  Either_BTree_int_User_Error_BTree_int_User insertLeaf (List_BTree_int_User_pair_t items , List_BTree_int_User_pair_t current , int index ) {
-    return ({ /* cicili#Let10727 */
+  Either_BTree_int_User_Error_BTree_int_User insertLeaf (List_BTree_int_User_pair_t items , List_BTree_int_User_pair_t current , size_t index ) {
+    return ({ /* cicili#Let10212 */
         typeof((((current -> __h_data ). Cons ). __h_0_mem )) head ;
         typeof((head . __h_0_mem )) key ;
         typeof((((current -> __h_data ). Cons ). __h_1_mem )) tail ;
         // ----------
-        
-        ({ /* cicili#Let10731 */
-          bool __h_case_result  = (true  &&  (((current -> __h_ctor ) ==  __h_Cons_t  ) &&  ((({ /* cicili#Progn10732 */
+        ;
+        ({ /* cicili#Let10214 */
+          bool __h_case_result  = (true  &&  (((current -> __h_ctor ) ==  __h_Cons_t  ) &&  ((({ /* cicili#Progn10215 */
                     (head  =  (((current -> __h_data ). Cons ). __h_0_mem ) );
                     true ;
-                  }) &&  (true  &&  ({ /* cicili#Progn10734 */
+                  }) &&  (true  &&  ({ /* cicili#Progn10217 */
                       (key  =  (head . __h_0_mem ) );
                       true ;
-                    }) ) ) &&  ({ /* cicili#Progn10736 */
+                    }) ) ) &&  ({ /* cicili#Progn10219 */
                   (tail  =  (((current -> __h_data ). Cons ). __h_1_mem ) );
                   true ;
                 }) ) ) );
           // ----------
-          ((__h_case_result ) ? ({ /* cicili#Progn10739 */
-              ({ /* cicili#Let10743 */
-                __auto_type match10742  = compareKey (skey , key );
+          
+          ((__h_case_result ) ? ({ /* cicili#Progn10224 */
+              ({ /* cicili#Let10228 */
+                __auto_type match10227  = compareKey (skey , key );
                 // ----------
-                
-                ({ /* cicili#Let10747 */
-                  bool __h_case_result  = (true  &&  ((match10742 . __h_ctor ) ==  __h_LT_t  ) );
+                ;
+                ({ /* cicili#Let10230 */
+                  bool __h_case_result  = (true  &&  ((match10227 . __h_ctor ) ==  __h_LT_t  ) );
                   // ----------
-                  ((__h_case_result ) ? ({ /* cicili#Progn10749 */
+                  
+                  ((__h_case_result ) ? ({ /* cicili#Progn10234 */
                       Right_BTree_int_User_Error_BTree_int_User (Leaf_BTree_int_User (insert_List_BTree_int_User_pair_t (items , ((BTree_int_User_pair_t){ skey , svalue }), current )));
-                    }) : ({ /* cicili#Let10759 */
+                    }) : ({ /* cicili#Let10244 */
                       // ----------
-                      
-                      ({ /* cicili#Let10763 */
-                        bool __h_case_result  = (true  &&  ((match10742 . __h_ctor ) ==  __h_EQ_t  ) );
+                      ;
+                      ({ /* cicili#Let10246 */
+                        bool __h_case_result  = (true  &&  ((match10227 . __h_ctor ) ==  __h_EQ_t  ) );
                         // ----------
-                        ((__h_case_result ) ? ({ /* cicili#Progn10765 */
+                        
+                        ((__h_case_result ) ? ({ /* cicili#Progn10250 */
                             Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_UNIQUE_KEY (head ));
-                          }) : ({ /* cicili#Let10772 */
+                          }) : ({ /* cicili#Let10257 */
                             // ----------
-                            
-                            ({ /* cicili#Progn10776 */
+                            ;
+                            ({ /* cicili#Progn10259 */
                               insertLeaf (items , tail , (index  +  1 ));
                             });
                           }));
@@ -10080,12 +10419,12 @@ Either_BTree_int_User_Error_BTree_int_User insert_BTree_int_User (BTree_int_User
                     }));
                 });
               });
-            }) : ({ /* cicili#Let10780 */
+            }) : ({ /* cicili#Let10263 */
               // ----------
-              
-              ({ /* cicili#Progn10784 */
-                Right_BTree_int_User_Error_BTree_int_User (Leaf_BTree_int_User (({ /* cicili#Let10791 */
-                    __auto_type r1  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let10793 */
+              ;
+              ({ /* cicili#Progn10265 */
+                Right_BTree_int_User_Error_BTree_int_User (Leaf_BTree_int_User (({ /* cicili#Let10272 */
+                    __auto_type r1  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let10274 */
                       __auto_type r1  = wrap_List_BTree_int_User_pair_t (((BTree_int_User_pair_t){ skey , svalue }));
                       // ----------
                       ((void)(r1 -> __h_table -> freeClass ));
@@ -10099,120 +10438,126 @@ Either_BTree_int_User_Error_BTree_int_User insert_BTree_int_User (BTree_int_User
         });
       });
   }
-  return ({ /* cicili#Let10803 */
+  return ({ /* cicili#Let10284 */
       typeof((((tree -> __h_data ). Branch ). __h_0_mem )) items ;
       typeof((((tree -> __h_data ). Branch ). __h_1_mem )) children ;
       // ----------
-      
-      ({ /* cicili#Let10807 */
-        bool __h_case_result  = (true  &&  (((tree -> __h_ctor ) ==  __h_Branch_t  ) &&  (({ /* cicili#Progn10808 */
+      ;
+      ({ /* cicili#Let10286 */
+        bool __h_case_result  = (true  &&  (((tree -> __h_ctor ) ==  __h_Branch_t  ) &&  (({ /* cicili#Progn10287 */
                 (items  =  (((tree -> __h_data ). Branch ). __h_0_mem ) );
                 true ;
-              }) &&  ({ /* cicili#Progn10810 */
+              }) &&  ({ /* cicili#Progn10289 */
                 (children  =  (((tree -> __h_data ). Branch ). __h_1_mem ) );
                 true ;
               }) ) ) );
         // ----------
-        ((__h_case_result ) ? ({ /* cicili#Progn10813 */
-            ({ /* cicili#Let10817 */
-              __auto_type match10816  = insertInternal (items , children , items , 0);
-              typeof((((match10816 . __h_data ). Right ). __h_0_mem )) tr ;
+        
+        ((__h_case_result ) ? ({ /* cicili#Progn10294 */
+            ({ /* cicili#Let10298 */
+              __auto_type match10297  = insertInternal (items , children , items , 0);
+              typeof((((match10297 . __h_data ). Right ). __h_0_mem )) tr ;
               // ----------
-              
-              ({ /* cicili#Let10821 */
-                bool __h_case_result  = (true  &&  (((match10816 . __h_ctor ) ==  __h_Right_t  ) &&  ({ /* cicili#Progn10822 */
-                      (tr  =  (((match10816 . __h_data ). Right ). __h_0_mem ) );
+              ;
+              ({ /* cicili#Let10300 */
+                bool __h_case_result  = (true  &&  (((match10297 . __h_ctor ) ==  __h_Right_t  ) &&  ({ /* cicili#Progn10301 */
+                      (tr  =  (((match10297 . __h_data ). Right ). __h_0_mem ) );
                       true ;
                     }) ) );
                 // ----------
-                ((__h_case_result ) ? ({ /* cicili#Progn10825 */
+                
+                ((__h_case_result ) ? ({ /* cicili#Progn10306 */
                     Right_BTree_int_User_Error_BTree_int_User (split_BTree_int_User (tr ));
-                  }) : ({ /* cicili#Let10832 */
-                    __auto_type left  = match10816 ;
+                  }) : ({ /* cicili#Let10313 */
+                    __auto_type left  = match10297 ;
                     // ----------
-                    
-                    ({ /* cicili#Progn10836 */
+                    ;
+                    ({ /* cicili#Progn10315 */
                       left ;
                     });
                   }));
               });
             });
-          }) : ({ /* cicili#Let10840 */
+          }) : ({ /* cicili#Let10319 */
             typeof((((tree -> __h_data ). Internal ). __h_0_mem )) items ;
             typeof((((tree -> __h_data ). Internal ). __h_1_mem )) children ;
             // ----------
-            
-            ({ /* cicili#Let10844 */
-              bool __h_case_result  = (true  &&  (((tree -> __h_ctor ) ==  __h_Internal_t  ) &&  (({ /* cicili#Progn10845 */
+            ;
+            ({ /* cicili#Let10321 */
+              bool __h_case_result  = (true  &&  (((tree -> __h_ctor ) ==  __h_Internal_t  ) &&  (({ /* cicili#Progn10322 */
                       (items  =  (((tree -> __h_data ). Internal ). __h_0_mem ) );
                       true ;
-                    }) &&  ({ /* cicili#Progn10847 */
+                    }) &&  ({ /* cicili#Progn10324 */
                       (children  =  (((tree -> __h_data ). Internal ). __h_1_mem ) );
                       true ;
                     }) ) ) );
               // ----------
-              ((__h_case_result ) ? ({ /* cicili#Progn10850 */
-                  ({ /* cicili#Let10854 */
-                    __auto_type match10853  = insertInternal (items , children , items , 0);
-                    typeof((((match10853 . __h_data ). Right ). __h_0_mem )) tr ;
+              
+              ((__h_case_result ) ? ({ /* cicili#Progn10329 */
+                  ({ /* cicili#Let10333 */
+                    __auto_type match10332  = insertInternal (items , children , items , 0);
+                    typeof((((match10332 . __h_data ). Right ). __h_0_mem )) tr ;
                     // ----------
-                    
-                    ({ /* cicili#Let10858 */
-                      bool __h_case_result  = (true  &&  (((match10853 . __h_ctor ) ==  __h_Right_t  ) &&  ({ /* cicili#Progn10859 */
-                            (tr  =  (((match10853 . __h_data ). Right ). __h_0_mem ) );
+                    ;
+                    ({ /* cicili#Let10335 */
+                      bool __h_case_result  = (true  &&  (((match10332 . __h_ctor ) ==  __h_Right_t  ) &&  ({ /* cicili#Progn10336 */
+                            (tr  =  (((match10332 . __h_data ). Right ). __h_0_mem ) );
                             true ;
                           }) ) );
                       // ----------
-                      ((__h_case_result ) ? ({ /* cicili#Progn10862 */
+                      
+                      ((__h_case_result ) ? ({ /* cicili#Progn10341 */
                           Right_BTree_int_User_Error_BTree_int_User (split_BTree_int_User (tr ));
-                        }) : ({ /* cicili#Let10869 */
-                          __auto_type left  = match10853 ;
+                        }) : ({ /* cicili#Let10348 */
+                          __auto_type left  = match10332 ;
                           // ----------
-                          
-                          ({ /* cicili#Progn10873 */
+                          ;
+                          ({ /* cicili#Progn10350 */
                             left ;
                           });
                         }));
                     });
                   });
-                }) : ({ /* cicili#Let10877 */
+                }) : ({ /* cicili#Let10354 */
                   typeof((((tree -> __h_data ). Leaf ). __h_0_mem )) items ;
                   // ----------
-                  
-                  ({ /* cicili#Let10881 */
-                    bool __h_case_result  = (true  &&  (((tree -> __h_ctor ) ==  __h_Leaf_t  ) &&  ({ /* cicili#Progn10882 */
+                  ;
+                  ({ /* cicili#Let10356 */
+                    bool __h_case_result  = (true  &&  (((tree -> __h_ctor ) ==  __h_Leaf_t  ) &&  ({ /* cicili#Progn10357 */
                           (items  =  (((tree -> __h_data ). Leaf ). __h_0_mem ) );
                           true ;
                         }) ) );
                     // ----------
-                    ((__h_case_result ) ? ({ /* cicili#Progn10885 */
-                        ({ /* cicili#Let10889 */
-                          __auto_type match10888  = insertLeaf (items , items , 0);
-                          typeof((((match10888 . __h_data ). Right ). __h_0_mem )) tr ;
+                    
+                    ((__h_case_result ) ? ({ /* cicili#Progn10362 */
+                        ({ /* cicili#Let10366 */
+                          __auto_type match10365  = insertLeaf (items , items , 0);
+                          typeof((((match10365 . __h_data ). Right ). __h_0_mem )) tr ;
                           // ----------
-                          
-                          ({ /* cicili#Let10893 */
-                            bool __h_case_result  = (true  &&  (((match10888 . __h_ctor ) ==  __h_Right_t  ) &&  ({ /* cicili#Progn10894 */
-                                  (tr  =  (((match10888 . __h_data ). Right ). __h_0_mem ) );
+                          ;
+                          ({ /* cicili#Let10368 */
+                            bool __h_case_result  = (true  &&  (((match10365 . __h_ctor ) ==  __h_Right_t  ) &&  ({ /* cicili#Progn10369 */
+                                  (tr  =  (((match10365 . __h_data ). Right ). __h_0_mem ) );
                                   true ;
                                 }) ) );
                             // ----------
-                            ((__h_case_result ) ? ({ /* cicili#Progn10897 */
+                            
+                            ((__h_case_result ) ? ({ /* cicili#Progn10374 */
                                 Right_BTree_int_User_Error_BTree_int_User (split_BTree_int_User (tr ));
-                              }) : ({ /* cicili#Let10904 */
-                                __auto_type left  = match10888 ;
+                              }) : ({ /* cicili#Let10381 */
+                                __auto_type left  = match10365 ;
                                 // ----------
-                                
-                                ({ /* cicili#Progn10908 */
+                                ;
+                                ({ /* cicili#Progn10383 */
                                   left ;
                                 });
                               }));
                           });
                         });
-                      }) : ({ /* cicili#Let10912 */
+                      }) : ({ /* cicili#Let10387 */
                         // ----------
-                        
-                        ({ /* cicili#Progn10916 */
+                        ;
+                        ({ /* cicili#Progn10389 */
                           Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_INVALID_OBJECT ());
                         });
                       }));
@@ -10223,31 +10568,32 @@ Either_BTree_int_User_Error_BTree_int_User insert_BTree_int_User (BTree_int_User
       });
     });
 }
-int order_BTree_int_User () {
+size_t order_BTree_int_User () {
   return 3;
 }
 void free_BTree_int_User (BTree_int_User * this_ptr ) {
-  { /* cicili#Let10925 */
+  { /* cicili#Let10398 */
     __auto_type this  = (*this_ptr );
     // ----------
     void freeChildren (List_Rc_BTree_int_User children ) {
-      { /* cicili#Let10930 */
+      { /* cicili#Let10403 */
         typeof((((children -> __h_data ). Cons ). __h_0_mem )) head ;
         typeof((((children -> __h_data ). Cons ). __h_1_mem )) tail ;
         // ----------
-        
-        ({ /* cicili#Let10934 */
-          bool __h_case_result  = (true  &&  (((children -> __h_ctor ) ==  __h_Cons_t  ) &&  (({ /* cicili#Progn10935 */
+        ;
+        ({ /* cicili#Let10405 */
+          bool __h_case_result  = (true  &&  (((children -> __h_ctor ) ==  __h_Cons_t  ) &&  (({ /* cicili#Progn10406 */
                   (head  =  (((children -> __h_data ). Cons ). __h_0_mem ) );
                   true ;
-                }) &&  ({ /* cicili#Progn10937 */
+                }) &&  ({ /* cicili#Progn10408 */
                   (tail  =  (((children -> __h_data ). Cons ). __h_1_mem ) );
                   true ;
                 }) ) ) );
           // ----------
+          
           if (__h_case_result )
-            { /* cicili#Block10941 */
-              { /* cicili#Block10943 */
+            { /* cicili#Block10414 */
+              { /* cicili#Block10416 */
                 free_Rc_BTree_int_User (&head );
                 freeChildren (tail );
               }
@@ -10255,23 +10601,24 @@ void free_BTree_int_User (BTree_int_User * this_ptr ) {
         });
       }
     }
-    { /* cicili#Let10949 */
+    { /* cicili#Let10422 */
       typeof((((this -> __h_data ). Branch ). __h_0_mem )) items ;
       typeof((((this -> __h_data ). Branch ). __h_1_mem )) children ;
       // ----------
-      
-      ({ /* cicili#Let10953 */
-        bool __h_case_result  = (true  &&  (((this -> __h_ctor ) ==  __h_Branch_t  ) &&  (({ /* cicili#Progn10954 */
+      ;
+      ({ /* cicili#Let10424 */
+        bool __h_case_result  = (true  &&  (((this -> __h_ctor ) ==  __h_Branch_t  ) &&  (({ /* cicili#Progn10425 */
                 (items  =  (((this -> __h_data ). Branch ). __h_0_mem ) );
                 true ;
-              }) &&  ({ /* cicili#Progn10956 */
+              }) &&  ({ /* cicili#Progn10427 */
                 (children  =  (((this -> __h_data ). Branch ). __h_1_mem ) );
                 true ;
               }) ) ) );
         // ----------
+        
         if (__h_case_result )
-          { /* cicili#Block10960 */
-            { /* cicili#Block10962 */
+          { /* cicili#Block10433 */
+            { /* cicili#Block10435 */
               free_List_BTree_int_User_pair_t ((&items ));
               freeChildren (children );
               free_List_Rc_BTree_int_User ((&children ));
@@ -10279,23 +10626,24 @@ void free_BTree_int_User (BTree_int_User * this_ptr ) {
             }
           }
         else
-          { /* cicili#Let10973 */
+          { /* cicili#Let10446 */
             typeof((((this -> __h_data ). Internal ). __h_0_mem )) items ;
             typeof((((this -> __h_data ). Internal ). __h_1_mem )) children ;
             // ----------
-            
-            ({ /* cicili#Let10977 */
-              bool __h_case_result  = (true  &&  (((this -> __h_ctor ) ==  __h_Internal_t  ) &&  (({ /* cicili#Progn10978 */
+            ;
+            ({ /* cicili#Let10448 */
+              bool __h_case_result  = (true  &&  (((this -> __h_ctor ) ==  __h_Internal_t  ) &&  (({ /* cicili#Progn10449 */
                       (items  =  (((this -> __h_data ). Internal ). __h_0_mem ) );
                       true ;
-                    }) &&  ({ /* cicili#Progn10980 */
+                    }) &&  ({ /* cicili#Progn10451 */
                       (children  =  (((this -> __h_data ). Internal ). __h_1_mem ) );
                       true ;
                     }) ) ) );
               // ----------
+              
               if (__h_case_result )
-                { /* cicili#Block10984 */
-                  { /* cicili#Block10986 */
+                { /* cicili#Block10457 */
+                  { /* cicili#Block10459 */
                     free_List_BTree_int_User_pair_t ((&items ));
                     freeChildren (children );
                     free_List_Rc_BTree_int_User ((&children ));
@@ -10303,19 +10651,20 @@ void free_BTree_int_User (BTree_int_User * this_ptr ) {
                   }
                 }
               else
-                { /* cicili#Let10997 */
+                { /* cicili#Let10470 */
                   typeof((((this -> __h_data ). Leaf ). __h_0_mem )) items ;
                   // ----------
-                  
-                  ({ /* cicili#Let11001 */
-                    bool __h_case_result  = (true  &&  (((this -> __h_ctor ) ==  __h_Leaf_t  ) &&  ({ /* cicili#Progn11002 */
+                  ;
+                  ({ /* cicili#Let10472 */
+                    bool __h_case_result  = (true  &&  (((this -> __h_ctor ) ==  __h_Leaf_t  ) &&  ({ /* cicili#Progn10473 */
                           (items  =  (((this -> __h_data ). Leaf ). __h_0_mem ) );
                           true ;
                         }) ) );
                     // ----------
+                    
                     if (__h_case_result )
-                      { /* cicili#Block11006 */
-                        { /* cicili#Block11008 */
+                      { /* cicili#Block10479 */
+                        { /* cicili#Block10481 */
                           free_List_BTree_int_User_pair_t ((&items ));
                           free (this );
                         }
@@ -10333,7 +10682,7 @@ BTree_int_User__H_Table * const get_BTree_int_User__H_Table () {
   return (&table );
 }
 BTree_int_User Branch_BTree_int_User (List_BTree_int_User_pair_t items , List_Rc_BTree_int_User children ) {
-  { /* cicili#Let11020 */
+  { /* cicili#Let10493 */
     BTree_int_User instance  = malloc (sizeof(class_BTree_int_User));
     // ----------
     (*instance ) = ((class_BTree_int_User){ get_BTree_int_User__H_Table (), __h_Branch_t , .__h_data.Branch = { items , children }});
@@ -10341,7 +10690,7 @@ BTree_int_User Branch_BTree_int_User (List_BTree_int_User_pair_t items , List_Rc
   }
 }
 BTree_int_User Internal_BTree_int_User (List_BTree_int_User_pair_t items , List_Rc_BTree_int_User children ) {
-  { /* cicili#Let11028 */
+  { /* cicili#Let10501 */
     BTree_int_User instance  = malloc (sizeof(class_BTree_int_User));
     // ----------
     (*instance ) = ((class_BTree_int_User){ get_BTree_int_User__H_Table (), __h_Internal_t , .__h_data.Internal = { items , children }});
@@ -10349,7 +10698,7 @@ BTree_int_User Internal_BTree_int_User (List_BTree_int_User_pair_t items , List_
   }
 }
 BTree_int_User Leaf_BTree_int_User (List_BTree_int_User_pair_t items ) {
-  { /* cicili#Let11036 */
+  { /* cicili#Let10509 */
     BTree_int_User instance  = malloc (sizeof(class_BTree_int_User));
     // ----------
     (*instance ) = ((class_BTree_int_User){ get_BTree_int_User__H_Table (), __h___t , .__h_data._ = { items }});
@@ -10377,11 +10726,11 @@ typedef struct Maybe_BTree_int_User__H_Table {
 typedef struct Maybe_BTree_int_User {
   const Maybe_BTree_int_User__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion11056 */
-    struct { /* ciciliStruct11057 */
+  union { /* ciciliUnion10529 */
+    struct { /* ciciliStruct10530 */
       BTree_int_User __h_0_mem ;
     } Just , _1 ;
-    struct { /* ciciliStruct11058 */
+    struct { /* ciciliStruct10531 */
     } Nothing , _ ;
   } __h_data ;
 } Maybe_BTree_int_User;
@@ -10415,14 +10764,14 @@ typedef struct Arc_BTree_int_User__H_Table {
 typedef struct Arc_BTree_int_User {
   const Arc_BTree_int_User__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion11097 */
-    struct { /* ciciliStruct11098 */
+  union { /* ciciliUnion10570 */
+    struct { /* ciciliStruct10571 */
       BTree_int_User * __h_0_mem ;
       int * __h_1_mem ;
       size_t __h_2_mem ;
       pthread_mutex_t * __h_3_mem ;
     } Hold , _1 ;
-    struct { /* ciciliStruct11099 */
+    struct { /* ciciliStruct10572 */
     } Gone , _ ;
   } __h_data ;
 } Arc_BTree_int_User;
@@ -10448,14 +10797,14 @@ const Maybe_BTree_int_User__H_Table * const get_Maybe_BTree_int_User__H_Table ()
   return (&table );
 }
 Maybe_BTree_int_User Just_BTree_int_User (BTree_int_User value ) {
-  { /* cicili#Let11154 */
+  { /* cicili#Let10627 */
     Maybe_BTree_int_User instance  = ((Maybe_BTree_int_User){ get_Maybe_BTree_int_User__H_Table (), __h_Just_t , .__h_data.Just = { value }});
     // ----------
     return instance ;
   }
 }
 Maybe_BTree_int_User Nothing_BTree_int_User () {
-  { /* cicili#Let11159 */
+  { /* cicili#Let10632 */
     Maybe_BTree_int_User instance  = ((Maybe_BTree_int_User){ get_Maybe_BTree_int_User__H_Table (), __h___t });
     // ----------
     return instance ;
@@ -10465,31 +10814,32 @@ Maybe_BTree_int_User Nothing_BTree_int_User () {
 #ifndef __Arc_BTree_int_User__H_IMPL__
 #define __Arc_BTree_int_User__H_IMPL__
 void lock_Arc_BTree_int_User (Arc_BTree_int_User arc , void (*alive_callback) (BTree_int_User pointer ), void (*dead_callback) ()) {
-  { /* cicili#Let11168 */
+  { /* cicili#Let10641 */
     typeof((((arc . __h_data ). Hold ). __h_0_mem )) pointer ;
     typeof((((arc . __h_data ). Hold ). __h_1_mem )) count ;
     typeof((((arc . __h_data ). Hold ). __h_2_mem )) address ;
     typeof((((arc . __h_data ). Hold ). __h_3_mem )) mutex ;
     // ----------
-    
-    ({ /* cicili#Let11172 */
-      bool __h_case_result  = (true  &&  (((arc . __h_ctor ) ==  __h_Hold_t  ) &&  (((({ /* cicili#Progn11173 */
+    ;
+    ({ /* cicili#Let10643 */
+      bool __h_case_result  = (true  &&  (((arc . __h_ctor ) ==  __h_Hold_t  ) &&  (((({ /* cicili#Progn10644 */
                   (pointer  =  (((arc . __h_data ). Hold ). __h_0_mem ) );
                   true ;
-                }) &&  ({ /* cicili#Progn11175 */
+                }) &&  ({ /* cicili#Progn10646 */
                   (count  =  (((arc . __h_data ). Hold ). __h_1_mem ) );
                   true ;
-                }) ) &&  ({ /* cicili#Progn11177 */
+                }) ) &&  ({ /* cicili#Progn10648 */
                 (address  =  (((arc . __h_data ). Hold ). __h_2_mem ) );
                 true ;
-              }) ) &&  ({ /* cicili#Progn11179 */
+              }) ) &&  ({ /* cicili#Progn10650 */
               (mutex  =  (((arc . __h_data ). Hold ). __h_3_mem ) );
               true ;
             }) ) ) );
       // ----------
+      
       if (__h_case_result )
-        { /* cicili#Block11183 */
-          { /* cicili#Block11186 */
+        { /* cicili#Block10656 */
+          { /* cicili#Block10659 */
             pthread_mutex_lock (mutex );
             if (pointer  &&  (((size_t)(*pointer )) ==  address  ) &&  ((*count ) >  0 ) )
               alive_callback ((*pointer ));
@@ -10499,14 +10849,15 @@ void lock_Arc_BTree_int_User (Arc_BTree_int_User arc , void (*alive_callback) (B
           }
         }
       else
-        { /* cicili#Let11193 */
+        { /* cicili#Let10666 */
           // ----------
-          
-          ({ /* cicili#Let11197 */
+          ;
+          ({ /* cicili#Let10668 */
             bool __h_case_result  = (true  &&  ((arc . __h_ctor ) ==  __h_Gone_t  ) );
             // ----------
+            
             if (__h_case_result )
-              { /* cicili#Block11200 */
+              { /* cicili#Block10673 */
                 dead_callback ();
               }
           });
@@ -10515,7 +10866,7 @@ void lock_Arc_BTree_int_User (Arc_BTree_int_User arc , void (*alive_callback) (B
   }
 }
 Arc_BTree_int_User new_Arc_BTree_int_User (BTree_int_User pointer , pthread_mutex_t * mutex ) {
-  return ({ /* cicili#Let11208 */
+  return ({ /* cicili#Let10681 */
       __auto_type count  = ((int *)malloc (sizeof(int)));
       __auto_type holder  = ((BTree_int_User *)malloc (sizeof(BTree_int_User *)));
       // ----------
@@ -10525,33 +10876,34 @@ Arc_BTree_int_User new_Arc_BTree_int_User (BTree_int_User pointer , pthread_mute
     });
 }
 Arc_BTree_int_User clone_Arc_BTree_int_User (Arc_BTree_int_User arc ) {
-  return ({ /* cicili#Let11216 */
+  return ({ /* cicili#Let10689 */
       typeof((((arc . __h_data ). Hold ). __h_0_mem )) pointer ;
       typeof((((arc . __h_data ). Hold ). __h_1_mem )) count ;
       typeof((((arc . __h_data ). Hold ). __h_2_mem )) address ;
       typeof((((arc . __h_data ). Hold ). __h_3_mem )) mutex ;
       // ----------
-      
-      ({ /* cicili#Let11220 */
-        bool __h_case_result  = (true  &&  (((arc . __h_ctor ) ==  __h_Hold_t  ) &&  (((({ /* cicili#Progn11221 */
+      ;
+      ({ /* cicili#Let10691 */
+        bool __h_case_result  = (true  &&  (((arc . __h_ctor ) ==  __h_Hold_t  ) &&  (((({ /* cicili#Progn10692 */
                     (pointer  =  (((arc . __h_data ). Hold ). __h_0_mem ) );
                     true ;
-                  }) &&  ({ /* cicili#Progn11223 */
+                  }) &&  ({ /* cicili#Progn10694 */
                     (count  =  (((arc . __h_data ). Hold ). __h_1_mem ) );
                     true ;
-                  }) ) &&  ({ /* cicili#Progn11225 */
+                  }) ) &&  ({ /* cicili#Progn10696 */
                   (address  =  (((arc . __h_data ). Hold ). __h_2_mem ) );
                   true ;
-                }) ) &&  ({ /* cicili#Progn11227 */
+                }) ) &&  ({ /* cicili#Progn10698 */
                 (mutex  =  (((arc . __h_data ). Hold ). __h_3_mem ) );
                 true ;
               }) ) ) );
         // ----------
-        ((__h_case_result ) ? ({ /* cicili#Progn11230 */
-            ({ /* cicili#Progn11233 */
+        
+        ((__h_case_result ) ? ({ /* cicili#Progn10703 */
+            ({ /* cicili#Progn10706 */
               pthread_mutex_lock (mutex );
-              __auto_type lock_result  = ({ /* cicili#Progn11235 */
-                    (((pointer  &&  (((size_t)(*pointer )) ==  address  ) )) ? ({ /* cicili#Progn11238 */
+              __auto_type lock_result  = ({ /* cicili#Progn10708 */
+                    (((pointer  &&  (((size_t)(*pointer )) ==  address  ) )) ? ({ /* cicili#Progn10711 */
                         (++(*count ));
                         __h_AtomicHold_BTree_int_User (pointer , count , address , mutex );
                       }) : AtomicGone_BTree_int_User ());
@@ -10559,10 +10911,10 @@ Arc_BTree_int_User clone_Arc_BTree_int_User (Arc_BTree_int_User arc ) {
               pthread_mutex_unlock (mutex );
               lock_result ;
             });
-          }) : ({ /* cicili#Let11244 */
+          }) : ({ /* cicili#Let10717 */
             // ----------
-            
-            ({ /* cicili#Progn11248 */
+            ;
+            ({ /* cicili#Progn10719 */
               AtomicGone_BTree_int_User ();
             });
           }));
@@ -10570,55 +10922,51 @@ Arc_BTree_int_User clone_Arc_BTree_int_User (Arc_BTree_int_User arc ) {
     });
 }
 Maybe_BTree_int_User take_Arc_BTree_int_User (Arc_BTree_int_User * this ) {
-  return ({ /* cicili#Let11257 */
+  return ({ /* cicili#Let10728 */
       typeof((((this -> __h_data ). Hold ). __h_0_mem )) pointer ;
       typeof((((this -> __h_data ). Hold ). __h_1_mem )) count ;
       typeof((((this -> __h_data ). Hold ). __h_2_mem )) address ;
       typeof((((this -> __h_data ). Hold ). __h_3_mem )) mutex ;
       // ----------
-      
-      ({ /* cicili#Let11261 */
-        bool __h_case_result  = (true  &&  (((this -> __h_ctor ) ==  __h_Hold_t  ) &&  (((({ /* cicili#Progn11262 */
+      ;
+      ({ /* cicili#Let10730 */
+        bool __h_case_result  = (true  &&  (((this -> __h_ctor ) ==  __h_Hold_t  ) &&  (((({ /* cicili#Progn10731 */
                     (pointer  =  (((this -> __h_data ). Hold ). __h_0_mem ) );
                     true ;
-                  }) &&  ({ /* cicili#Progn11264 */
+                  }) &&  ({ /* cicili#Progn10733 */
                     (count  =  (((this -> __h_data ). Hold ). __h_1_mem ) );
                     true ;
-                  }) ) &&  ({ /* cicili#Progn11266 */
+                  }) ) &&  ({ /* cicili#Progn10735 */
                   (address  =  (((this -> __h_data ). Hold ). __h_2_mem ) );
                   true ;
-                }) ) &&  ({ /* cicili#Progn11268 */
+                }) ) &&  ({ /* cicili#Progn10737 */
                 (mutex  =  (((this -> __h_data ). Hold ). __h_3_mem ) );
                 true ;
               }) ) ) );
         // ----------
-        ((__h_case_result ) ? ({ /* cicili#Progn11271 */
-            ({ /* cicili#Progn11274 */
+        
+        ((__h_case_result ) ? ({ /* cicili#Progn10742 */
+            ({ /* cicili#Progn10745 */
               pthread_mutex_lock (mutex );
-              __auto_type lock_result  = ({ /* cicili#Progn11276 */
-                    (((pointer  &&  (((size_t)(*pointer )) ==  address  ) )) ? ({ /* cicili#Let11280 */
+              __auto_type lock_result  = ({ /* cicili#Progn10747 */
+                    (((pointer  &&  (((size_t)(*pointer )) ==  address  ) )) ? ({ /* cicili#Let10751 */
                         __auto_type result  = Just_BTree_int_User ((*pointer ));
                         // ----------
-                        if ((*count ) ==  1 )
-                          { /* cicili#Block11286 */
+                        if ((*count ) >=  1 )
+                          { /* cicili#Block10757 */
                             (*count ) = 0;
-                            free (((void *)count ));
                             (*pointer ) = NULL ;
-                            free (((void *)pointer ));
-                            (*this ) = AtomicGone_BTree_int_User ();
                           }
-                        else
-                          (--(*count ));
                         result ;
                       }) : Nothing_BTree_int_User ());
                   });
               pthread_mutex_unlock (mutex );
               lock_result ;
             });
-          }) : ({ /* cicili#Let11293 */
+          }) : ({ /* cicili#Let10762 */
             // ----------
-            
-            ({ /* cicili#Progn11297 */
+            ;
+            ({ /* cicili#Progn10764 */
               Nothing_BTree_int_User ();
             });
           }));
@@ -10626,41 +10974,42 @@ Maybe_BTree_int_User take_Arc_BTree_int_User (Arc_BTree_int_User * this ) {
     });
 }
 Maybe_BTree_int_User get_Arc_BTree_int_User (Arc_BTree_int_User arc ) {
-  return ({ /* cicili#Let11306 */
+  return ({ /* cicili#Let10773 */
       typeof((((arc . __h_data ). Hold ). __h_0_mem )) pointer ;
       typeof((((arc . __h_data ). Hold ). __h_1_mem )) count ;
       typeof((((arc . __h_data ). Hold ). __h_2_mem )) address ;
       typeof((((arc . __h_data ). Hold ). __h_3_mem )) mutex ;
       // ----------
-      
-      ({ /* cicili#Let11310 */
-        bool __h_case_result  = (true  &&  (((arc . __h_ctor ) ==  __h_Hold_t  ) &&  (((({ /* cicili#Progn11311 */
+      ;
+      ({ /* cicili#Let10775 */
+        bool __h_case_result  = (true  &&  (((arc . __h_ctor ) ==  __h_Hold_t  ) &&  (((({ /* cicili#Progn10776 */
                     (pointer  =  (((arc . __h_data ). Hold ). __h_0_mem ) );
                     true ;
-                  }) &&  ({ /* cicili#Progn11313 */
+                  }) &&  ({ /* cicili#Progn10778 */
                     (count  =  (((arc . __h_data ). Hold ). __h_1_mem ) );
                     true ;
-                  }) ) &&  ({ /* cicili#Progn11315 */
+                  }) ) &&  ({ /* cicili#Progn10780 */
                   (address  =  (((arc . __h_data ). Hold ). __h_2_mem ) );
                   true ;
-                }) ) &&  ({ /* cicili#Progn11317 */
+                }) ) &&  ({ /* cicili#Progn10782 */
                 (mutex  =  (((arc . __h_data ). Hold ). __h_3_mem ) );
                 true ;
               }) ) ) );
         // ----------
-        ((__h_case_result ) ? ({ /* cicili#Progn11320 */
-            ({ /* cicili#Progn11323 */
+        
+        ((__h_case_result ) ? ({ /* cicili#Progn10787 */
+            ({ /* cicili#Progn10790 */
               pthread_mutex_lock (mutex );
-              __auto_type lock_result  = ({ /* cicili#Progn11325 */
+              __auto_type lock_result  = ({ /* cicili#Progn10792 */
                     (((pointer  &&  (((size_t)(*pointer )) ==  address  ) &&  ((*count ) >  0 ) )) ? Just_BTree_int_User ((*pointer )) : Nothing_BTree_int_User ());
                   });
               pthread_mutex_unlock (mutex );
               lock_result ;
             });
-          }) : ({ /* cicili#Let11332 */
+          }) : ({ /* cicili#Let10799 */
             // ----------
-            
-            ({ /* cicili#Progn11336 */
+            ;
+            ({ /* cicili#Progn10801 */
               Nothing_BTree_int_User ();
             });
           }));
@@ -10668,58 +11017,68 @@ Maybe_BTree_int_User get_Arc_BTree_int_User (Arc_BTree_int_User arc ) {
     });
 }
 void free_Arc_BTree_int_User (Arc_BTree_int_User * this ) {
-  { /* cicili#Let11346 */
+  { /* cicili#Let10811 */
     typeof((((this -> __h_data ). Hold ). __h_0_mem )) pointer ;
     typeof((((this -> __h_data ). Hold ). __h_1_mem )) count ;
     typeof((((this -> __h_data ). Hold ). __h_2_mem )) address ;
     typeof((((this -> __h_data ). Hold ). __h_3_mem )) mutex ;
     // ----------
-    
-    ({ /* cicili#Let11350 */
-      bool __h_case_result  = (true  &&  (((this -> __h_ctor ) ==  __h_Hold_t  ) &&  (((({ /* cicili#Progn11351 */
+    ;
+    ({ /* cicili#Let10813 */
+      bool __h_case_result  = (true  &&  (((this -> __h_ctor ) ==  __h_Hold_t  ) &&  (((({ /* cicili#Progn10814 */
                   (pointer  =  (((this -> __h_data ). Hold ). __h_0_mem ) );
                   true ;
-                }) &&  ({ /* cicili#Progn11353 */
+                }) &&  ({ /* cicili#Progn10816 */
                   (count  =  (((this -> __h_data ). Hold ). __h_1_mem ) );
                   true ;
-                }) ) &&  ({ /* cicili#Progn11355 */
+                }) ) &&  ({ /* cicili#Progn10818 */
                 (address  =  (((this -> __h_data ). Hold ). __h_2_mem ) );
                 true ;
-              }) ) &&  ({ /* cicili#Progn11357 */
+              }) ) &&  ({ /* cicili#Progn10820 */
               (mutex  =  (((this -> __h_data ). Hold ). __h_3_mem ) );
               true ;
             }) ) ) );
       // ----------
+      
       if (__h_case_result )
-        { /* cicili#Block11361 */
-          { /* cicili#Block11364 */
+        { /* cicili#Block10826 */
+          { /* cicili#Block10829 */
             pthread_mutex_lock (mutex );
-            if (pointer  &&  (((size_t)(*pointer )) ==  address  ) )
-              { /* cicili#Block11368 */
-                if ((*count ) ==  1 )
-                  { /* cicili#Block11371 */
-                    free_BTree_int_User (pointer );
-                    (*count ) = 0;
-                    free (((void *)count ));
-                    (*pointer ) = NULL ;
-                    free (((void *)pointer ));
-                    (*this ) = AtomicGone_BTree_int_User ();
-                  }
-                else
-                  (--(*count ));
+            if (((*count ) ==  0 ) &&  ((*pointer ) ==  NULL  ) )
+              { /* cicili#Block10832 */
+                free (((void *)count ));
+                free (((void *)pointer ));
+                (*this ) = AtomicGone_BTree_int_User ();
               }
-            pthread_mutex_unlock (mutex );
+            else
+              {
+              if (pointer  &&  (((size_t)(*pointer )) ==  address  ) )
+                { /* cicili#Block10840 */
+                  if ((*count ) ==  1 )
+                    { /* cicili#Block10843 */
+                      free_BTree_int_User (pointer );
+                      (*count ) = 0;
+                      free (((void *)count ));
+                      (*pointer ) = NULL ;
+                      free (((void *)pointer ));
+                      (*this ) = AtomicGone_BTree_int_User ();
+                    }
+                  else
+                    (--(*count ));
+                }
+                }            pthread_mutex_unlock (mutex );
           }
         }
       else
-        { /* cicili#Let11381 */
+        { /* cicili#Let10853 */
           // ----------
-          
-          ({ /* cicili#Let11385 */
+          ;
+          ({ /* cicili#Let10855 */
             bool __h_case_result  = (true  &&  ((this -> __h_ctor ) ==  __h_Gone_t  ) );
             // ----------
+            
             if (__h_case_result )
-              { /* cicili#Block11388 */
+              { /* cicili#Block10860 */
               }
           });
         }
@@ -10731,22 +11090,22 @@ const Arc_BTree_int_User__H_Table * const get_Arc_BTree_int_User__H_Table () {
   return (&table );
 }
 Arc_BTree_int_User __h_AtomicHold_BTree_int_User (BTree_int_User * pointer , int * count , size_t address , pthread_mutex_t * mutex ) {
-  { /* cicili#Let11399 */
+  { /* cicili#Let10871 */
     Arc_BTree_int_User instance  = ((Arc_BTree_int_User){ get_Arc_BTree_int_User__H_Table (), __h_Hold_t , .__h_data.Hold = { pointer , count , address , mutex }});
     // ----------
     return instance ;
   }
 }
 Arc_BTree_int_User AtomicGone_BTree_int_User () {
-  { /* cicili#Let11404 */
+  { /* cicili#Let10876 */
     Arc_BTree_int_User instance  = ((Arc_BTree_int_User){ get_Arc_BTree_int_User__H_Table (), __h___t });
     // ----------
     return instance ;
   }
 }
 #endif /* __Arc_BTree_int_User__H_IMPL__ */ 
-void __ciciliL_11476 () {
-  ({ /* cicili#Let11479 */
+void __ciciliL_10948 () {
+  ({ /* cicili#Let10951 */
     __auto_type tmp_stdout  = stdout ;
     // ----------
     stdout  = stderr ;
@@ -10756,20 +11115,20 @@ void __ciciliL_11476 () {
   });
 }
 void insertMany (Arc_BTree_int_User * pwtree , int from , int to ) {
-  { /* cicili#Let11408 */
+  { /* cicili#Let10880 */
     char keyStr [10];
     // ----------
     for (int i  = from ; (i  <=  to  ); (++i )) {
         sprintf (keyStr , "%d", i );
-        { /* cicili#Let11412 */
-          String name  = ({ /* cicili#Let11414 */
-            __auto_type r1  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let11416 */
+        { /* cicili#Let10884 */
+          String name  = ({ /* cicili#Let10886 */
+            __auto_type r1  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let10888 */
               __auto_type r1  = new_String_Const ("User ");
               // ----------
               ((void)(r1 -> __h_table -> freeClass ));
               r1 ;
             });
-            __auto_type r2  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let11419 */
+            __auto_type r2  __attribute__((__cleanup__(__h_free_class_router ))) = ({ /* cicili#Let10891 */
               __auto_type r2  = new_String_Const (keyStr );
               // ----------
               ((void)(r2 -> __h_table -> freeClass ));
@@ -10779,23 +11138,24 @@ void insertMany (Arc_BTree_int_User * pwtree , int from , int to ) {
             append_String (r1 , r2 );
           });
           // ----------
-          lock_Arc_BTree_int_User ((*pwtree ), ({ /* cicili#Progn11425 */
-              void __ciciliC_11424 (BTree_int_User tree ) {
-                { /* cicili#Let11430 */
-                  __auto_type match11429  = insert_BTree_int_User (tree , i , ((User){ new_Cell_String (name ), (i  +  2000 )}));
-                  typeof((((match11429 . __h_data ). Right ). __h_0_mem )) new_tree ;
+          lock_Arc_BTree_int_User ((*pwtree ), ({ /* cicili#Progn10897 */
+              void __ciciliC_10896 (BTree_int_User tree ) {
+                { /* cicili#Let10902 */
+                  __auto_type match10901  = insert_BTree_int_User (tree , i , ((User){ new_Cell_String (name ), (i  +  2000 )}));
+                  typeof((((match10901 . __h_data ). Right ). __h_0_mem )) new_tree ;
                   // ----------
-                  
-                  ({ /* cicili#Let11436 */
-                    bool __h_case_result  = (true  &&  (((match11429 . __h_ctor ) ==  __h_Right_t  ) &&  ({ /* cicili#Progn11437 */
-                          (new_tree  =  (((match11429 . __h_data ). Right ). __h_0_mem ) );
+                  ;
+                  ({ /* cicili#Let10906 */
+                    bool __h_case_result  = (true  &&  (((match10901 . __h_ctor ) ==  __h_Right_t  ) &&  ({ /* cicili#Progn10907 */
+                          (new_tree  =  (((match10901 . __h_data ). Right ). __h_0_mem ) );
                           true ;
                         }) ) );
                     // ----------
+                    
                     if (__h_case_result )
-                      { /* cicili#Block11441 */
-                        { /* cicili#Block11443 */
-                          { /* cicili#Block11446 */
+                      { /* cicili#Block10913 */
+                        { /* cicili#Block10915 */
+                          { /* cicili#Block10918 */
                             pthread_mutex_lock ((&outlock ));
                             fprintf (stdout , "Inserted: %d, ", i );
                             show_String (stdout , name );
@@ -10807,21 +11167,22 @@ void insertMany (Arc_BTree_int_User * pwtree , int from , int to ) {
                         }
                       }
                     else
-                      { /* cicili#Let11458 */
-                        typeof((((match11429 . __h_data ). Left ). __h_0_mem )) err ;
+                      { /* cicili#Let10930 */
+                        typeof((((match10901 . __h_data ). Left ). __h_0_mem )) err ;
                         // ----------
-                        
-                        ({ /* cicili#Let11462 */
-                          bool __h_case_result  = (true  &&  (((match11429 . __h_ctor ) ==  __h_Left_t  ) &&  ({ /* cicili#Progn11463 */
-                                (err  =  (((match11429 . __h_data ). Left ). __h_0_mem ) );
+                        ;
+                        ({ /* cicili#Let10932 */
+                          bool __h_case_result  = (true  &&  (((match10901 . __h_ctor ) ==  __h_Left_t  ) &&  ({ /* cicili#Progn10933 */
+                                (err  =  (((match10901 . __h_data ). Left ). __h_0_mem ) );
                                 true ;
                               }) ) );
                           // ----------
+                          
                           if (__h_case_result )
-                            { /* cicili#Block11467 */
-                              { /* cicili#Block11470 */
+                            { /* cicili#Block10939 */
+                              { /* cicili#Block10942 */
                                 pthread_mutex_lock ((&outlock ));
-                                ({ /* cicili#Let11473 */
+                                ({ /* cicili#Let10945 */
                                   __auto_type tmp_stdout  = stdout ;
                                   // ----------
                                   stdout  = stderr ;
@@ -10839,50 +11200,52 @@ void insertMany (Arc_BTree_int_User * pwtree , int from , int to ) {
                   });
                 }
               }
-              __ciciliC_11424 ;
-            }), __ciciliL_11476 );
+              __ciciliC_10896 ;
+            }), __ciciliL_10948 );
           usleep (5);
         }
     }
   }
 }
-void __ciciliL_11484 (BTree_int_User_pair_t item ) {
-  { /* cicili#Let11489 */
+void __ciciliL_10956 (BTree_int_User_pair_t item ) {
+  { /* cicili#Let10961 */
     typeof((item . __h_0_mem )) key ;
-    typeof((item . __h_1_mem )) __h_match11487_1_arg ;
-    typeof((__h_match11487_1_arg . __h_0_mem )) wname ;
+    typeof((item . __h_1_mem )) __h_match10959_1_arg ;
+    typeof((__h_match10959_1_arg . __h_0_mem )) wname ;
     // ----------
-    
-    ({ /* cicili#Let11493 */
-      bool __h_case_result  = (true  &&  ((({ /* cicili#Progn11494 */
+    ;
+    ({ /* cicili#Let10963 */
+      bool __h_case_result  = (true  &&  ((({ /* cicili#Progn10964 */
               (key  =  (item . __h_0_mem ) );
               true ;
-            }) &&  ({ /* cicili#Progn11496 */
-              (__h_match11487_1_arg  =  (item . __h_1_mem ) );
+            }) &&  ({ /* cicili#Progn10966 */
+              (__h_match10959_1_arg  =  (item . __h_1_mem ) );
               true ;
-            }) ) &&  (true  &&  ({ /* cicili#Progn11498 */
-              (wname  =  (__h_match11487_1_arg . __h_0_mem ) );
+            }) ) &&  (true  &&  ({ /* cicili#Progn10968 */
+              (wname  =  (__h_match10959_1_arg . __h_0_mem ) );
               true ;
             }) ) ) );
       // ----------
+      
       if (__h_case_result )
-        { /* cicili#Block11502 */
-          { /* cicili#Block11505 */
+        { /* cicili#Block10974 */
+          { /* cicili#Block10977 */
             pthread_mutex_lock ((&outlock ));
             printf ("Deleted: %d, ", key );
-            { /* cicili#Let11509 */
-              __auto_type match11508  = get_Cell_String (wname );
-              typeof((((match11508 . __h_data ). Just ). __h_0_mem )) name ;
+            { /* cicili#Let10981 */
+              __auto_type match10980  = get_Cell_String (wname );
+              typeof((((match10980 . __h_data ). Just ). __h_0_mem )) name ;
               // ----------
-              
-              ({ /* cicili#Let11514 */
-                bool __h_case_result  = (true  &&  (((match11508 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn11515 */
-                      (name  =  (((match11508 . __h_data ). Just ). __h_0_mem ) );
+              ;
+              ({ /* cicili#Let10984 */
+                bool __h_case_result  = (true  &&  (((match10980 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn10985 */
+                      (name  =  (((match10980 . __h_data ). Just ). __h_0_mem ) );
                       true ;
                     }) ) );
                 // ----------
+                
                 if (__h_case_result )
-                  { /* cicili#Block11519 */
+                  { /* cicili#Block10991 */
                     show_String (stdout , name );
                   }
               });
@@ -10895,8 +11258,8 @@ void __ciciliL_11484 (BTree_int_User_pair_t item ) {
     });
   }
 }
-void __ciciliL_11574 () {
-  ({ /* cicili#Let11577 */
+void __ciciliL_11046 () {
+  ({ /* cicili#Let11049 */
     __auto_type tmp_stdout  = stdout ;
     // ----------
     stdout  = stderr ;
@@ -10906,46 +11269,48 @@ void __ciciliL_11574 () {
   });
 }
 void deleteMany (Arc_BTree_int_User * pwtree , int from , int to ) {
-  { /* cicili#Let11483 */
-    __auto_type item_deallocator  = __ciciliL_11484 ;
+  { /* cicili#Let10955 */
+    __auto_type item_deallocator  = __ciciliL_10956 ;
     // ----------
     for (int i  = from ; (i  <=  to  ); (++i )) {
-        lock_Arc_BTree_int_User ((*pwtree ), ({ /* cicili#Progn11528 */
-            void __ciciliC_11527 (BTree_int_User tree ) {
-              { /* cicili#Let11533 */
-                __auto_type match11532  = delete_BTree_int_User (tree , i , item_deallocator );
-                typeof((((match11532 . __h_data ). Right ). __h_0_mem )) new_tree ;
+        lock_Arc_BTree_int_User ((*pwtree ), ({ /* cicili#Progn11000 */
+            void __ciciliC_10999 (BTree_int_User tree ) {
+              { /* cicili#Let11005 */
+                __auto_type match11004  = delete_BTree_int_User (tree , i , item_deallocator );
+                typeof((((match11004 . __h_data ). Right ). __h_0_mem )) new_tree ;
                 // ----------
-                
-                ({ /* cicili#Let11538 */
-                  bool __h_case_result  = (true  &&  (((match11532 . __h_ctor ) ==  __h_Right_t  ) &&  ({ /* cicili#Progn11539 */
-                        (new_tree  =  (((match11532 . __h_data ). Right ). __h_0_mem ) );
+                ;
+                ({ /* cicili#Let11008 */
+                  bool __h_case_result  = (true  &&  (((match11004 . __h_ctor ) ==  __h_Right_t  ) &&  ({ /* cicili#Progn11009 */
+                        (new_tree  =  (((match11004 . __h_data ). Right ). __h_0_mem ) );
                         true ;
                       }) ) );
                   // ----------
+                  
                   if (__h_case_result )
-                    { /* cicili#Block11543 */
-                      { /* cicili#Block11545 */
+                    { /* cicili#Block11015 */
+                      { /* cicili#Block11017 */
                         free_Arc_BTree_int_User (pwtree );
                         (*pwtree ) = new_Arc_BTree_int_User (new_tree , (&treeArc ));
                       }
                     }
                   else
-                    { /* cicili#Let11556 */
-                      typeof((((match11532 . __h_data ). Left ). __h_0_mem )) err ;
+                    { /* cicili#Let11028 */
+                      typeof((((match11004 . __h_data ). Left ). __h_0_mem )) err ;
                       // ----------
-                      
-                      ({ /* cicili#Let11560 */
-                        bool __h_case_result  = (true  &&  (((match11532 . __h_ctor ) ==  __h_Left_t  ) &&  ({ /* cicili#Progn11561 */
-                              (err  =  (((match11532 . __h_data ). Left ). __h_0_mem ) );
+                      ;
+                      ({ /* cicili#Let11030 */
+                        bool __h_case_result  = (true  &&  (((match11004 . __h_ctor ) ==  __h_Left_t  ) &&  ({ /* cicili#Progn11031 */
+                              (err  =  (((match11004 . __h_data ). Left ). __h_0_mem ) );
                               true ;
                             }) ) );
                         // ----------
+                        
                         if (__h_case_result )
-                          { /* cicili#Block11565 */
-                            { /* cicili#Block11568 */
+                          { /* cicili#Block11037 */
+                            { /* cicili#Block11040 */
                               pthread_mutex_lock ((&outlock ));
-                              ({ /* cicili#Let11571 */
+                              ({ /* cicili#Let11043 */
                                 __auto_type tmp_stdout  = stdout ;
                                 // ----------
                                 stdout  = stderr ;
@@ -10963,8 +11328,8 @@ void deleteMany (Arc_BTree_int_User * pwtree , int from , int to ) {
                 });
               }
             }
-            __ciciliC_11527 ;
-          }), __ciciliL_11574 );
+            __ciciliC_10999 ;
+          }), __ciciliL_11046 );
         usleep (5);
     }
   }
@@ -10974,100 +11339,105 @@ void freeRcTree (Arc_BTree_int_User * pnwtree ) {
 }
 void searchMany (Arc_BTree_int_User * pwtree , int from , int to ) {
   while (true ) {
-      { /* cicili#Let11589 */
+      { /* cicili#Let11061 */
         // ----------
-        
-        ({ /* cicili#Let11593 */
+        ;
+        ({ /* cicili#Let11063 */
           bool __h_case_result  = (true  &&  ((doQuit . __h_ctor ) ==  __h_True_t  ) );
           // ----------
+          
           if (__h_case_result )
-            { /* cicili#Block11596 */
+            { /* cicili#Block11068 */
               return ;
             }
         });
       }
-      ({ /* cicili#Let11599 */
+      ({ /* cicili#Let11071 */
         __auto_type nwtree  __attribute__((__cleanup__(freeRcTree ))) = clone_Arc_BTree_int_User ((*pwtree ));
         // ----------
-        { /* cicili#Let11604 */
-          __auto_type match11603  = get_Arc_BTree_int_User (nwtree );
-          typeof((((match11603 . __h_data ). Just ). __h_0_mem )) tree ;
+        { /* cicili#Let11076 */
+          __auto_type match11075  = get_Arc_BTree_int_User (nwtree );
+          typeof((((match11075 . __h_data ). Just ). __h_0_mem )) tree ;
           // ----------
-          
-          ({ /* cicili#Let11609 */
-            bool __h_case_result  = (true  &&  (((match11603 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn11610 */
-                  (tree  =  (((match11603 . __h_data ). Just ). __h_0_mem ) );
+          ;
+          ({ /* cicili#Let11079 */
+            bool __h_case_result  = (true  &&  (((match11075 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn11080 */
+                  (tree  =  (((match11075 . __h_data ). Just ). __h_0_mem ) );
                   true ;
                 }) ) );
             // ----------
+            
             if (__h_case_result )
-              { /* cicili#Block11614 */
+              { /* cicili#Block11086 */
                 for (int i  = from ; (i  <=  to  ); (++i )) {
-                    { /* cicili#Let11620 */
-                      __auto_type match11619  = search_BTree_int_User (tree , i );
-                      typeof((((match11619 . __h_data ). Just ). __h_0_mem )) item ;
+                    { /* cicili#Let11092 */
+                      __auto_type match11091  = search_BTree_int_User (tree , i );
+                      typeof((((match11091 . __h_data ). Just ). __h_0_mem )) item ;
                       // ----------
-                      
-                      ({ /* cicili#Let11625 */
-                        bool __h_case_result  = (true  &&  (((match11619 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn11626 */
-                              (item  =  (((match11619 . __h_data ). Just ). __h_0_mem ) );
+                      ;
+                      ({ /* cicili#Let11095 */
+                        bool __h_case_result  = (true  &&  (((match11091 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn11096 */
+                              (item  =  (((match11091 . __h_data ). Just ). __h_0_mem ) );
                               true ;
                             }) ) );
                         // ----------
+                        
                         if (__h_case_result )
-                          { /* cicili#Block11630 */
-                            { /* cicili#Block11633 */
+                          { /* cicili#Block11102 */
+                            { /* cicili#Block11105 */
                               pthread_mutex_lock ((&outlock ));
                               fprintf (stdout , "thread: %lu, Search Found: ", ((unsigned long )pthread_self ()));
-                              ({ /* cicili#Let11642 */
+                              ({ /* cicili#Let11114 */
                                 typeof((item . __h_0_mem )) id ;
-                                typeof((item . __h_1_mem )) __h_match11640_1_arg ;
-                                typeof((__h_match11640_1_arg . __h_0_mem )) wname ;
-                                typeof((__h_match11640_1_arg . __h_1_mem )) salary ;
+                                typeof((item . __h_1_mem )) __h_match11112_1_arg ;
+                                typeof((__h_match11112_1_arg . __h_0_mem )) wname ;
+                                typeof((__h_match11112_1_arg . __h_1_mem )) salary ;
                                 // ----------
-                                
-                                ({ /* cicili#Let11646 */
-                                  bool __h_case_result  = (true  &&  ((({ /* cicili#Progn11647 */
+                                ;
+                                ({ /* cicili#Let11116 */
+                                  bool __h_case_result  = (true  &&  ((({ /* cicili#Progn11117 */
                                           (id  =  (item . __h_0_mem ) );
                                           true ;
-                                        }) &&  ({ /* cicili#Progn11649 */
-                                          (__h_match11640_1_arg  =  (item . __h_1_mem ) );
+                                        }) &&  ({ /* cicili#Progn11119 */
+                                          (__h_match11112_1_arg  =  (item . __h_1_mem ) );
                                           true ;
-                                        }) ) &&  (true  &&  (({ /* cicili#Progn11651 */
-                                            (wname  =  (__h_match11640_1_arg . __h_0_mem ) );
+                                        }) ) &&  (true  &&  (({ /* cicili#Progn11121 */
+                                            (wname  =  (__h_match11112_1_arg . __h_0_mem ) );
                                             true ;
-                                          }) &&  ({ /* cicili#Progn11653 */
-                                            (salary  =  (__h_match11640_1_arg . __h_1_mem ) );
+                                          }) &&  ({ /* cicili#Progn11123 */
+                                            (salary  =  (__h_match11112_1_arg . __h_1_mem ) );
                                             true ;
                                           }) ) ) ) );
                                   // ----------
-                                  ((__h_case_result ) ? ({ /* cicili#Progn11656 */
-                                      ({ /* cicili#Let11660 */
-                                        __auto_type match11659  = get_Cell_String (wname );
-                                        typeof((((match11659 . __h_data ). Just ). __h_0_mem )) name ;
+                                  
+                                  ((__h_case_result ) ? ({ /* cicili#Progn11128 */
+                                      ({ /* cicili#Let11132 */
+                                        __auto_type match11131  = get_Cell_String (wname );
+                                        typeof((((match11131 . __h_data ). Just ). __h_0_mem )) name ;
                                         // ----------
-                                        
-                                        ({ /* cicili#Let11665 */
-                                          bool __h_case_result  = (true  &&  (((match11659 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn11666 */
-                                                (name  =  (((match11659 . __h_data ). Just ). __h_0_mem ) );
+                                        ;
+                                        ({ /* cicili#Let11135 */
+                                          bool __h_case_result  = (true  &&  (((match11131 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn11136 */
+                                                (name  =  (((match11131 . __h_data ). Just ). __h_0_mem ) );
                                                 true ;
                                               }) ) );
                                           // ----------
-                                          ((__h_case_result ) ? ({ /* cicili#Progn11669 */
+                                          
+                                          ((__h_case_result ) ? ({ /* cicili#Progn11141 */
                                               (fprintf (stdout , "(%d, '", id ) +  show_String (stdout , name ) +  fprintf (stdout , "', %d)", salary ) );
-                                            }) : ({ /* cicili#Let11673 */
+                                            }) : ({ /* cicili#Let11145 */
                                               // ----------
-                                              
-                                              ({ /* cicili#Progn11677 */
+                                              ;
+                                              ({ /* cicili#Progn11147 */
                                                 fprintf (stdout , "%d, but item is deleted in another version!", id );
                                               });
                                             }));
                                         });
                                       });
-                                    }) : ({ /* cicili#Let11681 */
+                                    }) : ({ /* cicili#Let11151 */
                                       // ----------
-                                      
-                                      ({ /* cicili#Progn11685 */
+                                      ;
+                                      ({ /* cicili#Progn11153 */
                                         0;
                                       });
                                     }));
@@ -11078,17 +11448,18 @@ void searchMany (Arc_BTree_int_User * pwtree , int from , int to ) {
                             }
                           }
                         else
-                          { /* cicili#Let11690 */
+                          { /* cicili#Let11158 */
                             // ----------
-                            
-                            ({ /* cicili#Let11694 */
-                              bool __h_case_result  = (true  &&  ((match11619 . __h_ctor ) ==  __h_Nothing_t  ) );
+                            ;
+                            ({ /* cicili#Let11160 */
+                              bool __h_case_result  = (true  &&  ((match11091 . __h_ctor ) ==  __h_Nothing_t  ) );
                               // ----------
+                              
                               if (__h_case_result )
-                                { /* cicili#Block11697 */
-                                  { /* cicili#Block11700 */
+                                { /* cicili#Block11165 */
+                                  { /* cicili#Block11168 */
                                     pthread_mutex_lock ((&outlock ));
-                                    ({ /* cicili#Let11703 */
+                                    ({ /* cicili#Let11171 */
                                       __auto_type tmp_stdout  = stdout ;
                                       // ----------
                                       stdout  = stderr ;
@@ -11110,130 +11481,130 @@ void searchMany (Arc_BTree_int_User * pwtree , int from , int to ) {
       });
   }
 }
-typedef struct __ciciliC_Context_11727 {
-    void (*routine) (struct __ciciliC_Context_11727 * context );
-  struct { /* ciciliStruct11730 */
+typedef struct __ciciliC_Context_11195 {
+    void (*routine) (struct __ciciliC_Context_11195 * context );
+  struct { /* ciciliStruct11198 */
     Arc_BTree_int_User * pwtree ;
   } context ;
-} __ciciliC_Context_11727;
-typedef struct ciciliO40Yrb_V0tImx1X77Qgs6Ver8mk_ {
+} __ciciliC_Context_11195;
+typedef struct ciciliuHxEOASl4P3iVDYo1QYX9E3bziQ_ {
   void * context ;
-} ciciliO40Yrb_V0tImx1X77Qgs6Ver8mk_;
-void __ciciliL_11737 (struct ciciliO40Yrb_V0tImx1X77Qgs6Ver8mk_ * ciciliDefer11734_ptr ) {
-  void * context  = (ciciliDefer11734_ptr -> context );
+} ciciliuHxEOASl4P3iVDYo1QYX9E3bziQ_;
+void __ciciliL_11205 (struct ciciliuHxEOASl4P3iVDYo1QYX9E3bziQ_ * ciciliDefer11202_ptr ) {
+  void * context  = (ciciliDefer11202_ptr -> context );
   free (context );
 }
-void __ciciliC_Context_11727___ciciliC_Routine_11728 (struct __ciciliC_Context_11727 * context ) {
+void __ciciliC_Context_11195___ciciliC_Routine_11196 (struct __ciciliC_Context_11195 * context ) {
   Arc_BTree_int_User * pwtree  = ((context -> context ). pwtree );
-  struct ciciliO40Yrb_V0tImx1X77Qgs6Ver8mk_ ciciliDefer11734  __attribute__((__cleanup__(__ciciliL_11737 ))) = { context };
+  struct ciciliuHxEOASl4P3iVDYo1QYX9E3bziQ_ ciciliDefer11202  __attribute__((__cleanup__(__ciciliL_11205 ))) = { context };
   searchMany (pwtree , 200, 200);
 }
-typedef struct __ciciliC_Context_11748 {
-    void (*routine) (struct __ciciliC_Context_11748 * context );
-  struct { /* ciciliStruct11751 */
+typedef struct __ciciliC_Context_11216 {
+    void (*routine) (struct __ciciliC_Context_11216 * context );
+  struct { /* ciciliStruct11219 */
     Arc_BTree_int_User * pwtree ;
   } context ;
-} __ciciliC_Context_11748;
-typedef struct cicilifEz9sS3cHnOlQNzwka_5_g7fCYY_ {
+} __ciciliC_Context_11216;
+typedef struct ciciliu8_vFmh_PNPXE3F4_mAYcl_OFyQ_ {
   void * context ;
-} cicilifEz9sS3cHnOlQNzwka_5_g7fCYY_;
-void __ciciliL_11758 (struct cicilifEz9sS3cHnOlQNzwka_5_g7fCYY_ * ciciliDefer11755_ptr ) {
-  void * context  = (ciciliDefer11755_ptr -> context );
+} ciciliu8_vFmh_PNPXE3F4_mAYcl_OFyQ_;
+void __ciciliL_11226 (struct ciciliu8_vFmh_PNPXE3F4_mAYcl_OFyQ_ * ciciliDefer11223_ptr ) {
+  void * context  = (ciciliDefer11223_ptr -> context );
   free (context );
 }
-void __ciciliC_Context_11748___ciciliC_Routine_11749 (struct __ciciliC_Context_11748 * context ) {
+void __ciciliC_Context_11216___ciciliC_Routine_11217 (struct __ciciliC_Context_11216 * context ) {
   Arc_BTree_int_User * pwtree  = ((context -> context ). pwtree );
-  struct cicilifEz9sS3cHnOlQNzwka_5_g7fCYY_ ciciliDefer11755  __attribute__((__cleanup__(__ciciliL_11758 ))) = { context };
+  struct ciciliu8_vFmh_PNPXE3F4_mAYcl_OFyQ_ ciciliDefer11223  __attribute__((__cleanup__(__ciciliL_11226 ))) = { context };
   searchMany (pwtree , 500, 500);
 }
-typedef struct __ciciliC_Context_11769 {
-    void (*routine) (struct __ciciliC_Context_11769 * context );
-  struct { /* ciciliStruct11772 */
+typedef struct __ciciliC_Context_11237 {
+    void (*routine) (struct __ciciliC_Context_11237 * context );
+  struct { /* ciciliStruct11240 */
     Arc_BTree_int_User * pwtree ;
   } context ;
-} __ciciliC_Context_11769;
-typedef struct ciciliTlTZv4oddosoxKu7FnMWTNI_gOE_ {
+} __ciciliC_Context_11237;
+typedef struct cicili_He5gRjoUUhEKi5L8NL_CI6DfyM_ {
   void * context ;
-} ciciliTlTZv4oddosoxKu7FnMWTNI_gOE_;
-void __ciciliL_11779 (struct ciciliTlTZv4oddosoxKu7FnMWTNI_gOE_ * ciciliDefer11776_ptr ) {
-  void * context  = (ciciliDefer11776_ptr -> context );
+} cicili_He5gRjoUUhEKi5L8NL_CI6DfyM_;
+void __ciciliL_11247 (struct cicili_He5gRjoUUhEKi5L8NL_CI6DfyM_ * ciciliDefer11244_ptr ) {
+  void * context  = (ciciliDefer11244_ptr -> context );
   free (context );
 }
-void __ciciliC_Context_11769___ciciliC_Routine_11770 (struct __ciciliC_Context_11769 * context ) {
+void __ciciliC_Context_11237___ciciliC_Routine_11238 (struct __ciciliC_Context_11237 * context ) {
   Arc_BTree_int_User * pwtree  = ((context -> context ). pwtree );
-  struct ciciliTlTZv4oddosoxKu7FnMWTNI_gOE_ ciciliDefer11776  __attribute__((__cleanup__(__ciciliL_11779 ))) = { context };
+  struct cicili_He5gRjoUUhEKi5L8NL_CI6DfyM_ ciciliDefer11244  __attribute__((__cleanup__(__ciciliL_11247 ))) = { context };
   searchMany (pwtree , 700, 700);
 }
-typedef struct __ciciliC_Context_11790 {
-    void (*routine) (struct __ciciliC_Context_11790 * context );
-  struct { /* ciciliStruct11793 */
+typedef struct __ciciliC_Context_11258 {
+    void (*routine) (struct __ciciliC_Context_11258 * context );
+  struct { /* ciciliStruct11261 */
     Arc_BTree_int_User * pwtree ;
   } context ;
-} __ciciliC_Context_11790;
-typedef struct ciciliiHfsBtygHeQnZlvKGH_TQQswvqs_ {
+} __ciciliC_Context_11258;
+typedef struct ciciliD74shCZDJyQmsm_4GpCZ0P6zt9c_ {
   void * context ;
-} ciciliiHfsBtygHeQnZlvKGH_TQQswvqs_;
-void __ciciliL_11800 (struct ciciliiHfsBtygHeQnZlvKGH_TQQswvqs_ * ciciliDefer11797_ptr ) {
-  void * context  = (ciciliDefer11797_ptr -> context );
+} ciciliD74shCZDJyQmsm_4GpCZ0P6zt9c_;
+void __ciciliL_11268 (struct ciciliD74shCZDJyQmsm_4GpCZ0P6zt9c_ * ciciliDefer11265_ptr ) {
+  void * context  = (ciciliDefer11265_ptr -> context );
   free (context );
 }
-void __ciciliC_Context_11790___ciciliC_Routine_11791 (struct __ciciliC_Context_11790 * context ) {
+void __ciciliC_Context_11258___ciciliC_Routine_11259 (struct __ciciliC_Context_11258 * context ) {
   Arc_BTree_int_User * pwtree  = ((context -> context ). pwtree );
-  struct ciciliiHfsBtygHeQnZlvKGH_TQQswvqs_ ciciliDefer11797  __attribute__((__cleanup__(__ciciliL_11800 ))) = { context };
+  struct ciciliD74shCZDJyQmsm_4GpCZ0P6zt9c_ ciciliDefer11265  __attribute__((__cleanup__(__ciciliL_11268 ))) = { context };
   searchMany (pwtree , 1000, 1000);
 }
 int main () {
   fprintf (stdout , "Multi-thread pure functional manipulation of '%s' type into and from '%s' structure using '%s' key type.\n", "User", "BTree_int_User", "int");
   doQuit  = False ();
-  { /* cicili#Let11713 */
+  { /* cicili#Let11181 */
     pthread_mutexattr_t attr ;
     // ----------
     pthread_mutexattr_init ((&attr ));
     pthread_mutexattr_settype ((&attr ), PTHREAD_MUTEX_RECURSIVE );
     pthread_mutex_init ((&treeArc ), (&attr ));
   }
-  { /* cicili#Let11715 */
+  { /* cicili#Let11183 */
     Arc_BTree_int_User wtree  = new_Arc_BTree_int_User (Leaf_BTree_int_User (Nil_BTree_int_User_pair_t ()), (&treeArc ));
     Arc_BTree_int_User * pwtree  = (&wtree );
-    __auto_type reader1  = ({ /* cicili#Let11724 */
-      __auto_type closure11723  = ((struct __ciciliC_Context_11727 ){ __ciciliC_Context_11727___ciciliC_Routine_11728 , { pwtree }});
-      void * data  = malloc (sizeof(closure11723));
-      pthread_t thread11722 ;
+    __auto_type reader1  = ({ /* cicili#Let11192 */
+      __auto_type closure11191  = ((struct __ciciliC_Context_11195 ){ __ciciliC_Context_11195___ciciliC_Routine_11196 , { pwtree }});
+      void * data  = malloc (sizeof(closure11191));
+      pthread_t thread11190 ;
       // ----------
-      memcpy (data , (&closure11723 ), sizeof(closure11723));
-      pthread_create ((&thread11722 ), NULL , ((        void * (*)(void *   ))(closure11723 . routine )), data );
+      memcpy (data , (&closure11191 ), sizeof(closure11191));
+      pthread_create ((&thread11190 ), NULL , ((        void * (*)(void *   ))(closure11191 . routine )), data );
       ;
-      thread11722 ;
+      thread11190 ;
     });
-    __auto_type reader2  = ({ /* cicili#Let11745 */
-      __auto_type closure11744  = ((struct __ciciliC_Context_11748 ){ __ciciliC_Context_11748___ciciliC_Routine_11749 , { pwtree }});
-      void * data  = malloc (sizeof(closure11744));
-      pthread_t thread11743 ;
+    __auto_type reader2  = ({ /* cicili#Let11213 */
+      __auto_type closure11212  = ((struct __ciciliC_Context_11216 ){ __ciciliC_Context_11216___ciciliC_Routine_11217 , { pwtree }});
+      void * data  = malloc (sizeof(closure11212));
+      pthread_t thread11211 ;
       // ----------
-      memcpy (data , (&closure11744 ), sizeof(closure11744));
-      pthread_create ((&thread11743 ), NULL , ((        void * (*)(void *   ))(closure11744 . routine )), data );
+      memcpy (data , (&closure11212 ), sizeof(closure11212));
+      pthread_create ((&thread11211 ), NULL , ((        void * (*)(void *   ))(closure11212 . routine )), data );
       ;
-      thread11743 ;
+      thread11211 ;
     });
-    __auto_type reader3  = ({ /* cicili#Let11766 */
-      __auto_type closure11765  = ((struct __ciciliC_Context_11769 ){ __ciciliC_Context_11769___ciciliC_Routine_11770 , { pwtree }});
-      void * data  = malloc (sizeof(closure11765));
-      pthread_t thread11764 ;
+    __auto_type reader3  = ({ /* cicili#Let11234 */
+      __auto_type closure11233  = ((struct __ciciliC_Context_11237 ){ __ciciliC_Context_11237___ciciliC_Routine_11238 , { pwtree }});
+      void * data  = malloc (sizeof(closure11233));
+      pthread_t thread11232 ;
       // ----------
-      memcpy (data , (&closure11765 ), sizeof(closure11765));
-      pthread_create ((&thread11764 ), NULL , ((        void * (*)(void *   ))(closure11765 . routine )), data );
+      memcpy (data , (&closure11233 ), sizeof(closure11233));
+      pthread_create ((&thread11232 ), NULL , ((        void * (*)(void *   ))(closure11233 . routine )), data );
       ;
-      thread11764 ;
+      thread11232 ;
     });
-    __auto_type reader4  = ({ /* cicili#Let11787 */
-      __auto_type closure11786  = ((struct __ciciliC_Context_11790 ){ __ciciliC_Context_11790___ciciliC_Routine_11791 , { pwtree }});
-      void * data  = malloc (sizeof(closure11786));
-      pthread_t thread11785 ;
+    __auto_type reader4  = ({ /* cicili#Let11255 */
+      __auto_type closure11254  = ((struct __ciciliC_Context_11258 ){ __ciciliC_Context_11258___ciciliC_Routine_11259 , { pwtree }});
+      void * data  = malloc (sizeof(closure11254));
+      pthread_t thread11253 ;
       // ----------
-      memcpy (data , (&closure11786 ), sizeof(closure11786));
-      pthread_create ((&thread11785 ), NULL , ((        void * (*)(void *   ))(closure11786 . routine )), data );
+      memcpy (data , (&closure11254 ), sizeof(closure11254));
+      pthread_create ((&thread11253 ), NULL , ((        void * (*)(void *   ))(closure11254 . routine )), data );
       ;
-      thread11785 ;
+      thread11253 ;
     });
     // ----------
     insertMany (pwtree , 1, 250);
