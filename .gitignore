@@ -293,3 +293,6 @@ draft/tests/collection/main
 /draft/tests/collection/main.dSYM
 benchmark/concurrent_btree
 draft/tests/collection/btree
+benchmark/royal_btree
+benchmark/simple_btree
+draft/tests/collection/royal_btree

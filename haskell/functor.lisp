@@ -92,6 +92,38 @@
   ) ; import-Functor-List
 
 
+;; BoxedList Functor
+(generic decl-Functor-BoxedList
+  (type a b)
+
+  (decl-Functor type List a b)
+
+  ) ; decl-Functor-BoxedList
+
+;; a_b function is available
+;; input variable is the head of each Cons and the expression should return wrapped b type
+(generic impl-Functor-BoxedList
+  (type a b)
+
+  (impl-Functor type List a b
+                (match# input
+                  (dead ((<> BoxedNil b)))
+                  (* Cons head tail    ; extract   f a
+                     ((<> BoxedCons b) ; construct f b
+                      ($> a_b $ head)
+                      ((<> fmap Functor type) a_b tail)))
+                  (default ((<> BoxedNil b)))))
+
+  ) ; impl-Functor-BoxedList
+
+(generic import-Functor-BoxedList
+  (type a b)
+
+  (import-Functor type List a b)
+
+  ) ; import-Functor-BoxedList
+
+
 ;; Maybe Functor
 (generic decl-Functor-Maybe
   (type a b)

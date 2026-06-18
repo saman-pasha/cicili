@@ -1,0 +1,251 @@
+
+(import "../../collection/royal-btree.lisp")
+
+(source "royal_btree.c" (make :std #t :haskell #t :compile #t :link "royal_btree.o -o royal_btree")
+
+        ;; Define a simple User type, contains name and salary
+        ;; id is not included in User type, chosen as key
+        (typedef (Tuple String int) User)
+
+        ;; list of Item should be declared
+        (decl-List List^User User)
+
+        (generic tree-type
+          (3t) ; 3t is BTree^int^User type
+          
+          (decl-B-Tree 3t ; 3t is BTree^int^User type
+            ;;   item : (Tuple int User)
+            int       ; int  : key type, user id
+            User)     ; User : value type
+
+          (func compareKey ((int lkey) (int rkey))
+                (out Ordering)
+                (return (case (<  lkey rkey) (LT)
+                              (== lkey rkey) (EQ)
+                              otherwise      (GT))))
+          
+          (fn showKey -file -key
+              (fprintf -file "%d" -key))
+          
+          (fn showValue -file -value
+              (match -value
+                ((\, name salary)
+                 (+ (fprintf -file "(")
+                    (show^String -file name)
+                    (fprintf -file ", %d)" salary)))
+                (default 0)))
+          
+          (fn showItem -file -item
+              (match -item
+                ((\, id ((\, name salary)))
+                 (+ (fprintf -file "(id: %d, name: " id)
+                    (show^String -file name)
+                    (fprintf -file ", salary: %d)" salary)))
+                (default 0)))
+          
+          (impl-List List^User User showValue " ")
+          
+          (impl-B-Tree 3t ; 3t is BTree^int^User type
+            ;;    item : (Tuple int User)
+            int        ; int  : key type, user id
+            User       ; User : value type
+            3          ; m    : order (degree)
+            compareKey ; key comparision function
+            showKey    ; show key function
+            showItem)  ; show item function
+          
+          
+          ;; bind Either (<> 3t Error) 3t for set k v >>= User
+          (decl-Monad-Either (<> Either (<> 3t Error) 3t 3t) (<> 3t Error) 3t 3t)
+          (impl-Monad-Either (<> Either (<> 3t Error) 3t 3t) (<> 3t Error) 3t 3t
+                             ((<> Left (<> 3t Error) 3t) ((<> 3t ERR_INVALID_OBJECT))))
+
+          
+          (func insertAndFree ((3t tree)
+                               (int key)
+                               (User value))
+                (out (<> Either (<> 3t Error) 3t))
+                (printf "Inserting: %d\n" key)
+                (return (letin ((* tree tree)) ; free previous tree deferral
+                          (letin* ((wtr ((<> insert 3t) tree key value)))
+                            (io wtr (Right ntr (block (printf "\nInserted: %d\n" key)
+                                                      ((<> show 3t) stdout ntr) (putchar #\Newline))))
+                            wtr))))
+
+          (func deleteAndFree ((3t tree)
+                               (int key))
+                (out (<> Either (<> 3t Error) 3t))
+                (printf "Deleting: %d\n" key)
+                (return (letin ((* tree tree)) ; free previous tree deferral
+                          (letin* ((wtr ((<> delete 3t)
+                                         tree
+                                         key
+                                         '(lambda (((<> 3t pair_t) item))
+                                           (io item
+                                             ((\, key (\, name)) (block (printf "\nDeleted: %d, " key)
+                                                                        (show name)
+                                                                        (putchar #\Newline)
+                                                                        (free^String (aof name))
+                                                                        )))))))
+                            (io wtr (Right ntr (block ((<> show 3t) stdout ntr) (putchar #\Newline))))
+                            wtr))))
+
+          (func insertMany ((3t tree))
+                (out (<> Either (<> 3t Error) 3t))
+                (return
+                  (letin* ((bind (<> bind Monad (<> Either (<> 3t Error) 3t) 3t)))
+                    ;; every step 3t type is input and (<> Either (<> 3t Error) 3t) is output
+                    ;; shorts circuit on error
+                    (>>= bind 3t (<> Either (<> 3t Error) 3t)
+                         tree <- (insertAndFree tree 30 (cast User '{ (new^String "Dennis Ritchie 01") 2000 }))
+                         tree <- (insertAndFree tree 20 (cast User '{ (new^String "Dennis Ritchie 02") 3000 }))
+                         tree <- (insertAndFree tree 40 (cast User '{ (new^String "Dennis Ritchie 03") 4000 }))
+                         tree <- (insertAndFree tree 18 (cast User '{ (new^String "Dennis Ritchie 04") 5000 }))
+                         tree <- (insertAndFree tree 28 (cast User '{ (new^String "Dennis Ritchie 05") 6000 }))
+                         tree <- (insertAndFree tree 50 (cast User '{ (new^String "John McCarthy 06")  2000 }))
+                         tree <- (insertAndFree tree 10 (cast User '{ (new^String "John McCarthy 07")  3000 }))
+                         tree <- (insertAndFree tree 42 (cast User '{ (new^String "John McCarthy 08")  4000 }))
+                         tree <- (insertAndFree tree 52 (cast User '{ (new^String "John McCarthy 09")  5000 }))
+                         tree <- (insertAndFree tree 8  (cast User '{ (new^String "Haskell Curry 10")  6000 }))
+                         tree <- (insertAndFree tree 26 (cast User '{ (new^String "Haskell Curry 11")  2000 }))
+                         tree <- (insertAndFree tree 60 (cast User '{ (new^String "Haskell Curry 12")  3000 }))
+                         tree <- (insertAndFree tree 70 (cast User '{ (new^String "Saman Pasha 13")    4000 }))
+                         tree <- (insertAndFree tree 56 (cast User '{ (new^String "Dennis Ritchie 14") 5000 }))
+                         tree <- (insertAndFree tree 58 (cast User '{ (new^String "Dennis Ritchie 15") 6000 }))
+                         tree <- (insertAndFree tree 74 (cast User '{ (new^String "Dennis Ritchie 16") 2000 }))
+                         tree <- (insertAndFree tree 76 (cast User '{ (new^String "Dennis Ritchie 17") 3000 }))
+                         tree <- (insertAndFree tree 2  (cast User '{ (new^String "John McCarthy 18")  4000 }))
+                         tree <- (insertAndFree tree 4  (cast User '{ (new^String "John McCarthy 19")  5000 }))
+                         tree <- (insertAndFree tree 6  (cast User '{ (new^String "John McCarthy 20")  6000 }))
+                         tree <- (insertAndFree tree 38 (cast User '{ (new^String "Haskell Curry 21")  2000 }))
+                         tree <- (insertAndFree tree 36 (cast User '{ (new^String "Haskell Curry 22")  3000 }))
+                         tree <- (insertAndFree tree 34 (cast User '{ (new^String "Saman Pasha 23")    4000 }))
+                         tree <- (insertAndFree tree 62 (cast User '{ (new^String "Cicili 24")         5000 }))
+                         tree <- (insertAndFree tree 46 (cast User '{ (new^String "Cicili 25")         6000 }))
+                         tree <- (insertAndFree tree 48 (cast User '{ (new^String "Cicili 26")         2000 }))
+                         tree <- (insertAndFree tree 54 (cast User '{ (new^String "Cicili 27")         3000 }))
+                         tree <- (insertAndFree tree 31 (cast User '{ (new^String "Cicili 28")         6000 }))
+                         tree <- (insertAndFree tree 32 (cast User '{ (new^String "Cicili 29")         2000 }))
+                         tree <- (insertAndFree tree 33 (cast User '{ (new^String "Cicili 30")         3000 }))
+                         
+                         ;; uncomment the line below for unique key error
+                         ;; tree <- (insertAndFree tree 50 (cast User '{ (new^String "Cicili 27")         4000 }))
+                         ((<> Right (<> 3t Error) 3t) tree)))))
+
+          (func deleteMany ((3t tree))
+                (out (<> Either (<> 3t Error) 3t))
+                ;; uncomment to doesn't delete anythong
+                ;; (return ((<> Right (<> 3t Error) 3t) tree))
+                
+                (return
+                  (letin* ((bind (<> bind Monad (<> Either (<> 3t Error) 3t) 3t)))
+                    (>>= bind 3t (<> Either (<> 3t Error) 3t)                    
+                         tree <- (deleteAndFree tree 76)
+                         tree <- (deleteAndFree tree 74)
+                         tree <- (deleteAndFree tree 70)
+                         tree <- (deleteAndFree tree 10)
+                         tree <- (deleteAndFree tree 42)
+                         tree <- (deleteAndFree tree 30)
+                         tree <- (deleteAndFree tree 28)
+                         tree <- (deleteAndFree tree 40)
+                         tree <- (deleteAndFree tree 52)
+                         tree <- (deleteAndFree tree 50)
+                         tree <- (deleteAndFree tree 18)
+                         tree <- (deleteAndFree tree 2)
+                         tree <- (deleteAndFree tree 8)
+                         tree <- (deleteAndFree tree 58)
+                         tree <- (deleteAndFree tree 20)
+                         tree <- (deleteAndFree tree 56)                         
+                         tree <- (deleteAndFree tree 26)
+                         tree <- (deleteAndFree tree 4)
+                         tree <- (deleteAndFree tree 60)
+                         tree <- (deleteAndFree tree 31)
+                         tree <- (deleteAndFree tree 54)
+                         tree <- (deleteAndFree tree 38)
+                         tree <- (deleteAndFree tree 62)                         
+                         tree <- (deleteAndFree tree 36)
+                         tree <- (deleteAndFree tree 6)
+                         tree <- (deleteAndFree tree 48)
+                         tree <- (deleteAndFree tree 34)
+                         tree <- (deleteAndFree tree 32)
+                         tree <- (deleteAndFree tree 46)
+                         tree <- (deleteAndFree tree 33)
+                         ((<> Right (<> 3t Error) 3t) tree)))))
+
+          (func showTreeResult (((<> Either (<> 3t Error) 3t) etree))                
+                (io etree
+                  (Right tree
+                         (where ((search (\\ key (block
+                                                   (printf "searching for %d: " key)
+                                                   (io ((<> search 3t) tree key)
+                                                     (Just item ($> showItem stdout item))
+                                                     (Nothing (printf "not found!")))
+                                                   (putchar #\Newline)))))
+                           (block
+                             (putchar #\Newline)
+                             (search 30)
+                             (search 50)
+                             (search 60)
+                             (search 70)
+                             (search 56)
+
+                             (putchar #\Newline)
+                             (printf "Traversing B-Tree: \n")
+                             ((<> traverse 3t) tree '(lambda (((<> 3t pair_t) item) (Bool hasNext))
+                                                      (io item
+                                                        ((\, key (\, name)) (block
+                                                                              ($> showKey stdout key)
+                                                                              (putchar #\Space)
+                                                                              (show name)
+                                                                              (putchar #\Newline))))))
+                             
+                             (putchar #\Newline)
+                             (io ((<> min 3t) tree)
+                               (Just item (block (printf "minimum: ")
+                                            ($> showItem stdout item)
+                                                 (putchar #\Newline)))
+                               (Nothing (printf "minimum not found!")))
+                             
+                             (putchar #\Newline)
+                             (io ((<> max 3t) tree)
+                               (Just item (block (printf "maximum: ")
+                                                 ($> showItem stdout item)
+                                                 (putchar #\Newline)))
+                               (Nothing (printf "maximum not found!")))
+                             
+                             (putchar #\Newline)
+                             
+                             (io (deleteMany tree)
+                               (Right tree (block
+                                             (printf "Traversing B-Tree to free strings allocated names if were not deleted.\n")
+                                             ((<> traverse 3t) tree '(lambda (((<> 3t pair_t) item) (Bool hasNext))
+                                                                      (io item
+                                                                        ((\, _ (\, name)) (block (show name)
+                                                                                                 (free^String (aof name))
+                                                                                                 (putchar #\Newline))
+                                                                         ))))
+                                             ((<> free 3t) (aof tree))
+                                             ))
+                               (Left error (error! (printf "\nB-Tree Deletion Error: ")
+                                                   ((<> show 3t Error) error)
+                                                   (putchar #\Newline))))
+
+                             (printf "Done\n")
+                             ))) ; Right
+                  (Left error (error! (printf "\nB-Tree Insertion Error: ")
+                                ((<> show 3t Error) error)
+                                (putchar #\Newline))))
+                ) ; showTreeResult
+
+          (main
+            (letin* ((tree ((<> Leaf 3t) ((<> BoxedNil 3t pair_t)))))                
+              (showTreeResult (insertMany tree))
+              ;; print all alive and dead pointers too
+              ;; (__h_stack_show)
+              )) ; main
+          
+          ) ; tree-type
+        
+        (tree-type BTree^int^User) ; use 3t to avoid using BTree^int^User type name too many times
+        
+        ) ; btree.c

@@ -17,28 +17,28 @@
     ;; selector finds the path to the function
     ;; selected function could be called then
     ;; ((\. nth list-instance) 0 alist)
-    (func nth     ((int index) (type list)) (out (<> Maybe a)))
-    (func nthcdr  ((int index) (type list)) (out type)) ; iterator
+    (func nth     ((size_t index) (type list)) (out (<> Maybe a)))
+    (func nthcdr  ((size_t index) (type list)) (out type)) ; iterator
     (func head    ((type list)) (out (<> Maybe a)))
-    (func drop    ((int len) (type list)) (out type))
+    (func drop    ((size_t len) (type list)) (out type))
     (func tail    ((type list)) (out type))
-    (func len     ((type list)) (out int))
-    (func hasLen  ((type list) (int desired)) (out int))
+    (func len     ((type list)) (out size_t))
+    (func hasLen  ((type list) (size_t desired)) (out size_t))
     (func init    ((type list)) (out type))
     (func last    ((type list)) (out type))
-    (func take    ((int len) (type list)) (out type))
+    (func take    ((size_t len) (type list)) (out type))
     (func push    ((a item) (type list)) (out type))
     (func append  ((type llist) (type rlist)) (out type))
     (func reverse ((type list)) (out type))
     (func insert  ((type llist) (a item) (type rlist)) (out type))
     (func delete  ((type list) (type aimed)) (out type))
     (func replace ((type list) (a item) (type aimed)) (out type))
-    (func insertAt  ((type llist) (a item) (int index)) (out type))
-    (func deleteAt  ((type list) (int index)) (out type))
-    (func replaceAt ((type list) (a item) (int index)) (out type))
+    (func insertAt  ((type llist) (a item) (size_t index)) (out type))
+    (func deleteAt  ((type list) (size_t index)) (out type))
+    (func replaceAt ((type list) (a item) (size_t index)) (out type))
     (func copy    ((type list)) (out type))
-    (func show    ((CFile file) (type list)) (out int))
-    (func pure    ((const a * buf) (int len)) (out type))
+    (func show    ((CFile file) (type list)) (out size_t))
+    (func pure    ((const a * buf) (size_t len)) (out type))
     (func wrap    ((const a item)) (out type))
     (func toArray ((type list) (a term)) (out a *)))
 
@@ -61,7 +61,7 @@
        (type tail))
     (= Nil (<> Nil a))
 
-    (func nth ((int index) (type list))
+    (func nth ((size_t index) (type list))
           (out (<> Maybe a))
           (return (match list
                     (* Cons head tail 
@@ -70,7 +70,7 @@
                              otherwise    ((<> nth type) (-- index) tail)))
                     (default ((<> Nothing a))))))
 
-    (func nthcdr ((int index) (type list))
+    (func nthcdr ((size_t index) (type list))
           (out type)
           (return (match list
                     (* Cons _ tail <!> (> index 0) ((<> nthcdr type) (-- index) tail))
@@ -82,7 +82,7 @@
                     (* Cons head ((<> Just a) head))
                     (default ((<> Nothing a))))))
     
-    (func drop ((int len) (type list))
+    (func drop ((size_t len) (type list))
           (out type)
           (return (case (<= len 0) ((<> copy type) list)
                         otherwise  (match list
@@ -94,13 +94,13 @@
           (return ((<> drop type) 1 list)))
     
     (func len ((type list))
-          (out int)
+          (out size_t)
           (return (match list
                     (* Cons _ tail (+ 1 ((<> len type) tail)))
                     (default 0))))
 
-    (func hasLen ((type list) (int desired))
-          (out int)
+    (func hasLen ((type list) (size_t desired))
+          (out size_t)
           (return (match list
                     (* Cons _ tail (case (== desired 1) 1
                                          otherwise      (+ 1 ((<> hasLen type) tail (-- desired)))))
@@ -121,7 +121,7 @@
                     (default ((<> Nil a))))))
 
     ;; copies first len elements
-    (func take ((int len) (type list))
+    (func take ((size_t len) (type list))
           (out type)
           (return (case (<= len 0) ((<> Nil a))
                         otherwise  (match list
@@ -183,13 +183,13 @@
                              (* Cons _ taill ((<> Cons a) item ((<> copy type) taill)))
                              (default ((<> Nil a)))))))
 
-    (func insertAt  ((type list) (a item) (int index))
+    (func insertAt  ((type list) (a item) (size_t index))
           (out type)
           (return (match list
                     (* Cons head tail <!> (> index 0) ((<> Cons a) head ((<> insertAt type) tail item (- index 1))))
                     (default ((<> Cons a) item ((<> copy type) list))))))
     
-    (func deleteAt  ((type list) (int index))
+    (func deleteAt  ((type list) (size_t index))
           (out type)
           (return (match list
                     (* Cons head tail <!> (> index 0) ((<> Cons a) head ((<> deleteAt type) tail (- index 1))))
@@ -197,7 +197,7 @@
                              (* Cons _ taill ((<> copy type) taill))
                              (default ((<> Nil a)))))))
     
-    (func replaceAt ((type list) (a item) (int index))
+    (func replaceAt ((type list) (a item) (size_t index))
           (out type)
           (return (match list
                     (* Cons head tail <!> (> index 0) ((<> Cons a) head ((<> replaceAt type) tail item (- index 1))))
@@ -212,7 +212,7 @@
                     (default ((<> Nil a))))))
 
     (func show ((CFile file) (type list))
-          (out int)
+          (out size_t)
           (return (match list
                     (* Cons head tail
                        (+ (match tail
@@ -221,7 +221,7 @@
                           ((<> show type) file tail)))
                     (default 0))))
     
-    (func pure ((const a * buf) (int len))
+    (func pure ((const a * buf) (size_t len))
           (out type)
           (return (case (null buf) ((<> Nil a))
                         otherwise  (letn ((a item . #'(cof buf)))
@@ -235,7 +235,7 @@
 
     (func toArray ((type list) (a term)) (out a *)
           
-          (func array ((type list) (int count))
+          (func array ((type list) (size_t count))
                 (out a *)
                 (return (match list
                           (* Cons head tail (letn ((a * arr . #'(array tail (+ count 1))))
@@ -244,19 +244,19 @@
                           (default (letn ((a * arr . #'(calloc count (sizeof a))))
                                      (set (nth (- count 1) arr) term)
                                      arr)))))
-                
+          
           (return (array list 0)))
 
     (free (io this
             (* Cons _ tail
                (block (syslog! (printf "freeing Cons:\n")
-                        ((<> show type) stdout this)
-                        (putchar #\Newline))
-                 (free this)
-                 ((<> free type) (aof tail))))
+                               ((<> show type) stdout this)
+                               (putchar #\Newline))
+                      (free this)
+                      ((<> free type) (aof tail))))
             (* Nil
                (block (syslog! (printf "freeing Nil:\n"))
-                 (free this)))))) ; Nil is pointer too
+                      (free this)))))) ; Nil is pointer too
 
   (impl-Maybe type)
 
