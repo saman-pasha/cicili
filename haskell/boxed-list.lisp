@@ -36,7 +36,7 @@
     (func show    ((CFile file) (type list)) (out size_t))
     (func pure    ((const a * buf) (size_t len)) (out type))
     (func wrap    ((const a item)) (out type))
-    (func toArray ((type list) (a term)) (out a *)))
+    (func toArray ((type list)) (out a *)))
 
   (decl-Maybe type)
   
@@ -268,20 +268,16 @@
           (out type)
           (return ((<> BoxedCons a) item ((<> BoxedNil a)))))
 
-    (func toArray ((type list) (a term)) (out a *)
+    (func toArray ((type list)) (out a *)
           
           (func array ((type list) (size_t count))
                 (out a *)
                 (return (match# list
-                          (dead (letn ((a * arr . #'(calloc count (sizeof a))))
-                                  (set (nth (- count 1) arr) term)
-                                  arr))
+                          (dead (cast (a *) (calloc count (sizeof a))))
                           (* Cons head tail (letn ((a * arr . #'(array tail (+ count 1))))
                                               (set (nth count arr) head)
                                               arr))
-                          (default (letn ((a * arr . #'(calloc count (sizeof a))))
-                                     (set (nth (- count 1) arr) term)
-                                     arr)))))
+                          (default (cast (a *) (calloc count (sizeof a)))))))
           
           (return (array list 0)))
 
@@ -328,63 +324,3 @@
   (import-Maybe type)
 
   ) ; import-BoxedList
-
-;; ;; list helper macros
-;; ;; (list type elm1 elm2 elm3 ...)
-;; (DEFMACRO boxed-list (elem-type &REST pure-list)
-;;   (LET ((elem-type elem-type))
-;;     `((<> pure BoxedList ,elem-type)
-;;       (cast (,elem-type []) '{ ,@pure-list })
-;;       ,(LENGTH pure-list))))
-
-;; ;; there is nth function for element access of arrays
-;; ;; (DEFMACRO nth (index list)
-;; ;;   (LET ((list list))
-;; ;;     `((\.* nth ,list) ,index ,list)))
-
-;; (DEFMACRO head (list)
-;;   (LET ((list list))
-;;     `((\.* head ,list) ,list)))
-
-;; (DEFMACRO drop (index list)
-;;   (LET ((list list))
-;;     `((\.* drop ,list) ,index ,list)))
-
-;; (DEFMACRO tail (list)
-;;   (LET ((list list))
-;;     `((\.* tail ,list) ,list)))
-
-;; (DEFMACRO len (list)
-;;   (LET ((list list))
-;;     `((\.* len ,list) ,list)))
-
-;; (DEFMACRO hasLen (list desired)
-;;   (LET ((list list))
-;;     `((\.* hasLen ,list) ,list ,desired)))
-
-;; (DEFMACRO init (list)
-;;   (LET ((list list))
-;;     `((\.* init ,list) ,list)))
-
-;; (DEFMACRO last (list)
-;;   (LET ((list list))
-;;     `((\.* last ,list) ,list)))
-
-;; (DEFMACRO take (index list)
-;;   (LET ((list list))
-;;     `((\.* take ,list) ,index ,list)))
-
-;; (DEFMACRO push (elem list)
-;;   (LET ((list list))
-;;     `((\.* push ,list) ,elem ,list)))
-
-;; ;; (append l1 l2 l3 ...)
-;; ;; auto free temporary results
-;; (DEFMACRO append (llist rlist &REST lists)
-;;   (LET ((llist llist)
-;;         (rlist rlist)
-;;         (lists lists))
-;;     (IF lists
-;;         `(letin ((* tmp_list (append ,rlist ,@lists)))
-;;            ((\.* append ,llist) ,llist tmp_list))
-;;         `((\.* append ,llist) ,llist ,rlist))))

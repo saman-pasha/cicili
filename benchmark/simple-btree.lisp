@@ -97,8 +97,8 @@
                                                                      ;; (io ((<> get Cell String) wname)
                                                                      ;;   (Just name (show^String stdout name)))
                                                                      ;;  (putchar #\Newline)
-                                                                     ((<> free Cell String) (aof wname))))))))
-            
+                                                                     ((<> free Cell String) (aof wname))))))))            
+
             (for ((int i . from)) (<= i to) ((++ i))
                  (io ((<> delete 3t) (cof pwtree) i item_deallocator)
                    (Right new_tree (block
@@ -109,7 +109,7 @@
                                      (putchar #\Newline)
                                      (exit -1))))
 
-                 )))
+               )))
 
     (func searchMany ((3t * pwtree) (int from) (int to))
           (for ((int i . from)) (<= i to) ((++ i))
