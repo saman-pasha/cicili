@@ -9,6 +9,11 @@
   (decl-Maybe a)
   (decl-StringBuffer a)
 
+  (typedef a * (<> Vector a pointer_t))
+  (typedef (Tuple (<> Vector a pointer_t)
+                  (<> Vector a pointer_t))
+    (<> Vector a iterator_t))
+  
   (decl-box (Vector type)
     (= Buffer (<> Buffer a) ((<> StringBuffer a) buffer))
     (= Slice  (<> Slice a)  (type vector) (size_t cursor) (size_t size))
@@ -20,7 +25,7 @@
     (func len     ((type vector)) (out size_t))
     (func hasLen  ((type vector) (size_t desired)) (out size_t))
     (func init    ((type vector)) (out type))
-    (func last    ((type vector)) (out type))
+    (func last    ((type vector)) (out (<> Maybe a)))
     (func take    ((size_t len) (type vector)) (out type))
     (func push    ((a item) (type vector)) (out type))
     (func append  ((type lvector) (type rvector)) (out type))
@@ -28,13 +33,15 @@
     (func insertAt  ((type vector) (a item) (size_t index)) (out type))
     (func deleteAt  ((type vector) (size_t index)) (out type))
     (func replaceAt ((type vector) (a item) (size_t index)) (out type))
+    (func copySlice ((type vector) (size_t pos) (size_t len)) (out type))
     (func copy    ((type vector)) (out type))
     (func show    ((CFile file) (type vector)) (out size_t))
     (func wrap    ((const a item)) (out type))
     (func toArray ((type vector)) (out a *))
     (func pureCapacity ((size_t capacity) (size_t step)) (out type))
     (func pure         ((size_t step)) (out type))
-    (func resize  ((type vector) (size_t len)) (out type))
+    (func resize   ((type vector) (size_t len)) (out type))
+    (func iterator ((type vector)) (out (<> Vector a iterator_t)))
     ) ; decl-box
 
   (decl-Maybe type)
@@ -131,14 +138,14 @@
                     (default ((<> clone Box Vector a) vector)))))
 
     (func last ((type vector))
-          (out type)
+          (out (<> Maybe a))
           (return (match# vector
-                    (dead ((<> None a)))
+                    (dead ((<> Nothing a)))
                     (* Buffer sb -> sb
-                       (Buffered ~ NullTerminated _buffer cursor ((<> Slice a) ((<> clone Box Vector a) vector) (- cursor 1) 1))
-                       (default ((<> None a))))
-                    (* Slice vec _cursor size ((<> Slice a) ((<> clone Box Vector a) vec) (- size 1) 1))
-                    (default ((<> clone Box Vector a) vector)))))
+                       (Buffered ~ NullTerminated buffer cursor ((<> Just a) (cof (+ buffer (- cursor 1)))))
+                       (default ((<> Nothing a))))
+                    (* Slice vec cursor size ((<> nth type) (+ cursor (- size 1)) vec))
+                    (default ((<> Nothing a))))))
 
     (func take ((size_t len) (type vector))
           (out type)
@@ -150,10 +157,10 @@
                                        (< len cursor) ((<> Slice a) ((<> clone Box Vector a) vector) 0 len)
                                        otherwise      ((<> Slice a) ((<> clone Box Vector a) vector) 0 0)))
                        (default ((<> Slice a) ((<> clone Box Vector a) vector) 0 0)))
-                    (* Slice vec _cursor size
-                       (case (<= len 0)   ((<> Slice a) ((<> clone Box Vector a) vec) 0 0)
-                             (< len size) ((<> Slice a) ((<> clone Box Vector a) vec) 0 len)
-                             otherwise    ((<> Slice a) ((<> clone Box Vector a) vec) 0 0)))
+                    (* Slice vec cursor size
+                       (case (<= len 0)   ((<> Slice a) ((<> clone Box Vector a) vec) cursor 0)
+                             (< len size) ((<> Slice a) ((<> clone Box Vector a) vec) cursor len)
+                             otherwise    ((<> Slice a) ((<> clone Box Vector a) vec) cursor 0)))
                     (default ((<> clone Box Vector a) vector)))))
 
     ;; any push makes all related variables and slices out of order
@@ -165,13 +172,13 @@
                                           (Just ptr (free ptr))) ; make it out of order
                                         ((<> Buffer a) ((<> put StringBuffer a) sb item))))
                     ;; COW pattern copy-on-write for Slices
-                    (* Slice vec cur size (match# vec
-                                            (dead ((<> None a)))
-                                            (* Buffer sbs ((<> Buffer a) ((<> put StringBuffer a)
-                                                                          ((<> copySlice StringBuffer a) sbs cur size)
-                                                                          item)))
-                                            (* Slice veci ((<> push type) item veci)) ; E
-                                            (default ((<> clone Box Vector a) vec))))
+                    (* Slice vec cur size -># vec
+                       (dead ((<> None a)))
+                       (* Buffer sbs ((<> Buffer a) ((<> put StringBuffer a)
+                                                     ((<> copySlice StringBuffer a) sbs cur size)
+                                                     item)))
+                       (* Slice veci ((<> push type) item ((<> copySlice type) veci cur size)))
+                       (default ((<> clone Box Vector a) vec)))
                     (default ((<> clone Box Vector a) vector)))))
     
     ;; any append makes all related variables and slices out of order
@@ -185,14 +192,14 @@
                                                         ((<> toArray type) rvector)
                                                         ((<> len type) rvector)))))
                     ;; COW pattern copy-on-write for Slices
-                    (* Slice vec cur size (match# vec
-                                            (dead ((<> None a)))
-                                            (* Buffer sbs ((<> Buffer a) ((<> print StringBuffer a)
-                                                                          ((<> copySlice StringBuffer a) sbs cur size)
-                                                                          ((<> toArray type) rvector)
-                                                                          ((<> len type) rvector))))
-                                            (* Slice veci ((<> append type) veci rvector)) ; E
-                                            (default ((<> clone Box Vector a) vec))))
+                    (* Slice vec cur size -># vec
+                       (dead ((<> None a)))
+                       (* Buffer sbs ((<> Buffer a) ((<> print StringBuffer a)
+                                                     ((<> copySlice StringBuffer a) sbs cur size)
+                                                     ((<> toArray type) rvector)
+                                                     ((<> len type) rvector))))
+                       (* Slice veci ((<> append type) ((<> copySlice type) veci cur size) rvector))
+                       (default ((<> clone Box Vector a) vec)))
                     (default ((<> clone Box Vector a) lvector)))))
 
     (func reverse ((type vector))
@@ -220,18 +227,18 @@
                                          ((<> Buffer a) ((<> MakeNullTerminatedBuffer a) buffer cursor size step))))
                        (default ((<> clone Box Vector a) vector)))
                     ;; COW pattern copy-on-write for Slices
-                    (* Slice vec cur size (match# vec
-                                            (dead ((<> None a)))
-                                            (* Buffer sbs ((<> reverse type)
-                                                           ((<> Buffer a) ((<> copySlice StringBuffer a) sbs cur size))))
-                                            (* Slice veci ((<> reverse type) veci)) ; E
-                                            (default ((<> clone Box Vector a) vec))))
+                    (* Slice vec cur size -># vec
+                       (dead ((<> None a)))
+                       (* Buffer sbs ((<> reverse type)
+                                      ((<> Buffer a) ((<> copySlice StringBuffer a) sbs cur size))))
+                       (* Slice veci ((<> reverse type) ((<> copySlice type) veci cur size)))
+                       (default ((<> clone Box Vector a) vec)))
                     (default ((<> clone Box Vector a) vector)))))
     
     (func insertAt ((type vector) (a item) (size_t index))
           (out type)
           (return (match# vector
-                    (dead ((<> clone Box Vector a) vector))
+                    (dead ((<> None a)))
                     (* Buffer sb (letn (((<> StringBuffer a) new_sb . #'((<> put StringBuffer a) sb item)))
                                    (io ((<> take Box Vector a) (aof vector))
                                      (Just ptr (free ptr))) ; make it out of order
@@ -244,40 +251,40 @@
                                                  ((<> Buffer a) new_sb)))
                                      (default ((<> clone Box Vector a) vector)))))
                     ;; COW pattern copy-on-write for Slices
-                    (* Slice vec cur size (match# vec
-                                            (dead ((<> clone Box Vector a) vector))
-                                            (* Buffer sbs -> sbs
-                                               (Buffered buffer _cursor _size step
-                                                         (case (< index size)
-                                                               (letn (((<> StringBuffer a) new_sb .
-                                                                       #'((<> newCapacity StringBuffer a) (+ size 1) step #f)))
-                                                                 ((<> Buffer a)
-                                                                  ((<> print StringBuffer a)
-                                                                   ((<> put StringBuffer a)
-                                                                    ((<> print StringBuffer a) new_sb (+ buffer cur) index)
-                                                                    item)
-                                                                   (+ buffer cur index) (- size index))))
-                                                               otherwise vec))
-                                               (NullTerminated buffer _cursor _size step
-                                                               (case (< index size)
-                                                                     (letn (((<> StringBuffer a) new_sb .
-                                                                             #'((<> newCapacity StringBuffer a) (+ size 1) step #t)))
-                                                                       ((<> Buffer a)
-                                                                        ((<> print StringBuffer a)
-                                                                         ((<> put StringBuffer a)
-                                                                          ((<> print StringBuffer a) new_sb (+ buffer cur) index)
-                                                                          item)
-                                                                         (+ buffer cur index) (- size index))))
-                                                                     otherwise vec))
-                                               (default vec))
-                                            (* Slice veci curi ((<> insertAt type) veci item (+ cur curi index))) ; E
-                                            (default ((<> clone Box Vector a) vec))))
+                    (* Slice vec cur size -># vec
+                       (dead ((<> None a)))
+                       (* Buffer sbs -> sbs
+                          (Buffered buffer _cursor _size step
+                                    (case (< index size)
+                                          (letn (((<> StringBuffer a) new_sb .
+                                                  #'((<> newCapacity StringBuffer a) (+ size 1) step #f)))
+                                            ((<> Buffer a)
+                                             ((<> print StringBuffer a)
+                                              ((<> put StringBuffer a)
+                                               ((<> print StringBuffer a) new_sb (+ buffer cur) index)
+                                               item)
+                                              (+ buffer cur index) (- size index))))
+                                          otherwise vec))
+                          (NullTerminated buffer _cursor _size step
+                                          (case (< index size)
+                                                (letn (((<> StringBuffer a) new_sb .
+                                                        #'((<> newCapacity StringBuffer a) (+ size 1) step #t)))
+                                                  ((<> Buffer a)
+                                                   ((<> print StringBuffer a)
+                                                    ((<> put StringBuffer a)
+                                                     ((<> print StringBuffer a) new_sb (+ buffer cur) index)
+                                                     item)
+                                                    (+ buffer cur index) (- size index))))
+                                                otherwise vec))
+                          (default ((<> None a))))
+                       (* Slice veci ((<> insertAt type) veci item (+ cur index)))
+                       (default ((<> clone Box Vector a) vec)))
                     (default ((<> clone Box Vector a) vector)))))
     
     (func deleteAt ((type vector) (size_t index))
           (out type)
           (return (match# vector
-                    (dead ((<> clone Box Vector a) vector))
+                    (dead ((<> None a)))
                     (* Buffer sb (progn
                                    (io ((<> take Box Vector a) (aof vector))
                                      (Just ptr (free ptr))) ; make it out of order
@@ -296,36 +303,36 @@
                                                         ((<> MakeNullTerminatedBuffer a) buffer (- cursor 1) size step))))
                                      (default ((<> clone Box Vector a) vector)))))
                     ;; COW pattern copy-on-write for Slices
-                    (* Slice vec cur size (match# vec
-                                            (dead ((<> clone Box Vector a) vector))
-                                            (* Buffer sbs -> sbs
-                                               (Buffered buffer _cursor _size step
-                                                         (case (< index size)
-                                                               (letn (((<> StringBuffer a) new_sb .
-                                                                       #'((<> newCapacity StringBuffer a) (- size 1) step #f)))
-                                                                 ((<> Buffer a)
-                                                                  ((<> print StringBuffer a)
-                                                                   ((<> print StringBuffer a) new_sb (+ buffer cur) index)
-                                                                   (+ buffer cur index 1) (- size index 1))))
-                                                               otherwise vec))
-                                               (NullTerminated buffer _cursor _size step
-                                                               (case (< index size)
-                                                                     (letn (((<> StringBuffer a) new_sb .
-                                                                             #'((<> newCapacity StringBuffer a) (- size 1) step #t)))
-                                                                       ((<> Buffer a)
-                                                                        ((<> print StringBuffer a)
-                                                                         ((<> print StringBuffer a) new_sb (+ buffer cur) index)
-                                                                         (+ buffer cur index 1) (- size index 1))))
-                                                                     otherwise vec))
-                                               (default vec))
-                                            (* Slice veci curi ((<> deleteAt type) veci (+ cur curi index))) ; E
-                                            (default ((<> clone Box Vector a) vec))))
+                    (* Slice vec cur size -># vec
+                       (dead ((<> None a)))
+                       (* Buffer sbs -> sbs
+                          (Buffered buffer _cursor _size step
+                                    (case (< index size)
+                                          (letn (((<> StringBuffer a) new_sb .
+                                                  #'((<> newCapacity StringBuffer a) (- size 1) step #f)))
+                                            ((<> Buffer a)
+                                             ((<> print StringBuffer a)
+                                              ((<> print StringBuffer a) new_sb (+ buffer cur) index)
+                                              (+ buffer cur index 1) (- size index 1))))
+                                          otherwise vec))
+                          (NullTerminated buffer _cursor _size step
+                                          (case (< index size)
+                                                (letn (((<> StringBuffer a) new_sb .
+                                                        #'((<> newCapacity StringBuffer a) (- size 1) step #t)))
+                                                  ((<> Buffer a)
+                                                   ((<> print StringBuffer a)
+                                                    ((<> print StringBuffer a) new_sb (+ buffer cur) index)
+                                                    (+ buffer cur index 1) (- size index 1))))
+                                                otherwise vec))
+                          (default ((<> None a))))
+                       (* Slice veci ((<> deleteAt type) veci (+ cur index)))
+                       (default ((<> clone Box Vector a) vec)))
                     (default ((<> clone Box Vector a) vector)))))
 
     (func replaceAt ((type vector) (a item) (size_t index))
           (out type)
           (return (match# vector
-                    (dead ((<> clone Box Vector a) vector))
+                    (dead ((<> None a)))
                     (* Buffer sb (progn
                                    (io ((<> take Box Vector a) (aof vector))
                                      (Just ptr (free ptr))) ; make it out of order
@@ -338,35 +345,51 @@
                                                      otherwise ((<> Buffer a) sb)))
                                      (default ((<> clone Box Vector a) vector)))))
                     ;; COW pattern copy-on-write for Slices
-                    (* Slice vec cur size (match# vec
-                                            (dead ((<> clone Box Vector a) vector))
-                                            (* Buffer sbs -> sbs
-                                               (Buffered buffer _cursor _size step
-                                                         (case (< index size)
-                                                               (letn (((<> StringBuffer a) new_sb .
-                                                                       #'((<> newCapacity StringBuffer a) size step #f)))
-                                                                 ((<> Buffer a)
-                                                                  ((<> print StringBuffer a)
-                                                                   ((<> put StringBuffer a)
-                                                                    ((<> print StringBuffer a) new_sb (+ buffer cur) index)
-                                                                    item)
-                                                                   (+ buffer cur index 1) (- size index 1))))
-                                                               otherwise vec))
-                                               (NullTerminated buffer _cursor _size step
-                                                               (case (< index size)
-                                                                     (letn (((<> StringBuffer a) new_sb .
-                                                                             #'((<> newCapacity StringBuffer a) size step #t)))
-                                                                       ((<> Buffer a)
-                                                                        ((<> print StringBuffer a)
-                                                                         ((<> put StringBuffer a)
-                                                                          ((<> print StringBuffer a) new_sb (+ buffer cur) index)
-                                                                          item)
-                                                                         (+ buffer cur index 1) (- size index 1))))
-                                                                     otherwise vec))
-                                               (default vec))
-                                            (* Slice veci curi ((<> replaceAt type) veci item (+ cur curi index))) ; E
-                                            (default ((<> clone Box Vector a) vec))))
+                    (* Slice vec cur size -># vec
+                       (dead ((<> None a)))
+                       (* Buffer sbs -> sbs
+                          (Buffered buffer _cursor _size step
+                                    (case (< index size)
+                                          (letn (((<> StringBuffer a) new_sb .
+                                                  #'((<> newCapacity StringBuffer a) size step #f)))
+                                            ((<> Buffer a)
+                                             ((<> print StringBuffer a)
+                                              ((<> put StringBuffer a)
+                                               ((<> print StringBuffer a) new_sb (+ buffer cur) index)
+                                               item)
+                                              (+ buffer cur index 1) (- size index 1))))
+                                          otherwise vec))
+                          (NullTerminated buffer _cursor _size step
+                                          (case (< index size)
+                                                (letn (((<> StringBuffer a) new_sb .
+                                                        #'((<> newCapacity StringBuffer a) size step #t)))
+                                                  ((<> Buffer a)
+                                                   ((<> print StringBuffer a)
+                                                    ((<> put StringBuffer a)
+                                                     ((<> print StringBuffer a) new_sb (+ buffer cur) index)
+                                                     item)
+                                                    (+ buffer cur index 1) (- size index 1))))
+                                                otherwise vec))
+                          (default ((<> None a))))
+                       (* Slice veci ((<> replaceAt type) veci item (+ cur index)))
+                       (default ((<> clone Box Vector a) vec)))
                     (default ((<> clone Box Vector a) vector)))))
+    
+    (func copySlice ((type vector) (size_t pos) (size_t len))
+          (out type)
+          (return (match# vector
+                    (dead ((<> None a)))
+                    (* Buffer sb -> sb
+                       (Buffered ~ NullTerminated ((<> Buffer a) ((<> copySlice StringBuffer a) sb pos len)))
+                       (default ((<> None a))))
+                    (* Slice vec cur -># vec
+                       (dead ((<> None a)))
+                       (* Buffer sbs -> sbs
+                          (Buffered ~ NullTerminated ((<> Buffer a) ((<> copySlice StringBuffer a) sbs (+ cur pos) len)))
+                          (default ((<> None a))))
+                       (* Slice veci ((<> copySlice type) veci (+ cur pos) len))
+                       (default ((<> None a))))
+                    (default ((<> None a))))))
     
     (func copy ((type vector))
           (out type)
@@ -375,16 +398,15 @@
                     (* Buffer sb -> sb
                        (Buffered ~ NullTerminated ((<> Buffer a) ((<> copy StringBuffer a) sb)))
                        (default ((<> None a))))
-                    (* Slice vec cur size
-                       (match# vec
-                         (dead ((<> None a)))
-                         (* Buffer sbs -> sbs
-                            (Buffered ~ NullTerminated ((<> Buffer a) ((<> copySlice StringBuffer a) sbs cur size)))
-                            (default ((<> None a))))
-                         (* Slice veci ((<> copy type) veci))
-                         (default ((<> None a)))))
+                    (* Slice vec cur size -># vec
+                       (dead ((<> None a)))
+                       (* Buffer sbs -> sbs
+                          (Buffered ~ NullTerminated ((<> Buffer a) ((<> copySlice StringBuffer a) sbs cur size)))
+                          (default ((<> None a))))
+                       (* Slice veci ((<> copySlice type) veci cur size))
+                       (default ((<> None a))))
                     (default ((<> None a))))))
-    
+
     (func show ((CFile file) (type vector))
           (out size_t)
 
@@ -456,14 +478,14 @@
     (func resize ((type vector) (size_t len))
           (out type)
           (return (match# vector
-                    (dead ((<> clone Box Vector a) vector))
+                    (dead ((<> None a)))
                     (* Buffer sb (progn
                                    (io ((<> take Box Vector a) (aof vector))
                                      (Just ptr (free ptr))) ; make it out of order
                                    ((<> Buffer a) ((<> resize StringBuffer a) sb len))))
                     ;; COW pattern copy-on-write for Slices
                     (* Slice vec cur (match# vec
-                                       (dead ((<> clone Box Vector a) vector))
+                                       (dead ((<> None a)))
                                        (* Buffer sbs -> sbs
                                           (Buffered buffer _cursor _size step
                                                     (letn (((<> StringBuffer a) new_sb .
@@ -475,11 +497,25 @@
                                                                   #'((<> newCapacity StringBuffer a) len step #t)))
                                                             ((<> Buffer a)
                                                              ((<> print StringBuffer a) new_sb (+ buffer cur) len))))
-                                          (default vec))
+                                          (default ((<> None a))))
                                        (* Slice veci ((<> resize type) veci len)) ; E
                                        (default ((<> clone Box Vector a) vec))))
                     (default ((<> clone Box Vector a) vector)))))
-    
+
+    (func iterator ((type vector))
+          (out (<> Vector a iterator_t))
+          (return (match# vector
+                    (dead (cast (<> Vector a iterator_t) '{ nil nil }))
+                    (* Buffer sb -> sb
+                       (Buffered ~ NullTerminated buffer cursor (cast (<> Vector a iterator_t) '{ buffer (+ buffer cursor) }))
+                       (default (cast (<> Vector a iterator_t) '{ nil nil })))
+                    (* Slice vec cur size
+                       (letn (((<> Vector a iterator_t) iter . #'((<> iterator type) vec)))
+                         (match iter
+                           ((\, begin) (cast (<> Vector a iterator_t) '{ (+ begin cur) (+ begin size) }))
+                           (default (cast (<> Vector a iterator_t) '{ nil nil })))))
+                    (default (cast (<> Vector a iterator_t) '{ nil nil })))))
+
     (free
       (io this
         (* Buffer sb ((<> free StringBuffer a) (aof sb)))

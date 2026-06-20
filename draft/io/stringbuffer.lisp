@@ -43,7 +43,7 @@
                                         (let ((a * new_buffer . #'(realloc buffer (* (+ size 1) (sizeof a)))))
                                           (set buffer new_buffer)))
                                       (memcpy (+ buffer cursor) data blen)
-                                      (set (cof (+ buffer cursor len)) (cast a #\Null))
+                                      (set (cof (+ buffer cursor len)) (cast a (cof (cast (a *) "\0"))))
                                       ((<> MakeNullTerminatedBuffer a) buffer (+ cursor len) size step)))
                     (default ((<> FreedStringBuffer a))))))
 
@@ -86,7 +86,7 @@
           (return (case null_terminated
                         (letn ((a * buffer . #'(malloc (* (+ capacity 1) (sizeof a))))
                                ((<> StringBuffer a) sb . #'((<> MakeNullTerminatedBuffer a) buffer 0 capacity step)))
-                          (set (cof buffer) (cast a #\Null))
+                          (set (cof buffer) (cast a (cof (cast (a *) "\0"))))
                           sb)
                         otherwise
                         (letn ((a * buffer . #'(malloc (* capacity (sizeof a))))
@@ -106,7 +106,7 @@
                     (NullTerminated buffer cursor _size step
                                     (letn ((a * new_buffer . #'(realloc buffer (* (+ len 1) (sizeof a))))
                                            (size_t new_cursor . #'(? (< cursor len) cursor len)))
-                                      (set (cof (+ new_buffer new_cursor)) (cast a #\Null))
+                                      (set (cof (+ new_buffer new_cursor)) (cast a (cof (cast (a *) "\0"))))
                                       ((<> MakeNullTerminatedBuffer a) new_buffer new_cursor len step)))
                     (default ((<> FreedStringBuffer a))))))
     

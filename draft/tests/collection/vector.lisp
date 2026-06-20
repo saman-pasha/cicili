@@ -38,8 +38,6 @@
             (v13 (drop^Vector^char 1 v11))
             (v14 (init^Vector^char v05))
             (v15 (init^Vector^char v14))
-            (v16 (last^Vector^int v03))
-            (v17 (last^Vector^char v05))
             (v18 (take^Vector^int 3 v03))
             (v19 (take^Vector^char 5 v05))
             (v20 (take^Vector^char 2 v19))
@@ -134,17 +132,11 @@
                             (putchar #\Newline)))
             (default (exit-status -119)))
           ;; last
-          (io# v16
-            (dead (exit-status -120))
-            (* Slice (block (printf "last of v03: ")
-                            (show^Vector^int stdout v16)
-                            (putchar #\Newline)))
+          (io (last^Vector^int v03)
+            (Just la (printf "last of v03: %d\n" la))
             (default (exit-status -121)))
-          (io# v17
-            (dead (exit-status -122))
-            (* Slice (block (printf "last of v05: ")
-                            (show^Vector^char stdout v17)
-                            (putchar #\Newline)))
+          (io (last^Vector^char v05)
+            (Just la (printf "last of v05: %c\n" la))
             (default (exit-status -123)))
           ;; take
           (io# v18
@@ -415,9 +407,91 @@
                                (putchar #\Newline)))
               (default (exit-status -180)))
 
+            ;; iterator
+            (letin ((sliceToSlice ((<> drop Vector^char) 2 v481)))
+              (io ((<> iterator Vector^char) v481)
+                ((\, begin end)
+                 (block (printf "iterator begin: %s\n" begin)
+                        (printf "iterator content: ")
+                        (while (!= begin end)
+                          (printf "%c" (cof begin))
+                          (++ begin))
+                        (printf "\n"))))
+              (io ((<> iterator Vector^char) sliceToSlice)
+                ((\, begin end)
+                 (block (printf "iterator STS begin: %s\n" begin)
+                        (printf "iterator STS content: ")
+                        (while (!= begin end)
+                          (printf "%c" (cof begin))
+                          (++ begin))
+                        (printf "\n")))))
+            
+            
             ) ; letin
           
           )) ; where
       ) ; letin
     ) ; main
   ) ; vector.c
+
+
+;; v03: 1 2 3 4 5
+;; v05: abcdefghijk
+;; length 5 of v03: 5
+;; has length 6 of v05: 6
+;; has length 12 of v05: 11
+;; 4th int element of v03: 4
+;; 6th char element of v05: f
+;; 12th char element of v05: not found!
+;; head int element of v08: 3
+;; head char element of v09: d
+;; v08: 3 4
+;; v09: def
+;; 2nd int element of v08: 4
+;; 3rd char element of v09: f
+;; 4th char element of v09: not found!
+;; tail v05: bcdefghijk
+;; v11: drop 7 v05: hijk
+;; drop 12 v05: Empty Slice
+;; drop 1 of Slice v11: ijk
+;; init of Slice v05: abcdefghij
+;; init of init of Slice v05: abcdefghi
+;; last of v03: 5
+;; last of v05: k
+;; take 3 of v03: 1 2 3
+;; take 5 of v05: abcde
+;; take 2 of take 5 of v05: ab
+;; wrap 1000 v50: 1000
+;; push 6 to v033: 1 2 3 4 5 6
+;; push L to v055: abcdefghijkL
+;; push 7 to Slice v08: 3 4 7
+;; push M to Slice v09: defM
+;; append v0333 to v0444: 1 2 3 4 5 6
+;; append v0555 to v0666: abcdefghijkl
+;; v27: 5 6
+;; v28: jkl
+;; append v27 to v0444: 5 6 4 5 6
+;; append v28 to v0666: jklghijkl
+;; reverse v27: 6 5 4
+;; reverse v28: lkjihg
+;; reverse Slice v288: lkj
+;; insert 6 at 2 v033: 1 2 6 3 4 5
+;; insert L at 3 v055: abcLdefghijk
+;; insert 7 at 2 v277: 2 6 7 3 4 5
+;; insert M at 3 v288: cLdMefghijk
+;; delete at 3 from v233: 2 6 7 4 5
+;; delete at 7 from v244: cLdMefgijk
+;; delete at 1 from drop 4 v233: 4
+;; delete at 3 from drop 5 v244: fghjk
+;; replace 9 at 3 v233: 2 6 7 9 4 5
+;; replace K at 7 v244: cLdMefgKijk
+;; replace at 1 of drop 4 v233: 4 9
+;; replace at 3 of drop 5 v244: fghKjk
+;; resize 1 v233: 2
+;; resize 15 v244: cLdMefghijk
+;; resize 1 of drop 4 v233: 4
+;; resize 15 of drop 5 v244: fghijk
+;; iterator begin: fghijk
+;; iterator content: fghijk
+;; iterator STS begin: hijk
+;; iterator STS content: hijk

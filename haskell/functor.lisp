@@ -124,6 +124,66 @@
   ) ; import-Functor-BoxedList
 
 
+;; Vector Functor
+(generic decl-Functor-Vector
+  (type a b)
+
+  (decl-Functor type Vector a b)
+
+  ) ; decl-Functor-Vector
+
+;; a_b function is available
+;; input variable is the head of each Cons and the expression should return wrapped b type
+(generic impl-Functor-Vector
+  (type a b)
+
+  (impl-Functor type Vector a b
+                (match# input
+                  (dead ((<> None b)))
+                  (* Buffer sbi -> sbi
+                     (Buffered ~ NullTerminated bufferA cursor _size step
+                               (letn (((<> Vector b) output . #'((<> pureCapacity Vector b) cursor step)))
+                                 (match# output
+                                   (dead ((<> None b)))
+                                   (* Buffer sbo -> sbo
+                                      (Buffered ~ NullTerminated bufferB
+                                                (progn
+                                                  (for ((size_t counter . 0)) (< counter cursor) ((++ counter))
+                                                       (set (cof (+ bufferB counter)) ($> a_b $ (cof (+ bufferA counter)))))
+                                                  output))
+                                      (default ((<> None b))))
+                                   (default ((<> None b))))))
+                     (default ((<> None b))))
+                  (* Slice vec cur -># vec
+                     (dead ((<> None b)))
+                     (* Buffer sbsi -> sbsi                
+                        (Buffered ~ NullTerminated bufferA cursor _size step
+                                  (letn (((<> Vector b) output . #'((<> pureCapacity Vector b) (- cursor cur) step)))
+                                    (match# output
+                                      (dead ((<> None b)))
+                                      (* Buffer sbo -> sbo
+                                         (Buffered ~ NullTerminated bufferB
+                                                   (progn
+                                                     (for ((size_t counter . cur)) (< counter cursor) ((++ counter))
+                                                          (set (cof (+ bufferB (- counter cur))) ($> a_b $ (cof (+ bufferA counter)))))
+                                                     output))
+                                         (default ((<> None b))))
+                                      (default ((<> None b))))))
+                        (default ((<> None b))))
+                     (* Slice vec ((<> fmap Functor type) a_b vec)) ; E
+                     (default ((<> None b))))
+                  (default ((<> None b)))))
+
+  ) ; impl-Functor-Vector
+
+(generic import-Functor-Vector
+  (type a b)
+
+  (import-Functor type Vector a b)
+
+  ) ; import-Functor-Vector
+
+
 ;; Maybe Functor
 (generic decl-Functor-Maybe
   (type a b)
