@@ -12,11 +12,11 @@
   (@define __Maybe_char__H_IMPL__)
   
   (decl-Vector Vector^int int)
-  (impl-Vector Vector^int int (\\ -f -v (fprintf -f "%d" -v)) " " #f)
+  (impl-Vector Vector^int int (\\ -f -v (fprintf -f "%d" -v)) " " NIL)
   (import-Vector Vector^int int new^Vector^int)
 
   (decl-Vector Vector^char char)
-  (impl-Vector Vector^char char (\\ -f -v (fprintf -f "%c" -v)) "" #t)
+  (impl-Vector Vector^char char (\\ -f -v (fprintf -f "%c" -v)) "" T)
   (import-Vector Vector^char char new^Vector^char)
 
   (main

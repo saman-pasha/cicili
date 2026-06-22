@@ -53,14 +53,15 @@
    a
    fmt  ; a reducible function ((FILE * file) (Vector vector))
    sep
-   nullt)
+   nullt) ; T or NIL
 
   ;; dependencies
   (impl-Maybe a)
-  (impl-StringBuffer a)
+  (impl-StringBuffer a nullt)
 
   ;; private constants
-  (var bool (<> null_terminated type) . (QUASIQUOTE 'nullt)) ; inside generic default atom values should set with ` or QUASIQUOTE 
+  (var bool (<> null_terminated type) .
+       (QUASIQUOTE (IF nullt '#t '#f))) ; inside generic default atom values should set with ` or QUASIQUOTE 
 
   (impl-box (Vector type)
     (= Buffer (<> Buffer a) ((<> StringBuffer a) buffer))
@@ -72,7 +73,8 @@
           (return (match# vector
                     (dead ((<> Nothing a)))
                     (* Buffer sb -> sb
-                       (Buffered ~ NullTerminated buffer cursor
+                       ;; compile time path choose instead of runtime
+                       (Buffered buffer cursor
                                  (case (and (>= index 0) (< index cursor)) ((<> Just a) (cof (+ buffer index)))
                                        otherwise ((<> Nothing a))))
                        (default ((<> Nothing a))))
@@ -86,7 +88,7 @@
           (return (match# vector
                     (dead ((<> Nothing a)))
                     (* Buffer sb -> sb
-                       (Buffered ~ NullTerminated buffer cursor
+                       (Buffered buffer cursor
                                  (case (> cursor 0) ((<> Just a) (cof buffer))
                                        otherwise ((<> Nothing a))))
                        (default ((<> Nothing a))))
@@ -99,7 +101,7 @@
           (return (match# vector
                     (dead ((<> None a)))
                     (* Buffer sb -> sb
-                       (Buffered ~ NullTerminated _buffer cursor
+                       (Buffered _buffer cursor
                                  (case (<= len 0)     ((<> Slice a) ((<> clone Box Vector a) vector) 0 cursor)
                                        (< len cursor) ((<> Slice a) ((<> clone Box Vector a) vector) len (- cursor len))
                                        otherwise      ((<> Slice a) ((<> clone Box Vector a) vector) 0 0)))
@@ -116,7 +118,7 @@
           (return (match# vector
                     (dead 0)
                     (* Buffer sb -> sb
-                       (Buffered ~ NullTerminated _buffer cursor cursor)
+                       (Buffered _buffer cursor cursor)
                        (default 0))
                     (* Slice _vector _cursor size size)
                     (default 0))))
@@ -132,7 +134,7 @@
           (return (match# vector
                     (dead ((<> None a)))
                     (* Buffer sb -> sb
-                       (Buffered ~ NullTerminated _buffer cursor ((<> Slice a) ((<> clone Box Vector a) vector) 0 (- cursor 1)))
+                       (Buffered _buffer cursor ((<> Slice a) ((<> clone Box Vector a) vector) 0 (- cursor 1)))
                        (default ((<> None a))))
                     (* Slice vec cursor size ((<> Slice a) ((<> clone Box Vector a) vec) cursor (- size 1)))
                     (default ((<> clone Box Vector a) vector)))))
@@ -142,7 +144,7 @@
           (return (match# vector
                     (dead ((<> Nothing a)))
                     (* Buffer sb -> sb
-                       (Buffered ~ NullTerminated buffer cursor ((<> Just a) (cof (+ buffer (- cursor 1)))))
+                       (Buffered buffer cursor ((<> Just a) (cof (+ buffer (- cursor 1)))))
                        (default ((<> Nothing a))))
                     (* Slice vec cursor size ((<> nth type) (+ cursor (- size 1)) vec))
                     (default ((<> Nothing a))))))
@@ -152,7 +154,7 @@
           (return (match# vector
                     (dead ((<> None a)))
                     (* Buffer sb -> sb
-                       (Buffered ~ NullTerminated _buffer cursor
+                       (Buffered _buffer cursor
                                  (case (<= len 0)     ((<> Slice a) ((<> clone Box Vector a) vector) 0 0)
                                        (< len cursor) ((<> Slice a) ((<> clone Box Vector a) vector) 0 len)
                                        otherwise      ((<> Slice a) ((<> clone Box Vector a) vector) 0 0)))
@@ -216,15 +218,6 @@
                                              (cof (+ buffer i))       (cof (+ buffer (- j 1)))
                                              (cof (+ buffer (- j 1))) tmp))
                                    ((<> Buffer a) ((<> MakeStringBuffer a) buffer cursor size step))))
-                       (NullTerminated buffer cursor size step
-                                       (letn ((a tmp))
-                                         (io ((<> take Box Vector a) (aof vector))
-                                           (Just ptr (free ptr))); make it out of order
-                                         (for ((size_t i . 0) (j . cursor)) (< i (/ cursor 2)) ((++ i) (-- j))
-                                              (set tmp                      (cof (+ buffer i))
-                                                   (cof (+ buffer i))       (cof (+ buffer (- j 1)))
-                                                   (cof (+ buffer (- j 1))) tmp))
-                                         ((<> Buffer a) ((<> MakeNullTerminatedBuffer a) buffer cursor size step))))
                        (default ((<> clone Box Vector a) vector)))
                     ;; COW pattern copy-on-write for Slices
                     (* Slice vec cur size -># vec
@@ -243,7 +236,7 @@
                                    (io ((<> take Box Vector a) (aof vector))
                                      (Just ptr (free ptr))) ; make it out of order
                                    (match new_sb
-                                     (Buffered ~ NullTerminated buffer cursor
+                                     (Buffered buffer cursor
                                                (progn
                                                  (for ((size_t i . #'(- cursor 1))) (> i index) ((-- i))
                                                       (set (cof (+ buffer i)) (cof (+ buffer (- i 1)))))
@@ -257,7 +250,7 @@
                           (Buffered buffer _cursor _size step
                                     (case (< index size)
                                           (letn (((<> StringBuffer a) new_sb .
-                                                  #'((<> newCapacity StringBuffer a) (+ size 1) step #f)))
+                                                  #'((<> newCapacity StringBuffer a) (+ size 1) step)))
                                             ((<> Buffer a)
                                              ((<> print StringBuffer a)
                                               ((<> put StringBuffer a)
@@ -265,17 +258,6 @@
                                                item)
                                               (+ buffer cur index) (- size index))))
                                           otherwise vec))
-                          (NullTerminated buffer _cursor _size step
-                                          (case (< index size)
-                                                (letn (((<> StringBuffer a) new_sb .
-                                                        #'((<> newCapacity StringBuffer a) (+ size 1) step #t)))
-                                                  ((<> Buffer a)
-                                                   ((<> print StringBuffer a)
-                                                    ((<> put StringBuffer a)
-                                                     ((<> print StringBuffer a) new_sb (+ buffer cur) index)
-                                                     item)
-                                                    (+ buffer cur index) (- size index))))
-                                                otherwise vec))
                           (default ((<> None a))))
                        (* Slice veci ((<> insertAt type) veci item (+ cur index)))
                        (default ((<> clone Box Vector a) vec)))
@@ -295,12 +277,6 @@
                                                       (set (cof (+ buffer i)) (cof (+ buffer (+ i 1)))))
                                                  ((<> Buffer a)
                                                   ((<> MakeStringBuffer a) buffer (- cursor 1) size step))))
-                                     (NullTerminated buffer cursor size step
-                                                     (progn
-                                                       (for ((size_t i . index)) (<= i cursor) ((++ i))
-                                                            (set (cof (+ buffer i)) (cof (+ buffer (+ i 1)))))
-                                                       ((<> Buffer a)
-                                                        ((<> MakeNullTerminatedBuffer a) buffer (- cursor 1) size step))))
                                      (default ((<> clone Box Vector a) vector)))))
                     ;; COW pattern copy-on-write for Slices
                     (* Slice vec cur size -># vec
@@ -309,21 +285,12 @@
                           (Buffered buffer _cursor _size step
                                     (case (< index size)
                                           (letn (((<> StringBuffer a) new_sb .
-                                                  #'((<> newCapacity StringBuffer a) (- size 1) step #f)))
+                                                  #'((<> newCapacity StringBuffer a) (- size 1) step)))
                                             ((<> Buffer a)
                                              ((<> print StringBuffer a)
                                               ((<> print StringBuffer a) new_sb (+ buffer cur) index)
                                               (+ buffer cur index 1) (- size index 1))))
                                           otherwise vec))
-                          (NullTerminated buffer _cursor _size step
-                                          (case (< index size)
-                                                (letn (((<> StringBuffer a) new_sb .
-                                                        #'((<> newCapacity StringBuffer a) (- size 1) step #t)))
-                                                  ((<> Buffer a)
-                                                   ((<> print StringBuffer a)
-                                                    ((<> print StringBuffer a) new_sb (+ buffer cur) index)
-                                                    (+ buffer cur index 1) (- size index 1))))
-                                                otherwise vec))
                           (default ((<> None a))))
                        (* Slice veci ((<> deleteAt type) veci (+ cur index)))
                        (default ((<> clone Box Vector a) vec)))
@@ -337,7 +304,7 @@
                                    (io ((<> take Box Vector a) (aof vector))
                                      (Just ptr (free ptr))) ; make it out of order
                                    (match sb
-                                     (Buffered ~ NullTerminated buffer cursor
+                                     (Buffered buffer cursor
                                                (case (< index cursor)
                                                      (progn
                                                        (set (cof (+ buffer index)) item)
@@ -351,7 +318,7 @@
                           (Buffered buffer _cursor _size step
                                     (case (< index size)
                                           (letn (((<> StringBuffer a) new_sb .
-                                                  #'((<> newCapacity StringBuffer a) size step #f)))
+                                                  #'((<> newCapacity StringBuffer a) size step)))
                                             ((<> Buffer a)
                                              ((<> print StringBuffer a)
                                               ((<> put StringBuffer a)
@@ -359,17 +326,6 @@
                                                item)
                                               (+ buffer cur index 1) (- size index 1))))
                                           otherwise vec))
-                          (NullTerminated buffer _cursor _size step
-                                          (case (< index size)
-                                                (letn (((<> StringBuffer a) new_sb .
-                                                        #'((<> newCapacity StringBuffer a) size step #t)))
-                                                  ((<> Buffer a)
-                                                   ((<> print StringBuffer a)
-                                                    ((<> put StringBuffer a)
-                                                     ((<> print StringBuffer a) new_sb (+ buffer cur) index)
-                                                     item)
-                                                    (+ buffer cur index 1) (- size index 1))))
-                                                otherwise vec))
                           (default ((<> None a))))
                        (* Slice veci ((<> replaceAt type) veci item (+ cur index)))
                        (default ((<> clone Box Vector a) vec)))
@@ -380,12 +336,12 @@
           (return (match# vector
                     (dead ((<> None a)))
                     (* Buffer sb -> sb
-                       (Buffered ~ NullTerminated ((<> Buffer a) ((<> copySlice StringBuffer a) sb pos len)))
+                       (Buffered ((<> Buffer a) ((<> copySlice StringBuffer a) sb pos len)))
                        (default ((<> None a))))
                     (* Slice vec cur -># vec
                        (dead ((<> None a)))
                        (* Buffer sbs -> sbs
-                          (Buffered ~ NullTerminated ((<> Buffer a) ((<> copySlice StringBuffer a) sbs (+ cur pos) len)))
+                          (Buffered ((<> Buffer a) ((<> copySlice StringBuffer a) sbs (+ cur pos) len)))
                           (default ((<> None a))))
                        (* Slice veci ((<> copySlice type) veci (+ cur pos) len))
                        (default ((<> None a))))
@@ -396,12 +352,12 @@
           (return (match# vector
                     (dead ((<> None a)))
                     (* Buffer sb -> sb
-                       (Buffered ~ NullTerminated ((<> Buffer a) ((<> copy StringBuffer a) sb)))
+                       (Buffered ((<> Buffer a) ((<> copy StringBuffer a) sb)))
                        (default ((<> None a))))
                     (* Slice vec cur size -># vec
                        (dead ((<> None a)))
                        (* Buffer sbs -> sbs
-                          (Buffered ~ NullTerminated ((<> Buffer a) ((<> copySlice StringBuffer a) sbs cur size)))
+                          (Buffered ((<> Buffer a) ((<> copySlice StringBuffer a) sbs cur size)))
                           (default ((<> None a))))
                        (* Slice veci ((<> copySlice type) veci cur size))
                        (default ((<> None a))))
@@ -417,7 +373,7 @@
                 (return (match# vector
                           (dead 0)
                           (* Buffer sb -> sb
-                             (Buffered ~ NullTerminated buffer
+                             (Buffered buffer
                                        (letn ((size_t sum . 0))
                                          (for ((size_t counter . index)) (< counter (+ size index)) ((++ counter))
                                               (set sum (+ sum
@@ -433,7 +389,7 @@
                 (return (match# vector
                           (dead 0)
                           (* Buffer sb -> sb
-                             (Buffered ~ NullTerminated buffer cursor
+                             (Buffered buffer cursor
                                        (letn ((size_t sum . 0))
                                          (for ((size_t counter . index)) (< counter cursor) ((++ counter))
                                               (set sum (+ sum
@@ -456,12 +412,12 @@
           (return (match# vector
                     (dead nil)
                     (* Buffer sb -> sb
-                       (Buffered ~ NullTerminated buffer buffer)
+                       (Buffered buffer buffer)
                        (default nil))
                     (* Slice vector cursor (match# vector
                                              (dead nil)
                                              (* Buffer sbs -> sbs
-                                                (Buffered ~ NullTerminated buffer (+ buffer cursor))
+                                                (Buffered buffer (+ buffer cursor))
                                                 (default nil))
                                              (* Slice vec cur (+ ((<> toArray type) vec) cur))
                                              (default nil)))
@@ -469,7 +425,7 @@
 
     (func pureCapacity ((size_t capacity) (size_t step))
           (out type)
-          (return ((<> Buffer a) ((<> newCapacity StringBuffer a) capacity step (<> null_terminated type)))))
+          (return ((<> Buffer a) ((<> newCapacity StringBuffer a) capacity step))))
 
     (func pure ((size_t step))
           (out type)
@@ -489,14 +445,9 @@
                                        (* Buffer sbs -> sbs
                                           (Buffered buffer _cursor _size step
                                                     (letn (((<> StringBuffer a) new_sb .
-                                                            #'((<> newCapacity StringBuffer a) len step #f)))
+                                                            #'((<> newCapacity StringBuffer a) len step)))
                                                       ((<> Buffer a)
                                                        ((<> print StringBuffer a) new_sb (+ buffer cur) len))))
-                                          (NullTerminated buffer _cursor _size step
-                                                          (letn (((<> StringBuffer a) new_sb .
-                                                                  #'((<> newCapacity StringBuffer a) len step #t)))
-                                                            ((<> Buffer a)
-                                                             ((<> print StringBuffer a) new_sb (+ buffer cur) len))))
                                           (default ((<> None a))))
                                        (* Slice veci ((<> resize type) veci len)) ; E
                                        (default ((<> clone Box Vector a) vec))))
@@ -507,7 +458,7 @@
           (return (match# vector
                     (dead (cast (<> Vector a iterator_t) '{ nil nil }))
                     (* Buffer sb -> sb
-                       (Buffered ~ NullTerminated buffer cursor (cast (<> Vector a iterator_t) '{ buffer (+ buffer cursor) }))
+                       (Buffered buffer cursor (cast (<> Vector a iterator_t) '{ buffer (+ buffer cursor) }))
                        (default (cast (<> Vector a iterator_t) '{ nil nil })))
                     (* Slice vec cur size
                        (letn (((<> Vector a iterator_t) iter . #'((<> iterator type) vec)))
@@ -546,16 +497,13 @@
     (LET ((len len)
           (buf-name (GENSYM "tmp_buf")))
       (IF len
-          `(letn (((<> StringBuffer a) ,buf-name . (FUNCTION ((<> newCapacity StringBuffer a)
-                                                              ,len 16 (<> null_terminated type)))))
+          `(letn (((<> StringBuffer a) ,buf-name . (FUNCTION ((<> newCapacity StringBuffer a) ,len 16))))
              ((<> Buffer a) ((<> print StringBuffer a) ,buf-name ,buf ,len)))
           (IF (STRINGP buf)
-              `(letn (((<> StringBuffer a) ,buf-name . (FUNCTION ((<> newCapacity StringBuffer a)
-                                                                  ,(LENGTH buf) 16 (<> null_terminated type)))))
+              `(letn (((<> StringBuffer a) ,buf-name . (FUNCTION ((<> newCapacity StringBuffer a) ,(LENGTH buf) 16))))
                  ((<> Buffer a) ((<> print StringBuffer a) ,buf-name ,buf ,(LENGTH buf))))
               (IF (AND (LISTP buf) (EQUAL (CAR buf) 'QUOTE))
-                  `(letn (((<> StringBuffer a) ,buf-name . (FUNCTION ((<> newCapacity StringBuffer a)
-                                                                      ,(LENGTH buf) 16 (<> null_terminated type)))))
+                  `(letn (((<> StringBuffer a) ,buf-name . (FUNCTION ((<> newCapacity StringBuffer a) ,(LENGTH buf) 16))))
                      ((<> Buffer a) ((<> print StringBuffer a) ,buf-name (cast (const a []) ,buf) ,(LENGTH (CADR buf)))))
                   (ERROR (FORMAT NIL "new^Vector len required for dynamic array input: ~A" buf)))))))
 

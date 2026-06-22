@@ -24,7 +24,7 @@
     (LET* ((has-alias (AND (LISTP case) (EQUAL (CAR case) '=)))
            (data-name (IF has-alias (CADR case) (IF (LISTP data) match-id data)))
            (case (IF has-alias (CDDR case) case))
-           (symb (MACROEXPAND (CAR case)))
+           (symb (CICILI:EXPAND-MACROS (CAR case)))
            (tail (CDR case))
            (defs ())
            (assigns ())
@@ -40,9 +40,9 @@
         (WHEN (EQUAL symb '**) (SETQ is-dptr T))
         (SETQ is-ptr T)
         (SETQ case (CDR case))
-        (SETQ symb (MACROEXPAND (CAR case)))
+        (SETQ symb (CICILI:EXPAND-MACROS (CAR case)))
         (SETQ tail (CDR case)))
-      
+
       ;; (WHEN (OR has-alias (NOT (EQL data data-name)))
       (WHEN (OR has-alias (NOT (EQL data data-name)))
         (IF is-inner-case
@@ -230,7 +230,7 @@
               (AND <!>found (ATOM symb) (< (LENGTH case) 4))
               (AND (NULL <!>found) (LISTP symb) (/= (LENGTH case) 2))
               (AND (NULL <!>found) (ATOM symb) (< (LENGTH case) 2)))
-        (ERROR (FORMAT NIL "match case wrong definition: ~A" case)))
+        (ERROR (FORMAT NIL "match case wrong definition: ~A -> ~A" case symb)))
 
       (UNLESS (EQUAL symb 'default)
         (SETQ conds (IF (AND conds (EQUAL conds 'true))

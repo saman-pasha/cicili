@@ -655,8 +655,8 @@
 (defun specify-$-expr (def)
   (let ((len (length def))
         (member (expand-macros (car (last def)))))
-    (unless (>= len 3) (error (format nil "wrong access member $ form ~A" def)))
-    (unless (is-symbol member) (error (format nil "wrong access member name ~A" def)))
+    (unless (>= len 3) (error (format nil "wrong access member $ form: ~A" def)))
+    (unless (is-symbol member) (error (format nil "wrong access member name: ~A" def)))
     (make-specifier (if (> len 3)
                         (specify-expr (without-last def))
                         (specify-expr (car (last (without-last def)))))
@@ -665,8 +665,8 @@
 
 (defun specify-->-expr (def no-call)
   (if no-call ; -->
-      (unless (= (length def) 3) (error (format nil "wrong access method name --> form ~A" def)))
-      (when   (< (length def) 3) (error (format nil "wrong access method -> form ~A" def))))
+      (unless (= (length def) 3) (error (format nil "wrong access method name --> form: ~A" def)))
+      (when   (< (length def) 3) (error (format nil "wrong access method -> form: ~A" def))))
   (let ((method-var (make-specifier (specify-expr (expand-macros (nth 1 def)))
                       (if no-call '|@-->| '|@->|) nil nil nil nil nil
                       (specify-expr (expand-macros (nth 2 def))) '())))
@@ -674,7 +674,7 @@
     method-var))
 
 (defun specify-=>-expr (def)
-  (when (< (length def) 3) (error (format nil "wrong access member function => form ~A" def)))
+  (when (< (length def) 3) (error (format nil "wrong access member function => form: ~A" def)))
   ;; (unless (is-symbol (nth 2 def)) (error (format nil "wrong access method name ~A" def)))
   (let ((method-var (make-specifier (specify-expr (nth 1 def)) '|@=>| nil nil nil nil nil
                                     ;; (specify-symbol-expr (nth 2 def)) '())))
