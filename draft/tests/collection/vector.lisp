@@ -425,7 +425,12 @@
                           (printf "%c" (cof begin))
                           (++ begin))
                         (printf "\n")))))
-            
+            (iterate (beg end v211)
+              (printf "%d" (cof beg))) ; cursor is beg
+            (putchar #\Newline) 
+            (iterate (beg end v222 :reverse T) ; cursor is end
+              (printf "%c" (cof end)))
+            (putchar #\Newline)
             
             ) ; letin
           
@@ -495,3 +500,5 @@
 ;; iterator content: fghijk
 ;; iterator STS begin: hijk
 ;; iterator STS content: hijk
+;; 263450
+;; kjihgfedLcba

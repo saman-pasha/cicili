@@ -141,12 +141,12 @@
                 (match# input
                   (dead ((<> None b)))
                   (* Buffer sbi -> sbi
-                     (Buffered ~ NullTerminated bufferA cursor _size step
+                     (Buffered bufferA cursor _size step
                                (letn (((<> Vector b) output . #'((<> pureCapacity Vector b) cursor step)))
                                  (match# output
                                    (dead ((<> None b)))
                                    (* Buffer sbo -> sbo
-                                      (Buffered ~ NullTerminated bufferB
+                                      (Buffered bufferB
                                                 (progn
                                                   (for ((size_t counter . 0)) (< counter cursor) ((++ counter))
                                                        (set (cof (+ bufferB counter)) ($> a_b $ (cof (+ bufferA counter)))))
@@ -157,12 +157,12 @@
                   (* Slice vec cur -># vec
                      (dead ((<> None b)))
                      (* Buffer sbsi -> sbsi                
-                        (Buffered ~ NullTerminated bufferA cursor _size step
+                        (Buffered bufferA cursor _size step
                                   (letn (((<> Vector b) output . #'((<> pureCapacity Vector b) (- cursor cur) step)))
                                     (match# output
                                       (dead ((<> None b)))
                                       (* Buffer sbo -> sbo
-                                         (Buffered ~ NullTerminated bufferB
+                                         (Buffered bufferB
                                                    (progn
                                                      (for ((size_t counter . cur)) (< counter cursor) ((++ counter))
                                                           (set (cof (+ bufferB (- counter cur))) ($> a_b $ (cof (+ bufferA counter)))))

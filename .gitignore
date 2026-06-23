@@ -296,3 +296,7 @@ draft/tests/collection/btree
 benchmark/royal_btree
 benchmark/simple_btree
 draft/tests/collection/royal_btree
+*.toml~
+*.lock
+*.rs~
+/benchmark/persistent_btree/target

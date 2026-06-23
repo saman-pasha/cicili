@@ -276,6 +276,7 @@
    (0 . None)
    (0 . force)
    (0 . lazy)
+   (1 . iterate)
    ))
 
 (defun cicili-add-attributes (face-name keyword-rules)

@@ -72,3 +72,22 @@
 (DEFMACRO show (obj)
   (LET ((obj obj))
     `((\.* show ,obj) stdout ,obj)))
+
+(DEFMACRO iterate (args &REST body)
+  (DESTRUCTURING-BIND (begin end vector &KEY reverse) args
+    (LET ((cloned   (GENSYM "__h_cloned"))
+          (cloned_x (GENSYM "__h_cloned_x"))
+          (iterator (GENSYM "__h_iterator")))
+      `(let ((defer () __h_free_data_router)
+             (auto ,cloned . #'((\. clone ,vector) ,vector))) ; get one reference till end of iteration
+         (io# ,cloned
+           (= ,cloned_x default
+              (let ((auto ,iterator . #'((\.* iterator ,cloned_x) ,cloned)))
+                (io ,iterator
+                  ((\, ,begin ,end)
+                   ,(IF reverse
+                        `(block (-- ,begin)
+                                (while (!= ,begin (-- ,end))
+                                  ,@body))
+                        `(while (!= (1+ ,begin) ,end)
+                           ,@body)))))))))))
