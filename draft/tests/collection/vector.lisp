@@ -41,7 +41,7 @@
             (v18 (take^Vector^int 3 v03))
             (v19 (take^Vector^char 5 v05))
             (v20 (take^Vector^char 2 v19))
-            (v50 (wrap^Vector^int 1000))
+            (v50 (wrap^Vector^int 1000)) ; push
             ) ; decls
 
       (printf "v03: ")
@@ -58,6 +58,17 @@
       (where ((exit-status (\\ -status (block (printf "status: %d\n" -status)
                                               (exit EXIT_FAILURE)))))
         (block
+          ;; mautation exclusive guard strategy
+          (letin ((v01C1 (clone^Box^Vector^int v01))
+                  (v01P1 (push^Vector^int 40 v01C1)))
+            (io# v01P1
+              (* None (printf "can't push to v01: any cloned versions or slices refered to it\n"))
+              (default (exit-status -90))))
+          (letin ((v01P1 (push^Vector^int 40 v01)))
+            (io ((<> head Vector int) v01P1)
+              (Just he (printf "head of v01: %d had not any cloned versions or slices refered to it\n" he))
+              (default (exit-status -91))))
+             
           (io ((<> nth Vector int) 3 v03)
             (Just i (printf "4th int element of v03: %d\n" i))
             (default (exit-status -100)))

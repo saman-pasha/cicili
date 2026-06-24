@@ -17,7 +17,7 @@
     (= List    (<> Dynamic List)    ((<> List DynamicType) data) (CStr xml_name))
     (= Object  (<> Dynamic Object)  ((<> BTree CStr DynamicType) data))
     (= Null    (<> Dynamic Null))
-    ;; error reason should be aloocated string, will be always deallocated
+    ;; error reason should be allocated string, will be always deallocated
     (= Error   (<> Dynamic Error)   (CStr reason))
     (= Thunk   (<> Dynamic Thunk)   (DynamicType args) (func fptr ((DynamicType params)) (out DynamicType)))
     (func parseJson ((CFile file)) (out DynamicType))

@@ -170,9 +170,11 @@
           (out type)
           (return (match# vector
                     (dead ((<> None a)))
-                    (* Buffer sb (progn (io ((<> take Box Vector a) (aof vector))
-                                          (Just ptr (free ptr))) ; make it out of order
-                                        ((<> Buffer a) ((<> put StringBuffer a) sb item))))
+                    (* Buffer sb (match ((<> take Box Vector a) (aof vector))
+                                   (Just ptr (progn
+                                               (free ptr) ; make it out of order
+                                               ((<> Buffer a) ((<> put StringBuffer a) sb item))))
+                                   (default ((<> None a)))))
                     ;; COW pattern copy-on-write for Slices
                     (* Slice vec cur size -># vec
                        (dead ((<> None a)))
@@ -188,11 +190,13 @@
           (out type)
           (return (match# lvector
                     (dead ((<> None a)))
-                    (* Buffer sb (progn (io ((<> take Box Vector a) (aof lvector))
-                                          (Just ptr (free ptr))) ; make it out of order
-                                        ((<> Buffer a) ((<> print StringBuffer a) sb
-                                                        ((<> toArray type) rvector)
-                                                        ((<> len type) rvector)))))
+                    (* Buffer sb (match ((<> take Box Vector a) (aof lvector))
+                                   (Just ptr (progn
+                                               (free ptr) ; make it out of order
+                                               ((<> Buffer a) ((<> print StringBuffer a) sb
+                                                               ((<> toArray type) rvector)
+                                                               ((<> len type) rvector)))))
+                                   (default ((<> None a)))))
                     ;; COW pattern copy-on-write for Slices
                     (* Slice vec cur size -># vec
                        (dead ((<> None a)))
@@ -210,15 +214,16 @@
                     (dead ((<> None a)))
                     (* Buffer sb -> sb
                        (Buffered buffer cursor size step
-                                 (letn ((a tmp))
-                                   (io ((<> take Box Vector a) (aof vector))
-                                     (Just ptr (free ptr))) ; make it out of order
-                                   (for ((size_t i . 0) (j . cursor)) (< i (/ cursor 2)) ((++ i) (-- j))
-                                        (set tmp                      (cof (+ buffer i))
-                                             (cof (+ buffer i))       (cof (+ buffer (- j 1)))
-                                             (cof (+ buffer (- j 1))) tmp))
-                                   ((<> Buffer a) ((<> MakeStringBuffer a) buffer cursor size step))))
-                       (default ((<> clone Box Vector a) vector)))
+                                   (match ((<> take Box Vector a) (aof vector))
+                                     (Just ptr (letn ((a tmp))
+                                                 (free ptr) ; make it out of order
+                                                 (for ((size_t i . 0) (j . cursor)) (< i (/ cursor 2)) ((++ i) (-- j))
+                                                      (set tmp                      (cof (+ buffer i))
+                                                           (cof (+ buffer i))       (cof (+ buffer (- j 1)))
+                                                           (cof (+ buffer (- j 1))) tmp))
+                                                 ((<> Buffer a) ((<> MakeStringBuffer a) buffer cursor size step))))
+                                     (default ((<> None a)))))
+                       (default ((<> None a))))
                     ;; COW pattern copy-on-write for Slices
                     (* Slice vec cur size -># vec
                        (dead ((<> None a)))
@@ -232,17 +237,18 @@
           (out type)
           (return (match# vector
                     (dead ((<> None a)))
-                    (* Buffer sb (letn (((<> StringBuffer a) new_sb . #'((<> put StringBuffer a) sb item)))
-                                   (io ((<> take Box Vector a) (aof vector))
-                                     (Just ptr (free ptr))) ; make it out of order
-                                   (match new_sb
-                                     (Buffered buffer cursor
-                                               (progn
-                                                 (for ((size_t i . #'(- cursor 1))) (> i index) ((-- i))
-                                                      (set (cof (+ buffer i)) (cof (+ buffer (- i 1)))))
-                                                 (set (cof (+ buffer index)) item)
-                                                 ((<> Buffer a) new_sb)))
-                                     (default ((<> clone Box Vector a) vector)))))
+                    (* Buffer sb (match ((<> take Box Vector a) (aof vector))
+                                   (Just ptr (letn (((<> StringBuffer a) new_sb . #'((<> put StringBuffer a) sb item)))
+                                               (free ptr) ; make it out of order
+                                               (match new_sb
+                                                 (Buffered buffer cursor
+                                                           (progn
+                                                             (for ((size_t i . #'(- cursor 1))) (> i index) ((-- i))
+                                                                  (set (cof (+ buffer i)) (cof (+ buffer (- i 1)))))
+                                                             (set (cof (+ buffer index)) item)
+                                                             ((<> Buffer a) new_sb)))
+                                                 (default ((<> clone Box Vector a) vector)))))
+                                   (default ((<> None a)))))
                     ;; COW pattern copy-on-write for Slices
                     (* Slice vec cur size -># vec
                        (dead ((<> None a)))
@@ -267,17 +273,18 @@
           (out type)
           (return (match# vector
                     (dead ((<> None a)))
-                    (* Buffer sb (progn
-                                   (io ((<> take Box Vector a) (aof vector))
-                                     (Just ptr (free ptr))) ; make it out of order
-                                   (match sb
-                                     (Buffered buffer cursor size step
-                                               (progn
-                                                 (for ((size_t i . index)) (< i cursor) ((++ i))
-                                                      (set (cof (+ buffer i)) (cof (+ buffer (+ i 1)))))
-                                                 ((<> Buffer a)
-                                                  ((<> MakeStringBuffer a) buffer (- cursor 1) size step))))
-                                     (default ((<> clone Box Vector a) vector)))))
+                    (* Buffer sb (match ((<> take Box Vector a) (aof vector))
+                                   (Just ptr (progn
+                                               (free ptr) ; make it out of order
+                                               (match sb
+                                                 (Buffered buffer cursor size step
+                                                           (progn
+                                                             (for ((size_t i . index)) (< i cursor) ((++ i))
+                                                                  (set (cof (+ buffer i)) (cof (+ buffer (+ i 1)))))
+                                                             ((<> Buffer a)
+                                                              ((<> MakeStringBuffer a) buffer (- cursor 1) size step))))
+                                                 (default ((<> clone Box Vector a) vector)))))
+                                   (default ((<> None a)))))
                     ;; COW pattern copy-on-write for Slices
                     (* Slice vec cur size -># vec
                        (dead ((<> None a)))
@@ -300,17 +307,18 @@
           (out type)
           (return (match# vector
                     (dead ((<> None a)))
-                    (* Buffer sb (progn
-                                   (io ((<> take Box Vector a) (aof vector))
-                                     (Just ptr (free ptr))) ; make it out of order
-                                   (match sb
-                                     (Buffered buffer cursor
-                                               (case (< index cursor)
-                                                     (progn
-                                                       (set (cof (+ buffer index)) item)
-                                                       ((<> Buffer a) sb))
-                                                     otherwise ((<> Buffer a) sb)))
-                                     (default ((<> clone Box Vector a) vector)))))
+                    (* Buffer sb (match ((<> take Box Vector a) (aof vector))
+                                   (Just ptr (progn
+                                               (free ptr) ; make it out of order
+                                               (match sb
+                                                 (Buffered buffer cursor
+                                                           (case (< index cursor)
+                                                                 (progn
+                                                                   (set (cof (+ buffer index)) item)
+                                                                   ((<> Buffer a) sb))
+                                                                 otherwise ((<> Buffer a) sb)))
+                                                 (default ((<> clone Box Vector a) vector)))))
+                                   (default ((<> None a)))))
                     ;; COW pattern copy-on-write for Slices
                     (* Slice vec cur size -># vec
                        (dead ((<> None a)))
@@ -435,10 +443,11 @@
           (out type)
           (return (match# vector
                     (dead ((<> None a)))
-                    (* Buffer sb (progn
-                                   (io ((<> take Box Vector a) (aof vector))
-                                     (Just ptr (free ptr))) ; make it out of order
-                                   ((<> Buffer a) ((<> resize StringBuffer a) sb len))))
+                    (* Buffer sb (match ((<> take Box Vector a) (aof vector))
+                                   (Just ptr (progn
+                                               (free ptr) ; make it out of order
+                                               ((<> Buffer a) ((<> resize StringBuffer a) sb len))))
+                                   (default ((<> None a)))))
                     ;; COW pattern copy-on-write for Slices
                     (* Slice vec cur (match# vec
                                        (dead ((<> None a)))

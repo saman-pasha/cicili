@@ -91,11 +91,11 @@ const StringBuffer_int__H_Table * const get_StringBuffer_int__H_Table ();
 void free_StringBuffer_int (StringBuffer_int * this );
 #endif /* __StringBuffer_int__H_DECL__ */ 
 typedef int * Vector_int_pointer_t ;
-typedef struct cicili_s0X_X0AcvrgoijFt0lbwwOqG_8_ {
+typedef struct cicili_gzsFxEwXLsUYWVUDRGSTRAGiBw_ {
   Vector_int_pointer_t __h_0_mem ;
   Vector_int_pointer_t __h_1_mem ;
-} cicili_s0X_X0AcvrgoijFt0lbwwOqG_8_;
-typedef cicili_s0X_X0AcvrgoijFt0lbwwOqG_8_ Vector_int_iterator_t ;
+} cicili_gzsFxEwXLsUYWVUDRGSTRAGiBw_;
+typedef cicili_gzsFxEwXLsUYWVUDRGSTRAGiBw_ Vector_int_iterator_t ;
 #ifndef __Vector_int__H_DECL__
 #define __Vector_int__H_DECL__
 #ifndef __H___h_Vector_ctor_t__
@@ -633,20 +633,17 @@ Maybe_Vector_int_x take_Box_Vector_int (Box_Vector_int * this ) {
         // ----------
         
         ((__h_case_result ) ? ({ /* cicili#Progn757 */
-            (((pointer  &&  (((size_t)(*pointer )) ==  address  ) )) ? ({ /* cicili#Let761 */
+            (((pointer  &&  (((size_t)(*pointer )) ==  address  ) &&  ((*count ) ==  1 ) )) ? ({ /* cicili#Let761 */
                 __auto_type result  = Just_Vector_int_x ((*pointer ));
                 // ----------
-                if ((*count ) >=  1 )
-                  { /* cicili#Block767 */
-                    (*count ) = 0;
-                    (*pointer ) = NULL ;
-                  }
+                (*count ) = 0;
+                (*pointer ) = NULL ;
                 result ;
               }) : Nothing_Vector_int_x ());
-          }) : ({ /* cicili#Let772 */
+          }) : ({ /* cicili#Let769 */
             // ----------
             ;
-            ({ /* cicili#Progn774 */
+            ({ /* cicili#Progn771 */
               Nothing_Vector_int_x ();
             });
           }));
@@ -654,31 +651,31 @@ Maybe_Vector_int_x take_Box_Vector_int (Box_Vector_int * this ) {
     });
 }
 Maybe_Vector_int_x get_Box_Vector_int (Box_Vector_int rc ) {
-  return ({ /* cicili#Let782 */
+  return ({ /* cicili#Let779 */
       typeof((((rc . __h_data ). Hold ). __h_0_mem )) pointer ;
       typeof((((rc . __h_data ). Hold ). __h_1_mem )) count ;
       typeof((((rc . __h_data ). Hold ). __h_2_mem )) address ;
       // ----------
       ;
-      ({ /* cicili#Let784 */
-        bool __h_case_result  = (true  &&  (((rc . __h_ctor ) ==  __h_Hold_t  ) &&  ((({ /* cicili#Progn785 */
+      ({ /* cicili#Let781 */
+        bool __h_case_result  = (true  &&  (((rc . __h_ctor ) ==  __h_Hold_t  ) &&  ((({ /* cicili#Progn782 */
                   (pointer  =  (((rc . __h_data ). Hold ). __h_0_mem ) );
                   true ;
-                }) &&  ({ /* cicili#Progn787 */
+                }) &&  ({ /* cicili#Progn784 */
                   (count  =  (((rc . __h_data ). Hold ). __h_1_mem ) );
                   true ;
-                }) ) &&  ({ /* cicili#Progn789 */
+                }) ) &&  ({ /* cicili#Progn786 */
                 (address  =  (((rc . __h_data ). Hold ). __h_2_mem ) );
                 true ;
               }) ) ) );
         // ----------
         
-        ((__h_case_result ) ? ({ /* cicili#Progn794 */
+        ((__h_case_result ) ? ({ /* cicili#Progn791 */
             (((pointer  &&  (((size_t)(*pointer )) ==  address  ) &&  ((*count ) >  0 ) )) ? Just_Vector_int_x ((*pointer )) : Nothing_Vector_int_x ());
-          }) : ({ /* cicili#Let801 */
+          }) : ({ /* cicili#Let798 */
             // ----------
             ;
-            ({ /* cicili#Progn803 */
+            ({ /* cicili#Progn800 */
               Nothing_Vector_int_x ();
             });
           }));
@@ -686,29 +683,29 @@ Maybe_Vector_int_x get_Box_Vector_int (Box_Vector_int rc ) {
     });
 }
 void free_Box_Vector_int (Box_Vector_int * this ) {
-  { /* cicili#Let812 */
+  { /* cicili#Let809 */
     typeof((((this -> __h_data ). Hold ). __h_0_mem )) pointer ;
     typeof((((this -> __h_data ). Hold ). __h_1_mem )) count ;
     typeof((((this -> __h_data ). Hold ). __h_2_mem )) address ;
     // ----------
     ;
-    ({ /* cicili#Let814 */
-      bool __h_case_result  = (true  &&  (((this -> __h_ctor ) ==  __h_Hold_t  ) &&  ((({ /* cicili#Progn815 */
+    ({ /* cicili#Let811 */
+      bool __h_case_result  = (true  &&  (((this -> __h_ctor ) ==  __h_Hold_t  ) &&  ((({ /* cicili#Progn812 */
                 (pointer  =  (((this -> __h_data ). Hold ). __h_0_mem ) );
                 true ;
-              }) &&  ({ /* cicili#Progn817 */
+              }) &&  ({ /* cicili#Progn814 */
                 (count  =  (((this -> __h_data ). Hold ). __h_1_mem ) );
                 true ;
-              }) ) &&  ({ /* cicili#Progn819 */
+              }) ) &&  ({ /* cicili#Progn816 */
               (address  =  (((this -> __h_data ). Hold ). __h_2_mem ) );
               true ;
             }) ) ) );
       // ----------
       
       if (__h_case_result )
-        { /* cicili#Block825 */
+        { /* cicili#Block822 */
           if (((*count ) ==  0 ) &&  ((*pointer ) ==  NULL  ) )
-            { /* cicili#Block828 */
+            { /* cicili#Block825 */
               free (((void *)count ));
               free (((void *)pointer ));
               (*this ) = Gone_Vector_int_x ();
@@ -716,9 +713,9 @@ void free_Box_Vector_int (Box_Vector_int * this ) {
           else
             {
             if (pointer  &&  (((size_t)(*pointer )) ==  address  ) )
-              { /* cicili#Block836 */
+              { /* cicili#Block833 */
                 if ((*count ) ==  1 )
-                  { /* cicili#Block839 */
+                  { /* cicili#Block836 */
                     free_Vector_int_x (pointer );
                     (*count ) = 0;
                     free (((void *)count ));
@@ -731,15 +728,15 @@ void free_Box_Vector_int (Box_Vector_int * this ) {
               }
               }        }
       else
-        { /* cicili#Let849 */
+        { /* cicili#Let846 */
           // ----------
           ;
-          ({ /* cicili#Let851 */
+          ({ /* cicili#Let848 */
             bool __h_case_result  = (true  &&  ((this -> __h_ctor ) ==  __h_Gone_t  ) );
             // ----------
             
             if (__h_case_result )
-              { /* cicili#Block856 */
+              { /* cicili#Block853 */
               }
           });
         }
@@ -751,14 +748,14 @@ const Box_Vector_int__H_Table * const get_Box_Vector_int__H_Table () {
   return (&table );
 }
 Box_Vector_int __h_Hold_Vector_int_x (Vector_int_x * pointer , int * count , size_t address ) {
-  { /* cicili#Let867 */
+  { /* cicili#Let864 */
     Box_Vector_int instance  = ((Box_Vector_int){ get_Box_Vector_int__H_Table (), __h_Hold_t , .__h_data.Hold = { pointer , count , address }});
     // ----------
     return instance ;
   }
 }
 Box_Vector_int Gone_Vector_int_x () {
-  { /* cicili#Let872 */
+  { /* cicili#Let869 */
     Box_Vector_int instance  = ((Box_Vector_int){ get_Box_Vector_int__H_Table (), __h___t });
     // ----------
     return instance ;
@@ -766,110 +763,110 @@ Box_Vector_int Gone_Vector_int_x () {
 }
 #endif /* __Box_Vector_int__H_IMPL__ */ 
 Vector_int_iterator_t iterator_Vector_int (Vector_int vector ) {
-  return ({ /* cicili#Let879 */
+  return ({ /* cicili#Let876 */
       __auto_type __h_matchbox  = vector ;
       // ----------
-      ({ /* cicili#Let883 */
-        __auto_type match882  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
-        typeof((((match882 . __h_data ). Just ). __h_0_mem )) unboxed ;
+      ({ /* cicili#Let880 */
+        __auto_type match879  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
+        typeof((((match879 . __h_data ). Just ). __h_0_mem )) unboxed ;
         // ----------
         ;
-        ({ /* cicili#Let886 */
-          bool __h_case_result  = (true  &&  (((match882 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn887 */
-                (unboxed  =  (((match882 . __h_data ). Just ). __h_0_mem ) );
+        ({ /* cicili#Let883 */
+          bool __h_case_result  = (true  &&  (((match879 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn884 */
+                (unboxed  =  (((match879 . __h_data ). Just ). __h_0_mem ) );
                 true ;
               }) ) );
           // ----------
           
-          ((__h_case_result ) ? ({ /* cicili#Progn892 */
-              ({ /* cicili#Let896 */
+          ((__h_case_result ) ? ({ /* cicili#Progn889 */
+              ({ /* cicili#Let893 */
                 typeof((((unboxed -> __h_data ). Buffer ). __h_0_mem )) sb ;
                 // ----------
                 ;
-                ({ /* cicili#Let898 */
-                  bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) &&  ({ /* cicili#Progn899 */
+                ({ /* cicili#Let895 */
+                  bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) &&  ({ /* cicili#Progn896 */
                         (sb  =  (((unboxed -> __h_data ). Buffer ). __h_0_mem ) );
                         true ;
                       }) ) );
                   // ----------
                   
-                  ((__h_case_result ) ? ({ /* cicili#Progn904 */
-                      ({ /* cicili#Let908 */
+                  ((__h_case_result ) ? ({ /* cicili#Progn901 */
+                      ({ /* cicili#Let905 */
                         typeof((((sb . __h_data ). Buffered ). __h_0_mem )) buffer ;
                         typeof((((sb . __h_data ). Buffered ). __h_1_mem )) cursor ;
                         // ----------
                         ;
-                        ({ /* cicili#Let910 */
-                          bool __h_case_result  = (true  &&  (((sb . __h_ctor ) ==  __h_Buffered_t  ) &&  (({ /* cicili#Progn911 */
+                        ({ /* cicili#Let907 */
+                          bool __h_case_result  = (true  &&  (((sb . __h_ctor ) ==  __h_Buffered_t  ) &&  (({ /* cicili#Progn908 */
                                   (buffer  =  (((sb . __h_data ). Buffered ). __h_0_mem ) );
                                   true ;
-                                }) &&  ({ /* cicili#Progn913 */
+                                }) &&  ({ /* cicili#Progn910 */
                                   (cursor  =  (((sb . __h_data ). Buffered ). __h_1_mem ) );
                                   true ;
                                 }) ) ) );
                           // ----------
                           
-                          ((__h_case_result ) ? ({ /* cicili#Progn918 */
+                          ((__h_case_result ) ? ({ /* cicili#Progn915 */
                               ((Vector_int_iterator_t){ buffer , (buffer  +  cursor  )});
-                            }) : ({ /* cicili#Let923 */
+                            }) : ({ /* cicili#Let920 */
                               // ----------
                               ;
-                              ({ /* cicili#Progn925 */
+                              ({ /* cicili#Progn922 */
                                 ((Vector_int_iterator_t){ NULL , NULL });
                               });
                             }));
                         });
                       });
-                    }) : ({ /* cicili#Let930 */
+                    }) : ({ /* cicili#Let927 */
                       typeof((((unboxed -> __h_data ). Slice ). __h_0_mem )) vec ;
                       typeof((((unboxed -> __h_data ). Slice ). __h_1_mem )) cur ;
                       typeof((((unboxed -> __h_data ). Slice ). __h_2_mem )) size ;
                       // ----------
                       ;
-                      ({ /* cicili#Let932 */
-                        bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Slice_t  ) &&  ((({ /* cicili#Progn933 */
+                      ({ /* cicili#Let929 */
+                        bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Slice_t  ) &&  ((({ /* cicili#Progn930 */
                                   (vec  =  (((unboxed -> __h_data ). Slice ). __h_0_mem ) );
                                   true ;
-                                }) &&  ({ /* cicili#Progn935 */
+                                }) &&  ({ /* cicili#Progn932 */
                                   (cur  =  (((unboxed -> __h_data ). Slice ). __h_1_mem ) );
                                   true ;
-                                }) ) &&  ({ /* cicili#Progn937 */
+                                }) ) &&  ({ /* cicili#Progn934 */
                                 (size  =  (((unboxed -> __h_data ). Slice ). __h_2_mem ) );
                                 true ;
                               }) ) ) );
                         // ----------
                         
-                        ((__h_case_result ) ? ({ /* cicili#Progn942 */
-                            ({ /* cicili#Let944 */
+                        ((__h_case_result ) ? ({ /* cicili#Progn939 */
+                            ({ /* cicili#Let941 */
                               Vector_int_iterator_t iter  = iterator_Vector_int (vec );
                               // ----------
-                              ({ /* cicili#Let950 */
+                              ({ /* cicili#Let947 */
                                 typeof((iter . __h_0_mem )) begin ;
                                 // ----------
                                 ;
-                                ({ /* cicili#Let952 */
-                                  bool __h_case_result  = (true  &&  ({ /* cicili#Progn953 */
+                                ({ /* cicili#Let949 */
+                                  bool __h_case_result  = (true  &&  ({ /* cicili#Progn950 */
                                       (begin  =  (iter . __h_0_mem ) );
                                       true ;
                                     }) );
                                   // ----------
                                   
-                                  ((__h_case_result ) ? ({ /* cicili#Progn958 */
+                                  ((__h_case_result ) ? ({ /* cicili#Progn955 */
                                       ((Vector_int_iterator_t){ (begin  +  cur  ), (begin  +  size  )});
-                                    }) : ({ /* cicili#Let963 */
+                                    }) : ({ /* cicili#Let960 */
                                       // ----------
                                       ;
-                                      ({ /* cicili#Progn965 */
+                                      ({ /* cicili#Progn962 */
                                         ((Vector_int_iterator_t){ NULL , NULL });
                                       });
                                     }));
                                 });
                               });
                             });
-                          }) : ({ /* cicili#Let970 */
+                          }) : ({ /* cicili#Let967 */
                             // ----------
                             ;
-                            ({ /* cicili#Progn972 */
+                            ({ /* cicili#Progn969 */
                               ((Vector_int_iterator_t){ NULL , NULL });
                             });
                           }));
@@ -877,10 +874,10 @@ Vector_int_iterator_t iterator_Vector_int (Vector_int vector ) {
                     }));
                 });
               });
-            }) : ({ /* cicili#Let977 */
+            }) : ({ /* cicili#Let974 */
               // ----------
               ;
-              ({ /* cicili#Progn979 */
+              ({ /* cicili#Progn976 */
                 ((Vector_int_iterator_t){ NULL , NULL });
               });
             }));
@@ -889,146 +886,151 @@ Vector_int_iterator_t iterator_Vector_int (Vector_int vector ) {
     });
 }
 Vector_int resize_Vector_int (Vector_int vector , size_t len ) {
-  return ({ /* cicili#Let985 */
+  return ({ /* cicili#Let982 */
       __auto_type __h_matchbox  = vector ;
       // ----------
-      ({ /* cicili#Let989 */
-        __auto_type match988  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
-        typeof((((match988 . __h_data ). Just ). __h_0_mem )) unboxed ;
+      ({ /* cicili#Let986 */
+        __auto_type match985  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
+        typeof((((match985 . __h_data ). Just ). __h_0_mem )) unboxed ;
         // ----------
         ;
-        ({ /* cicili#Let992 */
-          bool __h_case_result  = (true  &&  (((match988 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn993 */
-                (unboxed  =  (((match988 . __h_data ). Just ). __h_0_mem ) );
+        ({ /* cicili#Let989 */
+          bool __h_case_result  = (true  &&  (((match985 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn990 */
+                (unboxed  =  (((match985 . __h_data ). Just ). __h_0_mem ) );
                 true ;
               }) ) );
           // ----------
           
-          ((__h_case_result ) ? ({ /* cicili#Progn998 */
-              ({ /* cicili#Let1002 */
+          ((__h_case_result ) ? ({ /* cicili#Progn995 */
+              ({ /* cicili#Let999 */
                 typeof((((unboxed -> __h_data ). Buffer ). __h_0_mem )) sb ;
                 // ----------
                 ;
-                ({ /* cicili#Let1004 */
-                  bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) &&  ({ /* cicili#Progn1005 */
+                ({ /* cicili#Let1001 */
+                  bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) &&  ({ /* cicili#Progn1002 */
                         (sb  =  (((unboxed -> __h_data ). Buffer ). __h_0_mem ) );
                         true ;
                       }) ) );
                   // ----------
                   
-                  ((__h_case_result ) ? ({ /* cicili#Progn1010 */
-                      ({ /* cicili#Progn1012 */
-                        { /* cicili#Let1016 */
-                          __auto_type match1015  = take_Box_Vector_int ((&vector ));
-                          typeof((((match1015 . __h_data ). Just ). __h_0_mem )) ptr ;
+                  ((__h_case_result ) ? ({ /* cicili#Progn1007 */
+                      ({ /* cicili#Let1011 */
+                        __auto_type match1010  = take_Box_Vector_int ((&vector ));
+                        typeof((((match1010 . __h_data ). Just ). __h_0_mem )) ptr ;
+                        // ----------
+                        ;
+                        ({ /* cicili#Let1014 */
+                          bool __h_case_result  = (true  &&  (((match1010 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn1015 */
+                                (ptr  =  (((match1010 . __h_data ). Just ). __h_0_mem ) );
+                                true ;
+                              }) ) );
                           // ----------
-                          ;
-                          ({ /* cicili#Let1019 */
-                            bool __h_case_result  = (true  &&  (((match1015 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn1020 */
-                                  (ptr  =  (((match1015 . __h_data ). Just ). __h_0_mem ) );
-                                  true ;
-                                }) ) );
-                            // ----------
-                            
-                            if (__h_case_result )
-                              { /* cicili#Block1026 */
+                          
+                          ((__h_case_result ) ? ({ /* cicili#Progn1020 */
+                              ({ /* cicili#Progn1022 */
                                 free (ptr );
-                              }
-                          });
-                        }
-                        Buffer_int (resize_StringBuffer_int (sb , len ));
+                                Buffer_int (resize_StringBuffer_int (sb , len ));
+                              });
+                            }) : ({ /* cicili#Let1028 */
+                              // ----------
+                              ;
+                              ({ /* cicili#Progn1030 */
+                                None_int ();
+                              });
+                            }));
+                        });
                       });
-                    }) : ({ /* cicili#Let1032 */
+                    }) : ({ /* cicili#Let1035 */
                       typeof((((unboxed -> __h_data ). Slice ). __h_0_mem )) vec ;
                       typeof((((unboxed -> __h_data ). Slice ). __h_1_mem )) cur ;
                       // ----------
                       ;
-                      ({ /* cicili#Let1034 */
-                        bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Slice_t  ) &&  (({ /* cicili#Progn1035 */
+                      ({ /* cicili#Let1037 */
+                        bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Slice_t  ) &&  (({ /* cicili#Progn1038 */
                                 (vec  =  (((unboxed -> __h_data ). Slice ). __h_0_mem ) );
                                 true ;
-                              }) &&  ({ /* cicili#Progn1037 */
+                              }) &&  ({ /* cicili#Progn1040 */
                                 (cur  =  (((unboxed -> __h_data ). Slice ). __h_1_mem ) );
                                 true ;
                               }) ) ) );
                         // ----------
                         
-                        ((__h_case_result ) ? ({ /* cicili#Progn1042 */
-                            ({ /* cicili#Let1045 */
+                        ((__h_case_result ) ? ({ /* cicili#Progn1045 */
+                            ({ /* cicili#Let1048 */
                               __auto_type __h_matchbox  = vec ;
                               // ----------
-                              ({ /* cicili#Let1049 */
-                                __auto_type match1048  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
-                                typeof((((match1048 . __h_data ). Just ). __h_0_mem )) unboxed ;
+                              ({ /* cicili#Let1052 */
+                                __auto_type match1051  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
+                                typeof((((match1051 . __h_data ). Just ). __h_0_mem )) unboxed ;
                                 // ----------
                                 ;
-                                ({ /* cicili#Let1052 */
-                                  bool __h_case_result  = (true  &&  (((match1048 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn1053 */
-                                        (unboxed  =  (((match1048 . __h_data ). Just ). __h_0_mem ) );
+                                ({ /* cicili#Let1055 */
+                                  bool __h_case_result  = (true  &&  (((match1051 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn1056 */
+                                        (unboxed  =  (((match1051 . __h_data ). Just ). __h_0_mem ) );
                                         true ;
                                       }) ) );
                                   // ----------
                                   
-                                  ((__h_case_result ) ? ({ /* cicili#Progn1058 */
-                                      ({ /* cicili#Let1062 */
+                                  ((__h_case_result ) ? ({ /* cicili#Progn1061 */
+                                      ({ /* cicili#Let1065 */
                                         typeof((((unboxed -> __h_data ). Buffer ). __h_0_mem )) sbs ;
                                         // ----------
                                         ;
-                                        ({ /* cicili#Let1064 */
-                                          bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) &&  ({ /* cicili#Progn1065 */
+                                        ({ /* cicili#Let1067 */
+                                          bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) &&  ({ /* cicili#Progn1068 */
                                                 (sbs  =  (((unboxed -> __h_data ). Buffer ). __h_0_mem ) );
                                                 true ;
                                               }) ) );
                                           // ----------
                                           
-                                          ((__h_case_result ) ? ({ /* cicili#Progn1070 */
-                                              ({ /* cicili#Let1074 */
+                                          ((__h_case_result ) ? ({ /* cicili#Progn1073 */
+                                              ({ /* cicili#Let1077 */
                                                 typeof((((sbs . __h_data ). Buffered ). __h_0_mem )) buffer ;
                                                 typeof((((sbs . __h_data ). Buffered ). __h_3_mem )) step ;
                                                 // ----------
                                                 ;
-                                                ({ /* cicili#Let1076 */
-                                                  bool __h_case_result  = (true  &&  (((sbs . __h_ctor ) ==  __h_Buffered_t  ) &&  (({ /* cicili#Progn1077 */
+                                                ({ /* cicili#Let1079 */
+                                                  bool __h_case_result  = (true  &&  (((sbs . __h_ctor ) ==  __h_Buffered_t  ) &&  (({ /* cicili#Progn1080 */
                                                           (buffer  =  (((sbs . __h_data ). Buffered ). __h_0_mem ) );
                                                           true ;
-                                                        }) &&  ({ /* cicili#Progn1079 */
+                                                        }) &&  ({ /* cicili#Progn1082 */
                                                           (step  =  (((sbs . __h_data ). Buffered ). __h_3_mem ) );
                                                           true ;
                                                         }) ) ) );
                                                   // ----------
                                                   
-                                                  ((__h_case_result ) ? ({ /* cicili#Progn1084 */
-                                                      ({ /* cicili#Let1086 */
+                                                  ((__h_case_result ) ? ({ /* cicili#Progn1087 */
+                                                      ({ /* cicili#Let1089 */
                                                         StringBuffer_int new_sb  = newCapacity_StringBuffer_int (len , step );
                                                         // ----------
                                                         Buffer_int (print_StringBuffer_int (new_sb , (buffer  +  cur  ), len ));
                                                       });
-                                                    }) : ({ /* cicili#Let1094 */
+                                                    }) : ({ /* cicili#Let1097 */
                                                       // ----------
                                                       ;
-                                                      ({ /* cicili#Progn1096 */
+                                                      ({ /* cicili#Progn1099 */
                                                         None_int ();
                                                       });
                                                     }));
                                                 });
                                               });
-                                            }) : ({ /* cicili#Let1101 */
+                                            }) : ({ /* cicili#Let1104 */
                                               typeof((((unboxed -> __h_data ). Slice ). __h_0_mem )) veci ;
                                               // ----------
                                               ;
-                                              ({ /* cicili#Let1103 */
-                                                bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Slice_t  ) &&  ({ /* cicili#Progn1104 */
+                                              ({ /* cicili#Let1106 */
+                                                bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Slice_t  ) &&  ({ /* cicili#Progn1107 */
                                                       (veci  =  (((unboxed -> __h_data ). Slice ). __h_0_mem ) );
                                                       true ;
                                                     }) ) );
                                                 // ----------
                                                 
-                                                ((__h_case_result ) ? ({ /* cicili#Progn1109 */
+                                                ((__h_case_result ) ? ({ /* cicili#Progn1112 */
                                                     resize_Vector_int (veci , len );
-                                                  }) : ({ /* cicili#Let1114 */
+                                                  }) : ({ /* cicili#Let1117 */
                                                     // ----------
                                                     ;
-                                                    ({ /* cicili#Progn1116 */
+                                                    ({ /* cicili#Progn1119 */
                                                       clone_Box_Vector_int (vec );
                                                     });
                                                   }));
@@ -1036,20 +1038,20 @@ Vector_int resize_Vector_int (Vector_int vector , size_t len ) {
                                             }));
                                         });
                                       });
-                                    }) : ({ /* cicili#Let1121 */
+                                    }) : ({ /* cicili#Let1124 */
                                       // ----------
                                       ;
-                                      ({ /* cicili#Progn1123 */
+                                      ({ /* cicili#Progn1126 */
                                         None_int ();
                                       });
                                     }));
                                 });
                               });
                             });
-                          }) : ({ /* cicili#Let1128 */
+                          }) : ({ /* cicili#Let1131 */
                             // ----------
                             ;
-                            ({ /* cicili#Progn1130 */
+                            ({ /* cicili#Progn1133 */
                               clone_Box_Vector_int (vector );
                             });
                           }));
@@ -1057,10 +1059,10 @@ Vector_int resize_Vector_int (Vector_int vector , size_t len ) {
                     }));
                 });
               });
-            }) : ({ /* cicili#Let1135 */
+            }) : ({ /* cicili#Let1138 */
               // ----------
               ;
-              ({ /* cicili#Progn1137 */
+              ({ /* cicili#Progn1140 */
                 None_int ();
               });
             }));
@@ -1075,143 +1077,143 @@ Vector_int pureCapacity_Vector_int (size_t capacity , size_t step ) {
   return Buffer_int (newCapacity_StringBuffer_int (capacity , step ));
 }
 int * toArray_Vector_int (Vector_int vector ) {
-  return ({ /* cicili#Let1150 */
+  return ({ /* cicili#Let1153 */
       __auto_type __h_matchbox  = vector ;
       // ----------
-      ({ /* cicili#Let1154 */
-        __auto_type match1153  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
-        typeof((((match1153 . __h_data ). Just ). __h_0_mem )) unboxed ;
+      ({ /* cicili#Let1157 */
+        __auto_type match1156  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
+        typeof((((match1156 . __h_data ). Just ). __h_0_mem )) unboxed ;
         // ----------
         ;
-        ({ /* cicili#Let1157 */
-          bool __h_case_result  = (true  &&  (((match1153 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn1158 */
-                (unboxed  =  (((match1153 . __h_data ). Just ). __h_0_mem ) );
+        ({ /* cicili#Let1160 */
+          bool __h_case_result  = (true  &&  (((match1156 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn1161 */
+                (unboxed  =  (((match1156 . __h_data ). Just ). __h_0_mem ) );
                 true ;
               }) ) );
           // ----------
           
-          ((__h_case_result ) ? ({ /* cicili#Progn1163 */
-              ({ /* cicili#Let1167 */
+          ((__h_case_result ) ? ({ /* cicili#Progn1166 */
+              ({ /* cicili#Let1170 */
                 typeof((((unboxed -> __h_data ). Buffer ). __h_0_mem )) sb ;
                 // ----------
                 ;
-                ({ /* cicili#Let1169 */
-                  bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) &&  ({ /* cicili#Progn1170 */
+                ({ /* cicili#Let1172 */
+                  bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) &&  ({ /* cicili#Progn1173 */
                         (sb  =  (((unboxed -> __h_data ). Buffer ). __h_0_mem ) );
                         true ;
                       }) ) );
                   // ----------
                   
-                  ((__h_case_result ) ? ({ /* cicili#Progn1175 */
-                      ({ /* cicili#Let1179 */
+                  ((__h_case_result ) ? ({ /* cicili#Progn1178 */
+                      ({ /* cicili#Let1182 */
                         typeof((((sb . __h_data ). Buffered ). __h_0_mem )) buffer ;
                         // ----------
                         ;
-                        ({ /* cicili#Let1181 */
-                          bool __h_case_result  = (true  &&  (((sb . __h_ctor ) ==  __h_Buffered_t  ) &&  ({ /* cicili#Progn1182 */
+                        ({ /* cicili#Let1184 */
+                          bool __h_case_result  = (true  &&  (((sb . __h_ctor ) ==  __h_Buffered_t  ) &&  ({ /* cicili#Progn1185 */
                                 (buffer  =  (((sb . __h_data ). Buffered ). __h_0_mem ) );
                                 true ;
                               }) ) );
                           // ----------
                           
-                          ((__h_case_result ) ? ({ /* cicili#Progn1187 */
+                          ((__h_case_result ) ? ({ /* cicili#Progn1190 */
                               buffer ;
-                            }) : ({ /* cicili#Let1191 */
+                            }) : ({ /* cicili#Let1194 */
                               // ----------
                               ;
-                              ({ /* cicili#Progn1193 */
+                              ({ /* cicili#Progn1196 */
                                 NULL ;
                               });
                             }));
                         });
                       });
-                    }) : ({ /* cicili#Let1197 */
+                    }) : ({ /* cicili#Let1200 */
                       typeof((((unboxed -> __h_data ). Slice ). __h_0_mem )) vector ;
                       typeof((((unboxed -> __h_data ). Slice ). __h_1_mem )) cursor ;
                       // ----------
                       ;
-                      ({ /* cicili#Let1199 */
-                        bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Slice_t  ) &&  (({ /* cicili#Progn1200 */
+                      ({ /* cicili#Let1202 */
+                        bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Slice_t  ) &&  (({ /* cicili#Progn1203 */
                                 (vector  =  (((unboxed -> __h_data ). Slice ). __h_0_mem ) );
                                 true ;
-                              }) &&  ({ /* cicili#Progn1202 */
+                              }) &&  ({ /* cicili#Progn1205 */
                                 (cursor  =  (((unboxed -> __h_data ). Slice ). __h_1_mem ) );
                                 true ;
                               }) ) ) );
                         // ----------
                         
-                        ((__h_case_result ) ? ({ /* cicili#Progn1207 */
-                            ({ /* cicili#Let1210 */
+                        ((__h_case_result ) ? ({ /* cicili#Progn1210 */
+                            ({ /* cicili#Let1213 */
                               __auto_type __h_matchbox  = vector ;
                               // ----------
-                              ({ /* cicili#Let1214 */
-                                __auto_type match1213  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
-                                typeof((((match1213 . __h_data ). Just ). __h_0_mem )) unboxed ;
+                              ({ /* cicili#Let1217 */
+                                __auto_type match1216  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
+                                typeof((((match1216 . __h_data ). Just ). __h_0_mem )) unboxed ;
                                 // ----------
                                 ;
-                                ({ /* cicili#Let1217 */
-                                  bool __h_case_result  = (true  &&  (((match1213 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn1218 */
-                                        (unboxed  =  (((match1213 . __h_data ). Just ). __h_0_mem ) );
+                                ({ /* cicili#Let1220 */
+                                  bool __h_case_result  = (true  &&  (((match1216 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn1221 */
+                                        (unboxed  =  (((match1216 . __h_data ). Just ). __h_0_mem ) );
                                         true ;
                                       }) ) );
                                   // ----------
                                   
-                                  ((__h_case_result ) ? ({ /* cicili#Progn1223 */
-                                      ({ /* cicili#Let1227 */
+                                  ((__h_case_result ) ? ({ /* cicili#Progn1226 */
+                                      ({ /* cicili#Let1230 */
                                         typeof((((unboxed -> __h_data ). Buffer ). __h_0_mem )) sbs ;
                                         // ----------
                                         ;
-                                        ({ /* cicili#Let1229 */
-                                          bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) &&  ({ /* cicili#Progn1230 */
+                                        ({ /* cicili#Let1232 */
+                                          bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) &&  ({ /* cicili#Progn1233 */
                                                 (sbs  =  (((unboxed -> __h_data ). Buffer ). __h_0_mem ) );
                                                 true ;
                                               }) ) );
                                           // ----------
                                           
-                                          ((__h_case_result ) ? ({ /* cicili#Progn1235 */
-                                              ({ /* cicili#Let1239 */
+                                          ((__h_case_result ) ? ({ /* cicili#Progn1238 */
+                                              ({ /* cicili#Let1242 */
                                                 typeof((((sbs . __h_data ). Buffered ). __h_0_mem )) buffer ;
                                                 // ----------
                                                 ;
-                                                ({ /* cicili#Let1241 */
-                                                  bool __h_case_result  = (true  &&  (((sbs . __h_ctor ) ==  __h_Buffered_t  ) &&  ({ /* cicili#Progn1242 */
+                                                ({ /* cicili#Let1244 */
+                                                  bool __h_case_result  = (true  &&  (((sbs . __h_ctor ) ==  __h_Buffered_t  ) &&  ({ /* cicili#Progn1245 */
                                                         (buffer  =  (((sbs . __h_data ). Buffered ). __h_0_mem ) );
                                                         true ;
                                                       }) ) );
                                                   // ----------
                                                   
-                                                  ((__h_case_result ) ? ({ /* cicili#Progn1247 */
+                                                  ((__h_case_result ) ? ({ /* cicili#Progn1250 */
                                                       (buffer  +  cursor  );
-                                                    }) : ({ /* cicili#Let1251 */
+                                                    }) : ({ /* cicili#Let1254 */
                                                       // ----------
                                                       ;
-                                                      ({ /* cicili#Progn1253 */
+                                                      ({ /* cicili#Progn1256 */
                                                         NULL ;
                                                       });
                                                     }));
                                                 });
                                               });
-                                            }) : ({ /* cicili#Let1257 */
+                                            }) : ({ /* cicili#Let1260 */
                                               typeof((((unboxed -> __h_data ). Slice ). __h_0_mem )) vec ;
                                               typeof((((unboxed -> __h_data ). Slice ). __h_1_mem )) cur ;
                                               // ----------
                                               ;
-                                              ({ /* cicili#Let1259 */
-                                                bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Slice_t  ) &&  (({ /* cicili#Progn1260 */
+                                              ({ /* cicili#Let1262 */
+                                                bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Slice_t  ) &&  (({ /* cicili#Progn1263 */
                                                         (vec  =  (((unboxed -> __h_data ). Slice ). __h_0_mem ) );
                                                         true ;
-                                                      }) &&  ({ /* cicili#Progn1262 */
+                                                      }) &&  ({ /* cicili#Progn1265 */
                                                         (cur  =  (((unboxed -> __h_data ). Slice ). __h_1_mem ) );
                                                         true ;
                                                       }) ) ) );
                                                 // ----------
                                                 
-                                                ((__h_case_result ) ? ({ /* cicili#Progn1267 */
+                                                ((__h_case_result ) ? ({ /* cicili#Progn1270 */
                                                     (toArray_Vector_int (vec ) +  cur  );
-                                                  }) : ({ /* cicili#Let1272 */
+                                                  }) : ({ /* cicili#Let1275 */
                                                     // ----------
                                                     ;
-                                                    ({ /* cicili#Progn1274 */
+                                                    ({ /* cicili#Progn1277 */
                                                       NULL ;
                                                     });
                                                   }));
@@ -1219,20 +1221,20 @@ int * toArray_Vector_int (Vector_int vector ) {
                                             }));
                                         });
                                       });
-                                    }) : ({ /* cicili#Let1278 */
+                                    }) : ({ /* cicili#Let1281 */
                                       // ----------
                                       ;
-                                      ({ /* cicili#Progn1280 */
+                                      ({ /* cicili#Progn1283 */
                                         NULL ;
                                       });
                                     }));
                                 });
                               });
                             });
-                          }) : ({ /* cicili#Let1284 */
+                          }) : ({ /* cicili#Let1287 */
                             // ----------
                             ;
-                            ({ /* cicili#Progn1286 */
+                            ({ /* cicili#Progn1289 */
                               NULL ;
                             });
                           }));
@@ -1240,10 +1242,10 @@ int * toArray_Vector_int (Vector_int vector ) {
                     }));
                 });
               });
-            }) : ({ /* cicili#Let1290 */
+            }) : ({ /* cicili#Let1293 */
               // ----------
               ;
-              ({ /* cicili#Progn1292 */
+              ({ /* cicili#Progn1295 */
                 NULL ;
               });
             }));
@@ -1252,8 +1254,8 @@ int * toArray_Vector_int (Vector_int vector ) {
     });
 }
 Vector_int wrap_Vector_int (const int item ) {
-  return ({ /* cicili#Let1297 */
-      __auto_type new_vec  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let1299 */
+  return ({ /* cicili#Let1300 */
+      __auto_type new_vec  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let1302 */
         __auto_type new_vec  = pureCapacity_Vector_int (16, 16);
         // ----------
         ((void)((new_vec . __h_table )-> freeData ));
@@ -1266,47 +1268,47 @@ Vector_int wrap_Vector_int (const int item ) {
 size_t show_Vector_int (CFile file , Vector_int vector ) {
   auto size_t show_ (size_t index , Vector_int vector );
   size_t showWithSize (size_t index , size_t size , Vector_int vector ) {
-    return ({ /* cicili#Let1309 */
+    return ({ /* cicili#Let1312 */
         __auto_type __h_matchbox  = vector ;
         // ----------
-        ({ /* cicili#Let1313 */
-          __auto_type match1312  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
-          typeof((((match1312 . __h_data ). Just ). __h_0_mem )) unboxed ;
+        ({ /* cicili#Let1316 */
+          __auto_type match1315  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
+          typeof((((match1315 . __h_data ). Just ). __h_0_mem )) unboxed ;
           // ----------
           ;
-          ({ /* cicili#Let1316 */
-            bool __h_case_result  = (true  &&  (((match1312 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn1317 */
-                  (unboxed  =  (((match1312 . __h_data ). Just ). __h_0_mem ) );
+          ({ /* cicili#Let1319 */
+            bool __h_case_result  = (true  &&  (((match1315 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn1320 */
+                  (unboxed  =  (((match1315 . __h_data ). Just ). __h_0_mem ) );
                   true ;
                 }) ) );
             // ----------
             
-            ((__h_case_result ) ? ({ /* cicili#Progn1322 */
-                ({ /* cicili#Let1326 */
+            ((__h_case_result ) ? ({ /* cicili#Progn1325 */
+                ({ /* cicili#Let1329 */
                   typeof((((unboxed -> __h_data ). Buffer ). __h_0_mem )) sb ;
                   // ----------
                   ;
-                  ({ /* cicili#Let1328 */
-                    bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) &&  ({ /* cicili#Progn1329 */
+                  ({ /* cicili#Let1331 */
+                    bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) &&  ({ /* cicili#Progn1332 */
                           (sb  =  (((unboxed -> __h_data ). Buffer ). __h_0_mem ) );
                           true ;
                         }) ) );
                     // ----------
                     
-                    ((__h_case_result ) ? ({ /* cicili#Progn1334 */
-                        ({ /* cicili#Let1338 */
+                    ((__h_case_result ) ? ({ /* cicili#Progn1337 */
+                        ({ /* cicili#Let1341 */
                           typeof((((sb . __h_data ). Buffered ). __h_0_mem )) buffer ;
                           // ----------
                           ;
-                          ({ /* cicili#Let1340 */
-                            bool __h_case_result  = (true  &&  (((sb . __h_ctor ) ==  __h_Buffered_t  ) &&  ({ /* cicili#Progn1341 */
+                          ({ /* cicili#Let1343 */
+                            bool __h_case_result  = (true  &&  (((sb . __h_ctor ) ==  __h_Buffered_t  ) &&  ({ /* cicili#Progn1344 */
                                   (buffer  =  (((sb . __h_data ). Buffered ). __h_0_mem ) );
                                   true ;
                                 }) ) );
                             // ----------
                             
-                            ((__h_case_result ) ? ({ /* cicili#Progn1346 */
-                                ({ /* cicili#Let1348 */
+                            ((__h_case_result ) ? ({ /* cicili#Progn1349 */
+                                ({ /* cicili#Let1351 */
                                   size_t sum  = 0;
                                   // ----------
                                   for (size_t counter  = index ; (counter  <  (size  +  index  ) ); (++counter )) {
@@ -1314,40 +1316,40 @@ size_t show_Vector_int (CFile file , Vector_int vector ) {
                                   }
                                   sum ;
                                 });
-                              }) : ({ /* cicili#Let1359 */
+                              }) : ({ /* cicili#Let1362 */
                                 // ----------
                                 ;
-                                ({ /* cicili#Progn1361 */
+                                ({ /* cicili#Progn1364 */
                                   0;
                                 });
                               }));
                           });
                         });
-                      }) : ({ /* cicili#Let1365 */
+                      }) : ({ /* cicili#Let1368 */
                         typeof((((unboxed -> __h_data ). Slice ). __h_0_mem )) vector ;
                         typeof((((unboxed -> __h_data ). Slice ). __h_1_mem )) cursor ;
                         typeof((((unboxed -> __h_data ). Slice ). __h_2_mem )) size ;
                         // ----------
                         ;
-                        ({ /* cicili#Let1367 */
-                          bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Slice_t  ) &&  ((({ /* cicili#Progn1368 */
+                        ({ /* cicili#Let1370 */
+                          bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Slice_t  ) &&  ((({ /* cicili#Progn1371 */
                                     (vector  =  (((unboxed -> __h_data ). Slice ). __h_0_mem ) );
                                     true ;
-                                  }) &&  ({ /* cicili#Progn1370 */
+                                  }) &&  ({ /* cicili#Progn1373 */
                                     (cursor  =  (((unboxed -> __h_data ). Slice ). __h_1_mem ) );
                                     true ;
-                                  }) ) &&  ({ /* cicili#Progn1372 */
+                                  }) ) &&  ({ /* cicili#Progn1375 */
                                   (size  =  (((unboxed -> __h_data ). Slice ). __h_2_mem ) );
                                   true ;
                                 }) ) ) );
                           // ----------
                           
-                          ((__h_case_result ) ? ({ /* cicili#Progn1377 */
+                          ((__h_case_result ) ? ({ /* cicili#Progn1380 */
                               showWithSize ((cursor  +  index  ), size , vector );
-                            }) : ({ /* cicili#Let1381 */
+                            }) : ({ /* cicili#Let1384 */
                               // ----------
                               ;
-                              ({ /* cicili#Progn1383 */
+                              ({ /* cicili#Progn1386 */
                                 0;
                               });
                             }));
@@ -1355,10 +1357,10 @@ size_t show_Vector_int (CFile file , Vector_int vector ) {
                       }));
                   });
                 });
-              }) : ({ /* cicili#Let1387 */
+              }) : ({ /* cicili#Let1390 */
                 // ----------
                 ;
-                ({ /* cicili#Progn1389 */
+                ({ /* cicili#Progn1392 */
                   0;
                 });
               }));
@@ -1367,51 +1369,51 @@ size_t show_Vector_int (CFile file , Vector_int vector ) {
       });
   }
   size_t show_ (size_t index , Vector_int vector ) {
-    return ({ /* cicili#Let1393 */
+    return ({ /* cicili#Let1396 */
         __auto_type __h_matchbox  = vector ;
         // ----------
-        ({ /* cicili#Let1397 */
-          __auto_type match1396  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
-          typeof((((match1396 . __h_data ). Just ). __h_0_mem )) unboxed ;
+        ({ /* cicili#Let1400 */
+          __auto_type match1399  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
+          typeof((((match1399 . __h_data ). Just ). __h_0_mem )) unboxed ;
           // ----------
           ;
-          ({ /* cicili#Let1400 */
-            bool __h_case_result  = (true  &&  (((match1396 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn1401 */
-                  (unboxed  =  (((match1396 . __h_data ). Just ). __h_0_mem ) );
+          ({ /* cicili#Let1403 */
+            bool __h_case_result  = (true  &&  (((match1399 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn1404 */
+                  (unboxed  =  (((match1399 . __h_data ). Just ). __h_0_mem ) );
                   true ;
                 }) ) );
             // ----------
             
-            ((__h_case_result ) ? ({ /* cicili#Progn1406 */
-                ({ /* cicili#Let1410 */
+            ((__h_case_result ) ? ({ /* cicili#Progn1409 */
+                ({ /* cicili#Let1413 */
                   typeof((((unboxed -> __h_data ). Buffer ). __h_0_mem )) sb ;
                   // ----------
                   ;
-                  ({ /* cicili#Let1412 */
-                    bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) &&  ({ /* cicili#Progn1413 */
+                  ({ /* cicili#Let1415 */
+                    bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) &&  ({ /* cicili#Progn1416 */
                           (sb  =  (((unboxed -> __h_data ). Buffer ). __h_0_mem ) );
                           true ;
                         }) ) );
                     // ----------
                     
-                    ((__h_case_result ) ? ({ /* cicili#Progn1418 */
-                        ({ /* cicili#Let1422 */
+                    ((__h_case_result ) ? ({ /* cicili#Progn1421 */
+                        ({ /* cicili#Let1425 */
                           typeof((((sb . __h_data ). Buffered ). __h_0_mem )) buffer ;
                           typeof((((sb . __h_data ). Buffered ). __h_1_mem )) cursor ;
                           // ----------
                           ;
-                          ({ /* cicili#Let1424 */
-                            bool __h_case_result  = (true  &&  (((sb . __h_ctor ) ==  __h_Buffered_t  ) &&  (({ /* cicili#Progn1425 */
+                          ({ /* cicili#Let1427 */
+                            bool __h_case_result  = (true  &&  (((sb . __h_ctor ) ==  __h_Buffered_t  ) &&  (({ /* cicili#Progn1428 */
                                     (buffer  =  (((sb . __h_data ). Buffered ). __h_0_mem ) );
                                     true ;
-                                  }) &&  ({ /* cicili#Progn1427 */
+                                  }) &&  ({ /* cicili#Progn1430 */
                                     (cursor  =  (((sb . __h_data ). Buffered ). __h_1_mem ) );
                                     true ;
                                   }) ) ) );
                             // ----------
                             
-                            ((__h_case_result ) ? ({ /* cicili#Progn1432 */
-                                ({ /* cicili#Let1434 */
+                            ((__h_case_result ) ? ({ /* cicili#Progn1435 */
+                                ({ /* cicili#Let1437 */
                                   size_t sum  = 0;
                                   // ----------
                                   for (size_t counter  = index ; (counter  <  cursor  ); (++counter )) {
@@ -1419,40 +1421,40 @@ size_t show_Vector_int (CFile file , Vector_int vector ) {
                                   }
                                   sum ;
                                 });
-                              }) : ({ /* cicili#Let1445 */
+                              }) : ({ /* cicili#Let1448 */
                                 // ----------
                                 ;
-                                ({ /* cicili#Progn1447 */
+                                ({ /* cicili#Progn1450 */
                                   0;
                                 });
                               }));
                           });
                         });
-                      }) : ({ /* cicili#Let1451 */
+                      }) : ({ /* cicili#Let1454 */
                         typeof((((unboxed -> __h_data ). Slice ). __h_0_mem )) vector ;
                         typeof((((unboxed -> __h_data ). Slice ). __h_1_mem )) cursor ;
                         typeof((((unboxed -> __h_data ). Slice ). __h_2_mem )) size ;
                         // ----------
                         ;
-                        ({ /* cicili#Let1453 */
-                          bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Slice_t  ) &&  ((({ /* cicili#Progn1454 */
+                        ({ /* cicili#Let1456 */
+                          bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Slice_t  ) &&  ((({ /* cicili#Progn1457 */
                                     (vector  =  (((unboxed -> __h_data ). Slice ). __h_0_mem ) );
                                     true ;
-                                  }) &&  ({ /* cicili#Progn1456 */
+                                  }) &&  ({ /* cicili#Progn1459 */
                                     (cursor  =  (((unboxed -> __h_data ). Slice ). __h_1_mem ) );
                                     true ;
-                                  }) ) &&  ({ /* cicili#Progn1458 */
+                                  }) ) &&  ({ /* cicili#Progn1461 */
                                   (size  =  (((unboxed -> __h_data ). Slice ). __h_2_mem ) );
                                   true ;
                                 }) ) ) );
                           // ----------
                           
-                          ((__h_case_result ) ? ({ /* cicili#Progn1463 */
+                          ((__h_case_result ) ? ({ /* cicili#Progn1466 */
                               showWithSize ((cursor  +  index  ), size , vector );
-                            }) : ({ /* cicili#Let1467 */
+                            }) : ({ /* cicili#Let1470 */
                               // ----------
                               ;
-                              ({ /* cicili#Progn1469 */
+                              ({ /* cicili#Progn1472 */
                                 0;
                               });
                             }));
@@ -1460,10 +1462,10 @@ size_t show_Vector_int (CFile file , Vector_int vector ) {
                       }));
                   });
                 });
-              }) : ({ /* cicili#Let1473 */
+              }) : ({ /* cicili#Let1476 */
                 // ----------
                 ;
-                ({ /* cicili#Progn1475 */
+                ({ /* cicili#Progn1478 */
                   0;
                 });
               }));
@@ -1474,135 +1476,135 @@ size_t show_Vector_int (CFile file , Vector_int vector ) {
   return show_ (0, vector );
 }
 Vector_int copy_Vector_int (Vector_int vector ) {
-  return ({ /* cicili#Let1480 */
+  return ({ /* cicili#Let1483 */
       __auto_type __h_matchbox  = vector ;
       // ----------
-      ({ /* cicili#Let1484 */
-        __auto_type match1483  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
-        typeof((((match1483 . __h_data ). Just ). __h_0_mem )) unboxed ;
+      ({ /* cicili#Let1487 */
+        __auto_type match1486  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
+        typeof((((match1486 . __h_data ). Just ). __h_0_mem )) unboxed ;
         // ----------
         ;
-        ({ /* cicili#Let1487 */
-          bool __h_case_result  = (true  &&  (((match1483 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn1488 */
-                (unboxed  =  (((match1483 . __h_data ). Just ). __h_0_mem ) );
+        ({ /* cicili#Let1490 */
+          bool __h_case_result  = (true  &&  (((match1486 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn1491 */
+                (unboxed  =  (((match1486 . __h_data ). Just ). __h_0_mem ) );
                 true ;
               }) ) );
           // ----------
           
-          ((__h_case_result ) ? ({ /* cicili#Progn1493 */
-              ({ /* cicili#Let1497 */
+          ((__h_case_result ) ? ({ /* cicili#Progn1496 */
+              ({ /* cicili#Let1500 */
                 typeof((((unboxed -> __h_data ). Buffer ). __h_0_mem )) sb ;
                 // ----------
                 ;
-                ({ /* cicili#Let1499 */
-                  bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) &&  ({ /* cicili#Progn1500 */
+                ({ /* cicili#Let1502 */
+                  bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) &&  ({ /* cicili#Progn1503 */
                         (sb  =  (((unboxed -> __h_data ). Buffer ). __h_0_mem ) );
                         true ;
                       }) ) );
                   // ----------
                   
-                  ((__h_case_result ) ? ({ /* cicili#Progn1505 */
-                      ({ /* cicili#Let1509 */
+                  ((__h_case_result ) ? ({ /* cicili#Progn1508 */
+                      ({ /* cicili#Let1512 */
                         // ----------
                         ;
-                        ({ /* cicili#Let1511 */
+                        ({ /* cicili#Let1514 */
                           bool __h_case_result  = (true  &&  ((sb . __h_ctor ) ==  __h_Buffered_t  ) );
                           // ----------
                           
-                          ((__h_case_result ) ? ({ /* cicili#Progn1515 */
+                          ((__h_case_result ) ? ({ /* cicili#Progn1518 */
                               Buffer_int (copy_StringBuffer_int (sb ));
-                            }) : ({ /* cicili#Let1521 */
+                            }) : ({ /* cicili#Let1524 */
                               // ----------
                               ;
-                              ({ /* cicili#Progn1523 */
+                              ({ /* cicili#Progn1526 */
                                 None_int ();
                               });
                             }));
                         });
                       });
-                    }) : ({ /* cicili#Let1528 */
+                    }) : ({ /* cicili#Let1531 */
                       typeof((((unboxed -> __h_data ). Slice ). __h_0_mem )) vec ;
                       typeof((((unboxed -> __h_data ). Slice ). __h_1_mem )) cur ;
                       typeof((((unboxed -> __h_data ). Slice ). __h_2_mem )) size ;
                       // ----------
                       ;
-                      ({ /* cicili#Let1530 */
-                        bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Slice_t  ) &&  ((({ /* cicili#Progn1531 */
+                      ({ /* cicili#Let1533 */
+                        bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Slice_t  ) &&  ((({ /* cicili#Progn1534 */
                                   (vec  =  (((unboxed -> __h_data ). Slice ). __h_0_mem ) );
                                   true ;
-                                }) &&  ({ /* cicili#Progn1533 */
+                                }) &&  ({ /* cicili#Progn1536 */
                                   (cur  =  (((unboxed -> __h_data ). Slice ). __h_1_mem ) );
                                   true ;
-                                }) ) &&  ({ /* cicili#Progn1535 */
+                                }) ) &&  ({ /* cicili#Progn1538 */
                                 (size  =  (((unboxed -> __h_data ). Slice ). __h_2_mem ) );
                                 true ;
                               }) ) ) );
                         // ----------
                         
-                        ((__h_case_result ) ? ({ /* cicili#Progn1540 */
-                            ({ /* cicili#Let1543 */
+                        ((__h_case_result ) ? ({ /* cicili#Progn1543 */
+                            ({ /* cicili#Let1546 */
                               __auto_type __h_matchbox  = vec ;
                               // ----------
-                              ({ /* cicili#Let1547 */
-                                __auto_type match1546  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
-                                typeof((((match1546 . __h_data ). Just ). __h_0_mem )) unboxed ;
+                              ({ /* cicili#Let1550 */
+                                __auto_type match1549  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
+                                typeof((((match1549 . __h_data ). Just ). __h_0_mem )) unboxed ;
                                 // ----------
                                 ;
-                                ({ /* cicili#Let1550 */
-                                  bool __h_case_result  = (true  &&  (((match1546 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn1551 */
-                                        (unboxed  =  (((match1546 . __h_data ). Just ). __h_0_mem ) );
+                                ({ /* cicili#Let1553 */
+                                  bool __h_case_result  = (true  &&  (((match1549 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn1554 */
+                                        (unboxed  =  (((match1549 . __h_data ). Just ). __h_0_mem ) );
                                         true ;
                                       }) ) );
                                   // ----------
                                   
-                                  ((__h_case_result ) ? ({ /* cicili#Progn1556 */
-                                      ({ /* cicili#Let1560 */
+                                  ((__h_case_result ) ? ({ /* cicili#Progn1559 */
+                                      ({ /* cicili#Let1563 */
                                         typeof((((unboxed -> __h_data ). Buffer ). __h_0_mem )) sbs ;
                                         // ----------
                                         ;
-                                        ({ /* cicili#Let1562 */
-                                          bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) &&  ({ /* cicili#Progn1563 */
+                                        ({ /* cicili#Let1565 */
+                                          bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) &&  ({ /* cicili#Progn1566 */
                                                 (sbs  =  (((unboxed -> __h_data ). Buffer ). __h_0_mem ) );
                                                 true ;
                                               }) ) );
                                           // ----------
                                           
-                                          ((__h_case_result ) ? ({ /* cicili#Progn1568 */
-                                              ({ /* cicili#Let1572 */
+                                          ((__h_case_result ) ? ({ /* cicili#Progn1571 */
+                                              ({ /* cicili#Let1575 */
                                                 // ----------
                                                 ;
-                                                ({ /* cicili#Let1574 */
+                                                ({ /* cicili#Let1577 */
                                                   bool __h_case_result  = (true  &&  ((sbs . __h_ctor ) ==  __h_Buffered_t  ) );
                                                   // ----------
                                                   
-                                                  ((__h_case_result ) ? ({ /* cicili#Progn1578 */
+                                                  ((__h_case_result ) ? ({ /* cicili#Progn1581 */
                                                       Buffer_int (copySlice_StringBuffer_int (sbs , cur , size ));
-                                                    }) : ({ /* cicili#Let1584 */
+                                                    }) : ({ /* cicili#Let1587 */
                                                       // ----------
                                                       ;
-                                                      ({ /* cicili#Progn1586 */
+                                                      ({ /* cicili#Progn1589 */
                                                         None_int ();
                                                       });
                                                     }));
                                                 });
                                               });
-                                            }) : ({ /* cicili#Let1591 */
+                                            }) : ({ /* cicili#Let1594 */
                                               typeof((((unboxed -> __h_data ). Slice ). __h_0_mem )) veci ;
                                               // ----------
                                               ;
-                                              ({ /* cicili#Let1593 */
-                                                bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Slice_t  ) &&  ({ /* cicili#Progn1594 */
+                                              ({ /* cicili#Let1596 */
+                                                bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Slice_t  ) &&  ({ /* cicili#Progn1597 */
                                                       (veci  =  (((unboxed -> __h_data ). Slice ). __h_0_mem ) );
                                                       true ;
                                                     }) ) );
                                                 // ----------
                                                 
-                                                ((__h_case_result ) ? ({ /* cicili#Progn1599 */
+                                                ((__h_case_result ) ? ({ /* cicili#Progn1602 */
                                                     copySlice_Vector_int (veci , cur , size );
-                                                  }) : ({ /* cicili#Let1604 */
+                                                  }) : ({ /* cicili#Let1607 */
                                                     // ----------
                                                     ;
-                                                    ({ /* cicili#Progn1606 */
+                                                    ({ /* cicili#Progn1609 */
                                                       None_int ();
                                                     });
                                                   }));
@@ -1610,20 +1612,20 @@ Vector_int copy_Vector_int (Vector_int vector ) {
                                             }));
                                         });
                                       });
-                                    }) : ({ /* cicili#Let1611 */
+                                    }) : ({ /* cicili#Let1614 */
                                       // ----------
                                       ;
-                                      ({ /* cicili#Progn1613 */
+                                      ({ /* cicili#Progn1616 */
                                         None_int ();
                                       });
                                     }));
                                 });
                               });
                             });
-                          }) : ({ /* cicili#Let1618 */
+                          }) : ({ /* cicili#Let1621 */
                             // ----------
                             ;
-                            ({ /* cicili#Progn1620 */
+                            ({ /* cicili#Progn1623 */
                               None_int ();
                             });
                           }));
@@ -1631,10 +1633,10 @@ Vector_int copy_Vector_int (Vector_int vector ) {
                     }));
                 });
               });
-            }) : ({ /* cicili#Let1625 */
+            }) : ({ /* cicili#Let1628 */
               // ----------
               ;
-              ({ /* cicili#Progn1627 */
+              ({ /* cicili#Progn1630 */
                 None_int ();
               });
             }));
@@ -1643,131 +1645,131 @@ Vector_int copy_Vector_int (Vector_int vector ) {
     });
 }
 Vector_int copySlice_Vector_int (Vector_int vector , size_t pos , size_t len ) {
-  return ({ /* cicili#Let1633 */
+  return ({ /* cicili#Let1636 */
       __auto_type __h_matchbox  = vector ;
       // ----------
-      ({ /* cicili#Let1637 */
-        __auto_type match1636  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
-        typeof((((match1636 . __h_data ). Just ). __h_0_mem )) unboxed ;
+      ({ /* cicili#Let1640 */
+        __auto_type match1639  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
+        typeof((((match1639 . __h_data ). Just ). __h_0_mem )) unboxed ;
         // ----------
         ;
-        ({ /* cicili#Let1640 */
-          bool __h_case_result  = (true  &&  (((match1636 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn1641 */
-                (unboxed  =  (((match1636 . __h_data ). Just ). __h_0_mem ) );
+        ({ /* cicili#Let1643 */
+          bool __h_case_result  = (true  &&  (((match1639 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn1644 */
+                (unboxed  =  (((match1639 . __h_data ). Just ). __h_0_mem ) );
                 true ;
               }) ) );
           // ----------
           
-          ((__h_case_result ) ? ({ /* cicili#Progn1646 */
-              ({ /* cicili#Let1650 */
+          ((__h_case_result ) ? ({ /* cicili#Progn1649 */
+              ({ /* cicili#Let1653 */
                 typeof((((unboxed -> __h_data ). Buffer ). __h_0_mem )) sb ;
                 // ----------
                 ;
-                ({ /* cicili#Let1652 */
-                  bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) &&  ({ /* cicili#Progn1653 */
+                ({ /* cicili#Let1655 */
+                  bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) &&  ({ /* cicili#Progn1656 */
                         (sb  =  (((unboxed -> __h_data ). Buffer ). __h_0_mem ) );
                         true ;
                       }) ) );
                   // ----------
                   
-                  ((__h_case_result ) ? ({ /* cicili#Progn1658 */
-                      ({ /* cicili#Let1662 */
+                  ((__h_case_result ) ? ({ /* cicili#Progn1661 */
+                      ({ /* cicili#Let1665 */
                         // ----------
                         ;
-                        ({ /* cicili#Let1664 */
+                        ({ /* cicili#Let1667 */
                           bool __h_case_result  = (true  &&  ((sb . __h_ctor ) ==  __h_Buffered_t  ) );
                           // ----------
                           
-                          ((__h_case_result ) ? ({ /* cicili#Progn1668 */
+                          ((__h_case_result ) ? ({ /* cicili#Progn1671 */
                               Buffer_int (copySlice_StringBuffer_int (sb , pos , len ));
-                            }) : ({ /* cicili#Let1674 */
+                            }) : ({ /* cicili#Let1677 */
                               // ----------
                               ;
-                              ({ /* cicili#Progn1676 */
+                              ({ /* cicili#Progn1679 */
                                 None_int ();
                               });
                             }));
                         });
                       });
-                    }) : ({ /* cicili#Let1681 */
+                    }) : ({ /* cicili#Let1684 */
                       typeof((((unboxed -> __h_data ). Slice ). __h_0_mem )) vec ;
                       typeof((((unboxed -> __h_data ). Slice ). __h_1_mem )) cur ;
                       // ----------
                       ;
-                      ({ /* cicili#Let1683 */
-                        bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Slice_t  ) &&  (({ /* cicili#Progn1684 */
+                      ({ /* cicili#Let1686 */
+                        bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Slice_t  ) &&  (({ /* cicili#Progn1687 */
                                 (vec  =  (((unboxed -> __h_data ). Slice ). __h_0_mem ) );
                                 true ;
-                              }) &&  ({ /* cicili#Progn1686 */
+                              }) &&  ({ /* cicili#Progn1689 */
                                 (cur  =  (((unboxed -> __h_data ). Slice ). __h_1_mem ) );
                                 true ;
                               }) ) ) );
                         // ----------
                         
-                        ((__h_case_result ) ? ({ /* cicili#Progn1691 */
-                            ({ /* cicili#Let1694 */
+                        ((__h_case_result ) ? ({ /* cicili#Progn1694 */
+                            ({ /* cicili#Let1697 */
                               __auto_type __h_matchbox  = vec ;
                               // ----------
-                              ({ /* cicili#Let1698 */
-                                __auto_type match1697  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
-                                typeof((((match1697 . __h_data ). Just ). __h_0_mem )) unboxed ;
+                              ({ /* cicili#Let1701 */
+                                __auto_type match1700  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
+                                typeof((((match1700 . __h_data ). Just ). __h_0_mem )) unboxed ;
                                 // ----------
                                 ;
-                                ({ /* cicili#Let1701 */
-                                  bool __h_case_result  = (true  &&  (((match1697 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn1702 */
-                                        (unboxed  =  (((match1697 . __h_data ). Just ). __h_0_mem ) );
+                                ({ /* cicili#Let1704 */
+                                  bool __h_case_result  = (true  &&  (((match1700 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn1705 */
+                                        (unboxed  =  (((match1700 . __h_data ). Just ). __h_0_mem ) );
                                         true ;
                                       }) ) );
                                   // ----------
                                   
-                                  ((__h_case_result ) ? ({ /* cicili#Progn1707 */
-                                      ({ /* cicili#Let1711 */
+                                  ((__h_case_result ) ? ({ /* cicili#Progn1710 */
+                                      ({ /* cicili#Let1714 */
                                         typeof((((unboxed -> __h_data ). Buffer ). __h_0_mem )) sbs ;
                                         // ----------
                                         ;
-                                        ({ /* cicili#Let1713 */
-                                          bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) &&  ({ /* cicili#Progn1714 */
+                                        ({ /* cicili#Let1716 */
+                                          bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) &&  ({ /* cicili#Progn1717 */
                                                 (sbs  =  (((unboxed -> __h_data ). Buffer ). __h_0_mem ) );
                                                 true ;
                                               }) ) );
                                           // ----------
                                           
-                                          ((__h_case_result ) ? ({ /* cicili#Progn1719 */
-                                              ({ /* cicili#Let1723 */
+                                          ((__h_case_result ) ? ({ /* cicili#Progn1722 */
+                                              ({ /* cicili#Let1726 */
                                                 // ----------
                                                 ;
-                                                ({ /* cicili#Let1725 */
+                                                ({ /* cicili#Let1728 */
                                                   bool __h_case_result  = (true  &&  ((sbs . __h_ctor ) ==  __h_Buffered_t  ) );
                                                   // ----------
                                                   
-                                                  ((__h_case_result ) ? ({ /* cicili#Progn1729 */
+                                                  ((__h_case_result ) ? ({ /* cicili#Progn1732 */
                                                       Buffer_int (copySlice_StringBuffer_int (sbs , (cur  +  pos  ), len ));
-                                                    }) : ({ /* cicili#Let1735 */
+                                                    }) : ({ /* cicili#Let1738 */
                                                       // ----------
                                                       ;
-                                                      ({ /* cicili#Progn1737 */
+                                                      ({ /* cicili#Progn1740 */
                                                         None_int ();
                                                       });
                                                     }));
                                                 });
                                               });
-                                            }) : ({ /* cicili#Let1742 */
+                                            }) : ({ /* cicili#Let1745 */
                                               typeof((((unboxed -> __h_data ). Slice ). __h_0_mem )) veci ;
                                               // ----------
                                               ;
-                                              ({ /* cicili#Let1744 */
-                                                bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Slice_t  ) &&  ({ /* cicili#Progn1745 */
+                                              ({ /* cicili#Let1747 */
+                                                bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Slice_t  ) &&  ({ /* cicili#Progn1748 */
                                                       (veci  =  (((unboxed -> __h_data ). Slice ). __h_0_mem ) );
                                                       true ;
                                                     }) ) );
                                                 // ----------
                                                 
-                                                ((__h_case_result ) ? ({ /* cicili#Progn1750 */
+                                                ((__h_case_result ) ? ({ /* cicili#Progn1753 */
                                                     copySlice_Vector_int (veci , (cur  +  pos  ), len );
-                                                  }) : ({ /* cicili#Let1755 */
+                                                  }) : ({ /* cicili#Let1758 */
                                                     // ----------
                                                     ;
-                                                    ({ /* cicili#Progn1757 */
+                                                    ({ /* cicili#Progn1760 */
                                                       None_int ();
                                                     });
                                                   }));
@@ -1775,20 +1777,20 @@ Vector_int copySlice_Vector_int (Vector_int vector , size_t pos , size_t len ) {
                                             }));
                                         });
                                       });
-                                    }) : ({ /* cicili#Let1762 */
+                                    }) : ({ /* cicili#Let1765 */
                                       // ----------
                                       ;
-                                      ({ /* cicili#Progn1764 */
+                                      ({ /* cicili#Progn1767 */
                                         None_int ();
                                       });
                                     }));
                                 });
                               });
                             });
-                          }) : ({ /* cicili#Let1769 */
+                          }) : ({ /* cicili#Let1772 */
                             // ----------
                             ;
-                            ({ /* cicili#Progn1771 */
+                            ({ /* cicili#Progn1774 */
                               None_int ();
                             });
                           }));
@@ -1796,10 +1798,10 @@ Vector_int copySlice_Vector_int (Vector_int vector , size_t pos , size_t len ) {
                     }));
                 });
               });
-            }) : ({ /* cicili#Let1776 */
+            }) : ({ /* cicili#Let1779 */
               // ----------
               ;
-              ({ /* cicili#Progn1778 */
+              ({ /* cicili#Progn1781 */
                 None_int ();
               });
             }));
@@ -1808,178 +1810,183 @@ Vector_int copySlice_Vector_int (Vector_int vector , size_t pos , size_t len ) {
     });
 }
 Vector_int replaceAt_Vector_int (Vector_int vector , int item , size_t index ) {
-  return ({ /* cicili#Let1784 */
+  return ({ /* cicili#Let1787 */
       __auto_type __h_matchbox  = vector ;
       // ----------
-      ({ /* cicili#Let1788 */
-        __auto_type match1787  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
-        typeof((((match1787 . __h_data ). Just ). __h_0_mem )) unboxed ;
+      ({ /* cicili#Let1791 */
+        __auto_type match1790  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
+        typeof((((match1790 . __h_data ). Just ). __h_0_mem )) unboxed ;
         // ----------
         ;
-        ({ /* cicili#Let1791 */
-          bool __h_case_result  = (true  &&  (((match1787 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn1792 */
-                (unboxed  =  (((match1787 . __h_data ). Just ). __h_0_mem ) );
+        ({ /* cicili#Let1794 */
+          bool __h_case_result  = (true  &&  (((match1790 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn1795 */
+                (unboxed  =  (((match1790 . __h_data ). Just ). __h_0_mem ) );
                 true ;
               }) ) );
           // ----------
           
-          ((__h_case_result ) ? ({ /* cicili#Progn1797 */
-              ({ /* cicili#Let1801 */
+          ((__h_case_result ) ? ({ /* cicili#Progn1800 */
+              ({ /* cicili#Let1804 */
                 typeof((((unboxed -> __h_data ). Buffer ). __h_0_mem )) sb ;
                 // ----------
                 ;
-                ({ /* cicili#Let1803 */
-                  bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) &&  ({ /* cicili#Progn1804 */
+                ({ /* cicili#Let1806 */
+                  bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) &&  ({ /* cicili#Progn1807 */
                         (sb  =  (((unboxed -> __h_data ). Buffer ). __h_0_mem ) );
                         true ;
                       }) ) );
                   // ----------
                   
-                  ((__h_case_result ) ? ({ /* cicili#Progn1809 */
-                      ({ /* cicili#Progn1811 */
-                        { /* cicili#Let1815 */
-                          __auto_type match1814  = take_Box_Vector_int ((&vector ));
-                          typeof((((match1814 . __h_data ). Just ). __h_0_mem )) ptr ;
+                  ((__h_case_result ) ? ({ /* cicili#Progn1812 */
+                      ({ /* cicili#Let1816 */
+                        __auto_type match1815  = take_Box_Vector_int ((&vector ));
+                        typeof((((match1815 . __h_data ). Just ). __h_0_mem )) ptr ;
+                        // ----------
+                        ;
+                        ({ /* cicili#Let1819 */
+                          bool __h_case_result  = (true  &&  (((match1815 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn1820 */
+                                (ptr  =  (((match1815 . __h_data ). Just ). __h_0_mem ) );
+                                true ;
+                              }) ) );
                           // ----------
-                          ;
-                          ({ /* cicili#Let1818 */
-                            bool __h_case_result  = (true  &&  (((match1814 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn1819 */
-                                  (ptr  =  (((match1814 . __h_data ). Just ). __h_0_mem ) );
-                                  true ;
-                                }) ) );
-                            // ----------
-                            
-                            if (__h_case_result )
-                              { /* cicili#Block1825 */
+                          
+                          ((__h_case_result ) ? ({ /* cicili#Progn1825 */
+                              ({ /* cicili#Progn1827 */
                                 free (ptr );
-                              }
-                          });
-                        }
-                        ({ /* cicili#Let1829 */
-                          typeof((((sb . __h_data ). Buffered ). __h_0_mem )) buffer ;
-                          typeof((((sb . __h_data ). Buffered ). __h_1_mem )) cursor ;
-                          // ----------
-                          ;
-                          ({ /* cicili#Let1831 */
-                            bool __h_case_result  = (true  &&  (((sb . __h_ctor ) ==  __h_Buffered_t  ) &&  (({ /* cicili#Progn1832 */
-                                    (buffer  =  (((sb . __h_data ). Buffered ). __h_0_mem ) );
-                                    true ;
-                                  }) &&  ({ /* cicili#Progn1834 */
-                                    (cursor  =  (((sb . __h_data ). Buffered ). __h_1_mem ) );
-                                    true ;
-                                  }) ) ) );
-                            // ----------
-                            
-                            ((__h_case_result ) ? ({ /* cicili#Progn1839 */
-                                (((index  <  cursor  )) ? ({ /* cicili#Progn1842 */
-                                    (*(buffer  +  index  )) = item ;
-                                    Buffer_int (sb );
-                                  }) : Buffer_int (sb ));
-                              }) : ({ /* cicili#Let1848 */
-                                // ----------
-                                ;
-                                ({ /* cicili#Progn1850 */
-                                  clone_Box_Vector_int (vector );
+                                ({ /* cicili#Let1831 */
+                                  typeof((((sb . __h_data ). Buffered ). __h_0_mem )) buffer ;
+                                  typeof((((sb . __h_data ). Buffered ). __h_1_mem )) cursor ;
+                                  // ----------
+                                  ;
+                                  ({ /* cicili#Let1833 */
+                                    bool __h_case_result  = (true  &&  (((sb . __h_ctor ) ==  __h_Buffered_t  ) &&  (({ /* cicili#Progn1834 */
+                                            (buffer  =  (((sb . __h_data ). Buffered ). __h_0_mem ) );
+                                            true ;
+                                          }) &&  ({ /* cicili#Progn1836 */
+                                            (cursor  =  (((sb . __h_data ). Buffered ). __h_1_mem ) );
+                                            true ;
+                                          }) ) ) );
+                                    // ----------
+                                    
+                                    ((__h_case_result ) ? ({ /* cicili#Progn1841 */
+                                        (((index  <  cursor  )) ? ({ /* cicili#Progn1844 */
+                                            (*(buffer  +  index  )) = item ;
+                                            Buffer_int (sb );
+                                          }) : Buffer_int (sb ));
+                                      }) : ({ /* cicili#Let1850 */
+                                        // ----------
+                                        ;
+                                        ({ /* cicili#Progn1852 */
+                                          clone_Box_Vector_int (vector );
+                                        });
+                                      }));
+                                  });
                                 });
-                              }));
-                          });
+                              });
+                            }) : ({ /* cicili#Let1857 */
+                              // ----------
+                              ;
+                              ({ /* cicili#Progn1859 */
+                                None_int ();
+                              });
+                            }));
                         });
                       });
-                    }) : ({ /* cicili#Let1855 */
+                    }) : ({ /* cicili#Let1864 */
                       typeof((((unboxed -> __h_data ). Slice ). __h_0_mem )) vec ;
                       typeof((((unboxed -> __h_data ). Slice ). __h_1_mem )) cur ;
                       typeof((((unboxed -> __h_data ). Slice ). __h_2_mem )) size ;
                       // ----------
                       ;
-                      ({ /* cicili#Let1857 */
-                        bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Slice_t  ) &&  ((({ /* cicili#Progn1858 */
+                      ({ /* cicili#Let1866 */
+                        bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Slice_t  ) &&  ((({ /* cicili#Progn1867 */
                                   (vec  =  (((unboxed -> __h_data ). Slice ). __h_0_mem ) );
                                   true ;
-                                }) &&  ({ /* cicili#Progn1860 */
+                                }) &&  ({ /* cicili#Progn1869 */
                                   (cur  =  (((unboxed -> __h_data ). Slice ). __h_1_mem ) );
                                   true ;
-                                }) ) &&  ({ /* cicili#Progn1862 */
+                                }) ) &&  ({ /* cicili#Progn1871 */
                                 (size  =  (((unboxed -> __h_data ). Slice ). __h_2_mem ) );
                                 true ;
                               }) ) ) );
                         // ----------
                         
-                        ((__h_case_result ) ? ({ /* cicili#Progn1867 */
-                            ({ /* cicili#Let1870 */
+                        ((__h_case_result ) ? ({ /* cicili#Progn1876 */
+                            ({ /* cicili#Let1879 */
                               __auto_type __h_matchbox  = vec ;
                               // ----------
-                              ({ /* cicili#Let1874 */
-                                __auto_type match1873  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
-                                typeof((((match1873 . __h_data ). Just ). __h_0_mem )) unboxed ;
+                              ({ /* cicili#Let1883 */
+                                __auto_type match1882  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
+                                typeof((((match1882 . __h_data ). Just ). __h_0_mem )) unboxed ;
                                 // ----------
                                 ;
-                                ({ /* cicili#Let1877 */
-                                  bool __h_case_result  = (true  &&  (((match1873 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn1878 */
-                                        (unboxed  =  (((match1873 . __h_data ). Just ). __h_0_mem ) );
+                                ({ /* cicili#Let1886 */
+                                  bool __h_case_result  = (true  &&  (((match1882 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn1887 */
+                                        (unboxed  =  (((match1882 . __h_data ). Just ). __h_0_mem ) );
                                         true ;
                                       }) ) );
                                   // ----------
                                   
-                                  ((__h_case_result ) ? ({ /* cicili#Progn1883 */
-                                      ({ /* cicili#Let1887 */
+                                  ((__h_case_result ) ? ({ /* cicili#Progn1892 */
+                                      ({ /* cicili#Let1896 */
                                         typeof((((unboxed -> __h_data ). Buffer ). __h_0_mem )) sbs ;
                                         // ----------
                                         ;
-                                        ({ /* cicili#Let1889 */
-                                          bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) &&  ({ /* cicili#Progn1890 */
+                                        ({ /* cicili#Let1898 */
+                                          bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) &&  ({ /* cicili#Progn1899 */
                                                 (sbs  =  (((unboxed -> __h_data ). Buffer ). __h_0_mem ) );
                                                 true ;
                                               }) ) );
                                           // ----------
                                           
-                                          ((__h_case_result ) ? ({ /* cicili#Progn1895 */
-                                              ({ /* cicili#Let1899 */
+                                          ((__h_case_result ) ? ({ /* cicili#Progn1904 */
+                                              ({ /* cicili#Let1908 */
                                                 typeof((((sbs . __h_data ). Buffered ). __h_0_mem )) buffer ;
                                                 typeof((((sbs . __h_data ). Buffered ). __h_3_mem )) step ;
                                                 // ----------
                                                 ;
-                                                ({ /* cicili#Let1901 */
-                                                  bool __h_case_result  = (true  &&  (((sbs . __h_ctor ) ==  __h_Buffered_t  ) &&  (({ /* cicili#Progn1902 */
+                                                ({ /* cicili#Let1910 */
+                                                  bool __h_case_result  = (true  &&  (((sbs . __h_ctor ) ==  __h_Buffered_t  ) &&  (({ /* cicili#Progn1911 */
                                                           (buffer  =  (((sbs . __h_data ). Buffered ). __h_0_mem ) );
                                                           true ;
-                                                        }) &&  ({ /* cicili#Progn1904 */
+                                                        }) &&  ({ /* cicili#Progn1913 */
                                                           (step  =  (((sbs . __h_data ). Buffered ). __h_3_mem ) );
                                                           true ;
                                                         }) ) ) );
                                                   // ----------
                                                   
-                                                  ((__h_case_result ) ? ({ /* cicili#Progn1909 */
-                                                      (((index  <  size  )) ? ({ /* cicili#Let1912 */
+                                                  ((__h_case_result ) ? ({ /* cicili#Progn1918 */
+                                                      (((index  <  size  )) ? ({ /* cicili#Let1921 */
                                                           StringBuffer_int new_sb  = newCapacity_StringBuffer_int (size , step );
                                                           // ----------
                                                           Buffer_int (print_StringBuffer_int (put_StringBuffer_int (print_StringBuffer_int (new_sb , (buffer  +  cur  ), index ), item ), (buffer  +  cur  +  index  +  1 ), (size  -  index  -  1 )));
                                                         }) : vec );
-                                                    }) : ({ /* cicili#Let1922 */
+                                                    }) : ({ /* cicili#Let1931 */
                                                       // ----------
                                                       ;
-                                                      ({ /* cicili#Progn1924 */
+                                                      ({ /* cicili#Progn1933 */
                                                         None_int ();
                                                       });
                                                     }));
                                                 });
                                               });
-                                            }) : ({ /* cicili#Let1929 */
+                                            }) : ({ /* cicili#Let1938 */
                                               typeof((((unboxed -> __h_data ). Slice ). __h_0_mem )) veci ;
                                               // ----------
                                               ;
-                                              ({ /* cicili#Let1931 */
-                                                bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Slice_t  ) &&  ({ /* cicili#Progn1932 */
+                                              ({ /* cicili#Let1940 */
+                                                bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Slice_t  ) &&  ({ /* cicili#Progn1941 */
                                                       (veci  =  (((unboxed -> __h_data ). Slice ). __h_0_mem ) );
                                                       true ;
                                                     }) ) );
                                                 // ----------
                                                 
-                                                ((__h_case_result ) ? ({ /* cicili#Progn1937 */
+                                                ((__h_case_result ) ? ({ /* cicili#Progn1946 */
                                                     replaceAt_Vector_int (veci , item , (cur  +  index  ));
-                                                  }) : ({ /* cicili#Let1942 */
+                                                  }) : ({ /* cicili#Let1951 */
                                                     // ----------
                                                     ;
-                                                    ({ /* cicili#Progn1944 */
+                                                    ({ /* cicili#Progn1953 */
                                                       clone_Box_Vector_int (vec );
                                                     });
                                                   }));
@@ -1987,20 +1994,20 @@ Vector_int replaceAt_Vector_int (Vector_int vector , int item , size_t index ) {
                                             }));
                                         });
                                       });
-                                    }) : ({ /* cicili#Let1949 */
+                                    }) : ({ /* cicili#Let1958 */
                                       // ----------
                                       ;
-                                      ({ /* cicili#Progn1951 */
+                                      ({ /* cicili#Progn1960 */
                                         None_int ();
                                       });
                                     }));
                                 });
                               });
                             });
-                          }) : ({ /* cicili#Let1956 */
+                          }) : ({ /* cicili#Let1965 */
                             // ----------
                             ;
-                            ({ /* cicili#Progn1958 */
+                            ({ /* cicili#Progn1967 */
                               clone_Box_Vector_int (vector );
                             });
                           }));
@@ -2008,10 +2015,10 @@ Vector_int replaceAt_Vector_int (Vector_int vector , int item , size_t index ) {
                     }));
                 });
               });
-            }) : ({ /* cicili#Let1963 */
+            }) : ({ /* cicili#Let1972 */
               // ----------
               ;
-              ({ /* cicili#Progn1965 */
+              ({ /* cicili#Progn1974 */
                 None_int ();
               });
             }));
@@ -2020,188 +2027,193 @@ Vector_int replaceAt_Vector_int (Vector_int vector , int item , size_t index ) {
     });
 }
 Vector_int deleteAt_Vector_int (Vector_int vector , size_t index ) {
-  return ({ /* cicili#Let1971 */
+  return ({ /* cicili#Let1980 */
       __auto_type __h_matchbox  = vector ;
       // ----------
-      ({ /* cicili#Let1975 */
-        __auto_type match1974  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
-        typeof((((match1974 . __h_data ). Just ). __h_0_mem )) unboxed ;
+      ({ /* cicili#Let1984 */
+        __auto_type match1983  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
+        typeof((((match1983 . __h_data ). Just ). __h_0_mem )) unboxed ;
         // ----------
         ;
-        ({ /* cicili#Let1978 */
-          bool __h_case_result  = (true  &&  (((match1974 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn1979 */
-                (unboxed  =  (((match1974 . __h_data ). Just ). __h_0_mem ) );
+        ({ /* cicili#Let1987 */
+          bool __h_case_result  = (true  &&  (((match1983 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn1988 */
+                (unboxed  =  (((match1983 . __h_data ). Just ). __h_0_mem ) );
                 true ;
               }) ) );
           // ----------
           
-          ((__h_case_result ) ? ({ /* cicili#Progn1984 */
-              ({ /* cicili#Let1988 */
+          ((__h_case_result ) ? ({ /* cicili#Progn1993 */
+              ({ /* cicili#Let1997 */
                 typeof((((unboxed -> __h_data ). Buffer ). __h_0_mem )) sb ;
                 // ----------
                 ;
-                ({ /* cicili#Let1990 */
-                  bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) &&  ({ /* cicili#Progn1991 */
+                ({ /* cicili#Let1999 */
+                  bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) &&  ({ /* cicili#Progn2000 */
                         (sb  =  (((unboxed -> __h_data ). Buffer ). __h_0_mem ) );
                         true ;
                       }) ) );
                   // ----------
                   
-                  ((__h_case_result ) ? ({ /* cicili#Progn1996 */
-                      ({ /* cicili#Progn1998 */
-                        { /* cicili#Let2002 */
-                          __auto_type match2001  = take_Box_Vector_int ((&vector ));
-                          typeof((((match2001 . __h_data ). Just ). __h_0_mem )) ptr ;
+                  ((__h_case_result ) ? ({ /* cicili#Progn2005 */
+                      ({ /* cicili#Let2009 */
+                        __auto_type match2008  = take_Box_Vector_int ((&vector ));
+                        typeof((((match2008 . __h_data ). Just ). __h_0_mem )) ptr ;
+                        // ----------
+                        ;
+                        ({ /* cicili#Let2012 */
+                          bool __h_case_result  = (true  &&  (((match2008 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn2013 */
+                                (ptr  =  (((match2008 . __h_data ). Just ). __h_0_mem ) );
+                                true ;
+                              }) ) );
                           // ----------
-                          ;
-                          ({ /* cicili#Let2005 */
-                            bool __h_case_result  = (true  &&  (((match2001 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn2006 */
-                                  (ptr  =  (((match2001 . __h_data ). Just ). __h_0_mem ) );
-                                  true ;
-                                }) ) );
-                            // ----------
-                            
-                            if (__h_case_result )
-                              { /* cicili#Block2012 */
+                          
+                          ((__h_case_result ) ? ({ /* cicili#Progn2018 */
+                              ({ /* cicili#Progn2020 */
                                 free (ptr );
-                              }
-                          });
-                        }
-                        ({ /* cicili#Let2016 */
-                          typeof((((sb . __h_data ). Buffered ). __h_0_mem )) buffer ;
-                          typeof((((sb . __h_data ). Buffered ). __h_1_mem )) cursor ;
-                          typeof((((sb . __h_data ). Buffered ). __h_2_mem )) size ;
-                          typeof((((sb . __h_data ). Buffered ). __h_3_mem )) step ;
-                          // ----------
-                          ;
-                          ({ /* cicili#Let2018 */
-                            bool __h_case_result  = (true  &&  (((sb . __h_ctor ) ==  __h_Buffered_t  ) &&  (((({ /* cicili#Progn2019 */
-                                        (buffer  =  (((sb . __h_data ). Buffered ). __h_0_mem ) );
-                                        true ;
-                                      }) &&  ({ /* cicili#Progn2021 */
-                                        (cursor  =  (((sb . __h_data ). Buffered ). __h_1_mem ) );
-                                        true ;
-                                      }) ) &&  ({ /* cicili#Progn2023 */
-                                      (size  =  (((sb . __h_data ). Buffered ). __h_2_mem ) );
-                                      true ;
-                                    }) ) &&  ({ /* cicili#Progn2025 */
-                                    (step  =  (((sb . __h_data ). Buffered ). __h_3_mem ) );
-                                    true ;
-                                  }) ) ) );
-                            // ----------
-                            
-                            ((__h_case_result ) ? ({ /* cicili#Progn2030 */
-                                ({ /* cicili#Progn2032 */
-                                  for (size_t i  = index ; (i  <  cursor  ); (++i )) {
-                                      (*(buffer  +  i  )) = (*(buffer  +  (i  +  1 ) ));
-                                  }
-                                  Buffer_int (MakeStringBuffer_int (buffer , (cursor  -  1 ), size , step ));
+                                ({ /* cicili#Let2024 */
+                                  typeof((((sb . __h_data ). Buffered ). __h_0_mem )) buffer ;
+                                  typeof((((sb . __h_data ). Buffered ). __h_1_mem )) cursor ;
+                                  typeof((((sb . __h_data ). Buffered ). __h_2_mem )) size ;
+                                  typeof((((sb . __h_data ). Buffered ). __h_3_mem )) step ;
+                                  // ----------
+                                  ;
+                                  ({ /* cicili#Let2026 */
+                                    bool __h_case_result  = (true  &&  (((sb . __h_ctor ) ==  __h_Buffered_t  ) &&  (((({ /* cicili#Progn2027 */
+                                                (buffer  =  (((sb . __h_data ). Buffered ). __h_0_mem ) );
+                                                true ;
+                                              }) &&  ({ /* cicili#Progn2029 */
+                                                (cursor  =  (((sb . __h_data ). Buffered ). __h_1_mem ) );
+                                                true ;
+                                              }) ) &&  ({ /* cicili#Progn2031 */
+                                              (size  =  (((sb . __h_data ). Buffered ). __h_2_mem ) );
+                                              true ;
+                                            }) ) &&  ({ /* cicili#Progn2033 */
+                                            (step  =  (((sb . __h_data ). Buffered ). __h_3_mem ) );
+                                            true ;
+                                          }) ) ) );
+                                    // ----------
+                                    
+                                    ((__h_case_result ) ? ({ /* cicili#Progn2038 */
+                                        ({ /* cicili#Progn2040 */
+                                          for (size_t i  = index ; (i  <  cursor  ); (++i )) {
+                                              (*(buffer  +  i  )) = (*(buffer  +  (i  +  1 ) ));
+                                          }
+                                          Buffer_int (MakeStringBuffer_int (buffer , (cursor  -  1 ), size , step ));
+                                        });
+                                      }) : ({ /* cicili#Let2048 */
+                                        // ----------
+                                        ;
+                                        ({ /* cicili#Progn2050 */
+                                          clone_Box_Vector_int (vector );
+                                        });
+                                      }));
+                                  });
                                 });
-                              }) : ({ /* cicili#Let2040 */
-                                // ----------
-                                ;
-                                ({ /* cicili#Progn2042 */
-                                  clone_Box_Vector_int (vector );
-                                });
-                              }));
-                          });
+                              });
+                            }) : ({ /* cicili#Let2055 */
+                              // ----------
+                              ;
+                              ({ /* cicili#Progn2057 */
+                                None_int ();
+                              });
+                            }));
                         });
                       });
-                    }) : ({ /* cicili#Let2047 */
+                    }) : ({ /* cicili#Let2062 */
                       typeof((((unboxed -> __h_data ). Slice ). __h_0_mem )) vec ;
                       typeof((((unboxed -> __h_data ). Slice ). __h_1_mem )) cur ;
                       typeof((((unboxed -> __h_data ). Slice ). __h_2_mem )) size ;
                       // ----------
                       ;
-                      ({ /* cicili#Let2049 */
-                        bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Slice_t  ) &&  ((({ /* cicili#Progn2050 */
+                      ({ /* cicili#Let2064 */
+                        bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Slice_t  ) &&  ((({ /* cicili#Progn2065 */
                                   (vec  =  (((unboxed -> __h_data ). Slice ). __h_0_mem ) );
                                   true ;
-                                }) &&  ({ /* cicili#Progn2052 */
+                                }) &&  ({ /* cicili#Progn2067 */
                                   (cur  =  (((unboxed -> __h_data ). Slice ). __h_1_mem ) );
                                   true ;
-                                }) ) &&  ({ /* cicili#Progn2054 */
+                                }) ) &&  ({ /* cicili#Progn2069 */
                                 (size  =  (((unboxed -> __h_data ). Slice ). __h_2_mem ) );
                                 true ;
                               }) ) ) );
                         // ----------
                         
-                        ((__h_case_result ) ? ({ /* cicili#Progn2059 */
-                            ({ /* cicili#Let2062 */
+                        ((__h_case_result ) ? ({ /* cicili#Progn2074 */
+                            ({ /* cicili#Let2077 */
                               __auto_type __h_matchbox  = vec ;
                               // ----------
-                              ({ /* cicili#Let2066 */
-                                __auto_type match2065  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
-                                typeof((((match2065 . __h_data ). Just ). __h_0_mem )) unboxed ;
+                              ({ /* cicili#Let2081 */
+                                __auto_type match2080  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
+                                typeof((((match2080 . __h_data ). Just ). __h_0_mem )) unboxed ;
                                 // ----------
                                 ;
-                                ({ /* cicili#Let2069 */
-                                  bool __h_case_result  = (true  &&  (((match2065 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn2070 */
-                                        (unboxed  =  (((match2065 . __h_data ). Just ). __h_0_mem ) );
+                                ({ /* cicili#Let2084 */
+                                  bool __h_case_result  = (true  &&  (((match2080 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn2085 */
+                                        (unboxed  =  (((match2080 . __h_data ). Just ). __h_0_mem ) );
                                         true ;
                                       }) ) );
                                   // ----------
                                   
-                                  ((__h_case_result ) ? ({ /* cicili#Progn2075 */
-                                      ({ /* cicili#Let2079 */
+                                  ((__h_case_result ) ? ({ /* cicili#Progn2090 */
+                                      ({ /* cicili#Let2094 */
                                         typeof((((unboxed -> __h_data ). Buffer ). __h_0_mem )) sbs ;
                                         // ----------
                                         ;
-                                        ({ /* cicili#Let2081 */
-                                          bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) &&  ({ /* cicili#Progn2082 */
+                                        ({ /* cicili#Let2096 */
+                                          bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) &&  ({ /* cicili#Progn2097 */
                                                 (sbs  =  (((unboxed -> __h_data ). Buffer ). __h_0_mem ) );
                                                 true ;
                                               }) ) );
                                           // ----------
                                           
-                                          ((__h_case_result ) ? ({ /* cicili#Progn2087 */
-                                              ({ /* cicili#Let2091 */
+                                          ((__h_case_result ) ? ({ /* cicili#Progn2102 */
+                                              ({ /* cicili#Let2106 */
                                                 typeof((((sbs . __h_data ). Buffered ). __h_0_mem )) buffer ;
                                                 typeof((((sbs . __h_data ). Buffered ). __h_3_mem )) step ;
                                                 // ----------
                                                 ;
-                                                ({ /* cicili#Let2093 */
-                                                  bool __h_case_result  = (true  &&  (((sbs . __h_ctor ) ==  __h_Buffered_t  ) &&  (({ /* cicili#Progn2094 */
+                                                ({ /* cicili#Let2108 */
+                                                  bool __h_case_result  = (true  &&  (((sbs . __h_ctor ) ==  __h_Buffered_t  ) &&  (({ /* cicili#Progn2109 */
                                                           (buffer  =  (((sbs . __h_data ). Buffered ). __h_0_mem ) );
                                                           true ;
-                                                        }) &&  ({ /* cicili#Progn2096 */
+                                                        }) &&  ({ /* cicili#Progn2111 */
                                                           (step  =  (((sbs . __h_data ). Buffered ). __h_3_mem ) );
                                                           true ;
                                                         }) ) ) );
                                                   // ----------
                                                   
-                                                  ((__h_case_result ) ? ({ /* cicili#Progn2101 */
-                                                      (((index  <  size  )) ? ({ /* cicili#Let2104 */
+                                                  ((__h_case_result ) ? ({ /* cicili#Progn2116 */
+                                                      (((index  <  size  )) ? ({ /* cicili#Let2119 */
                                                           StringBuffer_int new_sb  = newCapacity_StringBuffer_int ((size  -  1 ), step );
                                                           // ----------
                                                           Buffer_int (print_StringBuffer_int (print_StringBuffer_int (new_sb , (buffer  +  cur  ), index ), (buffer  +  cur  +  index  +  1 ), (size  -  index  -  1 )));
                                                         }) : vec );
-                                                    }) : ({ /* cicili#Let2113 */
+                                                    }) : ({ /* cicili#Let2128 */
                                                       // ----------
                                                       ;
-                                                      ({ /* cicili#Progn2115 */
+                                                      ({ /* cicili#Progn2130 */
                                                         None_int ();
                                                       });
                                                     }));
                                                 });
                                               });
-                                            }) : ({ /* cicili#Let2120 */
+                                            }) : ({ /* cicili#Let2135 */
                                               typeof((((unboxed -> __h_data ). Slice ). __h_0_mem )) veci ;
                                               // ----------
                                               ;
-                                              ({ /* cicili#Let2122 */
-                                                bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Slice_t  ) &&  ({ /* cicili#Progn2123 */
+                                              ({ /* cicili#Let2137 */
+                                                bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Slice_t  ) &&  ({ /* cicili#Progn2138 */
                                                       (veci  =  (((unboxed -> __h_data ). Slice ). __h_0_mem ) );
                                                       true ;
                                                     }) ) );
                                                 // ----------
                                                 
-                                                ((__h_case_result ) ? ({ /* cicili#Progn2128 */
+                                                ((__h_case_result ) ? ({ /* cicili#Progn2143 */
                                                     deleteAt_Vector_int (veci , (cur  +  index  ));
-                                                  }) : ({ /* cicili#Let2133 */
+                                                  }) : ({ /* cicili#Let2148 */
                                                     // ----------
                                                     ;
-                                                    ({ /* cicili#Progn2135 */
+                                                    ({ /* cicili#Progn2150 */
                                                       clone_Box_Vector_int (vec );
                                                     });
                                                   }));
@@ -2209,20 +2221,20 @@ Vector_int deleteAt_Vector_int (Vector_int vector , size_t index ) {
                                             }));
                                         });
                                       });
-                                    }) : ({ /* cicili#Let2140 */
+                                    }) : ({ /* cicili#Let2155 */
                                       // ----------
                                       ;
-                                      ({ /* cicili#Progn2142 */
+                                      ({ /* cicili#Progn2157 */
                                         None_int ();
                                       });
                                     }));
                                 });
                               });
                             });
-                          }) : ({ /* cicili#Let2147 */
+                          }) : ({ /* cicili#Let2162 */
                             // ----------
                             ;
-                            ({ /* cicili#Progn2149 */
+                            ({ /* cicili#Progn2164 */
                               clone_Box_Vector_int (vector );
                             });
                           }));
@@ -2230,10 +2242,10 @@ Vector_int deleteAt_Vector_int (Vector_int vector , size_t index ) {
                     }));
                 });
               });
-            }) : ({ /* cicili#Let2154 */
+            }) : ({ /* cicili#Let2169 */
               // ----------
               ;
-              ({ /* cicili#Progn2156 */
+              ({ /* cicili#Progn2171 */
                 None_int ();
               });
             }));
@@ -2242,183 +2254,188 @@ Vector_int deleteAt_Vector_int (Vector_int vector , size_t index ) {
     });
 }
 Vector_int insertAt_Vector_int (Vector_int vector , int item , size_t index ) {
-  return ({ /* cicili#Let2162 */
+  return ({ /* cicili#Let2177 */
       __auto_type __h_matchbox  = vector ;
       // ----------
-      ({ /* cicili#Let2166 */
-        __auto_type match2165  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
-        typeof((((match2165 . __h_data ). Just ). __h_0_mem )) unboxed ;
+      ({ /* cicili#Let2181 */
+        __auto_type match2180  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
+        typeof((((match2180 . __h_data ). Just ). __h_0_mem )) unboxed ;
         // ----------
         ;
-        ({ /* cicili#Let2169 */
-          bool __h_case_result  = (true  &&  (((match2165 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn2170 */
-                (unboxed  =  (((match2165 . __h_data ). Just ). __h_0_mem ) );
+        ({ /* cicili#Let2184 */
+          bool __h_case_result  = (true  &&  (((match2180 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn2185 */
+                (unboxed  =  (((match2180 . __h_data ). Just ). __h_0_mem ) );
                 true ;
               }) ) );
           // ----------
           
-          ((__h_case_result ) ? ({ /* cicili#Progn2175 */
-              ({ /* cicili#Let2179 */
+          ((__h_case_result ) ? ({ /* cicili#Progn2190 */
+              ({ /* cicili#Let2194 */
                 typeof((((unboxed -> __h_data ). Buffer ). __h_0_mem )) sb ;
                 // ----------
                 ;
-                ({ /* cicili#Let2181 */
-                  bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) &&  ({ /* cicili#Progn2182 */
+                ({ /* cicili#Let2196 */
+                  bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) &&  ({ /* cicili#Progn2197 */
                         (sb  =  (((unboxed -> __h_data ). Buffer ). __h_0_mem ) );
                         true ;
                       }) ) );
                   // ----------
                   
-                  ((__h_case_result ) ? ({ /* cicili#Progn2187 */
-                      ({ /* cicili#Let2189 */
-                        StringBuffer_int new_sb  = put_StringBuffer_int (sb , item );
+                  ((__h_case_result ) ? ({ /* cicili#Progn2202 */
+                      ({ /* cicili#Let2206 */
+                        __auto_type match2205  = take_Box_Vector_int ((&vector ));
+                        typeof((((match2205 . __h_data ). Just ). __h_0_mem )) ptr ;
                         // ----------
-                        { /* cicili#Let2195 */
-                          __auto_type match2194  = take_Box_Vector_int ((&vector ));
-                          typeof((((match2194 . __h_data ). Just ). __h_0_mem )) ptr ;
-                          // ----------
-                          ;
-                          ({ /* cicili#Let2198 */
-                            bool __h_case_result  = (true  &&  (((match2194 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn2199 */
-                                  (ptr  =  (((match2194 . __h_data ). Just ). __h_0_mem ) );
-                                  true ;
-                                }) ) );
-                            // ----------
-                            
-                            if (__h_case_result )
-                              { /* cicili#Block2205 */
-                                free (ptr );
-                              }
-                          });
-                        }
+                        ;
                         ({ /* cicili#Let2209 */
-                          typeof((((new_sb . __h_data ). Buffered ). __h_0_mem )) buffer ;
-                          typeof((((new_sb . __h_data ). Buffered ). __h_1_mem )) cursor ;
+                          bool __h_case_result  = (true  &&  (((match2205 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn2210 */
+                                (ptr  =  (((match2205 . __h_data ). Just ). __h_0_mem ) );
+                                true ;
+                              }) ) );
                           // ----------
-                          ;
-                          ({ /* cicili#Let2211 */
-                            bool __h_case_result  = (true  &&  (((new_sb . __h_ctor ) ==  __h_Buffered_t  ) &&  (({ /* cicili#Progn2212 */
-                                    (buffer  =  (((new_sb . __h_data ). Buffered ). __h_0_mem ) );
-                                    true ;
-                                  }) &&  ({ /* cicili#Progn2214 */
-                                    (cursor  =  (((new_sb . __h_data ). Buffered ). __h_1_mem ) );
-                                    true ;
-                                  }) ) ) );
-                            // ----------
-                            
-                            ((__h_case_result ) ? ({ /* cicili#Progn2219 */
-                                ({ /* cicili#Progn2221 */
-                                  for (size_t i  = (cursor  -  1 ); (i  >  index  ); (--i )) {
-                                      (*(buffer  +  i  )) = (*(buffer  +  (i  -  1 ) ));
-                                  }
-                                  (*(buffer  +  index  )) = item ;
-                                  Buffer_int (new_sb );
-                                });
-                              }) : ({ /* cicili#Let2228 */
+                          
+                          ((__h_case_result ) ? ({ /* cicili#Progn2215 */
+                              ({ /* cicili#Let2217 */
+                                StringBuffer_int new_sb  = put_StringBuffer_int (sb , item );
                                 // ----------
-                                ;
-                                ({ /* cicili#Progn2230 */
-                                  clone_Box_Vector_int (vector );
+                                free (ptr );
+                                ({ /* cicili#Let2223 */
+                                  typeof((((new_sb . __h_data ). Buffered ). __h_0_mem )) buffer ;
+                                  typeof((((new_sb . __h_data ). Buffered ). __h_1_mem )) cursor ;
+                                  // ----------
+                                  ;
+                                  ({ /* cicili#Let2225 */
+                                    bool __h_case_result  = (true  &&  (((new_sb . __h_ctor ) ==  __h_Buffered_t  ) &&  (({ /* cicili#Progn2226 */
+                                            (buffer  =  (((new_sb . __h_data ). Buffered ). __h_0_mem ) );
+                                            true ;
+                                          }) &&  ({ /* cicili#Progn2228 */
+                                            (cursor  =  (((new_sb . __h_data ). Buffered ). __h_1_mem ) );
+                                            true ;
+                                          }) ) ) );
+                                    // ----------
+                                    
+                                    ((__h_case_result ) ? ({ /* cicili#Progn2233 */
+                                        ({ /* cicili#Progn2235 */
+                                          for (size_t i  = (cursor  -  1 ); (i  >  index  ); (--i )) {
+                                              (*(buffer  +  i  )) = (*(buffer  +  (i  -  1 ) ));
+                                          }
+                                          (*(buffer  +  index  )) = item ;
+                                          Buffer_int (new_sb );
+                                        });
+                                      }) : ({ /* cicili#Let2242 */
+                                        // ----------
+                                        ;
+                                        ({ /* cicili#Progn2244 */
+                                          clone_Box_Vector_int (vector );
+                                        });
+                                      }));
+                                  });
                                 });
-                              }));
-                          });
+                              });
+                            }) : ({ /* cicili#Let2249 */
+                              // ----------
+                              ;
+                              ({ /* cicili#Progn2251 */
+                                None_int ();
+                              });
+                            }));
                         });
                       });
-                    }) : ({ /* cicili#Let2235 */
+                    }) : ({ /* cicili#Let2256 */
                       typeof((((unboxed -> __h_data ). Slice ). __h_0_mem )) vec ;
                       typeof((((unboxed -> __h_data ). Slice ). __h_1_mem )) cur ;
                       typeof((((unboxed -> __h_data ). Slice ). __h_2_mem )) size ;
                       // ----------
                       ;
-                      ({ /* cicili#Let2237 */
-                        bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Slice_t  ) &&  ((({ /* cicili#Progn2238 */
+                      ({ /* cicili#Let2258 */
+                        bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Slice_t  ) &&  ((({ /* cicili#Progn2259 */
                                   (vec  =  (((unboxed -> __h_data ). Slice ). __h_0_mem ) );
                                   true ;
-                                }) &&  ({ /* cicili#Progn2240 */
+                                }) &&  ({ /* cicili#Progn2261 */
                                   (cur  =  (((unboxed -> __h_data ). Slice ). __h_1_mem ) );
                                   true ;
-                                }) ) &&  ({ /* cicili#Progn2242 */
+                                }) ) &&  ({ /* cicili#Progn2263 */
                                 (size  =  (((unboxed -> __h_data ). Slice ). __h_2_mem ) );
                                 true ;
                               }) ) ) );
                         // ----------
                         
-                        ((__h_case_result ) ? ({ /* cicili#Progn2247 */
-                            ({ /* cicili#Let2250 */
+                        ((__h_case_result ) ? ({ /* cicili#Progn2268 */
+                            ({ /* cicili#Let2271 */
                               __auto_type __h_matchbox  = vec ;
                               // ----------
-                              ({ /* cicili#Let2254 */
-                                __auto_type match2253  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
-                                typeof((((match2253 . __h_data ). Just ). __h_0_mem )) unboxed ;
+                              ({ /* cicili#Let2275 */
+                                __auto_type match2274  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
+                                typeof((((match2274 . __h_data ). Just ). __h_0_mem )) unboxed ;
                                 // ----------
                                 ;
-                                ({ /* cicili#Let2257 */
-                                  bool __h_case_result  = (true  &&  (((match2253 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn2258 */
-                                        (unboxed  =  (((match2253 . __h_data ). Just ). __h_0_mem ) );
+                                ({ /* cicili#Let2278 */
+                                  bool __h_case_result  = (true  &&  (((match2274 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn2279 */
+                                        (unboxed  =  (((match2274 . __h_data ). Just ). __h_0_mem ) );
                                         true ;
                                       }) ) );
                                   // ----------
                                   
-                                  ((__h_case_result ) ? ({ /* cicili#Progn2263 */
-                                      ({ /* cicili#Let2267 */
+                                  ((__h_case_result ) ? ({ /* cicili#Progn2284 */
+                                      ({ /* cicili#Let2288 */
                                         typeof((((unboxed -> __h_data ). Buffer ). __h_0_mem )) sbs ;
                                         // ----------
                                         ;
-                                        ({ /* cicili#Let2269 */
-                                          bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) &&  ({ /* cicili#Progn2270 */
+                                        ({ /* cicili#Let2290 */
+                                          bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) &&  ({ /* cicili#Progn2291 */
                                                 (sbs  =  (((unboxed -> __h_data ). Buffer ). __h_0_mem ) );
                                                 true ;
                                               }) ) );
                                           // ----------
                                           
-                                          ((__h_case_result ) ? ({ /* cicili#Progn2275 */
-                                              ({ /* cicili#Let2279 */
+                                          ((__h_case_result ) ? ({ /* cicili#Progn2296 */
+                                              ({ /* cicili#Let2300 */
                                                 typeof((((sbs . __h_data ). Buffered ). __h_0_mem )) buffer ;
                                                 typeof((((sbs . __h_data ). Buffered ). __h_3_mem )) step ;
                                                 // ----------
                                                 ;
-                                                ({ /* cicili#Let2281 */
-                                                  bool __h_case_result  = (true  &&  (((sbs . __h_ctor ) ==  __h_Buffered_t  ) &&  (({ /* cicili#Progn2282 */
+                                                ({ /* cicili#Let2302 */
+                                                  bool __h_case_result  = (true  &&  (((sbs . __h_ctor ) ==  __h_Buffered_t  ) &&  (({ /* cicili#Progn2303 */
                                                           (buffer  =  (((sbs . __h_data ). Buffered ). __h_0_mem ) );
                                                           true ;
-                                                        }) &&  ({ /* cicili#Progn2284 */
+                                                        }) &&  ({ /* cicili#Progn2305 */
                                                           (step  =  (((sbs . __h_data ). Buffered ). __h_3_mem ) );
                                                           true ;
                                                         }) ) ) );
                                                   // ----------
                                                   
-                                                  ((__h_case_result ) ? ({ /* cicili#Progn2289 */
-                                                      (((index  <  size  )) ? ({ /* cicili#Let2292 */
+                                                  ((__h_case_result ) ? ({ /* cicili#Progn2310 */
+                                                      (((index  <  size  )) ? ({ /* cicili#Let2313 */
                                                           StringBuffer_int new_sb  = newCapacity_StringBuffer_int ((size  +  1 ), step );
                                                           // ----------
                                                           Buffer_int (print_StringBuffer_int (put_StringBuffer_int (print_StringBuffer_int (new_sb , (buffer  +  cur  ), index ), item ), (buffer  +  cur  +  index  ), (size  -  index  )));
                                                         }) : vec );
-                                                    }) : ({ /* cicili#Let2302 */
+                                                    }) : ({ /* cicili#Let2323 */
                                                       // ----------
                                                       ;
-                                                      ({ /* cicili#Progn2304 */
+                                                      ({ /* cicili#Progn2325 */
                                                         None_int ();
                                                       });
                                                     }));
                                                 });
                                               });
-                                            }) : ({ /* cicili#Let2309 */
+                                            }) : ({ /* cicili#Let2330 */
                                               typeof((((unboxed -> __h_data ). Slice ). __h_0_mem )) veci ;
                                               // ----------
                                               ;
-                                              ({ /* cicili#Let2311 */
-                                                bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Slice_t  ) &&  ({ /* cicili#Progn2312 */
+                                              ({ /* cicili#Let2332 */
+                                                bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Slice_t  ) &&  ({ /* cicili#Progn2333 */
                                                       (veci  =  (((unboxed -> __h_data ). Slice ). __h_0_mem ) );
                                                       true ;
                                                     }) ) );
                                                 // ----------
                                                 
-                                                ((__h_case_result ) ? ({ /* cicili#Progn2317 */
+                                                ((__h_case_result ) ? ({ /* cicili#Progn2338 */
                                                     insertAt_Vector_int (veci , item , (cur  +  index  ));
-                                                  }) : ({ /* cicili#Let2322 */
+                                                  }) : ({ /* cicili#Let2343 */
                                                     // ----------
                                                     ;
-                                                    ({ /* cicili#Progn2324 */
+                                                    ({ /* cicili#Progn2345 */
                                                       clone_Box_Vector_int (vec );
                                                     });
                                                   }));
@@ -2426,20 +2443,20 @@ Vector_int insertAt_Vector_int (Vector_int vector , int item , size_t index ) {
                                             }));
                                         });
                                       });
-                                    }) : ({ /* cicili#Let2329 */
+                                    }) : ({ /* cicili#Let2350 */
                                       // ----------
                                       ;
-                                      ({ /* cicili#Progn2331 */
+                                      ({ /* cicili#Progn2352 */
                                         None_int ();
                                       });
                                     }));
                                 });
                               });
                             });
-                          }) : ({ /* cicili#Let2336 */
+                          }) : ({ /* cicili#Let2357 */
                             // ----------
                             ;
-                            ({ /* cicili#Progn2338 */
+                            ({ /* cicili#Progn2359 */
                               clone_Box_Vector_int (vector );
                             });
                           }));
@@ -2447,10 +2464,10 @@ Vector_int insertAt_Vector_int (Vector_int vector , int item , size_t index ) {
                     }));
                 });
               });
-            }) : ({ /* cicili#Let2343 */
+            }) : ({ /* cicili#Let2364 */
               // ----------
               ;
-              ({ /* cicili#Progn2345 */
+              ({ /* cicili#Progn2366 */
                 None_int ();
               });
             }));
@@ -2459,161 +2476,166 @@ Vector_int insertAt_Vector_int (Vector_int vector , int item , size_t index ) {
     });
 }
 Vector_int reverse_Vector_int (Vector_int vector ) {
-  return ({ /* cicili#Let2351 */
+  return ({ /* cicili#Let2372 */
       __auto_type __h_matchbox  = vector ;
       // ----------
-      ({ /* cicili#Let2355 */
-        __auto_type match2354  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
-        typeof((((match2354 . __h_data ). Just ). __h_0_mem )) unboxed ;
+      ({ /* cicili#Let2376 */
+        __auto_type match2375  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
+        typeof((((match2375 . __h_data ). Just ). __h_0_mem )) unboxed ;
         // ----------
         ;
-        ({ /* cicili#Let2358 */
-          bool __h_case_result  = (true  &&  (((match2354 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn2359 */
-                (unboxed  =  (((match2354 . __h_data ). Just ). __h_0_mem ) );
+        ({ /* cicili#Let2379 */
+          bool __h_case_result  = (true  &&  (((match2375 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn2380 */
+                (unboxed  =  (((match2375 . __h_data ). Just ). __h_0_mem ) );
                 true ;
               }) ) );
           // ----------
           
-          ((__h_case_result ) ? ({ /* cicili#Progn2364 */
-              ({ /* cicili#Let2368 */
+          ((__h_case_result ) ? ({ /* cicili#Progn2385 */
+              ({ /* cicili#Let2389 */
                 typeof((((unboxed -> __h_data ). Buffer ). __h_0_mem )) sb ;
                 // ----------
                 ;
-                ({ /* cicili#Let2370 */
-                  bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) &&  ({ /* cicili#Progn2371 */
+                ({ /* cicili#Let2391 */
+                  bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) &&  ({ /* cicili#Progn2392 */
                         (sb  =  (((unboxed -> __h_data ). Buffer ). __h_0_mem ) );
                         true ;
                       }) ) );
                   // ----------
                   
-                  ((__h_case_result ) ? ({ /* cicili#Progn2376 */
-                      ({ /* cicili#Let2380 */
+                  ((__h_case_result ) ? ({ /* cicili#Progn2397 */
+                      ({ /* cicili#Let2401 */
                         typeof((((sb . __h_data ). Buffered ). __h_0_mem )) buffer ;
                         typeof((((sb . __h_data ). Buffered ). __h_1_mem )) cursor ;
                         typeof((((sb . __h_data ). Buffered ). __h_2_mem )) size ;
                         typeof((((sb . __h_data ). Buffered ). __h_3_mem )) step ;
                         // ----------
                         ;
-                        ({ /* cicili#Let2382 */
-                          bool __h_case_result  = (true  &&  (((sb . __h_ctor ) ==  __h_Buffered_t  ) &&  (((({ /* cicili#Progn2383 */
+                        ({ /* cicili#Let2403 */
+                          bool __h_case_result  = (true  &&  (((sb . __h_ctor ) ==  __h_Buffered_t  ) &&  (((({ /* cicili#Progn2404 */
                                       (buffer  =  (((sb . __h_data ). Buffered ). __h_0_mem ) );
                                       true ;
-                                    }) &&  ({ /* cicili#Progn2385 */
+                                    }) &&  ({ /* cicili#Progn2406 */
                                       (cursor  =  (((sb . __h_data ). Buffered ). __h_1_mem ) );
                                       true ;
-                                    }) ) &&  ({ /* cicili#Progn2387 */
+                                    }) ) &&  ({ /* cicili#Progn2408 */
                                     (size  =  (((sb . __h_data ). Buffered ). __h_2_mem ) );
                                     true ;
-                                  }) ) &&  ({ /* cicili#Progn2389 */
+                                  }) ) &&  ({ /* cicili#Progn2410 */
                                   (step  =  (((sb . __h_data ). Buffered ). __h_3_mem ) );
                                   true ;
                                 }) ) ) );
                           // ----------
                           
-                          ((__h_case_result ) ? ({ /* cicili#Progn2394 */
-                              ({ /* cicili#Let2396 */
-                                int tmp ;
+                          ((__h_case_result ) ? ({ /* cicili#Progn2415 */
+                              ({ /* cicili#Let2419 */
+                                __auto_type match2418  = take_Box_Vector_int ((&vector ));
+                                typeof((((match2418 . __h_data ). Just ). __h_0_mem )) ptr ;
                                 // ----------
-                                { /* cicili#Let2400 */
-                                  __auto_type match2399  = take_Box_Vector_int ((&vector ));
-                                  typeof((((match2399 . __h_data ). Just ). __h_0_mem )) ptr ;
+                                ;
+                                ({ /* cicili#Let2422 */
+                                  bool __h_case_result  = (true  &&  (((match2418 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn2423 */
+                                        (ptr  =  (((match2418 . __h_data ). Just ). __h_0_mem ) );
+                                        true ;
+                                      }) ) );
                                   // ----------
-                                  ;
-                                  ({ /* cicili#Let2403 */
-                                    bool __h_case_result  = (true  &&  (((match2399 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn2404 */
-                                          (ptr  =  (((match2399 . __h_data ). Just ). __h_0_mem ) );
-                                          true ;
-                                        }) ) );
-                                    // ----------
-                                    
-                                    if (__h_case_result )
-                                      { /* cicili#Block2410 */
+                                  
+                                  ((__h_case_result ) ? ({ /* cicili#Progn2428 */
+                                      ({ /* cicili#Let2430 */
+                                        int tmp ;
+                                        // ----------
                                         free (ptr );
-                                      }
-                                  });
-                                }
-                                for (size_t i  = 0,  j  = cursor ; (i  <  (cursor  /  2 ) ); (++i ), (--j )) {
-                                    tmp  = (*(buffer  +  i  ));
-                                    (*(buffer  +  i  )) = (*(buffer  +  (j  -  1 ) ));
-                                    (*(buffer  +  (j  -  1 ) )) = tmp ;
-                                }
-                                Buffer_int (MakeStringBuffer_int (buffer , cursor , size , step ));
+                                        for (size_t i  = 0,  j  = cursor ; (i  <  (cursor  /  2 ) ); (++i ), (--j )) {
+                                            tmp  = (*(buffer  +  i  ));
+                                            (*(buffer  +  i  )) = (*(buffer  +  (j  -  1 ) ));
+                                            (*(buffer  +  (j  -  1 ) )) = tmp ;
+                                        }
+                                        Buffer_int (MakeStringBuffer_int (buffer , cursor , size , step ));
+                                      });
+                                    }) : ({ /* cicili#Let2438 */
+                                      // ----------
+                                      ;
+                                      ({ /* cicili#Progn2440 */
+                                        None_int ();
+                                      });
+                                    }));
+                                });
                               });
-                            }) : ({ /* cicili#Let2418 */
+                            }) : ({ /* cicili#Let2445 */
                               // ----------
                               ;
-                              ({ /* cicili#Progn2420 */
-                                clone_Box_Vector_int (vector );
+                              ({ /* cicili#Progn2447 */
+                                None_int ();
                               });
                             }));
                         });
                       });
-                    }) : ({ /* cicili#Let2425 */
+                    }) : ({ /* cicili#Let2452 */
                       typeof((((unboxed -> __h_data ). Slice ). __h_0_mem )) vec ;
                       typeof((((unboxed -> __h_data ). Slice ). __h_1_mem )) cur ;
                       typeof((((unboxed -> __h_data ). Slice ). __h_2_mem )) size ;
                       // ----------
                       ;
-                      ({ /* cicili#Let2427 */
-                        bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Slice_t  ) &&  ((({ /* cicili#Progn2428 */
+                      ({ /* cicili#Let2454 */
+                        bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Slice_t  ) &&  ((({ /* cicili#Progn2455 */
                                   (vec  =  (((unboxed -> __h_data ). Slice ). __h_0_mem ) );
                                   true ;
-                                }) &&  ({ /* cicili#Progn2430 */
+                                }) &&  ({ /* cicili#Progn2457 */
                                   (cur  =  (((unboxed -> __h_data ). Slice ). __h_1_mem ) );
                                   true ;
-                                }) ) &&  ({ /* cicili#Progn2432 */
+                                }) ) &&  ({ /* cicili#Progn2459 */
                                 (size  =  (((unboxed -> __h_data ). Slice ). __h_2_mem ) );
                                 true ;
                               }) ) ) );
                         // ----------
                         
-                        ((__h_case_result ) ? ({ /* cicili#Progn2437 */
-                            ({ /* cicili#Let2440 */
+                        ((__h_case_result ) ? ({ /* cicili#Progn2464 */
+                            ({ /* cicili#Let2467 */
                               __auto_type __h_matchbox  = vec ;
                               // ----------
-                              ({ /* cicili#Let2444 */
-                                __auto_type match2443  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
-                                typeof((((match2443 . __h_data ). Just ). __h_0_mem )) unboxed ;
+                              ({ /* cicili#Let2471 */
+                                __auto_type match2470  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
+                                typeof((((match2470 . __h_data ). Just ). __h_0_mem )) unboxed ;
                                 // ----------
                                 ;
-                                ({ /* cicili#Let2447 */
-                                  bool __h_case_result  = (true  &&  (((match2443 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn2448 */
-                                        (unboxed  =  (((match2443 . __h_data ). Just ). __h_0_mem ) );
+                                ({ /* cicili#Let2474 */
+                                  bool __h_case_result  = (true  &&  (((match2470 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn2475 */
+                                        (unboxed  =  (((match2470 . __h_data ). Just ). __h_0_mem ) );
                                         true ;
                                       }) ) );
                                   // ----------
                                   
-                                  ((__h_case_result ) ? ({ /* cicili#Progn2453 */
-                                      ({ /* cicili#Let2457 */
+                                  ((__h_case_result ) ? ({ /* cicili#Progn2480 */
+                                      ({ /* cicili#Let2484 */
                                         typeof((((unboxed -> __h_data ). Buffer ). __h_0_mem )) sbs ;
                                         // ----------
                                         ;
-                                        ({ /* cicili#Let2459 */
-                                          bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) &&  ({ /* cicili#Progn2460 */
+                                        ({ /* cicili#Let2486 */
+                                          bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) &&  ({ /* cicili#Progn2487 */
                                                 (sbs  =  (((unboxed -> __h_data ). Buffer ). __h_0_mem ) );
                                                 true ;
                                               }) ) );
                                           // ----------
                                           
-                                          ((__h_case_result ) ? ({ /* cicili#Progn2465 */
+                                          ((__h_case_result ) ? ({ /* cicili#Progn2492 */
                                               reverse_Vector_int (Buffer_int (copySlice_StringBuffer_int (sbs , cur , size )));
-                                            }) : ({ /* cicili#Let2472 */
+                                            }) : ({ /* cicili#Let2499 */
                                               typeof((((unboxed -> __h_data ). Slice ). __h_0_mem )) veci ;
                                               // ----------
                                               ;
-                                              ({ /* cicili#Let2474 */
-                                                bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Slice_t  ) &&  ({ /* cicili#Progn2475 */
+                                              ({ /* cicili#Let2501 */
+                                                bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Slice_t  ) &&  ({ /* cicili#Progn2502 */
                                                       (veci  =  (((unboxed -> __h_data ). Slice ). __h_0_mem ) );
                                                       true ;
                                                     }) ) );
                                                 // ----------
                                                 
-                                                ((__h_case_result ) ? ({ /* cicili#Progn2480 */
+                                                ((__h_case_result ) ? ({ /* cicili#Progn2507 */
                                                     reverse_Vector_int (copySlice_Vector_int (veci , cur , size ));
-                                                  }) : ({ /* cicili#Let2486 */
+                                                  }) : ({ /* cicili#Let2513 */
                                                     // ----------
                                                     ;
-                                                    ({ /* cicili#Progn2488 */
+                                                    ({ /* cicili#Progn2515 */
                                                       clone_Box_Vector_int (vec );
                                                     });
                                                   }));
@@ -2621,20 +2643,20 @@ Vector_int reverse_Vector_int (Vector_int vector ) {
                                             }));
                                         });
                                       });
-                                    }) : ({ /* cicili#Let2493 */
+                                    }) : ({ /* cicili#Let2520 */
                                       // ----------
                                       ;
-                                      ({ /* cicili#Progn2495 */
+                                      ({ /* cicili#Progn2522 */
                                         None_int ();
                                       });
                                     }));
                                 });
                               });
                             });
-                          }) : ({ /* cicili#Let2500 */
+                          }) : ({ /* cicili#Let2527 */
                             // ----------
                             ;
-                            ({ /* cicili#Progn2502 */
+                            ({ /* cicili#Progn2529 */
                               clone_Box_Vector_int (vector );
                             });
                           }));
@@ -2642,10 +2664,10 @@ Vector_int reverse_Vector_int (Vector_int vector ) {
                     }));
                 });
               });
-            }) : ({ /* cicili#Let2507 */
+            }) : ({ /* cicili#Let2534 */
               // ----------
               ;
-              ({ /* cicili#Progn2509 */
+              ({ /* cicili#Progn2536 */
                 None_int ();
               });
             }));
@@ -2654,121 +2676,126 @@ Vector_int reverse_Vector_int (Vector_int vector ) {
     });
 }
 Vector_int append_Vector_int (Vector_int lvector , Vector_int rvector ) {
-  return ({ /* cicili#Let2515 */
+  return ({ /* cicili#Let2542 */
       __auto_type __h_matchbox  = lvector ;
       // ----------
-      ({ /* cicili#Let2519 */
-        __auto_type match2518  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
-        typeof((((match2518 . __h_data ). Just ). __h_0_mem )) unboxed ;
+      ({ /* cicili#Let2546 */
+        __auto_type match2545  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
+        typeof((((match2545 . __h_data ). Just ). __h_0_mem )) unboxed ;
         // ----------
         ;
-        ({ /* cicili#Let2522 */
-          bool __h_case_result  = (true  &&  (((match2518 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn2523 */
-                (unboxed  =  (((match2518 . __h_data ). Just ). __h_0_mem ) );
+        ({ /* cicili#Let2549 */
+          bool __h_case_result  = (true  &&  (((match2545 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn2550 */
+                (unboxed  =  (((match2545 . __h_data ). Just ). __h_0_mem ) );
                 true ;
               }) ) );
           // ----------
           
-          ((__h_case_result ) ? ({ /* cicili#Progn2528 */
-              ({ /* cicili#Let2532 */
+          ((__h_case_result ) ? ({ /* cicili#Progn2555 */
+              ({ /* cicili#Let2559 */
                 typeof((((unboxed -> __h_data ). Buffer ). __h_0_mem )) sb ;
                 // ----------
                 ;
-                ({ /* cicili#Let2534 */
-                  bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) &&  ({ /* cicili#Progn2535 */
+                ({ /* cicili#Let2561 */
+                  bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) &&  ({ /* cicili#Progn2562 */
                         (sb  =  (((unboxed -> __h_data ). Buffer ). __h_0_mem ) );
                         true ;
                       }) ) );
                   // ----------
                   
-                  ((__h_case_result ) ? ({ /* cicili#Progn2540 */
-                      ({ /* cicili#Progn2542 */
-                        { /* cicili#Let2546 */
-                          __auto_type match2545  = take_Box_Vector_int ((&lvector ));
-                          typeof((((match2545 . __h_data ). Just ). __h_0_mem )) ptr ;
+                  ((__h_case_result ) ? ({ /* cicili#Progn2567 */
+                      ({ /* cicili#Let2571 */
+                        __auto_type match2570  = take_Box_Vector_int ((&lvector ));
+                        typeof((((match2570 . __h_data ). Just ). __h_0_mem )) ptr ;
+                        // ----------
+                        ;
+                        ({ /* cicili#Let2574 */
+                          bool __h_case_result  = (true  &&  (((match2570 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn2575 */
+                                (ptr  =  (((match2570 . __h_data ). Just ). __h_0_mem ) );
+                                true ;
+                              }) ) );
                           // ----------
-                          ;
-                          ({ /* cicili#Let2549 */
-                            bool __h_case_result  = (true  &&  (((match2545 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn2550 */
-                                  (ptr  =  (((match2545 . __h_data ). Just ). __h_0_mem ) );
-                                  true ;
-                                }) ) );
-                            // ----------
-                            
-                            if (__h_case_result )
-                              { /* cicili#Block2556 */
+                          
+                          ((__h_case_result ) ? ({ /* cicili#Progn2580 */
+                              ({ /* cicili#Progn2582 */
                                 free (ptr );
-                              }
-                          });
-                        }
-                        Buffer_int (print_StringBuffer_int (sb , toArray_Vector_int (rvector ), len_Vector_int (rvector )));
+                                Buffer_int (print_StringBuffer_int (sb , toArray_Vector_int (rvector ), len_Vector_int (rvector )));
+                              });
+                            }) : ({ /* cicili#Let2590 */
+                              // ----------
+                              ;
+                              ({ /* cicili#Progn2592 */
+                                None_int ();
+                              });
+                            }));
+                        });
                       });
-                    }) : ({ /* cicili#Let2564 */
+                    }) : ({ /* cicili#Let2597 */
                       typeof((((unboxed -> __h_data ). Slice ). __h_0_mem )) vec ;
                       typeof((((unboxed -> __h_data ). Slice ). __h_1_mem )) cur ;
                       typeof((((unboxed -> __h_data ). Slice ). __h_2_mem )) size ;
                       // ----------
                       ;
-                      ({ /* cicili#Let2566 */
-                        bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Slice_t  ) &&  ((({ /* cicili#Progn2567 */
+                      ({ /* cicili#Let2599 */
+                        bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Slice_t  ) &&  ((({ /* cicili#Progn2600 */
                                   (vec  =  (((unboxed -> __h_data ). Slice ). __h_0_mem ) );
                                   true ;
-                                }) &&  ({ /* cicili#Progn2569 */
+                                }) &&  ({ /* cicili#Progn2602 */
                                   (cur  =  (((unboxed -> __h_data ). Slice ). __h_1_mem ) );
                                   true ;
-                                }) ) &&  ({ /* cicili#Progn2571 */
+                                }) ) &&  ({ /* cicili#Progn2604 */
                                 (size  =  (((unboxed -> __h_data ). Slice ). __h_2_mem ) );
                                 true ;
                               }) ) ) );
                         // ----------
                         
-                        ((__h_case_result ) ? ({ /* cicili#Progn2576 */
-                            ({ /* cicili#Let2579 */
+                        ((__h_case_result ) ? ({ /* cicili#Progn2609 */
+                            ({ /* cicili#Let2612 */
                               __auto_type __h_matchbox  = vec ;
                               // ----------
-                              ({ /* cicili#Let2583 */
-                                __auto_type match2582  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
-                                typeof((((match2582 . __h_data ). Just ). __h_0_mem )) unboxed ;
+                              ({ /* cicili#Let2616 */
+                                __auto_type match2615  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
+                                typeof((((match2615 . __h_data ). Just ). __h_0_mem )) unboxed ;
                                 // ----------
                                 ;
-                                ({ /* cicili#Let2586 */
-                                  bool __h_case_result  = (true  &&  (((match2582 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn2587 */
-                                        (unboxed  =  (((match2582 . __h_data ). Just ). __h_0_mem ) );
+                                ({ /* cicili#Let2619 */
+                                  bool __h_case_result  = (true  &&  (((match2615 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn2620 */
+                                        (unboxed  =  (((match2615 . __h_data ). Just ). __h_0_mem ) );
                                         true ;
                                       }) ) );
                                   // ----------
                                   
-                                  ((__h_case_result ) ? ({ /* cicili#Progn2592 */
-                                      ({ /* cicili#Let2596 */
+                                  ((__h_case_result ) ? ({ /* cicili#Progn2625 */
+                                      ({ /* cicili#Let2629 */
                                         typeof((((unboxed -> __h_data ). Buffer ). __h_0_mem )) sbs ;
                                         // ----------
                                         ;
-                                        ({ /* cicili#Let2598 */
-                                          bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) &&  ({ /* cicili#Progn2599 */
+                                        ({ /* cicili#Let2631 */
+                                          bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) &&  ({ /* cicili#Progn2632 */
                                                 (sbs  =  (((unboxed -> __h_data ). Buffer ). __h_0_mem ) );
                                                 true ;
                                               }) ) );
                                           // ----------
                                           
-                                          ((__h_case_result ) ? ({ /* cicili#Progn2604 */
+                                          ((__h_case_result ) ? ({ /* cicili#Progn2637 */
                                               Buffer_int (print_StringBuffer_int (copySlice_StringBuffer_int (sbs , cur , size ), toArray_Vector_int (rvector ), len_Vector_int (rvector )));
-                                            }) : ({ /* cicili#Let2613 */
+                                            }) : ({ /* cicili#Let2646 */
                                               typeof((((unboxed -> __h_data ). Slice ). __h_0_mem )) veci ;
                                               // ----------
                                               ;
-                                              ({ /* cicili#Let2615 */
-                                                bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Slice_t  ) &&  ({ /* cicili#Progn2616 */
+                                              ({ /* cicili#Let2648 */
+                                                bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Slice_t  ) &&  ({ /* cicili#Progn2649 */
                                                       (veci  =  (((unboxed -> __h_data ). Slice ). __h_0_mem ) );
                                                       true ;
                                                     }) ) );
                                                 // ----------
                                                 
-                                                ((__h_case_result ) ? ({ /* cicili#Progn2621 */
+                                                ((__h_case_result ) ? ({ /* cicili#Progn2654 */
                                                     append_Vector_int (copySlice_Vector_int (veci , cur , size ), rvector );
-                                                  }) : ({ /* cicili#Let2627 */
+                                                  }) : ({ /* cicili#Let2660 */
                                                     // ----------
                                                     ;
-                                                    ({ /* cicili#Progn2629 */
+                                                    ({ /* cicili#Progn2662 */
                                                       clone_Box_Vector_int (vec );
                                                     });
                                                   }));
@@ -2776,20 +2803,20 @@ Vector_int append_Vector_int (Vector_int lvector , Vector_int rvector ) {
                                             }));
                                         });
                                       });
-                                    }) : ({ /* cicili#Let2634 */
+                                    }) : ({ /* cicili#Let2667 */
                                       // ----------
                                       ;
-                                      ({ /* cicili#Progn2636 */
+                                      ({ /* cicili#Progn2669 */
                                         None_int ();
                                       });
                                     }));
                                 });
                               });
                             });
-                          }) : ({ /* cicili#Let2641 */
+                          }) : ({ /* cicili#Let2674 */
                             // ----------
                             ;
-                            ({ /* cicili#Progn2643 */
+                            ({ /* cicili#Progn2676 */
                               clone_Box_Vector_int (lvector );
                             });
                           }));
@@ -2797,10 +2824,10 @@ Vector_int append_Vector_int (Vector_int lvector , Vector_int rvector ) {
                     }));
                 });
               });
-            }) : ({ /* cicili#Let2648 */
+            }) : ({ /* cicili#Let2681 */
               // ----------
               ;
-              ({ /* cicili#Progn2650 */
+              ({ /* cicili#Progn2683 */
                 None_int ();
               });
             }));
@@ -2809,121 +2836,126 @@ Vector_int append_Vector_int (Vector_int lvector , Vector_int rvector ) {
     });
 }
 Vector_int push_Vector_int (int item , Vector_int vector ) {
-  return ({ /* cicili#Let2656 */
+  return ({ /* cicili#Let2689 */
       __auto_type __h_matchbox  = vector ;
       // ----------
-      ({ /* cicili#Let2660 */
-        __auto_type match2659  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
-        typeof((((match2659 . __h_data ). Just ). __h_0_mem )) unboxed ;
+      ({ /* cicili#Let2693 */
+        __auto_type match2692  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
+        typeof((((match2692 . __h_data ). Just ). __h_0_mem )) unboxed ;
         // ----------
         ;
-        ({ /* cicili#Let2663 */
-          bool __h_case_result  = (true  &&  (((match2659 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn2664 */
-                (unboxed  =  (((match2659 . __h_data ). Just ). __h_0_mem ) );
+        ({ /* cicili#Let2696 */
+          bool __h_case_result  = (true  &&  (((match2692 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn2697 */
+                (unboxed  =  (((match2692 . __h_data ). Just ). __h_0_mem ) );
                 true ;
               }) ) );
           // ----------
           
-          ((__h_case_result ) ? ({ /* cicili#Progn2669 */
-              ({ /* cicili#Let2673 */
+          ((__h_case_result ) ? ({ /* cicili#Progn2702 */
+              ({ /* cicili#Let2706 */
                 typeof((((unboxed -> __h_data ). Buffer ). __h_0_mem )) sb ;
                 // ----------
                 ;
-                ({ /* cicili#Let2675 */
-                  bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) &&  ({ /* cicili#Progn2676 */
+                ({ /* cicili#Let2708 */
+                  bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) &&  ({ /* cicili#Progn2709 */
                         (sb  =  (((unboxed -> __h_data ). Buffer ). __h_0_mem ) );
                         true ;
                       }) ) );
                   // ----------
                   
-                  ((__h_case_result ) ? ({ /* cicili#Progn2681 */
-                      ({ /* cicili#Progn2683 */
-                        { /* cicili#Let2687 */
-                          __auto_type match2686  = take_Box_Vector_int ((&vector ));
-                          typeof((((match2686 . __h_data ). Just ). __h_0_mem )) ptr ;
+                  ((__h_case_result ) ? ({ /* cicili#Progn2714 */
+                      ({ /* cicili#Let2718 */
+                        __auto_type match2717  = take_Box_Vector_int ((&vector ));
+                        typeof((((match2717 . __h_data ). Just ). __h_0_mem )) ptr ;
+                        // ----------
+                        ;
+                        ({ /* cicili#Let2721 */
+                          bool __h_case_result  = (true  &&  (((match2717 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn2722 */
+                                (ptr  =  (((match2717 . __h_data ). Just ). __h_0_mem ) );
+                                true ;
+                              }) ) );
                           // ----------
-                          ;
-                          ({ /* cicili#Let2690 */
-                            bool __h_case_result  = (true  &&  (((match2686 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn2691 */
-                                  (ptr  =  (((match2686 . __h_data ). Just ). __h_0_mem ) );
-                                  true ;
-                                }) ) );
-                            // ----------
-                            
-                            if (__h_case_result )
-                              { /* cicili#Block2697 */
+                          
+                          ((__h_case_result ) ? ({ /* cicili#Progn2727 */
+                              ({ /* cicili#Progn2729 */
                                 free (ptr );
-                              }
-                          });
-                        }
-                        Buffer_int (put_StringBuffer_int (sb , item ));
+                                Buffer_int (put_StringBuffer_int (sb , item ));
+                              });
+                            }) : ({ /* cicili#Let2735 */
+                              // ----------
+                              ;
+                              ({ /* cicili#Progn2737 */
+                                None_int ();
+                              });
+                            }));
+                        });
                       });
-                    }) : ({ /* cicili#Let2703 */
+                    }) : ({ /* cicili#Let2742 */
                       typeof((((unboxed -> __h_data ). Slice ). __h_0_mem )) vec ;
                       typeof((((unboxed -> __h_data ). Slice ). __h_1_mem )) cur ;
                       typeof((((unboxed -> __h_data ). Slice ). __h_2_mem )) size ;
                       // ----------
                       ;
-                      ({ /* cicili#Let2705 */
-                        bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Slice_t  ) &&  ((({ /* cicili#Progn2706 */
+                      ({ /* cicili#Let2744 */
+                        bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Slice_t  ) &&  ((({ /* cicili#Progn2745 */
                                   (vec  =  (((unboxed -> __h_data ). Slice ). __h_0_mem ) );
                                   true ;
-                                }) &&  ({ /* cicili#Progn2708 */
+                                }) &&  ({ /* cicili#Progn2747 */
                                   (cur  =  (((unboxed -> __h_data ). Slice ). __h_1_mem ) );
                                   true ;
-                                }) ) &&  ({ /* cicili#Progn2710 */
+                                }) ) &&  ({ /* cicili#Progn2749 */
                                 (size  =  (((unboxed -> __h_data ). Slice ). __h_2_mem ) );
                                 true ;
                               }) ) ) );
                         // ----------
                         
-                        ((__h_case_result ) ? ({ /* cicili#Progn2715 */
-                            ({ /* cicili#Let2718 */
+                        ((__h_case_result ) ? ({ /* cicili#Progn2754 */
+                            ({ /* cicili#Let2757 */
                               __auto_type __h_matchbox  = vec ;
                               // ----------
-                              ({ /* cicili#Let2722 */
-                                __auto_type match2721  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
-                                typeof((((match2721 . __h_data ). Just ). __h_0_mem )) unboxed ;
+                              ({ /* cicili#Let2761 */
+                                __auto_type match2760  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
+                                typeof((((match2760 . __h_data ). Just ). __h_0_mem )) unboxed ;
                                 // ----------
                                 ;
-                                ({ /* cicili#Let2725 */
-                                  bool __h_case_result  = (true  &&  (((match2721 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn2726 */
-                                        (unboxed  =  (((match2721 . __h_data ). Just ). __h_0_mem ) );
+                                ({ /* cicili#Let2764 */
+                                  bool __h_case_result  = (true  &&  (((match2760 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn2765 */
+                                        (unboxed  =  (((match2760 . __h_data ). Just ). __h_0_mem ) );
                                         true ;
                                       }) ) );
                                   // ----------
                                   
-                                  ((__h_case_result ) ? ({ /* cicili#Progn2731 */
-                                      ({ /* cicili#Let2735 */
+                                  ((__h_case_result ) ? ({ /* cicili#Progn2770 */
+                                      ({ /* cicili#Let2774 */
                                         typeof((((unboxed -> __h_data ). Buffer ). __h_0_mem )) sbs ;
                                         // ----------
                                         ;
-                                        ({ /* cicili#Let2737 */
-                                          bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) &&  ({ /* cicili#Progn2738 */
+                                        ({ /* cicili#Let2776 */
+                                          bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) &&  ({ /* cicili#Progn2777 */
                                                 (sbs  =  (((unboxed -> __h_data ). Buffer ). __h_0_mem ) );
                                                 true ;
                                               }) ) );
                                           // ----------
                                           
-                                          ((__h_case_result ) ? ({ /* cicili#Progn2743 */
+                                          ((__h_case_result ) ? ({ /* cicili#Progn2782 */
                                               Buffer_int (put_StringBuffer_int (copySlice_StringBuffer_int (sbs , cur , size ), item ));
-                                            }) : ({ /* cicili#Let2750 */
+                                            }) : ({ /* cicili#Let2789 */
                                               typeof((((unboxed -> __h_data ). Slice ). __h_0_mem )) veci ;
                                               // ----------
                                               ;
-                                              ({ /* cicili#Let2752 */
-                                                bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Slice_t  ) &&  ({ /* cicili#Progn2753 */
+                                              ({ /* cicili#Let2791 */
+                                                bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Slice_t  ) &&  ({ /* cicili#Progn2792 */
                                                       (veci  =  (((unboxed -> __h_data ). Slice ). __h_0_mem ) );
                                                       true ;
                                                     }) ) );
                                                 // ----------
                                                 
-                                                ((__h_case_result ) ? ({ /* cicili#Progn2758 */
+                                                ((__h_case_result ) ? ({ /* cicili#Progn2797 */
                                                     push_Vector_int (item , copySlice_Vector_int (veci , cur , size ));
-                                                  }) : ({ /* cicili#Let2764 */
+                                                  }) : ({ /* cicili#Let2803 */
                                                     // ----------
                                                     ;
-                                                    ({ /* cicili#Progn2766 */
+                                                    ({ /* cicili#Progn2805 */
                                                       clone_Box_Vector_int (vec );
                                                     });
                                                   }));
@@ -2931,20 +2963,20 @@ Vector_int push_Vector_int (int item , Vector_int vector ) {
                                             }));
                                         });
                                       });
-                                    }) : ({ /* cicili#Let2771 */
+                                    }) : ({ /* cicili#Let2810 */
                                       // ----------
                                       ;
-                                      ({ /* cicili#Progn2773 */
+                                      ({ /* cicili#Progn2812 */
                                         None_int ();
                                       });
                                     }));
                                 });
                               });
                             });
-                          }) : ({ /* cicili#Let2778 */
+                          }) : ({ /* cicili#Let2817 */
                             // ----------
                             ;
-                            ({ /* cicili#Progn2780 */
+                            ({ /* cicili#Progn2819 */
                               clone_Box_Vector_int (vector );
                             });
                           }));
@@ -2952,10 +2984,10 @@ Vector_int push_Vector_int (int item , Vector_int vector ) {
                     }));
                 });
               });
-            }) : ({ /* cicili#Let2785 */
+            }) : ({ /* cicili#Let2824 */
               // ----------
               ;
-              ({ /* cicili#Progn2787 */
+              ({ /* cicili#Progn2826 */
                 None_int ();
               });
             }));
@@ -2964,81 +2996,81 @@ Vector_int push_Vector_int (int item , Vector_int vector ) {
     });
 }
 Vector_int take_Vector_int (size_t len , Vector_int vector ) {
-  return ({ /* cicili#Let2793 */
+  return ({ /* cicili#Let2832 */
       __auto_type __h_matchbox  = vector ;
       // ----------
-      ({ /* cicili#Let2797 */
-        __auto_type match2796  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
-        typeof((((match2796 . __h_data ). Just ). __h_0_mem )) unboxed ;
+      ({ /* cicili#Let2836 */
+        __auto_type match2835  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
+        typeof((((match2835 . __h_data ). Just ). __h_0_mem )) unboxed ;
         // ----------
         ;
-        ({ /* cicili#Let2800 */
-          bool __h_case_result  = (true  &&  (((match2796 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn2801 */
-                (unboxed  =  (((match2796 . __h_data ). Just ). __h_0_mem ) );
+        ({ /* cicili#Let2839 */
+          bool __h_case_result  = (true  &&  (((match2835 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn2840 */
+                (unboxed  =  (((match2835 . __h_data ). Just ). __h_0_mem ) );
                 true ;
               }) ) );
           // ----------
           
-          ((__h_case_result ) ? ({ /* cicili#Progn2806 */
-              ({ /* cicili#Let2810 */
+          ((__h_case_result ) ? ({ /* cicili#Progn2845 */
+              ({ /* cicili#Let2849 */
                 typeof((((unboxed -> __h_data ). Buffer ). __h_0_mem )) sb ;
                 // ----------
                 ;
-                ({ /* cicili#Let2812 */
-                  bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) &&  ({ /* cicili#Progn2813 */
+                ({ /* cicili#Let2851 */
+                  bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) &&  ({ /* cicili#Progn2852 */
                         (sb  =  (((unboxed -> __h_data ). Buffer ). __h_0_mem ) );
                         true ;
                       }) ) );
                   // ----------
                   
-                  ((__h_case_result ) ? ({ /* cicili#Progn2818 */
-                      ({ /* cicili#Let2822 */
+                  ((__h_case_result ) ? ({ /* cicili#Progn2857 */
+                      ({ /* cicili#Let2861 */
                         typeof((((sb . __h_data ). Buffered ). __h_1_mem )) cursor ;
                         // ----------
                         ;
-                        ({ /* cicili#Let2824 */
-                          bool __h_case_result  = (true  &&  (((sb . __h_ctor ) ==  __h_Buffered_t  ) &&  ({ /* cicili#Progn2825 */
+                        ({ /* cicili#Let2863 */
+                          bool __h_case_result  = (true  &&  (((sb . __h_ctor ) ==  __h_Buffered_t  ) &&  ({ /* cicili#Progn2864 */
                                 (cursor  =  (((sb . __h_data ). Buffered ). __h_1_mem ) );
                                 true ;
                               }) ) );
                           // ----------
                           
-                          ((__h_case_result ) ? ({ /* cicili#Progn2830 */
+                          ((__h_case_result ) ? ({ /* cicili#Progn2869 */
                               (((len  <=  0 )) ? Slice_int (clone_Box_Vector_int (vector ), 0, 0) : (((len  <  cursor  )) ? Slice_int (clone_Box_Vector_int (vector ), 0, len ) : Slice_int (clone_Box_Vector_int (vector ), 0, 0)));
-                            }) : ({ /* cicili#Let2842 */
+                            }) : ({ /* cicili#Let2881 */
                               // ----------
                               ;
-                              ({ /* cicili#Progn2844 */
+                              ({ /* cicili#Progn2883 */
                                 Slice_int (clone_Box_Vector_int (vector ), 0, 0);
                               });
                             }));
                         });
                       });
-                    }) : ({ /* cicili#Let2850 */
+                    }) : ({ /* cicili#Let2889 */
                       typeof((((unboxed -> __h_data ). Slice ). __h_0_mem )) vec ;
                       typeof((((unboxed -> __h_data ). Slice ). __h_1_mem )) cursor ;
                       typeof((((unboxed -> __h_data ). Slice ). __h_2_mem )) size ;
                       // ----------
                       ;
-                      ({ /* cicili#Let2852 */
-                        bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Slice_t  ) &&  ((({ /* cicili#Progn2853 */
+                      ({ /* cicili#Let2891 */
+                        bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Slice_t  ) &&  ((({ /* cicili#Progn2892 */
                                   (vec  =  (((unboxed -> __h_data ). Slice ). __h_0_mem ) );
                                   true ;
-                                }) &&  ({ /* cicili#Progn2855 */
+                                }) &&  ({ /* cicili#Progn2894 */
                                   (cursor  =  (((unboxed -> __h_data ). Slice ). __h_1_mem ) );
                                   true ;
-                                }) ) &&  ({ /* cicili#Progn2857 */
+                                }) ) &&  ({ /* cicili#Progn2896 */
                                 (size  =  (((unboxed -> __h_data ). Slice ). __h_2_mem ) );
                                 true ;
                               }) ) ) );
                         // ----------
                         
-                        ((__h_case_result ) ? ({ /* cicili#Progn2862 */
+                        ((__h_case_result ) ? ({ /* cicili#Progn2901 */
                             (((len  <=  0 )) ? Slice_int (clone_Box_Vector_int (vec ), cursor , 0) : (((len  <  size  )) ? Slice_int (clone_Box_Vector_int (vec ), cursor , len ) : Slice_int (clone_Box_Vector_int (vec ), cursor , 0)));
-                          }) : ({ /* cicili#Let2874 */
+                          }) : ({ /* cicili#Let2913 */
                             // ----------
                             ;
-                            ({ /* cicili#Progn2876 */
+                            ({ /* cicili#Progn2915 */
                               clone_Box_Vector_int (vector );
                             });
                           }));
@@ -3046,10 +3078,10 @@ Vector_int take_Vector_int (size_t len , Vector_int vector ) {
                     }));
                 });
               });
-            }) : ({ /* cicili#Let2881 */
+            }) : ({ /* cicili#Let2920 */
               // ----------
               ;
-              ({ /* cicili#Progn2883 */
+              ({ /* cicili#Progn2922 */
                 None_int ();
               });
             }));
@@ -3058,85 +3090,85 @@ Vector_int take_Vector_int (size_t len , Vector_int vector ) {
     });
 }
 Maybe_int last_Vector_int (Vector_int vector ) {
-  return ({ /* cicili#Let2890 */
+  return ({ /* cicili#Let2929 */
       __auto_type __h_matchbox  = vector ;
       // ----------
-      ({ /* cicili#Let2894 */
-        __auto_type match2893  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
-        typeof((((match2893 . __h_data ). Just ). __h_0_mem )) unboxed ;
+      ({ /* cicili#Let2933 */
+        __auto_type match2932  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
+        typeof((((match2932 . __h_data ). Just ). __h_0_mem )) unboxed ;
         // ----------
         ;
-        ({ /* cicili#Let2897 */
-          bool __h_case_result  = (true  &&  (((match2893 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn2898 */
-                (unboxed  =  (((match2893 . __h_data ). Just ). __h_0_mem ) );
+        ({ /* cicili#Let2936 */
+          bool __h_case_result  = (true  &&  (((match2932 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn2937 */
+                (unboxed  =  (((match2932 . __h_data ). Just ). __h_0_mem ) );
                 true ;
               }) ) );
           // ----------
           
-          ((__h_case_result ) ? ({ /* cicili#Progn2903 */
-              ({ /* cicili#Let2907 */
+          ((__h_case_result ) ? ({ /* cicili#Progn2942 */
+              ({ /* cicili#Let2946 */
                 typeof((((unboxed -> __h_data ). Buffer ). __h_0_mem )) sb ;
                 // ----------
                 ;
-                ({ /* cicili#Let2909 */
-                  bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) &&  ({ /* cicili#Progn2910 */
+                ({ /* cicili#Let2948 */
+                  bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) &&  ({ /* cicili#Progn2949 */
                         (sb  =  (((unboxed -> __h_data ). Buffer ). __h_0_mem ) );
                         true ;
                       }) ) );
                   // ----------
                   
-                  ((__h_case_result ) ? ({ /* cicili#Progn2915 */
-                      ({ /* cicili#Let2919 */
+                  ((__h_case_result ) ? ({ /* cicili#Progn2954 */
+                      ({ /* cicili#Let2958 */
                         typeof((((sb . __h_data ). Buffered ). __h_0_mem )) buffer ;
                         typeof((((sb . __h_data ). Buffered ). __h_1_mem )) cursor ;
                         // ----------
                         ;
-                        ({ /* cicili#Let2921 */
-                          bool __h_case_result  = (true  &&  (((sb . __h_ctor ) ==  __h_Buffered_t  ) &&  (({ /* cicili#Progn2922 */
+                        ({ /* cicili#Let2960 */
+                          bool __h_case_result  = (true  &&  (((sb . __h_ctor ) ==  __h_Buffered_t  ) &&  (({ /* cicili#Progn2961 */
                                   (buffer  =  (((sb . __h_data ). Buffered ). __h_0_mem ) );
                                   true ;
-                                }) &&  ({ /* cicili#Progn2924 */
+                                }) &&  ({ /* cicili#Progn2963 */
                                   (cursor  =  (((sb . __h_data ). Buffered ). __h_1_mem ) );
                                   true ;
                                 }) ) ) );
                           // ----------
                           
-                          ((__h_case_result ) ? ({ /* cicili#Progn2929 */
+                          ((__h_case_result ) ? ({ /* cicili#Progn2968 */
                               Just_int ((*(buffer  +  (cursor  -  1 ) )));
-                            }) : ({ /* cicili#Let2934 */
+                            }) : ({ /* cicili#Let2973 */
                               // ----------
                               ;
-                              ({ /* cicili#Progn2936 */
+                              ({ /* cicili#Progn2975 */
                                 Nothing_int ();
                               });
                             }));
                         });
                       });
-                    }) : ({ /* cicili#Let2941 */
+                    }) : ({ /* cicili#Let2980 */
                       typeof((((unboxed -> __h_data ). Slice ). __h_0_mem )) vec ;
                       typeof((((unboxed -> __h_data ). Slice ). __h_1_mem )) cursor ;
                       typeof((((unboxed -> __h_data ). Slice ). __h_2_mem )) size ;
                       // ----------
                       ;
-                      ({ /* cicili#Let2943 */
-                        bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Slice_t  ) &&  ((({ /* cicili#Progn2944 */
+                      ({ /* cicili#Let2982 */
+                        bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Slice_t  ) &&  ((({ /* cicili#Progn2983 */
                                   (vec  =  (((unboxed -> __h_data ). Slice ). __h_0_mem ) );
                                   true ;
-                                }) &&  ({ /* cicili#Progn2946 */
+                                }) &&  ({ /* cicili#Progn2985 */
                                   (cursor  =  (((unboxed -> __h_data ). Slice ). __h_1_mem ) );
                                   true ;
-                                }) ) &&  ({ /* cicili#Progn2948 */
+                                }) ) &&  ({ /* cicili#Progn2987 */
                                 (size  =  (((unboxed -> __h_data ). Slice ). __h_2_mem ) );
                                 true ;
                               }) ) ) );
                         // ----------
                         
-                        ((__h_case_result ) ? ({ /* cicili#Progn2953 */
+                        ((__h_case_result ) ? ({ /* cicili#Progn2992 */
                             nth_Vector_int ((cursor  +  (size  -  1 ) ), vec );
-                          }) : ({ /* cicili#Let2958 */
+                          }) : ({ /* cicili#Let2997 */
                             // ----------
                             ;
-                            ({ /* cicili#Progn2960 */
+                            ({ /* cicili#Progn2999 */
                               Nothing_int ();
                             });
                           }));
@@ -3144,10 +3176,10 @@ Maybe_int last_Vector_int (Vector_int vector ) {
                     }));
                 });
               });
-            }) : ({ /* cicili#Let2965 */
+            }) : ({ /* cicili#Let3004 */
               // ----------
               ;
-              ({ /* cicili#Progn2967 */
+              ({ /* cicili#Progn3006 */
                 Nothing_int ();
               });
             }));
@@ -3156,81 +3188,81 @@ Maybe_int last_Vector_int (Vector_int vector ) {
     });
 }
 Vector_int init_Vector_int (Vector_int vector ) {
-  return ({ /* cicili#Let2973 */
+  return ({ /* cicili#Let3012 */
       __auto_type __h_matchbox  = vector ;
       // ----------
-      ({ /* cicili#Let2977 */
-        __auto_type match2976  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
-        typeof((((match2976 . __h_data ). Just ). __h_0_mem )) unboxed ;
+      ({ /* cicili#Let3016 */
+        __auto_type match3015  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
+        typeof((((match3015 . __h_data ). Just ). __h_0_mem )) unboxed ;
         // ----------
         ;
-        ({ /* cicili#Let2980 */
-          bool __h_case_result  = (true  &&  (((match2976 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn2981 */
-                (unboxed  =  (((match2976 . __h_data ). Just ). __h_0_mem ) );
+        ({ /* cicili#Let3019 */
+          bool __h_case_result  = (true  &&  (((match3015 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn3020 */
+                (unboxed  =  (((match3015 . __h_data ). Just ). __h_0_mem ) );
                 true ;
               }) ) );
           // ----------
           
-          ((__h_case_result ) ? ({ /* cicili#Progn2986 */
-              ({ /* cicili#Let2990 */
+          ((__h_case_result ) ? ({ /* cicili#Progn3025 */
+              ({ /* cicili#Let3029 */
                 typeof((((unboxed -> __h_data ). Buffer ). __h_0_mem )) sb ;
                 // ----------
                 ;
-                ({ /* cicili#Let2992 */
-                  bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) &&  ({ /* cicili#Progn2993 */
+                ({ /* cicili#Let3031 */
+                  bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) &&  ({ /* cicili#Progn3032 */
                         (sb  =  (((unboxed -> __h_data ). Buffer ). __h_0_mem ) );
                         true ;
                       }) ) );
                   // ----------
                   
-                  ((__h_case_result ) ? ({ /* cicili#Progn2998 */
-                      ({ /* cicili#Let3002 */
+                  ((__h_case_result ) ? ({ /* cicili#Progn3037 */
+                      ({ /* cicili#Let3041 */
                         typeof((((sb . __h_data ). Buffered ). __h_1_mem )) cursor ;
                         // ----------
                         ;
-                        ({ /* cicili#Let3004 */
-                          bool __h_case_result  = (true  &&  (((sb . __h_ctor ) ==  __h_Buffered_t  ) &&  ({ /* cicili#Progn3005 */
+                        ({ /* cicili#Let3043 */
+                          bool __h_case_result  = (true  &&  (((sb . __h_ctor ) ==  __h_Buffered_t  ) &&  ({ /* cicili#Progn3044 */
                                 (cursor  =  (((sb . __h_data ). Buffered ). __h_1_mem ) );
                                 true ;
                               }) ) );
                           // ----------
                           
-                          ((__h_case_result ) ? ({ /* cicili#Progn3010 */
+                          ((__h_case_result ) ? ({ /* cicili#Progn3049 */
                               Slice_int (clone_Box_Vector_int (vector ), 0, (cursor  -  1 ));
-                            }) : ({ /* cicili#Let3016 */
+                            }) : ({ /* cicili#Let3055 */
                               // ----------
                               ;
-                              ({ /* cicili#Progn3018 */
+                              ({ /* cicili#Progn3057 */
                                 None_int ();
                               });
                             }));
                         });
                       });
-                    }) : ({ /* cicili#Let3023 */
+                    }) : ({ /* cicili#Let3062 */
                       typeof((((unboxed -> __h_data ). Slice ). __h_0_mem )) vec ;
                       typeof((((unboxed -> __h_data ). Slice ). __h_1_mem )) cursor ;
                       typeof((((unboxed -> __h_data ). Slice ). __h_2_mem )) size ;
                       // ----------
                       ;
-                      ({ /* cicili#Let3025 */
-                        bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Slice_t  ) &&  ((({ /* cicili#Progn3026 */
+                      ({ /* cicili#Let3064 */
+                        bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Slice_t  ) &&  ((({ /* cicili#Progn3065 */
                                   (vec  =  (((unboxed -> __h_data ). Slice ). __h_0_mem ) );
                                   true ;
-                                }) &&  ({ /* cicili#Progn3028 */
+                                }) &&  ({ /* cicili#Progn3067 */
                                   (cursor  =  (((unboxed -> __h_data ). Slice ). __h_1_mem ) );
                                   true ;
-                                }) ) &&  ({ /* cicili#Progn3030 */
+                                }) ) &&  ({ /* cicili#Progn3069 */
                                 (size  =  (((unboxed -> __h_data ). Slice ). __h_2_mem ) );
                                 true ;
                               }) ) ) );
                         // ----------
                         
-                        ((__h_case_result ) ? ({ /* cicili#Progn3035 */
+                        ((__h_case_result ) ? ({ /* cicili#Progn3074 */
                             Slice_int (clone_Box_Vector_int (vec ), cursor , (size  -  1 ));
-                          }) : ({ /* cicili#Let3041 */
+                          }) : ({ /* cicili#Let3080 */
                             // ----------
                             ;
-                            ({ /* cicili#Progn3043 */
+                            ({ /* cicili#Progn3082 */
                               clone_Box_Vector_int (vector );
                             });
                           }));
@@ -3238,10 +3270,10 @@ Vector_int init_Vector_int (Vector_int vector ) {
                     }));
                 });
               });
-            }) : ({ /* cicili#Let3048 */
+            }) : ({ /* cicili#Let3087 */
               // ----------
               ;
-              ({ /* cicili#Progn3050 */
+              ({ /* cicili#Progn3089 */
                 None_int ();
               });
             }));
@@ -3250,80 +3282,80 @@ Vector_int init_Vector_int (Vector_int vector ) {
     });
 }
 size_t hasLen_Vector_int (Vector_int vector , size_t desired ) {
-  return ({ /* cicili#Let3055 */
+  return ({ /* cicili#Let3094 */
       size_t len  = len_Vector_int (vector );
       // ----------
       (((len  <=  desired  )) ? len  : desired );
     });
 }
 size_t len_Vector_int (Vector_int vector ) {
-  return ({ /* cicili#Let3062 */
+  return ({ /* cicili#Let3101 */
       __auto_type __h_matchbox  = vector ;
       // ----------
-      ({ /* cicili#Let3066 */
-        __auto_type match3065  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
-        typeof((((match3065 . __h_data ). Just ). __h_0_mem )) unboxed ;
+      ({ /* cicili#Let3105 */
+        __auto_type match3104  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
+        typeof((((match3104 . __h_data ). Just ). __h_0_mem )) unboxed ;
         // ----------
         ;
-        ({ /* cicili#Let3069 */
-          bool __h_case_result  = (true  &&  (((match3065 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn3070 */
-                (unboxed  =  (((match3065 . __h_data ). Just ). __h_0_mem ) );
+        ({ /* cicili#Let3108 */
+          bool __h_case_result  = (true  &&  (((match3104 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn3109 */
+                (unboxed  =  (((match3104 . __h_data ). Just ). __h_0_mem ) );
                 true ;
               }) ) );
           // ----------
           
-          ((__h_case_result ) ? ({ /* cicili#Progn3075 */
-              ({ /* cicili#Let3079 */
+          ((__h_case_result ) ? ({ /* cicili#Progn3114 */
+              ({ /* cicili#Let3118 */
                 typeof((((unboxed -> __h_data ). Buffer ). __h_0_mem )) sb ;
                 // ----------
                 ;
-                ({ /* cicili#Let3081 */
-                  bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) &&  ({ /* cicili#Progn3082 */
+                ({ /* cicili#Let3120 */
+                  bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) &&  ({ /* cicili#Progn3121 */
                         (sb  =  (((unboxed -> __h_data ). Buffer ). __h_0_mem ) );
                         true ;
                       }) ) );
                   // ----------
                   
-                  ((__h_case_result ) ? ({ /* cicili#Progn3087 */
-                      ({ /* cicili#Let3091 */
+                  ((__h_case_result ) ? ({ /* cicili#Progn3126 */
+                      ({ /* cicili#Let3130 */
                         typeof((((sb . __h_data ). Buffered ). __h_1_mem )) cursor ;
                         // ----------
                         ;
-                        ({ /* cicili#Let3093 */
-                          bool __h_case_result  = (true  &&  (((sb . __h_ctor ) ==  __h_Buffered_t  ) &&  ({ /* cicili#Progn3094 */
+                        ({ /* cicili#Let3132 */
+                          bool __h_case_result  = (true  &&  (((sb . __h_ctor ) ==  __h_Buffered_t  ) &&  ({ /* cicili#Progn3133 */
                                 (cursor  =  (((sb . __h_data ). Buffered ). __h_1_mem ) );
                                 true ;
                               }) ) );
                           // ----------
                           
-                          ((__h_case_result ) ? ({ /* cicili#Progn3099 */
+                          ((__h_case_result ) ? ({ /* cicili#Progn3138 */
                               cursor ;
-                            }) : ({ /* cicili#Let3103 */
+                            }) : ({ /* cicili#Let3142 */
                               // ----------
                               ;
-                              ({ /* cicili#Progn3105 */
+                              ({ /* cicili#Progn3144 */
                                 0;
                               });
                             }));
                         });
                       });
-                    }) : ({ /* cicili#Let3109 */
+                    }) : ({ /* cicili#Let3148 */
                       typeof((((unboxed -> __h_data ). Slice ). __h_2_mem )) size ;
                       // ----------
                       ;
-                      ({ /* cicili#Let3111 */
-                        bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Slice_t  ) &&  ({ /* cicili#Progn3112 */
+                      ({ /* cicili#Let3150 */
+                        bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Slice_t  ) &&  ({ /* cicili#Progn3151 */
                               (size  =  (((unboxed -> __h_data ). Slice ). __h_2_mem ) );
                               true ;
                             }) ) );
                         // ----------
                         
-                        ((__h_case_result ) ? ({ /* cicili#Progn3117 */
+                        ((__h_case_result ) ? ({ /* cicili#Progn3156 */
                             size ;
-                          }) : ({ /* cicili#Let3121 */
+                          }) : ({ /* cicili#Let3160 */
                             // ----------
                             ;
-                            ({ /* cicili#Progn3123 */
+                            ({ /* cicili#Progn3162 */
                               0;
                             });
                           }));
@@ -3331,10 +3363,10 @@ size_t len_Vector_int (Vector_int vector ) {
                     }));
                 });
               });
-            }) : ({ /* cicili#Let3127 */
+            }) : ({ /* cicili#Let3166 */
               // ----------
               ;
-              ({ /* cicili#Progn3129 */
+              ({ /* cicili#Progn3168 */
                 0;
               });
             }));
@@ -3346,77 +3378,77 @@ Vector_int tail_Vector_int (Vector_int vector ) {
   return drop_Vector_int (1, vector );
 }
 Vector_int drop_Vector_int (size_t len , Vector_int vector ) {
-  return ({ /* cicili#Let3137 */
+  return ({ /* cicili#Let3176 */
       __auto_type __h_matchbox  = vector ;
       // ----------
-      ({ /* cicili#Let3141 */
-        __auto_type match3140  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
-        typeof((((match3140 . __h_data ). Just ). __h_0_mem )) unboxed ;
+      ({ /* cicili#Let3180 */
+        __auto_type match3179  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
+        typeof((((match3179 . __h_data ). Just ). __h_0_mem )) unboxed ;
         // ----------
         ;
-        ({ /* cicili#Let3144 */
-          bool __h_case_result  = (true  &&  (((match3140 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn3145 */
-                (unboxed  =  (((match3140 . __h_data ). Just ). __h_0_mem ) );
+        ({ /* cicili#Let3183 */
+          bool __h_case_result  = (true  &&  (((match3179 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn3184 */
+                (unboxed  =  (((match3179 . __h_data ). Just ). __h_0_mem ) );
                 true ;
               }) ) );
           // ----------
           
-          ((__h_case_result ) ? ({ /* cicili#Progn3150 */
-              ({ /* cicili#Let3154 */
+          ((__h_case_result ) ? ({ /* cicili#Progn3189 */
+              ({ /* cicili#Let3193 */
                 typeof((((unboxed -> __h_data ). Buffer ). __h_0_mem )) sb ;
                 // ----------
                 ;
-                ({ /* cicili#Let3156 */
-                  bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) &&  ({ /* cicili#Progn3157 */
+                ({ /* cicili#Let3195 */
+                  bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) &&  ({ /* cicili#Progn3196 */
                         (sb  =  (((unboxed -> __h_data ). Buffer ). __h_0_mem ) );
                         true ;
                       }) ) );
                   // ----------
                   
-                  ((__h_case_result ) ? ({ /* cicili#Progn3162 */
-                      ({ /* cicili#Let3166 */
+                  ((__h_case_result ) ? ({ /* cicili#Progn3201 */
+                      ({ /* cicili#Let3205 */
                         typeof((((sb . __h_data ). Buffered ). __h_1_mem )) cursor ;
                         // ----------
                         ;
-                        ({ /* cicili#Let3168 */
-                          bool __h_case_result  = (true  &&  (((sb . __h_ctor ) ==  __h_Buffered_t  ) &&  ({ /* cicili#Progn3169 */
+                        ({ /* cicili#Let3207 */
+                          bool __h_case_result  = (true  &&  (((sb . __h_ctor ) ==  __h_Buffered_t  ) &&  ({ /* cicili#Progn3208 */
                                 (cursor  =  (((sb . __h_data ). Buffered ). __h_1_mem ) );
                                 true ;
                               }) ) );
                           // ----------
                           
-                          ((__h_case_result ) ? ({ /* cicili#Progn3174 */
+                          ((__h_case_result ) ? ({ /* cicili#Progn3213 */
                               (((len  <=  0 )) ? Slice_int (clone_Box_Vector_int (vector ), 0, cursor ) : (((len  <  cursor  )) ? Slice_int (clone_Box_Vector_int (vector ), len , (cursor  -  len  )) : Slice_int (clone_Box_Vector_int (vector ), 0, 0)));
-                            }) : ({ /* cicili#Let3186 */
+                            }) : ({ /* cicili#Let3225 */
                               // ----------
                               ;
-                              ({ /* cicili#Progn3188 */
+                              ({ /* cicili#Progn3227 */
                                 Slice_int (clone_Box_Vector_int (vector ), 0, 0);
                               });
                             }));
                         });
                       });
-                    }) : ({ /* cicili#Let3194 */
+                    }) : ({ /* cicili#Let3233 */
                       typeof((((unboxed -> __h_data ). Slice ). __h_0_mem )) vec ;
                       typeof((((unboxed -> __h_data ). Slice ). __h_1_mem )) cursor ;
                       // ----------
                       ;
-                      ({ /* cicili#Let3196 */
-                        bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Slice_t  ) &&  (({ /* cicili#Progn3197 */
+                      ({ /* cicili#Let3235 */
+                        bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Slice_t  ) &&  (({ /* cicili#Progn3236 */
                                 (vec  =  (((unboxed -> __h_data ). Slice ). __h_0_mem ) );
                                 true ;
-                              }) &&  ({ /* cicili#Progn3199 */
+                              }) &&  ({ /* cicili#Progn3238 */
                                 (cursor  =  (((unboxed -> __h_data ). Slice ). __h_1_mem ) );
                                 true ;
                               }) ) ) );
                         // ----------
                         
-                        ((__h_case_result ) ? ({ /* cicili#Progn3204 */
+                        ((__h_case_result ) ? ({ /* cicili#Progn3243 */
                             drop_Vector_int ((cursor  +  len  ), vec );
-                          }) : ({ /* cicili#Let3209 */
+                          }) : ({ /* cicili#Let3248 */
                             // ----------
                             ;
-                            ({ /* cicili#Progn3211 */
+                            ({ /* cicili#Progn3250 */
                               clone_Box_Vector_int (vector );
                             });
                           }));
@@ -3424,10 +3456,10 @@ Vector_int drop_Vector_int (size_t len , Vector_int vector ) {
                     }));
                 });
               });
-            }) : ({ /* cicili#Let3216 */
+            }) : ({ /* cicili#Let3255 */
               // ----------
               ;
-              ({ /* cicili#Progn3218 */
+              ({ /* cicili#Progn3257 */
                 None_int ();
               });
             }));
@@ -3436,81 +3468,81 @@ Vector_int drop_Vector_int (size_t len , Vector_int vector ) {
     });
 }
 Maybe_int head_Vector_int (Vector_int vector ) {
-  return ({ /* cicili#Let3225 */
+  return ({ /* cicili#Let3264 */
       __auto_type __h_matchbox  = vector ;
       // ----------
-      ({ /* cicili#Let3229 */
-        __auto_type match3228  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
-        typeof((((match3228 . __h_data ). Just ). __h_0_mem )) unboxed ;
+      ({ /* cicili#Let3268 */
+        __auto_type match3267  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
+        typeof((((match3267 . __h_data ). Just ). __h_0_mem )) unboxed ;
         // ----------
         ;
-        ({ /* cicili#Let3232 */
-          bool __h_case_result  = (true  &&  (((match3228 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn3233 */
-                (unboxed  =  (((match3228 . __h_data ). Just ). __h_0_mem ) );
+        ({ /* cicili#Let3271 */
+          bool __h_case_result  = (true  &&  (((match3267 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn3272 */
+                (unboxed  =  (((match3267 . __h_data ). Just ). __h_0_mem ) );
                 true ;
               }) ) );
           // ----------
           
-          ((__h_case_result ) ? ({ /* cicili#Progn3238 */
-              ({ /* cicili#Let3242 */
+          ((__h_case_result ) ? ({ /* cicili#Progn3277 */
+              ({ /* cicili#Let3281 */
                 typeof((((unboxed -> __h_data ). Buffer ). __h_0_mem )) sb ;
                 // ----------
                 ;
-                ({ /* cicili#Let3244 */
-                  bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) &&  ({ /* cicili#Progn3245 */
+                ({ /* cicili#Let3283 */
+                  bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) &&  ({ /* cicili#Progn3284 */
                         (sb  =  (((unboxed -> __h_data ). Buffer ). __h_0_mem ) );
                         true ;
                       }) ) );
                   // ----------
                   
-                  ((__h_case_result ) ? ({ /* cicili#Progn3250 */
-                      ({ /* cicili#Let3254 */
+                  ((__h_case_result ) ? ({ /* cicili#Progn3289 */
+                      ({ /* cicili#Let3293 */
                         typeof((((sb . __h_data ). Buffered ). __h_0_mem )) buffer ;
                         typeof((((sb . __h_data ). Buffered ). __h_1_mem )) cursor ;
                         // ----------
                         ;
-                        ({ /* cicili#Let3256 */
-                          bool __h_case_result  = (true  &&  (((sb . __h_ctor ) ==  __h_Buffered_t  ) &&  (({ /* cicili#Progn3257 */
+                        ({ /* cicili#Let3295 */
+                          bool __h_case_result  = (true  &&  (((sb . __h_ctor ) ==  __h_Buffered_t  ) &&  (({ /* cicili#Progn3296 */
                                   (buffer  =  (((sb . __h_data ). Buffered ). __h_0_mem ) );
                                   true ;
-                                }) &&  ({ /* cicili#Progn3259 */
+                                }) &&  ({ /* cicili#Progn3298 */
                                   (cursor  =  (((sb . __h_data ). Buffered ). __h_1_mem ) );
                                   true ;
                                 }) ) ) );
                           // ----------
                           
-                          ((__h_case_result ) ? ({ /* cicili#Progn3264 */
+                          ((__h_case_result ) ? ({ /* cicili#Progn3303 */
                               (((cursor  >  0 )) ? Just_int ((*buffer )) : Nothing_int ());
-                            }) : ({ /* cicili#Let3271 */
+                            }) : ({ /* cicili#Let3310 */
                               // ----------
                               ;
-                              ({ /* cicili#Progn3273 */
+                              ({ /* cicili#Progn3312 */
                                 Nothing_int ();
                               });
                             }));
                         });
                       });
-                    }) : ({ /* cicili#Let3278 */
+                    }) : ({ /* cicili#Let3317 */
                       typeof((((unboxed -> __h_data ). Slice ). __h_0_mem )) vector ;
                       typeof((((unboxed -> __h_data ). Slice ). __h_1_mem )) cursor ;
                       // ----------
                       ;
-                      ({ /* cicili#Let3280 */
-                        bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Slice_t  ) &&  (({ /* cicili#Progn3281 */
+                      ({ /* cicili#Let3319 */
+                        bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Slice_t  ) &&  (({ /* cicili#Progn3320 */
                                 (vector  =  (((unboxed -> __h_data ). Slice ). __h_0_mem ) );
                                 true ;
-                              }) &&  ({ /* cicili#Progn3283 */
+                              }) &&  ({ /* cicili#Progn3322 */
                                 (cursor  =  (((unboxed -> __h_data ). Slice ). __h_1_mem ) );
                                 true ;
                               }) ) ) );
                         // ----------
                         
-                        ((__h_case_result ) ? ({ /* cicili#Progn3288 */
+                        ((__h_case_result ) ? ({ /* cicili#Progn3327 */
                             nth_Vector_int (cursor , vector );
-                          }) : ({ /* cicili#Let3293 */
+                          }) : ({ /* cicili#Let3332 */
                             // ----------
                             ;
-                            ({ /* cicili#Progn3295 */
+                            ({ /* cicili#Progn3334 */
                               Nothing_int ();
                             });
                           }));
@@ -3518,10 +3550,10 @@ Maybe_int head_Vector_int (Vector_int vector ) {
                     }));
                 });
               });
-            }) : ({ /* cicili#Let3300 */
+            }) : ({ /* cicili#Let3339 */
               // ----------
               ;
-              ({ /* cicili#Progn3302 */
+              ({ /* cicili#Progn3341 */
                 Nothing_int ();
               });
             }));
@@ -3530,85 +3562,85 @@ Maybe_int head_Vector_int (Vector_int vector ) {
     });
 }
 Maybe_int nth_Vector_int (size_t index , Vector_int vector ) {
-  return ({ /* cicili#Let3309 */
+  return ({ /* cicili#Let3348 */
       __auto_type __h_matchbox  = vector ;
       // ----------
-      ({ /* cicili#Let3313 */
-        __auto_type match3312  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
-        typeof((((match3312 . __h_data ). Just ). __h_0_mem )) unboxed ;
+      ({ /* cicili#Let3352 */
+        __auto_type match3351  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
+        typeof((((match3351 . __h_data ). Just ). __h_0_mem )) unboxed ;
         // ----------
         ;
-        ({ /* cicili#Let3316 */
-          bool __h_case_result  = (true  &&  (((match3312 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn3317 */
-                (unboxed  =  (((match3312 . __h_data ). Just ). __h_0_mem ) );
+        ({ /* cicili#Let3355 */
+          bool __h_case_result  = (true  &&  (((match3351 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn3356 */
+                (unboxed  =  (((match3351 . __h_data ). Just ). __h_0_mem ) );
                 true ;
               }) ) );
           // ----------
           
-          ((__h_case_result ) ? ({ /* cicili#Progn3322 */
-              ({ /* cicili#Let3326 */
+          ((__h_case_result ) ? ({ /* cicili#Progn3361 */
+              ({ /* cicili#Let3365 */
                 typeof((((unboxed -> __h_data ). Buffer ). __h_0_mem )) sb ;
                 // ----------
                 ;
-                ({ /* cicili#Let3328 */
-                  bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) &&  ({ /* cicili#Progn3329 */
+                ({ /* cicili#Let3367 */
+                  bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) &&  ({ /* cicili#Progn3368 */
                         (sb  =  (((unboxed -> __h_data ). Buffer ). __h_0_mem ) );
                         true ;
                       }) ) );
                   // ----------
                   
-                  ((__h_case_result ) ? ({ /* cicili#Progn3334 */
-                      ({ /* cicili#Let3338 */
+                  ((__h_case_result ) ? ({ /* cicili#Progn3373 */
+                      ({ /* cicili#Let3377 */
                         typeof((((sb . __h_data ). Buffered ). __h_0_mem )) buffer ;
                         typeof((((sb . __h_data ). Buffered ). __h_1_mem )) cursor ;
                         // ----------
                         ;
-                        ({ /* cicili#Let3340 */
-                          bool __h_case_result  = (true  &&  (((sb . __h_ctor ) ==  __h_Buffered_t  ) &&  (({ /* cicili#Progn3341 */
+                        ({ /* cicili#Let3379 */
+                          bool __h_case_result  = (true  &&  (((sb . __h_ctor ) ==  __h_Buffered_t  ) &&  (({ /* cicili#Progn3380 */
                                   (buffer  =  (((sb . __h_data ). Buffered ). __h_0_mem ) );
                                   true ;
-                                }) &&  ({ /* cicili#Progn3343 */
+                                }) &&  ({ /* cicili#Progn3382 */
                                   (cursor  =  (((sb . __h_data ). Buffered ). __h_1_mem ) );
                                   true ;
                                 }) ) ) );
                           // ----------
                           
-                          ((__h_case_result ) ? ({ /* cicili#Progn3348 */
+                          ((__h_case_result ) ? ({ /* cicili#Progn3387 */
                               ((((index  >=  0 ) &&  (index  <  cursor  ) )) ? Just_int ((*(buffer  +  index  ))) : Nothing_int ());
-                            }) : ({ /* cicili#Let3355 */
+                            }) : ({ /* cicili#Let3394 */
                               // ----------
                               ;
-                              ({ /* cicili#Progn3357 */
+                              ({ /* cicili#Progn3396 */
                                 Nothing_int ();
                               });
                             }));
                         });
                       });
-                    }) : ({ /* cicili#Let3362 */
+                    }) : ({ /* cicili#Let3401 */
                       typeof((((unboxed -> __h_data ). Slice ). __h_0_mem )) vector ;
                       typeof((((unboxed -> __h_data ). Slice ). __h_1_mem )) cursor ;
                       typeof((((unboxed -> __h_data ). Slice ). __h_2_mem )) size ;
                       // ----------
                       ;
-                      ({ /* cicili#Let3364 */
-                        bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Slice_t  ) &&  ((({ /* cicili#Progn3365 */
+                      ({ /* cicili#Let3403 */
+                        bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Slice_t  ) &&  ((({ /* cicili#Progn3404 */
                                   (vector  =  (((unboxed -> __h_data ). Slice ). __h_0_mem ) );
                                   true ;
-                                }) &&  ({ /* cicili#Progn3367 */
+                                }) &&  ({ /* cicili#Progn3406 */
                                   (cursor  =  (((unboxed -> __h_data ). Slice ). __h_1_mem ) );
                                   true ;
-                                }) ) &&  ({ /* cicili#Progn3369 */
+                                }) ) &&  ({ /* cicili#Progn3408 */
                                 (size  =  (((unboxed -> __h_data ). Slice ). __h_2_mem ) );
                                 true ;
                               }) ) ) );
                         // ----------
                         
-                        ((__h_case_result ) ? ({ /* cicili#Progn3374 */
+                        ((__h_case_result ) ? ({ /* cicili#Progn3413 */
                             ((((index  >=  0 ) &&  (index  <  size  ) )) ? nth_Vector_int ((cursor  +  index  ), vector ) : Nothing_int ());
-                          }) : ({ /* cicili#Let3381 */
+                          }) : ({ /* cicili#Let3420 */
                             // ----------
                             ;
-                            ({ /* cicili#Progn3383 */
+                            ({ /* cicili#Progn3422 */
                               Nothing_int ();
                             });
                           }));
@@ -3616,10 +3648,10 @@ Maybe_int nth_Vector_int (size_t index , Vector_int vector ) {
                     }));
                 });
               });
-            }) : ({ /* cicili#Let3388 */
+            }) : ({ /* cicili#Let3427 */
               // ----------
               ;
-              ({ /* cicili#Progn3390 */
+              ({ /* cicili#Progn3429 */
                 Nothing_int ();
               });
             }));
@@ -3628,38 +3660,38 @@ Maybe_int nth_Vector_int (size_t index , Vector_int vector ) {
     });
 }
 void free_Vector_int_x (Vector_int_x * this_ptr ) {
-  { /* cicili#Let3395 */
+  { /* cicili#Let3434 */
     __auto_type this  = (*this_ptr );
     // ----------
-    { /* cicili#Let3399 */
+    { /* cicili#Let3438 */
       typeof((((this -> __h_data ). Buffer ). __h_0_mem )) sb ;
       // ----------
       ;
-      ({ /* cicili#Let3401 */
-        bool __h_case_result  = (true  &&  (((this -> __h_ctor ) ==  __h_Buffer_t  ) &&  ({ /* cicili#Progn3402 */
+      ({ /* cicili#Let3440 */
+        bool __h_case_result  = (true  &&  (((this -> __h_ctor ) ==  __h_Buffer_t  ) &&  ({ /* cicili#Progn3441 */
               (sb  =  (((this -> __h_data ). Buffer ). __h_0_mem ) );
               true ;
             }) ) );
         // ----------
         
         if (__h_case_result )
-          { /* cicili#Block3408 */
+          { /* cicili#Block3447 */
             free_StringBuffer_int ((&sb ));
           }
         else
-          { /* cicili#Let3414 */
+          { /* cicili#Let3453 */
             typeof((((this -> __h_data ). Slice ). __h_0_mem )) vector ;
             // ----------
             ;
-            ({ /* cicili#Let3416 */
-              bool __h_case_result  = (true  &&  (((this -> __h_ctor ) ==  __h_Slice_t  ) &&  ({ /* cicili#Progn3417 */
+            ({ /* cicili#Let3455 */
+              bool __h_case_result  = (true  &&  (((this -> __h_ctor ) ==  __h_Slice_t  ) &&  ({ /* cicili#Progn3456 */
                     (vector  =  (((this -> __h_data ). Slice ). __h_0_mem ) );
                     true ;
                   }) ) );
               // ----------
               
               if (__h_case_result )
-                { /* cicili#Block3423 */
+                { /* cicili#Block3462 */
                   free_Box_Vector_int ((&vector ));
                 }
             });
@@ -3674,7 +3706,7 @@ Vector_int__H_Table * const get_Vector_int__H_Table () {
   return (&table );
 }
 Vector_int Buffer_int (StringBuffer_int buffer ) {
-  { /* cicili#Let3433 */
+  { /* cicili#Let3472 */
     Vector_int_x instance  = malloc (sizeof(class_Vector_int));
     // ----------
     (*instance ) = ((class_Vector_int){ get_Vector_int__H_Table (), __h_Buffer_t , .__h_data.Buffer = { buffer }});
@@ -3682,7 +3714,7 @@ Vector_int Buffer_int (StringBuffer_int buffer ) {
   }
 }
 Vector_int Slice_int (Vector_int vector , size_t cursor , size_t size ) {
-  { /* cicili#Let3441 */
+  { /* cicili#Let3480 */
     Vector_int_x instance  = malloc (sizeof(class_Vector_int));
     // ----------
     (*instance ) = ((class_Vector_int){ get_Vector_int__H_Table (), __h_Slice_t , .__h_data.Slice = { vector , cursor , size }});
@@ -3690,7 +3722,7 @@ Vector_int Slice_int (Vector_int vector , size_t cursor , size_t size ) {
   }
 }
 Vector_int None_int () {
-  { /* cicili#Let3448 */
+  { /* cicili#Let3487 */
     Vector_int_x instance  = malloc (sizeof(class_Vector_int));
     // ----------
     (*instance ) = ((class_Vector_int){ get_Vector_int__H_Table (), __h___t });
@@ -3707,14 +3739,14 @@ const Maybe_Vector_int__H_Table * const get_Maybe_Vector_int__H_Table () {
   return (&table );
 }
 Maybe_Vector_int Just_Vector_int (Vector_int value ) {
-  { /* cicili#Let3466 */
+  { /* cicili#Let3505 */
     Maybe_Vector_int instance  = ((Maybe_Vector_int){ get_Maybe_Vector_int__H_Table (), __h_Just_t , .__h_data.Just = { value }});
     // ----------
     return instance ;
   }
 }
 Maybe_Vector_int Nothing_Vector_int () {
-  { /* cicili#Let3471 */
+  { /* cicili#Let3510 */
     Maybe_Vector_int instance  = ((Maybe_Vector_int){ get_Maybe_Vector_int__H_Table (), __h___t });
     // ----------
     return instance ;
@@ -3738,11 +3770,11 @@ typedef struct Maybe_char__H_Table {
 typedef struct Maybe_char {
   const Maybe_char__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion3497 */
-    struct { /* ciciliStruct3498 */
+  union { /* ciciliUnion3536 */
+    struct { /* ciciliStruct3537 */
       char __h_0_mem ;
     } Just , _1 ;
-    struct { /* ciciliStruct3499 */
+    struct { /* ciciliStruct3538 */
     } Nothing , _ ;
   } __h_data ;
 } Maybe_char;
@@ -3778,14 +3810,14 @@ typedef struct StringBuffer_char__H_Table {
 typedef struct StringBuffer_char {
   const StringBuffer_char__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion3544 */
-    struct { /* ciciliStruct3545 */
+  union { /* ciciliUnion3583 */
+    struct { /* ciciliStruct3584 */
       char * __h_0_mem ;
       size_t __h_1_mem ;
       size_t __h_2_mem ;
       size_t __h_3_mem ;
     } Buffered , _1 ;
-    struct { /* ciciliStruct3546 */
+    struct { /* ciciliStruct3585 */
     } Freed , _ ;
   } __h_data ;
 } StringBuffer_char;
@@ -3805,11 +3837,11 @@ const StringBuffer_char__H_Table * const get_StringBuffer_char__H_Table ();
 void free_StringBuffer_char (StringBuffer_char * this );
 #endif /* __StringBuffer_char__H_DECL__ */ 
 typedef char * Vector_char_pointer_t ;
-typedef struct cicili7W0IuEfy7bNnoRfLRK4ZtblvPDc_ {
+typedef struct cicili5eDw_BcQ_pfJBGo4gWnbKCTVUiU_ {
   Vector_char_pointer_t __h_0_mem ;
   Vector_char_pointer_t __h_1_mem ;
-} cicili7W0IuEfy7bNnoRfLRK4ZtblvPDc_;
-typedef cicili7W0IuEfy7bNnoRfLRK4ZtblvPDc_ Vector_char_iterator_t ;
+} cicili5eDw_BcQ_pfJBGo4gWnbKCTVUiU_;
+typedef cicili5eDw_BcQ_pfJBGo4gWnbKCTVUiU_ Vector_char_iterator_t ;
 #ifndef __Vector_char__H_DECL__
 #define __Vector_char__H_DECL__
 #ifndef __H___h_Vector_ctor_t__
@@ -3839,11 +3871,11 @@ typedef struct Maybe_Vector_char_x__H_Table {
 typedef struct Maybe_Vector_char_x {
   const Maybe_Vector_char_x__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion3617 */
-    struct { /* ciciliStruct3618 */
+  union { /* ciciliUnion3656 */
+    struct { /* ciciliStruct3657 */
       Vector_char_x __h_0_mem ;
     } Just , _1 ;
-    struct { /* ciciliStruct3619 */
+    struct { /* ciciliStruct3658 */
     } Nothing , _ ;
   } __h_data ;
 } Maybe_Vector_char_x;
@@ -3876,13 +3908,13 @@ typedef struct Box_Vector_char__H_Table {
 typedef struct Box_Vector_char {
   const Box_Vector_char__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion3649 */
-    struct { /* ciciliStruct3650 */
+  union { /* ciciliUnion3688 */
+    struct { /* ciciliStruct3689 */
       Vector_char_x * __h_0_mem ;
       int * __h_1_mem ;
       size_t __h_2_mem ;
     } Hold , _1 ;
-    struct { /* ciciliStruct3651 */
+    struct { /* ciciliStruct3690 */
     } Gone , _ ;
   } __h_data ;
 } Box_Vector_char;
@@ -3930,16 +3962,16 @@ typedef struct Vector_char__H_Table {
 typedef struct class_Vector_char {
   const Vector_char__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion3715 */
-    struct { /* ciciliStruct3716 */
+  union { /* ciciliUnion3754 */
+    struct { /* ciciliStruct3755 */
       StringBuffer_char __h_0_mem ;
     } Buffer , _2 ;
-    struct { /* ciciliStruct3717 */
+    struct { /* ciciliStruct3756 */
       Vector_char __h_0_mem ;
       size_t __h_1_mem ;
       size_t __h_2_mem ;
     } Slice , _1 ;
-    struct { /* ciciliStruct3718 */
+    struct { /* ciciliStruct3757 */
     } None , _ ;
   } __h_data ;
 } class_Vector_char;
@@ -3993,11 +4025,11 @@ typedef struct Maybe_Vector_char__H_Table {
 typedef struct Maybe_Vector_char {
   const Maybe_Vector_char__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion3824 */
-    struct { /* ciciliStruct3825 */
+  union { /* ciciliUnion3863 */
+    struct { /* ciciliStruct3864 */
       Vector_char __h_0_mem ;
     } Just , _1 ;
-    struct { /* ciciliStruct3826 */
+    struct { /* ciciliStruct3865 */
     } Nothing , _ ;
   } __h_data ;
 } Maybe_Vector_char;
@@ -4018,14 +4050,14 @@ const Maybe_char__H_Table * const get_Maybe_char__H_Table () {
   return (&table );
 }
 Maybe_char Just_char (char value ) {
-  { /* cicili#Let3856 */
+  { /* cicili#Let3895 */
     Maybe_char instance  = ((Maybe_char){ get_Maybe_char__H_Table (), __h_Just_t , .__h_data.Just = { value }});
     // ----------
     return instance ;
   }
 }
 Maybe_char Nothing_char () {
-  { /* cicili#Let3861 */
+  { /* cicili#Let3900 */
     Maybe_char instance  = ((Maybe_char){ get_Maybe_char__H_Table (), __h___t });
     // ----------
     return instance ;
@@ -4036,37 +4068,37 @@ bool null_terminated_StringBuffer_char  = true ;
 #ifndef __StringBuffer_char__H_IMPL__
 #define __StringBuffer_char__H_IMPL__
 StringBuffer_char resize_StringBuffer_char (StringBuffer_char sb , size_t len ) {
-  return ({ /* cicili#Let3874 */
+  return ({ /* cicili#Let3913 */
       typeof((((sb . __h_data ). Buffered ). __h_0_mem )) buffer ;
       typeof((((sb . __h_data ). Buffered ). __h_1_mem )) cursor ;
       typeof((((sb . __h_data ). Buffered ). __h_3_mem )) step ;
       // ----------
       ;
-      ({ /* cicili#Let3876 */
-        bool __h_case_result  = (true  &&  (((sb . __h_ctor ) ==  __h_Buffered_t  ) &&  ((({ /* cicili#Progn3877 */
+      ({ /* cicili#Let3915 */
+        bool __h_case_result  = (true  &&  (((sb . __h_ctor ) ==  __h_Buffered_t  ) &&  ((({ /* cicili#Progn3916 */
                   (buffer  =  (((sb . __h_data ). Buffered ). __h_0_mem ) );
                   true ;
-                }) &&  ({ /* cicili#Progn3879 */
+                }) &&  ({ /* cicili#Progn3918 */
                   (cursor  =  (((sb . __h_data ). Buffered ). __h_1_mem ) );
                   true ;
-                }) ) &&  ({ /* cicili#Progn3881 */
+                }) ) &&  ({ /* cicili#Progn3920 */
                 (step  =  (((sb . __h_data ). Buffered ). __h_3_mem ) );
                 true ;
               }) ) ) );
         // ----------
         
-        ((__h_case_result ) ? ({ /* cicili#Progn3886 */
-            ({ /* cicili#Let3888 */
+        ((__h_case_result ) ? ({ /* cicili#Progn3925 */
+            ({ /* cicili#Let3927 */
               char * new_buffer  = realloc (buffer , ((len  +  1 ) *  sizeof(char) ));
               size_t new_cursor  = (((cursor  <  len  )) ? cursor  : len );
               // ----------
               (*(new_buffer  +  new_cursor  )) = ((char)(*((char *)"\0")));
               MakeStringBuffer_char (new_buffer , new_cursor , len , step );
             });
-          }) : ({ /* cicili#Let3893 */
+          }) : ({ /* cicili#Let3932 */
             // ----------
             ;
-            ({ /* cicili#Progn3895 */
+            ({ /* cicili#Progn3934 */
               FreedStringBuffer_char ();
             });
           }));
@@ -4077,7 +4109,7 @@ StringBuffer_char new_StringBuffer_char (size_t step ) {
   return newCapacity_StringBuffer_char (step , step );
 }
 StringBuffer_char newCapacity_StringBuffer_char (size_t capacity , size_t step ) {
-  return ({ /* cicili#Let3906 */
+  return ({ /* cicili#Let3945 */
       char * buffer  = malloc (((capacity  +  1 ) *  sizeof(char) ));
       StringBuffer_char sb  = MakeStringBuffer_char (buffer , 0, capacity , step );
       // ----------
@@ -4086,35 +4118,35 @@ StringBuffer_char newCapacity_StringBuffer_char (size_t capacity , size_t step )
     });
 }
 StringBuffer_char copySlice_StringBuffer_char (StringBuffer_char sb , size_t pos , size_t len ) {
-  return ({ /* cicili#Let3915 */
+  return ({ /* cicili#Let3954 */
       typeof((((sb . __h_data ). Buffered ). __h_0_mem )) buffer ;
       typeof((((sb . __h_data ). Buffered ). __h_1_mem )) cursor ;
       typeof((((sb . __h_data ). Buffered ). __h_3_mem )) step ;
       // ----------
       ;
-      ({ /* cicili#Let3917 */
-        bool __h_case_result  = (true  &&  (((sb . __h_ctor ) ==  __h_Buffered_t  ) &&  ((({ /* cicili#Progn3918 */
+      ({ /* cicili#Let3956 */
+        bool __h_case_result  = (true  &&  (((sb . __h_ctor ) ==  __h_Buffered_t  ) &&  ((({ /* cicili#Progn3957 */
                   (buffer  =  (((sb . __h_data ). Buffered ). __h_0_mem ) );
                   true ;
-                }) &&  ({ /* cicili#Progn3920 */
+                }) &&  ({ /* cicili#Progn3959 */
                   (cursor  =  (((sb . __h_data ). Buffered ). __h_1_mem ) );
                   true ;
-                }) ) &&  ({ /* cicili#Progn3922 */
+                }) ) &&  ({ /* cicili#Progn3961 */
                 (step  =  (((sb . __h_data ). Buffered ). __h_3_mem ) );
                 true ;
               }) ) ) );
         // ----------
         
-        ((__h_case_result ) ? ({ /* cicili#Progn3927 */
-            ({ /* cicili#Let3929 */
+        ((__h_case_result ) ? ({ /* cicili#Progn3966 */
+            ({ /* cicili#Let3968 */
               StringBuffer_char new_sb  = newCapacity_StringBuffer_char (len , step );
               // ----------
               ((((pos  +  len  ) <=  cursor  )) ? print_StringBuffer_char (new_sb , (buffer  +  pos  ), len ) : print_StringBuffer_char (new_sb , (buffer  +  pos  ), (cursor  -  pos  )));
             });
-          }) : ({ /* cicili#Let3938 */
+          }) : ({ /* cicili#Let3977 */
             // ----------
             ;
-            ({ /* cicili#Progn3940 */
+            ({ /* cicili#Progn3979 */
               FreedStringBuffer_char ();
             });
           }));
@@ -4122,49 +4154,6 @@ StringBuffer_char copySlice_StringBuffer_char (StringBuffer_char sb , size_t pos
     });
 }
 StringBuffer_char copy_StringBuffer_char (StringBuffer_char sb ) {
-  return ({ /* cicili#Let3949 */
-      typeof((((sb . __h_data ). Buffered ). __h_0_mem )) buffer ;
-      typeof((((sb . __h_data ). Buffered ). __h_1_mem )) cursor ;
-      typeof((((sb . __h_data ). Buffered ). __h_2_mem )) size ;
-      typeof((((sb . __h_data ). Buffered ). __h_3_mem )) step ;
-      // ----------
-      ;
-      ({ /* cicili#Let3951 */
-        bool __h_case_result  = (true  &&  (((sb . __h_ctor ) ==  __h_Buffered_t  ) &&  (((({ /* cicili#Progn3952 */
-                    (buffer  =  (((sb . __h_data ). Buffered ). __h_0_mem ) );
-                    true ;
-                  }) &&  ({ /* cicili#Progn3954 */
-                    (cursor  =  (((sb . __h_data ). Buffered ). __h_1_mem ) );
-                    true ;
-                  }) ) &&  ({ /* cicili#Progn3956 */
-                  (size  =  (((sb . __h_data ). Buffered ). __h_2_mem ) );
-                  true ;
-                }) ) &&  ({ /* cicili#Progn3958 */
-                (step  =  (((sb . __h_data ). Buffered ). __h_3_mem ) );
-                true ;
-              }) ) ) );
-        // ----------
-        
-        ((__h_case_result ) ? ({ /* cicili#Progn3963 */
-            ({ /* cicili#Let3965 */
-              StringBuffer_char new_sb  = newCapacity_StringBuffer_char (size , step );
-              // ----------
-              print_StringBuffer_char (new_sb , buffer , cursor );
-            });
-          }) : ({ /* cicili#Let3972 */
-            // ----------
-            ;
-            ({ /* cicili#Progn3974 */
-              FreedStringBuffer_char ();
-            });
-          }));
-      });
-    });
-}
-StringBuffer_char put_StringBuffer_char (StringBuffer_char sb , const char data ) {
-  return print_StringBuffer_char (sb , (&data ), 1);
-}
-StringBuffer_char print_StringBuffer_char (StringBuffer_char sb , const char * data , size_t len ) {
   return ({ /* cicili#Let3988 */
       typeof((((sb . __h_data ). Buffered ). __h_0_mem )) buffer ;
       typeof((((sb . __h_data ). Buffered ). __h_1_mem )) cursor ;
@@ -4190,12 +4179,55 @@ StringBuffer_char print_StringBuffer_char (StringBuffer_char sb , const char * d
         
         ((__h_case_result ) ? ({ /* cicili#Progn4002 */
             ({ /* cicili#Let4004 */
+              StringBuffer_char new_sb  = newCapacity_StringBuffer_char (size , step );
+              // ----------
+              print_StringBuffer_char (new_sb , buffer , cursor );
+            });
+          }) : ({ /* cicili#Let4011 */
+            // ----------
+            ;
+            ({ /* cicili#Progn4013 */
+              FreedStringBuffer_char ();
+            });
+          }));
+      });
+    });
+}
+StringBuffer_char put_StringBuffer_char (StringBuffer_char sb , const char data ) {
+  return print_StringBuffer_char (sb , (&data ), 1);
+}
+StringBuffer_char print_StringBuffer_char (StringBuffer_char sb , const char * data , size_t len ) {
+  return ({ /* cicili#Let4027 */
+      typeof((((sb . __h_data ). Buffered ). __h_0_mem )) buffer ;
+      typeof((((sb . __h_data ). Buffered ). __h_1_mem )) cursor ;
+      typeof((((sb . __h_data ). Buffered ). __h_2_mem )) size ;
+      typeof((((sb . __h_data ). Buffered ). __h_3_mem )) step ;
+      // ----------
+      ;
+      ({ /* cicili#Let4029 */
+        bool __h_case_result  = (true  &&  (((sb . __h_ctor ) ==  __h_Buffered_t  ) &&  (((({ /* cicili#Progn4030 */
+                    (buffer  =  (((sb . __h_data ). Buffered ). __h_0_mem ) );
+                    true ;
+                  }) &&  ({ /* cicili#Progn4032 */
+                    (cursor  =  (((sb . __h_data ). Buffered ). __h_1_mem ) );
+                    true ;
+                  }) ) &&  ({ /* cicili#Progn4034 */
+                  (size  =  (((sb . __h_data ). Buffered ). __h_2_mem ) );
+                  true ;
+                }) ) &&  ({ /* cicili#Progn4036 */
+                (step  =  (((sb . __h_data ). Buffered ). __h_3_mem ) );
+                true ;
+              }) ) ) );
+        // ----------
+        
+        ((__h_case_result ) ? ({ /* cicili#Progn4041 */
+            ({ /* cicili#Let4043 */
               size_t blen  = (len  *  sizeof(char) );
               // ----------
               if ((size  -  cursor  ) <  len  )
-                { /* cicili#Block4008 */
+                { /* cicili#Block4047 */
                   size  = (step  *  (((cursor  +  len  ) /  step  ) +  1 ) );
-                  { /* cicili#Let4010 */
+                  { /* cicili#Let4049 */
                     char * new_buffer  = realloc (buffer , ((size  +  1 ) *  sizeof(char) ));
                     // ----------
                     buffer  = new_buffer ;
@@ -4205,10 +4237,10 @@ StringBuffer_char print_StringBuffer_char (StringBuffer_char sb , const char * d
               (*(buffer  +  cursor  +  len  )) = ((char)(*((char *)"\0")));
               MakeStringBuffer_char (buffer , (cursor  +  len  ), size , step );
             });
-          }) : ({ /* cicili#Let4015 */
+          }) : ({ /* cicili#Let4054 */
             // ----------
             ;
-            ({ /* cicili#Progn4017 */
+            ({ /* cicili#Progn4056 */
               FreedStringBuffer_char ();
             });
           }));
@@ -4216,20 +4248,20 @@ StringBuffer_char print_StringBuffer_char (StringBuffer_char sb , const char * d
     });
 }
 void free_StringBuffer_char (StringBuffer_char * this ) {
-  { /* cicili#Let4025 */
+  { /* cicili#Let4064 */
     typeof((((this -> __h_data ). Buffered ). __h_0_mem )) buffer ;
     // ----------
     ;
-    ({ /* cicili#Let4027 */
-      bool __h_case_result  = (true  &&  (((this -> __h_ctor ) ==  __h_Buffered_t  ) &&  ({ /* cicili#Progn4028 */
+    ({ /* cicili#Let4066 */
+      bool __h_case_result  = (true  &&  (((this -> __h_ctor ) ==  __h_Buffered_t  ) &&  ({ /* cicili#Progn4067 */
             (buffer  =  (((this -> __h_data ). Buffered ). __h_0_mem ) );
             true ;
           }) ) );
       // ----------
       
       if (__h_case_result )
-        { /* cicili#Block4034 */
-          { /* cicili#Block4036 */
+        { /* cicili#Block4073 */
+          { /* cicili#Block4075 */
             free (buffer );
             (*this ) = FreedStringBuffer_char ();
           }
@@ -4242,14 +4274,14 @@ const StringBuffer_char__H_Table * const get_StringBuffer_char__H_Table () {
   return (&table );
 }
 StringBuffer_char MakeStringBuffer_char (char * buffer , size_t cursor , size_t size , size_t step ) {
-  { /* cicili#Let4046 */
+  { /* cicili#Let4085 */
     StringBuffer_char instance  = ((StringBuffer_char){ get_StringBuffer_char__H_Table (), __h_Buffered_t , .__h_data.Buffered = { buffer , cursor , size , step }});
     // ----------
     return instance ;
   }
 }
 StringBuffer_char FreedStringBuffer_char () {
-  { /* cicili#Let4051 */
+  { /* cicili#Let4090 */
     StringBuffer_char instance  = ((StringBuffer_char){ get_StringBuffer_char__H_Table (), __h___t });
     // ----------
     return instance ;
@@ -4268,14 +4300,14 @@ const Maybe_Vector_char_x__H_Table * const get_Maybe_Vector_char_x__H_Table () {
   return (&table );
 }
 Maybe_Vector_char_x Just_Vector_char_x (Vector_char_x value ) {
-  { /* cicili#Let4073 */
+  { /* cicili#Let4112 */
     Maybe_Vector_char_x instance  = ((Maybe_Vector_char_x){ get_Maybe_Vector_char_x__H_Table (), __h_Just_t , .__h_data.Just = { value }});
     // ----------
     return instance ;
   }
 }
 Maybe_Vector_char_x Nothing_Vector_char_x () {
-  { /* cicili#Let4078 */
+  { /* cicili#Let4117 */
     Maybe_Vector_char_x instance  = ((Maybe_Vector_char_x){ get_Maybe_Vector_char_x__H_Table (), __h___t });
     // ----------
     return instance ;
@@ -4285,7 +4317,7 @@ Maybe_Vector_char_x Nothing_Vector_char_x () {
 #ifndef __Box_Vector_char__H_IMPL__
 #define __Box_Vector_char__H_IMPL__
 Box_Vector_char new_Box_Vector_char (Vector_char_x pointer ) {
-  return ({ /* cicili#Let4085 */
+  return ({ /* cicili#Let4124 */
       __auto_type count  = ((int *)malloc (sizeof(int)));
       __auto_type holder  = ((Vector_char_x *)malloc (sizeof(Vector_char_x *)));
       // ----------
@@ -4295,34 +4327,34 @@ Box_Vector_char new_Box_Vector_char (Vector_char_x pointer ) {
     });
 }
 Box_Vector_char clone_Box_Vector_char (Box_Vector_char rc ) {
-  return ({ /* cicili#Let4094 */
+  return ({ /* cicili#Let4133 */
       typeof((((rc . __h_data ). Hold ). __h_0_mem )) pointer ;
       typeof((((rc . __h_data ). Hold ). __h_1_mem )) count ;
       typeof((((rc . __h_data ). Hold ). __h_2_mem )) address ;
       // ----------
       ;
-      ({ /* cicili#Let4096 */
-        bool __h_case_result  = (true  &&  (((rc . __h_ctor ) ==  __h_Hold_t  ) &&  ((({ /* cicili#Progn4097 */
+      ({ /* cicili#Let4135 */
+        bool __h_case_result  = (true  &&  (((rc . __h_ctor ) ==  __h_Hold_t  ) &&  ((({ /* cicili#Progn4136 */
                   (pointer  =  (((rc . __h_data ). Hold ). __h_0_mem ) );
                   true ;
-                }) &&  ({ /* cicili#Progn4099 */
+                }) &&  ({ /* cicili#Progn4138 */
                   (count  =  (((rc . __h_data ). Hold ). __h_1_mem ) );
                   true ;
-                }) ) &&  ({ /* cicili#Progn4101 */
+                }) ) &&  ({ /* cicili#Progn4140 */
                 (address  =  (((rc . __h_data ). Hold ). __h_2_mem ) );
                 true ;
               }) ) ) );
         // ----------
         
-        ((__h_case_result ) ? ({ /* cicili#Progn4106 */
-            (((pointer  &&  (((size_t)(*pointer )) ==  address  ) )) ? ({ /* cicili#Progn4109 */
+        ((__h_case_result ) ? ({ /* cicili#Progn4145 */
+            (((pointer  &&  (((size_t)(*pointer )) ==  address  ) )) ? ({ /* cicili#Progn4148 */
                 (++(*count ));
                 __h_Hold_Vector_char_x (pointer , count , address );
               }) : Gone_Vector_char_x ());
-          }) : ({ /* cicili#Let4115 */
+          }) : ({ /* cicili#Let4154 */
             // ----------
             ;
-            ({ /* cicili#Progn4117 */
+            ({ /* cicili#Progn4156 */
               Gone_Vector_char_x ();
             });
           }));
@@ -4330,40 +4362,37 @@ Box_Vector_char clone_Box_Vector_char (Box_Vector_char rc ) {
     });
 }
 Maybe_Vector_char_x take_Box_Vector_char (Box_Vector_char * this ) {
-  return ({ /* cicili#Let4125 */
+  return ({ /* cicili#Let4164 */
       typeof((((this -> __h_data ). Hold ). __h_0_mem )) pointer ;
       typeof((((this -> __h_data ). Hold ). __h_1_mem )) count ;
       typeof((((this -> __h_data ). Hold ). __h_2_mem )) address ;
       // ----------
       ;
-      ({ /* cicili#Let4127 */
-        bool __h_case_result  = (true  &&  (((this -> __h_ctor ) ==  __h_Hold_t  ) &&  ((({ /* cicili#Progn4128 */
+      ({ /* cicili#Let4166 */
+        bool __h_case_result  = (true  &&  (((this -> __h_ctor ) ==  __h_Hold_t  ) &&  ((({ /* cicili#Progn4167 */
                   (pointer  =  (((this -> __h_data ). Hold ). __h_0_mem ) );
                   true ;
-                }) &&  ({ /* cicili#Progn4130 */
+                }) &&  ({ /* cicili#Progn4169 */
                   (count  =  (((this -> __h_data ). Hold ). __h_1_mem ) );
                   true ;
-                }) ) &&  ({ /* cicili#Progn4132 */
+                }) ) &&  ({ /* cicili#Progn4171 */
                 (address  =  (((this -> __h_data ). Hold ). __h_2_mem ) );
                 true ;
               }) ) ) );
         // ----------
         
-        ((__h_case_result ) ? ({ /* cicili#Progn4137 */
-            (((pointer  &&  (((size_t)(*pointer )) ==  address  ) )) ? ({ /* cicili#Let4141 */
+        ((__h_case_result ) ? ({ /* cicili#Progn4176 */
+            (((pointer  &&  (((size_t)(*pointer )) ==  address  ) &&  ((*count ) ==  1 ) )) ? ({ /* cicili#Let4180 */
                 __auto_type result  = Just_Vector_char_x ((*pointer ));
                 // ----------
-                if ((*count ) >=  1 )
-                  { /* cicili#Block4147 */
-                    (*count ) = 0;
-                    (*pointer ) = NULL ;
-                  }
+                (*count ) = 0;
+                (*pointer ) = NULL ;
                 result ;
               }) : Nothing_Vector_char_x ());
-          }) : ({ /* cicili#Let4152 */
+          }) : ({ /* cicili#Let4188 */
             // ----------
             ;
-            ({ /* cicili#Progn4154 */
+            ({ /* cicili#Progn4190 */
               Nothing_Vector_char_x ();
             });
           }));
@@ -4371,31 +4400,31 @@ Maybe_Vector_char_x take_Box_Vector_char (Box_Vector_char * this ) {
     });
 }
 Maybe_Vector_char_x get_Box_Vector_char (Box_Vector_char rc ) {
-  return ({ /* cicili#Let4162 */
+  return ({ /* cicili#Let4198 */
       typeof((((rc . __h_data ). Hold ). __h_0_mem )) pointer ;
       typeof((((rc . __h_data ). Hold ). __h_1_mem )) count ;
       typeof((((rc . __h_data ). Hold ). __h_2_mem )) address ;
       // ----------
       ;
-      ({ /* cicili#Let4164 */
-        bool __h_case_result  = (true  &&  (((rc . __h_ctor ) ==  __h_Hold_t  ) &&  ((({ /* cicili#Progn4165 */
+      ({ /* cicili#Let4200 */
+        bool __h_case_result  = (true  &&  (((rc . __h_ctor ) ==  __h_Hold_t  ) &&  ((({ /* cicili#Progn4201 */
                   (pointer  =  (((rc . __h_data ). Hold ). __h_0_mem ) );
                   true ;
-                }) &&  ({ /* cicili#Progn4167 */
+                }) &&  ({ /* cicili#Progn4203 */
                   (count  =  (((rc . __h_data ). Hold ). __h_1_mem ) );
                   true ;
-                }) ) &&  ({ /* cicili#Progn4169 */
+                }) ) &&  ({ /* cicili#Progn4205 */
                 (address  =  (((rc . __h_data ). Hold ). __h_2_mem ) );
                 true ;
               }) ) ) );
         // ----------
         
-        ((__h_case_result ) ? ({ /* cicili#Progn4174 */
+        ((__h_case_result ) ? ({ /* cicili#Progn4210 */
             (((pointer  &&  (((size_t)(*pointer )) ==  address  ) &&  ((*count ) >  0 ) )) ? Just_Vector_char_x ((*pointer )) : Nothing_Vector_char_x ());
-          }) : ({ /* cicili#Let4181 */
+          }) : ({ /* cicili#Let4217 */
             // ----------
             ;
-            ({ /* cicili#Progn4183 */
+            ({ /* cicili#Progn4219 */
               Nothing_Vector_char_x ();
             });
           }));
@@ -4403,29 +4432,29 @@ Maybe_Vector_char_x get_Box_Vector_char (Box_Vector_char rc ) {
     });
 }
 void free_Box_Vector_char (Box_Vector_char * this ) {
-  { /* cicili#Let4192 */
+  { /* cicili#Let4228 */
     typeof((((this -> __h_data ). Hold ). __h_0_mem )) pointer ;
     typeof((((this -> __h_data ). Hold ). __h_1_mem )) count ;
     typeof((((this -> __h_data ). Hold ). __h_2_mem )) address ;
     // ----------
     ;
-    ({ /* cicili#Let4194 */
-      bool __h_case_result  = (true  &&  (((this -> __h_ctor ) ==  __h_Hold_t  ) &&  ((({ /* cicili#Progn4195 */
+    ({ /* cicili#Let4230 */
+      bool __h_case_result  = (true  &&  (((this -> __h_ctor ) ==  __h_Hold_t  ) &&  ((({ /* cicili#Progn4231 */
                 (pointer  =  (((this -> __h_data ). Hold ). __h_0_mem ) );
                 true ;
-              }) &&  ({ /* cicili#Progn4197 */
+              }) &&  ({ /* cicili#Progn4233 */
                 (count  =  (((this -> __h_data ). Hold ). __h_1_mem ) );
                 true ;
-              }) ) &&  ({ /* cicili#Progn4199 */
+              }) ) &&  ({ /* cicili#Progn4235 */
               (address  =  (((this -> __h_data ). Hold ). __h_2_mem ) );
               true ;
             }) ) ) );
       // ----------
       
       if (__h_case_result )
-        { /* cicili#Block4205 */
+        { /* cicili#Block4241 */
           if (((*count ) ==  0 ) &&  ((*pointer ) ==  NULL  ) )
-            { /* cicili#Block4208 */
+            { /* cicili#Block4244 */
               free (((void *)count ));
               free (((void *)pointer ));
               (*this ) = Gone_Vector_char_x ();
@@ -4433,9 +4462,9 @@ void free_Box_Vector_char (Box_Vector_char * this ) {
           else
             {
             if (pointer  &&  (((size_t)(*pointer )) ==  address  ) )
-              { /* cicili#Block4216 */
+              { /* cicili#Block4252 */
                 if ((*count ) ==  1 )
-                  { /* cicili#Block4219 */
+                  { /* cicili#Block4255 */
                     free_Vector_char_x (pointer );
                     (*count ) = 0;
                     free (((void *)count ));
@@ -4448,15 +4477,15 @@ void free_Box_Vector_char (Box_Vector_char * this ) {
               }
               }        }
       else
-        { /* cicili#Let4229 */
+        { /* cicili#Let4265 */
           // ----------
           ;
-          ({ /* cicili#Let4231 */
+          ({ /* cicili#Let4267 */
             bool __h_case_result  = (true  &&  ((this -> __h_ctor ) ==  __h_Gone_t  ) );
             // ----------
             
             if (__h_case_result )
-              { /* cicili#Block4236 */
+              { /* cicili#Block4272 */
               }
           });
         }
@@ -4468,14 +4497,14 @@ const Box_Vector_char__H_Table * const get_Box_Vector_char__H_Table () {
   return (&table );
 }
 Box_Vector_char __h_Hold_Vector_char_x (Vector_char_x * pointer , int * count , size_t address ) {
-  { /* cicili#Let4247 */
+  { /* cicili#Let4283 */
     Box_Vector_char instance  = ((Box_Vector_char){ get_Box_Vector_char__H_Table (), __h_Hold_t , .__h_data.Hold = { pointer , count , address }});
     // ----------
     return instance ;
   }
 }
 Box_Vector_char Gone_Vector_char_x () {
-  { /* cicili#Let4252 */
+  { /* cicili#Let4288 */
     Box_Vector_char instance  = ((Box_Vector_char){ get_Box_Vector_char__H_Table (), __h___t });
     // ----------
     return instance ;
@@ -4483,110 +4512,110 @@ Box_Vector_char Gone_Vector_char_x () {
 }
 #endif /* __Box_Vector_char__H_IMPL__ */ 
 Vector_char_iterator_t iterator_Vector_char (Vector_char vector ) {
-  return ({ /* cicili#Let4259 */
+  return ({ /* cicili#Let4295 */
       __auto_type __h_matchbox  = vector ;
       // ----------
-      ({ /* cicili#Let4263 */
-        __auto_type match4262  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
-        typeof((((match4262 . __h_data ). Just ). __h_0_mem )) unboxed ;
+      ({ /* cicili#Let4299 */
+        __auto_type match4298  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
+        typeof((((match4298 . __h_data ). Just ). __h_0_mem )) unboxed ;
         // ----------
         ;
-        ({ /* cicili#Let4266 */
-          bool __h_case_result  = (true  &&  (((match4262 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn4267 */
-                (unboxed  =  (((match4262 . __h_data ). Just ). __h_0_mem ) );
+        ({ /* cicili#Let4302 */
+          bool __h_case_result  = (true  &&  (((match4298 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn4303 */
+                (unboxed  =  (((match4298 . __h_data ). Just ). __h_0_mem ) );
                 true ;
               }) ) );
           // ----------
           
-          ((__h_case_result ) ? ({ /* cicili#Progn4272 */
-              ({ /* cicili#Let4276 */
+          ((__h_case_result ) ? ({ /* cicili#Progn4308 */
+              ({ /* cicili#Let4312 */
                 typeof((((unboxed -> __h_data ). Buffer ). __h_0_mem )) sb ;
                 // ----------
                 ;
-                ({ /* cicili#Let4278 */
-                  bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) &&  ({ /* cicili#Progn4279 */
+                ({ /* cicili#Let4314 */
+                  bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) &&  ({ /* cicili#Progn4315 */
                         (sb  =  (((unboxed -> __h_data ). Buffer ). __h_0_mem ) );
                         true ;
                       }) ) );
                   // ----------
                   
-                  ((__h_case_result ) ? ({ /* cicili#Progn4284 */
-                      ({ /* cicili#Let4288 */
+                  ((__h_case_result ) ? ({ /* cicili#Progn4320 */
+                      ({ /* cicili#Let4324 */
                         typeof((((sb . __h_data ). Buffered ). __h_0_mem )) buffer ;
                         typeof((((sb . __h_data ). Buffered ). __h_1_mem )) cursor ;
                         // ----------
                         ;
-                        ({ /* cicili#Let4290 */
-                          bool __h_case_result  = (true  &&  (((sb . __h_ctor ) ==  __h_Buffered_t  ) &&  (({ /* cicili#Progn4291 */
+                        ({ /* cicili#Let4326 */
+                          bool __h_case_result  = (true  &&  (((sb . __h_ctor ) ==  __h_Buffered_t  ) &&  (({ /* cicili#Progn4327 */
                                   (buffer  =  (((sb . __h_data ). Buffered ). __h_0_mem ) );
                                   true ;
-                                }) &&  ({ /* cicili#Progn4293 */
+                                }) &&  ({ /* cicili#Progn4329 */
                                   (cursor  =  (((sb . __h_data ). Buffered ). __h_1_mem ) );
                                   true ;
                                 }) ) ) );
                           // ----------
                           
-                          ((__h_case_result ) ? ({ /* cicili#Progn4298 */
+                          ((__h_case_result ) ? ({ /* cicili#Progn4334 */
                               ((Vector_char_iterator_t){ buffer , (buffer  +  cursor  )});
-                            }) : ({ /* cicili#Let4303 */
+                            }) : ({ /* cicili#Let4339 */
                               // ----------
                               ;
-                              ({ /* cicili#Progn4305 */
+                              ({ /* cicili#Progn4341 */
                                 ((Vector_char_iterator_t){ NULL , NULL });
                               });
                             }));
                         });
                       });
-                    }) : ({ /* cicili#Let4310 */
+                    }) : ({ /* cicili#Let4346 */
                       typeof((((unboxed -> __h_data ). Slice ). __h_0_mem )) vec ;
                       typeof((((unboxed -> __h_data ). Slice ). __h_1_mem )) cur ;
                       typeof((((unboxed -> __h_data ). Slice ). __h_2_mem )) size ;
                       // ----------
                       ;
-                      ({ /* cicili#Let4312 */
-                        bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Slice_t  ) &&  ((({ /* cicili#Progn4313 */
+                      ({ /* cicili#Let4348 */
+                        bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Slice_t  ) &&  ((({ /* cicili#Progn4349 */
                                   (vec  =  (((unboxed -> __h_data ). Slice ). __h_0_mem ) );
                                   true ;
-                                }) &&  ({ /* cicili#Progn4315 */
+                                }) &&  ({ /* cicili#Progn4351 */
                                   (cur  =  (((unboxed -> __h_data ). Slice ). __h_1_mem ) );
                                   true ;
-                                }) ) &&  ({ /* cicili#Progn4317 */
+                                }) ) &&  ({ /* cicili#Progn4353 */
                                 (size  =  (((unboxed -> __h_data ). Slice ). __h_2_mem ) );
                                 true ;
                               }) ) ) );
                         // ----------
                         
-                        ((__h_case_result ) ? ({ /* cicili#Progn4322 */
-                            ({ /* cicili#Let4324 */
+                        ((__h_case_result ) ? ({ /* cicili#Progn4358 */
+                            ({ /* cicili#Let4360 */
                               Vector_char_iterator_t iter  = iterator_Vector_char (vec );
                               // ----------
-                              ({ /* cicili#Let4330 */
+                              ({ /* cicili#Let4366 */
                                 typeof((iter . __h_0_mem )) begin ;
                                 // ----------
                                 ;
-                                ({ /* cicili#Let4332 */
-                                  bool __h_case_result  = (true  &&  ({ /* cicili#Progn4333 */
+                                ({ /* cicili#Let4368 */
+                                  bool __h_case_result  = (true  &&  ({ /* cicili#Progn4369 */
                                       (begin  =  (iter . __h_0_mem ) );
                                       true ;
                                     }) );
                                   // ----------
                                   
-                                  ((__h_case_result ) ? ({ /* cicili#Progn4338 */
+                                  ((__h_case_result ) ? ({ /* cicili#Progn4374 */
                                       ((Vector_char_iterator_t){ (begin  +  cur  ), (begin  +  size  )});
-                                    }) : ({ /* cicili#Let4343 */
+                                    }) : ({ /* cicili#Let4379 */
                                       // ----------
                                       ;
-                                      ({ /* cicili#Progn4345 */
+                                      ({ /* cicili#Progn4381 */
                                         ((Vector_char_iterator_t){ NULL , NULL });
                                       });
                                     }));
                                 });
                               });
                             });
-                          }) : ({ /* cicili#Let4350 */
+                          }) : ({ /* cicili#Let4386 */
                             // ----------
                             ;
-                            ({ /* cicili#Progn4352 */
+                            ({ /* cicili#Progn4388 */
                               ((Vector_char_iterator_t){ NULL , NULL });
                             });
                           }));
@@ -4594,10 +4623,10 @@ Vector_char_iterator_t iterator_Vector_char (Vector_char vector ) {
                     }));
                 });
               });
-            }) : ({ /* cicili#Let4357 */
+            }) : ({ /* cicili#Let4393 */
               // ----------
               ;
-              ({ /* cicili#Progn4359 */
+              ({ /* cicili#Progn4395 */
                 ((Vector_char_iterator_t){ NULL , NULL });
               });
             }));
@@ -4606,146 +4635,151 @@ Vector_char_iterator_t iterator_Vector_char (Vector_char vector ) {
     });
 }
 Vector_char resize_Vector_char (Vector_char vector , size_t len ) {
-  return ({ /* cicili#Let4365 */
+  return ({ /* cicili#Let4401 */
       __auto_type __h_matchbox  = vector ;
       // ----------
-      ({ /* cicili#Let4369 */
-        __auto_type match4368  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
-        typeof((((match4368 . __h_data ). Just ). __h_0_mem )) unboxed ;
+      ({ /* cicili#Let4405 */
+        __auto_type match4404  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
+        typeof((((match4404 . __h_data ). Just ). __h_0_mem )) unboxed ;
         // ----------
         ;
-        ({ /* cicili#Let4372 */
-          bool __h_case_result  = (true  &&  (((match4368 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn4373 */
-                (unboxed  =  (((match4368 . __h_data ). Just ). __h_0_mem ) );
+        ({ /* cicili#Let4408 */
+          bool __h_case_result  = (true  &&  (((match4404 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn4409 */
+                (unboxed  =  (((match4404 . __h_data ). Just ). __h_0_mem ) );
                 true ;
               }) ) );
           // ----------
           
-          ((__h_case_result ) ? ({ /* cicili#Progn4378 */
-              ({ /* cicili#Let4382 */
+          ((__h_case_result ) ? ({ /* cicili#Progn4414 */
+              ({ /* cicili#Let4418 */
                 typeof((((unboxed -> __h_data ). Buffer ). __h_0_mem )) sb ;
                 // ----------
                 ;
-                ({ /* cicili#Let4384 */
-                  bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) &&  ({ /* cicili#Progn4385 */
+                ({ /* cicili#Let4420 */
+                  bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) &&  ({ /* cicili#Progn4421 */
                         (sb  =  (((unboxed -> __h_data ). Buffer ). __h_0_mem ) );
                         true ;
                       }) ) );
                   // ----------
                   
-                  ((__h_case_result ) ? ({ /* cicili#Progn4390 */
-                      ({ /* cicili#Progn4392 */
-                        { /* cicili#Let4396 */
-                          __auto_type match4395  = take_Box_Vector_char ((&vector ));
-                          typeof((((match4395 . __h_data ). Just ). __h_0_mem )) ptr ;
+                  ((__h_case_result ) ? ({ /* cicili#Progn4426 */
+                      ({ /* cicili#Let4430 */
+                        __auto_type match4429  = take_Box_Vector_char ((&vector ));
+                        typeof((((match4429 . __h_data ). Just ). __h_0_mem )) ptr ;
+                        // ----------
+                        ;
+                        ({ /* cicili#Let4433 */
+                          bool __h_case_result  = (true  &&  (((match4429 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn4434 */
+                                (ptr  =  (((match4429 . __h_data ). Just ). __h_0_mem ) );
+                                true ;
+                              }) ) );
                           // ----------
-                          ;
-                          ({ /* cicili#Let4399 */
-                            bool __h_case_result  = (true  &&  (((match4395 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn4400 */
-                                  (ptr  =  (((match4395 . __h_data ). Just ). __h_0_mem ) );
-                                  true ;
-                                }) ) );
-                            // ----------
-                            
-                            if (__h_case_result )
-                              { /* cicili#Block4406 */
+                          
+                          ((__h_case_result ) ? ({ /* cicili#Progn4439 */
+                              ({ /* cicili#Progn4441 */
                                 free (ptr );
-                              }
-                          });
-                        }
-                        Buffer_char (resize_StringBuffer_char (sb , len ));
+                                Buffer_char (resize_StringBuffer_char (sb , len ));
+                              });
+                            }) : ({ /* cicili#Let4447 */
+                              // ----------
+                              ;
+                              ({ /* cicili#Progn4449 */
+                                None_char ();
+                              });
+                            }));
+                        });
                       });
-                    }) : ({ /* cicili#Let4412 */
+                    }) : ({ /* cicili#Let4454 */
                       typeof((((unboxed -> __h_data ). Slice ). __h_0_mem )) vec ;
                       typeof((((unboxed -> __h_data ). Slice ). __h_1_mem )) cur ;
                       // ----------
                       ;
-                      ({ /* cicili#Let4414 */
-                        bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Slice_t  ) &&  (({ /* cicili#Progn4415 */
+                      ({ /* cicili#Let4456 */
+                        bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Slice_t  ) &&  (({ /* cicili#Progn4457 */
                                 (vec  =  (((unboxed -> __h_data ). Slice ). __h_0_mem ) );
                                 true ;
-                              }) &&  ({ /* cicili#Progn4417 */
+                              }) &&  ({ /* cicili#Progn4459 */
                                 (cur  =  (((unboxed -> __h_data ). Slice ). __h_1_mem ) );
                                 true ;
                               }) ) ) );
                         // ----------
                         
-                        ((__h_case_result ) ? ({ /* cicili#Progn4422 */
-                            ({ /* cicili#Let4425 */
+                        ((__h_case_result ) ? ({ /* cicili#Progn4464 */
+                            ({ /* cicili#Let4467 */
                               __auto_type __h_matchbox  = vec ;
                               // ----------
-                              ({ /* cicili#Let4429 */
-                                __auto_type match4428  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
-                                typeof((((match4428 . __h_data ). Just ). __h_0_mem )) unboxed ;
+                              ({ /* cicili#Let4471 */
+                                __auto_type match4470  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
+                                typeof((((match4470 . __h_data ). Just ). __h_0_mem )) unboxed ;
                                 // ----------
                                 ;
-                                ({ /* cicili#Let4432 */
-                                  bool __h_case_result  = (true  &&  (((match4428 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn4433 */
-                                        (unboxed  =  (((match4428 . __h_data ). Just ). __h_0_mem ) );
+                                ({ /* cicili#Let4474 */
+                                  bool __h_case_result  = (true  &&  (((match4470 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn4475 */
+                                        (unboxed  =  (((match4470 . __h_data ). Just ). __h_0_mem ) );
                                         true ;
                                       }) ) );
                                   // ----------
                                   
-                                  ((__h_case_result ) ? ({ /* cicili#Progn4438 */
-                                      ({ /* cicili#Let4442 */
+                                  ((__h_case_result ) ? ({ /* cicili#Progn4480 */
+                                      ({ /* cicili#Let4484 */
                                         typeof((((unboxed -> __h_data ). Buffer ). __h_0_mem )) sbs ;
                                         // ----------
                                         ;
-                                        ({ /* cicili#Let4444 */
-                                          bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) &&  ({ /* cicili#Progn4445 */
+                                        ({ /* cicili#Let4486 */
+                                          bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) &&  ({ /* cicili#Progn4487 */
                                                 (sbs  =  (((unboxed -> __h_data ). Buffer ). __h_0_mem ) );
                                                 true ;
                                               }) ) );
                                           // ----------
                                           
-                                          ((__h_case_result ) ? ({ /* cicili#Progn4450 */
-                                              ({ /* cicili#Let4454 */
+                                          ((__h_case_result ) ? ({ /* cicili#Progn4492 */
+                                              ({ /* cicili#Let4496 */
                                                 typeof((((sbs . __h_data ). Buffered ). __h_0_mem )) buffer ;
                                                 typeof((((sbs . __h_data ). Buffered ). __h_3_mem )) step ;
                                                 // ----------
                                                 ;
-                                                ({ /* cicili#Let4456 */
-                                                  bool __h_case_result  = (true  &&  (((sbs . __h_ctor ) ==  __h_Buffered_t  ) &&  (({ /* cicili#Progn4457 */
+                                                ({ /* cicili#Let4498 */
+                                                  bool __h_case_result  = (true  &&  (((sbs . __h_ctor ) ==  __h_Buffered_t  ) &&  (({ /* cicili#Progn4499 */
                                                           (buffer  =  (((sbs . __h_data ). Buffered ). __h_0_mem ) );
                                                           true ;
-                                                        }) &&  ({ /* cicili#Progn4459 */
+                                                        }) &&  ({ /* cicili#Progn4501 */
                                                           (step  =  (((sbs . __h_data ). Buffered ). __h_3_mem ) );
                                                           true ;
                                                         }) ) ) );
                                                   // ----------
                                                   
-                                                  ((__h_case_result ) ? ({ /* cicili#Progn4464 */
-                                                      ({ /* cicili#Let4466 */
+                                                  ((__h_case_result ) ? ({ /* cicili#Progn4506 */
+                                                      ({ /* cicili#Let4508 */
                                                         StringBuffer_char new_sb  = newCapacity_StringBuffer_char (len , step );
                                                         // ----------
                                                         Buffer_char (print_StringBuffer_char (new_sb , (buffer  +  cur  ), len ));
                                                       });
-                                                    }) : ({ /* cicili#Let4474 */
+                                                    }) : ({ /* cicili#Let4516 */
                                                       // ----------
                                                       ;
-                                                      ({ /* cicili#Progn4476 */
+                                                      ({ /* cicili#Progn4518 */
                                                         None_char ();
                                                       });
                                                     }));
                                                 });
                                               });
-                                            }) : ({ /* cicili#Let4481 */
+                                            }) : ({ /* cicili#Let4523 */
                                               typeof((((unboxed -> __h_data ). Slice ). __h_0_mem )) veci ;
                                               // ----------
                                               ;
-                                              ({ /* cicili#Let4483 */
-                                                bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Slice_t  ) &&  ({ /* cicili#Progn4484 */
+                                              ({ /* cicili#Let4525 */
+                                                bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Slice_t  ) &&  ({ /* cicili#Progn4526 */
                                                       (veci  =  (((unboxed -> __h_data ). Slice ). __h_0_mem ) );
                                                       true ;
                                                     }) ) );
                                                 // ----------
                                                 
-                                                ((__h_case_result ) ? ({ /* cicili#Progn4489 */
+                                                ((__h_case_result ) ? ({ /* cicili#Progn4531 */
                                                     resize_Vector_char (veci , len );
-                                                  }) : ({ /* cicili#Let4494 */
+                                                  }) : ({ /* cicili#Let4536 */
                                                     // ----------
                                                     ;
-                                                    ({ /* cicili#Progn4496 */
+                                                    ({ /* cicili#Progn4538 */
                                                       clone_Box_Vector_char (vec );
                                                     });
                                                   }));
@@ -4753,20 +4787,20 @@ Vector_char resize_Vector_char (Vector_char vector , size_t len ) {
                                             }));
                                         });
                                       });
-                                    }) : ({ /* cicili#Let4501 */
+                                    }) : ({ /* cicili#Let4543 */
                                       // ----------
                                       ;
-                                      ({ /* cicili#Progn4503 */
+                                      ({ /* cicili#Progn4545 */
                                         None_char ();
                                       });
                                     }));
                                 });
                               });
                             });
-                          }) : ({ /* cicili#Let4508 */
+                          }) : ({ /* cicili#Let4550 */
                             // ----------
                             ;
-                            ({ /* cicili#Progn4510 */
+                            ({ /* cicili#Progn4552 */
                               clone_Box_Vector_char (vector );
                             });
                           }));
@@ -4774,10 +4808,10 @@ Vector_char resize_Vector_char (Vector_char vector , size_t len ) {
                     }));
                 });
               });
-            }) : ({ /* cicili#Let4515 */
+            }) : ({ /* cicili#Let4557 */
               // ----------
               ;
-              ({ /* cicili#Progn4517 */
+              ({ /* cicili#Progn4559 */
                 None_char ();
               });
             }));
@@ -4792,143 +4826,143 @@ Vector_char pureCapacity_Vector_char (size_t capacity , size_t step ) {
   return Buffer_char (newCapacity_StringBuffer_char (capacity , step ));
 }
 char * toArray_Vector_char (Vector_char vector ) {
-  return ({ /* cicili#Let4530 */
+  return ({ /* cicili#Let4572 */
       __auto_type __h_matchbox  = vector ;
       // ----------
-      ({ /* cicili#Let4534 */
-        __auto_type match4533  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
-        typeof((((match4533 . __h_data ). Just ). __h_0_mem )) unboxed ;
+      ({ /* cicili#Let4576 */
+        __auto_type match4575  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
+        typeof((((match4575 . __h_data ). Just ). __h_0_mem )) unboxed ;
         // ----------
         ;
-        ({ /* cicili#Let4537 */
-          bool __h_case_result  = (true  &&  (((match4533 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn4538 */
-                (unboxed  =  (((match4533 . __h_data ). Just ). __h_0_mem ) );
+        ({ /* cicili#Let4579 */
+          bool __h_case_result  = (true  &&  (((match4575 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn4580 */
+                (unboxed  =  (((match4575 . __h_data ). Just ). __h_0_mem ) );
                 true ;
               }) ) );
           // ----------
           
-          ((__h_case_result ) ? ({ /* cicili#Progn4543 */
-              ({ /* cicili#Let4547 */
+          ((__h_case_result ) ? ({ /* cicili#Progn4585 */
+              ({ /* cicili#Let4589 */
                 typeof((((unboxed -> __h_data ). Buffer ). __h_0_mem )) sb ;
                 // ----------
                 ;
-                ({ /* cicili#Let4549 */
-                  bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) &&  ({ /* cicili#Progn4550 */
+                ({ /* cicili#Let4591 */
+                  bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) &&  ({ /* cicili#Progn4592 */
                         (sb  =  (((unboxed -> __h_data ). Buffer ). __h_0_mem ) );
                         true ;
                       }) ) );
                   // ----------
                   
-                  ((__h_case_result ) ? ({ /* cicili#Progn4555 */
-                      ({ /* cicili#Let4559 */
+                  ((__h_case_result ) ? ({ /* cicili#Progn4597 */
+                      ({ /* cicili#Let4601 */
                         typeof((((sb . __h_data ). Buffered ). __h_0_mem )) buffer ;
                         // ----------
                         ;
-                        ({ /* cicili#Let4561 */
-                          bool __h_case_result  = (true  &&  (((sb . __h_ctor ) ==  __h_Buffered_t  ) &&  ({ /* cicili#Progn4562 */
+                        ({ /* cicili#Let4603 */
+                          bool __h_case_result  = (true  &&  (((sb . __h_ctor ) ==  __h_Buffered_t  ) &&  ({ /* cicili#Progn4604 */
                                 (buffer  =  (((sb . __h_data ). Buffered ). __h_0_mem ) );
                                 true ;
                               }) ) );
                           // ----------
                           
-                          ((__h_case_result ) ? ({ /* cicili#Progn4567 */
+                          ((__h_case_result ) ? ({ /* cicili#Progn4609 */
                               buffer ;
-                            }) : ({ /* cicili#Let4571 */
+                            }) : ({ /* cicili#Let4613 */
                               // ----------
                               ;
-                              ({ /* cicili#Progn4573 */
+                              ({ /* cicili#Progn4615 */
                                 NULL ;
                               });
                             }));
                         });
                       });
-                    }) : ({ /* cicili#Let4577 */
+                    }) : ({ /* cicili#Let4619 */
                       typeof((((unboxed -> __h_data ). Slice ). __h_0_mem )) vector ;
                       typeof((((unboxed -> __h_data ). Slice ). __h_1_mem )) cursor ;
                       // ----------
                       ;
-                      ({ /* cicili#Let4579 */
-                        bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Slice_t  ) &&  (({ /* cicili#Progn4580 */
+                      ({ /* cicili#Let4621 */
+                        bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Slice_t  ) &&  (({ /* cicili#Progn4622 */
                                 (vector  =  (((unboxed -> __h_data ). Slice ). __h_0_mem ) );
                                 true ;
-                              }) &&  ({ /* cicili#Progn4582 */
+                              }) &&  ({ /* cicili#Progn4624 */
                                 (cursor  =  (((unboxed -> __h_data ). Slice ). __h_1_mem ) );
                                 true ;
                               }) ) ) );
                         // ----------
                         
-                        ((__h_case_result ) ? ({ /* cicili#Progn4587 */
-                            ({ /* cicili#Let4590 */
+                        ((__h_case_result ) ? ({ /* cicili#Progn4629 */
+                            ({ /* cicili#Let4632 */
                               __auto_type __h_matchbox  = vector ;
                               // ----------
-                              ({ /* cicili#Let4594 */
-                                __auto_type match4593  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
-                                typeof((((match4593 . __h_data ). Just ). __h_0_mem )) unboxed ;
+                              ({ /* cicili#Let4636 */
+                                __auto_type match4635  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
+                                typeof((((match4635 . __h_data ). Just ). __h_0_mem )) unboxed ;
                                 // ----------
                                 ;
-                                ({ /* cicili#Let4597 */
-                                  bool __h_case_result  = (true  &&  (((match4593 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn4598 */
-                                        (unboxed  =  (((match4593 . __h_data ). Just ). __h_0_mem ) );
+                                ({ /* cicili#Let4639 */
+                                  bool __h_case_result  = (true  &&  (((match4635 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn4640 */
+                                        (unboxed  =  (((match4635 . __h_data ). Just ). __h_0_mem ) );
                                         true ;
                                       }) ) );
                                   // ----------
                                   
-                                  ((__h_case_result ) ? ({ /* cicili#Progn4603 */
-                                      ({ /* cicili#Let4607 */
+                                  ((__h_case_result ) ? ({ /* cicili#Progn4645 */
+                                      ({ /* cicili#Let4649 */
                                         typeof((((unboxed -> __h_data ). Buffer ). __h_0_mem )) sbs ;
                                         // ----------
                                         ;
-                                        ({ /* cicili#Let4609 */
-                                          bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) &&  ({ /* cicili#Progn4610 */
+                                        ({ /* cicili#Let4651 */
+                                          bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) &&  ({ /* cicili#Progn4652 */
                                                 (sbs  =  (((unboxed -> __h_data ). Buffer ). __h_0_mem ) );
                                                 true ;
                                               }) ) );
                                           // ----------
                                           
-                                          ((__h_case_result ) ? ({ /* cicili#Progn4615 */
-                                              ({ /* cicili#Let4619 */
+                                          ((__h_case_result ) ? ({ /* cicili#Progn4657 */
+                                              ({ /* cicili#Let4661 */
                                                 typeof((((sbs . __h_data ). Buffered ). __h_0_mem )) buffer ;
                                                 // ----------
                                                 ;
-                                                ({ /* cicili#Let4621 */
-                                                  bool __h_case_result  = (true  &&  (((sbs . __h_ctor ) ==  __h_Buffered_t  ) &&  ({ /* cicili#Progn4622 */
+                                                ({ /* cicili#Let4663 */
+                                                  bool __h_case_result  = (true  &&  (((sbs . __h_ctor ) ==  __h_Buffered_t  ) &&  ({ /* cicili#Progn4664 */
                                                         (buffer  =  (((sbs . __h_data ). Buffered ). __h_0_mem ) );
                                                         true ;
                                                       }) ) );
                                                   // ----------
                                                   
-                                                  ((__h_case_result ) ? ({ /* cicili#Progn4627 */
+                                                  ((__h_case_result ) ? ({ /* cicili#Progn4669 */
                                                       (buffer  +  cursor  );
-                                                    }) : ({ /* cicili#Let4631 */
+                                                    }) : ({ /* cicili#Let4673 */
                                                       // ----------
                                                       ;
-                                                      ({ /* cicili#Progn4633 */
+                                                      ({ /* cicili#Progn4675 */
                                                         NULL ;
                                                       });
                                                     }));
                                                 });
                                               });
-                                            }) : ({ /* cicili#Let4637 */
+                                            }) : ({ /* cicili#Let4679 */
                                               typeof((((unboxed -> __h_data ). Slice ). __h_0_mem )) vec ;
                                               typeof((((unboxed -> __h_data ). Slice ). __h_1_mem )) cur ;
                                               // ----------
                                               ;
-                                              ({ /* cicili#Let4639 */
-                                                bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Slice_t  ) &&  (({ /* cicili#Progn4640 */
+                                              ({ /* cicili#Let4681 */
+                                                bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Slice_t  ) &&  (({ /* cicili#Progn4682 */
                                                         (vec  =  (((unboxed -> __h_data ). Slice ). __h_0_mem ) );
                                                         true ;
-                                                      }) &&  ({ /* cicili#Progn4642 */
+                                                      }) &&  ({ /* cicili#Progn4684 */
                                                         (cur  =  (((unboxed -> __h_data ). Slice ). __h_1_mem ) );
                                                         true ;
                                                       }) ) ) );
                                                 // ----------
                                                 
-                                                ((__h_case_result ) ? ({ /* cicili#Progn4647 */
+                                                ((__h_case_result ) ? ({ /* cicili#Progn4689 */
                                                     (toArray_Vector_char (vec ) +  cur  );
-                                                  }) : ({ /* cicili#Let4652 */
+                                                  }) : ({ /* cicili#Let4694 */
                                                     // ----------
                                                     ;
-                                                    ({ /* cicili#Progn4654 */
+                                                    ({ /* cicili#Progn4696 */
                                                       NULL ;
                                                     });
                                                   }));
@@ -4936,20 +4970,20 @@ char * toArray_Vector_char (Vector_char vector ) {
                                             }));
                                         });
                                       });
-                                    }) : ({ /* cicili#Let4658 */
+                                    }) : ({ /* cicili#Let4700 */
                                       // ----------
                                       ;
-                                      ({ /* cicili#Progn4660 */
+                                      ({ /* cicili#Progn4702 */
                                         NULL ;
                                       });
                                     }));
                                 });
                               });
                             });
-                          }) : ({ /* cicili#Let4664 */
+                          }) : ({ /* cicili#Let4706 */
                             // ----------
                             ;
-                            ({ /* cicili#Progn4666 */
+                            ({ /* cicili#Progn4708 */
                               NULL ;
                             });
                           }));
@@ -4957,10 +4991,10 @@ char * toArray_Vector_char (Vector_char vector ) {
                     }));
                 });
               });
-            }) : ({ /* cicili#Let4670 */
+            }) : ({ /* cicili#Let4712 */
               // ----------
               ;
-              ({ /* cicili#Progn4672 */
+              ({ /* cicili#Progn4714 */
                 NULL ;
               });
             }));
@@ -4969,8 +5003,8 @@ char * toArray_Vector_char (Vector_char vector ) {
     });
 }
 Vector_char wrap_Vector_char (const char item ) {
-  return ({ /* cicili#Let4677 */
-      __auto_type new_vec  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let4679 */
+  return ({ /* cicili#Let4719 */
+      __auto_type new_vec  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let4721 */
         __auto_type new_vec  = pureCapacity_Vector_char (16, 16);
         // ----------
         ((void)((new_vec . __h_table )-> freeData ));
@@ -4983,47 +5017,47 @@ Vector_char wrap_Vector_char (const char item ) {
 size_t show_Vector_char (CFile file , Vector_char vector ) {
   auto size_t show_ (size_t index , Vector_char vector );
   size_t showWithSize (size_t index , size_t size , Vector_char vector ) {
-    return ({ /* cicili#Let4689 */
+    return ({ /* cicili#Let4731 */
         __auto_type __h_matchbox  = vector ;
         // ----------
-        ({ /* cicili#Let4693 */
-          __auto_type match4692  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
-          typeof((((match4692 . __h_data ). Just ). __h_0_mem )) unboxed ;
+        ({ /* cicili#Let4735 */
+          __auto_type match4734  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
+          typeof((((match4734 . __h_data ). Just ). __h_0_mem )) unboxed ;
           // ----------
           ;
-          ({ /* cicili#Let4696 */
-            bool __h_case_result  = (true  &&  (((match4692 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn4697 */
-                  (unboxed  =  (((match4692 . __h_data ). Just ). __h_0_mem ) );
+          ({ /* cicili#Let4738 */
+            bool __h_case_result  = (true  &&  (((match4734 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn4739 */
+                  (unboxed  =  (((match4734 . __h_data ). Just ). __h_0_mem ) );
                   true ;
                 }) ) );
             // ----------
             
-            ((__h_case_result ) ? ({ /* cicili#Progn4702 */
-                ({ /* cicili#Let4706 */
+            ((__h_case_result ) ? ({ /* cicili#Progn4744 */
+                ({ /* cicili#Let4748 */
                   typeof((((unboxed -> __h_data ). Buffer ). __h_0_mem )) sb ;
                   // ----------
                   ;
-                  ({ /* cicili#Let4708 */
-                    bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) &&  ({ /* cicili#Progn4709 */
+                  ({ /* cicili#Let4750 */
+                    bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) &&  ({ /* cicili#Progn4751 */
                           (sb  =  (((unboxed -> __h_data ). Buffer ). __h_0_mem ) );
                           true ;
                         }) ) );
                     // ----------
                     
-                    ((__h_case_result ) ? ({ /* cicili#Progn4714 */
-                        ({ /* cicili#Let4718 */
+                    ((__h_case_result ) ? ({ /* cicili#Progn4756 */
+                        ({ /* cicili#Let4760 */
                           typeof((((sb . __h_data ). Buffered ). __h_0_mem )) buffer ;
                           // ----------
                           ;
-                          ({ /* cicili#Let4720 */
-                            bool __h_case_result  = (true  &&  (((sb . __h_ctor ) ==  __h_Buffered_t  ) &&  ({ /* cicili#Progn4721 */
+                          ({ /* cicili#Let4762 */
+                            bool __h_case_result  = (true  &&  (((sb . __h_ctor ) ==  __h_Buffered_t  ) &&  ({ /* cicili#Progn4763 */
                                   (buffer  =  (((sb . __h_data ). Buffered ). __h_0_mem ) );
                                   true ;
                                 }) ) );
                             // ----------
                             
-                            ((__h_case_result ) ? ({ /* cicili#Progn4726 */
-                                ({ /* cicili#Let4728 */
+                            ((__h_case_result ) ? ({ /* cicili#Progn4768 */
+                                ({ /* cicili#Let4770 */
                                   size_t sum  = 0;
                                   // ----------
                                   for (size_t counter  = index ; (counter  <  (size  +  index  ) ); (++counter )) {
@@ -5031,40 +5065,40 @@ size_t show_Vector_char (CFile file , Vector_char vector ) {
                                   }
                                   sum ;
                                 });
-                              }) : ({ /* cicili#Let4739 */
+                              }) : ({ /* cicili#Let4781 */
                                 // ----------
                                 ;
-                                ({ /* cicili#Progn4741 */
+                                ({ /* cicili#Progn4783 */
                                   0;
                                 });
                               }));
                           });
                         });
-                      }) : ({ /* cicili#Let4745 */
+                      }) : ({ /* cicili#Let4787 */
                         typeof((((unboxed -> __h_data ). Slice ). __h_0_mem )) vector ;
                         typeof((((unboxed -> __h_data ). Slice ). __h_1_mem )) cursor ;
                         typeof((((unboxed -> __h_data ). Slice ). __h_2_mem )) size ;
                         // ----------
                         ;
-                        ({ /* cicili#Let4747 */
-                          bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Slice_t  ) &&  ((({ /* cicili#Progn4748 */
+                        ({ /* cicili#Let4789 */
+                          bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Slice_t  ) &&  ((({ /* cicili#Progn4790 */
                                     (vector  =  (((unboxed -> __h_data ). Slice ). __h_0_mem ) );
                                     true ;
-                                  }) &&  ({ /* cicili#Progn4750 */
+                                  }) &&  ({ /* cicili#Progn4792 */
                                     (cursor  =  (((unboxed -> __h_data ). Slice ). __h_1_mem ) );
                                     true ;
-                                  }) ) &&  ({ /* cicili#Progn4752 */
+                                  }) ) &&  ({ /* cicili#Progn4794 */
                                   (size  =  (((unboxed -> __h_data ). Slice ). __h_2_mem ) );
                                   true ;
                                 }) ) ) );
                           // ----------
                           
-                          ((__h_case_result ) ? ({ /* cicili#Progn4757 */
+                          ((__h_case_result ) ? ({ /* cicili#Progn4799 */
                               showWithSize ((cursor  +  index  ), size , vector );
-                            }) : ({ /* cicili#Let4761 */
+                            }) : ({ /* cicili#Let4803 */
                               // ----------
                               ;
-                              ({ /* cicili#Progn4763 */
+                              ({ /* cicili#Progn4805 */
                                 0;
                               });
                             }));
@@ -5072,10 +5106,10 @@ size_t show_Vector_char (CFile file , Vector_char vector ) {
                       }));
                   });
                 });
-              }) : ({ /* cicili#Let4767 */
+              }) : ({ /* cicili#Let4809 */
                 // ----------
                 ;
-                ({ /* cicili#Progn4769 */
+                ({ /* cicili#Progn4811 */
                   0;
                 });
               }));
@@ -5084,51 +5118,51 @@ size_t show_Vector_char (CFile file , Vector_char vector ) {
       });
   }
   size_t show_ (size_t index , Vector_char vector ) {
-    return ({ /* cicili#Let4773 */
+    return ({ /* cicili#Let4815 */
         __auto_type __h_matchbox  = vector ;
         // ----------
-        ({ /* cicili#Let4777 */
-          __auto_type match4776  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
-          typeof((((match4776 . __h_data ). Just ). __h_0_mem )) unboxed ;
+        ({ /* cicili#Let4819 */
+          __auto_type match4818  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
+          typeof((((match4818 . __h_data ). Just ). __h_0_mem )) unboxed ;
           // ----------
           ;
-          ({ /* cicili#Let4780 */
-            bool __h_case_result  = (true  &&  (((match4776 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn4781 */
-                  (unboxed  =  (((match4776 . __h_data ). Just ). __h_0_mem ) );
+          ({ /* cicili#Let4822 */
+            bool __h_case_result  = (true  &&  (((match4818 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn4823 */
+                  (unboxed  =  (((match4818 . __h_data ). Just ). __h_0_mem ) );
                   true ;
                 }) ) );
             // ----------
             
-            ((__h_case_result ) ? ({ /* cicili#Progn4786 */
-                ({ /* cicili#Let4790 */
+            ((__h_case_result ) ? ({ /* cicili#Progn4828 */
+                ({ /* cicili#Let4832 */
                   typeof((((unboxed -> __h_data ). Buffer ). __h_0_mem )) sb ;
                   // ----------
                   ;
-                  ({ /* cicili#Let4792 */
-                    bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) &&  ({ /* cicili#Progn4793 */
+                  ({ /* cicili#Let4834 */
+                    bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) &&  ({ /* cicili#Progn4835 */
                           (sb  =  (((unboxed -> __h_data ). Buffer ). __h_0_mem ) );
                           true ;
                         }) ) );
                     // ----------
                     
-                    ((__h_case_result ) ? ({ /* cicili#Progn4798 */
-                        ({ /* cicili#Let4802 */
+                    ((__h_case_result ) ? ({ /* cicili#Progn4840 */
+                        ({ /* cicili#Let4844 */
                           typeof((((sb . __h_data ). Buffered ). __h_0_mem )) buffer ;
                           typeof((((sb . __h_data ). Buffered ). __h_1_mem )) cursor ;
                           // ----------
                           ;
-                          ({ /* cicili#Let4804 */
-                            bool __h_case_result  = (true  &&  (((sb . __h_ctor ) ==  __h_Buffered_t  ) &&  (({ /* cicili#Progn4805 */
+                          ({ /* cicili#Let4846 */
+                            bool __h_case_result  = (true  &&  (((sb . __h_ctor ) ==  __h_Buffered_t  ) &&  (({ /* cicili#Progn4847 */
                                     (buffer  =  (((sb . __h_data ). Buffered ). __h_0_mem ) );
                                     true ;
-                                  }) &&  ({ /* cicili#Progn4807 */
+                                  }) &&  ({ /* cicili#Progn4849 */
                                     (cursor  =  (((sb . __h_data ). Buffered ). __h_1_mem ) );
                                     true ;
                                   }) ) ) );
                             // ----------
                             
-                            ((__h_case_result ) ? ({ /* cicili#Progn4812 */
-                                ({ /* cicili#Let4814 */
+                            ((__h_case_result ) ? ({ /* cicili#Progn4854 */
+                                ({ /* cicili#Let4856 */
                                   size_t sum  = 0;
                                   // ----------
                                   for (size_t counter  = index ; (counter  <  cursor  ); (++counter )) {
@@ -5136,40 +5170,40 @@ size_t show_Vector_char (CFile file , Vector_char vector ) {
                                   }
                                   sum ;
                                 });
-                              }) : ({ /* cicili#Let4825 */
+                              }) : ({ /* cicili#Let4867 */
                                 // ----------
                                 ;
-                                ({ /* cicili#Progn4827 */
+                                ({ /* cicili#Progn4869 */
                                   0;
                                 });
                               }));
                           });
                         });
-                      }) : ({ /* cicili#Let4831 */
+                      }) : ({ /* cicili#Let4873 */
                         typeof((((unboxed -> __h_data ). Slice ). __h_0_mem )) vector ;
                         typeof((((unboxed -> __h_data ). Slice ). __h_1_mem )) cursor ;
                         typeof((((unboxed -> __h_data ). Slice ). __h_2_mem )) size ;
                         // ----------
                         ;
-                        ({ /* cicili#Let4833 */
-                          bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Slice_t  ) &&  ((({ /* cicili#Progn4834 */
+                        ({ /* cicili#Let4875 */
+                          bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Slice_t  ) &&  ((({ /* cicili#Progn4876 */
                                     (vector  =  (((unboxed -> __h_data ). Slice ). __h_0_mem ) );
                                     true ;
-                                  }) &&  ({ /* cicili#Progn4836 */
+                                  }) &&  ({ /* cicili#Progn4878 */
                                     (cursor  =  (((unboxed -> __h_data ). Slice ). __h_1_mem ) );
                                     true ;
-                                  }) ) &&  ({ /* cicili#Progn4838 */
+                                  }) ) &&  ({ /* cicili#Progn4880 */
                                   (size  =  (((unboxed -> __h_data ). Slice ). __h_2_mem ) );
                                   true ;
                                 }) ) ) );
                           // ----------
                           
-                          ((__h_case_result ) ? ({ /* cicili#Progn4843 */
+                          ((__h_case_result ) ? ({ /* cicili#Progn4885 */
                               showWithSize ((cursor  +  index  ), size , vector );
-                            }) : ({ /* cicili#Let4847 */
+                            }) : ({ /* cicili#Let4889 */
                               // ----------
                               ;
-                              ({ /* cicili#Progn4849 */
+                              ({ /* cicili#Progn4891 */
                                 0;
                               });
                             }));
@@ -5177,10 +5211,10 @@ size_t show_Vector_char (CFile file , Vector_char vector ) {
                       }));
                   });
                 });
-              }) : ({ /* cicili#Let4853 */
+              }) : ({ /* cicili#Let4895 */
                 // ----------
                 ;
-                ({ /* cicili#Progn4855 */
+                ({ /* cicili#Progn4897 */
                   0;
                 });
               }));
@@ -5191,135 +5225,135 @@ size_t show_Vector_char (CFile file , Vector_char vector ) {
   return show_ (0, vector );
 }
 Vector_char copy_Vector_char (Vector_char vector ) {
-  return ({ /* cicili#Let4860 */
+  return ({ /* cicili#Let4902 */
       __auto_type __h_matchbox  = vector ;
       // ----------
-      ({ /* cicili#Let4864 */
-        __auto_type match4863  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
-        typeof((((match4863 . __h_data ). Just ). __h_0_mem )) unboxed ;
+      ({ /* cicili#Let4906 */
+        __auto_type match4905  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
+        typeof((((match4905 . __h_data ). Just ). __h_0_mem )) unboxed ;
         // ----------
         ;
-        ({ /* cicili#Let4867 */
-          bool __h_case_result  = (true  &&  (((match4863 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn4868 */
-                (unboxed  =  (((match4863 . __h_data ). Just ). __h_0_mem ) );
+        ({ /* cicili#Let4909 */
+          bool __h_case_result  = (true  &&  (((match4905 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn4910 */
+                (unboxed  =  (((match4905 . __h_data ). Just ). __h_0_mem ) );
                 true ;
               }) ) );
           // ----------
           
-          ((__h_case_result ) ? ({ /* cicili#Progn4873 */
-              ({ /* cicili#Let4877 */
+          ((__h_case_result ) ? ({ /* cicili#Progn4915 */
+              ({ /* cicili#Let4919 */
                 typeof((((unboxed -> __h_data ). Buffer ). __h_0_mem )) sb ;
                 // ----------
                 ;
-                ({ /* cicili#Let4879 */
-                  bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) &&  ({ /* cicili#Progn4880 */
+                ({ /* cicili#Let4921 */
+                  bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) &&  ({ /* cicili#Progn4922 */
                         (sb  =  (((unboxed -> __h_data ). Buffer ). __h_0_mem ) );
                         true ;
                       }) ) );
                   // ----------
                   
-                  ((__h_case_result ) ? ({ /* cicili#Progn4885 */
-                      ({ /* cicili#Let4889 */
+                  ((__h_case_result ) ? ({ /* cicili#Progn4927 */
+                      ({ /* cicili#Let4931 */
                         // ----------
                         ;
-                        ({ /* cicili#Let4891 */
+                        ({ /* cicili#Let4933 */
                           bool __h_case_result  = (true  &&  ((sb . __h_ctor ) ==  __h_Buffered_t  ) );
                           // ----------
                           
-                          ((__h_case_result ) ? ({ /* cicili#Progn4895 */
+                          ((__h_case_result ) ? ({ /* cicili#Progn4937 */
                               Buffer_char (copy_StringBuffer_char (sb ));
-                            }) : ({ /* cicili#Let4901 */
+                            }) : ({ /* cicili#Let4943 */
                               // ----------
                               ;
-                              ({ /* cicili#Progn4903 */
+                              ({ /* cicili#Progn4945 */
                                 None_char ();
                               });
                             }));
                         });
                       });
-                    }) : ({ /* cicili#Let4908 */
+                    }) : ({ /* cicili#Let4950 */
                       typeof((((unboxed -> __h_data ). Slice ). __h_0_mem )) vec ;
                       typeof((((unboxed -> __h_data ). Slice ). __h_1_mem )) cur ;
                       typeof((((unboxed -> __h_data ). Slice ). __h_2_mem )) size ;
                       // ----------
                       ;
-                      ({ /* cicili#Let4910 */
-                        bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Slice_t  ) &&  ((({ /* cicili#Progn4911 */
+                      ({ /* cicili#Let4952 */
+                        bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Slice_t  ) &&  ((({ /* cicili#Progn4953 */
                                   (vec  =  (((unboxed -> __h_data ). Slice ). __h_0_mem ) );
                                   true ;
-                                }) &&  ({ /* cicili#Progn4913 */
+                                }) &&  ({ /* cicili#Progn4955 */
                                   (cur  =  (((unboxed -> __h_data ). Slice ). __h_1_mem ) );
                                   true ;
-                                }) ) &&  ({ /* cicili#Progn4915 */
+                                }) ) &&  ({ /* cicili#Progn4957 */
                                 (size  =  (((unboxed -> __h_data ). Slice ). __h_2_mem ) );
                                 true ;
                               }) ) ) );
                         // ----------
                         
-                        ((__h_case_result ) ? ({ /* cicili#Progn4920 */
-                            ({ /* cicili#Let4923 */
+                        ((__h_case_result ) ? ({ /* cicili#Progn4962 */
+                            ({ /* cicili#Let4965 */
                               __auto_type __h_matchbox  = vec ;
                               // ----------
-                              ({ /* cicili#Let4927 */
-                                __auto_type match4926  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
-                                typeof((((match4926 . __h_data ). Just ). __h_0_mem )) unboxed ;
+                              ({ /* cicili#Let4969 */
+                                __auto_type match4968  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
+                                typeof((((match4968 . __h_data ). Just ). __h_0_mem )) unboxed ;
                                 // ----------
                                 ;
-                                ({ /* cicili#Let4930 */
-                                  bool __h_case_result  = (true  &&  (((match4926 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn4931 */
-                                        (unboxed  =  (((match4926 . __h_data ). Just ). __h_0_mem ) );
+                                ({ /* cicili#Let4972 */
+                                  bool __h_case_result  = (true  &&  (((match4968 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn4973 */
+                                        (unboxed  =  (((match4968 . __h_data ). Just ). __h_0_mem ) );
                                         true ;
                                       }) ) );
                                   // ----------
                                   
-                                  ((__h_case_result ) ? ({ /* cicili#Progn4936 */
-                                      ({ /* cicili#Let4940 */
+                                  ((__h_case_result ) ? ({ /* cicili#Progn4978 */
+                                      ({ /* cicili#Let4982 */
                                         typeof((((unboxed -> __h_data ). Buffer ). __h_0_mem )) sbs ;
                                         // ----------
                                         ;
-                                        ({ /* cicili#Let4942 */
-                                          bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) &&  ({ /* cicili#Progn4943 */
+                                        ({ /* cicili#Let4984 */
+                                          bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) &&  ({ /* cicili#Progn4985 */
                                                 (sbs  =  (((unboxed -> __h_data ). Buffer ). __h_0_mem ) );
                                                 true ;
                                               }) ) );
                                           // ----------
                                           
-                                          ((__h_case_result ) ? ({ /* cicili#Progn4948 */
-                                              ({ /* cicili#Let4952 */
+                                          ((__h_case_result ) ? ({ /* cicili#Progn4990 */
+                                              ({ /* cicili#Let4994 */
                                                 // ----------
                                                 ;
-                                                ({ /* cicili#Let4954 */
+                                                ({ /* cicili#Let4996 */
                                                   bool __h_case_result  = (true  &&  ((sbs . __h_ctor ) ==  __h_Buffered_t  ) );
                                                   // ----------
                                                   
-                                                  ((__h_case_result ) ? ({ /* cicili#Progn4958 */
+                                                  ((__h_case_result ) ? ({ /* cicili#Progn5000 */
                                                       Buffer_char (copySlice_StringBuffer_char (sbs , cur , size ));
-                                                    }) : ({ /* cicili#Let4964 */
+                                                    }) : ({ /* cicili#Let5006 */
                                                       // ----------
                                                       ;
-                                                      ({ /* cicili#Progn4966 */
+                                                      ({ /* cicili#Progn5008 */
                                                         None_char ();
                                                       });
                                                     }));
                                                 });
                                               });
-                                            }) : ({ /* cicili#Let4971 */
+                                            }) : ({ /* cicili#Let5013 */
                                               typeof((((unboxed -> __h_data ). Slice ). __h_0_mem )) veci ;
                                               // ----------
                                               ;
-                                              ({ /* cicili#Let4973 */
-                                                bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Slice_t  ) &&  ({ /* cicili#Progn4974 */
+                                              ({ /* cicili#Let5015 */
+                                                bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Slice_t  ) &&  ({ /* cicili#Progn5016 */
                                                       (veci  =  (((unboxed -> __h_data ). Slice ). __h_0_mem ) );
                                                       true ;
                                                     }) ) );
                                                 // ----------
                                                 
-                                                ((__h_case_result ) ? ({ /* cicili#Progn4979 */
+                                                ((__h_case_result ) ? ({ /* cicili#Progn5021 */
                                                     copySlice_Vector_char (veci , cur , size );
-                                                  }) : ({ /* cicili#Let4984 */
+                                                  }) : ({ /* cicili#Let5026 */
                                                     // ----------
                                                     ;
-                                                    ({ /* cicili#Progn4986 */
+                                                    ({ /* cicili#Progn5028 */
                                                       None_char ();
                                                     });
                                                   }));
@@ -5327,20 +5361,20 @@ Vector_char copy_Vector_char (Vector_char vector ) {
                                             }));
                                         });
                                       });
-                                    }) : ({ /* cicili#Let4991 */
+                                    }) : ({ /* cicili#Let5033 */
                                       // ----------
                                       ;
-                                      ({ /* cicili#Progn4993 */
+                                      ({ /* cicili#Progn5035 */
                                         None_char ();
                                       });
                                     }));
                                 });
                               });
                             });
-                          }) : ({ /* cicili#Let4998 */
+                          }) : ({ /* cicili#Let5040 */
                             // ----------
                             ;
-                            ({ /* cicili#Progn5000 */
+                            ({ /* cicili#Progn5042 */
                               None_char ();
                             });
                           }));
@@ -5348,10 +5382,10 @@ Vector_char copy_Vector_char (Vector_char vector ) {
                     }));
                 });
               });
-            }) : ({ /* cicili#Let5005 */
+            }) : ({ /* cicili#Let5047 */
               // ----------
               ;
-              ({ /* cicili#Progn5007 */
+              ({ /* cicili#Progn5049 */
                 None_char ();
               });
             }));
@@ -5360,131 +5394,131 @@ Vector_char copy_Vector_char (Vector_char vector ) {
     });
 }
 Vector_char copySlice_Vector_char (Vector_char vector , size_t pos , size_t len ) {
-  return ({ /* cicili#Let5013 */
+  return ({ /* cicili#Let5055 */
       __auto_type __h_matchbox  = vector ;
       // ----------
-      ({ /* cicili#Let5017 */
-        __auto_type match5016  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
-        typeof((((match5016 . __h_data ). Just ). __h_0_mem )) unboxed ;
+      ({ /* cicili#Let5059 */
+        __auto_type match5058  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
+        typeof((((match5058 . __h_data ). Just ). __h_0_mem )) unboxed ;
         // ----------
         ;
-        ({ /* cicili#Let5020 */
-          bool __h_case_result  = (true  &&  (((match5016 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn5021 */
-                (unboxed  =  (((match5016 . __h_data ). Just ). __h_0_mem ) );
+        ({ /* cicili#Let5062 */
+          bool __h_case_result  = (true  &&  (((match5058 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn5063 */
+                (unboxed  =  (((match5058 . __h_data ). Just ). __h_0_mem ) );
                 true ;
               }) ) );
           // ----------
           
-          ((__h_case_result ) ? ({ /* cicili#Progn5026 */
-              ({ /* cicili#Let5030 */
+          ((__h_case_result ) ? ({ /* cicili#Progn5068 */
+              ({ /* cicili#Let5072 */
                 typeof((((unboxed -> __h_data ). Buffer ). __h_0_mem )) sb ;
                 // ----------
                 ;
-                ({ /* cicili#Let5032 */
-                  bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) &&  ({ /* cicili#Progn5033 */
+                ({ /* cicili#Let5074 */
+                  bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) &&  ({ /* cicili#Progn5075 */
                         (sb  =  (((unboxed -> __h_data ). Buffer ). __h_0_mem ) );
                         true ;
                       }) ) );
                   // ----------
                   
-                  ((__h_case_result ) ? ({ /* cicili#Progn5038 */
-                      ({ /* cicili#Let5042 */
+                  ((__h_case_result ) ? ({ /* cicili#Progn5080 */
+                      ({ /* cicili#Let5084 */
                         // ----------
                         ;
-                        ({ /* cicili#Let5044 */
+                        ({ /* cicili#Let5086 */
                           bool __h_case_result  = (true  &&  ((sb . __h_ctor ) ==  __h_Buffered_t  ) );
                           // ----------
                           
-                          ((__h_case_result ) ? ({ /* cicili#Progn5048 */
+                          ((__h_case_result ) ? ({ /* cicili#Progn5090 */
                               Buffer_char (copySlice_StringBuffer_char (sb , pos , len ));
-                            }) : ({ /* cicili#Let5054 */
+                            }) : ({ /* cicili#Let5096 */
                               // ----------
                               ;
-                              ({ /* cicili#Progn5056 */
+                              ({ /* cicili#Progn5098 */
                                 None_char ();
                               });
                             }));
                         });
                       });
-                    }) : ({ /* cicili#Let5061 */
+                    }) : ({ /* cicili#Let5103 */
                       typeof((((unboxed -> __h_data ). Slice ). __h_0_mem )) vec ;
                       typeof((((unboxed -> __h_data ). Slice ). __h_1_mem )) cur ;
                       // ----------
                       ;
-                      ({ /* cicili#Let5063 */
-                        bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Slice_t  ) &&  (({ /* cicili#Progn5064 */
+                      ({ /* cicili#Let5105 */
+                        bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Slice_t  ) &&  (({ /* cicili#Progn5106 */
                                 (vec  =  (((unboxed -> __h_data ). Slice ). __h_0_mem ) );
                                 true ;
-                              }) &&  ({ /* cicili#Progn5066 */
+                              }) &&  ({ /* cicili#Progn5108 */
                                 (cur  =  (((unboxed -> __h_data ). Slice ). __h_1_mem ) );
                                 true ;
                               }) ) ) );
                         // ----------
                         
-                        ((__h_case_result ) ? ({ /* cicili#Progn5071 */
-                            ({ /* cicili#Let5074 */
+                        ((__h_case_result ) ? ({ /* cicili#Progn5113 */
+                            ({ /* cicili#Let5116 */
                               __auto_type __h_matchbox  = vec ;
                               // ----------
-                              ({ /* cicili#Let5078 */
-                                __auto_type match5077  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
-                                typeof((((match5077 . __h_data ). Just ). __h_0_mem )) unboxed ;
+                              ({ /* cicili#Let5120 */
+                                __auto_type match5119  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
+                                typeof((((match5119 . __h_data ). Just ). __h_0_mem )) unboxed ;
                                 // ----------
                                 ;
-                                ({ /* cicili#Let5081 */
-                                  bool __h_case_result  = (true  &&  (((match5077 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn5082 */
-                                        (unboxed  =  (((match5077 . __h_data ). Just ). __h_0_mem ) );
+                                ({ /* cicili#Let5123 */
+                                  bool __h_case_result  = (true  &&  (((match5119 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn5124 */
+                                        (unboxed  =  (((match5119 . __h_data ). Just ). __h_0_mem ) );
                                         true ;
                                       }) ) );
                                   // ----------
                                   
-                                  ((__h_case_result ) ? ({ /* cicili#Progn5087 */
-                                      ({ /* cicili#Let5091 */
+                                  ((__h_case_result ) ? ({ /* cicili#Progn5129 */
+                                      ({ /* cicili#Let5133 */
                                         typeof((((unboxed -> __h_data ). Buffer ). __h_0_mem )) sbs ;
                                         // ----------
                                         ;
-                                        ({ /* cicili#Let5093 */
-                                          bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) &&  ({ /* cicili#Progn5094 */
+                                        ({ /* cicili#Let5135 */
+                                          bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) &&  ({ /* cicili#Progn5136 */
                                                 (sbs  =  (((unboxed -> __h_data ). Buffer ). __h_0_mem ) );
                                                 true ;
                                               }) ) );
                                           // ----------
                                           
-                                          ((__h_case_result ) ? ({ /* cicili#Progn5099 */
-                                              ({ /* cicili#Let5103 */
+                                          ((__h_case_result ) ? ({ /* cicili#Progn5141 */
+                                              ({ /* cicili#Let5145 */
                                                 // ----------
                                                 ;
-                                                ({ /* cicili#Let5105 */
+                                                ({ /* cicili#Let5147 */
                                                   bool __h_case_result  = (true  &&  ((sbs . __h_ctor ) ==  __h_Buffered_t  ) );
                                                   // ----------
                                                   
-                                                  ((__h_case_result ) ? ({ /* cicili#Progn5109 */
+                                                  ((__h_case_result ) ? ({ /* cicili#Progn5151 */
                                                       Buffer_char (copySlice_StringBuffer_char (sbs , (cur  +  pos  ), len ));
-                                                    }) : ({ /* cicili#Let5115 */
+                                                    }) : ({ /* cicili#Let5157 */
                                                       // ----------
                                                       ;
-                                                      ({ /* cicili#Progn5117 */
+                                                      ({ /* cicili#Progn5159 */
                                                         None_char ();
                                                       });
                                                     }));
                                                 });
                                               });
-                                            }) : ({ /* cicili#Let5122 */
+                                            }) : ({ /* cicili#Let5164 */
                                               typeof((((unboxed -> __h_data ). Slice ). __h_0_mem )) veci ;
                                               // ----------
                                               ;
-                                              ({ /* cicili#Let5124 */
-                                                bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Slice_t  ) &&  ({ /* cicili#Progn5125 */
+                                              ({ /* cicili#Let5166 */
+                                                bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Slice_t  ) &&  ({ /* cicili#Progn5167 */
                                                       (veci  =  (((unboxed -> __h_data ). Slice ). __h_0_mem ) );
                                                       true ;
                                                     }) ) );
                                                 // ----------
                                                 
-                                                ((__h_case_result ) ? ({ /* cicili#Progn5130 */
+                                                ((__h_case_result ) ? ({ /* cicili#Progn5172 */
                                                     copySlice_Vector_char (veci , (cur  +  pos  ), len );
-                                                  }) : ({ /* cicili#Let5135 */
+                                                  }) : ({ /* cicili#Let5177 */
                                                     // ----------
                                                     ;
-                                                    ({ /* cicili#Progn5137 */
+                                                    ({ /* cicili#Progn5179 */
                                                       None_char ();
                                                     });
                                                   }));
@@ -5492,20 +5526,20 @@ Vector_char copySlice_Vector_char (Vector_char vector , size_t pos , size_t len 
                                             }));
                                         });
                                       });
-                                    }) : ({ /* cicili#Let5142 */
+                                    }) : ({ /* cicili#Let5184 */
                                       // ----------
                                       ;
-                                      ({ /* cicili#Progn5144 */
+                                      ({ /* cicili#Progn5186 */
                                         None_char ();
                                       });
                                     }));
                                 });
                               });
                             });
-                          }) : ({ /* cicili#Let5149 */
+                          }) : ({ /* cicili#Let5191 */
                             // ----------
                             ;
-                            ({ /* cicili#Progn5151 */
+                            ({ /* cicili#Progn5193 */
                               None_char ();
                             });
                           }));
@@ -5513,10 +5547,10 @@ Vector_char copySlice_Vector_char (Vector_char vector , size_t pos , size_t len 
                     }));
                 });
               });
-            }) : ({ /* cicili#Let5156 */
+            }) : ({ /* cicili#Let5198 */
               // ----------
               ;
-              ({ /* cicili#Progn5158 */
+              ({ /* cicili#Progn5200 */
                 None_char ();
               });
             }));
@@ -5525,178 +5559,183 @@ Vector_char copySlice_Vector_char (Vector_char vector , size_t pos , size_t len 
     });
 }
 Vector_char replaceAt_Vector_char (Vector_char vector , char item , size_t index ) {
-  return ({ /* cicili#Let5164 */
+  return ({ /* cicili#Let5206 */
       __auto_type __h_matchbox  = vector ;
       // ----------
-      ({ /* cicili#Let5168 */
-        __auto_type match5167  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
-        typeof((((match5167 . __h_data ). Just ). __h_0_mem )) unboxed ;
+      ({ /* cicili#Let5210 */
+        __auto_type match5209  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
+        typeof((((match5209 . __h_data ). Just ). __h_0_mem )) unboxed ;
         // ----------
         ;
-        ({ /* cicili#Let5171 */
-          bool __h_case_result  = (true  &&  (((match5167 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn5172 */
-                (unboxed  =  (((match5167 . __h_data ). Just ). __h_0_mem ) );
+        ({ /* cicili#Let5213 */
+          bool __h_case_result  = (true  &&  (((match5209 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn5214 */
+                (unboxed  =  (((match5209 . __h_data ). Just ). __h_0_mem ) );
                 true ;
               }) ) );
           // ----------
           
-          ((__h_case_result ) ? ({ /* cicili#Progn5177 */
-              ({ /* cicili#Let5181 */
+          ((__h_case_result ) ? ({ /* cicili#Progn5219 */
+              ({ /* cicili#Let5223 */
                 typeof((((unboxed -> __h_data ). Buffer ). __h_0_mem )) sb ;
                 // ----------
                 ;
-                ({ /* cicili#Let5183 */
-                  bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) &&  ({ /* cicili#Progn5184 */
+                ({ /* cicili#Let5225 */
+                  bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) &&  ({ /* cicili#Progn5226 */
                         (sb  =  (((unboxed -> __h_data ). Buffer ). __h_0_mem ) );
                         true ;
                       }) ) );
                   // ----------
                   
-                  ((__h_case_result ) ? ({ /* cicili#Progn5189 */
-                      ({ /* cicili#Progn5191 */
-                        { /* cicili#Let5195 */
-                          __auto_type match5194  = take_Box_Vector_char ((&vector ));
-                          typeof((((match5194 . __h_data ). Just ). __h_0_mem )) ptr ;
+                  ((__h_case_result ) ? ({ /* cicili#Progn5231 */
+                      ({ /* cicili#Let5235 */
+                        __auto_type match5234  = take_Box_Vector_char ((&vector ));
+                        typeof((((match5234 . __h_data ). Just ). __h_0_mem )) ptr ;
+                        // ----------
+                        ;
+                        ({ /* cicili#Let5238 */
+                          bool __h_case_result  = (true  &&  (((match5234 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn5239 */
+                                (ptr  =  (((match5234 . __h_data ). Just ). __h_0_mem ) );
+                                true ;
+                              }) ) );
                           // ----------
-                          ;
-                          ({ /* cicili#Let5198 */
-                            bool __h_case_result  = (true  &&  (((match5194 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn5199 */
-                                  (ptr  =  (((match5194 . __h_data ). Just ). __h_0_mem ) );
-                                  true ;
-                                }) ) );
-                            // ----------
-                            
-                            if (__h_case_result )
-                              { /* cicili#Block5205 */
+                          
+                          ((__h_case_result ) ? ({ /* cicili#Progn5244 */
+                              ({ /* cicili#Progn5246 */
                                 free (ptr );
-                              }
-                          });
-                        }
-                        ({ /* cicili#Let5209 */
-                          typeof((((sb . __h_data ). Buffered ). __h_0_mem )) buffer ;
-                          typeof((((sb . __h_data ). Buffered ). __h_1_mem )) cursor ;
-                          // ----------
-                          ;
-                          ({ /* cicili#Let5211 */
-                            bool __h_case_result  = (true  &&  (((sb . __h_ctor ) ==  __h_Buffered_t  ) &&  (({ /* cicili#Progn5212 */
-                                    (buffer  =  (((sb . __h_data ). Buffered ). __h_0_mem ) );
-                                    true ;
-                                  }) &&  ({ /* cicili#Progn5214 */
-                                    (cursor  =  (((sb . __h_data ). Buffered ). __h_1_mem ) );
-                                    true ;
-                                  }) ) ) );
-                            // ----------
-                            
-                            ((__h_case_result ) ? ({ /* cicili#Progn5219 */
-                                (((index  <  cursor  )) ? ({ /* cicili#Progn5222 */
-                                    (*(buffer  +  index  )) = item ;
-                                    Buffer_char (sb );
-                                  }) : Buffer_char (sb ));
-                              }) : ({ /* cicili#Let5228 */
-                                // ----------
-                                ;
-                                ({ /* cicili#Progn5230 */
-                                  clone_Box_Vector_char (vector );
+                                ({ /* cicili#Let5250 */
+                                  typeof((((sb . __h_data ). Buffered ). __h_0_mem )) buffer ;
+                                  typeof((((sb . __h_data ). Buffered ). __h_1_mem )) cursor ;
+                                  // ----------
+                                  ;
+                                  ({ /* cicili#Let5252 */
+                                    bool __h_case_result  = (true  &&  (((sb . __h_ctor ) ==  __h_Buffered_t  ) &&  (({ /* cicili#Progn5253 */
+                                            (buffer  =  (((sb . __h_data ). Buffered ). __h_0_mem ) );
+                                            true ;
+                                          }) &&  ({ /* cicili#Progn5255 */
+                                            (cursor  =  (((sb . __h_data ). Buffered ). __h_1_mem ) );
+                                            true ;
+                                          }) ) ) );
+                                    // ----------
+                                    
+                                    ((__h_case_result ) ? ({ /* cicili#Progn5260 */
+                                        (((index  <  cursor  )) ? ({ /* cicili#Progn5263 */
+                                            (*(buffer  +  index  )) = item ;
+                                            Buffer_char (sb );
+                                          }) : Buffer_char (sb ));
+                                      }) : ({ /* cicili#Let5269 */
+                                        // ----------
+                                        ;
+                                        ({ /* cicili#Progn5271 */
+                                          clone_Box_Vector_char (vector );
+                                        });
+                                      }));
+                                  });
                                 });
-                              }));
-                          });
+                              });
+                            }) : ({ /* cicili#Let5276 */
+                              // ----------
+                              ;
+                              ({ /* cicili#Progn5278 */
+                                None_char ();
+                              });
+                            }));
                         });
                       });
-                    }) : ({ /* cicili#Let5235 */
+                    }) : ({ /* cicili#Let5283 */
                       typeof((((unboxed -> __h_data ). Slice ). __h_0_mem )) vec ;
                       typeof((((unboxed -> __h_data ). Slice ). __h_1_mem )) cur ;
                       typeof((((unboxed -> __h_data ). Slice ). __h_2_mem )) size ;
                       // ----------
                       ;
-                      ({ /* cicili#Let5237 */
-                        bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Slice_t  ) &&  ((({ /* cicili#Progn5238 */
+                      ({ /* cicili#Let5285 */
+                        bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Slice_t  ) &&  ((({ /* cicili#Progn5286 */
                                   (vec  =  (((unboxed -> __h_data ). Slice ). __h_0_mem ) );
                                   true ;
-                                }) &&  ({ /* cicili#Progn5240 */
+                                }) &&  ({ /* cicili#Progn5288 */
                                   (cur  =  (((unboxed -> __h_data ). Slice ). __h_1_mem ) );
                                   true ;
-                                }) ) &&  ({ /* cicili#Progn5242 */
+                                }) ) &&  ({ /* cicili#Progn5290 */
                                 (size  =  (((unboxed -> __h_data ). Slice ). __h_2_mem ) );
                                 true ;
                               }) ) ) );
                         // ----------
                         
-                        ((__h_case_result ) ? ({ /* cicili#Progn5247 */
-                            ({ /* cicili#Let5250 */
+                        ((__h_case_result ) ? ({ /* cicili#Progn5295 */
+                            ({ /* cicili#Let5298 */
                               __auto_type __h_matchbox  = vec ;
                               // ----------
-                              ({ /* cicili#Let5254 */
-                                __auto_type match5253  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
-                                typeof((((match5253 . __h_data ). Just ). __h_0_mem )) unboxed ;
+                              ({ /* cicili#Let5302 */
+                                __auto_type match5301  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
+                                typeof((((match5301 . __h_data ). Just ). __h_0_mem )) unboxed ;
                                 // ----------
                                 ;
-                                ({ /* cicili#Let5257 */
-                                  bool __h_case_result  = (true  &&  (((match5253 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn5258 */
-                                        (unboxed  =  (((match5253 . __h_data ). Just ). __h_0_mem ) );
+                                ({ /* cicili#Let5305 */
+                                  bool __h_case_result  = (true  &&  (((match5301 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn5306 */
+                                        (unboxed  =  (((match5301 . __h_data ). Just ). __h_0_mem ) );
                                         true ;
                                       }) ) );
                                   // ----------
                                   
-                                  ((__h_case_result ) ? ({ /* cicili#Progn5263 */
-                                      ({ /* cicili#Let5267 */
+                                  ((__h_case_result ) ? ({ /* cicili#Progn5311 */
+                                      ({ /* cicili#Let5315 */
                                         typeof((((unboxed -> __h_data ). Buffer ). __h_0_mem )) sbs ;
                                         // ----------
                                         ;
-                                        ({ /* cicili#Let5269 */
-                                          bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) &&  ({ /* cicili#Progn5270 */
+                                        ({ /* cicili#Let5317 */
+                                          bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) &&  ({ /* cicili#Progn5318 */
                                                 (sbs  =  (((unboxed -> __h_data ). Buffer ). __h_0_mem ) );
                                                 true ;
                                               }) ) );
                                           // ----------
                                           
-                                          ((__h_case_result ) ? ({ /* cicili#Progn5275 */
-                                              ({ /* cicili#Let5279 */
+                                          ((__h_case_result ) ? ({ /* cicili#Progn5323 */
+                                              ({ /* cicili#Let5327 */
                                                 typeof((((sbs . __h_data ). Buffered ). __h_0_mem )) buffer ;
                                                 typeof((((sbs . __h_data ). Buffered ). __h_3_mem )) step ;
                                                 // ----------
                                                 ;
-                                                ({ /* cicili#Let5281 */
-                                                  bool __h_case_result  = (true  &&  (((sbs . __h_ctor ) ==  __h_Buffered_t  ) &&  (({ /* cicili#Progn5282 */
+                                                ({ /* cicili#Let5329 */
+                                                  bool __h_case_result  = (true  &&  (((sbs . __h_ctor ) ==  __h_Buffered_t  ) &&  (({ /* cicili#Progn5330 */
                                                           (buffer  =  (((sbs . __h_data ). Buffered ). __h_0_mem ) );
                                                           true ;
-                                                        }) &&  ({ /* cicili#Progn5284 */
+                                                        }) &&  ({ /* cicili#Progn5332 */
                                                           (step  =  (((sbs . __h_data ). Buffered ). __h_3_mem ) );
                                                           true ;
                                                         }) ) ) );
                                                   // ----------
                                                   
-                                                  ((__h_case_result ) ? ({ /* cicili#Progn5289 */
-                                                      (((index  <  size  )) ? ({ /* cicili#Let5292 */
+                                                  ((__h_case_result ) ? ({ /* cicili#Progn5337 */
+                                                      (((index  <  size  )) ? ({ /* cicili#Let5340 */
                                                           StringBuffer_char new_sb  = newCapacity_StringBuffer_char (size , step );
                                                           // ----------
                                                           Buffer_char (print_StringBuffer_char (put_StringBuffer_char (print_StringBuffer_char (new_sb , (buffer  +  cur  ), index ), item ), (buffer  +  cur  +  index  +  1 ), (size  -  index  -  1 )));
                                                         }) : vec );
-                                                    }) : ({ /* cicili#Let5302 */
+                                                    }) : ({ /* cicili#Let5350 */
                                                       // ----------
                                                       ;
-                                                      ({ /* cicili#Progn5304 */
+                                                      ({ /* cicili#Progn5352 */
                                                         None_char ();
                                                       });
                                                     }));
                                                 });
                                               });
-                                            }) : ({ /* cicili#Let5309 */
+                                            }) : ({ /* cicili#Let5357 */
                                               typeof((((unboxed -> __h_data ). Slice ). __h_0_mem )) veci ;
                                               // ----------
                                               ;
-                                              ({ /* cicili#Let5311 */
-                                                bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Slice_t  ) &&  ({ /* cicili#Progn5312 */
+                                              ({ /* cicili#Let5359 */
+                                                bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Slice_t  ) &&  ({ /* cicili#Progn5360 */
                                                       (veci  =  (((unboxed -> __h_data ). Slice ). __h_0_mem ) );
                                                       true ;
                                                     }) ) );
                                                 // ----------
                                                 
-                                                ((__h_case_result ) ? ({ /* cicili#Progn5317 */
+                                                ((__h_case_result ) ? ({ /* cicili#Progn5365 */
                                                     replaceAt_Vector_char (veci , item , (cur  +  index  ));
-                                                  }) : ({ /* cicili#Let5322 */
+                                                  }) : ({ /* cicili#Let5370 */
                                                     // ----------
                                                     ;
-                                                    ({ /* cicili#Progn5324 */
+                                                    ({ /* cicili#Progn5372 */
                                                       clone_Box_Vector_char (vec );
                                                     });
                                                   }));
@@ -5704,20 +5743,20 @@ Vector_char replaceAt_Vector_char (Vector_char vector , char item , size_t index
                                             }));
                                         });
                                       });
-                                    }) : ({ /* cicili#Let5329 */
+                                    }) : ({ /* cicili#Let5377 */
                                       // ----------
                                       ;
-                                      ({ /* cicili#Progn5331 */
+                                      ({ /* cicili#Progn5379 */
                                         None_char ();
                                       });
                                     }));
                                 });
                               });
                             });
-                          }) : ({ /* cicili#Let5336 */
+                          }) : ({ /* cicili#Let5384 */
                             // ----------
                             ;
-                            ({ /* cicili#Progn5338 */
+                            ({ /* cicili#Progn5386 */
                               clone_Box_Vector_char (vector );
                             });
                           }));
@@ -5725,10 +5764,10 @@ Vector_char replaceAt_Vector_char (Vector_char vector , char item , size_t index
                     }));
                 });
               });
-            }) : ({ /* cicili#Let5343 */
+            }) : ({ /* cicili#Let5391 */
               // ----------
               ;
-              ({ /* cicili#Progn5345 */
+              ({ /* cicili#Progn5393 */
                 None_char ();
               });
             }));
@@ -5737,188 +5776,193 @@ Vector_char replaceAt_Vector_char (Vector_char vector , char item , size_t index
     });
 }
 Vector_char deleteAt_Vector_char (Vector_char vector , size_t index ) {
-  return ({ /* cicili#Let5351 */
+  return ({ /* cicili#Let5399 */
       __auto_type __h_matchbox  = vector ;
       // ----------
-      ({ /* cicili#Let5355 */
-        __auto_type match5354  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
-        typeof((((match5354 . __h_data ). Just ). __h_0_mem )) unboxed ;
+      ({ /* cicili#Let5403 */
+        __auto_type match5402  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
+        typeof((((match5402 . __h_data ). Just ). __h_0_mem )) unboxed ;
         // ----------
         ;
-        ({ /* cicili#Let5358 */
-          bool __h_case_result  = (true  &&  (((match5354 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn5359 */
-                (unboxed  =  (((match5354 . __h_data ). Just ). __h_0_mem ) );
+        ({ /* cicili#Let5406 */
+          bool __h_case_result  = (true  &&  (((match5402 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn5407 */
+                (unboxed  =  (((match5402 . __h_data ). Just ). __h_0_mem ) );
                 true ;
               }) ) );
           // ----------
           
-          ((__h_case_result ) ? ({ /* cicili#Progn5364 */
-              ({ /* cicili#Let5368 */
+          ((__h_case_result ) ? ({ /* cicili#Progn5412 */
+              ({ /* cicili#Let5416 */
                 typeof((((unboxed -> __h_data ). Buffer ). __h_0_mem )) sb ;
                 // ----------
                 ;
-                ({ /* cicili#Let5370 */
-                  bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) &&  ({ /* cicili#Progn5371 */
+                ({ /* cicili#Let5418 */
+                  bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) &&  ({ /* cicili#Progn5419 */
                         (sb  =  (((unboxed -> __h_data ). Buffer ). __h_0_mem ) );
                         true ;
                       }) ) );
                   // ----------
                   
-                  ((__h_case_result ) ? ({ /* cicili#Progn5376 */
-                      ({ /* cicili#Progn5378 */
-                        { /* cicili#Let5382 */
-                          __auto_type match5381  = take_Box_Vector_char ((&vector ));
-                          typeof((((match5381 . __h_data ). Just ). __h_0_mem )) ptr ;
+                  ((__h_case_result ) ? ({ /* cicili#Progn5424 */
+                      ({ /* cicili#Let5428 */
+                        __auto_type match5427  = take_Box_Vector_char ((&vector ));
+                        typeof((((match5427 . __h_data ). Just ). __h_0_mem )) ptr ;
+                        // ----------
+                        ;
+                        ({ /* cicili#Let5431 */
+                          bool __h_case_result  = (true  &&  (((match5427 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn5432 */
+                                (ptr  =  (((match5427 . __h_data ). Just ). __h_0_mem ) );
+                                true ;
+                              }) ) );
                           // ----------
-                          ;
-                          ({ /* cicili#Let5385 */
-                            bool __h_case_result  = (true  &&  (((match5381 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn5386 */
-                                  (ptr  =  (((match5381 . __h_data ). Just ). __h_0_mem ) );
-                                  true ;
-                                }) ) );
-                            // ----------
-                            
-                            if (__h_case_result )
-                              { /* cicili#Block5392 */
+                          
+                          ((__h_case_result ) ? ({ /* cicili#Progn5437 */
+                              ({ /* cicili#Progn5439 */
                                 free (ptr );
-                              }
-                          });
-                        }
-                        ({ /* cicili#Let5396 */
-                          typeof((((sb . __h_data ). Buffered ). __h_0_mem )) buffer ;
-                          typeof((((sb . __h_data ). Buffered ). __h_1_mem )) cursor ;
-                          typeof((((sb . __h_data ). Buffered ). __h_2_mem )) size ;
-                          typeof((((sb . __h_data ). Buffered ). __h_3_mem )) step ;
-                          // ----------
-                          ;
-                          ({ /* cicili#Let5398 */
-                            bool __h_case_result  = (true  &&  (((sb . __h_ctor ) ==  __h_Buffered_t  ) &&  (((({ /* cicili#Progn5399 */
-                                        (buffer  =  (((sb . __h_data ). Buffered ). __h_0_mem ) );
-                                        true ;
-                                      }) &&  ({ /* cicili#Progn5401 */
-                                        (cursor  =  (((sb . __h_data ). Buffered ). __h_1_mem ) );
-                                        true ;
-                                      }) ) &&  ({ /* cicili#Progn5403 */
-                                      (size  =  (((sb . __h_data ). Buffered ). __h_2_mem ) );
-                                      true ;
-                                    }) ) &&  ({ /* cicili#Progn5405 */
-                                    (step  =  (((sb . __h_data ). Buffered ). __h_3_mem ) );
-                                    true ;
-                                  }) ) ) );
-                            // ----------
-                            
-                            ((__h_case_result ) ? ({ /* cicili#Progn5410 */
-                                ({ /* cicili#Progn5412 */
-                                  for (size_t i  = index ; (i  <  cursor  ); (++i )) {
-                                      (*(buffer  +  i  )) = (*(buffer  +  (i  +  1 ) ));
-                                  }
-                                  Buffer_char (MakeStringBuffer_char (buffer , (cursor  -  1 ), size , step ));
+                                ({ /* cicili#Let5443 */
+                                  typeof((((sb . __h_data ). Buffered ). __h_0_mem )) buffer ;
+                                  typeof((((sb . __h_data ). Buffered ). __h_1_mem )) cursor ;
+                                  typeof((((sb . __h_data ). Buffered ). __h_2_mem )) size ;
+                                  typeof((((sb . __h_data ). Buffered ). __h_3_mem )) step ;
+                                  // ----------
+                                  ;
+                                  ({ /* cicili#Let5445 */
+                                    bool __h_case_result  = (true  &&  (((sb . __h_ctor ) ==  __h_Buffered_t  ) &&  (((({ /* cicili#Progn5446 */
+                                                (buffer  =  (((sb . __h_data ). Buffered ). __h_0_mem ) );
+                                                true ;
+                                              }) &&  ({ /* cicili#Progn5448 */
+                                                (cursor  =  (((sb . __h_data ). Buffered ). __h_1_mem ) );
+                                                true ;
+                                              }) ) &&  ({ /* cicili#Progn5450 */
+                                              (size  =  (((sb . __h_data ). Buffered ). __h_2_mem ) );
+                                              true ;
+                                            }) ) &&  ({ /* cicili#Progn5452 */
+                                            (step  =  (((sb . __h_data ). Buffered ). __h_3_mem ) );
+                                            true ;
+                                          }) ) ) );
+                                    // ----------
+                                    
+                                    ((__h_case_result ) ? ({ /* cicili#Progn5457 */
+                                        ({ /* cicili#Progn5459 */
+                                          for (size_t i  = index ; (i  <  cursor  ); (++i )) {
+                                              (*(buffer  +  i  )) = (*(buffer  +  (i  +  1 ) ));
+                                          }
+                                          Buffer_char (MakeStringBuffer_char (buffer , (cursor  -  1 ), size , step ));
+                                        });
+                                      }) : ({ /* cicili#Let5467 */
+                                        // ----------
+                                        ;
+                                        ({ /* cicili#Progn5469 */
+                                          clone_Box_Vector_char (vector );
+                                        });
+                                      }));
+                                  });
                                 });
-                              }) : ({ /* cicili#Let5420 */
-                                // ----------
-                                ;
-                                ({ /* cicili#Progn5422 */
-                                  clone_Box_Vector_char (vector );
-                                });
-                              }));
-                          });
+                              });
+                            }) : ({ /* cicili#Let5474 */
+                              // ----------
+                              ;
+                              ({ /* cicili#Progn5476 */
+                                None_char ();
+                              });
+                            }));
                         });
                       });
-                    }) : ({ /* cicili#Let5427 */
+                    }) : ({ /* cicili#Let5481 */
                       typeof((((unboxed -> __h_data ). Slice ). __h_0_mem )) vec ;
                       typeof((((unboxed -> __h_data ). Slice ). __h_1_mem )) cur ;
                       typeof((((unboxed -> __h_data ). Slice ). __h_2_mem )) size ;
                       // ----------
                       ;
-                      ({ /* cicili#Let5429 */
-                        bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Slice_t  ) &&  ((({ /* cicili#Progn5430 */
+                      ({ /* cicili#Let5483 */
+                        bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Slice_t  ) &&  ((({ /* cicili#Progn5484 */
                                   (vec  =  (((unboxed -> __h_data ). Slice ). __h_0_mem ) );
                                   true ;
-                                }) &&  ({ /* cicili#Progn5432 */
+                                }) &&  ({ /* cicili#Progn5486 */
                                   (cur  =  (((unboxed -> __h_data ). Slice ). __h_1_mem ) );
                                   true ;
-                                }) ) &&  ({ /* cicili#Progn5434 */
+                                }) ) &&  ({ /* cicili#Progn5488 */
                                 (size  =  (((unboxed -> __h_data ). Slice ). __h_2_mem ) );
                                 true ;
                               }) ) ) );
                         // ----------
                         
-                        ((__h_case_result ) ? ({ /* cicili#Progn5439 */
-                            ({ /* cicili#Let5442 */
+                        ((__h_case_result ) ? ({ /* cicili#Progn5493 */
+                            ({ /* cicili#Let5496 */
                               __auto_type __h_matchbox  = vec ;
                               // ----------
-                              ({ /* cicili#Let5446 */
-                                __auto_type match5445  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
-                                typeof((((match5445 . __h_data ). Just ). __h_0_mem )) unboxed ;
+                              ({ /* cicili#Let5500 */
+                                __auto_type match5499  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
+                                typeof((((match5499 . __h_data ). Just ). __h_0_mem )) unboxed ;
                                 // ----------
                                 ;
-                                ({ /* cicili#Let5449 */
-                                  bool __h_case_result  = (true  &&  (((match5445 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn5450 */
-                                        (unboxed  =  (((match5445 . __h_data ). Just ). __h_0_mem ) );
+                                ({ /* cicili#Let5503 */
+                                  bool __h_case_result  = (true  &&  (((match5499 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn5504 */
+                                        (unboxed  =  (((match5499 . __h_data ). Just ). __h_0_mem ) );
                                         true ;
                                       }) ) );
                                   // ----------
                                   
-                                  ((__h_case_result ) ? ({ /* cicili#Progn5455 */
-                                      ({ /* cicili#Let5459 */
+                                  ((__h_case_result ) ? ({ /* cicili#Progn5509 */
+                                      ({ /* cicili#Let5513 */
                                         typeof((((unboxed -> __h_data ). Buffer ). __h_0_mem )) sbs ;
                                         // ----------
                                         ;
-                                        ({ /* cicili#Let5461 */
-                                          bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) &&  ({ /* cicili#Progn5462 */
+                                        ({ /* cicili#Let5515 */
+                                          bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) &&  ({ /* cicili#Progn5516 */
                                                 (sbs  =  (((unboxed -> __h_data ). Buffer ). __h_0_mem ) );
                                                 true ;
                                               }) ) );
                                           // ----------
                                           
-                                          ((__h_case_result ) ? ({ /* cicili#Progn5467 */
-                                              ({ /* cicili#Let5471 */
+                                          ((__h_case_result ) ? ({ /* cicili#Progn5521 */
+                                              ({ /* cicili#Let5525 */
                                                 typeof((((sbs . __h_data ). Buffered ). __h_0_mem )) buffer ;
                                                 typeof((((sbs . __h_data ). Buffered ). __h_3_mem )) step ;
                                                 // ----------
                                                 ;
-                                                ({ /* cicili#Let5473 */
-                                                  bool __h_case_result  = (true  &&  (((sbs . __h_ctor ) ==  __h_Buffered_t  ) &&  (({ /* cicili#Progn5474 */
+                                                ({ /* cicili#Let5527 */
+                                                  bool __h_case_result  = (true  &&  (((sbs . __h_ctor ) ==  __h_Buffered_t  ) &&  (({ /* cicili#Progn5528 */
                                                           (buffer  =  (((sbs . __h_data ). Buffered ). __h_0_mem ) );
                                                           true ;
-                                                        }) &&  ({ /* cicili#Progn5476 */
+                                                        }) &&  ({ /* cicili#Progn5530 */
                                                           (step  =  (((sbs . __h_data ). Buffered ). __h_3_mem ) );
                                                           true ;
                                                         }) ) ) );
                                                   // ----------
                                                   
-                                                  ((__h_case_result ) ? ({ /* cicili#Progn5481 */
-                                                      (((index  <  size  )) ? ({ /* cicili#Let5484 */
+                                                  ((__h_case_result ) ? ({ /* cicili#Progn5535 */
+                                                      (((index  <  size  )) ? ({ /* cicili#Let5538 */
                                                           StringBuffer_char new_sb  = newCapacity_StringBuffer_char ((size  -  1 ), step );
                                                           // ----------
                                                           Buffer_char (print_StringBuffer_char (print_StringBuffer_char (new_sb , (buffer  +  cur  ), index ), (buffer  +  cur  +  index  +  1 ), (size  -  index  -  1 )));
                                                         }) : vec );
-                                                    }) : ({ /* cicili#Let5493 */
+                                                    }) : ({ /* cicili#Let5547 */
                                                       // ----------
                                                       ;
-                                                      ({ /* cicili#Progn5495 */
+                                                      ({ /* cicili#Progn5549 */
                                                         None_char ();
                                                       });
                                                     }));
                                                 });
                                               });
-                                            }) : ({ /* cicili#Let5500 */
+                                            }) : ({ /* cicili#Let5554 */
                                               typeof((((unboxed -> __h_data ). Slice ). __h_0_mem )) veci ;
                                               // ----------
                                               ;
-                                              ({ /* cicili#Let5502 */
-                                                bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Slice_t  ) &&  ({ /* cicili#Progn5503 */
+                                              ({ /* cicili#Let5556 */
+                                                bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Slice_t  ) &&  ({ /* cicili#Progn5557 */
                                                       (veci  =  (((unboxed -> __h_data ). Slice ). __h_0_mem ) );
                                                       true ;
                                                     }) ) );
                                                 // ----------
                                                 
-                                                ((__h_case_result ) ? ({ /* cicili#Progn5508 */
+                                                ((__h_case_result ) ? ({ /* cicili#Progn5562 */
                                                     deleteAt_Vector_char (veci , (cur  +  index  ));
-                                                  }) : ({ /* cicili#Let5513 */
+                                                  }) : ({ /* cicili#Let5567 */
                                                     // ----------
                                                     ;
-                                                    ({ /* cicili#Progn5515 */
+                                                    ({ /* cicili#Progn5569 */
                                                       clone_Box_Vector_char (vec );
                                                     });
                                                   }));
@@ -5926,20 +5970,20 @@ Vector_char deleteAt_Vector_char (Vector_char vector , size_t index ) {
                                             }));
                                         });
                                       });
-                                    }) : ({ /* cicili#Let5520 */
+                                    }) : ({ /* cicili#Let5574 */
                                       // ----------
                                       ;
-                                      ({ /* cicili#Progn5522 */
+                                      ({ /* cicili#Progn5576 */
                                         None_char ();
                                       });
                                     }));
                                 });
                               });
                             });
-                          }) : ({ /* cicili#Let5527 */
+                          }) : ({ /* cicili#Let5581 */
                             // ----------
                             ;
-                            ({ /* cicili#Progn5529 */
+                            ({ /* cicili#Progn5583 */
                               clone_Box_Vector_char (vector );
                             });
                           }));
@@ -5947,10 +5991,10 @@ Vector_char deleteAt_Vector_char (Vector_char vector , size_t index ) {
                     }));
                 });
               });
-            }) : ({ /* cicili#Let5534 */
+            }) : ({ /* cicili#Let5588 */
               // ----------
               ;
-              ({ /* cicili#Progn5536 */
+              ({ /* cicili#Progn5590 */
                 None_char ();
               });
             }));
@@ -5959,183 +6003,188 @@ Vector_char deleteAt_Vector_char (Vector_char vector , size_t index ) {
     });
 }
 Vector_char insertAt_Vector_char (Vector_char vector , char item , size_t index ) {
-  return ({ /* cicili#Let5542 */
+  return ({ /* cicili#Let5596 */
       __auto_type __h_matchbox  = vector ;
       // ----------
-      ({ /* cicili#Let5546 */
-        __auto_type match5545  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
-        typeof((((match5545 . __h_data ). Just ). __h_0_mem )) unboxed ;
+      ({ /* cicili#Let5600 */
+        __auto_type match5599  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
+        typeof((((match5599 . __h_data ). Just ). __h_0_mem )) unboxed ;
         // ----------
         ;
-        ({ /* cicili#Let5549 */
-          bool __h_case_result  = (true  &&  (((match5545 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn5550 */
-                (unboxed  =  (((match5545 . __h_data ). Just ). __h_0_mem ) );
+        ({ /* cicili#Let5603 */
+          bool __h_case_result  = (true  &&  (((match5599 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn5604 */
+                (unboxed  =  (((match5599 . __h_data ). Just ). __h_0_mem ) );
                 true ;
               }) ) );
           // ----------
           
-          ((__h_case_result ) ? ({ /* cicili#Progn5555 */
-              ({ /* cicili#Let5559 */
+          ((__h_case_result ) ? ({ /* cicili#Progn5609 */
+              ({ /* cicili#Let5613 */
                 typeof((((unboxed -> __h_data ). Buffer ). __h_0_mem )) sb ;
                 // ----------
                 ;
-                ({ /* cicili#Let5561 */
-                  bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) &&  ({ /* cicili#Progn5562 */
+                ({ /* cicili#Let5615 */
+                  bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) &&  ({ /* cicili#Progn5616 */
                         (sb  =  (((unboxed -> __h_data ). Buffer ). __h_0_mem ) );
                         true ;
                       }) ) );
                   // ----------
                   
-                  ((__h_case_result ) ? ({ /* cicili#Progn5567 */
-                      ({ /* cicili#Let5569 */
-                        StringBuffer_char new_sb  = put_StringBuffer_char (sb , item );
+                  ((__h_case_result ) ? ({ /* cicili#Progn5621 */
+                      ({ /* cicili#Let5625 */
+                        __auto_type match5624  = take_Box_Vector_char ((&vector ));
+                        typeof((((match5624 . __h_data ). Just ). __h_0_mem )) ptr ;
                         // ----------
-                        { /* cicili#Let5575 */
-                          __auto_type match5574  = take_Box_Vector_char ((&vector ));
-                          typeof((((match5574 . __h_data ). Just ). __h_0_mem )) ptr ;
+                        ;
+                        ({ /* cicili#Let5628 */
+                          bool __h_case_result  = (true  &&  (((match5624 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn5629 */
+                                (ptr  =  (((match5624 . __h_data ). Just ). __h_0_mem ) );
+                                true ;
+                              }) ) );
                           // ----------
-                          ;
-                          ({ /* cicili#Let5578 */
-                            bool __h_case_result  = (true  &&  (((match5574 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn5579 */
-                                  (ptr  =  (((match5574 . __h_data ). Just ). __h_0_mem ) );
-                                  true ;
-                                }) ) );
-                            // ----------
-                            
-                            if (__h_case_result )
-                              { /* cicili#Block5585 */
-                                free (ptr );
-                              }
-                          });
-                        }
-                        ({ /* cicili#Let5589 */
-                          typeof((((new_sb . __h_data ). Buffered ). __h_0_mem )) buffer ;
-                          typeof((((new_sb . __h_data ). Buffered ). __h_1_mem )) cursor ;
-                          // ----------
-                          ;
-                          ({ /* cicili#Let5591 */
-                            bool __h_case_result  = (true  &&  (((new_sb . __h_ctor ) ==  __h_Buffered_t  ) &&  (({ /* cicili#Progn5592 */
-                                    (buffer  =  (((new_sb . __h_data ). Buffered ). __h_0_mem ) );
-                                    true ;
-                                  }) &&  ({ /* cicili#Progn5594 */
-                                    (cursor  =  (((new_sb . __h_data ). Buffered ). __h_1_mem ) );
-                                    true ;
-                                  }) ) ) );
-                            // ----------
-                            
-                            ((__h_case_result ) ? ({ /* cicili#Progn5599 */
-                                ({ /* cicili#Progn5601 */
-                                  for (size_t i  = (cursor  -  1 ); (i  >  index  ); (--i )) {
-                                      (*(buffer  +  i  )) = (*(buffer  +  (i  -  1 ) ));
-                                  }
-                                  (*(buffer  +  index  )) = item ;
-                                  Buffer_char (new_sb );
-                                });
-                              }) : ({ /* cicili#Let5608 */
+                          
+                          ((__h_case_result ) ? ({ /* cicili#Progn5634 */
+                              ({ /* cicili#Let5636 */
+                                StringBuffer_char new_sb  = put_StringBuffer_char (sb , item );
                                 // ----------
-                                ;
-                                ({ /* cicili#Progn5610 */
-                                  clone_Box_Vector_char (vector );
+                                free (ptr );
+                                ({ /* cicili#Let5642 */
+                                  typeof((((new_sb . __h_data ). Buffered ). __h_0_mem )) buffer ;
+                                  typeof((((new_sb . __h_data ). Buffered ). __h_1_mem )) cursor ;
+                                  // ----------
+                                  ;
+                                  ({ /* cicili#Let5644 */
+                                    bool __h_case_result  = (true  &&  (((new_sb . __h_ctor ) ==  __h_Buffered_t  ) &&  (({ /* cicili#Progn5645 */
+                                            (buffer  =  (((new_sb . __h_data ). Buffered ). __h_0_mem ) );
+                                            true ;
+                                          }) &&  ({ /* cicili#Progn5647 */
+                                            (cursor  =  (((new_sb . __h_data ). Buffered ). __h_1_mem ) );
+                                            true ;
+                                          }) ) ) );
+                                    // ----------
+                                    
+                                    ((__h_case_result ) ? ({ /* cicili#Progn5652 */
+                                        ({ /* cicili#Progn5654 */
+                                          for (size_t i  = (cursor  -  1 ); (i  >  index  ); (--i )) {
+                                              (*(buffer  +  i  )) = (*(buffer  +  (i  -  1 ) ));
+                                          }
+                                          (*(buffer  +  index  )) = item ;
+                                          Buffer_char (new_sb );
+                                        });
+                                      }) : ({ /* cicili#Let5661 */
+                                        // ----------
+                                        ;
+                                        ({ /* cicili#Progn5663 */
+                                          clone_Box_Vector_char (vector );
+                                        });
+                                      }));
+                                  });
                                 });
-                              }));
-                          });
+                              });
+                            }) : ({ /* cicili#Let5668 */
+                              // ----------
+                              ;
+                              ({ /* cicili#Progn5670 */
+                                None_char ();
+                              });
+                            }));
                         });
                       });
-                    }) : ({ /* cicili#Let5615 */
+                    }) : ({ /* cicili#Let5675 */
                       typeof((((unboxed -> __h_data ). Slice ). __h_0_mem )) vec ;
                       typeof((((unboxed -> __h_data ). Slice ). __h_1_mem )) cur ;
                       typeof((((unboxed -> __h_data ). Slice ). __h_2_mem )) size ;
                       // ----------
                       ;
-                      ({ /* cicili#Let5617 */
-                        bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Slice_t  ) &&  ((({ /* cicili#Progn5618 */
+                      ({ /* cicili#Let5677 */
+                        bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Slice_t  ) &&  ((({ /* cicili#Progn5678 */
                                   (vec  =  (((unboxed -> __h_data ). Slice ). __h_0_mem ) );
                                   true ;
-                                }) &&  ({ /* cicili#Progn5620 */
+                                }) &&  ({ /* cicili#Progn5680 */
                                   (cur  =  (((unboxed -> __h_data ). Slice ). __h_1_mem ) );
                                   true ;
-                                }) ) &&  ({ /* cicili#Progn5622 */
+                                }) ) &&  ({ /* cicili#Progn5682 */
                                 (size  =  (((unboxed -> __h_data ). Slice ). __h_2_mem ) );
                                 true ;
                               }) ) ) );
                         // ----------
                         
-                        ((__h_case_result ) ? ({ /* cicili#Progn5627 */
-                            ({ /* cicili#Let5630 */
+                        ((__h_case_result ) ? ({ /* cicili#Progn5687 */
+                            ({ /* cicili#Let5690 */
                               __auto_type __h_matchbox  = vec ;
                               // ----------
-                              ({ /* cicili#Let5634 */
-                                __auto_type match5633  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
-                                typeof((((match5633 . __h_data ). Just ). __h_0_mem )) unboxed ;
+                              ({ /* cicili#Let5694 */
+                                __auto_type match5693  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
+                                typeof((((match5693 . __h_data ). Just ). __h_0_mem )) unboxed ;
                                 // ----------
                                 ;
-                                ({ /* cicili#Let5637 */
-                                  bool __h_case_result  = (true  &&  (((match5633 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn5638 */
-                                        (unboxed  =  (((match5633 . __h_data ). Just ). __h_0_mem ) );
+                                ({ /* cicili#Let5697 */
+                                  bool __h_case_result  = (true  &&  (((match5693 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn5698 */
+                                        (unboxed  =  (((match5693 . __h_data ). Just ). __h_0_mem ) );
                                         true ;
                                       }) ) );
                                   // ----------
                                   
-                                  ((__h_case_result ) ? ({ /* cicili#Progn5643 */
-                                      ({ /* cicili#Let5647 */
+                                  ((__h_case_result ) ? ({ /* cicili#Progn5703 */
+                                      ({ /* cicili#Let5707 */
                                         typeof((((unboxed -> __h_data ). Buffer ). __h_0_mem )) sbs ;
                                         // ----------
                                         ;
-                                        ({ /* cicili#Let5649 */
-                                          bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) &&  ({ /* cicili#Progn5650 */
+                                        ({ /* cicili#Let5709 */
+                                          bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) &&  ({ /* cicili#Progn5710 */
                                                 (sbs  =  (((unboxed -> __h_data ). Buffer ). __h_0_mem ) );
                                                 true ;
                                               }) ) );
                                           // ----------
                                           
-                                          ((__h_case_result ) ? ({ /* cicili#Progn5655 */
-                                              ({ /* cicili#Let5659 */
+                                          ((__h_case_result ) ? ({ /* cicili#Progn5715 */
+                                              ({ /* cicili#Let5719 */
                                                 typeof((((sbs . __h_data ). Buffered ). __h_0_mem )) buffer ;
                                                 typeof((((sbs . __h_data ). Buffered ). __h_3_mem )) step ;
                                                 // ----------
                                                 ;
-                                                ({ /* cicili#Let5661 */
-                                                  bool __h_case_result  = (true  &&  (((sbs . __h_ctor ) ==  __h_Buffered_t  ) &&  (({ /* cicili#Progn5662 */
+                                                ({ /* cicili#Let5721 */
+                                                  bool __h_case_result  = (true  &&  (((sbs . __h_ctor ) ==  __h_Buffered_t  ) &&  (({ /* cicili#Progn5722 */
                                                           (buffer  =  (((sbs . __h_data ). Buffered ). __h_0_mem ) );
                                                           true ;
-                                                        }) &&  ({ /* cicili#Progn5664 */
+                                                        }) &&  ({ /* cicili#Progn5724 */
                                                           (step  =  (((sbs . __h_data ). Buffered ). __h_3_mem ) );
                                                           true ;
                                                         }) ) ) );
                                                   // ----------
                                                   
-                                                  ((__h_case_result ) ? ({ /* cicili#Progn5669 */
-                                                      (((index  <  size  )) ? ({ /* cicili#Let5672 */
+                                                  ((__h_case_result ) ? ({ /* cicili#Progn5729 */
+                                                      (((index  <  size  )) ? ({ /* cicili#Let5732 */
                                                           StringBuffer_char new_sb  = newCapacity_StringBuffer_char ((size  +  1 ), step );
                                                           // ----------
                                                           Buffer_char (print_StringBuffer_char (put_StringBuffer_char (print_StringBuffer_char (new_sb , (buffer  +  cur  ), index ), item ), (buffer  +  cur  +  index  ), (size  -  index  )));
                                                         }) : vec );
-                                                    }) : ({ /* cicili#Let5682 */
+                                                    }) : ({ /* cicili#Let5742 */
                                                       // ----------
                                                       ;
-                                                      ({ /* cicili#Progn5684 */
+                                                      ({ /* cicili#Progn5744 */
                                                         None_char ();
                                                       });
                                                     }));
                                                 });
                                               });
-                                            }) : ({ /* cicili#Let5689 */
+                                            }) : ({ /* cicili#Let5749 */
                                               typeof((((unboxed -> __h_data ). Slice ). __h_0_mem )) veci ;
                                               // ----------
                                               ;
-                                              ({ /* cicili#Let5691 */
-                                                bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Slice_t  ) &&  ({ /* cicili#Progn5692 */
+                                              ({ /* cicili#Let5751 */
+                                                bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Slice_t  ) &&  ({ /* cicili#Progn5752 */
                                                       (veci  =  (((unboxed -> __h_data ). Slice ). __h_0_mem ) );
                                                       true ;
                                                     }) ) );
                                                 // ----------
                                                 
-                                                ((__h_case_result ) ? ({ /* cicili#Progn5697 */
+                                                ((__h_case_result ) ? ({ /* cicili#Progn5757 */
                                                     insertAt_Vector_char (veci , item , (cur  +  index  ));
-                                                  }) : ({ /* cicili#Let5702 */
+                                                  }) : ({ /* cicili#Let5762 */
                                                     // ----------
                                                     ;
-                                                    ({ /* cicili#Progn5704 */
+                                                    ({ /* cicili#Progn5764 */
                                                       clone_Box_Vector_char (vec );
                                                     });
                                                   }));
@@ -6143,20 +6192,20 @@ Vector_char insertAt_Vector_char (Vector_char vector , char item , size_t index 
                                             }));
                                         });
                                       });
-                                    }) : ({ /* cicili#Let5709 */
+                                    }) : ({ /* cicili#Let5769 */
                                       // ----------
                                       ;
-                                      ({ /* cicili#Progn5711 */
+                                      ({ /* cicili#Progn5771 */
                                         None_char ();
                                       });
                                     }));
                                 });
                               });
                             });
-                          }) : ({ /* cicili#Let5716 */
+                          }) : ({ /* cicili#Let5776 */
                             // ----------
                             ;
-                            ({ /* cicili#Progn5718 */
+                            ({ /* cicili#Progn5778 */
                               clone_Box_Vector_char (vector );
                             });
                           }));
@@ -6164,10 +6213,10 @@ Vector_char insertAt_Vector_char (Vector_char vector , char item , size_t index 
                     }));
                 });
               });
-            }) : ({ /* cicili#Let5723 */
+            }) : ({ /* cicili#Let5783 */
               // ----------
               ;
-              ({ /* cicili#Progn5725 */
+              ({ /* cicili#Progn5785 */
                 None_char ();
               });
             }));
@@ -6176,161 +6225,166 @@ Vector_char insertAt_Vector_char (Vector_char vector , char item , size_t index 
     });
 }
 Vector_char reverse_Vector_char (Vector_char vector ) {
-  return ({ /* cicili#Let5731 */
+  return ({ /* cicili#Let5791 */
       __auto_type __h_matchbox  = vector ;
       // ----------
-      ({ /* cicili#Let5735 */
-        __auto_type match5734  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
-        typeof((((match5734 . __h_data ). Just ). __h_0_mem )) unboxed ;
+      ({ /* cicili#Let5795 */
+        __auto_type match5794  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
+        typeof((((match5794 . __h_data ). Just ). __h_0_mem )) unboxed ;
         // ----------
         ;
-        ({ /* cicili#Let5738 */
-          bool __h_case_result  = (true  &&  (((match5734 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn5739 */
-                (unboxed  =  (((match5734 . __h_data ). Just ). __h_0_mem ) );
+        ({ /* cicili#Let5798 */
+          bool __h_case_result  = (true  &&  (((match5794 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn5799 */
+                (unboxed  =  (((match5794 . __h_data ). Just ). __h_0_mem ) );
                 true ;
               }) ) );
           // ----------
           
-          ((__h_case_result ) ? ({ /* cicili#Progn5744 */
-              ({ /* cicili#Let5748 */
+          ((__h_case_result ) ? ({ /* cicili#Progn5804 */
+              ({ /* cicili#Let5808 */
                 typeof((((unboxed -> __h_data ). Buffer ). __h_0_mem )) sb ;
                 // ----------
                 ;
-                ({ /* cicili#Let5750 */
-                  bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) &&  ({ /* cicili#Progn5751 */
+                ({ /* cicili#Let5810 */
+                  bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) &&  ({ /* cicili#Progn5811 */
                         (sb  =  (((unboxed -> __h_data ). Buffer ). __h_0_mem ) );
                         true ;
                       }) ) );
                   // ----------
                   
-                  ((__h_case_result ) ? ({ /* cicili#Progn5756 */
-                      ({ /* cicili#Let5760 */
+                  ((__h_case_result ) ? ({ /* cicili#Progn5816 */
+                      ({ /* cicili#Let5820 */
                         typeof((((sb . __h_data ). Buffered ). __h_0_mem )) buffer ;
                         typeof((((sb . __h_data ). Buffered ). __h_1_mem )) cursor ;
                         typeof((((sb . __h_data ). Buffered ). __h_2_mem )) size ;
                         typeof((((sb . __h_data ). Buffered ). __h_3_mem )) step ;
                         // ----------
                         ;
-                        ({ /* cicili#Let5762 */
-                          bool __h_case_result  = (true  &&  (((sb . __h_ctor ) ==  __h_Buffered_t  ) &&  (((({ /* cicili#Progn5763 */
+                        ({ /* cicili#Let5822 */
+                          bool __h_case_result  = (true  &&  (((sb . __h_ctor ) ==  __h_Buffered_t  ) &&  (((({ /* cicili#Progn5823 */
                                       (buffer  =  (((sb . __h_data ). Buffered ). __h_0_mem ) );
                                       true ;
-                                    }) &&  ({ /* cicili#Progn5765 */
+                                    }) &&  ({ /* cicili#Progn5825 */
                                       (cursor  =  (((sb . __h_data ). Buffered ). __h_1_mem ) );
                                       true ;
-                                    }) ) &&  ({ /* cicili#Progn5767 */
+                                    }) ) &&  ({ /* cicili#Progn5827 */
                                     (size  =  (((sb . __h_data ). Buffered ). __h_2_mem ) );
                                     true ;
-                                  }) ) &&  ({ /* cicili#Progn5769 */
+                                  }) ) &&  ({ /* cicili#Progn5829 */
                                   (step  =  (((sb . __h_data ). Buffered ). __h_3_mem ) );
                                   true ;
                                 }) ) ) );
                           // ----------
                           
-                          ((__h_case_result ) ? ({ /* cicili#Progn5774 */
-                              ({ /* cicili#Let5776 */
-                                char tmp ;
+                          ((__h_case_result ) ? ({ /* cicili#Progn5834 */
+                              ({ /* cicili#Let5838 */
+                                __auto_type match5837  = take_Box_Vector_char ((&vector ));
+                                typeof((((match5837 . __h_data ). Just ). __h_0_mem )) ptr ;
                                 // ----------
-                                { /* cicili#Let5780 */
-                                  __auto_type match5779  = take_Box_Vector_char ((&vector ));
-                                  typeof((((match5779 . __h_data ). Just ). __h_0_mem )) ptr ;
+                                ;
+                                ({ /* cicili#Let5841 */
+                                  bool __h_case_result  = (true  &&  (((match5837 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn5842 */
+                                        (ptr  =  (((match5837 . __h_data ). Just ). __h_0_mem ) );
+                                        true ;
+                                      }) ) );
                                   // ----------
-                                  ;
-                                  ({ /* cicili#Let5783 */
-                                    bool __h_case_result  = (true  &&  (((match5779 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn5784 */
-                                          (ptr  =  (((match5779 . __h_data ). Just ). __h_0_mem ) );
-                                          true ;
-                                        }) ) );
-                                    // ----------
-                                    
-                                    if (__h_case_result )
-                                      { /* cicili#Block5790 */
+                                  
+                                  ((__h_case_result ) ? ({ /* cicili#Progn5847 */
+                                      ({ /* cicili#Let5849 */
+                                        char tmp ;
+                                        // ----------
                                         free (ptr );
-                                      }
-                                  });
-                                }
-                                for (size_t i  = 0,  j  = cursor ; (i  <  (cursor  /  2 ) ); (++i ), (--j )) {
-                                    tmp  = (*(buffer  +  i  ));
-                                    (*(buffer  +  i  )) = (*(buffer  +  (j  -  1 ) ));
-                                    (*(buffer  +  (j  -  1 ) )) = tmp ;
-                                }
-                                Buffer_char (MakeStringBuffer_char (buffer , cursor , size , step ));
+                                        for (size_t i  = 0,  j  = cursor ; (i  <  (cursor  /  2 ) ); (++i ), (--j )) {
+                                            tmp  = (*(buffer  +  i  ));
+                                            (*(buffer  +  i  )) = (*(buffer  +  (j  -  1 ) ));
+                                            (*(buffer  +  (j  -  1 ) )) = tmp ;
+                                        }
+                                        Buffer_char (MakeStringBuffer_char (buffer , cursor , size , step ));
+                                      });
+                                    }) : ({ /* cicili#Let5857 */
+                                      // ----------
+                                      ;
+                                      ({ /* cicili#Progn5859 */
+                                        None_char ();
+                                      });
+                                    }));
+                                });
                               });
-                            }) : ({ /* cicili#Let5798 */
+                            }) : ({ /* cicili#Let5864 */
                               // ----------
                               ;
-                              ({ /* cicili#Progn5800 */
-                                clone_Box_Vector_char (vector );
+                              ({ /* cicili#Progn5866 */
+                                None_char ();
                               });
                             }));
                         });
                       });
-                    }) : ({ /* cicili#Let5805 */
+                    }) : ({ /* cicili#Let5871 */
                       typeof((((unboxed -> __h_data ). Slice ). __h_0_mem )) vec ;
                       typeof((((unboxed -> __h_data ). Slice ). __h_1_mem )) cur ;
                       typeof((((unboxed -> __h_data ). Slice ). __h_2_mem )) size ;
                       // ----------
                       ;
-                      ({ /* cicili#Let5807 */
-                        bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Slice_t  ) &&  ((({ /* cicili#Progn5808 */
+                      ({ /* cicili#Let5873 */
+                        bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Slice_t  ) &&  ((({ /* cicili#Progn5874 */
                                   (vec  =  (((unboxed -> __h_data ). Slice ). __h_0_mem ) );
                                   true ;
-                                }) &&  ({ /* cicili#Progn5810 */
+                                }) &&  ({ /* cicili#Progn5876 */
                                   (cur  =  (((unboxed -> __h_data ). Slice ). __h_1_mem ) );
                                   true ;
-                                }) ) &&  ({ /* cicili#Progn5812 */
+                                }) ) &&  ({ /* cicili#Progn5878 */
                                 (size  =  (((unboxed -> __h_data ). Slice ). __h_2_mem ) );
                                 true ;
                               }) ) ) );
                         // ----------
                         
-                        ((__h_case_result ) ? ({ /* cicili#Progn5817 */
-                            ({ /* cicili#Let5820 */
+                        ((__h_case_result ) ? ({ /* cicili#Progn5883 */
+                            ({ /* cicili#Let5886 */
                               __auto_type __h_matchbox  = vec ;
                               // ----------
-                              ({ /* cicili#Let5824 */
-                                __auto_type match5823  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
-                                typeof((((match5823 . __h_data ). Just ). __h_0_mem )) unboxed ;
+                              ({ /* cicili#Let5890 */
+                                __auto_type match5889  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
+                                typeof((((match5889 . __h_data ). Just ). __h_0_mem )) unboxed ;
                                 // ----------
                                 ;
-                                ({ /* cicili#Let5827 */
-                                  bool __h_case_result  = (true  &&  (((match5823 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn5828 */
-                                        (unboxed  =  (((match5823 . __h_data ). Just ). __h_0_mem ) );
+                                ({ /* cicili#Let5893 */
+                                  bool __h_case_result  = (true  &&  (((match5889 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn5894 */
+                                        (unboxed  =  (((match5889 . __h_data ). Just ). __h_0_mem ) );
                                         true ;
                                       }) ) );
                                   // ----------
                                   
-                                  ((__h_case_result ) ? ({ /* cicili#Progn5833 */
-                                      ({ /* cicili#Let5837 */
+                                  ((__h_case_result ) ? ({ /* cicili#Progn5899 */
+                                      ({ /* cicili#Let5903 */
                                         typeof((((unboxed -> __h_data ). Buffer ). __h_0_mem )) sbs ;
                                         // ----------
                                         ;
-                                        ({ /* cicili#Let5839 */
-                                          bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) &&  ({ /* cicili#Progn5840 */
+                                        ({ /* cicili#Let5905 */
+                                          bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) &&  ({ /* cicili#Progn5906 */
                                                 (sbs  =  (((unboxed -> __h_data ). Buffer ). __h_0_mem ) );
                                                 true ;
                                               }) ) );
                                           // ----------
                                           
-                                          ((__h_case_result ) ? ({ /* cicili#Progn5845 */
+                                          ((__h_case_result ) ? ({ /* cicili#Progn5911 */
                                               reverse_Vector_char (Buffer_char (copySlice_StringBuffer_char (sbs , cur , size )));
-                                            }) : ({ /* cicili#Let5852 */
+                                            }) : ({ /* cicili#Let5918 */
                                               typeof((((unboxed -> __h_data ). Slice ). __h_0_mem )) veci ;
                                               // ----------
                                               ;
-                                              ({ /* cicili#Let5854 */
-                                                bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Slice_t  ) &&  ({ /* cicili#Progn5855 */
+                                              ({ /* cicili#Let5920 */
+                                                bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Slice_t  ) &&  ({ /* cicili#Progn5921 */
                                                       (veci  =  (((unboxed -> __h_data ). Slice ). __h_0_mem ) );
                                                       true ;
                                                     }) ) );
                                                 // ----------
                                                 
-                                                ((__h_case_result ) ? ({ /* cicili#Progn5860 */
+                                                ((__h_case_result ) ? ({ /* cicili#Progn5926 */
                                                     reverse_Vector_char (copySlice_Vector_char (veci , cur , size ));
-                                                  }) : ({ /* cicili#Let5866 */
+                                                  }) : ({ /* cicili#Let5932 */
                                                     // ----------
                                                     ;
-                                                    ({ /* cicili#Progn5868 */
+                                                    ({ /* cicili#Progn5934 */
                                                       clone_Box_Vector_char (vec );
                                                     });
                                                   }));
@@ -6338,20 +6392,20 @@ Vector_char reverse_Vector_char (Vector_char vector ) {
                                             }));
                                         });
                                       });
-                                    }) : ({ /* cicili#Let5873 */
+                                    }) : ({ /* cicili#Let5939 */
                                       // ----------
                                       ;
-                                      ({ /* cicili#Progn5875 */
+                                      ({ /* cicili#Progn5941 */
                                         None_char ();
                                       });
                                     }));
                                 });
                               });
                             });
-                          }) : ({ /* cicili#Let5880 */
+                          }) : ({ /* cicili#Let5946 */
                             // ----------
                             ;
-                            ({ /* cicili#Progn5882 */
+                            ({ /* cicili#Progn5948 */
                               clone_Box_Vector_char (vector );
                             });
                           }));
@@ -6359,10 +6413,10 @@ Vector_char reverse_Vector_char (Vector_char vector ) {
                     }));
                 });
               });
-            }) : ({ /* cicili#Let5887 */
+            }) : ({ /* cicili#Let5953 */
               // ----------
               ;
-              ({ /* cicili#Progn5889 */
+              ({ /* cicili#Progn5955 */
                 None_char ();
               });
             }));
@@ -6371,121 +6425,126 @@ Vector_char reverse_Vector_char (Vector_char vector ) {
     });
 }
 Vector_char append_Vector_char (Vector_char lvector , Vector_char rvector ) {
-  return ({ /* cicili#Let5895 */
+  return ({ /* cicili#Let5961 */
       __auto_type __h_matchbox  = lvector ;
       // ----------
-      ({ /* cicili#Let5899 */
-        __auto_type match5898  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
-        typeof((((match5898 . __h_data ). Just ). __h_0_mem )) unboxed ;
+      ({ /* cicili#Let5965 */
+        __auto_type match5964  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
+        typeof((((match5964 . __h_data ). Just ). __h_0_mem )) unboxed ;
         // ----------
         ;
-        ({ /* cicili#Let5902 */
-          bool __h_case_result  = (true  &&  (((match5898 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn5903 */
-                (unboxed  =  (((match5898 . __h_data ). Just ). __h_0_mem ) );
+        ({ /* cicili#Let5968 */
+          bool __h_case_result  = (true  &&  (((match5964 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn5969 */
+                (unboxed  =  (((match5964 . __h_data ). Just ). __h_0_mem ) );
                 true ;
               }) ) );
           // ----------
           
-          ((__h_case_result ) ? ({ /* cicili#Progn5908 */
-              ({ /* cicili#Let5912 */
+          ((__h_case_result ) ? ({ /* cicili#Progn5974 */
+              ({ /* cicili#Let5978 */
                 typeof((((unboxed -> __h_data ). Buffer ). __h_0_mem )) sb ;
                 // ----------
                 ;
-                ({ /* cicili#Let5914 */
-                  bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) &&  ({ /* cicili#Progn5915 */
+                ({ /* cicili#Let5980 */
+                  bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) &&  ({ /* cicili#Progn5981 */
                         (sb  =  (((unboxed -> __h_data ). Buffer ). __h_0_mem ) );
                         true ;
                       }) ) );
                   // ----------
                   
-                  ((__h_case_result ) ? ({ /* cicili#Progn5920 */
-                      ({ /* cicili#Progn5922 */
-                        { /* cicili#Let5926 */
-                          __auto_type match5925  = take_Box_Vector_char ((&lvector ));
-                          typeof((((match5925 . __h_data ). Just ). __h_0_mem )) ptr ;
+                  ((__h_case_result ) ? ({ /* cicili#Progn5986 */
+                      ({ /* cicili#Let5990 */
+                        __auto_type match5989  = take_Box_Vector_char ((&lvector ));
+                        typeof((((match5989 . __h_data ). Just ). __h_0_mem )) ptr ;
+                        // ----------
+                        ;
+                        ({ /* cicili#Let5993 */
+                          bool __h_case_result  = (true  &&  (((match5989 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn5994 */
+                                (ptr  =  (((match5989 . __h_data ). Just ). __h_0_mem ) );
+                                true ;
+                              }) ) );
                           // ----------
-                          ;
-                          ({ /* cicili#Let5929 */
-                            bool __h_case_result  = (true  &&  (((match5925 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn5930 */
-                                  (ptr  =  (((match5925 . __h_data ). Just ). __h_0_mem ) );
-                                  true ;
-                                }) ) );
-                            // ----------
-                            
-                            if (__h_case_result )
-                              { /* cicili#Block5936 */
+                          
+                          ((__h_case_result ) ? ({ /* cicili#Progn5999 */
+                              ({ /* cicili#Progn6001 */
                                 free (ptr );
-                              }
-                          });
-                        }
-                        Buffer_char (print_StringBuffer_char (sb , toArray_Vector_char (rvector ), len_Vector_char (rvector )));
+                                Buffer_char (print_StringBuffer_char (sb , toArray_Vector_char (rvector ), len_Vector_char (rvector )));
+                              });
+                            }) : ({ /* cicili#Let6009 */
+                              // ----------
+                              ;
+                              ({ /* cicili#Progn6011 */
+                                None_char ();
+                              });
+                            }));
+                        });
                       });
-                    }) : ({ /* cicili#Let5944 */
+                    }) : ({ /* cicili#Let6016 */
                       typeof((((unboxed -> __h_data ). Slice ). __h_0_mem )) vec ;
                       typeof((((unboxed -> __h_data ). Slice ). __h_1_mem )) cur ;
                       typeof((((unboxed -> __h_data ). Slice ). __h_2_mem )) size ;
                       // ----------
                       ;
-                      ({ /* cicili#Let5946 */
-                        bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Slice_t  ) &&  ((({ /* cicili#Progn5947 */
+                      ({ /* cicili#Let6018 */
+                        bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Slice_t  ) &&  ((({ /* cicili#Progn6019 */
                                   (vec  =  (((unboxed -> __h_data ). Slice ). __h_0_mem ) );
                                   true ;
-                                }) &&  ({ /* cicili#Progn5949 */
+                                }) &&  ({ /* cicili#Progn6021 */
                                   (cur  =  (((unboxed -> __h_data ). Slice ). __h_1_mem ) );
                                   true ;
-                                }) ) &&  ({ /* cicili#Progn5951 */
+                                }) ) &&  ({ /* cicili#Progn6023 */
                                 (size  =  (((unboxed -> __h_data ). Slice ). __h_2_mem ) );
                                 true ;
                               }) ) ) );
                         // ----------
                         
-                        ((__h_case_result ) ? ({ /* cicili#Progn5956 */
-                            ({ /* cicili#Let5959 */
+                        ((__h_case_result ) ? ({ /* cicili#Progn6028 */
+                            ({ /* cicili#Let6031 */
                               __auto_type __h_matchbox  = vec ;
                               // ----------
-                              ({ /* cicili#Let5963 */
-                                __auto_type match5962  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
-                                typeof((((match5962 . __h_data ). Just ). __h_0_mem )) unboxed ;
+                              ({ /* cicili#Let6035 */
+                                __auto_type match6034  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
+                                typeof((((match6034 . __h_data ). Just ). __h_0_mem )) unboxed ;
                                 // ----------
                                 ;
-                                ({ /* cicili#Let5966 */
-                                  bool __h_case_result  = (true  &&  (((match5962 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn5967 */
-                                        (unboxed  =  (((match5962 . __h_data ). Just ). __h_0_mem ) );
+                                ({ /* cicili#Let6038 */
+                                  bool __h_case_result  = (true  &&  (((match6034 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn6039 */
+                                        (unboxed  =  (((match6034 . __h_data ). Just ). __h_0_mem ) );
                                         true ;
                                       }) ) );
                                   // ----------
                                   
-                                  ((__h_case_result ) ? ({ /* cicili#Progn5972 */
-                                      ({ /* cicili#Let5976 */
+                                  ((__h_case_result ) ? ({ /* cicili#Progn6044 */
+                                      ({ /* cicili#Let6048 */
                                         typeof((((unboxed -> __h_data ). Buffer ). __h_0_mem )) sbs ;
                                         // ----------
                                         ;
-                                        ({ /* cicili#Let5978 */
-                                          bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) &&  ({ /* cicili#Progn5979 */
+                                        ({ /* cicili#Let6050 */
+                                          bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) &&  ({ /* cicili#Progn6051 */
                                                 (sbs  =  (((unboxed -> __h_data ). Buffer ). __h_0_mem ) );
                                                 true ;
                                               }) ) );
                                           // ----------
                                           
-                                          ((__h_case_result ) ? ({ /* cicili#Progn5984 */
+                                          ((__h_case_result ) ? ({ /* cicili#Progn6056 */
                                               Buffer_char (print_StringBuffer_char (copySlice_StringBuffer_char (sbs , cur , size ), toArray_Vector_char (rvector ), len_Vector_char (rvector )));
-                                            }) : ({ /* cicili#Let5993 */
+                                            }) : ({ /* cicili#Let6065 */
                                               typeof((((unboxed -> __h_data ). Slice ). __h_0_mem )) veci ;
                                               // ----------
                                               ;
-                                              ({ /* cicili#Let5995 */
-                                                bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Slice_t  ) &&  ({ /* cicili#Progn5996 */
+                                              ({ /* cicili#Let6067 */
+                                                bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Slice_t  ) &&  ({ /* cicili#Progn6068 */
                                                       (veci  =  (((unboxed -> __h_data ). Slice ). __h_0_mem ) );
                                                       true ;
                                                     }) ) );
                                                 // ----------
                                                 
-                                                ((__h_case_result ) ? ({ /* cicili#Progn6001 */
+                                                ((__h_case_result ) ? ({ /* cicili#Progn6073 */
                                                     append_Vector_char (copySlice_Vector_char (veci , cur , size ), rvector );
-                                                  }) : ({ /* cicili#Let6007 */
+                                                  }) : ({ /* cicili#Let6079 */
                                                     // ----------
                                                     ;
-                                                    ({ /* cicili#Progn6009 */
+                                                    ({ /* cicili#Progn6081 */
                                                       clone_Box_Vector_char (vec );
                                                     });
                                                   }));
@@ -6493,20 +6552,20 @@ Vector_char append_Vector_char (Vector_char lvector , Vector_char rvector ) {
                                             }));
                                         });
                                       });
-                                    }) : ({ /* cicili#Let6014 */
+                                    }) : ({ /* cicili#Let6086 */
                                       // ----------
                                       ;
-                                      ({ /* cicili#Progn6016 */
+                                      ({ /* cicili#Progn6088 */
                                         None_char ();
                                       });
                                     }));
                                 });
                               });
                             });
-                          }) : ({ /* cicili#Let6021 */
+                          }) : ({ /* cicili#Let6093 */
                             // ----------
                             ;
-                            ({ /* cicili#Progn6023 */
+                            ({ /* cicili#Progn6095 */
                               clone_Box_Vector_char (lvector );
                             });
                           }));
@@ -6514,10 +6573,10 @@ Vector_char append_Vector_char (Vector_char lvector , Vector_char rvector ) {
                     }));
                 });
               });
-            }) : ({ /* cicili#Let6028 */
+            }) : ({ /* cicili#Let6100 */
               // ----------
               ;
-              ({ /* cicili#Progn6030 */
+              ({ /* cicili#Progn6102 */
                 None_char ();
               });
             }));
@@ -6526,121 +6585,126 @@ Vector_char append_Vector_char (Vector_char lvector , Vector_char rvector ) {
     });
 }
 Vector_char push_Vector_char (char item , Vector_char vector ) {
-  return ({ /* cicili#Let6036 */
+  return ({ /* cicili#Let6108 */
       __auto_type __h_matchbox  = vector ;
       // ----------
-      ({ /* cicili#Let6040 */
-        __auto_type match6039  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
-        typeof((((match6039 . __h_data ). Just ). __h_0_mem )) unboxed ;
+      ({ /* cicili#Let6112 */
+        __auto_type match6111  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
+        typeof((((match6111 . __h_data ). Just ). __h_0_mem )) unboxed ;
         // ----------
         ;
-        ({ /* cicili#Let6043 */
-          bool __h_case_result  = (true  &&  (((match6039 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn6044 */
-                (unboxed  =  (((match6039 . __h_data ). Just ). __h_0_mem ) );
+        ({ /* cicili#Let6115 */
+          bool __h_case_result  = (true  &&  (((match6111 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn6116 */
+                (unboxed  =  (((match6111 . __h_data ). Just ). __h_0_mem ) );
                 true ;
               }) ) );
           // ----------
           
-          ((__h_case_result ) ? ({ /* cicili#Progn6049 */
-              ({ /* cicili#Let6053 */
+          ((__h_case_result ) ? ({ /* cicili#Progn6121 */
+              ({ /* cicili#Let6125 */
                 typeof((((unboxed -> __h_data ). Buffer ). __h_0_mem )) sb ;
                 // ----------
                 ;
-                ({ /* cicili#Let6055 */
-                  bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) &&  ({ /* cicili#Progn6056 */
+                ({ /* cicili#Let6127 */
+                  bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) &&  ({ /* cicili#Progn6128 */
                         (sb  =  (((unboxed -> __h_data ). Buffer ). __h_0_mem ) );
                         true ;
                       }) ) );
                   // ----------
                   
-                  ((__h_case_result ) ? ({ /* cicili#Progn6061 */
-                      ({ /* cicili#Progn6063 */
-                        { /* cicili#Let6067 */
-                          __auto_type match6066  = take_Box_Vector_char ((&vector ));
-                          typeof((((match6066 . __h_data ). Just ). __h_0_mem )) ptr ;
+                  ((__h_case_result ) ? ({ /* cicili#Progn6133 */
+                      ({ /* cicili#Let6137 */
+                        __auto_type match6136  = take_Box_Vector_char ((&vector ));
+                        typeof((((match6136 . __h_data ). Just ). __h_0_mem )) ptr ;
+                        // ----------
+                        ;
+                        ({ /* cicili#Let6140 */
+                          bool __h_case_result  = (true  &&  (((match6136 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn6141 */
+                                (ptr  =  (((match6136 . __h_data ). Just ). __h_0_mem ) );
+                                true ;
+                              }) ) );
                           // ----------
-                          ;
-                          ({ /* cicili#Let6070 */
-                            bool __h_case_result  = (true  &&  (((match6066 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn6071 */
-                                  (ptr  =  (((match6066 . __h_data ). Just ). __h_0_mem ) );
-                                  true ;
-                                }) ) );
-                            // ----------
-                            
-                            if (__h_case_result )
-                              { /* cicili#Block6077 */
+                          
+                          ((__h_case_result ) ? ({ /* cicili#Progn6146 */
+                              ({ /* cicili#Progn6148 */
                                 free (ptr );
-                              }
-                          });
-                        }
-                        Buffer_char (put_StringBuffer_char (sb , item ));
+                                Buffer_char (put_StringBuffer_char (sb , item ));
+                              });
+                            }) : ({ /* cicili#Let6154 */
+                              // ----------
+                              ;
+                              ({ /* cicili#Progn6156 */
+                                None_char ();
+                              });
+                            }));
+                        });
                       });
-                    }) : ({ /* cicili#Let6083 */
+                    }) : ({ /* cicili#Let6161 */
                       typeof((((unboxed -> __h_data ). Slice ). __h_0_mem )) vec ;
                       typeof((((unboxed -> __h_data ). Slice ). __h_1_mem )) cur ;
                       typeof((((unboxed -> __h_data ). Slice ). __h_2_mem )) size ;
                       // ----------
                       ;
-                      ({ /* cicili#Let6085 */
-                        bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Slice_t  ) &&  ((({ /* cicili#Progn6086 */
+                      ({ /* cicili#Let6163 */
+                        bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Slice_t  ) &&  ((({ /* cicili#Progn6164 */
                                   (vec  =  (((unboxed -> __h_data ). Slice ). __h_0_mem ) );
                                   true ;
-                                }) &&  ({ /* cicili#Progn6088 */
+                                }) &&  ({ /* cicili#Progn6166 */
                                   (cur  =  (((unboxed -> __h_data ). Slice ). __h_1_mem ) );
                                   true ;
-                                }) ) &&  ({ /* cicili#Progn6090 */
+                                }) ) &&  ({ /* cicili#Progn6168 */
                                 (size  =  (((unboxed -> __h_data ). Slice ). __h_2_mem ) );
                                 true ;
                               }) ) ) );
                         // ----------
                         
-                        ((__h_case_result ) ? ({ /* cicili#Progn6095 */
-                            ({ /* cicili#Let6098 */
+                        ((__h_case_result ) ? ({ /* cicili#Progn6173 */
+                            ({ /* cicili#Let6176 */
                               __auto_type __h_matchbox  = vec ;
                               // ----------
-                              ({ /* cicili#Let6102 */
-                                __auto_type match6101  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
-                                typeof((((match6101 . __h_data ). Just ). __h_0_mem )) unboxed ;
+                              ({ /* cicili#Let6180 */
+                                __auto_type match6179  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
+                                typeof((((match6179 . __h_data ). Just ). __h_0_mem )) unboxed ;
                                 // ----------
                                 ;
-                                ({ /* cicili#Let6105 */
-                                  bool __h_case_result  = (true  &&  (((match6101 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn6106 */
-                                        (unboxed  =  (((match6101 . __h_data ). Just ). __h_0_mem ) );
+                                ({ /* cicili#Let6183 */
+                                  bool __h_case_result  = (true  &&  (((match6179 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn6184 */
+                                        (unboxed  =  (((match6179 . __h_data ). Just ). __h_0_mem ) );
                                         true ;
                                       }) ) );
                                   // ----------
                                   
-                                  ((__h_case_result ) ? ({ /* cicili#Progn6111 */
-                                      ({ /* cicili#Let6115 */
+                                  ((__h_case_result ) ? ({ /* cicili#Progn6189 */
+                                      ({ /* cicili#Let6193 */
                                         typeof((((unboxed -> __h_data ). Buffer ). __h_0_mem )) sbs ;
                                         // ----------
                                         ;
-                                        ({ /* cicili#Let6117 */
-                                          bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) &&  ({ /* cicili#Progn6118 */
+                                        ({ /* cicili#Let6195 */
+                                          bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) &&  ({ /* cicili#Progn6196 */
                                                 (sbs  =  (((unboxed -> __h_data ). Buffer ). __h_0_mem ) );
                                                 true ;
                                               }) ) );
                                           // ----------
                                           
-                                          ((__h_case_result ) ? ({ /* cicili#Progn6123 */
+                                          ((__h_case_result ) ? ({ /* cicili#Progn6201 */
                                               Buffer_char (put_StringBuffer_char (copySlice_StringBuffer_char (sbs , cur , size ), item ));
-                                            }) : ({ /* cicili#Let6130 */
+                                            }) : ({ /* cicili#Let6208 */
                                               typeof((((unboxed -> __h_data ). Slice ). __h_0_mem )) veci ;
                                               // ----------
                                               ;
-                                              ({ /* cicili#Let6132 */
-                                                bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Slice_t  ) &&  ({ /* cicili#Progn6133 */
+                                              ({ /* cicili#Let6210 */
+                                                bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Slice_t  ) &&  ({ /* cicili#Progn6211 */
                                                       (veci  =  (((unboxed -> __h_data ). Slice ). __h_0_mem ) );
                                                       true ;
                                                     }) ) );
                                                 // ----------
                                                 
-                                                ((__h_case_result ) ? ({ /* cicili#Progn6138 */
+                                                ((__h_case_result ) ? ({ /* cicili#Progn6216 */
                                                     push_Vector_char (item , copySlice_Vector_char (veci , cur , size ));
-                                                  }) : ({ /* cicili#Let6144 */
+                                                  }) : ({ /* cicili#Let6222 */
                                                     // ----------
                                                     ;
-                                                    ({ /* cicili#Progn6146 */
+                                                    ({ /* cicili#Progn6224 */
                                                       clone_Box_Vector_char (vec );
                                                     });
                                                   }));
@@ -6648,20 +6712,20 @@ Vector_char push_Vector_char (char item , Vector_char vector ) {
                                             }));
                                         });
                                       });
-                                    }) : ({ /* cicili#Let6151 */
+                                    }) : ({ /* cicili#Let6229 */
                                       // ----------
                                       ;
-                                      ({ /* cicili#Progn6153 */
+                                      ({ /* cicili#Progn6231 */
                                         None_char ();
                                       });
                                     }));
                                 });
                               });
                             });
-                          }) : ({ /* cicili#Let6158 */
+                          }) : ({ /* cicili#Let6236 */
                             // ----------
                             ;
-                            ({ /* cicili#Progn6160 */
+                            ({ /* cicili#Progn6238 */
                               clone_Box_Vector_char (vector );
                             });
                           }));
@@ -6669,10 +6733,10 @@ Vector_char push_Vector_char (char item , Vector_char vector ) {
                     }));
                 });
               });
-            }) : ({ /* cicili#Let6165 */
+            }) : ({ /* cicili#Let6243 */
               // ----------
               ;
-              ({ /* cicili#Progn6167 */
+              ({ /* cicili#Progn6245 */
                 None_char ();
               });
             }));
@@ -6681,81 +6745,81 @@ Vector_char push_Vector_char (char item , Vector_char vector ) {
     });
 }
 Vector_char take_Vector_char (size_t len , Vector_char vector ) {
-  return ({ /* cicili#Let6173 */
+  return ({ /* cicili#Let6251 */
       __auto_type __h_matchbox  = vector ;
       // ----------
-      ({ /* cicili#Let6177 */
-        __auto_type match6176  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
-        typeof((((match6176 . __h_data ). Just ). __h_0_mem )) unboxed ;
+      ({ /* cicili#Let6255 */
+        __auto_type match6254  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
+        typeof((((match6254 . __h_data ). Just ). __h_0_mem )) unboxed ;
         // ----------
         ;
-        ({ /* cicili#Let6180 */
-          bool __h_case_result  = (true  &&  (((match6176 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn6181 */
-                (unboxed  =  (((match6176 . __h_data ). Just ). __h_0_mem ) );
+        ({ /* cicili#Let6258 */
+          bool __h_case_result  = (true  &&  (((match6254 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn6259 */
+                (unboxed  =  (((match6254 . __h_data ). Just ). __h_0_mem ) );
                 true ;
               }) ) );
           // ----------
           
-          ((__h_case_result ) ? ({ /* cicili#Progn6186 */
-              ({ /* cicili#Let6190 */
+          ((__h_case_result ) ? ({ /* cicili#Progn6264 */
+              ({ /* cicili#Let6268 */
                 typeof((((unboxed -> __h_data ). Buffer ). __h_0_mem )) sb ;
                 // ----------
                 ;
-                ({ /* cicili#Let6192 */
-                  bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) &&  ({ /* cicili#Progn6193 */
+                ({ /* cicili#Let6270 */
+                  bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) &&  ({ /* cicili#Progn6271 */
                         (sb  =  (((unboxed -> __h_data ). Buffer ). __h_0_mem ) );
                         true ;
                       }) ) );
                   // ----------
                   
-                  ((__h_case_result ) ? ({ /* cicili#Progn6198 */
-                      ({ /* cicili#Let6202 */
+                  ((__h_case_result ) ? ({ /* cicili#Progn6276 */
+                      ({ /* cicili#Let6280 */
                         typeof((((sb . __h_data ). Buffered ). __h_1_mem )) cursor ;
                         // ----------
                         ;
-                        ({ /* cicili#Let6204 */
-                          bool __h_case_result  = (true  &&  (((sb . __h_ctor ) ==  __h_Buffered_t  ) &&  ({ /* cicili#Progn6205 */
+                        ({ /* cicili#Let6282 */
+                          bool __h_case_result  = (true  &&  (((sb . __h_ctor ) ==  __h_Buffered_t  ) &&  ({ /* cicili#Progn6283 */
                                 (cursor  =  (((sb . __h_data ). Buffered ). __h_1_mem ) );
                                 true ;
                               }) ) );
                           // ----------
                           
-                          ((__h_case_result ) ? ({ /* cicili#Progn6210 */
+                          ((__h_case_result ) ? ({ /* cicili#Progn6288 */
                               (((len  <=  0 )) ? Slice_char (clone_Box_Vector_char (vector ), 0, 0) : (((len  <  cursor  )) ? Slice_char (clone_Box_Vector_char (vector ), 0, len ) : Slice_char (clone_Box_Vector_char (vector ), 0, 0)));
-                            }) : ({ /* cicili#Let6222 */
+                            }) : ({ /* cicili#Let6300 */
                               // ----------
                               ;
-                              ({ /* cicili#Progn6224 */
+                              ({ /* cicili#Progn6302 */
                                 Slice_char (clone_Box_Vector_char (vector ), 0, 0);
                               });
                             }));
                         });
                       });
-                    }) : ({ /* cicili#Let6230 */
+                    }) : ({ /* cicili#Let6308 */
                       typeof((((unboxed -> __h_data ). Slice ). __h_0_mem )) vec ;
                       typeof((((unboxed -> __h_data ). Slice ). __h_1_mem )) cursor ;
                       typeof((((unboxed -> __h_data ). Slice ). __h_2_mem )) size ;
                       // ----------
                       ;
-                      ({ /* cicili#Let6232 */
-                        bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Slice_t  ) &&  ((({ /* cicili#Progn6233 */
+                      ({ /* cicili#Let6310 */
+                        bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Slice_t  ) &&  ((({ /* cicili#Progn6311 */
                                   (vec  =  (((unboxed -> __h_data ). Slice ). __h_0_mem ) );
                                   true ;
-                                }) &&  ({ /* cicili#Progn6235 */
+                                }) &&  ({ /* cicili#Progn6313 */
                                   (cursor  =  (((unboxed -> __h_data ). Slice ). __h_1_mem ) );
                                   true ;
-                                }) ) &&  ({ /* cicili#Progn6237 */
+                                }) ) &&  ({ /* cicili#Progn6315 */
                                 (size  =  (((unboxed -> __h_data ). Slice ). __h_2_mem ) );
                                 true ;
                               }) ) ) );
                         // ----------
                         
-                        ((__h_case_result ) ? ({ /* cicili#Progn6242 */
+                        ((__h_case_result ) ? ({ /* cicili#Progn6320 */
                             (((len  <=  0 )) ? Slice_char (clone_Box_Vector_char (vec ), cursor , 0) : (((len  <  size  )) ? Slice_char (clone_Box_Vector_char (vec ), cursor , len ) : Slice_char (clone_Box_Vector_char (vec ), cursor , 0)));
-                          }) : ({ /* cicili#Let6254 */
+                          }) : ({ /* cicili#Let6332 */
                             // ----------
                             ;
-                            ({ /* cicili#Progn6256 */
+                            ({ /* cicili#Progn6334 */
                               clone_Box_Vector_char (vector );
                             });
                           }));
@@ -6763,10 +6827,10 @@ Vector_char take_Vector_char (size_t len , Vector_char vector ) {
                     }));
                 });
               });
-            }) : ({ /* cicili#Let6261 */
+            }) : ({ /* cicili#Let6339 */
               // ----------
               ;
-              ({ /* cicili#Progn6263 */
+              ({ /* cicili#Progn6341 */
                 None_char ();
               });
             }));
@@ -6775,85 +6839,85 @@ Vector_char take_Vector_char (size_t len , Vector_char vector ) {
     });
 }
 Maybe_char last_Vector_char (Vector_char vector ) {
-  return ({ /* cicili#Let6270 */
+  return ({ /* cicili#Let6348 */
       __auto_type __h_matchbox  = vector ;
       // ----------
-      ({ /* cicili#Let6274 */
-        __auto_type match6273  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
-        typeof((((match6273 . __h_data ). Just ). __h_0_mem )) unboxed ;
+      ({ /* cicili#Let6352 */
+        __auto_type match6351  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
+        typeof((((match6351 . __h_data ). Just ). __h_0_mem )) unboxed ;
         // ----------
         ;
-        ({ /* cicili#Let6277 */
-          bool __h_case_result  = (true  &&  (((match6273 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn6278 */
-                (unboxed  =  (((match6273 . __h_data ). Just ). __h_0_mem ) );
+        ({ /* cicili#Let6355 */
+          bool __h_case_result  = (true  &&  (((match6351 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn6356 */
+                (unboxed  =  (((match6351 . __h_data ). Just ). __h_0_mem ) );
                 true ;
               }) ) );
           // ----------
           
-          ((__h_case_result ) ? ({ /* cicili#Progn6283 */
-              ({ /* cicili#Let6287 */
+          ((__h_case_result ) ? ({ /* cicili#Progn6361 */
+              ({ /* cicili#Let6365 */
                 typeof((((unboxed -> __h_data ). Buffer ). __h_0_mem )) sb ;
                 // ----------
                 ;
-                ({ /* cicili#Let6289 */
-                  bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) &&  ({ /* cicili#Progn6290 */
+                ({ /* cicili#Let6367 */
+                  bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) &&  ({ /* cicili#Progn6368 */
                         (sb  =  (((unboxed -> __h_data ). Buffer ). __h_0_mem ) );
                         true ;
                       }) ) );
                   // ----------
                   
-                  ((__h_case_result ) ? ({ /* cicili#Progn6295 */
-                      ({ /* cicili#Let6299 */
+                  ((__h_case_result ) ? ({ /* cicili#Progn6373 */
+                      ({ /* cicili#Let6377 */
                         typeof((((sb . __h_data ). Buffered ). __h_0_mem )) buffer ;
                         typeof((((sb . __h_data ). Buffered ). __h_1_mem )) cursor ;
                         // ----------
                         ;
-                        ({ /* cicili#Let6301 */
-                          bool __h_case_result  = (true  &&  (((sb . __h_ctor ) ==  __h_Buffered_t  ) &&  (({ /* cicili#Progn6302 */
+                        ({ /* cicili#Let6379 */
+                          bool __h_case_result  = (true  &&  (((sb . __h_ctor ) ==  __h_Buffered_t  ) &&  (({ /* cicili#Progn6380 */
                                   (buffer  =  (((sb . __h_data ). Buffered ). __h_0_mem ) );
                                   true ;
-                                }) &&  ({ /* cicili#Progn6304 */
+                                }) &&  ({ /* cicili#Progn6382 */
                                   (cursor  =  (((sb . __h_data ). Buffered ). __h_1_mem ) );
                                   true ;
                                 }) ) ) );
                           // ----------
                           
-                          ((__h_case_result ) ? ({ /* cicili#Progn6309 */
+                          ((__h_case_result ) ? ({ /* cicili#Progn6387 */
                               Just_char ((*(buffer  +  (cursor  -  1 ) )));
-                            }) : ({ /* cicili#Let6314 */
+                            }) : ({ /* cicili#Let6392 */
                               // ----------
                               ;
-                              ({ /* cicili#Progn6316 */
+                              ({ /* cicili#Progn6394 */
                                 Nothing_char ();
                               });
                             }));
                         });
                       });
-                    }) : ({ /* cicili#Let6321 */
+                    }) : ({ /* cicili#Let6399 */
                       typeof((((unboxed -> __h_data ). Slice ). __h_0_mem )) vec ;
                       typeof((((unboxed -> __h_data ). Slice ). __h_1_mem )) cursor ;
                       typeof((((unboxed -> __h_data ). Slice ). __h_2_mem )) size ;
                       // ----------
                       ;
-                      ({ /* cicili#Let6323 */
-                        bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Slice_t  ) &&  ((({ /* cicili#Progn6324 */
+                      ({ /* cicili#Let6401 */
+                        bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Slice_t  ) &&  ((({ /* cicili#Progn6402 */
                                   (vec  =  (((unboxed -> __h_data ). Slice ). __h_0_mem ) );
                                   true ;
-                                }) &&  ({ /* cicili#Progn6326 */
+                                }) &&  ({ /* cicili#Progn6404 */
                                   (cursor  =  (((unboxed -> __h_data ). Slice ). __h_1_mem ) );
                                   true ;
-                                }) ) &&  ({ /* cicili#Progn6328 */
+                                }) ) &&  ({ /* cicili#Progn6406 */
                                 (size  =  (((unboxed -> __h_data ). Slice ). __h_2_mem ) );
                                 true ;
                               }) ) ) );
                         // ----------
                         
-                        ((__h_case_result ) ? ({ /* cicili#Progn6333 */
+                        ((__h_case_result ) ? ({ /* cicili#Progn6411 */
                             nth_Vector_char ((cursor  +  (size  -  1 ) ), vec );
-                          }) : ({ /* cicili#Let6338 */
+                          }) : ({ /* cicili#Let6416 */
                             // ----------
                             ;
-                            ({ /* cicili#Progn6340 */
+                            ({ /* cicili#Progn6418 */
                               Nothing_char ();
                             });
                           }));
@@ -6861,10 +6925,10 @@ Maybe_char last_Vector_char (Vector_char vector ) {
                     }));
                 });
               });
-            }) : ({ /* cicili#Let6345 */
+            }) : ({ /* cicili#Let6423 */
               // ----------
               ;
-              ({ /* cicili#Progn6347 */
+              ({ /* cicili#Progn6425 */
                 Nothing_char ();
               });
             }));
@@ -6873,81 +6937,81 @@ Maybe_char last_Vector_char (Vector_char vector ) {
     });
 }
 Vector_char init_Vector_char (Vector_char vector ) {
-  return ({ /* cicili#Let6353 */
+  return ({ /* cicili#Let6431 */
       __auto_type __h_matchbox  = vector ;
       // ----------
-      ({ /* cicili#Let6357 */
-        __auto_type match6356  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
-        typeof((((match6356 . __h_data ). Just ). __h_0_mem )) unboxed ;
+      ({ /* cicili#Let6435 */
+        __auto_type match6434  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
+        typeof((((match6434 . __h_data ). Just ). __h_0_mem )) unboxed ;
         // ----------
         ;
-        ({ /* cicili#Let6360 */
-          bool __h_case_result  = (true  &&  (((match6356 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn6361 */
-                (unboxed  =  (((match6356 . __h_data ). Just ). __h_0_mem ) );
+        ({ /* cicili#Let6438 */
+          bool __h_case_result  = (true  &&  (((match6434 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn6439 */
+                (unboxed  =  (((match6434 . __h_data ). Just ). __h_0_mem ) );
                 true ;
               }) ) );
           // ----------
           
-          ((__h_case_result ) ? ({ /* cicili#Progn6366 */
-              ({ /* cicili#Let6370 */
+          ((__h_case_result ) ? ({ /* cicili#Progn6444 */
+              ({ /* cicili#Let6448 */
                 typeof((((unboxed -> __h_data ). Buffer ). __h_0_mem )) sb ;
                 // ----------
                 ;
-                ({ /* cicili#Let6372 */
-                  bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) &&  ({ /* cicili#Progn6373 */
+                ({ /* cicili#Let6450 */
+                  bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) &&  ({ /* cicili#Progn6451 */
                         (sb  =  (((unboxed -> __h_data ). Buffer ). __h_0_mem ) );
                         true ;
                       }) ) );
                   // ----------
                   
-                  ((__h_case_result ) ? ({ /* cicili#Progn6378 */
-                      ({ /* cicili#Let6382 */
+                  ((__h_case_result ) ? ({ /* cicili#Progn6456 */
+                      ({ /* cicili#Let6460 */
                         typeof((((sb . __h_data ). Buffered ). __h_1_mem )) cursor ;
                         // ----------
                         ;
-                        ({ /* cicili#Let6384 */
-                          bool __h_case_result  = (true  &&  (((sb . __h_ctor ) ==  __h_Buffered_t  ) &&  ({ /* cicili#Progn6385 */
+                        ({ /* cicili#Let6462 */
+                          bool __h_case_result  = (true  &&  (((sb . __h_ctor ) ==  __h_Buffered_t  ) &&  ({ /* cicili#Progn6463 */
                                 (cursor  =  (((sb . __h_data ). Buffered ). __h_1_mem ) );
                                 true ;
                               }) ) );
                           // ----------
                           
-                          ((__h_case_result ) ? ({ /* cicili#Progn6390 */
+                          ((__h_case_result ) ? ({ /* cicili#Progn6468 */
                               Slice_char (clone_Box_Vector_char (vector ), 0, (cursor  -  1 ));
-                            }) : ({ /* cicili#Let6396 */
+                            }) : ({ /* cicili#Let6474 */
                               // ----------
                               ;
-                              ({ /* cicili#Progn6398 */
+                              ({ /* cicili#Progn6476 */
                                 None_char ();
                               });
                             }));
                         });
                       });
-                    }) : ({ /* cicili#Let6403 */
+                    }) : ({ /* cicili#Let6481 */
                       typeof((((unboxed -> __h_data ). Slice ). __h_0_mem )) vec ;
                       typeof((((unboxed -> __h_data ). Slice ). __h_1_mem )) cursor ;
                       typeof((((unboxed -> __h_data ). Slice ). __h_2_mem )) size ;
                       // ----------
                       ;
-                      ({ /* cicili#Let6405 */
-                        bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Slice_t  ) &&  ((({ /* cicili#Progn6406 */
+                      ({ /* cicili#Let6483 */
+                        bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Slice_t  ) &&  ((({ /* cicili#Progn6484 */
                                   (vec  =  (((unboxed -> __h_data ). Slice ). __h_0_mem ) );
                                   true ;
-                                }) &&  ({ /* cicili#Progn6408 */
+                                }) &&  ({ /* cicili#Progn6486 */
                                   (cursor  =  (((unboxed -> __h_data ). Slice ). __h_1_mem ) );
                                   true ;
-                                }) ) &&  ({ /* cicili#Progn6410 */
+                                }) ) &&  ({ /* cicili#Progn6488 */
                                 (size  =  (((unboxed -> __h_data ). Slice ). __h_2_mem ) );
                                 true ;
                               }) ) ) );
                         // ----------
                         
-                        ((__h_case_result ) ? ({ /* cicili#Progn6415 */
+                        ((__h_case_result ) ? ({ /* cicili#Progn6493 */
                             Slice_char (clone_Box_Vector_char (vec ), cursor , (size  -  1 ));
-                          }) : ({ /* cicili#Let6421 */
+                          }) : ({ /* cicili#Let6499 */
                             // ----------
                             ;
-                            ({ /* cicili#Progn6423 */
+                            ({ /* cicili#Progn6501 */
                               clone_Box_Vector_char (vector );
                             });
                           }));
@@ -6955,10 +7019,10 @@ Vector_char init_Vector_char (Vector_char vector ) {
                     }));
                 });
               });
-            }) : ({ /* cicili#Let6428 */
+            }) : ({ /* cicili#Let6506 */
               // ----------
               ;
-              ({ /* cicili#Progn6430 */
+              ({ /* cicili#Progn6508 */
                 None_char ();
               });
             }));
@@ -6967,80 +7031,80 @@ Vector_char init_Vector_char (Vector_char vector ) {
     });
 }
 size_t hasLen_Vector_char (Vector_char vector , size_t desired ) {
-  return ({ /* cicili#Let6435 */
+  return ({ /* cicili#Let6513 */
       size_t len  = len_Vector_char (vector );
       // ----------
       (((len  <=  desired  )) ? len  : desired );
     });
 }
 size_t len_Vector_char (Vector_char vector ) {
-  return ({ /* cicili#Let6442 */
+  return ({ /* cicili#Let6520 */
       __auto_type __h_matchbox  = vector ;
       // ----------
-      ({ /* cicili#Let6446 */
-        __auto_type match6445  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
-        typeof((((match6445 . __h_data ). Just ). __h_0_mem )) unboxed ;
+      ({ /* cicili#Let6524 */
+        __auto_type match6523  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
+        typeof((((match6523 . __h_data ). Just ). __h_0_mem )) unboxed ;
         // ----------
         ;
-        ({ /* cicili#Let6449 */
-          bool __h_case_result  = (true  &&  (((match6445 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn6450 */
-                (unboxed  =  (((match6445 . __h_data ). Just ). __h_0_mem ) );
+        ({ /* cicili#Let6527 */
+          bool __h_case_result  = (true  &&  (((match6523 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn6528 */
+                (unboxed  =  (((match6523 . __h_data ). Just ). __h_0_mem ) );
                 true ;
               }) ) );
           // ----------
           
-          ((__h_case_result ) ? ({ /* cicili#Progn6455 */
-              ({ /* cicili#Let6459 */
+          ((__h_case_result ) ? ({ /* cicili#Progn6533 */
+              ({ /* cicili#Let6537 */
                 typeof((((unboxed -> __h_data ). Buffer ). __h_0_mem )) sb ;
                 // ----------
                 ;
-                ({ /* cicili#Let6461 */
-                  bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) &&  ({ /* cicili#Progn6462 */
+                ({ /* cicili#Let6539 */
+                  bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) &&  ({ /* cicili#Progn6540 */
                         (sb  =  (((unboxed -> __h_data ). Buffer ). __h_0_mem ) );
                         true ;
                       }) ) );
                   // ----------
                   
-                  ((__h_case_result ) ? ({ /* cicili#Progn6467 */
-                      ({ /* cicili#Let6471 */
+                  ((__h_case_result ) ? ({ /* cicili#Progn6545 */
+                      ({ /* cicili#Let6549 */
                         typeof((((sb . __h_data ). Buffered ). __h_1_mem )) cursor ;
                         // ----------
                         ;
-                        ({ /* cicili#Let6473 */
-                          bool __h_case_result  = (true  &&  (((sb . __h_ctor ) ==  __h_Buffered_t  ) &&  ({ /* cicili#Progn6474 */
+                        ({ /* cicili#Let6551 */
+                          bool __h_case_result  = (true  &&  (((sb . __h_ctor ) ==  __h_Buffered_t  ) &&  ({ /* cicili#Progn6552 */
                                 (cursor  =  (((sb . __h_data ). Buffered ). __h_1_mem ) );
                                 true ;
                               }) ) );
                           // ----------
                           
-                          ((__h_case_result ) ? ({ /* cicili#Progn6479 */
+                          ((__h_case_result ) ? ({ /* cicili#Progn6557 */
                               cursor ;
-                            }) : ({ /* cicili#Let6483 */
+                            }) : ({ /* cicili#Let6561 */
                               // ----------
                               ;
-                              ({ /* cicili#Progn6485 */
+                              ({ /* cicili#Progn6563 */
                                 0;
                               });
                             }));
                         });
                       });
-                    }) : ({ /* cicili#Let6489 */
+                    }) : ({ /* cicili#Let6567 */
                       typeof((((unboxed -> __h_data ). Slice ). __h_2_mem )) size ;
                       // ----------
                       ;
-                      ({ /* cicili#Let6491 */
-                        bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Slice_t  ) &&  ({ /* cicili#Progn6492 */
+                      ({ /* cicili#Let6569 */
+                        bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Slice_t  ) &&  ({ /* cicili#Progn6570 */
                               (size  =  (((unboxed -> __h_data ). Slice ). __h_2_mem ) );
                               true ;
                             }) ) );
                         // ----------
                         
-                        ((__h_case_result ) ? ({ /* cicili#Progn6497 */
+                        ((__h_case_result ) ? ({ /* cicili#Progn6575 */
                             size ;
-                          }) : ({ /* cicili#Let6501 */
+                          }) : ({ /* cicili#Let6579 */
                             // ----------
                             ;
-                            ({ /* cicili#Progn6503 */
+                            ({ /* cicili#Progn6581 */
                               0;
                             });
                           }));
@@ -7048,10 +7112,10 @@ size_t len_Vector_char (Vector_char vector ) {
                     }));
                 });
               });
-            }) : ({ /* cicili#Let6507 */
+            }) : ({ /* cicili#Let6585 */
               // ----------
               ;
-              ({ /* cicili#Progn6509 */
+              ({ /* cicili#Progn6587 */
                 0;
               });
             }));
@@ -7063,77 +7127,77 @@ Vector_char tail_Vector_char (Vector_char vector ) {
   return drop_Vector_char (1, vector );
 }
 Vector_char drop_Vector_char (size_t len , Vector_char vector ) {
-  return ({ /* cicili#Let6517 */
+  return ({ /* cicili#Let6595 */
       __auto_type __h_matchbox  = vector ;
       // ----------
-      ({ /* cicili#Let6521 */
-        __auto_type match6520  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
-        typeof((((match6520 . __h_data ). Just ). __h_0_mem )) unboxed ;
+      ({ /* cicili#Let6599 */
+        __auto_type match6598  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
+        typeof((((match6598 . __h_data ). Just ). __h_0_mem )) unboxed ;
         // ----------
         ;
-        ({ /* cicili#Let6524 */
-          bool __h_case_result  = (true  &&  (((match6520 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn6525 */
-                (unboxed  =  (((match6520 . __h_data ). Just ). __h_0_mem ) );
+        ({ /* cicili#Let6602 */
+          bool __h_case_result  = (true  &&  (((match6598 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn6603 */
+                (unboxed  =  (((match6598 . __h_data ). Just ). __h_0_mem ) );
                 true ;
               }) ) );
           // ----------
           
-          ((__h_case_result ) ? ({ /* cicili#Progn6530 */
-              ({ /* cicili#Let6534 */
+          ((__h_case_result ) ? ({ /* cicili#Progn6608 */
+              ({ /* cicili#Let6612 */
                 typeof((((unboxed -> __h_data ). Buffer ). __h_0_mem )) sb ;
                 // ----------
                 ;
-                ({ /* cicili#Let6536 */
-                  bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) &&  ({ /* cicili#Progn6537 */
+                ({ /* cicili#Let6614 */
+                  bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) &&  ({ /* cicili#Progn6615 */
                         (sb  =  (((unboxed -> __h_data ). Buffer ). __h_0_mem ) );
                         true ;
                       }) ) );
                   // ----------
                   
-                  ((__h_case_result ) ? ({ /* cicili#Progn6542 */
-                      ({ /* cicili#Let6546 */
+                  ((__h_case_result ) ? ({ /* cicili#Progn6620 */
+                      ({ /* cicili#Let6624 */
                         typeof((((sb . __h_data ). Buffered ). __h_1_mem )) cursor ;
                         // ----------
                         ;
-                        ({ /* cicili#Let6548 */
-                          bool __h_case_result  = (true  &&  (((sb . __h_ctor ) ==  __h_Buffered_t  ) &&  ({ /* cicili#Progn6549 */
+                        ({ /* cicili#Let6626 */
+                          bool __h_case_result  = (true  &&  (((sb . __h_ctor ) ==  __h_Buffered_t  ) &&  ({ /* cicili#Progn6627 */
                                 (cursor  =  (((sb . __h_data ). Buffered ). __h_1_mem ) );
                                 true ;
                               }) ) );
                           // ----------
                           
-                          ((__h_case_result ) ? ({ /* cicili#Progn6554 */
+                          ((__h_case_result ) ? ({ /* cicili#Progn6632 */
                               (((len  <=  0 )) ? Slice_char (clone_Box_Vector_char (vector ), 0, cursor ) : (((len  <  cursor  )) ? Slice_char (clone_Box_Vector_char (vector ), len , (cursor  -  len  )) : Slice_char (clone_Box_Vector_char (vector ), 0, 0)));
-                            }) : ({ /* cicili#Let6566 */
+                            }) : ({ /* cicili#Let6644 */
                               // ----------
                               ;
-                              ({ /* cicili#Progn6568 */
+                              ({ /* cicili#Progn6646 */
                                 Slice_char (clone_Box_Vector_char (vector ), 0, 0);
                               });
                             }));
                         });
                       });
-                    }) : ({ /* cicili#Let6574 */
+                    }) : ({ /* cicili#Let6652 */
                       typeof((((unboxed -> __h_data ). Slice ). __h_0_mem )) vec ;
                       typeof((((unboxed -> __h_data ). Slice ). __h_1_mem )) cursor ;
                       // ----------
                       ;
-                      ({ /* cicili#Let6576 */
-                        bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Slice_t  ) &&  (({ /* cicili#Progn6577 */
+                      ({ /* cicili#Let6654 */
+                        bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Slice_t  ) &&  (({ /* cicili#Progn6655 */
                                 (vec  =  (((unboxed -> __h_data ). Slice ). __h_0_mem ) );
                                 true ;
-                              }) &&  ({ /* cicili#Progn6579 */
+                              }) &&  ({ /* cicili#Progn6657 */
                                 (cursor  =  (((unboxed -> __h_data ). Slice ). __h_1_mem ) );
                                 true ;
                               }) ) ) );
                         // ----------
                         
-                        ((__h_case_result ) ? ({ /* cicili#Progn6584 */
+                        ((__h_case_result ) ? ({ /* cicili#Progn6662 */
                             drop_Vector_char ((cursor  +  len  ), vec );
-                          }) : ({ /* cicili#Let6589 */
+                          }) : ({ /* cicili#Let6667 */
                             // ----------
                             ;
-                            ({ /* cicili#Progn6591 */
+                            ({ /* cicili#Progn6669 */
                               clone_Box_Vector_char (vector );
                             });
                           }));
@@ -7141,10 +7205,10 @@ Vector_char drop_Vector_char (size_t len , Vector_char vector ) {
                     }));
                 });
               });
-            }) : ({ /* cicili#Let6596 */
+            }) : ({ /* cicili#Let6674 */
               // ----------
               ;
-              ({ /* cicili#Progn6598 */
+              ({ /* cicili#Progn6676 */
                 None_char ();
               });
             }));
@@ -7153,81 +7217,81 @@ Vector_char drop_Vector_char (size_t len , Vector_char vector ) {
     });
 }
 Maybe_char head_Vector_char (Vector_char vector ) {
-  return ({ /* cicili#Let6605 */
+  return ({ /* cicili#Let6683 */
       __auto_type __h_matchbox  = vector ;
       // ----------
-      ({ /* cicili#Let6609 */
-        __auto_type match6608  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
-        typeof((((match6608 . __h_data ). Just ). __h_0_mem )) unboxed ;
+      ({ /* cicili#Let6687 */
+        __auto_type match6686  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
+        typeof((((match6686 . __h_data ). Just ). __h_0_mem )) unboxed ;
         // ----------
         ;
-        ({ /* cicili#Let6612 */
-          bool __h_case_result  = (true  &&  (((match6608 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn6613 */
-                (unboxed  =  (((match6608 . __h_data ). Just ). __h_0_mem ) );
+        ({ /* cicili#Let6690 */
+          bool __h_case_result  = (true  &&  (((match6686 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn6691 */
+                (unboxed  =  (((match6686 . __h_data ). Just ). __h_0_mem ) );
                 true ;
               }) ) );
           // ----------
           
-          ((__h_case_result ) ? ({ /* cicili#Progn6618 */
-              ({ /* cicili#Let6622 */
+          ((__h_case_result ) ? ({ /* cicili#Progn6696 */
+              ({ /* cicili#Let6700 */
                 typeof((((unboxed -> __h_data ). Buffer ). __h_0_mem )) sb ;
                 // ----------
                 ;
-                ({ /* cicili#Let6624 */
-                  bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) &&  ({ /* cicili#Progn6625 */
+                ({ /* cicili#Let6702 */
+                  bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) &&  ({ /* cicili#Progn6703 */
                         (sb  =  (((unboxed -> __h_data ). Buffer ). __h_0_mem ) );
                         true ;
                       }) ) );
                   // ----------
                   
-                  ((__h_case_result ) ? ({ /* cicili#Progn6630 */
-                      ({ /* cicili#Let6634 */
+                  ((__h_case_result ) ? ({ /* cicili#Progn6708 */
+                      ({ /* cicili#Let6712 */
                         typeof((((sb . __h_data ). Buffered ). __h_0_mem )) buffer ;
                         typeof((((sb . __h_data ). Buffered ). __h_1_mem )) cursor ;
                         // ----------
                         ;
-                        ({ /* cicili#Let6636 */
-                          bool __h_case_result  = (true  &&  (((sb . __h_ctor ) ==  __h_Buffered_t  ) &&  (({ /* cicili#Progn6637 */
+                        ({ /* cicili#Let6714 */
+                          bool __h_case_result  = (true  &&  (((sb . __h_ctor ) ==  __h_Buffered_t  ) &&  (({ /* cicili#Progn6715 */
                                   (buffer  =  (((sb . __h_data ). Buffered ). __h_0_mem ) );
                                   true ;
-                                }) &&  ({ /* cicili#Progn6639 */
+                                }) &&  ({ /* cicili#Progn6717 */
                                   (cursor  =  (((sb . __h_data ). Buffered ). __h_1_mem ) );
                                   true ;
                                 }) ) ) );
                           // ----------
                           
-                          ((__h_case_result ) ? ({ /* cicili#Progn6644 */
+                          ((__h_case_result ) ? ({ /* cicili#Progn6722 */
                               (((cursor  >  0 )) ? Just_char ((*buffer )) : Nothing_char ());
-                            }) : ({ /* cicili#Let6651 */
+                            }) : ({ /* cicili#Let6729 */
                               // ----------
                               ;
-                              ({ /* cicili#Progn6653 */
+                              ({ /* cicili#Progn6731 */
                                 Nothing_char ();
                               });
                             }));
                         });
                       });
-                    }) : ({ /* cicili#Let6658 */
+                    }) : ({ /* cicili#Let6736 */
                       typeof((((unboxed -> __h_data ). Slice ). __h_0_mem )) vector ;
                       typeof((((unboxed -> __h_data ). Slice ). __h_1_mem )) cursor ;
                       // ----------
                       ;
-                      ({ /* cicili#Let6660 */
-                        bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Slice_t  ) &&  (({ /* cicili#Progn6661 */
+                      ({ /* cicili#Let6738 */
+                        bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Slice_t  ) &&  (({ /* cicili#Progn6739 */
                                 (vector  =  (((unboxed -> __h_data ). Slice ). __h_0_mem ) );
                                 true ;
-                              }) &&  ({ /* cicili#Progn6663 */
+                              }) &&  ({ /* cicili#Progn6741 */
                                 (cursor  =  (((unboxed -> __h_data ). Slice ). __h_1_mem ) );
                                 true ;
                               }) ) ) );
                         // ----------
                         
-                        ((__h_case_result ) ? ({ /* cicili#Progn6668 */
+                        ((__h_case_result ) ? ({ /* cicili#Progn6746 */
                             nth_Vector_char (cursor , vector );
-                          }) : ({ /* cicili#Let6673 */
+                          }) : ({ /* cicili#Let6751 */
                             // ----------
                             ;
-                            ({ /* cicili#Progn6675 */
+                            ({ /* cicili#Progn6753 */
                               Nothing_char ();
                             });
                           }));
@@ -7235,10 +7299,10 @@ Maybe_char head_Vector_char (Vector_char vector ) {
                     }));
                 });
               });
-            }) : ({ /* cicili#Let6680 */
+            }) : ({ /* cicili#Let6758 */
               // ----------
               ;
-              ({ /* cicili#Progn6682 */
+              ({ /* cicili#Progn6760 */
                 Nothing_char ();
               });
             }));
@@ -7247,85 +7311,85 @@ Maybe_char head_Vector_char (Vector_char vector ) {
     });
 }
 Maybe_char nth_Vector_char (size_t index , Vector_char vector ) {
-  return ({ /* cicili#Let6689 */
+  return ({ /* cicili#Let6767 */
       __auto_type __h_matchbox  = vector ;
       // ----------
-      ({ /* cicili#Let6693 */
-        __auto_type match6692  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
-        typeof((((match6692 . __h_data ). Just ). __h_0_mem )) unboxed ;
+      ({ /* cicili#Let6771 */
+        __auto_type match6770  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
+        typeof((((match6770 . __h_data ). Just ). __h_0_mem )) unboxed ;
         // ----------
         ;
-        ({ /* cicili#Let6696 */
-          bool __h_case_result  = (true  &&  (((match6692 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn6697 */
-                (unboxed  =  (((match6692 . __h_data ). Just ). __h_0_mem ) );
+        ({ /* cicili#Let6774 */
+          bool __h_case_result  = (true  &&  (((match6770 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn6775 */
+                (unboxed  =  (((match6770 . __h_data ). Just ). __h_0_mem ) );
                 true ;
               }) ) );
           // ----------
           
-          ((__h_case_result ) ? ({ /* cicili#Progn6702 */
-              ({ /* cicili#Let6706 */
+          ((__h_case_result ) ? ({ /* cicili#Progn6780 */
+              ({ /* cicili#Let6784 */
                 typeof((((unboxed -> __h_data ). Buffer ). __h_0_mem )) sb ;
                 // ----------
                 ;
-                ({ /* cicili#Let6708 */
-                  bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) &&  ({ /* cicili#Progn6709 */
+                ({ /* cicili#Let6786 */
+                  bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) &&  ({ /* cicili#Progn6787 */
                         (sb  =  (((unboxed -> __h_data ). Buffer ). __h_0_mem ) );
                         true ;
                       }) ) );
                   // ----------
                   
-                  ((__h_case_result ) ? ({ /* cicili#Progn6714 */
-                      ({ /* cicili#Let6718 */
+                  ((__h_case_result ) ? ({ /* cicili#Progn6792 */
+                      ({ /* cicili#Let6796 */
                         typeof((((sb . __h_data ). Buffered ). __h_0_mem )) buffer ;
                         typeof((((sb . __h_data ). Buffered ). __h_1_mem )) cursor ;
                         // ----------
                         ;
-                        ({ /* cicili#Let6720 */
-                          bool __h_case_result  = (true  &&  (((sb . __h_ctor ) ==  __h_Buffered_t  ) &&  (({ /* cicili#Progn6721 */
+                        ({ /* cicili#Let6798 */
+                          bool __h_case_result  = (true  &&  (((sb . __h_ctor ) ==  __h_Buffered_t  ) &&  (({ /* cicili#Progn6799 */
                                   (buffer  =  (((sb . __h_data ). Buffered ). __h_0_mem ) );
                                   true ;
-                                }) &&  ({ /* cicili#Progn6723 */
+                                }) &&  ({ /* cicili#Progn6801 */
                                   (cursor  =  (((sb . __h_data ). Buffered ). __h_1_mem ) );
                                   true ;
                                 }) ) ) );
                           // ----------
                           
-                          ((__h_case_result ) ? ({ /* cicili#Progn6728 */
+                          ((__h_case_result ) ? ({ /* cicili#Progn6806 */
                               ((((index  >=  0 ) &&  (index  <  cursor  ) )) ? Just_char ((*(buffer  +  index  ))) : Nothing_char ());
-                            }) : ({ /* cicili#Let6735 */
+                            }) : ({ /* cicili#Let6813 */
                               // ----------
                               ;
-                              ({ /* cicili#Progn6737 */
+                              ({ /* cicili#Progn6815 */
                                 Nothing_char ();
                               });
                             }));
                         });
                       });
-                    }) : ({ /* cicili#Let6742 */
+                    }) : ({ /* cicili#Let6820 */
                       typeof((((unboxed -> __h_data ). Slice ). __h_0_mem )) vector ;
                       typeof((((unboxed -> __h_data ). Slice ). __h_1_mem )) cursor ;
                       typeof((((unboxed -> __h_data ). Slice ). __h_2_mem )) size ;
                       // ----------
                       ;
-                      ({ /* cicili#Let6744 */
-                        bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Slice_t  ) &&  ((({ /* cicili#Progn6745 */
+                      ({ /* cicili#Let6822 */
+                        bool __h_case_result  = (true  &&  (((unboxed -> __h_ctor ) ==  __h_Slice_t  ) &&  ((({ /* cicili#Progn6823 */
                                   (vector  =  (((unboxed -> __h_data ). Slice ). __h_0_mem ) );
                                   true ;
-                                }) &&  ({ /* cicili#Progn6747 */
+                                }) &&  ({ /* cicili#Progn6825 */
                                   (cursor  =  (((unboxed -> __h_data ). Slice ). __h_1_mem ) );
                                   true ;
-                                }) ) &&  ({ /* cicili#Progn6749 */
+                                }) ) &&  ({ /* cicili#Progn6827 */
                                 (size  =  (((unboxed -> __h_data ). Slice ). __h_2_mem ) );
                                 true ;
                               }) ) ) );
                         // ----------
                         
-                        ((__h_case_result ) ? ({ /* cicili#Progn6754 */
+                        ((__h_case_result ) ? ({ /* cicili#Progn6832 */
                             ((((index  >=  0 ) &&  (index  <  size  ) )) ? nth_Vector_char ((cursor  +  index  ), vector ) : Nothing_char ());
-                          }) : ({ /* cicili#Let6761 */
+                          }) : ({ /* cicili#Let6839 */
                             // ----------
                             ;
-                            ({ /* cicili#Progn6763 */
+                            ({ /* cicili#Progn6841 */
                               Nothing_char ();
                             });
                           }));
@@ -7333,10 +7397,10 @@ Maybe_char nth_Vector_char (size_t index , Vector_char vector ) {
                     }));
                 });
               });
-            }) : ({ /* cicili#Let6768 */
+            }) : ({ /* cicili#Let6846 */
               // ----------
               ;
-              ({ /* cicili#Progn6770 */
+              ({ /* cicili#Progn6848 */
                 Nothing_char ();
               });
             }));
@@ -7345,38 +7409,38 @@ Maybe_char nth_Vector_char (size_t index , Vector_char vector ) {
     });
 }
 void free_Vector_char_x (Vector_char_x * this_ptr ) {
-  { /* cicili#Let6775 */
+  { /* cicili#Let6853 */
     __auto_type this  = (*this_ptr );
     // ----------
-    { /* cicili#Let6779 */
+    { /* cicili#Let6857 */
       typeof((((this -> __h_data ). Buffer ). __h_0_mem )) sb ;
       // ----------
       ;
-      ({ /* cicili#Let6781 */
-        bool __h_case_result  = (true  &&  (((this -> __h_ctor ) ==  __h_Buffer_t  ) &&  ({ /* cicili#Progn6782 */
+      ({ /* cicili#Let6859 */
+        bool __h_case_result  = (true  &&  (((this -> __h_ctor ) ==  __h_Buffer_t  ) &&  ({ /* cicili#Progn6860 */
               (sb  =  (((this -> __h_data ). Buffer ). __h_0_mem ) );
               true ;
             }) ) );
         // ----------
         
         if (__h_case_result )
-          { /* cicili#Block6788 */
+          { /* cicili#Block6866 */
             free_StringBuffer_char ((&sb ));
           }
         else
-          { /* cicili#Let6794 */
+          { /* cicili#Let6872 */
             typeof((((this -> __h_data ). Slice ). __h_0_mem )) vector ;
             // ----------
             ;
-            ({ /* cicili#Let6796 */
-              bool __h_case_result  = (true  &&  (((this -> __h_ctor ) ==  __h_Slice_t  ) &&  ({ /* cicili#Progn6797 */
+            ({ /* cicili#Let6874 */
+              bool __h_case_result  = (true  &&  (((this -> __h_ctor ) ==  __h_Slice_t  ) &&  ({ /* cicili#Progn6875 */
                     (vector  =  (((this -> __h_data ). Slice ). __h_0_mem ) );
                     true ;
                   }) ) );
               // ----------
               
               if (__h_case_result )
-                { /* cicili#Block6803 */
+                { /* cicili#Block6881 */
                   free_Box_Vector_char ((&vector ));
                 }
             });
@@ -7391,7 +7455,7 @@ Vector_char__H_Table * const get_Vector_char__H_Table () {
   return (&table );
 }
 Vector_char Buffer_char (StringBuffer_char buffer ) {
-  { /* cicili#Let6813 */
+  { /* cicili#Let6891 */
     Vector_char_x instance  = malloc (sizeof(class_Vector_char));
     // ----------
     (*instance ) = ((class_Vector_char){ get_Vector_char__H_Table (), __h_Buffer_t , .__h_data.Buffer = { buffer }});
@@ -7399,7 +7463,7 @@ Vector_char Buffer_char (StringBuffer_char buffer ) {
   }
 }
 Vector_char Slice_char (Vector_char vector , size_t cursor , size_t size ) {
-  { /* cicili#Let6821 */
+  { /* cicili#Let6899 */
     Vector_char_x instance  = malloc (sizeof(class_Vector_char));
     // ----------
     (*instance ) = ((class_Vector_char){ get_Vector_char__H_Table (), __h_Slice_t , .__h_data.Slice = { vector , cursor , size }});
@@ -7407,7 +7471,7 @@ Vector_char Slice_char (Vector_char vector , size_t cursor , size_t size ) {
   }
 }
 Vector_char None_char () {
-  { /* cicili#Let6828 */
+  { /* cicili#Let6906 */
     Vector_char_x instance  = malloc (sizeof(class_Vector_char));
     // ----------
     (*instance ) = ((class_Vector_char){ get_Vector_char__H_Table (), __h___t });
@@ -7424,14 +7488,14 @@ const Maybe_Vector_char__H_Table * const get_Maybe_Vector_char__H_Table () {
   return (&table );
 }
 Maybe_Vector_char Just_Vector_char (Vector_char value ) {
-  { /* cicili#Let6846 */
+  { /* cicili#Let6924 */
     Maybe_Vector_char instance  = ((Maybe_Vector_char){ get_Maybe_Vector_char__H_Table (), __h_Just_t , .__h_data.Just = { value }});
     // ----------
     return instance ;
   }
 }
 Maybe_Vector_char Nothing_Vector_char () {
-  { /* cicili#Let6851 */
+  { /* cicili#Let6929 */
     Maybe_Vector_char instance  = ((Maybe_Vector_char){ get_Maybe_Vector_char__H_Table (), __h___t });
     // ----------
     return instance ;
@@ -7439,116 +7503,116 @@ Maybe_Vector_char Nothing_Vector_char () {
 }
 #endif /* __Maybe_Vector_char__H_IMPL__ */ 
 int main () {
-  ({ /* cicili#Let6867 */
-    __auto_type v01  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let6869 */
+  ({ /* cicili#Let6945 */
+    __auto_type v01  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let6947 */
       __auto_type v01  = pure_Vector_int (4);
       // ----------
       ((void)((v01 . __h_table )-> freeData ));
       v01 ;
     });
-    __auto_type v02  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let6872 */
+    __auto_type v02  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let6950 */
       __auto_type v02  = pureCapacity_Vector_int (5, 4);
       // ----------
       ((void)((v02 . __h_table )-> freeData ));
       v02 ;
     });
-    __auto_type v03  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let6875 */
-      __auto_type v03  = ({ /* cicili#Let6878 */
-        StringBuffer_int tmp_buf6877  = newCapacity_StringBuffer_int (5, 16);
+    __auto_type v03  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let6953 */
+      __auto_type v03  = ({ /* cicili#Let6956 */
+        StringBuffer_int tmp_buf6955  = newCapacity_StringBuffer_int (5, 16);
         // ----------
-        Buffer_int (print_StringBuffer_int (tmp_buf6877 , ((const int[]){ 1, 2, 3, 4, 5}), 5));
+        Buffer_int (print_StringBuffer_int (tmp_buf6955 , ((const int[]){ 1, 2, 3, 4, 5}), 5));
       });
       // ----------
       ((void)((v03 . __h_table )-> freeData ));
       v03 ;
     });
-    __auto_type v04  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let6886 */
-      __auto_type v04  = ({ /* cicili#Let6889 */
-        StringBuffer_int tmp_buf6888  = newCapacity_StringBuffer_int (2, 16);
+    __auto_type v04  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let6964 */
+      __auto_type v04  = ({ /* cicili#Let6967 */
+        StringBuffer_int tmp_buf6966  = newCapacity_StringBuffer_int (2, 16);
         // ----------
-        Buffer_int (print_StringBuffer_int (tmp_buf6888 , ((const int[]){ 1, 2, 3, 4, 5, 6, 7}), 7));
+        Buffer_int (print_StringBuffer_int (tmp_buf6966 , ((const int[]){ 1, 2, 3, 4, 5, 6, 7}), 7));
       });
       // ----------
       ((void)((v04 . __h_table )-> freeData ));
       v04 ;
     });
-    __auto_type v05  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let6897 */
-      __auto_type v05  = ({ /* cicili#Let6900 */
-        StringBuffer_char tmp_buf6899  = newCapacity_StringBuffer_char (11, 16);
+    __auto_type v05  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let6975 */
+      __auto_type v05  = ({ /* cicili#Let6978 */
+        StringBuffer_char tmp_buf6977  = newCapacity_StringBuffer_char (11, 16);
         // ----------
-        Buffer_char (print_StringBuffer_char (tmp_buf6899 , "abcdefghijk", 11));
+        Buffer_char (print_StringBuffer_char (tmp_buf6977 , "abcdefghijk", 11));
       });
       // ----------
       ((void)((v05 . __h_table )-> freeData ));
       v05 ;
     });
-    __auto_type v08  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let6908 */
+    __auto_type v08  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let6986 */
       __auto_type v08  = Slice_int (clone_Box_Vector_int (v03 ), 2, 2);
       // ----------
       ((void)((v08 . __h_table )-> freeData ));
       v08 ;
     });
-    __auto_type v09  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let6912 */
+    __auto_type v09  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let6990 */
       __auto_type v09  = Slice_char (clone_Box_Vector_char (v05 ), 3, 3);
       // ----------
       ((void)((v09 . __h_table )-> freeData ));
       v09 ;
     });
-    __auto_type v10  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let6916 */
+    __auto_type v10  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let6994 */
       __auto_type v10  = tail_Vector_char (v05 );
       // ----------
       ((void)((v10 . __h_table )-> freeData ));
       v10 ;
     });
-    __auto_type v11  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let6919 */
+    __auto_type v11  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let6997 */
       __auto_type v11  = drop_Vector_char (7, v05 );
       // ----------
       ((void)((v11 . __h_table )-> freeData ));
       v11 ;
     });
-    __auto_type v12  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let6922 */
+    __auto_type v12  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let7000 */
       __auto_type v12  = drop_Vector_char (12, v05 );
       // ----------
       ((void)((v12 . __h_table )-> freeData ));
       v12 ;
     });
-    __auto_type v13  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let6925 */
+    __auto_type v13  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let7003 */
       __auto_type v13  = drop_Vector_char (1, v11 );
       // ----------
       ((void)((v13 . __h_table )-> freeData ));
       v13 ;
     });
-    __auto_type v14  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let6928 */
+    __auto_type v14  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let7006 */
       __auto_type v14  = init_Vector_char (v05 );
       // ----------
       ((void)((v14 . __h_table )-> freeData ));
       v14 ;
     });
-    __auto_type v15  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let6931 */
+    __auto_type v15  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let7009 */
       __auto_type v15  = init_Vector_char (v14 );
       // ----------
       ((void)((v15 . __h_table )-> freeData ));
       v15 ;
     });
-    __auto_type v18  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let6934 */
+    __auto_type v18  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let7012 */
       __auto_type v18  = take_Vector_int (3, v03 );
       // ----------
       ((void)((v18 . __h_table )-> freeData ));
       v18 ;
     });
-    __auto_type v19  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let6937 */
+    __auto_type v19  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let7015 */
       __auto_type v19  = take_Vector_char (5, v05 );
       // ----------
       ((void)((v19 . __h_table )-> freeData ));
       v19 ;
     });
-    __auto_type v20  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let6940 */
+    __auto_type v20  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let7018 */
       __auto_type v20  = take_Vector_char (2, v19 );
       // ----------
       ((void)((v20 . __h_table )-> freeData ));
       v20 ;
     });
-    __auto_type v50  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let6943 */
+    __auto_type v50  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let7021 */
       __auto_type v50  = wrap_Vector_int (1000);
       // ----------
       ((void)((v50 . __h_table )-> freeData ));
@@ -7564,29 +7628,127 @@ int main () {
     printf ("length 5 of v03: %ld\n", len_Vector_int (v03 ));
     printf ("has length 6 of v05: %ld\n", hasLen_Vector_char (v05 , 6));
     printf ("has length 12 of v05: %ld\n", hasLen_Vector_char (v05 , 12));
-    { /* cicili#Block6950 */
-      { /* cicili#Let6954 */
-        __auto_type match6953  = nth_Vector_int (3, v03 );
-        typeof((((match6953 . __h_data ). Just ). __h_0_mem )) i ;
+    { /* cicili#Block7028 */
+      ({ /* cicili#Let7031 */
+        __auto_type v01C1  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let7033 */
+          __auto_type v01C1  = clone_Box_Vector_int (v01 );
+          // ----------
+          ((void)((v01C1 . __h_table )-> freeData ));
+          v01C1 ;
+        });
+        __auto_type v01P1  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let7036 */
+          __auto_type v01P1  = push_Vector_int (40, v01C1 );
+          // ----------
+          ((void)((v01P1 . __h_table )-> freeData ));
+          v01P1 ;
+        });
+        // ----------
+        ({ /* cicili#Let7040 */
+          __auto_type __h_matchbox  = v01P1 ;
+          // ----------
+          { /* cicili#Let7044 */
+            __auto_type match7043  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
+            typeof((((match7043 . __h_data ). Just ). __h_0_mem )) unboxed ;
+            // ----------
+            ;
+            ({ /* cicili#Let7047 */
+              bool __h_case_result  = (true  &&  (((match7043 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn7048 */
+                    (unboxed  =  (((match7043 . __h_data ). Just ). __h_0_mem ) );
+                    true ;
+                  }) ) );
+              // ----------
+              
+              if (__h_case_result )
+                { /* cicili#Block7054 */
+                  { /* cicili#Let7058 */
+                    // ----------
+                    ;
+                    ({ /* cicili#Let7060 */
+                      bool __h_case_result  = (true  &&  ((unboxed -> __h_ctor ) ==  __h_None_t  ) );
+                      // ----------
+                      
+                      if (__h_case_result )
+                        { /* cicili#Block7065 */
+                          printf ("can't push to v01: any cloned versions or slices refered to it\n");
+                        }
+                      else
+                        { /* cicili#Let7070 */
+                          // ----------
+                          ;
+                          { /* cicili#Block7072 */
+                            { /* cicili#Block7077 */
+                              printf ("status: %d\n", -90);
+                              exit (EXIT_FAILURE );
+                            }
+                          }
+                        }
+                    });
+                  }
+                }
+            });
+          }
+        });
+      });
+      ({ /* cicili#Let7080 */
+        __auto_type v01P1  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let7082 */
+          __auto_type v01P1  = push_Vector_int (40, v01 );
+          // ----------
+          ((void)((v01P1 . __h_table )-> freeData ));
+          v01P1 ;
+        });
+        // ----------
+        { /* cicili#Let7087 */
+          __auto_type match7086  = head_Vector_int (v01P1 );
+          typeof((((match7086 . __h_data ). Just ). __h_0_mem )) he ;
+          // ----------
+          ;
+          ({ /* cicili#Let7090 */
+            bool __h_case_result  = (true  &&  (((match7086 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn7091 */
+                  (he  =  (((match7086 . __h_data ). Just ). __h_0_mem ) );
+                  true ;
+                }) ) );
+            // ----------
+            
+            if (__h_case_result )
+              { /* cicili#Block7097 */
+                printf ("head of v01: %d had not any cloned versions or slices refered to it\n", he );
+              }
+            else
+              { /* cicili#Let7102 */
+                // ----------
+                ;
+                { /* cicili#Block7104 */
+                  { /* cicili#Block7109 */
+                    printf ("status: %d\n", -91);
+                    exit (EXIT_FAILURE );
+                  }
+                }
+              }
+          });
+        }
+      });
+      { /* cicili#Let7113 */
+        __auto_type match7112  = nth_Vector_int (3, v03 );
+        typeof((((match7112 . __h_data ). Just ). __h_0_mem )) i ;
         // ----------
         ;
-        ({ /* cicili#Let6957 */
-          bool __h_case_result  = (true  &&  (((match6953 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn6958 */
-                (i  =  (((match6953 . __h_data ). Just ). __h_0_mem ) );
+        ({ /* cicili#Let7116 */
+          bool __h_case_result  = (true  &&  (((match7112 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn7117 */
+                (i  =  (((match7112 . __h_data ). Just ). __h_0_mem ) );
                 true ;
               }) ) );
           // ----------
           
           if (__h_case_result )
-            { /* cicili#Block6964 */
+            { /* cicili#Block7123 */
               printf ("4th int element of v03: %d\n", i );
             }
           else
-            { /* cicili#Let6969 */
+            { /* cicili#Let7128 */
               // ----------
               ;
-              { /* cicili#Block6971 */
-                { /* cicili#Block6976 */
+              { /* cicili#Block7130 */
+                { /* cicili#Block7135 */
                   printf ("status: %d\n", -100);
                   exit (EXIT_FAILURE );
                 }
@@ -7594,28 +7756,28 @@ int main () {
             }
         });
       }
-      { /* cicili#Let6980 */
-        __auto_type match6979  = nth_Vector_char (5, v05 );
-        typeof((((match6979 . __h_data ). Just ). __h_0_mem )) c ;
+      { /* cicili#Let7139 */
+        __auto_type match7138  = nth_Vector_char (5, v05 );
+        typeof((((match7138 . __h_data ). Just ). __h_0_mem )) c ;
         // ----------
         ;
-        ({ /* cicili#Let6983 */
-          bool __h_case_result  = (true  &&  (((match6979 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn6984 */
-                (c  =  (((match6979 . __h_data ). Just ). __h_0_mem ) );
+        ({ /* cicili#Let7142 */
+          bool __h_case_result  = (true  &&  (((match7138 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn7143 */
+                (c  =  (((match7138 . __h_data ). Just ). __h_0_mem ) );
                 true ;
               }) ) );
           // ----------
           
           if (__h_case_result )
-            { /* cicili#Block6990 */
+            { /* cicili#Block7149 */
               printf ("6th char element of v05: %c\n", c );
             }
           else
-            { /* cicili#Let6995 */
+            { /* cicili#Let7154 */
               // ----------
               ;
-              { /* cicili#Block6997 */
-                { /* cicili#Block7002 */
+              { /* cicili#Block7156 */
+                { /* cicili#Block7161 */
                   printf ("status: %d\n", -101);
                   exit (EXIT_FAILURE );
                 }
@@ -7623,24 +7785,24 @@ int main () {
             }
         });
       }
-      { /* cicili#Let7006 */
-        __auto_type match7005  = nth_Vector_char (11, v05 );
+      { /* cicili#Let7165 */
+        __auto_type match7164  = nth_Vector_char (11, v05 );
         // ----------
         ;
-        ({ /* cicili#Let7009 */
-          bool __h_case_result  = (true  &&  ((match7005 . __h_ctor ) ==  __h_Nothing_t  ) );
+        ({ /* cicili#Let7168 */
+          bool __h_case_result  = (true  &&  ((match7164 . __h_ctor ) ==  __h_Nothing_t  ) );
           // ----------
           
           if (__h_case_result )
-            { /* cicili#Block7014 */
+            { /* cicili#Block7173 */
               printf ("12th char element of v05: not found!\n");
             }
           else
-            { /* cicili#Let7019 */
+            { /* cicili#Let7178 */
               // ----------
               ;
-              { /* cicili#Block7021 */
-                { /* cicili#Block7026 */
+              { /* cicili#Block7180 */
+                { /* cicili#Block7185 */
                   printf ("status: %d\n", -102);
                   exit (EXIT_FAILURE );
                 }
@@ -7648,28 +7810,28 @@ int main () {
             }
         });
       }
-      { /* cicili#Let7030 */
-        __auto_type match7029  = head_Vector_int (v08 );
-        typeof((((match7029 . __h_data ). Just ). __h_0_mem )) i ;
+      { /* cicili#Let7189 */
+        __auto_type match7188  = head_Vector_int (v08 );
+        typeof((((match7188 . __h_data ). Just ). __h_0_mem )) i ;
         // ----------
         ;
-        ({ /* cicili#Let7033 */
-          bool __h_case_result  = (true  &&  (((match7029 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn7034 */
-                (i  =  (((match7029 . __h_data ). Just ). __h_0_mem ) );
+        ({ /* cicili#Let7192 */
+          bool __h_case_result  = (true  &&  (((match7188 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn7193 */
+                (i  =  (((match7188 . __h_data ). Just ). __h_0_mem ) );
                 true ;
               }) ) );
           // ----------
           
           if (__h_case_result )
-            { /* cicili#Block7040 */
+            { /* cicili#Block7199 */
               printf ("head int element of v08: %d\n", i );
             }
           else
-            { /* cicili#Let7045 */
+            { /* cicili#Let7204 */
               // ----------
               ;
-              { /* cicili#Block7047 */
-                { /* cicili#Block7052 */
+              { /* cicili#Block7206 */
+                { /* cicili#Block7211 */
                   printf ("status: %d\n", -103);
                   exit (EXIT_FAILURE );
                 }
@@ -7677,28 +7839,28 @@ int main () {
             }
         });
       }
-      { /* cicili#Let7056 */
-        __auto_type match7055  = head_Vector_char (v09 );
-        typeof((((match7055 . __h_data ). Just ). __h_0_mem )) c ;
+      { /* cicili#Let7215 */
+        __auto_type match7214  = head_Vector_char (v09 );
+        typeof((((match7214 . __h_data ). Just ). __h_0_mem )) c ;
         // ----------
         ;
-        ({ /* cicili#Let7059 */
-          bool __h_case_result  = (true  &&  (((match7055 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn7060 */
-                (c  =  (((match7055 . __h_data ). Just ). __h_0_mem ) );
+        ({ /* cicili#Let7218 */
+          bool __h_case_result  = (true  &&  (((match7214 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn7219 */
+                (c  =  (((match7214 . __h_data ). Just ). __h_0_mem ) );
                 true ;
               }) ) );
           // ----------
           
           if (__h_case_result )
-            { /* cicili#Block7066 */
+            { /* cicili#Block7225 */
               printf ("head char element of v09: %c\n", c );
             }
           else
-            { /* cicili#Let7071 */
+            { /* cicili#Let7230 */
               // ----------
               ;
-              { /* cicili#Block7073 */
-                { /* cicili#Block7078 */
+              { /* cicili#Block7232 */
+                { /* cicili#Block7237 */
                   printf ("status: %d\n", -104);
                   exit (EXIT_FAILURE );
                 }
@@ -7712,28 +7874,28 @@ int main () {
       printf ("v09: ");
       show_Vector_char (stdout , v09 );
       putchar ('\n');
-      { /* cicili#Let7082 */
-        __auto_type match7081  = nth_Vector_int (1, v08 );
-        typeof((((match7081 . __h_data ). Just ). __h_0_mem )) i ;
+      { /* cicili#Let7241 */
+        __auto_type match7240  = nth_Vector_int (1, v08 );
+        typeof((((match7240 . __h_data ). Just ). __h_0_mem )) i ;
         // ----------
         ;
-        ({ /* cicili#Let7085 */
-          bool __h_case_result  = (true  &&  (((match7081 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn7086 */
-                (i  =  (((match7081 . __h_data ). Just ). __h_0_mem ) );
+        ({ /* cicili#Let7244 */
+          bool __h_case_result  = (true  &&  (((match7240 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn7245 */
+                (i  =  (((match7240 . __h_data ). Just ). __h_0_mem ) );
                 true ;
               }) ) );
           // ----------
           
           if (__h_case_result )
-            { /* cicili#Block7092 */
+            { /* cicili#Block7251 */
               printf ("2nd int element of v08: %d\n", i );
             }
           else
-            { /* cicili#Let7097 */
+            { /* cicili#Let7256 */
               // ----------
               ;
-              { /* cicili#Block7099 */
-                { /* cicili#Block7104 */
+              { /* cicili#Block7258 */
+                { /* cicili#Block7263 */
                   printf ("status: %d\n", -105);
                   exit (EXIT_FAILURE );
                 }
@@ -7741,28 +7903,28 @@ int main () {
             }
         });
       }
-      { /* cicili#Let7108 */
-        __auto_type match7107  = nth_Vector_char (2, v09 );
-        typeof((((match7107 . __h_data ). Just ). __h_0_mem )) c ;
+      { /* cicili#Let7267 */
+        __auto_type match7266  = nth_Vector_char (2, v09 );
+        typeof((((match7266 . __h_data ). Just ). __h_0_mem )) c ;
         // ----------
         ;
-        ({ /* cicili#Let7111 */
-          bool __h_case_result  = (true  &&  (((match7107 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn7112 */
-                (c  =  (((match7107 . __h_data ). Just ). __h_0_mem ) );
+        ({ /* cicili#Let7270 */
+          bool __h_case_result  = (true  &&  (((match7266 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn7271 */
+                (c  =  (((match7266 . __h_data ). Just ). __h_0_mem ) );
                 true ;
               }) ) );
           // ----------
           
           if (__h_case_result )
-            { /* cicili#Block7118 */
+            { /* cicili#Block7277 */
               printf ("3rd char element of v09: %c\n", c );
             }
           else
-            { /* cicili#Let7123 */
+            { /* cicili#Let7282 */
               // ----------
               ;
-              { /* cicili#Block7125 */
-                { /* cicili#Block7130 */
+              { /* cicili#Block7284 */
+                { /* cicili#Block7289 */
                   printf ("status: %d\n", -106);
                   exit (EXIT_FAILURE );
                 }
@@ -7770,24 +7932,24 @@ int main () {
             }
         });
       }
-      { /* cicili#Let7134 */
-        __auto_type match7133  = nth_Vector_char (3, v09 );
+      { /* cicili#Let7293 */
+        __auto_type match7292  = nth_Vector_char (3, v09 );
         // ----------
         ;
-        ({ /* cicili#Let7137 */
-          bool __h_case_result  = (true  &&  ((match7133 . __h_ctor ) ==  __h_Nothing_t  ) );
+        ({ /* cicili#Let7296 */
+          bool __h_case_result  = (true  &&  ((match7292 . __h_ctor ) ==  __h_Nothing_t  ) );
           // ----------
           
           if (__h_case_result )
-            { /* cicili#Block7142 */
+            { /* cicili#Block7301 */
               printf ("4th char element of v09: not found!\n");
             }
           else
-            { /* cicili#Let7147 */
+            { /* cicili#Let7306 */
               // ----------
               ;
-              { /* cicili#Block7149 */
-                { /* cicili#Block7154 */
+              { /* cicili#Block7308 */
+                { /* cicili#Block7313 */
                   printf ("status: %d\n", -107);
                   exit (EXIT_FAILURE );
                 }
@@ -7795,44 +7957,44 @@ int main () {
             }
         });
       }
-      ({ /* cicili#Let7157 */
+      ({ /* cicili#Let7316 */
         __auto_type __h_matchbox  = v10 ;
         // ----------
-        { /* cicili#Let7161 */
-          __auto_type match7160  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
-          typeof((((match7160 . __h_data ). Just ). __h_0_mem )) unboxed ;
+        { /* cicili#Let7320 */
+          __auto_type match7319  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
+          typeof((((match7319 . __h_data ). Just ). __h_0_mem )) unboxed ;
           // ----------
           ;
-          ({ /* cicili#Let7164 */
-            bool __h_case_result  = (true  &&  (((match7160 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn7165 */
-                  (unboxed  =  (((match7160 . __h_data ). Just ). __h_0_mem ) );
+          ({ /* cicili#Let7323 */
+            bool __h_case_result  = (true  &&  (((match7319 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn7324 */
+                  (unboxed  =  (((match7319 . __h_data ). Just ). __h_0_mem ) );
                   true ;
                 }) ) );
             // ----------
             
             if (__h_case_result )
-              { /* cicili#Block7171 */
-                { /* cicili#Let7175 */
+              { /* cicili#Block7330 */
+                { /* cicili#Let7334 */
                   // ----------
                   ;
-                  ({ /* cicili#Let7177 */
+                  ({ /* cicili#Let7336 */
                     bool __h_case_result  = (true  &&  ((unboxed -> __h_ctor ) ==  __h_Slice_t  ) );
                     // ----------
                     
                     if (__h_case_result )
-                      { /* cicili#Block7182 */
-                        { /* cicili#Block7184 */
+                      { /* cicili#Block7341 */
+                        { /* cicili#Block7343 */
                           printf ("tail v05: ");
                           show_Vector_char (stdout , v10 );
                           putchar ('\n');
                         }
                       }
                     else
-                      { /* cicili#Let7189 */
+                      { /* cicili#Let7348 */
                         // ----------
                         ;
-                        { /* cicili#Block7191 */
-                          { /* cicili#Block7196 */
+                        { /* cicili#Block7350 */
+                          { /* cicili#Block7355 */
                             printf ("status: %d\n", -109);
                             exit (EXIT_FAILURE );
                           }
@@ -7842,16 +8004,16 @@ int main () {
                 }
               }
             else
-              { /* cicili#Let7201 */
+              { /* cicili#Let7360 */
                 // ----------
                 ;
-                ({ /* cicili#Let7203 */
-                  bool __h_case_result  = (true  &&  ((match7160 . __h_ctor ) ==  __h_Nothing_t  ) );
+                ({ /* cicili#Let7362 */
+                  bool __h_case_result  = (true  &&  ((match7319 . __h_ctor ) ==  __h_Nothing_t  ) );
                   // ----------
                   
                   if (__h_case_result )
-                    { /* cicili#Block7208 */
-                      { /* cicili#Block7213 */
+                    { /* cicili#Block7367 */
+                      { /* cicili#Block7372 */
                         printf ("status: %d\n", -108);
                         exit (EXIT_FAILURE );
                       }
@@ -7861,44 +8023,44 @@ int main () {
           });
         }
       });
-      ({ /* cicili#Let7216 */
+      ({ /* cicili#Let7375 */
         __auto_type __h_matchbox  = v11 ;
         // ----------
-        { /* cicili#Let7220 */
-          __auto_type match7219  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
-          typeof((((match7219 . __h_data ). Just ). __h_0_mem )) unboxed ;
+        { /* cicili#Let7379 */
+          __auto_type match7378  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
+          typeof((((match7378 . __h_data ). Just ). __h_0_mem )) unboxed ;
           // ----------
           ;
-          ({ /* cicili#Let7223 */
-            bool __h_case_result  = (true  &&  (((match7219 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn7224 */
-                  (unboxed  =  (((match7219 . __h_data ). Just ). __h_0_mem ) );
+          ({ /* cicili#Let7382 */
+            bool __h_case_result  = (true  &&  (((match7378 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn7383 */
+                  (unboxed  =  (((match7378 . __h_data ). Just ). __h_0_mem ) );
                   true ;
                 }) ) );
             // ----------
             
             if (__h_case_result )
-              { /* cicili#Block7230 */
-                { /* cicili#Let7234 */
+              { /* cicili#Block7389 */
+                { /* cicili#Let7393 */
                   // ----------
                   ;
-                  ({ /* cicili#Let7236 */
+                  ({ /* cicili#Let7395 */
                     bool __h_case_result  = (true  &&  ((unboxed -> __h_ctor ) ==  __h_Slice_t  ) );
                     // ----------
                     
                     if (__h_case_result )
-                      { /* cicili#Block7241 */
-                        { /* cicili#Block7243 */
+                      { /* cicili#Block7400 */
+                        { /* cicili#Block7402 */
                           printf ("v11: drop 7 v05: ");
                           show_Vector_char (stdout , v11 );
                           putchar ('\n');
                         }
                       }
                     else
-                      { /* cicili#Let7248 */
+                      { /* cicili#Let7407 */
                         // ----------
                         ;
-                        { /* cicili#Block7250 */
-                          { /* cicili#Block7255 */
+                        { /* cicili#Block7409 */
+                          { /* cicili#Block7414 */
                             printf ("status: %d\n", -111);
                             exit (EXIT_FAILURE );
                           }
@@ -7908,16 +8070,16 @@ int main () {
                 }
               }
             else
-              { /* cicili#Let7260 */
+              { /* cicili#Let7419 */
                 // ----------
                 ;
-                ({ /* cicili#Let7262 */
-                  bool __h_case_result  = (true  &&  ((match7219 . __h_ctor ) ==  __h_Nothing_t  ) );
+                ({ /* cicili#Let7421 */
+                  bool __h_case_result  = (true  &&  ((match7378 . __h_ctor ) ==  __h_Nothing_t  ) );
                   // ----------
                   
                   if (__h_case_result )
-                    { /* cicili#Block7267 */
-                      { /* cicili#Block7272 */
+                    { /* cicili#Block7426 */
+                      { /* cicili#Block7431 */
                         printf ("status: %d\n", -110);
                         exit (EXIT_FAILURE );
                       }
@@ -7927,44 +8089,44 @@ int main () {
           });
         }
       });
-      ({ /* cicili#Let7275 */
+      ({ /* cicili#Let7434 */
         __auto_type __h_matchbox  = v12 ;
         // ----------
-        { /* cicili#Let7279 */
-          __auto_type match7278  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
-          typeof((((match7278 . __h_data ). Just ). __h_0_mem )) unboxed ;
+        { /* cicili#Let7438 */
+          __auto_type match7437  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
+          typeof((((match7437 . __h_data ). Just ). __h_0_mem )) unboxed ;
           // ----------
           ;
-          ({ /* cicili#Let7282 */
-            bool __h_case_result  = (true  &&  (((match7278 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn7283 */
-                  (unboxed  =  (((match7278 . __h_data ). Just ). __h_0_mem ) );
+          ({ /* cicili#Let7441 */
+            bool __h_case_result  = (true  &&  (((match7437 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn7442 */
+                  (unboxed  =  (((match7437 . __h_data ). Just ). __h_0_mem ) );
                   true ;
                 }) ) );
             // ----------
             
             if (__h_case_result )
-              { /* cicili#Block7289 */
-                { /* cicili#Let7293 */
+              { /* cicili#Block7448 */
+                { /* cicili#Let7452 */
                   // ----------
                   ;
-                  ({ /* cicili#Let7295 */
+                  ({ /* cicili#Let7454 */
                     bool __h_case_result  = (true  &&  ((unboxed -> __h_ctor ) ==  __h_Slice_t  ) );
                     // ----------
                     
                     if (__h_case_result )
-                      { /* cicili#Block7300 */
-                        { /* cicili#Block7302 */
+                      { /* cicili#Block7459 */
+                        { /* cicili#Block7461 */
                           printf ("drop 12 v05: Empty Slice");
                           show_Vector_char (stdout , v12 );
                           putchar ('\n');
                         }
                       }
                     else
-                      { /* cicili#Let7307 */
+                      { /* cicili#Let7466 */
                         // ----------
                         ;
-                        { /* cicili#Block7309 */
-                          { /* cicili#Block7314 */
+                        { /* cicili#Block7468 */
+                          { /* cicili#Block7473 */
                             printf ("status: %d\n", -113);
                             exit (EXIT_FAILURE );
                           }
@@ -7974,16 +8136,16 @@ int main () {
                 }
               }
             else
-              { /* cicili#Let7319 */
+              { /* cicili#Let7478 */
                 // ----------
                 ;
-                ({ /* cicili#Let7321 */
-                  bool __h_case_result  = (true  &&  ((match7278 . __h_ctor ) ==  __h_Nothing_t  ) );
+                ({ /* cicili#Let7480 */
+                  bool __h_case_result  = (true  &&  ((match7437 . __h_ctor ) ==  __h_Nothing_t  ) );
                   // ----------
                   
                   if (__h_case_result )
-                    { /* cicili#Block7326 */
-                      { /* cicili#Block7331 */
+                    { /* cicili#Block7485 */
+                      { /* cicili#Block7490 */
                         printf ("status: %d\n", -112);
                         exit (EXIT_FAILURE );
                       }
@@ -7993,44 +8155,44 @@ int main () {
           });
         }
       });
-      ({ /* cicili#Let7334 */
+      ({ /* cicili#Let7493 */
         __auto_type __h_matchbox  = v13 ;
         // ----------
-        { /* cicili#Let7338 */
-          __auto_type match7337  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
-          typeof((((match7337 . __h_data ). Just ). __h_0_mem )) unboxed ;
+        { /* cicili#Let7497 */
+          __auto_type match7496  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
+          typeof((((match7496 . __h_data ). Just ). __h_0_mem )) unboxed ;
           // ----------
           ;
-          ({ /* cicili#Let7341 */
-            bool __h_case_result  = (true  &&  (((match7337 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn7342 */
-                  (unboxed  =  (((match7337 . __h_data ). Just ). __h_0_mem ) );
+          ({ /* cicili#Let7500 */
+            bool __h_case_result  = (true  &&  (((match7496 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn7501 */
+                  (unboxed  =  (((match7496 . __h_data ). Just ). __h_0_mem ) );
                   true ;
                 }) ) );
             // ----------
             
             if (__h_case_result )
-              { /* cicili#Block7348 */
-                { /* cicili#Let7352 */
+              { /* cicili#Block7507 */
+                { /* cicili#Let7511 */
                   // ----------
                   ;
-                  ({ /* cicili#Let7354 */
+                  ({ /* cicili#Let7513 */
                     bool __h_case_result  = (true  &&  ((unboxed -> __h_ctor ) ==  __h_Slice_t  ) );
                     // ----------
                     
                     if (__h_case_result )
-                      { /* cicili#Block7359 */
-                        { /* cicili#Block7361 */
+                      { /* cicili#Block7518 */
+                        { /* cicili#Block7520 */
                           printf ("drop 1 of Slice v11: ");
                           show_Vector_char (stdout , v13 );
                           putchar ('\n');
                         }
                       }
                     else
-                      { /* cicili#Let7366 */
+                      { /* cicili#Let7525 */
                         // ----------
                         ;
-                        { /* cicili#Block7368 */
-                          { /* cicili#Block7373 */
+                        { /* cicili#Block7527 */
+                          { /* cicili#Block7532 */
                             printf ("status: %d\n", -115);
                             exit (EXIT_FAILURE );
                           }
@@ -8040,16 +8202,16 @@ int main () {
                 }
               }
             else
-              { /* cicili#Let7378 */
+              { /* cicili#Let7537 */
                 // ----------
                 ;
-                ({ /* cicili#Let7380 */
-                  bool __h_case_result  = (true  &&  ((match7337 . __h_ctor ) ==  __h_Nothing_t  ) );
+                ({ /* cicili#Let7539 */
+                  bool __h_case_result  = (true  &&  ((match7496 . __h_ctor ) ==  __h_Nothing_t  ) );
                   // ----------
                   
                   if (__h_case_result )
-                    { /* cicili#Block7385 */
-                      { /* cicili#Block7390 */
+                    { /* cicili#Block7544 */
+                      { /* cicili#Block7549 */
                         printf ("status: %d\n", -114);
                         exit (EXIT_FAILURE );
                       }
@@ -8059,44 +8221,44 @@ int main () {
           });
         }
       });
-      ({ /* cicili#Let7393 */
+      ({ /* cicili#Let7552 */
         __auto_type __h_matchbox  = v14 ;
         // ----------
-        { /* cicili#Let7397 */
-          __auto_type match7396  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
-          typeof((((match7396 . __h_data ). Just ). __h_0_mem )) unboxed ;
+        { /* cicili#Let7556 */
+          __auto_type match7555  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
+          typeof((((match7555 . __h_data ). Just ). __h_0_mem )) unboxed ;
           // ----------
           ;
-          ({ /* cicili#Let7400 */
-            bool __h_case_result  = (true  &&  (((match7396 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn7401 */
-                  (unboxed  =  (((match7396 . __h_data ). Just ). __h_0_mem ) );
+          ({ /* cicili#Let7559 */
+            bool __h_case_result  = (true  &&  (((match7555 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn7560 */
+                  (unboxed  =  (((match7555 . __h_data ). Just ). __h_0_mem ) );
                   true ;
                 }) ) );
             // ----------
             
             if (__h_case_result )
-              { /* cicili#Block7407 */
-                { /* cicili#Let7411 */
+              { /* cicili#Block7566 */
+                { /* cicili#Let7570 */
                   // ----------
                   ;
-                  ({ /* cicili#Let7413 */
+                  ({ /* cicili#Let7572 */
                     bool __h_case_result  = (true  &&  ((unboxed -> __h_ctor ) ==  __h_Slice_t  ) );
                     // ----------
                     
                     if (__h_case_result )
-                      { /* cicili#Block7418 */
-                        { /* cicili#Block7420 */
+                      { /* cicili#Block7577 */
+                        { /* cicili#Block7579 */
                           printf ("init of Slice v05: ");
                           show_Vector_char (stdout , v14 );
                           putchar ('\n');
                         }
                       }
                     else
-                      { /* cicili#Let7425 */
+                      { /* cicili#Let7584 */
                         // ----------
                         ;
-                        { /* cicili#Block7427 */
-                          { /* cicili#Block7432 */
+                        { /* cicili#Block7586 */
+                          { /* cicili#Block7591 */
                             printf ("status: %d\n", -117);
                             exit (EXIT_FAILURE );
                           }
@@ -8106,16 +8268,16 @@ int main () {
                 }
               }
             else
-              { /* cicili#Let7437 */
+              { /* cicili#Let7596 */
                 // ----------
                 ;
-                ({ /* cicili#Let7439 */
-                  bool __h_case_result  = (true  &&  ((match7396 . __h_ctor ) ==  __h_Nothing_t  ) );
+                ({ /* cicili#Let7598 */
+                  bool __h_case_result  = (true  &&  ((match7555 . __h_ctor ) ==  __h_Nothing_t  ) );
                   // ----------
                   
                   if (__h_case_result )
-                    { /* cicili#Block7444 */
-                      { /* cicili#Block7449 */
+                    { /* cicili#Block7603 */
+                      { /* cicili#Block7608 */
                         printf ("status: %d\n", -116);
                         exit (EXIT_FAILURE );
                       }
@@ -8125,44 +8287,44 @@ int main () {
           });
         }
       });
-      ({ /* cicili#Let7452 */
+      ({ /* cicili#Let7611 */
         __auto_type __h_matchbox  = v15 ;
         // ----------
-        { /* cicili#Let7456 */
-          __auto_type match7455  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
-          typeof((((match7455 . __h_data ). Just ). __h_0_mem )) unboxed ;
+        { /* cicili#Let7615 */
+          __auto_type match7614  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
+          typeof((((match7614 . __h_data ). Just ). __h_0_mem )) unboxed ;
           // ----------
           ;
-          ({ /* cicili#Let7459 */
-            bool __h_case_result  = (true  &&  (((match7455 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn7460 */
-                  (unboxed  =  (((match7455 . __h_data ). Just ). __h_0_mem ) );
+          ({ /* cicili#Let7618 */
+            bool __h_case_result  = (true  &&  (((match7614 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn7619 */
+                  (unboxed  =  (((match7614 . __h_data ). Just ). __h_0_mem ) );
                   true ;
                 }) ) );
             // ----------
             
             if (__h_case_result )
-              { /* cicili#Block7466 */
-                { /* cicili#Let7470 */
+              { /* cicili#Block7625 */
+                { /* cicili#Let7629 */
                   // ----------
                   ;
-                  ({ /* cicili#Let7472 */
+                  ({ /* cicili#Let7631 */
                     bool __h_case_result  = (true  &&  ((unboxed -> __h_ctor ) ==  __h_Slice_t  ) );
                     // ----------
                     
                     if (__h_case_result )
-                      { /* cicili#Block7477 */
-                        { /* cicili#Block7479 */
+                      { /* cicili#Block7636 */
+                        { /* cicili#Block7638 */
                           printf ("init of init of Slice v05: ");
                           show_Vector_char (stdout , v15 );
                           putchar ('\n');
                         }
                       }
                     else
-                      { /* cicili#Let7484 */
+                      { /* cicili#Let7643 */
                         // ----------
                         ;
-                        { /* cicili#Block7486 */
-                          { /* cicili#Block7491 */
+                        { /* cicili#Block7645 */
+                          { /* cicili#Block7650 */
                             printf ("status: %d\n", -119);
                             exit (EXIT_FAILURE );
                           }
@@ -8172,16 +8334,16 @@ int main () {
                 }
               }
             else
-              { /* cicili#Let7496 */
+              { /* cicili#Let7655 */
                 // ----------
                 ;
-                ({ /* cicili#Let7498 */
-                  bool __h_case_result  = (true  &&  ((match7455 . __h_ctor ) ==  __h_Nothing_t  ) );
+                ({ /* cicili#Let7657 */
+                  bool __h_case_result  = (true  &&  ((match7614 . __h_ctor ) ==  __h_Nothing_t  ) );
                   // ----------
                   
                   if (__h_case_result )
-                    { /* cicili#Block7503 */
-                      { /* cicili#Block7508 */
+                    { /* cicili#Block7662 */
+                      { /* cicili#Block7667 */
                         printf ("status: %d\n", -118);
                         exit (EXIT_FAILURE );
                       }
@@ -8191,28 +8353,28 @@ int main () {
           });
         }
       });
-      { /* cicili#Let7512 */
-        __auto_type match7511  = last_Vector_int (v03 );
-        typeof((((match7511 . __h_data ). Just ). __h_0_mem )) la ;
+      { /* cicili#Let7671 */
+        __auto_type match7670  = last_Vector_int (v03 );
+        typeof((((match7670 . __h_data ). Just ). __h_0_mem )) la ;
         // ----------
         ;
-        ({ /* cicili#Let7514 */
-          bool __h_case_result  = (true  &&  (((match7511 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn7515 */
-                (la  =  (((match7511 . __h_data ). Just ). __h_0_mem ) );
+        ({ /* cicili#Let7673 */
+          bool __h_case_result  = (true  &&  (((match7670 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn7674 */
+                (la  =  (((match7670 . __h_data ). Just ). __h_0_mem ) );
                 true ;
               }) ) );
           // ----------
           
           if (__h_case_result )
-            { /* cicili#Block7521 */
+            { /* cicili#Block7680 */
               printf ("last of v03: %d\n", la );
             }
           else
-            { /* cicili#Let7526 */
+            { /* cicili#Let7685 */
               // ----------
               ;
-              { /* cicili#Block7528 */
-                { /* cicili#Block7533 */
+              { /* cicili#Block7687 */
+                { /* cicili#Block7692 */
                   printf ("status: %d\n", -121);
                   exit (EXIT_FAILURE );
                 }
@@ -8220,28 +8382,28 @@ int main () {
             }
         });
       }
-      { /* cicili#Let7537 */
-        __auto_type match7536  = last_Vector_char (v05 );
-        typeof((((match7536 . __h_data ). Just ). __h_0_mem )) la ;
+      { /* cicili#Let7696 */
+        __auto_type match7695  = last_Vector_char (v05 );
+        typeof((((match7695 . __h_data ). Just ). __h_0_mem )) la ;
         // ----------
         ;
-        ({ /* cicili#Let7539 */
-          bool __h_case_result  = (true  &&  (((match7536 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn7540 */
-                (la  =  (((match7536 . __h_data ). Just ). __h_0_mem ) );
+        ({ /* cicili#Let7698 */
+          bool __h_case_result  = (true  &&  (((match7695 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn7699 */
+                (la  =  (((match7695 . __h_data ). Just ). __h_0_mem ) );
                 true ;
               }) ) );
           // ----------
           
           if (__h_case_result )
-            { /* cicili#Block7546 */
+            { /* cicili#Block7705 */
               printf ("last of v05: %c\n", la );
             }
           else
-            { /* cicili#Let7551 */
+            { /* cicili#Let7710 */
               // ----------
               ;
-              { /* cicili#Block7553 */
-                { /* cicili#Block7558 */
+              { /* cicili#Block7712 */
+                { /* cicili#Block7717 */
                   printf ("status: %d\n", -123);
                   exit (EXIT_FAILURE );
                 }
@@ -8249,44 +8411,44 @@ int main () {
             }
         });
       }
-      ({ /* cicili#Let7561 */
+      ({ /* cicili#Let7720 */
         __auto_type __h_matchbox  = v18 ;
         // ----------
-        { /* cicili#Let7565 */
-          __auto_type match7564  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
-          typeof((((match7564 . __h_data ). Just ). __h_0_mem )) unboxed ;
+        { /* cicili#Let7724 */
+          __auto_type match7723  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
+          typeof((((match7723 . __h_data ). Just ). __h_0_mem )) unboxed ;
           // ----------
           ;
-          ({ /* cicili#Let7568 */
-            bool __h_case_result  = (true  &&  (((match7564 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn7569 */
-                  (unboxed  =  (((match7564 . __h_data ). Just ). __h_0_mem ) );
+          ({ /* cicili#Let7727 */
+            bool __h_case_result  = (true  &&  (((match7723 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn7728 */
+                  (unboxed  =  (((match7723 . __h_data ). Just ). __h_0_mem ) );
                   true ;
                 }) ) );
             // ----------
             
             if (__h_case_result )
-              { /* cicili#Block7575 */
-                { /* cicili#Let7579 */
+              { /* cicili#Block7734 */
+                { /* cicili#Let7738 */
                   // ----------
                   ;
-                  ({ /* cicili#Let7581 */
+                  ({ /* cicili#Let7740 */
                     bool __h_case_result  = (true  &&  ((unboxed -> __h_ctor ) ==  __h_Slice_t  ) );
                     // ----------
                     
                     if (__h_case_result )
-                      { /* cicili#Block7586 */
-                        { /* cicili#Block7588 */
+                      { /* cicili#Block7745 */
+                        { /* cicili#Block7747 */
                           printf ("take 3 of v03: ");
                           show_Vector_int (stdout , v18 );
                           putchar ('\n');
                         }
                       }
                     else
-                      { /* cicili#Let7593 */
+                      { /* cicili#Let7752 */
                         // ----------
                         ;
-                        { /* cicili#Block7595 */
-                          { /* cicili#Block7600 */
+                        { /* cicili#Block7754 */
+                          { /* cicili#Block7759 */
                             printf ("status: %d\n", -125);
                             exit (EXIT_FAILURE );
                           }
@@ -8296,16 +8458,16 @@ int main () {
                 }
               }
             else
-              { /* cicili#Let7605 */
+              { /* cicili#Let7764 */
                 // ----------
                 ;
-                ({ /* cicili#Let7607 */
-                  bool __h_case_result  = (true  &&  ((match7564 . __h_ctor ) ==  __h_Nothing_t  ) );
+                ({ /* cicili#Let7766 */
+                  bool __h_case_result  = (true  &&  ((match7723 . __h_ctor ) ==  __h_Nothing_t  ) );
                   // ----------
                   
                   if (__h_case_result )
-                    { /* cicili#Block7612 */
-                      { /* cicili#Block7617 */
+                    { /* cicili#Block7771 */
+                      { /* cicili#Block7776 */
                         printf ("status: %d\n", -124);
                         exit (EXIT_FAILURE );
                       }
@@ -8315,44 +8477,44 @@ int main () {
           });
         }
       });
-      ({ /* cicili#Let7620 */
+      ({ /* cicili#Let7779 */
         __auto_type __h_matchbox  = v19 ;
         // ----------
-        { /* cicili#Let7624 */
-          __auto_type match7623  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
-          typeof((((match7623 . __h_data ). Just ). __h_0_mem )) unboxed ;
+        { /* cicili#Let7783 */
+          __auto_type match7782  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
+          typeof((((match7782 . __h_data ). Just ). __h_0_mem )) unboxed ;
           // ----------
           ;
-          ({ /* cicili#Let7627 */
-            bool __h_case_result  = (true  &&  (((match7623 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn7628 */
-                  (unboxed  =  (((match7623 . __h_data ). Just ). __h_0_mem ) );
+          ({ /* cicili#Let7786 */
+            bool __h_case_result  = (true  &&  (((match7782 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn7787 */
+                  (unboxed  =  (((match7782 . __h_data ). Just ). __h_0_mem ) );
                   true ;
                 }) ) );
             // ----------
             
             if (__h_case_result )
-              { /* cicili#Block7634 */
-                { /* cicili#Let7638 */
+              { /* cicili#Block7793 */
+                { /* cicili#Let7797 */
                   // ----------
                   ;
-                  ({ /* cicili#Let7640 */
+                  ({ /* cicili#Let7799 */
                     bool __h_case_result  = (true  &&  ((unboxed -> __h_ctor ) ==  __h_Slice_t  ) );
                     // ----------
                     
                     if (__h_case_result )
-                      { /* cicili#Block7645 */
-                        { /* cicili#Block7647 */
+                      { /* cicili#Block7804 */
+                        { /* cicili#Block7806 */
                           printf ("take 5 of v05: ");
                           show_Vector_char (stdout , v19 );
                           putchar ('\n');
                         }
                       }
                     else
-                      { /* cicili#Let7652 */
+                      { /* cicili#Let7811 */
                         // ----------
                         ;
-                        { /* cicili#Block7654 */
-                          { /* cicili#Block7659 */
+                        { /* cicili#Block7813 */
+                          { /* cicili#Block7818 */
                             printf ("status: %d\n", -127);
                             exit (EXIT_FAILURE );
                           }
@@ -8362,16 +8524,16 @@ int main () {
                 }
               }
             else
-              { /* cicili#Let7664 */
+              { /* cicili#Let7823 */
                 // ----------
                 ;
-                ({ /* cicili#Let7666 */
-                  bool __h_case_result  = (true  &&  ((match7623 . __h_ctor ) ==  __h_Nothing_t  ) );
+                ({ /* cicili#Let7825 */
+                  bool __h_case_result  = (true  &&  ((match7782 . __h_ctor ) ==  __h_Nothing_t  ) );
                   // ----------
                   
                   if (__h_case_result )
-                    { /* cicili#Block7671 */
-                      { /* cicili#Block7676 */
+                    { /* cicili#Block7830 */
+                      { /* cicili#Block7835 */
                         printf ("status: %d\n", -126);
                         exit (EXIT_FAILURE );
                       }
@@ -8381,44 +8543,44 @@ int main () {
           });
         }
       });
-      ({ /* cicili#Let7679 */
+      ({ /* cicili#Let7838 */
         __auto_type __h_matchbox  = v20 ;
         // ----------
-        { /* cicili#Let7683 */
-          __auto_type match7682  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
-          typeof((((match7682 . __h_data ). Just ). __h_0_mem )) unboxed ;
+        { /* cicili#Let7842 */
+          __auto_type match7841  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
+          typeof((((match7841 . __h_data ). Just ). __h_0_mem )) unboxed ;
           // ----------
           ;
-          ({ /* cicili#Let7686 */
-            bool __h_case_result  = (true  &&  (((match7682 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn7687 */
-                  (unboxed  =  (((match7682 . __h_data ). Just ). __h_0_mem ) );
+          ({ /* cicili#Let7845 */
+            bool __h_case_result  = (true  &&  (((match7841 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn7846 */
+                  (unboxed  =  (((match7841 . __h_data ). Just ). __h_0_mem ) );
                   true ;
                 }) ) );
             // ----------
             
             if (__h_case_result )
-              { /* cicili#Block7693 */
-                { /* cicili#Let7697 */
+              { /* cicili#Block7852 */
+                { /* cicili#Let7856 */
                   // ----------
                   ;
-                  ({ /* cicili#Let7699 */
+                  ({ /* cicili#Let7858 */
                     bool __h_case_result  = (true  &&  ((unboxed -> __h_ctor ) ==  __h_Slice_t  ) );
                     // ----------
                     
                     if (__h_case_result )
-                      { /* cicili#Block7704 */
-                        { /* cicili#Block7706 */
+                      { /* cicili#Block7863 */
+                        { /* cicili#Block7865 */
                           printf ("take 2 of take 5 of v05: ");
                           show_Vector_char (stdout , v20 );
                           putchar ('\n');
                         }
                       }
                     else
-                      { /* cicili#Let7711 */
+                      { /* cicili#Let7870 */
                         // ----------
                         ;
-                        { /* cicili#Block7713 */
-                          { /* cicili#Block7718 */
+                        { /* cicili#Block7872 */
+                          { /* cicili#Block7877 */
                             printf ("status: %d\n", -129);
                             exit (EXIT_FAILURE );
                           }
@@ -8428,16 +8590,16 @@ int main () {
                 }
               }
             else
-              { /* cicili#Let7723 */
+              { /* cicili#Let7882 */
                 // ----------
                 ;
-                ({ /* cicili#Let7725 */
-                  bool __h_case_result  = (true  &&  ((match7682 . __h_ctor ) ==  __h_Nothing_t  ) );
+                ({ /* cicili#Let7884 */
+                  bool __h_case_result  = (true  &&  ((match7841 . __h_ctor ) ==  __h_Nothing_t  ) );
                   // ----------
                   
                   if (__h_case_result )
-                    { /* cicili#Block7730 */
-                      { /* cicili#Block7735 */
+                    { /* cicili#Block7889 */
+                      { /* cicili#Block7894 */
                         printf ("status: %d\n", -128);
                         exit (EXIT_FAILURE );
                       }
@@ -8447,44 +8609,44 @@ int main () {
           });
         }
       });
-      ({ /* cicili#Let7738 */
+      ({ /* cicili#Let7897 */
         __auto_type __h_matchbox  = v50 ;
         // ----------
-        { /* cicili#Let7742 */
-          __auto_type match7741  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
-          typeof((((match7741 . __h_data ). Just ). __h_0_mem )) unboxed ;
+        { /* cicili#Let7901 */
+          __auto_type match7900  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
+          typeof((((match7900 . __h_data ). Just ). __h_0_mem )) unboxed ;
           // ----------
           ;
-          ({ /* cicili#Let7745 */
-            bool __h_case_result  = (true  &&  (((match7741 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn7746 */
-                  (unboxed  =  (((match7741 . __h_data ). Just ). __h_0_mem ) );
+          ({ /* cicili#Let7904 */
+            bool __h_case_result  = (true  &&  (((match7900 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn7905 */
+                  (unboxed  =  (((match7900 . __h_data ). Just ). __h_0_mem ) );
                   true ;
                 }) ) );
             // ----------
             
             if (__h_case_result )
-              { /* cicili#Block7752 */
-                { /* cicili#Let7756 */
+              { /* cicili#Block7911 */
+                { /* cicili#Let7915 */
                   // ----------
                   ;
-                  ({ /* cicili#Let7758 */
+                  ({ /* cicili#Let7917 */
                     bool __h_case_result  = (true  &&  ((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) );
                     // ----------
                     
                     if (__h_case_result )
-                      { /* cicili#Block7763 */
-                        { /* cicili#Block7765 */
+                      { /* cicili#Block7922 */
+                        { /* cicili#Block7924 */
                           printf ("wrap 1000 v50: ");
                           show_Vector_int (stdout , v50 );
                           putchar ('\n');
                         }
                       }
                     else
-                      { /* cicili#Let7770 */
+                      { /* cicili#Let7929 */
                         // ----------
                         ;
-                        { /* cicili#Block7772 */
-                          { /* cicili#Block7777 */
+                        { /* cicili#Block7931 */
+                          { /* cicili#Block7936 */
                             printf ("status: %d\n", -301);
                             exit (EXIT_FAILURE );
                           }
@@ -8494,16 +8656,16 @@ int main () {
                 }
               }
             else
-              { /* cicili#Let7782 */
+              { /* cicili#Let7941 */
                 // ----------
                 ;
-                ({ /* cicili#Let7784 */
-                  bool __h_case_result  = (true  &&  ((match7741 . __h_ctor ) ==  __h_Nothing_t  ) );
+                ({ /* cicili#Let7943 */
+                  bool __h_case_result  = (true  &&  ((match7900 . __h_ctor ) ==  __h_Nothing_t  ) );
                   // ----------
                   
                   if (__h_case_result )
-                    { /* cicili#Block7789 */
-                      { /* cicili#Block7794 */
+                    { /* cicili#Block7948 */
+                      { /* cicili#Block7953 */
                         printf ("status: %d\n", -300);
                         exit (EXIT_FAILURE );
                       }
@@ -8513,208 +8675,208 @@ int main () {
           });
         }
       });
-      ({ /* cicili#Let7797 */
-        __auto_type v033  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let7799 */
-          __auto_type v033  = ({ /* cicili#Let7802 */
-            StringBuffer_int tmp_buf7801  = newCapacity_StringBuffer_int (5, 16);
+      ({ /* cicili#Let7956 */
+        __auto_type v033  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let7958 */
+          __auto_type v033  = ({ /* cicili#Let7961 */
+            StringBuffer_int tmp_buf7960  = newCapacity_StringBuffer_int (5, 16);
             // ----------
-            Buffer_int (print_StringBuffer_int (tmp_buf7801 , ((const int[]){ 1, 2, 3, 4, 5}), 5));
+            Buffer_int (print_StringBuffer_int (tmp_buf7960 , ((const int[]){ 1, 2, 3, 4, 5}), 5));
           });
           // ----------
           ((void)((v033 . __h_table )-> freeData ));
           v033 ;
         });
-        __auto_type v055  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let7810 */
-          __auto_type v055  = ({ /* cicili#Let7813 */
-            StringBuffer_char tmp_buf7812  = newCapacity_StringBuffer_char (11, 16);
+        __auto_type v055  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let7969 */
+          __auto_type v055  = ({ /* cicili#Let7972 */
+            StringBuffer_char tmp_buf7971  = newCapacity_StringBuffer_char (11, 16);
             // ----------
-            Buffer_char (print_StringBuffer_char (tmp_buf7812 , "abcdefghijk", 11));
+            Buffer_char (print_StringBuffer_char (tmp_buf7971 , "abcdefghijk", 11));
           });
           // ----------
           ((void)((v055 . __h_table )-> freeData ));
           v055 ;
         });
-        __auto_type v21  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let7821 */
+        __auto_type v21  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let7980 */
           __auto_type v21  = push_Vector_int (6, v033 );
           // ----------
           ((void)((v21 . __h_table )-> freeData ));
           v21 ;
         });
-        __auto_type v22  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let7824 */
+        __auto_type v22  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let7983 */
           __auto_type v22  = push_Vector_char ('L', v055 );
           // ----------
           ((void)((v22 . __h_table )-> freeData ));
           v22 ;
         });
-        __auto_type v23  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let7827 */
+        __auto_type v23  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let7986 */
           __auto_type v23  = push_Vector_int (7, v08 );
           // ----------
           ((void)((v23 . __h_table )-> freeData ));
           v23 ;
         });
-        __auto_type v24  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let7830 */
+        __auto_type v24  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let7989 */
           __auto_type v24  = push_Vector_char ('M', v09 );
           // ----------
           ((void)((v24 . __h_table )-> freeData ));
           v24 ;
         });
-        __auto_type v0333  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let7833 */
-          __auto_type v0333  = ({ /* cicili#Let7836 */
-            StringBuffer_int tmp_buf7835  = newCapacity_StringBuffer_int (3, 16);
+        __auto_type v0333  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let7992 */
+          __auto_type v0333  = ({ /* cicili#Let7995 */
+            StringBuffer_int tmp_buf7994  = newCapacity_StringBuffer_int (3, 16);
             // ----------
-            Buffer_int (print_StringBuffer_int (tmp_buf7835 , ((const int[]){ 1, 2, 3}), 3));
+            Buffer_int (print_StringBuffer_int (tmp_buf7994 , ((const int[]){ 1, 2, 3}), 3));
           });
           // ----------
           ((void)((v0333 . __h_table )-> freeData ));
           v0333 ;
         });
-        __auto_type v0555  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let7844 */
-          __auto_type v0555  = ({ /* cicili#Let7847 */
-            StringBuffer_char tmp_buf7846  = newCapacity_StringBuffer_char (6, 16);
+        __auto_type v0555  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let8003 */
+          __auto_type v0555  = ({ /* cicili#Let8006 */
+            StringBuffer_char tmp_buf8005  = newCapacity_StringBuffer_char (6, 16);
             // ----------
-            Buffer_char (print_StringBuffer_char (tmp_buf7846 , "abcdef", 6));
+            Buffer_char (print_StringBuffer_char (tmp_buf8005 , "abcdef", 6));
           });
           // ----------
           ((void)((v0555 . __h_table )-> freeData ));
           v0555 ;
         });
-        __auto_type v0444  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let7855 */
-          __auto_type v0444  = ({ /* cicili#Let7858 */
-            StringBuffer_int tmp_buf7857  = newCapacity_StringBuffer_int (3, 16);
+        __auto_type v0444  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let8014 */
+          __auto_type v0444  = ({ /* cicili#Let8017 */
+            StringBuffer_int tmp_buf8016  = newCapacity_StringBuffer_int (3, 16);
             // ----------
-            Buffer_int (print_StringBuffer_int (tmp_buf7857 , ((const int[]){ 4, 5, 6}), 3));
+            Buffer_int (print_StringBuffer_int (tmp_buf8016 , ((const int[]){ 4, 5, 6}), 3));
           });
           // ----------
           ((void)((v0444 . __h_table )-> freeData ));
           v0444 ;
         });
-        __auto_type v0666  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let7866 */
-          __auto_type v0666  = ({ /* cicili#Let7869 */
-            StringBuffer_char tmp_buf7868  = newCapacity_StringBuffer_char (6, 16);
+        __auto_type v0666  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let8025 */
+          __auto_type v0666  = ({ /* cicili#Let8028 */
+            StringBuffer_char tmp_buf8027  = newCapacity_StringBuffer_char (6, 16);
             // ----------
-            Buffer_char (print_StringBuffer_char (tmp_buf7868 , "ghijkl", 6));
+            Buffer_char (print_StringBuffer_char (tmp_buf8027 , "ghijkl", 6));
           });
           // ----------
           ((void)((v0666 . __h_table )-> freeData ));
           v0666 ;
         });
-        __auto_type v25  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let7877 */
+        __auto_type v25  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let8036 */
           __auto_type v25  = append_Vector_int (v0333 , v0444 );
           // ----------
           ((void)((v25 . __h_table )-> freeData ));
           v25 ;
         });
-        __auto_type v26  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let7880 */
+        __auto_type v26  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let8039 */
           __auto_type v26  = append_Vector_char (v0555 , v0666 );
           // ----------
           ((void)((v26 . __h_table )-> freeData ));
           v26 ;
         });
-        __auto_type v27  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let7883 */
+        __auto_type v27  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let8042 */
           __auto_type v27  = drop_Vector_int (1, v0444 );
           // ----------
           ((void)((v27 . __h_table )-> freeData ));
           v27 ;
         });
-        __auto_type v28  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let7886 */
+        __auto_type v28  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let8045 */
           __auto_type v28  = drop_Vector_char (3, v0666 );
           // ----------
           ((void)((v28 . __h_table )-> freeData ));
           v28 ;
         });
-        __auto_type v29  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let7889 */
+        __auto_type v29  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let8048 */
           __auto_type v29  = append_Vector_int (v27 , v0444 );
           // ----------
           ((void)((v29 . __h_table )-> freeData ));
           v29 ;
         });
-        __auto_type v30  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let7892 */
+        __auto_type v30  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let8051 */
           __auto_type v30  = append_Vector_char (v28 , v0666 );
           // ----------
           ((void)((v30 . __h_table )-> freeData ));
           v30 ;
         });
-        __auto_type v277  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let7895 */
+        __auto_type v277  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let8054 */
           __auto_type v277  = drop_Vector_int (1, v0444 );
           // ----------
           ((void)((v277 . __h_table )-> freeData ));
           v277 ;
         });
-        __auto_type v288  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let7898 */
+        __auto_type v288  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let8057 */
           __auto_type v288  = drop_Vector_char (3, v0666 );
           // ----------
           ((void)((v288 . __h_table )-> freeData ));
           v288 ;
         });
-        __auto_type vt1  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let7901 */
+        __auto_type vt1  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let8060 */
           __auto_type vt1  = copy_Vector_int (v0444 );
           // ----------
           ((void)((vt1 . __h_table )-> freeData ));
           vt1 ;
         });
-        __auto_type vt2  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let7904 */
+        __auto_type vt2  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let8063 */
           __auto_type vt2  = copy_Vector_char (v0666 );
           // ----------
           ((void)((vt2 . __h_table )-> freeData ));
           vt2 ;
         });
-        __auto_type v31  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let7907 */
+        __auto_type v31  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let8066 */
           __auto_type v31  = reverse_Vector_int (vt1 );
           // ----------
           ((void)((v31 . __h_table )-> freeData ));
           v31 ;
         });
-        __auto_type v32  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let7910 */
+        __auto_type v32  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let8069 */
           __auto_type v32  = reverse_Vector_char (vt2 );
           // ----------
           ((void)((v32 . __h_table )-> freeData ));
           v32 ;
         });
-        __auto_type v33  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let7913 */
+        __auto_type v33  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let8072 */
           __auto_type v33  = reverse_Vector_char (v288 );
           // ----------
           ((void)((v33 . __h_table )-> freeData ));
           v33 ;
         });
         // ----------
-        ({ /* cicili#Let7917 */
+        ({ /* cicili#Let8076 */
           __auto_type __h_matchbox  = v21 ;
           // ----------
-          { /* cicili#Let7921 */
-            __auto_type match7920  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
-            typeof((((match7920 . __h_data ). Just ). __h_0_mem )) unboxed ;
+          { /* cicili#Let8080 */
+            __auto_type match8079  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
+            typeof((((match8079 . __h_data ). Just ). __h_0_mem )) unboxed ;
             // ----------
             ;
-            ({ /* cicili#Let7924 */
-              bool __h_case_result  = (true  &&  (((match7920 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn7925 */
-                    (unboxed  =  (((match7920 . __h_data ). Just ). __h_0_mem ) );
+            ({ /* cicili#Let8083 */
+              bool __h_case_result  = (true  &&  (((match8079 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn8084 */
+                    (unboxed  =  (((match8079 . __h_data ). Just ). __h_0_mem ) );
                     true ;
                   }) ) );
               // ----------
               
               if (__h_case_result )
-                { /* cicili#Block7931 */
-                  { /* cicili#Let7935 */
+                { /* cicili#Block8090 */
+                  { /* cicili#Let8094 */
                     // ----------
                     ;
-                    ({ /* cicili#Let7937 */
+                    ({ /* cicili#Let8096 */
                       bool __h_case_result  = (true  &&  ((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) );
                       // ----------
                       
                       if (__h_case_result )
-                        { /* cicili#Block7942 */
-                          { /* cicili#Block7944 */
+                        { /* cicili#Block8101 */
+                          { /* cicili#Block8103 */
                             printf ("push 6 to v033: ");
                             show_Vector_int (stdout , v21 );
                             putchar ('\n');
                           }
                         }
                       else
-                        { /* cicili#Let7949 */
+                        { /* cicili#Let8108 */
                           // ----------
                           ;
-                          { /* cicili#Block7951 */
-                            { /* cicili#Block7956 */
+                          { /* cicili#Block8110 */
+                            { /* cicili#Block8115 */
                               printf ("status: %d\n", -131);
                               exit (EXIT_FAILURE );
                             }
@@ -8724,16 +8886,16 @@ int main () {
                   }
                 }
               else
-                { /* cicili#Let7961 */
+                { /* cicili#Let8120 */
                   // ----------
                   ;
-                  ({ /* cicili#Let7963 */
-                    bool __h_case_result  = (true  &&  ((match7920 . __h_ctor ) ==  __h_Nothing_t  ) );
+                  ({ /* cicili#Let8122 */
+                    bool __h_case_result  = (true  &&  ((match8079 . __h_ctor ) ==  __h_Nothing_t  ) );
                     // ----------
                     
                     if (__h_case_result )
-                      { /* cicili#Block7968 */
-                        { /* cicili#Block7973 */
+                      { /* cicili#Block8127 */
+                        { /* cicili#Block8132 */
                           printf ("status: %d\n", -130);
                           exit (EXIT_FAILURE );
                         }
@@ -8743,44 +8905,44 @@ int main () {
             });
           }
         });
-        ({ /* cicili#Let7976 */
+        ({ /* cicili#Let8135 */
           __auto_type __h_matchbox  = v22 ;
           // ----------
-          { /* cicili#Let7980 */
-            __auto_type match7979  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
-            typeof((((match7979 . __h_data ). Just ). __h_0_mem )) unboxed ;
+          { /* cicili#Let8139 */
+            __auto_type match8138  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
+            typeof((((match8138 . __h_data ). Just ). __h_0_mem )) unboxed ;
             // ----------
             ;
-            ({ /* cicili#Let7983 */
-              bool __h_case_result  = (true  &&  (((match7979 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn7984 */
-                    (unboxed  =  (((match7979 . __h_data ). Just ). __h_0_mem ) );
+            ({ /* cicili#Let8142 */
+              bool __h_case_result  = (true  &&  (((match8138 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn8143 */
+                    (unboxed  =  (((match8138 . __h_data ). Just ). __h_0_mem ) );
                     true ;
                   }) ) );
               // ----------
               
               if (__h_case_result )
-                { /* cicili#Block7990 */
-                  { /* cicili#Let7994 */
+                { /* cicili#Block8149 */
+                  { /* cicili#Let8153 */
                     // ----------
                     ;
-                    ({ /* cicili#Let7996 */
+                    ({ /* cicili#Let8155 */
                       bool __h_case_result  = (true  &&  ((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) );
                       // ----------
                       
                       if (__h_case_result )
-                        { /* cicili#Block8001 */
-                          { /* cicili#Block8003 */
+                        { /* cicili#Block8160 */
+                          { /* cicili#Block8162 */
                             printf ("push L to v055: ");
                             show_Vector_char (stdout , v22 );
                             putchar ('\n');
                           }
                         }
                       else
-                        { /* cicili#Let8008 */
+                        { /* cicili#Let8167 */
                           // ----------
                           ;
-                          { /* cicili#Block8010 */
-                            { /* cicili#Block8015 */
+                          { /* cicili#Block8169 */
+                            { /* cicili#Block8174 */
                               printf ("status: %d\n", -133);
                               exit (EXIT_FAILURE );
                             }
@@ -8790,16 +8952,16 @@ int main () {
                   }
                 }
               else
-                { /* cicili#Let8020 */
+                { /* cicili#Let8179 */
                   // ----------
                   ;
-                  ({ /* cicili#Let8022 */
-                    bool __h_case_result  = (true  &&  ((match7979 . __h_ctor ) ==  __h_Nothing_t  ) );
+                  ({ /* cicili#Let8181 */
+                    bool __h_case_result  = (true  &&  ((match8138 . __h_ctor ) ==  __h_Nothing_t  ) );
                     // ----------
                     
                     if (__h_case_result )
-                      { /* cicili#Block8027 */
-                        { /* cicili#Block8032 */
+                      { /* cicili#Block8186 */
+                        { /* cicili#Block8191 */
                           printf ("status: %d\n", -132);
                           exit (EXIT_FAILURE );
                         }
@@ -8809,44 +8971,44 @@ int main () {
             });
           }
         });
-        ({ /* cicili#Let8035 */
+        ({ /* cicili#Let8194 */
           __auto_type __h_matchbox  = v23 ;
           // ----------
-          { /* cicili#Let8039 */
-            __auto_type match8038  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
-            typeof((((match8038 . __h_data ). Just ). __h_0_mem )) unboxed ;
+          { /* cicili#Let8198 */
+            __auto_type match8197  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
+            typeof((((match8197 . __h_data ). Just ). __h_0_mem )) unboxed ;
             // ----------
             ;
-            ({ /* cicili#Let8042 */
-              bool __h_case_result  = (true  &&  (((match8038 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn8043 */
-                    (unboxed  =  (((match8038 . __h_data ). Just ). __h_0_mem ) );
+            ({ /* cicili#Let8201 */
+              bool __h_case_result  = (true  &&  (((match8197 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn8202 */
+                    (unboxed  =  (((match8197 . __h_data ). Just ). __h_0_mem ) );
                     true ;
                   }) ) );
               // ----------
               
               if (__h_case_result )
-                { /* cicili#Block8049 */
-                  { /* cicili#Let8053 */
+                { /* cicili#Block8208 */
+                  { /* cicili#Let8212 */
                     // ----------
                     ;
-                    ({ /* cicili#Let8055 */
+                    ({ /* cicili#Let8214 */
                       bool __h_case_result  = (true  &&  ((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) );
                       // ----------
                       
                       if (__h_case_result )
-                        { /* cicili#Block8060 */
-                          { /* cicili#Block8062 */
+                        { /* cicili#Block8219 */
+                          { /* cicili#Block8221 */
                             printf ("push 7 to Slice v08: ");
                             show_Vector_int (stdout , v23 );
                             putchar ('\n');
                           }
                         }
                       else
-                        { /* cicili#Let8067 */
+                        { /* cicili#Let8226 */
                           // ----------
                           ;
-                          { /* cicili#Block8069 */
-                            { /* cicili#Block8074 */
+                          { /* cicili#Block8228 */
+                            { /* cicili#Block8233 */
                               printf ("status: %d\n", -132);
                               exit (EXIT_FAILURE );
                             }
@@ -8856,16 +9018,16 @@ int main () {
                   }
                 }
               else
-                { /* cicili#Let8079 */
+                { /* cicili#Let8238 */
                   // ----------
                   ;
-                  ({ /* cicili#Let8081 */
-                    bool __h_case_result  = (true  &&  ((match8038 . __h_ctor ) ==  __h_Nothing_t  ) );
+                  ({ /* cicili#Let8240 */
+                    bool __h_case_result  = (true  &&  ((match8197 . __h_ctor ) ==  __h_Nothing_t  ) );
                     // ----------
                     
                     if (__h_case_result )
-                      { /* cicili#Block8086 */
-                        { /* cicili#Block8091 */
+                      { /* cicili#Block8245 */
+                        { /* cicili#Block8250 */
                           printf ("status: %d\n", -131);
                           exit (EXIT_FAILURE );
                         }
@@ -8875,44 +9037,44 @@ int main () {
             });
           }
         });
-        ({ /* cicili#Let8094 */
+        ({ /* cicili#Let8253 */
           __auto_type __h_matchbox  = v24 ;
           // ----------
-          { /* cicili#Let8098 */
-            __auto_type match8097  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
-            typeof((((match8097 . __h_data ). Just ). __h_0_mem )) unboxed ;
+          { /* cicili#Let8257 */
+            __auto_type match8256  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
+            typeof((((match8256 . __h_data ). Just ). __h_0_mem )) unboxed ;
             // ----------
             ;
-            ({ /* cicili#Let8101 */
-              bool __h_case_result  = (true  &&  (((match8097 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn8102 */
-                    (unboxed  =  (((match8097 . __h_data ). Just ). __h_0_mem ) );
+            ({ /* cicili#Let8260 */
+              bool __h_case_result  = (true  &&  (((match8256 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn8261 */
+                    (unboxed  =  (((match8256 . __h_data ). Just ). __h_0_mem ) );
                     true ;
                   }) ) );
               // ----------
               
               if (__h_case_result )
-                { /* cicili#Block8108 */
-                  { /* cicili#Let8112 */
+                { /* cicili#Block8267 */
+                  { /* cicili#Let8271 */
                     // ----------
                     ;
-                    ({ /* cicili#Let8114 */
+                    ({ /* cicili#Let8273 */
                       bool __h_case_result  = (true  &&  ((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) );
                       // ----------
                       
                       if (__h_case_result )
-                        { /* cicili#Block8119 */
-                          { /* cicili#Block8121 */
+                        { /* cicili#Block8278 */
+                          { /* cicili#Block8280 */
                             printf ("push M to Slice v09: ");
                             show_Vector_char (stdout , v24 );
                             putchar ('\n');
                           }
                         }
                       else
-                        { /* cicili#Let8126 */
+                        { /* cicili#Let8285 */
                           // ----------
                           ;
-                          { /* cicili#Block8128 */
-                            { /* cicili#Block8133 */
+                          { /* cicili#Block8287 */
+                            { /* cicili#Block8292 */
                               printf ("status: %d\n", -134);
                               exit (EXIT_FAILURE );
                             }
@@ -8922,16 +9084,16 @@ int main () {
                   }
                 }
               else
-                { /* cicili#Let8138 */
+                { /* cicili#Let8297 */
                   // ----------
                   ;
-                  ({ /* cicili#Let8140 */
-                    bool __h_case_result  = (true  &&  ((match8097 . __h_ctor ) ==  __h_Nothing_t  ) );
+                  ({ /* cicili#Let8299 */
+                    bool __h_case_result  = (true  &&  ((match8256 . __h_ctor ) ==  __h_Nothing_t  ) );
                     // ----------
                     
                     if (__h_case_result )
-                      { /* cicili#Block8145 */
-                        { /* cicili#Block8150 */
+                      { /* cicili#Block8304 */
+                        { /* cicili#Block8309 */
                           printf ("status: %d\n", -133);
                           exit (EXIT_FAILURE );
                         }
@@ -8941,44 +9103,44 @@ int main () {
             });
           }
         });
-        ({ /* cicili#Let8153 */
+        ({ /* cicili#Let8312 */
           __auto_type __h_matchbox  = v25 ;
           // ----------
-          { /* cicili#Let8157 */
-            __auto_type match8156  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
-            typeof((((match8156 . __h_data ). Just ). __h_0_mem )) unboxed ;
+          { /* cicili#Let8316 */
+            __auto_type match8315  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
+            typeof((((match8315 . __h_data ). Just ). __h_0_mem )) unboxed ;
             // ----------
             ;
-            ({ /* cicili#Let8160 */
-              bool __h_case_result  = (true  &&  (((match8156 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn8161 */
-                    (unboxed  =  (((match8156 . __h_data ). Just ). __h_0_mem ) );
+            ({ /* cicili#Let8319 */
+              bool __h_case_result  = (true  &&  (((match8315 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn8320 */
+                    (unboxed  =  (((match8315 . __h_data ). Just ). __h_0_mem ) );
                     true ;
                   }) ) );
               // ----------
               
               if (__h_case_result )
-                { /* cicili#Block8167 */
-                  { /* cicili#Let8171 */
+                { /* cicili#Block8326 */
+                  { /* cicili#Let8330 */
                     // ----------
                     ;
-                    ({ /* cicili#Let8173 */
+                    ({ /* cicili#Let8332 */
                       bool __h_case_result  = (true  &&  ((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) );
                       // ----------
                       
                       if (__h_case_result )
-                        { /* cicili#Block8178 */
-                          { /* cicili#Block8180 */
+                        { /* cicili#Block8337 */
+                          { /* cicili#Block8339 */
                             printf ("append v0333 to v0444: ");
                             show_Vector_int (stdout , v25 );
                             putchar ('\n');
                           }
                         }
                       else
-                        { /* cicili#Let8185 */
+                        { /* cicili#Let8344 */
                           // ----------
                           ;
-                          { /* cicili#Block8187 */
-                            { /* cicili#Block8192 */
+                          { /* cicili#Block8346 */
+                            { /* cicili#Block8351 */
                               printf ("status: %d\n", -136);
                               exit (EXIT_FAILURE );
                             }
@@ -8988,16 +9150,16 @@ int main () {
                   }
                 }
               else
-                { /* cicili#Let8197 */
+                { /* cicili#Let8356 */
                   // ----------
                   ;
-                  ({ /* cicili#Let8199 */
-                    bool __h_case_result  = (true  &&  ((match8156 . __h_ctor ) ==  __h_Nothing_t  ) );
+                  ({ /* cicili#Let8358 */
+                    bool __h_case_result  = (true  &&  ((match8315 . __h_ctor ) ==  __h_Nothing_t  ) );
                     // ----------
                     
                     if (__h_case_result )
-                      { /* cicili#Block8204 */
-                        { /* cicili#Block8209 */
+                      { /* cicili#Block8363 */
+                        { /* cicili#Block8368 */
                           printf ("status: %d\n", -135);
                           exit (EXIT_FAILURE );
                         }
@@ -9007,44 +9169,44 @@ int main () {
             });
           }
         });
-        ({ /* cicili#Let8212 */
+        ({ /* cicili#Let8371 */
           __auto_type __h_matchbox  = v26 ;
           // ----------
-          { /* cicili#Let8216 */
-            __auto_type match8215  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
-            typeof((((match8215 . __h_data ). Just ). __h_0_mem )) unboxed ;
+          { /* cicili#Let8375 */
+            __auto_type match8374  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
+            typeof((((match8374 . __h_data ). Just ). __h_0_mem )) unboxed ;
             // ----------
             ;
-            ({ /* cicili#Let8219 */
-              bool __h_case_result  = (true  &&  (((match8215 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn8220 */
-                    (unboxed  =  (((match8215 . __h_data ). Just ). __h_0_mem ) );
+            ({ /* cicili#Let8378 */
+              bool __h_case_result  = (true  &&  (((match8374 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn8379 */
+                    (unboxed  =  (((match8374 . __h_data ). Just ). __h_0_mem ) );
                     true ;
                   }) ) );
               // ----------
               
               if (__h_case_result )
-                { /* cicili#Block8226 */
-                  { /* cicili#Let8230 */
+                { /* cicili#Block8385 */
+                  { /* cicili#Let8389 */
                     // ----------
                     ;
-                    ({ /* cicili#Let8232 */
+                    ({ /* cicili#Let8391 */
                       bool __h_case_result  = (true  &&  ((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) );
                       // ----------
                       
                       if (__h_case_result )
-                        { /* cicili#Block8237 */
-                          { /* cicili#Block8239 */
+                        { /* cicili#Block8396 */
+                          { /* cicili#Block8398 */
                             printf ("append v0555 to v0666: ");
                             show_Vector_char (stdout , v26 );
                             putchar ('\n');
                           }
                         }
                       else
-                        { /* cicili#Let8244 */
+                        { /* cicili#Let8403 */
                           // ----------
                           ;
-                          { /* cicili#Block8246 */
-                            { /* cicili#Block8251 */
+                          { /* cicili#Block8405 */
+                            { /* cicili#Block8410 */
                               printf ("status: %d\n", -138);
                               exit (EXIT_FAILURE );
                             }
@@ -9054,16 +9216,16 @@ int main () {
                   }
                 }
               else
-                { /* cicili#Let8256 */
+                { /* cicili#Let8415 */
                   // ----------
                   ;
-                  ({ /* cicili#Let8258 */
-                    bool __h_case_result  = (true  &&  ((match8215 . __h_ctor ) ==  __h_Nothing_t  ) );
+                  ({ /* cicili#Let8417 */
+                    bool __h_case_result  = (true  &&  ((match8374 . __h_ctor ) ==  __h_Nothing_t  ) );
                     // ----------
                     
                     if (__h_case_result )
-                      { /* cicili#Block8263 */
-                        { /* cicili#Block8268 */
+                      { /* cicili#Block8422 */
+                        { /* cicili#Block8427 */
                           printf ("status: %d\n", -137);
                           exit (EXIT_FAILURE );
                         }
@@ -9079,44 +9241,44 @@ int main () {
         printf ("v28: ");
         show_Vector_char (stdout , v28 );
         putchar ('\n');
-        ({ /* cicili#Let8271 */
+        ({ /* cicili#Let8430 */
           __auto_type __h_matchbox  = v29 ;
           // ----------
-          { /* cicili#Let8275 */
-            __auto_type match8274  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
-            typeof((((match8274 . __h_data ). Just ). __h_0_mem )) unboxed ;
+          { /* cicili#Let8434 */
+            __auto_type match8433  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
+            typeof((((match8433 . __h_data ). Just ). __h_0_mem )) unboxed ;
             // ----------
             ;
-            ({ /* cicili#Let8278 */
-              bool __h_case_result  = (true  &&  (((match8274 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn8279 */
-                    (unboxed  =  (((match8274 . __h_data ). Just ). __h_0_mem ) );
+            ({ /* cicili#Let8437 */
+              bool __h_case_result  = (true  &&  (((match8433 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn8438 */
+                    (unboxed  =  (((match8433 . __h_data ). Just ). __h_0_mem ) );
                     true ;
                   }) ) );
               // ----------
               
               if (__h_case_result )
-                { /* cicili#Block8285 */
-                  { /* cicili#Let8289 */
+                { /* cicili#Block8444 */
+                  { /* cicili#Let8448 */
                     // ----------
                     ;
-                    ({ /* cicili#Let8291 */
+                    ({ /* cicili#Let8450 */
                       bool __h_case_result  = (true  &&  ((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) );
                       // ----------
                       
                       if (__h_case_result )
-                        { /* cicili#Block8296 */
-                          { /* cicili#Block8298 */
+                        { /* cicili#Block8455 */
+                          { /* cicili#Block8457 */
                             printf ("append v27 to v0444: ");
                             show_Vector_int (stdout , v29 );
                             putchar ('\n');
                           }
                         }
                       else
-                        { /* cicili#Let8303 */
+                        { /* cicili#Let8462 */
                           // ----------
                           ;
-                          { /* cicili#Block8305 */
-                            { /* cicili#Block8310 */
+                          { /* cicili#Block8464 */
+                            { /* cicili#Block8469 */
                               printf ("status: %d\n", -140);
                               exit (EXIT_FAILURE );
                             }
@@ -9126,16 +9288,16 @@ int main () {
                   }
                 }
               else
-                { /* cicili#Let8315 */
+                { /* cicili#Let8474 */
                   // ----------
                   ;
-                  ({ /* cicili#Let8317 */
-                    bool __h_case_result  = (true  &&  ((match8274 . __h_ctor ) ==  __h_Nothing_t  ) );
+                  ({ /* cicili#Let8476 */
+                    bool __h_case_result  = (true  &&  ((match8433 . __h_ctor ) ==  __h_Nothing_t  ) );
                     // ----------
                     
                     if (__h_case_result )
-                      { /* cicili#Block8322 */
-                        { /* cicili#Block8327 */
+                      { /* cicili#Block8481 */
+                        { /* cicili#Block8486 */
                           printf ("status: %d\n", -139);
                           exit (EXIT_FAILURE );
                         }
@@ -9145,44 +9307,44 @@ int main () {
             });
           }
         });
-        ({ /* cicili#Let8330 */
+        ({ /* cicili#Let8489 */
           __auto_type __h_matchbox  = v30 ;
           // ----------
-          { /* cicili#Let8334 */
-            __auto_type match8333  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
-            typeof((((match8333 . __h_data ). Just ). __h_0_mem )) unboxed ;
+          { /* cicili#Let8493 */
+            __auto_type match8492  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
+            typeof((((match8492 . __h_data ). Just ). __h_0_mem )) unboxed ;
             // ----------
             ;
-            ({ /* cicili#Let8337 */
-              bool __h_case_result  = (true  &&  (((match8333 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn8338 */
-                    (unboxed  =  (((match8333 . __h_data ). Just ). __h_0_mem ) );
+            ({ /* cicili#Let8496 */
+              bool __h_case_result  = (true  &&  (((match8492 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn8497 */
+                    (unboxed  =  (((match8492 . __h_data ). Just ). __h_0_mem ) );
                     true ;
                   }) ) );
               // ----------
               
               if (__h_case_result )
-                { /* cicili#Block8344 */
-                  { /* cicili#Let8348 */
+                { /* cicili#Block8503 */
+                  { /* cicili#Let8507 */
                     // ----------
                     ;
-                    ({ /* cicili#Let8350 */
+                    ({ /* cicili#Let8509 */
                       bool __h_case_result  = (true  &&  ((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) );
                       // ----------
                       
                       if (__h_case_result )
-                        { /* cicili#Block8355 */
-                          { /* cicili#Block8357 */
+                        { /* cicili#Block8514 */
+                          { /* cicili#Block8516 */
                             printf ("append v28 to v0666: ");
                             show_Vector_char (stdout , v30 );
                             putchar ('\n');
                           }
                         }
                       else
-                        { /* cicili#Let8362 */
+                        { /* cicili#Let8521 */
                           // ----------
                           ;
-                          { /* cicili#Block8364 */
-                            { /* cicili#Block8369 */
+                          { /* cicili#Block8523 */
+                            { /* cicili#Block8528 */
                               printf ("status: %d\n", -142);
                               exit (EXIT_FAILURE );
                             }
@@ -9192,16 +9354,16 @@ int main () {
                   }
                 }
               else
-                { /* cicili#Let8374 */
+                { /* cicili#Let8533 */
                   // ----------
                   ;
-                  ({ /* cicili#Let8376 */
-                    bool __h_case_result  = (true  &&  ((match8333 . __h_ctor ) ==  __h_Nothing_t  ) );
+                  ({ /* cicili#Let8535 */
+                    bool __h_case_result  = (true  &&  ((match8492 . __h_ctor ) ==  __h_Nothing_t  ) );
                     // ----------
                     
                     if (__h_case_result )
-                      { /* cicili#Block8381 */
-                        { /* cicili#Block8386 */
+                      { /* cicili#Block8540 */
+                        { /* cicili#Block8545 */
                           printf ("status: %d\n", -141);
                           exit (EXIT_FAILURE );
                         }
@@ -9211,44 +9373,44 @@ int main () {
             });
           }
         });
-        ({ /* cicili#Let8389 */
+        ({ /* cicili#Let8548 */
           __auto_type __h_matchbox  = v31 ;
           // ----------
-          { /* cicili#Let8393 */
-            __auto_type match8392  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
-            typeof((((match8392 . __h_data ). Just ). __h_0_mem )) unboxed ;
+          { /* cicili#Let8552 */
+            __auto_type match8551  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
+            typeof((((match8551 . __h_data ). Just ). __h_0_mem )) unboxed ;
             // ----------
             ;
-            ({ /* cicili#Let8396 */
-              bool __h_case_result  = (true  &&  (((match8392 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn8397 */
-                    (unboxed  =  (((match8392 . __h_data ). Just ). __h_0_mem ) );
+            ({ /* cicili#Let8555 */
+              bool __h_case_result  = (true  &&  (((match8551 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn8556 */
+                    (unboxed  =  (((match8551 . __h_data ). Just ). __h_0_mem ) );
                     true ;
                   }) ) );
               // ----------
               
               if (__h_case_result )
-                { /* cicili#Block8403 */
-                  { /* cicili#Let8407 */
+                { /* cicili#Block8562 */
+                  { /* cicili#Let8566 */
                     // ----------
                     ;
-                    ({ /* cicili#Let8409 */
+                    ({ /* cicili#Let8568 */
                       bool __h_case_result  = (true  &&  ((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) );
                       // ----------
                       
                       if (__h_case_result )
-                        { /* cicili#Block8414 */
-                          { /* cicili#Block8416 */
+                        { /* cicili#Block8573 */
+                          { /* cicili#Block8575 */
                             printf ("reverse v27: ");
                             show_Vector_int (stdout , v31 );
                             putchar ('\n');
                           }
                         }
                       else
-                        { /* cicili#Let8421 */
+                        { /* cicili#Let8580 */
                           // ----------
                           ;
-                          { /* cicili#Block8423 */
-                            { /* cicili#Block8428 */
+                          { /* cicili#Block8582 */
+                            { /* cicili#Block8587 */
                               printf ("status: %d\n", -144);
                               exit (EXIT_FAILURE );
                             }
@@ -9258,16 +9420,16 @@ int main () {
                   }
                 }
               else
-                { /* cicili#Let8433 */
+                { /* cicili#Let8592 */
                   // ----------
                   ;
-                  ({ /* cicili#Let8435 */
-                    bool __h_case_result  = (true  &&  ((match8392 . __h_ctor ) ==  __h_Nothing_t  ) );
+                  ({ /* cicili#Let8594 */
+                    bool __h_case_result  = (true  &&  ((match8551 . __h_ctor ) ==  __h_Nothing_t  ) );
                     // ----------
                     
                     if (__h_case_result )
-                      { /* cicili#Block8440 */
-                        { /* cicili#Block8445 */
+                      { /* cicili#Block8599 */
+                        { /* cicili#Block8604 */
                           printf ("status: %d\n", -143);
                           exit (EXIT_FAILURE );
                         }
@@ -9277,44 +9439,44 @@ int main () {
             });
           }
         });
-        ({ /* cicili#Let8448 */
+        ({ /* cicili#Let8607 */
           __auto_type __h_matchbox  = v32 ;
           // ----------
-          { /* cicili#Let8452 */
-            __auto_type match8451  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
-            typeof((((match8451 . __h_data ). Just ). __h_0_mem )) unboxed ;
+          { /* cicili#Let8611 */
+            __auto_type match8610  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
+            typeof((((match8610 . __h_data ). Just ). __h_0_mem )) unboxed ;
             // ----------
             ;
-            ({ /* cicili#Let8455 */
-              bool __h_case_result  = (true  &&  (((match8451 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn8456 */
-                    (unboxed  =  (((match8451 . __h_data ). Just ). __h_0_mem ) );
+            ({ /* cicili#Let8614 */
+              bool __h_case_result  = (true  &&  (((match8610 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn8615 */
+                    (unboxed  =  (((match8610 . __h_data ). Just ). __h_0_mem ) );
                     true ;
                   }) ) );
               // ----------
               
               if (__h_case_result )
-                { /* cicili#Block8462 */
-                  { /* cicili#Let8466 */
+                { /* cicili#Block8621 */
+                  { /* cicili#Let8625 */
                     // ----------
                     ;
-                    ({ /* cicili#Let8468 */
+                    ({ /* cicili#Let8627 */
                       bool __h_case_result  = (true  &&  ((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) );
                       // ----------
                       
                       if (__h_case_result )
-                        { /* cicili#Block8473 */
-                          { /* cicili#Block8475 */
+                        { /* cicili#Block8632 */
+                          { /* cicili#Block8634 */
                             printf ("reverse v28: ");
                             show_Vector_char (stdout , v32 );
                             putchar ('\n');
                           }
                         }
                       else
-                        { /* cicili#Let8480 */
+                        { /* cicili#Let8639 */
                           // ----------
                           ;
-                          { /* cicili#Block8482 */
-                            { /* cicili#Block8487 */
+                          { /* cicili#Block8641 */
+                            { /* cicili#Block8646 */
                               printf ("status: %d\n", -146);
                               exit (EXIT_FAILURE );
                             }
@@ -9324,16 +9486,16 @@ int main () {
                   }
                 }
               else
-                { /* cicili#Let8492 */
+                { /* cicili#Let8651 */
                   // ----------
                   ;
-                  ({ /* cicili#Let8494 */
-                    bool __h_case_result  = (true  &&  ((match8451 . __h_ctor ) ==  __h_Nothing_t  ) );
+                  ({ /* cicili#Let8653 */
+                    bool __h_case_result  = (true  &&  ((match8610 . __h_ctor ) ==  __h_Nothing_t  ) );
                     // ----------
                     
                     if (__h_case_result )
-                      { /* cicili#Block8499 */
-                        { /* cicili#Block8504 */
+                      { /* cicili#Block8658 */
+                        { /* cicili#Block8663 */
                           printf ("status: %d\n", -145);
                           exit (EXIT_FAILURE );
                         }
@@ -9343,44 +9505,44 @@ int main () {
             });
           }
         });
-        ({ /* cicili#Let8507 */
+        ({ /* cicili#Let8666 */
           __auto_type __h_matchbox  = v33 ;
           // ----------
-          { /* cicili#Let8511 */
-            __auto_type match8510  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
-            typeof((((match8510 . __h_data ). Just ). __h_0_mem )) unboxed ;
+          { /* cicili#Let8670 */
+            __auto_type match8669  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
+            typeof((((match8669 . __h_data ). Just ). __h_0_mem )) unboxed ;
             // ----------
             ;
-            ({ /* cicili#Let8514 */
-              bool __h_case_result  = (true  &&  (((match8510 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn8515 */
-                    (unboxed  =  (((match8510 . __h_data ). Just ). __h_0_mem ) );
+            ({ /* cicili#Let8673 */
+              bool __h_case_result  = (true  &&  (((match8669 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn8674 */
+                    (unboxed  =  (((match8669 . __h_data ). Just ). __h_0_mem ) );
                     true ;
                   }) ) );
               // ----------
               
               if (__h_case_result )
-                { /* cicili#Block8521 */
-                  { /* cicili#Let8525 */
+                { /* cicili#Block8680 */
+                  { /* cicili#Let8684 */
                     // ----------
                     ;
-                    ({ /* cicili#Let8527 */
+                    ({ /* cicili#Let8686 */
                       bool __h_case_result  = (true  &&  ((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) );
                       // ----------
                       
                       if (__h_case_result )
-                        { /* cicili#Block8532 */
-                          { /* cicili#Block8534 */
+                        { /* cicili#Block8691 */
+                          { /* cicili#Block8693 */
                             printf ("reverse Slice v288: ");
                             show_Vector_char (stdout , v33 );
                             putchar ('\n');
                           }
                         }
                       else
-                        { /* cicili#Let8539 */
+                        { /* cicili#Let8698 */
                           // ----------
                           ;
-                          { /* cicili#Block8541 */
-                            { /* cicili#Block8546 */
+                          { /* cicili#Block8700 */
+                            { /* cicili#Block8705 */
                               printf ("status: %d\n", -148);
                               exit (EXIT_FAILURE );
                             }
@@ -9390,16 +9552,16 @@ int main () {
                   }
                 }
               else
-                { /* cicili#Let8551 */
+                { /* cicili#Let8710 */
                   // ----------
                   ;
-                  ({ /* cicili#Let8553 */
-                    bool __h_case_result  = (true  &&  ((match8510 . __h_ctor ) ==  __h_Nothing_t  ) );
+                  ({ /* cicili#Let8712 */
+                    bool __h_case_result  = (true  &&  ((match8669 . __h_ctor ) ==  __h_Nothing_t  ) );
                     // ----------
                     
                     if (__h_case_result )
-                      { /* cicili#Block8558 */
-                        { /* cicili#Block8563 */
+                      { /* cicili#Block8717 */
+                        { /* cicili#Block8722 */
                           printf ("status: %d\n", -147);
                           exit (EXIT_FAILURE );
                         }
@@ -9410,246 +9572,246 @@ int main () {
           }
         });
       });
-      ({ /* cicili#Let8566 */
-        __auto_type v033  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let8568 */
-          __auto_type v033  = ({ /* cicili#Let8571 */
-            StringBuffer_int tmp_buf8570  = newCapacity_StringBuffer_int (5, 16);
+      ({ /* cicili#Let8725 */
+        __auto_type v033  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let8727 */
+          __auto_type v033  = ({ /* cicili#Let8730 */
+            StringBuffer_int tmp_buf8729  = newCapacity_StringBuffer_int (5, 16);
             // ----------
-            Buffer_int (print_StringBuffer_int (tmp_buf8570 , ((const int[]){ 1, 2, 3, 4, 5}), 5));
+            Buffer_int (print_StringBuffer_int (tmp_buf8729 , ((const int[]){ 1, 2, 3, 4, 5}), 5));
           });
           // ----------
           ((void)((v033 . __h_table )-> freeData ));
           v033 ;
         });
-        __auto_type v055  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let8579 */
-          __auto_type v055  = ({ /* cicili#Let8582 */
-            StringBuffer_char tmp_buf8581  = newCapacity_StringBuffer_char (11, 16);
+        __auto_type v055  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let8738 */
+          __auto_type v055  = ({ /* cicili#Let8741 */
+            StringBuffer_char tmp_buf8740  = newCapacity_StringBuffer_char (11, 16);
             // ----------
-            Buffer_char (print_StringBuffer_char (tmp_buf8581 , "abcdefghijk", 11));
+            Buffer_char (print_StringBuffer_char (tmp_buf8740 , "abcdefghijk", 11));
           });
           // ----------
           ((void)((v055 . __h_table )-> freeData ));
           v055 ;
         });
-        __auto_type v211  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let8590 */
+        __auto_type v211  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let8749 */
           __auto_type v211  = insertAt_Vector_int (v033 , 6, 2);
           // ----------
           ((void)((v211 . __h_table )-> freeData ));
           v211 ;
         });
-        __auto_type v222  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let8593 */
+        __auto_type v222  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let8752 */
           __auto_type v222  = insertAt_Vector_char (v055 , 'L', 3);
           // ----------
           ((void)((v222 . __h_table )-> freeData ));
           v222 ;
         });
-        __auto_type v277  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let8596 */
+        __auto_type v277  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let8755 */
           __auto_type v277  = drop_Vector_int (1, v211 );
           // ----------
           ((void)((v277 . __h_table )-> freeData ));
           v277 ;
         });
-        __auto_type v288  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let8599 */
+        __auto_type v288  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let8758 */
           __auto_type v288  = drop_Vector_char (2, v222 );
           // ----------
           ((void)((v288 . __h_table )-> freeData ));
           v288 ;
         });
-        __auto_type v233  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let8602 */
+        __auto_type v233  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let8761 */
           __auto_type v233  = insertAt_Vector_int (v277 , 7, 2);
           // ----------
           ((void)((v233 . __h_table )-> freeData ));
           v233 ;
         });
-        __auto_type v244  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let8605 */
+        __auto_type v244  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let8764 */
           __auto_type v244  = insertAt_Vector_char (v288 , 'M', 3);
           // ----------
           ((void)((v244 . __h_table )-> freeData ));
           v244 ;
         });
-        __auto_type vt3  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let8608 */
+        __auto_type vt3  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let8767 */
           __auto_type vt3  = copy_Vector_int (v233 );
           // ----------
           ((void)((vt3 . __h_table )-> freeData ));
           vt3 ;
         });
-        __auto_type vt4  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let8611 */
+        __auto_type vt4  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let8770 */
           __auto_type vt4  = copy_Vector_char (v244 );
           // ----------
           ((void)((vt4 . __h_table )-> freeData ));
           vt4 ;
         });
-        __auto_type v41  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let8614 */
+        __auto_type v41  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let8773 */
           __auto_type v41  = deleteAt_Vector_int (vt3 , 3);
           // ----------
           ((void)((v41 . __h_table )-> freeData ));
           v41 ;
         });
-        __auto_type v42  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let8617 */
+        __auto_type v42  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let8776 */
           __auto_type v42  = deleteAt_Vector_char (vt4 , 7);
           // ----------
           ((void)((v42 . __h_table )-> freeData ));
           v42 ;
         });
-        __auto_type vt7  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let8620 */
+        __auto_type vt7  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let8779 */
           __auto_type vt7  = drop_Vector_int (4, v233 );
           // ----------
           ((void)((vt7 . __h_table )-> freeData ));
           vt7 ;
         });
-        __auto_type vt8  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let8623 */
+        __auto_type vt8  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let8782 */
           __auto_type vt8  = drop_Vector_char (5, v244 );
           // ----------
           ((void)((vt8 . __h_table )-> freeData ));
           vt8 ;
         });
-        __auto_type v43  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let8626 */
+        __auto_type v43  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let8785 */
           __auto_type v43  = deleteAt_Vector_int (vt7 , 1);
           // ----------
           ((void)((v43 . __h_table )-> freeData ));
           v43 ;
         });
-        __auto_type v44  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let8629 */
+        __auto_type v44  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let8788 */
           __auto_type v44  = deleteAt_Vector_char (vt8 , 3);
           // ----------
           ((void)((v44 . __h_table )-> freeData ));
           v44 ;
         });
-        __auto_type vt5  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let8632 */
+        __auto_type vt5  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let8791 */
           __auto_type vt5  = copy_Vector_int (v233 );
           // ----------
           ((void)((vt5 . __h_table )-> freeData ));
           vt5 ;
         });
-        __auto_type vt6  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let8635 */
+        __auto_type vt6  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let8794 */
           __auto_type vt6  = copy_Vector_char (v244 );
           // ----------
           ((void)((vt6 . __h_table )-> freeData ));
           vt6 ;
         });
-        __auto_type v45  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let8638 */
+        __auto_type v45  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let8797 */
           __auto_type v45  = replaceAt_Vector_int (vt5 , 9, 3);
           // ----------
           ((void)((v45 . __h_table )-> freeData ));
           v45 ;
         });
-        __auto_type v46  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let8641 */
+        __auto_type v46  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let8800 */
           __auto_type v46  = replaceAt_Vector_char (vt6 , 'K', 7);
           // ----------
           ((void)((v46 . __h_table )-> freeData ));
           v46 ;
         });
-        __auto_type vt9  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let8644 */
+        __auto_type vt9  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let8803 */
           __auto_type vt9  = drop_Vector_int (4, v233 );
           // ----------
           ((void)((vt9 . __h_table )-> freeData ));
           vt9 ;
         });
-        __auto_type vt10  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let8647 */
+        __auto_type vt10  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let8806 */
           __auto_type vt10  = drop_Vector_char (5, v244 );
           // ----------
           ((void)((vt10 . __h_table )-> freeData ));
           vt10 ;
         });
-        __auto_type v47  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let8650 */
+        __auto_type v47  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let8809 */
           __auto_type v47  = replaceAt_Vector_int (vt9 , 9, 1);
           // ----------
           ((void)((v47 . __h_table )-> freeData ));
           v47 ;
         });
-        __auto_type v48  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let8653 */
+        __auto_type v48  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let8812 */
           __auto_type v48  = replaceAt_Vector_char (vt10 , 'K', 3);
           // ----------
           ((void)((v48 . __h_table )-> freeData ));
           v48 ;
         });
-        __auto_type vt51  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let8656 */
+        __auto_type vt51  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let8815 */
           __auto_type vt51  = copy_Vector_int (v233 );
           // ----------
           ((void)((vt51 . __h_table )-> freeData ));
           vt51 ;
         });
-        __auto_type vt61  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let8659 */
+        __auto_type vt61  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let8818 */
           __auto_type vt61  = copy_Vector_char (v244 );
           // ----------
           ((void)((vt61 . __h_table )-> freeData ));
           vt61 ;
         });
-        __auto_type v451  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let8662 */
+        __auto_type v451  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let8821 */
           __auto_type v451  = resize_Vector_int (vt51 , 1);
           // ----------
           ((void)((v451 . __h_table )-> freeData ));
           v451 ;
         });
-        __auto_type v461  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let8665 */
+        __auto_type v461  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let8824 */
           __auto_type v461  = resize_Vector_char (vt61 , 15);
           // ----------
           ((void)((v461 . __h_table )-> freeData ));
           v461 ;
         });
-        __auto_type vt91  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let8668 */
+        __auto_type vt91  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let8827 */
           __auto_type vt91  = drop_Vector_int (4, v233 );
           // ----------
           ((void)((vt91 . __h_table )-> freeData ));
           vt91 ;
         });
-        __auto_type vt101  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let8671 */
+        __auto_type vt101  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let8830 */
           __auto_type vt101  = drop_Vector_char (5, v244 );
           // ----------
           ((void)((vt101 . __h_table )-> freeData ));
           vt101 ;
         });
-        __auto_type v471  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let8674 */
+        __auto_type v471  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let8833 */
           __auto_type v471  = resize_Vector_int (vt91 , 1);
           // ----------
           ((void)((v471 . __h_table )-> freeData ));
           v471 ;
         });
-        __auto_type v481  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let8677 */
+        __auto_type v481  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let8836 */
           __auto_type v481  = resize_Vector_char (vt101 , 15);
           // ----------
           ((void)((v481 . __h_table )-> freeData ));
           v481 ;
         });
         // ----------
-        ({ /* cicili#Let8681 */
+        ({ /* cicili#Let8840 */
           __auto_type __h_matchbox  = v211 ;
           // ----------
-          { /* cicili#Let8685 */
-            __auto_type match8684  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
-            typeof((((match8684 . __h_data ). Just ). __h_0_mem )) unboxed ;
+          { /* cicili#Let8844 */
+            __auto_type match8843  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
+            typeof((((match8843 . __h_data ). Just ). __h_0_mem )) unboxed ;
             // ----------
             ;
-            ({ /* cicili#Let8688 */
-              bool __h_case_result  = (true  &&  (((match8684 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn8689 */
-                    (unboxed  =  (((match8684 . __h_data ). Just ). __h_0_mem ) );
+            ({ /* cicili#Let8847 */
+              bool __h_case_result  = (true  &&  (((match8843 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn8848 */
+                    (unboxed  =  (((match8843 . __h_data ). Just ). __h_0_mem ) );
                     true ;
                   }) ) );
               // ----------
               
               if (__h_case_result )
-                { /* cicili#Block8695 */
-                  { /* cicili#Let8699 */
+                { /* cicili#Block8854 */
+                  { /* cicili#Let8858 */
                     // ----------
                     ;
-                    ({ /* cicili#Let8701 */
+                    ({ /* cicili#Let8860 */
                       bool __h_case_result  = (true  &&  ((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) );
                       // ----------
                       
                       if (__h_case_result )
-                        { /* cicili#Block8706 */
-                          { /* cicili#Block8708 */
+                        { /* cicili#Block8865 */
+                          { /* cicili#Block8867 */
                             printf ("insert 6 at 2 v033: ");
                             show_Vector_int (stdout , v211 );
                             putchar ('\n');
                           }
                         }
                       else
-                        { /* cicili#Let8713 */
+                        { /* cicili#Let8872 */
                           // ----------
                           ;
-                          { /* cicili#Block8715 */
-                            { /* cicili#Block8720 */
+                          { /* cicili#Block8874 */
+                            { /* cicili#Block8879 */
                               printf ("status: %d\n", -150);
                               exit (EXIT_FAILURE );
                             }
@@ -9659,16 +9821,16 @@ int main () {
                   }
                 }
               else
-                { /* cicili#Let8725 */
+                { /* cicili#Let8884 */
                   // ----------
                   ;
-                  ({ /* cicili#Let8727 */
-                    bool __h_case_result  = (true  &&  ((match8684 . __h_ctor ) ==  __h_Nothing_t  ) );
+                  ({ /* cicili#Let8886 */
+                    bool __h_case_result  = (true  &&  ((match8843 . __h_ctor ) ==  __h_Nothing_t  ) );
                     // ----------
                     
                     if (__h_case_result )
-                      { /* cicili#Block8732 */
-                        { /* cicili#Block8737 */
+                      { /* cicili#Block8891 */
+                        { /* cicili#Block8896 */
                           printf ("status: %d\n", -149);
                           exit (EXIT_FAILURE );
                         }
@@ -9678,44 +9840,44 @@ int main () {
             });
           }
         });
-        ({ /* cicili#Let8740 */
+        ({ /* cicili#Let8899 */
           __auto_type __h_matchbox  = v222 ;
           // ----------
-          { /* cicili#Let8744 */
-            __auto_type match8743  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
-            typeof((((match8743 . __h_data ). Just ). __h_0_mem )) unboxed ;
+          { /* cicili#Let8903 */
+            __auto_type match8902  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
+            typeof((((match8902 . __h_data ). Just ). __h_0_mem )) unboxed ;
             // ----------
             ;
-            ({ /* cicili#Let8747 */
-              bool __h_case_result  = (true  &&  (((match8743 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn8748 */
-                    (unboxed  =  (((match8743 . __h_data ). Just ). __h_0_mem ) );
+            ({ /* cicili#Let8906 */
+              bool __h_case_result  = (true  &&  (((match8902 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn8907 */
+                    (unboxed  =  (((match8902 . __h_data ). Just ). __h_0_mem ) );
                     true ;
                   }) ) );
               // ----------
               
               if (__h_case_result )
-                { /* cicili#Block8754 */
-                  { /* cicili#Let8758 */
+                { /* cicili#Block8913 */
+                  { /* cicili#Let8917 */
                     // ----------
                     ;
-                    ({ /* cicili#Let8760 */
+                    ({ /* cicili#Let8919 */
                       bool __h_case_result  = (true  &&  ((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) );
                       // ----------
                       
                       if (__h_case_result )
-                        { /* cicili#Block8765 */
-                          { /* cicili#Block8767 */
+                        { /* cicili#Block8924 */
+                          { /* cicili#Block8926 */
                             printf ("insert L at 3 v055: ");
                             show_Vector_char (stdout , v222 );
                             putchar ('\n');
                           }
                         }
                       else
-                        { /* cicili#Let8772 */
+                        { /* cicili#Let8931 */
                           // ----------
                           ;
-                          { /* cicili#Block8774 */
-                            { /* cicili#Block8779 */
+                          { /* cicili#Block8933 */
+                            { /* cicili#Block8938 */
                               printf ("status: %d\n", -152);
                               exit (EXIT_FAILURE );
                             }
@@ -9725,16 +9887,16 @@ int main () {
                   }
                 }
               else
-                { /* cicili#Let8784 */
+                { /* cicili#Let8943 */
                   // ----------
                   ;
-                  ({ /* cicili#Let8786 */
-                    bool __h_case_result  = (true  &&  ((match8743 . __h_ctor ) ==  __h_Nothing_t  ) );
+                  ({ /* cicili#Let8945 */
+                    bool __h_case_result  = (true  &&  ((match8902 . __h_ctor ) ==  __h_Nothing_t  ) );
                     // ----------
                     
                     if (__h_case_result )
-                      { /* cicili#Block8791 */
-                        { /* cicili#Block8796 */
+                      { /* cicili#Block8950 */
+                        { /* cicili#Block8955 */
                           printf ("status: %d\n", -151);
                           exit (EXIT_FAILURE );
                         }
@@ -9744,44 +9906,44 @@ int main () {
             });
           }
         });
-        ({ /* cicili#Let8799 */
+        ({ /* cicili#Let8958 */
           __auto_type __h_matchbox  = v233 ;
           // ----------
-          { /* cicili#Let8803 */
-            __auto_type match8802  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
-            typeof((((match8802 . __h_data ). Just ). __h_0_mem )) unboxed ;
+          { /* cicili#Let8962 */
+            __auto_type match8961  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
+            typeof((((match8961 . __h_data ). Just ). __h_0_mem )) unboxed ;
             // ----------
             ;
-            ({ /* cicili#Let8806 */
-              bool __h_case_result  = (true  &&  (((match8802 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn8807 */
-                    (unboxed  =  (((match8802 . __h_data ). Just ). __h_0_mem ) );
+            ({ /* cicili#Let8965 */
+              bool __h_case_result  = (true  &&  (((match8961 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn8966 */
+                    (unboxed  =  (((match8961 . __h_data ). Just ). __h_0_mem ) );
                     true ;
                   }) ) );
               // ----------
               
               if (__h_case_result )
-                { /* cicili#Block8813 */
-                  { /* cicili#Let8817 */
+                { /* cicili#Block8972 */
+                  { /* cicili#Let8976 */
                     // ----------
                     ;
-                    ({ /* cicili#Let8819 */
+                    ({ /* cicili#Let8978 */
                       bool __h_case_result  = (true  &&  ((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) );
                       // ----------
                       
                       if (__h_case_result )
-                        { /* cicili#Block8824 */
-                          { /* cicili#Block8826 */
+                        { /* cicili#Block8983 */
+                          { /* cicili#Block8985 */
                             printf ("insert 7 at 2 v277: ");
                             show_Vector_int (stdout , v233 );
                             putchar ('\n');
                           }
                         }
                       else
-                        { /* cicili#Let8831 */
+                        { /* cicili#Let8990 */
                           // ----------
                           ;
-                          { /* cicili#Block8833 */
-                            { /* cicili#Block8838 */
+                          { /* cicili#Block8992 */
+                            { /* cicili#Block8997 */
                               printf ("status: %d\n", -154);
                               exit (EXIT_FAILURE );
                             }
@@ -9791,16 +9953,16 @@ int main () {
                   }
                 }
               else
-                { /* cicili#Let8843 */
+                { /* cicili#Let9002 */
                   // ----------
                   ;
-                  ({ /* cicili#Let8845 */
-                    bool __h_case_result  = (true  &&  ((match8802 . __h_ctor ) ==  __h_Nothing_t  ) );
+                  ({ /* cicili#Let9004 */
+                    bool __h_case_result  = (true  &&  ((match8961 . __h_ctor ) ==  __h_Nothing_t  ) );
                     // ----------
                     
                     if (__h_case_result )
-                      { /* cicili#Block8850 */
-                        { /* cicili#Block8855 */
+                      { /* cicili#Block9009 */
+                        { /* cicili#Block9014 */
                           printf ("status: %d\n", -153);
                           exit (EXIT_FAILURE );
                         }
@@ -9810,44 +9972,44 @@ int main () {
             });
           }
         });
-        ({ /* cicili#Let8858 */
+        ({ /* cicili#Let9017 */
           __auto_type __h_matchbox  = v244 ;
           // ----------
-          { /* cicili#Let8862 */
-            __auto_type match8861  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
-            typeof((((match8861 . __h_data ). Just ). __h_0_mem )) unboxed ;
+          { /* cicili#Let9021 */
+            __auto_type match9020  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
+            typeof((((match9020 . __h_data ). Just ). __h_0_mem )) unboxed ;
             // ----------
             ;
-            ({ /* cicili#Let8865 */
-              bool __h_case_result  = (true  &&  (((match8861 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn8866 */
-                    (unboxed  =  (((match8861 . __h_data ). Just ). __h_0_mem ) );
+            ({ /* cicili#Let9024 */
+              bool __h_case_result  = (true  &&  (((match9020 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn9025 */
+                    (unboxed  =  (((match9020 . __h_data ). Just ). __h_0_mem ) );
                     true ;
                   }) ) );
               // ----------
               
               if (__h_case_result )
-                { /* cicili#Block8872 */
-                  { /* cicili#Let8876 */
+                { /* cicili#Block9031 */
+                  { /* cicili#Let9035 */
                     // ----------
                     ;
-                    ({ /* cicili#Let8878 */
+                    ({ /* cicili#Let9037 */
                       bool __h_case_result  = (true  &&  ((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) );
                       // ----------
                       
                       if (__h_case_result )
-                        { /* cicili#Block8883 */
-                          { /* cicili#Block8885 */
+                        { /* cicili#Block9042 */
+                          { /* cicili#Block9044 */
                             printf ("insert M at 3 v288: ");
                             show_Vector_char (stdout , v244 );
                             putchar ('\n');
                           }
                         }
                       else
-                        { /* cicili#Let8890 */
+                        { /* cicili#Let9049 */
                           // ----------
                           ;
-                          { /* cicili#Block8892 */
-                            { /* cicili#Block8897 */
+                          { /* cicili#Block9051 */
+                            { /* cicili#Block9056 */
                               printf ("status: %d\n", -156);
                               exit (EXIT_FAILURE );
                             }
@@ -9857,16 +10019,16 @@ int main () {
                   }
                 }
               else
-                { /* cicili#Let8902 */
+                { /* cicili#Let9061 */
                   // ----------
                   ;
-                  ({ /* cicili#Let8904 */
-                    bool __h_case_result  = (true  &&  ((match8861 . __h_ctor ) ==  __h_Nothing_t  ) );
+                  ({ /* cicili#Let9063 */
+                    bool __h_case_result  = (true  &&  ((match9020 . __h_ctor ) ==  __h_Nothing_t  ) );
                     // ----------
                     
                     if (__h_case_result )
-                      { /* cicili#Block8909 */
-                        { /* cicili#Block8914 */
+                      { /* cicili#Block9068 */
+                        { /* cicili#Block9073 */
                           printf ("status: %d\n", -155);
                           exit (EXIT_FAILURE );
                         }
@@ -9876,44 +10038,44 @@ int main () {
             });
           }
         });
-        ({ /* cicili#Let8917 */
+        ({ /* cicili#Let9076 */
           __auto_type __h_matchbox  = v41 ;
           // ----------
-          { /* cicili#Let8921 */
-            __auto_type match8920  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
-            typeof((((match8920 . __h_data ). Just ). __h_0_mem )) unboxed ;
+          { /* cicili#Let9080 */
+            __auto_type match9079  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
+            typeof((((match9079 . __h_data ). Just ). __h_0_mem )) unboxed ;
             // ----------
             ;
-            ({ /* cicili#Let8924 */
-              bool __h_case_result  = (true  &&  (((match8920 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn8925 */
-                    (unboxed  =  (((match8920 . __h_data ). Just ). __h_0_mem ) );
+            ({ /* cicili#Let9083 */
+              bool __h_case_result  = (true  &&  (((match9079 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn9084 */
+                    (unboxed  =  (((match9079 . __h_data ). Just ). __h_0_mem ) );
                     true ;
                   }) ) );
               // ----------
               
               if (__h_case_result )
-                { /* cicili#Block8931 */
-                  { /* cicili#Let8935 */
+                { /* cicili#Block9090 */
+                  { /* cicili#Let9094 */
                     // ----------
                     ;
-                    ({ /* cicili#Let8937 */
+                    ({ /* cicili#Let9096 */
                       bool __h_case_result  = (true  &&  ((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) );
                       // ----------
                       
                       if (__h_case_result )
-                        { /* cicili#Block8942 */
-                          { /* cicili#Block8944 */
+                        { /* cicili#Block9101 */
+                          { /* cicili#Block9103 */
                             printf ("delete at 3 from v233: ");
                             show_Vector_int (stdout , v41 );
                             putchar ('\n');
                           }
                         }
                       else
-                        { /* cicili#Let8949 */
+                        { /* cicili#Let9108 */
                           // ----------
                           ;
-                          { /* cicili#Block8951 */
-                            { /* cicili#Block8956 */
+                          { /* cicili#Block9110 */
+                            { /* cicili#Block9115 */
                               printf ("status: %d\n", -158);
                               exit (EXIT_FAILURE );
                             }
@@ -9923,16 +10085,16 @@ int main () {
                   }
                 }
               else
-                { /* cicili#Let8961 */
+                { /* cicili#Let9120 */
                   // ----------
                   ;
-                  ({ /* cicili#Let8963 */
-                    bool __h_case_result  = (true  &&  ((match8920 . __h_ctor ) ==  __h_Nothing_t  ) );
+                  ({ /* cicili#Let9122 */
+                    bool __h_case_result  = (true  &&  ((match9079 . __h_ctor ) ==  __h_Nothing_t  ) );
                     // ----------
                     
                     if (__h_case_result )
-                      { /* cicili#Block8968 */
-                        { /* cicili#Block8973 */
+                      { /* cicili#Block9127 */
+                        { /* cicili#Block9132 */
                           printf ("status: %d\n", -157);
                           exit (EXIT_FAILURE );
                         }
@@ -9942,44 +10104,44 @@ int main () {
             });
           }
         });
-        ({ /* cicili#Let8976 */
+        ({ /* cicili#Let9135 */
           __auto_type __h_matchbox  = v42 ;
           // ----------
-          { /* cicili#Let8980 */
-            __auto_type match8979  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
-            typeof((((match8979 . __h_data ). Just ). __h_0_mem )) unboxed ;
+          { /* cicili#Let9139 */
+            __auto_type match9138  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
+            typeof((((match9138 . __h_data ). Just ). __h_0_mem )) unboxed ;
             // ----------
             ;
-            ({ /* cicili#Let8983 */
-              bool __h_case_result  = (true  &&  (((match8979 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn8984 */
-                    (unboxed  =  (((match8979 . __h_data ). Just ). __h_0_mem ) );
+            ({ /* cicili#Let9142 */
+              bool __h_case_result  = (true  &&  (((match9138 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn9143 */
+                    (unboxed  =  (((match9138 . __h_data ). Just ). __h_0_mem ) );
                     true ;
                   }) ) );
               // ----------
               
               if (__h_case_result )
-                { /* cicili#Block8990 */
-                  { /* cicili#Let8994 */
+                { /* cicili#Block9149 */
+                  { /* cicili#Let9153 */
                     // ----------
                     ;
-                    ({ /* cicili#Let8996 */
+                    ({ /* cicili#Let9155 */
                       bool __h_case_result  = (true  &&  ((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) );
                       // ----------
                       
                       if (__h_case_result )
-                        { /* cicili#Block9001 */
-                          { /* cicili#Block9003 */
+                        { /* cicili#Block9160 */
+                          { /* cicili#Block9162 */
                             printf ("delete at 7 from v244: ");
                             show_Vector_char (stdout , v42 );
                             putchar ('\n');
                           }
                         }
                       else
-                        { /* cicili#Let9008 */
+                        { /* cicili#Let9167 */
                           // ----------
                           ;
-                          { /* cicili#Block9010 */
-                            { /* cicili#Block9015 */
+                          { /* cicili#Block9169 */
+                            { /* cicili#Block9174 */
                               printf ("status: %d\n", -160);
                               exit (EXIT_FAILURE );
                             }
@@ -9989,16 +10151,16 @@ int main () {
                   }
                 }
               else
-                { /* cicili#Let9020 */
+                { /* cicili#Let9179 */
                   // ----------
                   ;
-                  ({ /* cicili#Let9022 */
-                    bool __h_case_result  = (true  &&  ((match8979 . __h_ctor ) ==  __h_Nothing_t  ) );
+                  ({ /* cicili#Let9181 */
+                    bool __h_case_result  = (true  &&  ((match9138 . __h_ctor ) ==  __h_Nothing_t  ) );
                     // ----------
                     
                     if (__h_case_result )
-                      { /* cicili#Block9027 */
-                        { /* cicili#Block9032 */
+                      { /* cicili#Block9186 */
+                        { /* cicili#Block9191 */
                           printf ("status: %d\n", -159);
                           exit (EXIT_FAILURE );
                         }
@@ -10008,44 +10170,44 @@ int main () {
             });
           }
         });
-        ({ /* cicili#Let9035 */
+        ({ /* cicili#Let9194 */
           __auto_type __h_matchbox  = v43 ;
           // ----------
-          { /* cicili#Let9039 */
-            __auto_type match9038  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
-            typeof((((match9038 . __h_data ). Just ). __h_0_mem )) unboxed ;
+          { /* cicili#Let9198 */
+            __auto_type match9197  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
+            typeof((((match9197 . __h_data ). Just ). __h_0_mem )) unboxed ;
             // ----------
             ;
-            ({ /* cicili#Let9042 */
-              bool __h_case_result  = (true  &&  (((match9038 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn9043 */
-                    (unboxed  =  (((match9038 . __h_data ). Just ). __h_0_mem ) );
+            ({ /* cicili#Let9201 */
+              bool __h_case_result  = (true  &&  (((match9197 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn9202 */
+                    (unboxed  =  (((match9197 . __h_data ). Just ). __h_0_mem ) );
                     true ;
                   }) ) );
               // ----------
               
               if (__h_case_result )
-                { /* cicili#Block9049 */
-                  { /* cicili#Let9053 */
+                { /* cicili#Block9208 */
+                  { /* cicili#Let9212 */
                     // ----------
                     ;
-                    ({ /* cicili#Let9055 */
+                    ({ /* cicili#Let9214 */
                       bool __h_case_result  = (true  &&  ((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) );
                       // ----------
                       
                       if (__h_case_result )
-                        { /* cicili#Block9060 */
-                          { /* cicili#Block9062 */
+                        { /* cicili#Block9219 */
+                          { /* cicili#Block9221 */
                             printf ("delete at 1 from drop 4 v233: ");
                             show_Vector_int (stdout , v43 );
                             putchar ('\n');
                           }
                         }
                       else
-                        { /* cicili#Let9067 */
+                        { /* cicili#Let9226 */
                           // ----------
                           ;
-                          { /* cicili#Block9069 */
-                            { /* cicili#Block9074 */
+                          { /* cicili#Block9228 */
+                            { /* cicili#Block9233 */
                               printf ("status: %d\n", -162);
                               exit (EXIT_FAILURE );
                             }
@@ -10055,16 +10217,16 @@ int main () {
                   }
                 }
               else
-                { /* cicili#Let9079 */
+                { /* cicili#Let9238 */
                   // ----------
                   ;
-                  ({ /* cicili#Let9081 */
-                    bool __h_case_result  = (true  &&  ((match9038 . __h_ctor ) ==  __h_Nothing_t  ) );
+                  ({ /* cicili#Let9240 */
+                    bool __h_case_result  = (true  &&  ((match9197 . __h_ctor ) ==  __h_Nothing_t  ) );
                     // ----------
                     
                     if (__h_case_result )
-                      { /* cicili#Block9086 */
-                        { /* cicili#Block9091 */
+                      { /* cicili#Block9245 */
+                        { /* cicili#Block9250 */
                           printf ("status: %d\n", -161);
                           exit (EXIT_FAILURE );
                         }
@@ -10074,44 +10236,44 @@ int main () {
             });
           }
         });
-        ({ /* cicili#Let9094 */
+        ({ /* cicili#Let9253 */
           __auto_type __h_matchbox  = v44 ;
           // ----------
-          { /* cicili#Let9098 */
-            __auto_type match9097  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
-            typeof((((match9097 . __h_data ). Just ). __h_0_mem )) unboxed ;
+          { /* cicili#Let9257 */
+            __auto_type match9256  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
+            typeof((((match9256 . __h_data ). Just ). __h_0_mem )) unboxed ;
             // ----------
             ;
-            ({ /* cicili#Let9101 */
-              bool __h_case_result  = (true  &&  (((match9097 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn9102 */
-                    (unboxed  =  (((match9097 . __h_data ). Just ). __h_0_mem ) );
+            ({ /* cicili#Let9260 */
+              bool __h_case_result  = (true  &&  (((match9256 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn9261 */
+                    (unboxed  =  (((match9256 . __h_data ). Just ). __h_0_mem ) );
                     true ;
                   }) ) );
               // ----------
               
               if (__h_case_result )
-                { /* cicili#Block9108 */
-                  { /* cicili#Let9112 */
+                { /* cicili#Block9267 */
+                  { /* cicili#Let9271 */
                     // ----------
                     ;
-                    ({ /* cicili#Let9114 */
+                    ({ /* cicili#Let9273 */
                       bool __h_case_result  = (true  &&  ((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) );
                       // ----------
                       
                       if (__h_case_result )
-                        { /* cicili#Block9119 */
-                          { /* cicili#Block9121 */
+                        { /* cicili#Block9278 */
+                          { /* cicili#Block9280 */
                             printf ("delete at 3 from drop 5 v244: ");
                             show_Vector_char (stdout , v44 );
                             putchar ('\n');
                           }
                         }
                       else
-                        { /* cicili#Let9126 */
+                        { /* cicili#Let9285 */
                           // ----------
                           ;
-                          { /* cicili#Block9128 */
-                            { /* cicili#Block9133 */
+                          { /* cicili#Block9287 */
+                            { /* cicili#Block9292 */
                               printf ("status: %d\n", -164);
                               exit (EXIT_FAILURE );
                             }
@@ -10121,16 +10283,16 @@ int main () {
                   }
                 }
               else
-                { /* cicili#Let9138 */
+                { /* cicili#Let9297 */
                   // ----------
                   ;
-                  ({ /* cicili#Let9140 */
-                    bool __h_case_result  = (true  &&  ((match9097 . __h_ctor ) ==  __h_Nothing_t  ) );
+                  ({ /* cicili#Let9299 */
+                    bool __h_case_result  = (true  &&  ((match9256 . __h_ctor ) ==  __h_Nothing_t  ) );
                     // ----------
                     
                     if (__h_case_result )
-                      { /* cicili#Block9145 */
-                        { /* cicili#Block9150 */
+                      { /* cicili#Block9304 */
+                        { /* cicili#Block9309 */
                           printf ("status: %d\n", -163);
                           exit (EXIT_FAILURE );
                         }
@@ -10140,44 +10302,44 @@ int main () {
             });
           }
         });
-        ({ /* cicili#Let9153 */
+        ({ /* cicili#Let9312 */
           __auto_type __h_matchbox  = v45 ;
           // ----------
-          { /* cicili#Let9157 */
-            __auto_type match9156  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
-            typeof((((match9156 . __h_data ). Just ). __h_0_mem )) unboxed ;
+          { /* cicili#Let9316 */
+            __auto_type match9315  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
+            typeof((((match9315 . __h_data ). Just ). __h_0_mem )) unboxed ;
             // ----------
             ;
-            ({ /* cicili#Let9160 */
-              bool __h_case_result  = (true  &&  (((match9156 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn9161 */
-                    (unboxed  =  (((match9156 . __h_data ). Just ). __h_0_mem ) );
+            ({ /* cicili#Let9319 */
+              bool __h_case_result  = (true  &&  (((match9315 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn9320 */
+                    (unboxed  =  (((match9315 . __h_data ). Just ). __h_0_mem ) );
                     true ;
                   }) ) );
               // ----------
               
               if (__h_case_result )
-                { /* cicili#Block9167 */
-                  { /* cicili#Let9171 */
+                { /* cicili#Block9326 */
+                  { /* cicili#Let9330 */
                     // ----------
                     ;
-                    ({ /* cicili#Let9173 */
+                    ({ /* cicili#Let9332 */
                       bool __h_case_result  = (true  &&  ((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) );
                       // ----------
                       
                       if (__h_case_result )
-                        { /* cicili#Block9178 */
-                          { /* cicili#Block9180 */
+                        { /* cicili#Block9337 */
+                          { /* cicili#Block9339 */
                             printf ("replace 9 at 3 v233: ");
                             show_Vector_int (stdout , v45 );
                             putchar ('\n');
                           }
                         }
                       else
-                        { /* cicili#Let9185 */
+                        { /* cicili#Let9344 */
                           // ----------
                           ;
-                          { /* cicili#Block9187 */
-                            { /* cicili#Block9192 */
+                          { /* cicili#Block9346 */
+                            { /* cicili#Block9351 */
                               printf ("status: %d\n", -166);
                               exit (EXIT_FAILURE );
                             }
@@ -10187,16 +10349,16 @@ int main () {
                   }
                 }
               else
-                { /* cicili#Let9197 */
+                { /* cicili#Let9356 */
                   // ----------
                   ;
-                  ({ /* cicili#Let9199 */
-                    bool __h_case_result  = (true  &&  ((match9156 . __h_ctor ) ==  __h_Nothing_t  ) );
+                  ({ /* cicili#Let9358 */
+                    bool __h_case_result  = (true  &&  ((match9315 . __h_ctor ) ==  __h_Nothing_t  ) );
                     // ----------
                     
                     if (__h_case_result )
-                      { /* cicili#Block9204 */
-                        { /* cicili#Block9209 */
+                      { /* cicili#Block9363 */
+                        { /* cicili#Block9368 */
                           printf ("status: %d\n", -165);
                           exit (EXIT_FAILURE );
                         }
@@ -10206,44 +10368,44 @@ int main () {
             });
           }
         });
-        ({ /* cicili#Let9212 */
+        ({ /* cicili#Let9371 */
           __auto_type __h_matchbox  = v46 ;
           // ----------
-          { /* cicili#Let9216 */
-            __auto_type match9215  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
-            typeof((((match9215 . __h_data ). Just ). __h_0_mem )) unboxed ;
+          { /* cicili#Let9375 */
+            __auto_type match9374  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
+            typeof((((match9374 . __h_data ). Just ). __h_0_mem )) unboxed ;
             // ----------
             ;
-            ({ /* cicili#Let9219 */
-              bool __h_case_result  = (true  &&  (((match9215 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn9220 */
-                    (unboxed  =  (((match9215 . __h_data ). Just ). __h_0_mem ) );
+            ({ /* cicili#Let9378 */
+              bool __h_case_result  = (true  &&  (((match9374 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn9379 */
+                    (unboxed  =  (((match9374 . __h_data ). Just ). __h_0_mem ) );
                     true ;
                   }) ) );
               // ----------
               
               if (__h_case_result )
-                { /* cicili#Block9226 */
-                  { /* cicili#Let9230 */
+                { /* cicili#Block9385 */
+                  { /* cicili#Let9389 */
                     // ----------
                     ;
-                    ({ /* cicili#Let9232 */
+                    ({ /* cicili#Let9391 */
                       bool __h_case_result  = (true  &&  ((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) );
                       // ----------
                       
                       if (__h_case_result )
-                        { /* cicili#Block9237 */
-                          { /* cicili#Block9239 */
+                        { /* cicili#Block9396 */
+                          { /* cicili#Block9398 */
                             printf ("replace K at 7 v244: ");
                             show_Vector_char (stdout , v46 );
                             putchar ('\n');
                           }
                         }
                       else
-                        { /* cicili#Let9244 */
+                        { /* cicili#Let9403 */
                           // ----------
                           ;
-                          { /* cicili#Block9246 */
-                            { /* cicili#Block9251 */
+                          { /* cicili#Block9405 */
+                            { /* cicili#Block9410 */
                               printf ("status: %d\n", -168);
                               exit (EXIT_FAILURE );
                             }
@@ -10253,16 +10415,16 @@ int main () {
                   }
                 }
               else
-                { /* cicili#Let9256 */
+                { /* cicili#Let9415 */
                   // ----------
                   ;
-                  ({ /* cicili#Let9258 */
-                    bool __h_case_result  = (true  &&  ((match9215 . __h_ctor ) ==  __h_Nothing_t  ) );
+                  ({ /* cicili#Let9417 */
+                    bool __h_case_result  = (true  &&  ((match9374 . __h_ctor ) ==  __h_Nothing_t  ) );
                     // ----------
                     
                     if (__h_case_result )
-                      { /* cicili#Block9263 */
-                        { /* cicili#Block9268 */
+                      { /* cicili#Block9422 */
+                        { /* cicili#Block9427 */
                           printf ("status: %d\n", -167);
                           exit (EXIT_FAILURE );
                         }
@@ -10272,44 +10434,44 @@ int main () {
             });
           }
         });
-        ({ /* cicili#Let9271 */
+        ({ /* cicili#Let9430 */
           __auto_type __h_matchbox  = v47 ;
           // ----------
-          { /* cicili#Let9275 */
-            __auto_type match9274  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
-            typeof((((match9274 . __h_data ). Just ). __h_0_mem )) unboxed ;
+          { /* cicili#Let9434 */
+            __auto_type match9433  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
+            typeof((((match9433 . __h_data ). Just ). __h_0_mem )) unboxed ;
             // ----------
             ;
-            ({ /* cicili#Let9278 */
-              bool __h_case_result  = (true  &&  (((match9274 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn9279 */
-                    (unboxed  =  (((match9274 . __h_data ). Just ). __h_0_mem ) );
+            ({ /* cicili#Let9437 */
+              bool __h_case_result  = (true  &&  (((match9433 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn9438 */
+                    (unboxed  =  (((match9433 . __h_data ). Just ). __h_0_mem ) );
                     true ;
                   }) ) );
               // ----------
               
               if (__h_case_result )
-                { /* cicili#Block9285 */
-                  { /* cicili#Let9289 */
+                { /* cicili#Block9444 */
+                  { /* cicili#Let9448 */
                     // ----------
                     ;
-                    ({ /* cicili#Let9291 */
+                    ({ /* cicili#Let9450 */
                       bool __h_case_result  = (true  &&  ((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) );
                       // ----------
                       
                       if (__h_case_result )
-                        { /* cicili#Block9296 */
-                          { /* cicili#Block9298 */
+                        { /* cicili#Block9455 */
+                          { /* cicili#Block9457 */
                             printf ("replace at 1 of drop 4 v233: ");
                             show_Vector_int (stdout , v47 );
                             putchar ('\n');
                           }
                         }
                       else
-                        { /* cicili#Let9303 */
+                        { /* cicili#Let9462 */
                           // ----------
                           ;
-                          { /* cicili#Block9305 */
-                            { /* cicili#Block9310 */
+                          { /* cicili#Block9464 */
+                            { /* cicili#Block9469 */
                               printf ("status: %d\n", -170);
                               exit (EXIT_FAILURE );
                             }
@@ -10319,16 +10481,16 @@ int main () {
                   }
                 }
               else
-                { /* cicili#Let9315 */
+                { /* cicili#Let9474 */
                   // ----------
                   ;
-                  ({ /* cicili#Let9317 */
-                    bool __h_case_result  = (true  &&  ((match9274 . __h_ctor ) ==  __h_Nothing_t  ) );
+                  ({ /* cicili#Let9476 */
+                    bool __h_case_result  = (true  &&  ((match9433 . __h_ctor ) ==  __h_Nothing_t  ) );
                     // ----------
                     
                     if (__h_case_result )
-                      { /* cicili#Block9322 */
-                        { /* cicili#Block9327 */
+                      { /* cicili#Block9481 */
+                        { /* cicili#Block9486 */
                           printf ("status: %d\n", -169);
                           exit (EXIT_FAILURE );
                         }
@@ -10338,44 +10500,44 @@ int main () {
             });
           }
         });
-        ({ /* cicili#Let9330 */
+        ({ /* cicili#Let9489 */
           __auto_type __h_matchbox  = v48 ;
           // ----------
-          { /* cicili#Let9334 */
-            __auto_type match9333  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
-            typeof((((match9333 . __h_data ). Just ). __h_0_mem )) unboxed ;
+          { /* cicili#Let9493 */
+            __auto_type match9492  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
+            typeof((((match9492 . __h_data ). Just ). __h_0_mem )) unboxed ;
             // ----------
             ;
-            ({ /* cicili#Let9337 */
-              bool __h_case_result  = (true  &&  (((match9333 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn9338 */
-                    (unboxed  =  (((match9333 . __h_data ). Just ). __h_0_mem ) );
+            ({ /* cicili#Let9496 */
+              bool __h_case_result  = (true  &&  (((match9492 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn9497 */
+                    (unboxed  =  (((match9492 . __h_data ). Just ). __h_0_mem ) );
                     true ;
                   }) ) );
               // ----------
               
               if (__h_case_result )
-                { /* cicili#Block9344 */
-                  { /* cicili#Let9348 */
+                { /* cicili#Block9503 */
+                  { /* cicili#Let9507 */
                     // ----------
                     ;
-                    ({ /* cicili#Let9350 */
+                    ({ /* cicili#Let9509 */
                       bool __h_case_result  = (true  &&  ((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) );
                       // ----------
                       
                       if (__h_case_result )
-                        { /* cicili#Block9355 */
-                          { /* cicili#Block9357 */
+                        { /* cicili#Block9514 */
+                          { /* cicili#Block9516 */
                             printf ("replace at 3 of drop 5 v244: ");
                             show_Vector_char (stdout , v48 );
                             putchar ('\n');
                           }
                         }
                       else
-                        { /* cicili#Let9362 */
+                        { /* cicili#Let9521 */
                           // ----------
                           ;
-                          { /* cicili#Block9364 */
-                            { /* cicili#Block9369 */
+                          { /* cicili#Block9523 */
+                            { /* cicili#Block9528 */
                               printf ("status: %d\n", -172);
                               exit (EXIT_FAILURE );
                             }
@@ -10385,16 +10547,16 @@ int main () {
                   }
                 }
               else
-                { /* cicili#Let9374 */
+                { /* cicili#Let9533 */
                   // ----------
                   ;
-                  ({ /* cicili#Let9376 */
-                    bool __h_case_result  = (true  &&  ((match9333 . __h_ctor ) ==  __h_Nothing_t  ) );
+                  ({ /* cicili#Let9535 */
+                    bool __h_case_result  = (true  &&  ((match9492 . __h_ctor ) ==  __h_Nothing_t  ) );
                     // ----------
                     
                     if (__h_case_result )
-                      { /* cicili#Block9381 */
-                        { /* cicili#Block9386 */
+                      { /* cicili#Block9540 */
+                        { /* cicili#Block9545 */
                           printf ("status: %d\n", -171);
                           exit (EXIT_FAILURE );
                         }
@@ -10404,44 +10566,44 @@ int main () {
             });
           }
         });
-        ({ /* cicili#Let9389 */
+        ({ /* cicili#Let9548 */
           __auto_type __h_matchbox  = v451 ;
           // ----------
-          { /* cicili#Let9393 */
-            __auto_type match9392  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
-            typeof((((match9392 . __h_data ). Just ). __h_0_mem )) unboxed ;
+          { /* cicili#Let9552 */
+            __auto_type match9551  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
+            typeof((((match9551 . __h_data ). Just ). __h_0_mem )) unboxed ;
             // ----------
             ;
-            ({ /* cicili#Let9396 */
-              bool __h_case_result  = (true  &&  (((match9392 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn9397 */
-                    (unboxed  =  (((match9392 . __h_data ). Just ). __h_0_mem ) );
+            ({ /* cicili#Let9555 */
+              bool __h_case_result  = (true  &&  (((match9551 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn9556 */
+                    (unboxed  =  (((match9551 . __h_data ). Just ). __h_0_mem ) );
                     true ;
                   }) ) );
               // ----------
               
               if (__h_case_result )
-                { /* cicili#Block9403 */
-                  { /* cicili#Let9407 */
+                { /* cicili#Block9562 */
+                  { /* cicili#Let9566 */
                     // ----------
                     ;
-                    ({ /* cicili#Let9409 */
+                    ({ /* cicili#Let9568 */
                       bool __h_case_result  = (true  &&  ((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) );
                       // ----------
                       
                       if (__h_case_result )
-                        { /* cicili#Block9414 */
-                          { /* cicili#Block9416 */
+                        { /* cicili#Block9573 */
+                          { /* cicili#Block9575 */
                             printf ("resize 1 v233: ");
                             show_Vector_int (stdout , v451 );
                             putchar ('\n');
                           }
                         }
                       else
-                        { /* cicili#Let9421 */
+                        { /* cicili#Let9580 */
                           // ----------
                           ;
-                          { /* cicili#Block9423 */
-                            { /* cicili#Block9428 */
+                          { /* cicili#Block9582 */
+                            { /* cicili#Block9587 */
                               printf ("status: %d\n", -174);
                               exit (EXIT_FAILURE );
                             }
@@ -10451,16 +10613,16 @@ int main () {
                   }
                 }
               else
-                { /* cicili#Let9433 */
+                { /* cicili#Let9592 */
                   // ----------
                   ;
-                  ({ /* cicili#Let9435 */
-                    bool __h_case_result  = (true  &&  ((match9392 . __h_ctor ) ==  __h_Nothing_t  ) );
+                  ({ /* cicili#Let9594 */
+                    bool __h_case_result  = (true  &&  ((match9551 . __h_ctor ) ==  __h_Nothing_t  ) );
                     // ----------
                     
                     if (__h_case_result )
-                      { /* cicili#Block9440 */
-                        { /* cicili#Block9445 */
+                      { /* cicili#Block9599 */
+                        { /* cicili#Block9604 */
                           printf ("status: %d\n", -173);
                           exit (EXIT_FAILURE );
                         }
@@ -10470,44 +10632,44 @@ int main () {
             });
           }
         });
-        ({ /* cicili#Let9448 */
+        ({ /* cicili#Let9607 */
           __auto_type __h_matchbox  = v461 ;
           // ----------
-          { /* cicili#Let9452 */
-            __auto_type match9451  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
-            typeof((((match9451 . __h_data ). Just ). __h_0_mem )) unboxed ;
+          { /* cicili#Let9611 */
+            __auto_type match9610  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
+            typeof((((match9610 . __h_data ). Just ). __h_0_mem )) unboxed ;
             // ----------
             ;
-            ({ /* cicili#Let9455 */
-              bool __h_case_result  = (true  &&  (((match9451 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn9456 */
-                    (unboxed  =  (((match9451 . __h_data ). Just ). __h_0_mem ) );
+            ({ /* cicili#Let9614 */
+              bool __h_case_result  = (true  &&  (((match9610 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn9615 */
+                    (unboxed  =  (((match9610 . __h_data ). Just ). __h_0_mem ) );
                     true ;
                   }) ) );
               // ----------
               
               if (__h_case_result )
-                { /* cicili#Block9462 */
-                  { /* cicili#Let9466 */
+                { /* cicili#Block9621 */
+                  { /* cicili#Let9625 */
                     // ----------
                     ;
-                    ({ /* cicili#Let9468 */
+                    ({ /* cicili#Let9627 */
                       bool __h_case_result  = (true  &&  ((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) );
                       // ----------
                       
                       if (__h_case_result )
-                        { /* cicili#Block9473 */
-                          { /* cicili#Block9475 */
+                        { /* cicili#Block9632 */
+                          { /* cicili#Block9634 */
                             printf ("resize 15 v244: ");
                             show_Vector_char (stdout , v461 );
                             putchar ('\n');
                           }
                         }
                       else
-                        { /* cicili#Let9480 */
+                        { /* cicili#Let9639 */
                           // ----------
                           ;
-                          { /* cicili#Block9482 */
-                            { /* cicili#Block9487 */
+                          { /* cicili#Block9641 */
+                            { /* cicili#Block9646 */
                               printf ("status: %d\n", -176);
                               exit (EXIT_FAILURE );
                             }
@@ -10517,16 +10679,16 @@ int main () {
                   }
                 }
               else
-                { /* cicili#Let9492 */
+                { /* cicili#Let9651 */
                   // ----------
                   ;
-                  ({ /* cicili#Let9494 */
-                    bool __h_case_result  = (true  &&  ((match9451 . __h_ctor ) ==  __h_Nothing_t  ) );
+                  ({ /* cicili#Let9653 */
+                    bool __h_case_result  = (true  &&  ((match9610 . __h_ctor ) ==  __h_Nothing_t  ) );
                     // ----------
                     
                     if (__h_case_result )
-                      { /* cicili#Block9499 */
-                        { /* cicili#Block9504 */
+                      { /* cicili#Block9658 */
+                        { /* cicili#Block9663 */
                           printf ("status: %d\n", -175);
                           exit (EXIT_FAILURE );
                         }
@@ -10536,44 +10698,44 @@ int main () {
             });
           }
         });
-        ({ /* cicili#Let9507 */
+        ({ /* cicili#Let9666 */
           __auto_type __h_matchbox  = v471 ;
           // ----------
-          { /* cicili#Let9511 */
-            __auto_type match9510  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
-            typeof((((match9510 . __h_data ). Just ). __h_0_mem )) unboxed ;
+          { /* cicili#Let9670 */
+            __auto_type match9669  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
+            typeof((((match9669 . __h_data ). Just ). __h_0_mem )) unboxed ;
             // ----------
             ;
-            ({ /* cicili#Let9514 */
-              bool __h_case_result  = (true  &&  (((match9510 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn9515 */
-                    (unboxed  =  (((match9510 . __h_data ). Just ). __h_0_mem ) );
+            ({ /* cicili#Let9673 */
+              bool __h_case_result  = (true  &&  (((match9669 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn9674 */
+                    (unboxed  =  (((match9669 . __h_data ). Just ). __h_0_mem ) );
                     true ;
                   }) ) );
               // ----------
               
               if (__h_case_result )
-                { /* cicili#Block9521 */
-                  { /* cicili#Let9525 */
+                { /* cicili#Block9680 */
+                  { /* cicili#Let9684 */
                     // ----------
                     ;
-                    ({ /* cicili#Let9527 */
+                    ({ /* cicili#Let9686 */
                       bool __h_case_result  = (true  &&  ((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) );
                       // ----------
                       
                       if (__h_case_result )
-                        { /* cicili#Block9532 */
-                          { /* cicili#Block9534 */
+                        { /* cicili#Block9691 */
+                          { /* cicili#Block9693 */
                             printf ("resize 1 of drop 4 v233: ");
                             show_Vector_int (stdout , v471 );
                             putchar ('\n');
                           }
                         }
                       else
-                        { /* cicili#Let9539 */
+                        { /* cicili#Let9698 */
                           // ----------
                           ;
-                          { /* cicili#Block9541 */
-                            { /* cicili#Block9546 */
+                          { /* cicili#Block9700 */
+                            { /* cicili#Block9705 */
                               printf ("status: %d\n", -178);
                               exit (EXIT_FAILURE );
                             }
@@ -10583,16 +10745,16 @@ int main () {
                   }
                 }
               else
-                { /* cicili#Let9551 */
+                { /* cicili#Let9710 */
                   // ----------
                   ;
-                  ({ /* cicili#Let9553 */
-                    bool __h_case_result  = (true  &&  ((match9510 . __h_ctor ) ==  __h_Nothing_t  ) );
+                  ({ /* cicili#Let9712 */
+                    bool __h_case_result  = (true  &&  ((match9669 . __h_ctor ) ==  __h_Nothing_t  ) );
                     // ----------
                     
                     if (__h_case_result )
-                      { /* cicili#Block9558 */
-                        { /* cicili#Block9563 */
+                      { /* cicili#Block9717 */
+                        { /* cicili#Block9722 */
                           printf ("status: %d\n", -177);
                           exit (EXIT_FAILURE );
                         }
@@ -10602,44 +10764,44 @@ int main () {
             });
           }
         });
-        ({ /* cicili#Let9566 */
+        ({ /* cicili#Let9725 */
           __auto_type __h_matchbox  = v481 ;
           // ----------
-          { /* cicili#Let9570 */
-            __auto_type match9569  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
-            typeof((((match9569 . __h_data ). Just ). __h_0_mem )) unboxed ;
+          { /* cicili#Let9729 */
+            __auto_type match9728  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
+            typeof((((match9728 . __h_data ). Just ). __h_0_mem )) unboxed ;
             // ----------
             ;
-            ({ /* cicili#Let9573 */
-              bool __h_case_result  = (true  &&  (((match9569 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn9574 */
-                    (unboxed  =  (((match9569 . __h_data ). Just ). __h_0_mem ) );
+            ({ /* cicili#Let9732 */
+              bool __h_case_result  = (true  &&  (((match9728 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn9733 */
+                    (unboxed  =  (((match9728 . __h_data ). Just ). __h_0_mem ) );
                     true ;
                   }) ) );
               // ----------
               
               if (__h_case_result )
-                { /* cicili#Block9580 */
-                  { /* cicili#Let9584 */
+                { /* cicili#Block9739 */
+                  { /* cicili#Let9743 */
                     // ----------
                     ;
-                    ({ /* cicili#Let9586 */
+                    ({ /* cicili#Let9745 */
                       bool __h_case_result  = (true  &&  ((unboxed -> __h_ctor ) ==  __h_Buffer_t  ) );
                       // ----------
                       
                       if (__h_case_result )
-                        { /* cicili#Block9591 */
-                          { /* cicili#Block9593 */
+                        { /* cicili#Block9750 */
+                          { /* cicili#Block9752 */
                             printf ("resize 15 of drop 5 v244: ");
                             show_Vector_char (stdout , v481 );
                             putchar ('\n');
                           }
                         }
                       else
-                        { /* cicili#Let9598 */
+                        { /* cicili#Let9757 */
                           // ----------
                           ;
-                          { /* cicili#Block9600 */
-                            { /* cicili#Block9605 */
+                          { /* cicili#Block9759 */
+                            { /* cicili#Block9764 */
                               printf ("status: %d\n", -180);
                               exit (EXIT_FAILURE );
                             }
@@ -10649,16 +10811,16 @@ int main () {
                   }
                 }
               else
-                { /* cicili#Let9610 */
+                { /* cicili#Let9769 */
                   // ----------
                   ;
-                  ({ /* cicili#Let9612 */
-                    bool __h_case_result  = (true  &&  ((match9569 . __h_ctor ) ==  __h_Nothing_t  ) );
+                  ({ /* cicili#Let9771 */
+                    bool __h_case_result  = (true  &&  ((match9728 . __h_ctor ) ==  __h_Nothing_t  ) );
                     // ----------
                     
                     if (__h_case_result )
-                      { /* cicili#Block9617 */
-                        { /* cicili#Block9622 */
+                      { /* cicili#Block9776 */
+                        { /* cicili#Block9781 */
                           printf ("status: %d\n", -179);
                           exit (EXIT_FAILURE );
                         }
@@ -10668,33 +10830,33 @@ int main () {
             });
           }
         });
-        ({ /* cicili#Let9625 */
-          __auto_type sliceToSlice  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let9627 */
+        ({ /* cicili#Let9784 */
+          __auto_type sliceToSlice  __attribute__((__cleanup__(__h_free_data_router ))) = ({ /* cicili#Let9786 */
             __auto_type sliceToSlice  = drop_Vector_char (2, v481 );
             // ----------
             ((void)((sliceToSlice . __h_table )-> freeData ));
             sliceToSlice ;
           });
           // ----------
-          { /* cicili#Let9633 */
-            __auto_type match9632  = iterator_Vector_char (v481 );
-            typeof((match9632 . __h_0_mem )) begin ;
-            typeof((match9632 . __h_1_mem )) end ;
+          { /* cicili#Let9792 */
+            __auto_type match9791  = iterator_Vector_char (v481 );
+            typeof((match9791 . __h_0_mem )) begin ;
+            typeof((match9791 . __h_1_mem )) end ;
             // ----------
             ;
-            ({ /* cicili#Let9636 */
-              bool __h_case_result  = (true  &&  (({ /* cicili#Progn9637 */
-                    (begin  =  (match9632 . __h_0_mem ) );
+            ({ /* cicili#Let9795 */
+              bool __h_case_result  = (true  &&  (({ /* cicili#Progn9796 */
+                    (begin  =  (match9791 . __h_0_mem ) );
                     true ;
-                  }) &&  ({ /* cicili#Progn9639 */
-                    (end  =  (match9632 . __h_1_mem ) );
+                  }) &&  ({ /* cicili#Progn9798 */
+                    (end  =  (match9791 . __h_1_mem ) );
                     true ;
                   }) ) );
               // ----------
               
               if (__h_case_result )
-                { /* cicili#Block9645 */
-                  { /* cicili#Block9647 */
+                { /* cicili#Block9804 */
+                  { /* cicili#Block9806 */
                     printf ("iterator begin: %s\n", begin );
                     printf ("iterator content: ");
                     while ((begin  !=  end  )) {
@@ -10706,25 +10868,25 @@ int main () {
                 }
             });
           }
-          { /* cicili#Let9652 */
-            __auto_type match9651  = iterator_Vector_char (sliceToSlice );
-            typeof((match9651 . __h_0_mem )) begin ;
-            typeof((match9651 . __h_1_mem )) end ;
+          { /* cicili#Let9811 */
+            __auto_type match9810  = iterator_Vector_char (sliceToSlice );
+            typeof((match9810 . __h_0_mem )) begin ;
+            typeof((match9810 . __h_1_mem )) end ;
             // ----------
             ;
-            ({ /* cicili#Let9655 */
-              bool __h_case_result  = (true  &&  (({ /* cicili#Progn9656 */
-                    (begin  =  (match9651 . __h_0_mem ) );
+            ({ /* cicili#Let9814 */
+              bool __h_case_result  = (true  &&  (({ /* cicili#Progn9815 */
+                    (begin  =  (match9810 . __h_0_mem ) );
                     true ;
-                  }) &&  ({ /* cicili#Progn9658 */
-                    (end  =  (match9651 . __h_1_mem ) );
+                  }) &&  ({ /* cicili#Progn9817 */
+                    (end  =  (match9810 . __h_1_mem ) );
                     true ;
                   }) ) );
               // ----------
               
               if (__h_case_result )
-                { /* cicili#Block9664 */
-                  { /* cicili#Block9666 */
+                { /* cicili#Block9823 */
+                  { /* cicili#Block9825 */
                     printf ("iterator STS begin: %s\n", begin );
                     printf ("iterator STS content: ");
                     while ((begin  !=  end  )) {
@@ -10737,51 +10899,51 @@ int main () {
             });
           }
         });
-        { /* cicili#Let9673 */
-          __auto_type __h_cloned9670  __attribute__((__cleanup__(__h_free_data_router ))) = ((&v211 )-> __h_table -> clone )(v211 );
+        { /* cicili#Let9832 */
+          __auto_type __h_cloned9829  __attribute__((__cleanup__(__h_free_data_router ))) = ((&v211 )-> __h_table -> clone )(v211 );
           // ----------
-          ({ /* cicili#Let9677 */
-            __auto_type __h_matchbox  = __h_cloned9670 ;
+          ({ /* cicili#Let9836 */
+            __auto_type __h_matchbox  = __h_cloned9829 ;
             // ----------
-            { /* cicili#Let9681 */
-              __auto_type match9680  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
-              typeof((((match9680 . __h_data ). Just ). __h_0_mem )) unboxed ;
+            { /* cicili#Let9840 */
+              __auto_type match9839  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
+              typeof((((match9839 . __h_data ). Just ). __h_0_mem )) unboxed ;
               // ----------
               ;
-              ({ /* cicili#Let9684 */
-                bool __h_case_result  = (true  &&  (((match9680 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn9685 */
-                      (unboxed  =  (((match9680 . __h_data ). Just ). __h_0_mem ) );
+              ({ /* cicili#Let9843 */
+                bool __h_case_result  = (true  &&  (((match9839 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn9844 */
+                      (unboxed  =  (((match9839 . __h_data ). Just ). __h_0_mem ) );
                       true ;
                     }) ) );
                 // ----------
                 
                 if (__h_case_result )
-                  { /* cicili#Block9691 */
-                    { /* cicili#Let9695 */
-                      __auto_type __h_cloned_x9671  = unboxed ;
+                  { /* cicili#Block9850 */
+                    { /* cicili#Let9854 */
+                      __auto_type __h_cloned_x9830  = unboxed ;
                       // ----------
                       ;
-                      { /* cicili#Block9697 */
-                        { /* cicili#Let9699 */
-                          __auto_type __h_iterator9672  = (__h_cloned_x9671 -> __h_table -> iterator )(__h_cloned9670 );
+                      { /* cicili#Block9856 */
+                        { /* cicili#Let9858 */
+                          __auto_type __h_iterator9831  = (__h_cloned_x9830 -> __h_table -> iterator )(__h_cloned9829 );
                           // ----------
-                          { /* cicili#Let9704 */
-                            typeof((__h_iterator9672 . __h_0_mem )) beg ;
-                            typeof((__h_iterator9672 . __h_1_mem )) end ;
+                          { /* cicili#Let9863 */
+                            typeof((__h_iterator9831 . __h_0_mem )) beg ;
+                            typeof((__h_iterator9831 . __h_1_mem )) end ;
                             // ----------
                             ;
-                            ({ /* cicili#Let9706 */
-                              bool __h_case_result  = (true  &&  (({ /* cicili#Progn9707 */
-                                    (beg  =  (__h_iterator9672 . __h_0_mem ) );
+                            ({ /* cicili#Let9865 */
+                              bool __h_case_result  = (true  &&  (({ /* cicili#Progn9866 */
+                                    (beg  =  (__h_iterator9831 . __h_0_mem ) );
                                     true ;
-                                  }) &&  ({ /* cicili#Progn9709 */
-                                    (end  =  (__h_iterator9672 . __h_1_mem ) );
+                                  }) &&  ({ /* cicili#Progn9868 */
+                                    (end  =  (__h_iterator9831 . __h_1_mem ) );
                                     true ;
                                   }) ) );
                               // ----------
                               
                               if (__h_case_result )
-                                { /* cicili#Block9715 */
+                                { /* cicili#Block9874 */
                                   while (((beg ++) !=  end  )) {
                                       printf ("%d", (*beg ));
                                   }
@@ -10797,52 +10959,52 @@ int main () {
           });
         }
         putchar ('\n');
-        { /* cicili#Let9722 */
-          __auto_type __h_cloned9719  __attribute__((__cleanup__(__h_free_data_router ))) = ((&v222 )-> __h_table -> clone )(v222 );
+        { /* cicili#Let9881 */
+          __auto_type __h_cloned9878  __attribute__((__cleanup__(__h_free_data_router ))) = ((&v222 )-> __h_table -> clone )(v222 );
           // ----------
-          ({ /* cicili#Let9726 */
-            __auto_type __h_matchbox  = __h_cloned9719 ;
+          ({ /* cicili#Let9885 */
+            __auto_type __h_matchbox  = __h_cloned9878 ;
             // ----------
-            { /* cicili#Let9730 */
-              __auto_type match9729  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
-              typeof((((match9729 . __h_data ). Just ). __h_0_mem )) unboxed ;
+            { /* cicili#Let9889 */
+              __auto_type match9888  = ((&__h_matchbox )-> __h_table -> get )(__h_matchbox );
+              typeof((((match9888 . __h_data ). Just ). __h_0_mem )) unboxed ;
               // ----------
               ;
-              ({ /* cicili#Let9733 */
-                bool __h_case_result  = (true  &&  (((match9729 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn9734 */
-                      (unboxed  =  (((match9729 . __h_data ). Just ). __h_0_mem ) );
+              ({ /* cicili#Let9892 */
+                bool __h_case_result  = (true  &&  (((match9888 . __h_ctor ) ==  __h_Just_t  ) &&  ({ /* cicili#Progn9893 */
+                      (unboxed  =  (((match9888 . __h_data ). Just ). __h_0_mem ) );
                       true ;
                     }) ) );
                 // ----------
                 
                 if (__h_case_result )
-                  { /* cicili#Block9740 */
-                    { /* cicili#Let9744 */
-                      __auto_type __h_cloned_x9720  = unboxed ;
+                  { /* cicili#Block9899 */
+                    { /* cicili#Let9903 */
+                      __auto_type __h_cloned_x9879  = unboxed ;
                       // ----------
                       ;
-                      { /* cicili#Block9746 */
-                        { /* cicili#Let9748 */
-                          __auto_type __h_iterator9721  = (__h_cloned_x9720 -> __h_table -> iterator )(__h_cloned9719 );
+                      { /* cicili#Block9905 */
+                        { /* cicili#Let9907 */
+                          __auto_type __h_iterator9880  = (__h_cloned_x9879 -> __h_table -> iterator )(__h_cloned9878 );
                           // ----------
-                          { /* cicili#Let9753 */
-                            typeof((__h_iterator9721 . __h_0_mem )) beg ;
-                            typeof((__h_iterator9721 . __h_1_mem )) end ;
+                          { /* cicili#Let9912 */
+                            typeof((__h_iterator9880 . __h_0_mem )) beg ;
+                            typeof((__h_iterator9880 . __h_1_mem )) end ;
                             // ----------
                             ;
-                            ({ /* cicili#Let9755 */
-                              bool __h_case_result  = (true  &&  (({ /* cicili#Progn9756 */
-                                    (beg  =  (__h_iterator9721 . __h_0_mem ) );
+                            ({ /* cicili#Let9914 */
+                              bool __h_case_result  = (true  &&  (({ /* cicili#Progn9915 */
+                                    (beg  =  (__h_iterator9880 . __h_0_mem ) );
                                     true ;
-                                  }) &&  ({ /* cicili#Progn9758 */
-                                    (end  =  (__h_iterator9721 . __h_1_mem ) );
+                                  }) &&  ({ /* cicili#Progn9917 */
+                                    (end  =  (__h_iterator9880 . __h_1_mem ) );
                                     true ;
                                   }) ) );
                               // ----------
                               
                               if (__h_case_result )
-                                { /* cicili#Block9764 */
-                                  { /* cicili#Block9766 */
+                                { /* cicili#Block9923 */
+                                  { /* cicili#Block9925 */
                                     (--beg );
                                     while ((beg  !=  (--end ) )) {
                                         printf ("%c", (*end ));

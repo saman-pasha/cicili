@@ -147,13 +147,11 @@
           (out (<> Maybe a))
           (return (match this
                     (* Hold pointer count address
-                       (case (and pointer (== (cast size_t (cof pointer)) address))
+                       (case (and pointer (== (cast size_t (cof pointer)) address) (== (cof count) 1))
                              (letin* ((result ((<> Just a) (cof pointer))))
                                (syslog! (printf "take Rc: %p\n" (cof pointer)))
-                               (if (>= (cof count) 1)
-                                   (block
-                                     (set (cof count) 0)
-                                     (set (cof pointer) nil)))
+                               (set (cof count) 0)
+                               (set (cof pointer) nil)
                                result)
                              otherwise ((<> Nothing a))))
                     (default ((<> Nothing a))))))
@@ -184,7 +182,7 @@
                (if (and (== (cof count) 0) (== (cof pointer) nil))
                    (block
                      (syslog! (printf "free Hold taken Rc %s: %p, %p, %d, %zx\n"
-                              (symbol-name a) this (cof pointer) (cof count) address))
+                                (symbol-name a) this (cof pointer) (cof count) address))
                      (free (cast (void *) count))
                      (free (cast (void *) pointer))
                      (set (cof this) ((<> Gone a))))
@@ -192,7 +190,7 @@
                      (if (== (cof count) 1)
                          (block
                            (syslog! (printf "free Hold Rc %s: %p, %p, %d, %zx\n"
-                                    (symbol-name a) this (cof pointer) (cof count) address))
+                                      (symbol-name a) this (cof pointer) (cof count) address))
                            ((<> free a) pointer)
                            (set (cof count) 0)
                            (free (cast (void *) count))
@@ -284,13 +282,11 @@
           (return (match this
                     (* Hold pointer count address mutex
                        (lockn mutex
-                              (case (and pointer (== (cast size_t (cof pointer)) address))
+                              (case (and pointer (== (cast size_t (cof pointer)) address) (== (cof count) 1))
                                     (letin* ((result ((<> Just a) (cof pointer))))
                                       (syslog! (printf "take Arc: %p\n" (cof pointer)))
-                                      (if (>= (cof count) 1)
-                                          (block
-                                            (set (cof count) 0)
-                                            (set (cof pointer) nil)))
+                                      (set (cof count) 0)
+                                      (set (cof pointer) nil)
                                       result)
                                     otherwise ((<> Nothing a)))))
                     (default ((<> Nothing a))))))
@@ -334,7 +330,7 @@
                      (if (and (== (cof count) 0) (== (cof pointer) nil))
                          (block
                            (syslog! (printf "free Hold Arc taken Rc %s: %p, %p, %d, %zx\n"
-                                    (symbol-name a) this (cof pointer) (cof count) address))
+                                      (symbol-name a) this (cof pointer) (cof count) address))
                            (free (cast (void *) count))
                            (free (cast (void *) pointer))
                            (set (cof this) ((<> AtomicGone a))))

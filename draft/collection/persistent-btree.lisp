@@ -58,7 +58,7 @@
     (func traverse  ((type tree) (func callback (((<> type pair_t) item) (Bool hasNext)))))
     (func show      ((CFile file) (type tree)) (out size_t))
     (func pure      ((k keys []) (v values []) (size_t len)) (out (<> Either (<> type Error) type)))
-    (func fromLists (((<> List k) keys) ((<> List v) values)) (out (<> Either (<> type Error) type))))
+    ) ; decl-class
   
   ) ; decl-B-Tree
 
@@ -1349,20 +1349,6 @@
                            (= left default (return left))))
                     (right tree))))
     
-    (func fromLists (((<> List k) keys) ((<> List v) values))
-          (out (<> Either (<> type Error) type))
-          (return (match keys
-                    (* Cons khead ktail -> values
-                       (* Cons vhead vtail
-                          (letin ((etree ((<> fromLists type) ktail vtail)))
-                            (match etree
-                              (Right tree
-                                     (letin ((* tree tree)) ; free prev tree
-                                       ((<> insert type) tree khead vhead)))
-                              (default etree))))
-                       (default (right ((<> Leaf type) ((<> Nil type pair_t))))))
-                    (default (right ((<> Leaf type) ((<> Nil type pair_t))))))))
-
     (free ; free a B-Tree
       
       (func freeChildren (((<> List Rc type) children))
@@ -1413,5 +1399,21 @@
       (LOOP FOR (key value) ON kvs BY #'CDDR DO (PROGN (SETQ ks (PUSH key ks)) (SETQ vs (PUSH value vs))))
       (UNLESS (= (LENGTH ks) (LENGTH vs)) (ERROR (FORMAT NIL "invalid Dynamic Object definition: ~A" kvs)))
       `((<> pure type) (cast (k []) '( ,@ks )) (cast (v []) '( ,@vs)) ,(LENGTH ks))))
-  
+
+  ;; List k and List v should be defined
+  (DEFMACRO (<> ctor FromLists) (keys values)
+    (LET ((keys keys)
+          (values values))
+      (match keys
+        (* Cons khead ktail -> values
+           (* Cons vhead vtail
+              (letin ((etree ((<> ctor FromLists type) ktail vtail)))
+                (match etree
+                  (Right tree
+                         (letin ((* tree tree)) ; free prev tree
+                           ((<> insert type) tree khead vhead)))
+                  (default etree))))
+           (default (right ((<> Leaf type) ((<> Nil type pair_t))))))
+        (default (right ((<> Leaf type) ((<> Nil type pair_t))))))))
+
   ) ; import-B-Tree
