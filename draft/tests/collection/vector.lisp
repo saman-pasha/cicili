@@ -456,6 +456,8 @@
 ;; length 5 of v03: 5
 ;; has length 6 of v05: 6
 ;; has length 12 of v05: 11
+;; can't push to v01: any cloned versions or slices refered to it
+;; head of v01: 40 had not any cloned versions or slices refered to it
 ;; 4th int element of v03: 4
 ;; 6th char element of v05: f
 ;; 12th char element of v05: not found!
