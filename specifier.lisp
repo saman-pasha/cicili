@@ -274,7 +274,6 @@
 	     (variable nil)
 	     (array nil)
 	     (status 0))
-
     ;; code has unextractable content
     (when (and (listp desc) (key-eq (car desc) '|code|))
       (return-from specify-type< (values nil (specify-code-expr desc) nil nil nil nil)))

@@ -11,13 +11,17 @@
   (@define __Maybe_int__H_IMPL__)
   (@define __Maybe_char__H_IMPL__)
   
-  (decl-Vector Vector^int int)
-  (impl-Vector Vector^int int (\\ -f -v (fprintf -f "%d" -v)) " " NIL)
-  (import-Vector Vector^int int new^Vector^int)
+  (decl-Vector Vector^int int NIL)
+  (impl-Vector Vector^int int (\\ -f -v (fprintf -f "%d" -v)) " " NIL NIL)
+  (import-Vector Vector^int int NIL new^Vector^int)
 
-  (decl-Vector Vector^char char)
-  (impl-Vector Vector^char char (\\ -f -v (fprintf -f "%c" -v)) "" T)
-  (import-Vector Vector^char char new^Vector^char)
+  (decl-Vector String Char NIL)
+  (impl-Vector String Char (\\ -f -v (fprintf -f "%c" -v)) "" T NIL)
+  (import-Vector String Char NIL new^String)
+
+  (decl-Vector Str char T)
+  (impl-Vector Str char (\\ -f -v (fprintf -f "%c" -v)) "" T T)
+  (import-Vector Str char T new^Str)
 
   (main
 
@@ -26,21 +30,21 @@
             (v02 (pureCapacity^Vector^int 5 4))
             (v03 (new^Vector^int (cast (const int []) '{ 1 2 3 4 5 }) 5))
             (v04 (new^Vector^int '{ 1 2 3 4 5 6 7}))
-            (v05 (new^Vector^char "abcdefghijk"))
+            (v05 (new^String "abcdefghijk"))
             ;; Slice without clone is not safe
             ;; but can pass every where until referenced vector is alive and no need (letin) to destruct
             ;; use safe path with cloning or vector functions
             (v08 (Slice^int  ((<> clone Box Vector int)  v03) 2 2)) 
-            (v09 (Slice^char ((<> clone Box Vector char) v05) 3 3))
-            (v10 (tail^Vector^char v05))
-            (v11 (drop^Vector^char 7 v05))
-            (v12 (drop^Vector^char 12 v05))
-            (v13 (drop^Vector^char 1 v11))
-            (v14 (init^Vector^char v05))
-            (v15 (init^Vector^char v14))
+            (v09 (Slice^Char ((<> clone Box String) v05) 3 3))
+            (v10 (tail^String v05))
+            (v11 (drop^String 7 v05))
+            (v12 (drop^String 12 v05))
+            (v13 (drop^String 1 v11))
+            (v14 (init^String v05))
+            (v15 (init^String v14))
             (v18 (take^Vector^int 3 v03))
-            (v19 (take^Vector^char 5 v05))
-            (v20 (take^Vector^char 2 v19))
+            (v19 (take^String 5 v05))
+            (v20 (take^String 2 v19))
             (v50 (wrap^Vector^int 1000)) ; push
             ) ; decls
 
@@ -48,12 +52,12 @@
       (show^Vector^int stdout v03)
       (putchar #\Newline)
       (printf "v05: ")
-      (show^Vector^char stdout v05)
+      (show^String stdout v05)
       (putchar #\Newline)
 
       (printf "length 5 of v03: %ld\n" (len^Vector^int v03))
-      (printf "has length 6 of v05: %ld\n" (hasLen^Vector^char v05 6))
-      (printf "has length 12 of v05: %ld\n" (hasLen^Vector^char v05 12))
+      (printf "has length 6 of v05: %ld\n" (hasLen^String v05 6))
+      (printf "has length 12 of v05: %ld\n" (hasLen^String v05 12))
 
       (where ((exit-status (\\ -status (block (printf "status: %d\n" -status)
                                               (exit EXIT_FAILURE)))))
@@ -68,21 +72,21 @@
             (io ((<> head Vector int) v01P1)
               (Just he (printf "head of v01: %d had not any cloned versions or slices refered to it\n" he))
               (default (exit-status -91))))
-             
+          
           (io ((<> nth Vector int) 3 v03)
             (Just i (printf "4th int element of v03: %d\n" i))
             (default (exit-status -100)))
-          (io ((<> nth Vector char) 5 v05)
+          (io ((<> nth String) 5 v05)
             (Just c (printf "6th char element of v05: %c\n" c))
             (default (exit-status -101)))
-          (io ((<> nth Vector char) 11 v05)
+          (io ((<> nth String) 11 v05)
             (Nothing (printf "12th char element of v05: not found!\n"))
             (default (exit-status -102)))
           
           (io ((<> head Vector int) v08)
             (Just i (printf "head int element of v08: %d\n" i))
             (default (exit-status -103)))
-          (io ((<> head Vector char) v09)
+          (io ((<> head String) v09)
             (Just c (printf "head char element of v09: %c\n" c))
             (default (exit-status -104)))
           
@@ -90,17 +94,17 @@
           (show^Vector^int stdout v08)
           (putchar #\Newline)
           (printf "v09: ")
-          (show^Vector^char stdout v09)
+          (show^String stdout v09)
           (putchar #\Newline)
           
           (io ((<> nth Vector int) 1 v08)
             (Just i (printf "2nd int element of v08: %d\n" i))
             (default (exit-status -105)))
-          (io ((<> nth Vector char) 2 v09)
+          (io ((<> nth String) 2 v09)
             (Just c (printf "3rd char element of v09: %c\n" c))
             (default (exit-status -106)))
           ;; referenced vector has element but slice has size limit, so not found
-          (io ((<> nth Vector char) 3 v09)
+          (io ((<> nth String) 3 v09)
             (Nothing (printf "4th char element of v09: not found!\n"))
             (default (exit-status -107)))
 
@@ -108,45 +112,45 @@
           (io# v10
             (dead (exit-status -108))
             (* Slice (block (printf "tail v05: ")
-                            (show^Vector^char stdout v10)
+                            (show^String stdout v10)
                             (putchar #\Newline)))
             (default (exit-status -109)))
           (io# v11
             (dead (exit-status -110))
             (* Slice (block (printf "v11: drop 7 v05: ")
-                            (show^Vector^char stdout v11)
+                            (show^String stdout v11)
                             (putchar #\Newline)))
             (default (exit-status -111)))
           (io# v12
             (dead (exit-status -112))
             (* Slice (block (printf "drop 12 v05: Empty Slice")
-                            (show^Vector^char stdout v12)
+                            (show^String stdout v12)
                             (putchar #\Newline)))
             (default (exit-status -113)))
           (io# v13
             (dead (exit-status -114))
             (* Slice (block (printf "drop 1 of Slice v11: ")
-                            (show^Vector^char stdout v13)
+                            (show^String stdout v13)
                             (putchar #\Newline)))
             (default (exit-status -115)))
           ;; init
           (io# v14
             (dead (exit-status -116))
             (* Slice (block (printf "init of Slice v05: ")
-                            (show^Vector^char stdout v14)
+                            (show^String stdout v14)
                             (putchar #\Newline)))
             (default (exit-status -117)))
           (io# v15
             (dead (exit-status -118))
             (* Slice (block (printf "init of init of Slice v05: ")
-                            (show^Vector^char stdout v15)
+                            (show^String stdout v15)
                             (putchar #\Newline)))
             (default (exit-status -119)))
           ;; last
           (io (last^Vector^int v03)
             (Just la (printf "last of v03: %d\n" la))
             (default (exit-status -121)))
-          (io (last^Vector^char v05)
+          (io (last^String v05)
             (Just la (printf "last of v05: %c\n" la))
             (default (exit-status -123)))
           ;; take
@@ -159,13 +163,13 @@
           (io# v19
             (dead (exit-status -126))
             (* Slice (block (printf "take 5 of v05: ")
-                            (show^Vector^char stdout v19)
+                            (show^String stdout v19)
                             (putchar #\Newline)))
             (default (exit-status -127)))
           (io# v20
             (dead (exit-status -128))
             (* Slice (block (printf "take 2 of take 5 of v05: ")
-                            (show^Vector^char stdout v20)
+                            (show^String stdout v20)
                             (putchar #\Newline)))
             (default (exit-status -129)))
           ;; wrap
@@ -179,28 +183,28 @@
           ;; modification
           (letin (
                   (v033  (new^Vector^int  (cast (const int []) '{ 1 2 3 4 5 }) 5))
-                  (v055  (new^Vector^char "abcdefghijk"))
+                  (v055  (new^String "abcdefghijk"))
                   (v21   (push^Vector^int  6 v033))
-                  (v22   (push^Vector^char #\L v055))
+                  (v22   (push^String #\L v055))
                   (v23   (push^Vector^int  7 v08))   ; COW
-                  (v24   (push^Vector^char #\M v09)) ; COW
+                  (v24   (push^String #\M v09)) ; COW
                   (v0333 (new^Vector^int  (cast (const int []) '{ 1 2 3 }) 3))
-                  (v0555 (new^Vector^char "abcdef"))
+                  (v0555 (new^String "abcdef"))
                   (v0444 (new^Vector^int  (cast (const int []) '{ 4 5 6 }) 3))
-                  (v0666 (new^Vector^char "ghijkl"))
+                  (v0666 (new^String "ghijkl"))
                   (v25   (append^Vector^int  v0333 v0444))
-                  (v26   (append^Vector^char v0555 v0666))
+                  (v26   (append^String v0555 v0666))
                   (v27   (drop^Vector^int  1 v0444))
-                  (v28   (drop^Vector^char 3 v0666))
+                  (v28   (drop^String 3 v0666))
                   (v29   (append^Vector^int  v27 v0444)) ; COW
-                  (v30   (append^Vector^char v28 v0666)) ; COW
+                  (v30   (append^String v28 v0666)) ; COW
                   (v277  (drop^Vector^int  1 v0444))
-                  (v288  (drop^Vector^char 3 v0666))
+                  (v288  (drop^String 3 v0666))
                   (vt1   (copy^Vector^int v0444))
-                  (vt2   (copy^Vector^char v0666))
+                  (vt2   (copy^String v0666))
                   (v31   (reverse^Vector^int  vt1))
-                  (v32   (reverse^Vector^char vt2))
-                  (v33   (reverse^Vector^char v288)) ; COW
+                  (v32   (reverse^String vt2))
+                  (v33   (reverse^String v288)) ; COW
                   ) ; decls
             
             ;; push
@@ -213,7 +217,7 @@
             (io# v22
               (dead (exit-status -132))
               (* Buffer (block (printf "push L to v055: ")
-                               (show^Vector^char stdout v22)
+                               (show^String stdout v22)
                                (putchar #\Newline)))
               (default (exit-status -133)))
             (io# v23
@@ -225,7 +229,7 @@
             (io# v24
               (dead (exit-status -133))
               (* Buffer (block (printf "push M to Slice v09: ")
-                               (show^Vector^char stdout v24)
+                               (show^String stdout v24)
                                (putchar #\Newline)))
               (default (exit-status -134)))
             ;; append
@@ -238,7 +242,7 @@
             (io# v26
               (dead (exit-status -137))
               (* Buffer (block (printf "append v0555 to v0666: ")
-                               (show^Vector^char stdout v26)
+                               (show^String stdout v26)
                                (putchar #\Newline)))
               (default (exit-status -138)))
 
@@ -246,7 +250,7 @@
             (show^Vector^int stdout v27)
             (putchar #\Newline)
             (printf "v28: ")
-            (show^Vector^char stdout v28)
+            (show^String stdout v28)
             (putchar #\Newline)
 
             (io# v29
@@ -258,7 +262,7 @@
             (io# v30
               (dead (exit-status -141))
               (* Buffer (block (printf "append v28 to v0666: ")
-                               (show^Vector^char stdout v30)
+                               (show^String stdout v30)
                                (putchar #\Newline)))
               (default (exit-status -142)))
             ;; reverse
@@ -271,50 +275,50 @@
             (io# v32
               (dead (exit-status -145))
               (* Buffer (block (printf "reverse v28: ")
-                               (show^Vector^char stdout v32)
+                               (show^String stdout v32)
                                (putchar #\Newline)))
               (default (exit-status -146)))
             (io# v33
               (dead (exit-status -147))
               (* Buffer (block (printf "reverse Slice v288: ")
-                               (show^Vector^char stdout v33)
+                               (show^String stdout v33)
                                (putchar #\Newline)))
               (default (exit-status -148)))            
             ) ; letin
 
           (letin (
                   (v033 (new^Vector^int  (cast (const int []) '{ 1 2 3 4 5 }) 5))
-                  (v055 (new^Vector^char "abcdefghijk"))
+                  (v055 (new^String "abcdefghijk"))
                   (v211 (insertAt^Vector^int  v033 6   2))
-                  (v222 (insertAt^Vector^char v055 #\L 3))
+                  (v222 (insertAt^String v055 #\L 3))
                   (v277 (drop^Vector^int  1 v211))
-                  (v288 (drop^Vector^char 2 v222))
+                  (v288 (drop^String 2 v222))
                   (v233 (insertAt^Vector^int  v277 7   2)) ; COW
-                  (v244 (insertAt^Vector^char v288 #\M 3)) ; COW
+                  (v244 (insertAt^String v288 #\M 3)) ; COW
                   (vt3  (copy^Vector^int  v233))
-                  (vt4  (copy^Vector^char v244))
+                  (vt4  (copy^String v244))
                   (v41  (deleteAt^Vector^int  vt3 3))
-                  (v42  (deleteAt^Vector^char vt4 7))
+                  (v42  (deleteAt^String vt4 7))
                   (vt7  (drop^Vector^int  4 v233))
-                  (vt8  (drop^Vector^char 5 v244))
+                  (vt8  (drop^String 5 v244))
                   (v43  (deleteAt^Vector^int  vt7 1)) ; COW
-                  (v44  (deleteAt^Vector^char vt8 3)) ; COW
+                  (v44  (deleteAt^String vt8 3)) ; COW
                   (vt5  (copy^Vector^int  v233))
-                  (vt6  (copy^Vector^char v244))
+                  (vt6  (copy^String v244))
                   (v45  (replaceAt^Vector^int  vt5 9   3))
-                  (v46  (replaceAt^Vector^char vt6 #\K 7))
+                  (v46  (replaceAt^String vt6 #\K 7))
                   (vt9  (drop^Vector^int  4 v233))
-                  (vt10 (drop^Vector^char 5 v244))
+                  (vt10 (drop^String 5 v244))
                   (v47  (replaceAt^Vector^int  vt9  9 1))   ; COW
-                  (v48  (replaceAt^Vector^char vt10 #\K 3)) ; COW
+                  (v48  (replaceAt^String vt10 #\K 3)) ; COW
                   (vt51  (copy^Vector^int  v233))
-                  (vt61  (copy^Vector^char v244))
+                  (vt61  (copy^String v244))
                   (v451  (resize^Vector^int  vt51 1))
-                  (v461  (resize^Vector^char vt61 15))
+                  (v461  (resize^String vt61 15))
                   (vt91  (drop^Vector^int  4 v233))
-                  (vt101 (drop^Vector^char 5 v244))
+                  (vt101 (drop^String 5 v244))
                   (v471  (resize^Vector^int  vt91  1))  ; COW
-                  (v481  (resize^Vector^char vt101 15)) ; COW
+                  (v481  (resize^String vt101 15)) ; COW
                   ) ; decls
             
             ;; insertAt
@@ -327,7 +331,7 @@
             (io# v222
               (dead (exit-status -151))
               (* Buffer (block (printf "insert L at 3 v055: ")
-                               (show^Vector^char stdout v222)
+                               (show^String stdout v222)
                                (putchar #\Newline)))
               (default (exit-status -152)))
             (io# v233
@@ -339,7 +343,7 @@
             (io# v244
               (dead (exit-status -155))
               (* Buffer (block (printf "insert M at 3 v288: ")
-                               (show^Vector^char stdout v244)
+                               (show^String stdout v244)
                                (putchar #\Newline)))
               (default (exit-status -156)))
             ;; deleteAt
@@ -352,7 +356,7 @@
             (io# v42
               (dead (exit-status -159))
               (* Buffer (block (printf "delete at 7 from v244: ")
-                               (show^Vector^char stdout v42)
+                               (show^String stdout v42)
                                (putchar #\Newline)))
               (default (exit-status -160)))
             (io# v43
@@ -364,7 +368,7 @@
             (io# v44
               (dead (exit-status -163))
               (* Buffer (block (printf "delete at 3 from drop 5 v244: ")
-                               (show^Vector^char stdout v44)
+                               (show^String stdout v44)
                                (putchar #\Newline)))
               (default (exit-status -164)))
             ;; replaceAt
@@ -377,7 +381,7 @@
             (io# v46
               (dead (exit-status -167))
               (* Buffer (block (printf "replace K at 7 v244: ")
-                               (show^Vector^char stdout v46)
+                               (show^String stdout v46)
                                (putchar #\Newline)))
               (default (exit-status -168)))
             (io# v47
@@ -389,7 +393,7 @@
             (io# v48
               (dead (exit-status -171))
               (* Buffer (block (printf "replace at 3 of drop 5 v244: ")
-                               (show^Vector^char stdout v48)
+                               (show^String stdout v48)
                                (putchar #\Newline)))
               (default (exit-status -172)))
             ;; resize
@@ -402,7 +406,7 @@
             (io# v461
               (dead (exit-status -175))
               (* Buffer (block (printf "resize 15 v244: ")
-                               (show^Vector^char stdout v461)
+                               (show^String stdout v461)
                                (putchar #\Newline)))
               (default (exit-status -176)))
             (io# v471
@@ -414,13 +418,13 @@
             (io# v481
               (dead (exit-status -179))
               (* Buffer (block (printf "resize 15 of drop 5 v244: ")
-                               (show^Vector^char stdout v481)
+                               (show^String stdout v481)
                                (putchar #\Newline)))
               (default (exit-status -180)))
 
             ;; iterator
-            (letin ((sliceToSlice ((<> drop Vector^char) 2 v481)))
-              (io ((<> iterator Vector^char) v481)
+            (letin ((sliceToSlice ((<> drop String) 2 v481)))
+              (io ((<> iterator String) v481)
                 ((\, begin end)
                  (block (printf "iterator begin: %s\n" begin)
                         (printf "iterator content: ")
@@ -428,7 +432,7 @@
                           (printf "%c" (cof begin))
                           (++ begin))
                         (printf "\n"))))
-              (io ((<> iterator Vector^char) sliceToSlice)
+              (io ((<> iterator String) sliceToSlice)
                 ((\, begin end)
                  (block (printf "iterator STS begin: %s\n" begin)
                         (printf "iterator STS content: ")
@@ -441,6 +445,28 @@
             (putchar #\Newline) 
             (iterate (beg end v222 :reverse T) ; cursor is end
               (printf "%c" (cof end)))
+            (putchar #\Newline)
+            
+            ;; constant
+            (letin ((cv01 (new^Str "wxyzpqrs"))
+                    (cv02 (drop^Str 2 cv01))
+                    (cv03 (push^Str #\P cv01)))
+              (show^Str stdout cv01)
+              (putchar #\Newline)
+              (io# cv02
+                (dead (exit-status -181))
+                (* Slice (block (printf "drop 2 of constant cv01: ")
+                                 (show^Str stdout cv02)
+                                 (putchar #\Newline)))
+                (default (exit-status -182)))
+              (io# cv03
+                (dead (exit-status -183))
+                (* None (block (printf "after push P into constant cv01: None")
+                               (show^Str stdout cv03)
+                               (putchar #\Newline)))
+                (default (exit-status -184)))
+              )
+            (show^Str stdout (static-cast Str v222)) ; for functions which need read-only strings
             (putchar #\Newline)
             
             ) ; letin
@@ -515,3 +541,7 @@
 ;; iterator STS content: hijk
 ;; 263450
 ;; kjihgfedLcba
+;; wxyzpqrs
+;; drop 2 of constant cv01: yzpqrs
+;; after push P into constant cv01: None
+;; abcLdefghijk
