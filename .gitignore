@@ -300,3 +300,5 @@ draft/tests/collection/royal_btree
 *.lock
 *.rs~
 /benchmark/persistent_btree/target
+benchmark/rust-vector-bench/main
+/benchmark/rust-vector-bench/target

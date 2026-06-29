@@ -38,7 +38,7 @@
         (LET ((ctor (CAR payload))
               (args (CDR payload)))
           (COND
-            ((EQUAL ctor 'List)
+            ((EQUAL ctor 'List) ; TODO! List should be Array if has been changed to Vector 
              (LET* ((has-name (AND (SYMBOLP (CAR args)) (STRING-EQUAL (SYMBOL-NAME (CAR args)) "xml-tag")))
                     (xml-tag (IF has-name (CADR args) "item"))
                     (args (IF has-name (CDDR args) args)))

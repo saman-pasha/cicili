@@ -13,7 +13,8 @@
     (func copySlice   (((<> StringBuffer a) sb) (size_t cursor) (size_t size)) (out (<> StringBuffer a)))
     (func newCapacity ((size_t capacity) (size_t step)) (out (<> StringBuffer a)))
     (func new    ((size_t step)) (out (<> StringBuffer a)))
-    (func resize (((<> StringBuffer a) sb) (size_t size)) (out (<> StringBuffer a))))
+    (func resize (((<> StringBuffer a) sb) (size_t size)) (out (<> StringBuffer a)))
+    (func clear  (((<> StringBuffer a) sb)) (out (<> StringBuffer a))))
 
   ) ; decl-StringBuffer
 
@@ -110,12 +111,20 @@
                '(return ((<> FreedStringBuffer a)))          
                '(return (match sb
                           (Buffered buffer cursor _size step
-                                    (letn ((a * new_buffer . #'(realloc buffer (* `(IF nullt '(+ len 1) 'len)(sizeof a))))
+                                    (letn ((a * new_buffer . #'(realloc buffer (* `(IF nullt '(+ len 1) 'len) (sizeof a))))
                                            (size_t new_cursor . #'(? (< cursor len) cursor len)))
                                       `(WHEN nullt '(set (cof (+ new_buffer new_cursor)) (cast a (cof (cast (a *) "\0")))))
                                       ((<> MakeStringBuffer a) new_buffer new_cursor len step)))
                           (default ((<> FreedStringBuffer a)))))))
     
+    (func clear (((<> StringBuffer a) sb))
+          (out (<> StringBuffer a))
+          `(IF is-const
+               '(return ((<> FreedStringBuffer a)))          
+               '(return (match sb
+                          (Buffered buffer _cursor size step ((<> MakeStringBuffer a) buffer 0 size step))
+                          (default ((<> FreedStringBuffer a)))))))
+
     (free `(UNLESS is-const
              '(io this
                (* Buffered buffer

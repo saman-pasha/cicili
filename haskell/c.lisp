@@ -42,7 +42,9 @@
     (decl-List   List^Bool Bool)
     (decl-List   List^int  int)
     (decl-String List^char char)
-    ;; (decl-String String    Char)
+
+    (decl-Vector Str       char T)
+    (decl-Vector String    Char NIL)
 
     (decl-Range Range^int  int  List^int)
     (decl-Range Range^char char List^char)
@@ -361,7 +363,9 @@
     (impl-List   List^Bool Bool (\\ -f -v ((<> show Bool) -f -v)) " ")
     (impl-List   List^int  int  (\\ -f -v (fprintf -f "%d" -v))   " ")
     (impl-String List^char char (\\ -f -v (fprintf -f "%c" -v))   " ")
-    ;; (impl-String String    Char (\\ -f -v (fprintf -f "%c" -v))   "")
+
+    (impl-Vector Str       char (\\ -f -v (fprintf -f "%c" -v))   "" T T)
+    (impl-Vector String    Char (\\ -f -v (fprintf -f "%c" -v))   "" T NIL)
     
     (impl-Range Range^int  int  List^int  (\\ -f -v (fprintf -f "%d" -v)) " ")
     (impl-Range Range^char char List^char (\\ -f -v (fprintf -f "%c" -v)) " ")

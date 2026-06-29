@@ -48,7 +48,7 @@
                     ((or (key-eq construct '|defmacro|) (key-eq construct '|DEFMACRO|))
                      (let ((symb (eval clause)))
                        (add-macro (symbol-name symb) symb)))
-		            (t (let ((bd (expand-macros   clause))) ; any macro which produces another macro
+		            (t (let ((bd (expand-macros clause))) ; any macro which produces another macro
                          (if (eq bd clause)
                              (add-inner (specify-expr bd) target-specifier)
                              (unless (symbolp bd)

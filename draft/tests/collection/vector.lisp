@@ -15,13 +15,13 @@
   (impl-Vector Vector^int int (\\ -f -v (fprintf -f "%d" -v)) " " NIL NIL)
   (import-Vector Vector^int int NIL new^Vector^int)
 
-  (decl-Vector String Char NIL)
-  (impl-Vector String Char (\\ -f -v (fprintf -f "%c" -v)) "" T NIL)
-  (import-Vector String Char NIL new^String)
+  ;; (decl-Vector String Char NIL)
+  ;; (impl-Vector String Char (\\ -f -v (fprintf -f "%c" -v)) "" T NIL)
+  ;; (import-Vector String Char NIL new^String)
 
-  (decl-Vector Str char T)
-  (impl-Vector Str char (\\ -f -v (fprintf -f "%c" -v)) "" T T)
-  (import-Vector Str char T new^Str)
+  ;; (decl-Vector Str char T)
+  ;; (impl-Vector Str char (\\ -f -v (fprintf -f "%c" -v)) "" T T)
+  ;; (import-Vector Str char T new^Str)
 
   (main
 

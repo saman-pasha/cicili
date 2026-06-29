@@ -47,8 +47,8 @@
        (list
         ;; C
         'dumper   '()
-        'compiler `("glibtool" "--tag=CC" "--mode=compile" "gcc" "-O3" "-Werror" "-Wall" "-Wno-maybe-uninitialized" *verbose*)
-        'linker   `("glibtool" "--tag=CC" "--mode=link" "gcc" "-O3" *verbose*)
+        'compiler `("glibtool" "--tag=CC" "--mode=compile" "clang" "-Werror" "-Wall" *verbose*) ; "-Wno-maybe-uninitialized"
+        'linker   `("glibtool" "--tag=CC" "--mode=link" "clang" *verbose*)
         ;; C++
         'cpp-dumper   '()
         'cpp-compiler `("glibtool" "--tag=CXX" "--mode=compile" "g++" "-g" "-O" "-Werror" *verbose*)

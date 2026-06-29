@@ -16,6 +16,7 @@
 (import "./functor.lisp")
 (import "./applicative.lisp")
 (import "./monad.lisp")
+(import "../draft/collection/vector.lisp")
 (import "./haskell.lisp")
 
 (DEFMACRO init-macro ()
@@ -31,13 +32,15 @@
      (import-List   List^Bool Bool new^List^Bool)
      (import-List   List^int  int  new^List^int)
      (import-List   List^char char new^List^char)
-     (import-String String    Char new^String)
+
+     (import-Vector Str       char T   new^Str)
+     (import-Vector String    Char NIL new^String)
      
      (import-Range  Range^int int)
 
      (import-List List^List^int  List^int  new^List^List^int)
      (import-List List^List^char List^char new^List^List^char)
-     (import-List List^String    String    new^List^String)
+     ;; (import-List List^String    String    new^List^String)
 
      (import-Monoid (<> All     Bool) Bool)
      (import-Monoid (<> Any     Bool) Bool)
@@ -47,13 +50,14 @@
      (import-Monoid (<> List   Bool) (<> List Bool))
      (import-Monoid (<> List   int)  (<> List int))
      (import-Monoid (<> List   char) (<> List char))
-     (import-Monoid (<> String char) (<> List char))
+     ;; (import-Monoid (<> String char) (<> List char))
 
      (import-Functor-List List^int^int   int  int)
+     (import-Functor-List List^int^char  int  char)
      (import-Functor-List List^int^Bool  int  Bool)
      (import-Functor-List List^char^char char char)
+     (import-Functor-List List^char^int  char int)
      (import-Functor-List List^char^Bool char Bool)
-     (import-Functor-List String^char    char char)
-     (import-Functor-List String^Bool    char Bool)
+     
      )
   ) ; init-macro

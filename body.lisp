@@ -158,6 +158,8 @@
 		                                         ((key-eq func '|module|)  (specify-module      form attributes))
 		                                         ((key-eq func '|cicili|)
                                                   (compile-ast (cdr form) (or *load-truename* *compile-file-truename*)))
+                                                 ((and (or (key-eq func '|defmacro|) (key-eq func '|DEFMACRO|)) (listp (cadr form)))
+                                                  (specify-body (list (append (list '|DEFMACRO| (expand-macros (cadr form))) (cddr form)))))
                                                  (t (let ((bd (expand-macros form)))
                                                       (if (eq bd form)
                                                           (specify-expr bd)

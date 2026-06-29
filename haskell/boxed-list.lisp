@@ -1,4 +1,3 @@
-;;; My Cicili for a List
 ;;; Safe List Processing (LisP) Solution in C using Haskell thinking model
 
 ;; each BoxedList must be defined by this generic

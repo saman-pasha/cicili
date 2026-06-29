@@ -10,12 +10,12 @@
   (decl-StringBuffer a is-const)
 
   `(IF is-const
-       '(typedef const a * (<> type pointer_t))
-       '(typedef a * (<> type pointer_t)))
+       '(typedef const a * (<> type ptr_t))
+       '(typedef a * (<> type ptr_t)))
   
-  (typedef (Tuple (<> type pointer_t)
-                  (<> type pointer_t))
-    (<> type iterator_t))
+  (typedef (Tuple (<> type ptr_t)
+                  (<> type ptr_t))
+    (<> type iter_t))
   
   (decl-box (Vector type)
     (= Buffer (<> Buffer a) ((<> StringBuffer a) buffer))
@@ -40,11 +40,12 @@
     (func copy    ((type vector)) (out type))
     (func show    ((CFile file) (type vector)) (out size_t))
     (func wrap    ((const a item)) (out type))
-    (func toArray ((type vector)) (out (<> type pointer_t)))
+    (func toArray ((type vector)) (out (<> type ptr_t)))
     (func pureCapacity ((size_t capacity) (size_t step)) (out type))
     (func pure         ((size_t step)) (out type))
     (func resize   ((type vector) (size_t len)) (out type))
-    (func iterator ((type vector)) (out (<> type iterator_t)))
+    (func clear    ((type vector)) (out type))    
+    (func iterator ((type vector)) (out (<> type iter_t)))
     ) ; decl-box
 
   (decl-Maybe type)
@@ -433,7 +434,7 @@
                     ((<> push type) item new_vec))))
 
     (func toArray ((type vector))
-          (out (<> type pointer_t))
+          (out (<> type ptr_t))
           (return (match# vector
                     (dead nil)
                     (* Buffer sb -> sb
@@ -458,40 +459,67 @@
 
     (func resize ((type vector) (size_t len))
           (out type)
-          (return (match# vector
-                    (dead ((<> None a)))
-                    (* Buffer sb (match ((<> take Box type) (aof vector))
-                                   (Just ptr (progn
-                                               (free (cast (void *) ptr)) ; make it out of order
-                                               ((<> Buffer a) ((<> resize StringBuffer a) sb len))))
-                                   (default ((<> None a)))))
-                    ;; COW pattern copy-on-write for Slices
-                    (* Slice vec cur (match# vec
-                                       (dead ((<> None a)))
-                                       (* Buffer sbs -> sbs
-                                          (Buffered buffer _cursor _size step
-                                                    (letn (((<> StringBuffer a) new_sb .
-                                                            #'((<> newCapacity StringBuffer a) len step)))
-                                                      ((<> Buffer a)
-                                                       ((<> print StringBuffer a) new_sb (+ buffer cur) len))))
-                                          (default ((<> None a))))
-                                       (* Slice veci ((<> resize type) veci len)) ; E
-                                       (default ((<> clone Box type) vec))))
-                    (default ((<> clone Box type) vector)))))
+          `(IF is-const
+               '(return ((<> None a)))
+               '(return (match# vector
+                          (dead ((<> None a)))
+                          (* Buffer sb (match ((<> take Box type) (aof vector))
+                                         (Just ptr (progn
+                                                     (free (cast (void *) ptr)) ; make it out of order
+                                                     ((<> Buffer a) ((<> resize StringBuffer a) sb len))))
+                                         (default ((<> None a)))))
+                          ;; COW pattern copy-on-write for Slices
+                          (* Slice vec cur (match# vec
+                                             (dead ((<> None a)))
+                                             (* Buffer sbs -> sbs
+                                                (Buffered buffer _cursor _size step
+                                                          (letn (((<> StringBuffer a) new_sb .
+                                                                  #'((<> newCapacity StringBuffer a) len step)))
+                                                            ((<> Buffer a)
+                                                             ((<> print StringBuffer a) new_sb (+ buffer cur) len))))
+                                                (default ((<> None a))))
+                                             (* Slice veci ((<> resize type) veci len))
+                                             (default ((<> clone Box type) vec))))
+                          (default ((<> clone Box type) vector))))))
+
+    (func clear ((type vector))
+          (out type)
+          `(IF is-const
+               '(return ((<> None a)))
+               '(return (match# vector
+                          (dead ((<> None a)))
+                          (* Buffer sb (match ((<> take Box type) (aof vector))
+                                         (Just ptr (progn
+                                                     (free (cast (void *) ptr)) ; make it out of order
+                                                     ((<> Buffer a) ((<> clear StringBuffer a) sb))))
+                                         (default ((<> None a)))))
+                          ;; COW pattern copy-on-write for Slices
+                          (* Slice vec cur (match# vec
+                                             (dead ((<> None a)))
+                                             (* Buffer sbs -> sbs
+                                                (Buffered buffer _cursor size step
+                                                          (letn (((<> StringBuffer a) new_sb .
+                                                                  #'((<> newCapacity StringBuffer a) size step)))
+                                                            ((<> Buffer a)
+                                                             ((<> print StringBuffer a) new_sb (+ buffer cur) size))))
+                                                (default ((<> None a))))
+                                             (* Slice veci ((<> clear type) veci))
+                                             (default ((<> clone Box type) vec))))
+                          (default ((<> clone Box type) vector))))))
 
     (func iterator ((type vector))
-          (out (<> type iterator_t))
+          (out (<> type iter_t))
           (return (match# vector
-                    (dead (cast (<> type iterator_t) '{ nil nil }))
+                    (dead (cast (<> type iter_t) '{ nil nil }))
                     (* Buffer sb -> sb
-                       (Buffered buffer cursor (cast (<> type iterator_t) '{ buffer (+ buffer cursor) }))
-                       (default (cast (<> type iterator_t) '{ nil nil })))
+                       (Buffered buffer cursor (cast (<> type iter_t) '{ buffer (+ buffer cursor) }))
+                       (default (cast (<> type iter_t) '{ nil nil })))
                     (* Slice vec cur size
-                       (letn (((<> type iterator_t) iter . #'((<> iterator type) vec)))
+                       (letn (((<> type iter_t) iter . #'((<> iterator type) vec)))
                          (match iter
-                           ((\, begin) (cast (<> type iterator_t) '{ (+ begin cur) (+ begin size) }))
-                           (default (cast (<> type iterator_t) '{ nil nil })))))
-                    (default (cast (<> type iterator_t) '{ nil nil })))))
+                           ((\, begin) (cast (<> type iter_t) '{ (+ begin cur) (+ begin size) }))
+                           (default (cast (<> type iter_t) '{ nil nil })))))
+                    (default (cast (<> type iter_t) '{ nil nil })))))
 
     (free
       (io this
