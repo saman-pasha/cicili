@@ -1,0 +1,83 @@
+;;;; contigous memory allocation
+;;; Cicili std array
+;;; uses 17-bit address space after 47-bit virtual memory
+;;; most minimal performant indexable array
+;;; arrays with max length of (2^17 - 1) 131071
+(generic decl-array
+  (type a)
+
+  (struct type
+    ;; using cicili direct c code for bit fields definition
+    (code '{ const size_t    len #\: 17 })
+    (code '{ const uintptr_t arr #\: 47 }))
+
+  (inline)
+  (func (<> free type) ((type * array))
+        (free (cast (void *) (-> array arr))))
+
+  ) ; decl-array
+
+
+(generic import-array
+  (type a)
+
+  (DEFMACRO (<> new type) (arr &OPTIONAL len)
+    (LET* ((arr arr)
+           (len len)
+           (arr-len (IF len len (IF (STRINGP arr) (LENGTH arr) (IF (LISTP arr) (LENGTH (CADR arr)) -1))))
+           (arr-name (GENSYM "tmp_arr")))
+      (IF len
+          `(letn ((a * ,arr-name . (FUNCTION (calloc ,arr-len (sizeof a)))))
+             (memcpy ,arr-name (cast (a []) ,arr) (* ,arr-len (sizeof a)))
+             (cast type '{ (cast unsigned ,arr-len) (cast uintptr_t ,arr-name) }))
+          (IF (STRINGP arr)
+              `(letn ((a * ,arr-name . (FUNCTION (calloc ,arr-len (sizeof a)))))
+                 (memcpy ,arr-name (cast (a []) ,arr) (* ,arr-len (sizeof a)))
+                 (cast type '{ (cast unsigned ,arr-len) (cast uintptr_t ,arr-name) }))
+              (IF (AND (LISTP arr) (EQUAL (CAR arr) 'QUOTE))
+                  `(letn ((a * ,arr-name . (FUNCTION (calloc ,arr-len (sizeof a)))))
+                     (memcpy ,arr-name (cast (a []) ,arr) (* ,arr-len (sizeof a)))
+                     (cast type '{ (cast unsigned ,arr-len) (cast uintptr_t ,arr-name) }))
+                  (ERROR (FORMAT NIL "new^~A len required for dynamic array input: ~A" (symbol-name type) arr)))))))
+
+
+  (DEFMACRO (<> len type) (array)
+    `($ ,array len))
+
+
+  ;; there are two path Safe and Unsafe
+  ;; Safe with default to check bounds
+  ;; Unsafe without default and check bounds
+  (DEFMACRO (<> nth type) (index array &KEY unchecked default)
+    (LET ((index index)
+          (array array)
+          (unchecked unchecked)
+          (default default)
+          (arr-name (GENSYM "acc_arr"))
+          (arr-idx (GENSYM "acc_arr_idx")))
+      (WHEN (AND (NULL unchecked) (NULL default)) (ERROR (FORMAT NIL "checked nth of array needs default value ~A" array)))
+      (IF unchecked
+          `(nth ,index (cast (a *) ($ ,array arr)))
+          `(letn ((const uintptr_t ,arr-name . (FUNCTION ($ ,array arr)))
+                  (const size_t ,arr-idx . (FUNCTION ,index)))
+             (? (< ,arr-idx ($ ,array len))
+                (nth ,arr-idx (cast (a *) ,arr-name))
+                ,default)))))
+
+  
+  (DEFMACRO (<> let type) ((arr len array) &REST body)
+    (LET ((arr-name (GENSYM "acc_arr")))
+      `(let ((uintptr_t ,arr-name . (FUNCTION (cast uintptr_t ,array)))
+             (type ,arr . (FUNCTION (cast type (bitand ,arr-name 0x7FFFFFFFFFFF))))
+             (size_t ,len . (FUNCTION (cast size_t (>> ,arr-name 47)))))
+         ,@body)))
+  
+
+  (DEFMACRO (<> letn type) ((arr len array) &REST body)
+    (LET ((arr-name (GENSYM "acc_arr")))
+      `(letn ((uintptr_t ,arr-name . (FUNCTION (cast uintptr_t ,array)))
+              (type ,arr . (FUNCTION (cast type (bitand ,arr-name 0x7FFFFFFFFFFF))))
+              (size_t ,len . (FUNCTION (cast size_t (>> ,arr-name 47)))))
+         ,@body)))
+
+  ) ; import-array

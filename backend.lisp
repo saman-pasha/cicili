@@ -78,9 +78,9 @@
           (when modifier  (output " ") (set-ast-line (output "~A" modifier)))
           (when const-ptr (output " ") (set-ast-line (output "const" const-ptr)))
           (when name      (output " ")
-                (setq line-n   (funcall *line-num* 0))
-                (setq col-n    (funcall *col-num* 0))
-                (set-ast-line (output "~A "(if (str:starts-with-p "_ciciliParam_" (symbol-name name)) " " name))))
+                (setq line-n  (funcall *line-num* 0))
+                (setq col-n   (funcall *col-num* 0))
+                (set-ast-line (output "~A " (if (str:starts-with-p "_ciciliParam_" (symbol-name name)) " " name))))
           (compile-array array-def lvl globals parent-spec)))
     (values line-n col-n)))
 

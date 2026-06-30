@@ -30,18 +30,6 @@
                       var-list))
      ,@body))
 
-;; accepts all variables if the 3rd argument specified, will use it as destructor
-(DEFMACRO letin* (var-list &REST body)
-  `(letn ,(APPLY 'APPEND
-                 (MAP 'LIST #'(LAMBDA (var)
-                                (WHEN (OR (< (LENGTH var) 2) (> (LENGTH var) 3))
-                                  (ERROR (FORMAT NIL "wrong letin* variable definition: ~A" var)))
-                                (IF (= (LENGTH var) 2)
-                                    `((auto ,(CAR var) . (FUNCTION ,(CADR var))))
-                                    `((defer () ,(CADDR var)) (auto ,(CAR var) . (FUNCTION ,(CADR var))))))
-                      var-list))
-     ,@body))
-
 ;; Rc works like letin but with reference counting and needs Rc type at second argument
 ;; each var will be wrapped inside a Rc
 ;; all var initializers should be a Rc ctor

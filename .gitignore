@@ -302,3 +302,5 @@ draft/tests/collection/royal_btree
 /benchmark/persistent_btree/target
 benchmark/rust-vector-bench/main
 /benchmark/rust-vector-bench/target
+test/std/\#array.c\#
+test/std/main

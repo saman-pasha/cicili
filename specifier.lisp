@@ -570,15 +570,20 @@
 
 (defun specify-code-expr (def)
   (unless (= (length def) 2) (error (format nil "wrong code form ~A" def)))
-  (let ((pure (cadr def)))
+  (let ((pure (cadr def))
+        (code-name (gensym "code")))
     (cond ((atom pure)
-           (make-specifier nil '|@CODE| nil nil nil nil nil pure '()))
+           (make-specifier code-name '|@CODE| nil nil nil nil nil pure '()))
 	      ((key-eq (car pure) 'QUOTE)
-           (make-specifier nil '|@CODE| nil nil nil nil nil
+           (make-specifier code-name '|@CODE| nil nil nil nil nil
                            (loop for item in (cadr pure)
                                  collect (if (atom item)
-                                             (make-specifier nil '|@CODE| nil nil nil nil nil item '())
-                                             (specify-code-expr item))) '()))
+                                             (make-specifier code-name '|@CODE| nil nil nil nil nil item '())
+                                             (if (key-eq (car item) '<>)
+                                                 (make-specifier code-name '|@CODE| nil nil nil nil nil
+                                                                 (intern (format nil "~{~A~^_~}" (cdr item))) '())
+                                                 (specify-code-expr item))))
+                           '()))
           ((key-eq (car pure) '|code|)
            (specify-code-expr pure))
           (t (error (format nil "wrong code form ~A" def))))))
@@ -1342,6 +1347,8 @@
 		            ((key-eq construct '|register|) (push clause attributes))
 		            ((key-eq construct '|extern|)   (push clause attributes))
 		            ((key-eq construct '|volatile|) (push clause attributes))
+                    ;; compatibility
+                    ((key-eq construct '|code|) (add-inner (specify-code-expr clause) struct-specifier))
                     ;; members
 		            ((key-eq construct '|member|)
                      (multiple-value-bind (const type modifier const-ptr variable array default)
@@ -1404,6 +1411,9 @@
 	        (let ((construct (car clause)))
 	          (cond ((find (char (symbol-name construct) 0) "@#")
 		             (add-inner (specify-preprocessor clause attributes) union-specifier) (setq attributes '()))
+                    ;; compatibility
+                    ((key-eq construct '|code|) (add-inner (specify-code-expr clause) union-specifier))
+                    ;; members
 		            ((key-eq construct '|member|)
 		             (add-inner (specify-variable clause attributes) union-specifier) (setq attributes '()))
 		            ((key-eq construct '|struct|)
