@@ -2,8 +2,8 @@
 ;;; test cicili std array
 (source "array.c"
   (make :std #t
-        :compile ("-O3" "-c" "array.c")
-        :link ("-larray.o" "-o" "main"))
+        :compile ("-O3" "-ffast-math" "-c" "array.c")
+        :link ("-larray.o" "-o" "arr_test"))
 
   (include <sys/time.h>)
   (include <limits.h>)
@@ -58,12 +58,11 @@
   
   (main
     (printf "sizeof %s: %zu\n" (symbol-name (<> array int)) (sizeof (<> array int)))
-    (fflush stdout)
     
     (let ((defer () (free^array^int (aof arr01)))
           (array^int arr01 . #'(new^array^int '{ 1 2 3 4 5 })))
 
-      (printf "arr01 len: %u\n" (len^array^int arr01))
+      (printf "arr01 len: %zu\n" (len^array^int arr01))
 
       (printf "print int array using Unsafe nth: ")
       (for ((size_t i . 0)) (< i (len^array^int arr01)) ((++ i))
@@ -77,6 +76,7 @@
 
       ) ; let
 
+    (fflush stdout)
     (printf "  nth (bounds-checked) %d times: %ld ms\n"
       N (bench_a_nth))
 
@@ -91,5 +91,5 @@
 
 
 ;; (nth) bench result: with letin* has 40ms latency
-;; Cicili 410 419 417 415 418
+;; Cicili 415 411 408 407 419
 ;; Rust   439 435 437 439 436

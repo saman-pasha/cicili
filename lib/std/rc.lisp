@@ -8,7 +8,7 @@
 
   (struct type
     ;; using cicili direct c code for bit fields definition
-    (struct payload
+    (struct
       (code '{ const size_t    cnt #\: 17 })
       (code '{ const uintptr_t ptr #\: 47 })
       (declare * pay))
@@ -17,9 +17,10 @@
 
   (inline)
   (func (<> free type) ((type * rc))
-        (when (and (== (-> rc cnt) 1) (== (cast size_t (-> rc ptr)) (-> rc adr)))
-          (free (cast (void *) (-> rc ptr))))
-        (-- (-> rc cnt)))
+        ;; (when (and (== (-> rc cnt) 1) (== (cast size_t (-> rc ptr)) (-> rc adr)))
+        ;;   (free (cast (void *) (-> rc ptr))))
+        ;; (-- (-> rc cnt))
+        )
 
   ) ; decl-rc
 
@@ -29,9 +30,28 @@
 
   (DEFMACRO (<> new type) (obj)
     (LET ((ptr-name (GENSYM "tmp_rc")))
-      `(letn ((size_t * ,ptr-name . (FUNCTION (malloc (sizeof size_t)))))
-         (memcpy ,ptr-name (aof ,obj) (sizeof a))
-         (cast type '{ 1 (cast uintptr_t ,ptr-name) (cast size_t ,ptr-name) }))))
+      `(letn (
+              (size_t * ,ptr-name . (FUNCTION (malloc (sizeof size_t))))
+              ;; (size_t ** pp . (FUNCTION (aof ,ptr-name))) ; (malloc (sizeof size_t))))
+              (size_t snp . (FUNCTION (cof ,ptr-name)))
+              )
+         (printf "CCCCC: %zx   %zx    %zx\n" (cast size_t ,ptr-name) (cof ,ptr-name) snp)
+         ;; (memcpy ,ptr-name (aof ,obj) (sizeof a))
+         ;; (set (cof pp) ,ptr-name)
+         
+         (printf "CCCCC: %zx   %zx    %zx\n" (cast size_t ,ptr-name) (cof ,ptr-name) snp)
+         ;; (free ,ptr-name)
+         ;; (set ,ptr-name nil)
+         ;; (set (cof pp) nil)
+         ;; (free pp)
+         (printf "CCCCC: %zx   %zx    %zx\n" (cast size_t ,ptr-name) (cof ,ptr-name) snp)
+         ;; (set ,ptr-name (malloc (* 10 (sizeof size_t))))
+         ;; (free ,ptr-name)
+         ;; (set (cof pp) (malloc (sizeof size_t)))
+         (printf "CCCCC: %zx   %zx    %zx\n" (cast size_t ,ptr-name) (cof ,ptr-name) snp)
+         (cast type '{ })
+         ;; (cast type '{ 1 (cast uintptr_t ,ptr-name) (cast size_t ,ptr-name) })
+         )))
 
 
   (DEFMACRO (<> count type) (pointer)

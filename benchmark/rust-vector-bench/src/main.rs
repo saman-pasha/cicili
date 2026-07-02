@@ -53,13 +53,14 @@ fn bench_a_nth(n: usize) -> u128 {
     elapsed
 }
 
-fn bench_a_slice(n: usize) -> u128 {
+fn bench_a_slice(mut n: usize) -> u128 {
     // mirrors Cicili drop/take: produce a &[T] view, O(1)
-    let v: Vec<i32> = (0..STEP as i32).collect();
+    let v: Vec<i32> = (0..50 as i32).collect();
     let start = Instant::now();
     let mut total_len: usize = 0;
+    n = n * n;
     for _ in 0..n {
-        let s = &v[2..]; // drop 2 — O(1), same as Cicili Slice
+        let s = &(&v[2..])[2..]; // drop 2 — O(1), same as Cicili Slice
         total_len = total_len.wrapping_add(s.len());
     }
     let elapsed = start.elapsed().as_millis();
@@ -192,7 +193,7 @@ fn main() {
     println!("  nth (bounds-checked get) {} times: {} ms", N, t);
 
     let t = bench_a_slice(N);
-    println!("  slice/drop (zero-copy &[T]) {} times: {} ms", N, t);
+    println!("  slice/drop (zero-copy &[T]) {} times: {} * {} ms", N, N, t);
 
     let t = bench_a_iterate(N);
     println!("  forward iterate ({}×{} elements): {} ms", N/STEP, STEP, t);

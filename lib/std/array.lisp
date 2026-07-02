@@ -1,15 +1,18 @@
-;;;; contigous memory allocation
-;;; Cicili std array
-;;; uses 17-bit address space after 47-bit virtual memory
+;;;; Cicili std array
+;;; contigous memory allocation
+;;; uses 16-bit address free space beside 47-bit virtual memory
 ;;; most minimal performant indexable array
-;;; arrays with max length of (2^17 - 1) 131071
+;;; arrays with max length of (2^16 - 1) 65535
 (generic decl-array
   (type a)
 
   (struct type
     ;; using cicili direct c code for bit fields definition
-    (code '{ const size_t    len #\: 17 })
-    (code '{ const uintptr_t arr #\: 47 }))
+    ;; (code '{       unsigned  len #\: 16 })
+    ;; (code '{ const uintptr_t arr #\: 48 }))
+    ;; tradeof between more 8 bytes and 5% performance      
+    (member size_t    len)
+    (member uintptr_t arr))
 
   (inline)
   (func (<> free type) ((type * array))
@@ -42,7 +45,7 @@
 
 
   (DEFMACRO (<> len type) (array)
-    `($ ,array len))
+    `(cast size_t ($ ,array len)))
 
 
   ;; there are two path Safe and Unsafe
@@ -58,7 +61,7 @@
       (WHEN (AND (NULL unchecked) (NULL default)) (ERROR (FORMAT NIL "checked nth of array needs default value ~A" array)))
       (IF unchecked
           `(nth ,index (cast (a *) ($ ,array arr)))
-          `(letn ((const uintptr_t ,arr-name . (FUNCTION ($ ,array arr)))
+          `(letn ((uintptr_t ,arr-name . (FUNCTION ($ ,array arr)))
                   (const size_t ,arr-idx . (FUNCTION ,index)))
              (? (< ,arr-idx ($ ,array len))
                 (nth ,arr-idx (cast (a *) ,arr-name))

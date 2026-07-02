@@ -1,9 +1,9 @@
 
-;;; test cicili std array
-(source "array.c"
+;;; test cicili std rc
+(source "rc.c"
   (make :std #t
-        :compile ("-O3" "-c" "array.c")
-        :link ("-larray.o" "-o" "main"))
+        :compile ("-O3" "-c" "rc.c")
+        :link ("-lrc.o" "-o" "rc_test"))
 
   (include <sys/time.h>)
   (include <limits.h>)
@@ -78,7 +78,7 @@
                  (rcv (new^rc^array^int v) (<> free rc (<> array int)))
                  ) ; decls
 
-          (printf "rc count: %zu\n" ((<> count rc array int) rcv))
+          ;; (printf "rc count: %zu\n" ((<> count rc array int) rcv))
           
           (let ((i64 sum . 0)
                 (llong t0 . #'(ms_now)))
@@ -121,7 +121,7 @@
     ;;   ) ; let
 
     (printf "  nth (bounds-checked) %d times: %ld ms\n"
-      N (bench_a_nth))
+      N (bench_b_nth))
 
     )) ; array.c
 
