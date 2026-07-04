@@ -82,13 +82,14 @@
 
     )) ; array.c
 
-;; sizeof array_int: 8
+;; sizeof array_int: 16
 ;; arr01 len: 5
 ;; print int array using Unsafe nth: 12345
 ;; print int array using Safe nth: 1234500
+;; FREE ARR: 6000035cd200
 ;;   (nth checksum: 24500000000)
+;; FREE ARR: 600000ecc000
 ;;   nth (bounds-checked) 1000000000 times: 415 ms
-
 
 ;; (nth) bench result: with letin* has 40ms latency
 ;; Cicili 415 411 408 407 419

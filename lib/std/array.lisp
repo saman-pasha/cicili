@@ -7,16 +7,14 @@
   (type a)
 
   (struct type
-    ;; using cicili direct c code for bit fields definition
-    ;; (code '{       unsigned  len #\: 16 })
-    ;; (code '{ const uintptr_t arr #\: 48 }))
-    ;; tradeof between more 8 bytes and 5% performance      
-    (member size_t    len)
-    (member uintptr_t arr))
+          (member uintptr_t arr)
+          (member size_t    len))
 
   (inline)
   (func (<> free type) ((type * array))
-        (free (cast (void *) (-> array arr))))
+        (syslog! (printf "FREE ARR: %zx\n" (-> array arr)))
+        (free (cast (void *) (-> array arr)))
+        (set (-> array arr) 0))
 
   ) ; decl-array
 
@@ -32,20 +30,20 @@
       (IF len
           `(letn ((a * ,arr-name . (FUNCTION (calloc ,arr-len (sizeof a)))))
              (memcpy ,arr-name (cast (a []) ,arr) (* ,arr-len (sizeof a)))
-             (cast type '{ (cast unsigned ,arr-len) (cast uintptr_t ,arr-name) }))
+             (cast type '{ (cast uintptr_t ,arr-name) (cast size_t ,arr-len) }))
           (IF (STRINGP arr)
               `(letn ((a * ,arr-name . (FUNCTION (calloc ,arr-len (sizeof a)))))
                  (memcpy ,arr-name (cast (a []) ,arr) (* ,arr-len (sizeof a)))
-                 (cast type '{ (cast unsigned ,arr-len) (cast uintptr_t ,arr-name) }))
+                 (cast type '{ (cast uintptr_t ,arr-name) (cast size_t ,arr-len) }))
               (IF (AND (LISTP arr) (EQUAL (CAR arr) 'QUOTE))
                   `(letn ((a * ,arr-name . (FUNCTION (calloc ,arr-len (sizeof a)))))
                      (memcpy ,arr-name (cast (a []) ,arr) (* ,arr-len (sizeof a)))
-                     (cast type '{ (cast unsigned ,arr-len) (cast uintptr_t ,arr-name) }))
+                     (cast type '{ (cast uintptr_t ,arr-name) (cast size_t ,arr-len) }))
                   (ERROR (FORMAT NIL "new^~A len required for dynamic array input: ~A" (symbol-name type) arr)))))))
 
 
   (DEFMACRO (<> len type) (array)
-    `(cast size_t ($ ,array len)))
+    `($ ,array len))
 
 
   ;; there are two path Safe and Unsafe
@@ -64,23 +62,23 @@
           `(letn ((uintptr_t ,arr-name . (FUNCTION ($ ,array arr)))
                   (const size_t ,arr-idx . (FUNCTION ,index)))
              (? (< ,arr-idx ($ ,array len))
-                (nth ,arr-idx (cast (a *) ,arr-name))
-                ,default)))))
+               (nth ,arr-idx (cast (a *) ,arr-name))
+               ,default)))))
 
   
   (DEFMACRO (<> let type) ((arr len array) &REST body)
     (LET ((arr-name (GENSYM "acc_arr")))
-      `(let ((uintptr_t ,arr-name . (FUNCTION (cast uintptr_t ,array)))
-             (type ,arr . (FUNCTION (cast type (bitand ,arr-name 0x7FFFFFFFFFFF))))
-             (size_t ,len . (FUNCTION (cast size_t (>> ,arr-name 47)))))
+      `(let ((type ,arr-name . (FUNCTION ,array))
+             (a * ,arr . (FUNCTION (cast (a *) ($ ,arr-name arr))))
+             (size_t ,len . (FUNCTION ($ ,arr-name len))))
          ,@body)))
   
 
   (DEFMACRO (<> letn type) ((arr len array) &REST body)
     (LET ((arr-name (GENSYM "acc_arr")))
-      `(letn ((uintptr_t ,arr-name . (FUNCTION (cast uintptr_t ,array)))
-              (type ,arr . (FUNCTION (cast type (bitand ,arr-name 0x7FFFFFFFFFFF))))
-              (size_t ,len . (FUNCTION (cast size_t (>> ,arr-name 47)))))
+      `(letn ((type ,arr-name . (FUNCTION ,array))
+              (a * ,arr . (FUNCTION (cast (a *) ($ ,arr-name arr))))
+              (size_t ,len . (FUNCTION ($ ,arr-name len))))
          ,@body)))
 
   ) ; import-array

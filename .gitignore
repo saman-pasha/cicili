@@ -307,3 +307,4 @@ test/std/main
 test/std/arr_test
 test/std/rc_test
 test/std/vec_test
+test/std/cell_test
