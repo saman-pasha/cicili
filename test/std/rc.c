@@ -126,18 +126,16 @@ int main () {
       rc_array_int acc_rc238  = rc01 ;
       array_int ** acc_rc_ptr239  = ((array_int **)(acc_rc238 . ptr ));
       // ----------
-      (((acc_rc_ptr239  &&  ((*((size_t *)acc_rc_ptr239 )) ==  (acc_rc238 . adr ) ) )) ? ({ /* cicili#Let242 */
+      (((acc_rc_ptr239  &&  ((*((size_t *)acc_rc_ptr239 )) ==  (acc_rc238 . adr ) ) &&  ((*((size_t *)(((uintptr_t *)(acc_rc238 . ptr )) +  1 ))) ==  1 ) )) ? ({ /* cicili#Let242 */
           __auto_type arr  = (*acc_rc_ptr239 );
           // ----------
-          ((((*((size_t *)(((uintptr_t *)(acc_rc238 . ptr )) +  1 ))) ==  1 )) ? ({ /* cicili#Progn244 */
-              ({ /* cicili#Progn247 */
-                printf ("TAKEN RC: %zx %zx\n", (*((size_t *)acc_rc_ptr239 )), (acc_rc238 . adr ));
-              });
-              free (((void *)(acc_rc238 . ptr )));
-              (acc_rc238 . ptr ) = 0;
-              printf ("5 rc01 arr len: %zu\n", ((*arr ). len ));
-              force_free_array_int (arr );
-            }) : printf ("5 rc01 arr len: default path\n"));
+          ({ /* cicili#Progn245 */
+            printf ("TAKEN RC: %zx %zx\n", (*((size_t *)acc_rc_ptr239 )), (acc_rc238 . adr ));
+          });
+          free (((void *)(acc_rc238 . ptr )));
+          (acc_rc238 . ptr ) = 0;
+          printf ("5 rc01 arr len: %zu\n", ((*arr ). len ));
+          force_free_array_int (arr );
         }) : printf ("5 rc01 arr len: default path\n"));
     });
   }
