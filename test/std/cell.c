@@ -120,7 +120,7 @@ int main () {
           __auto_type arr  = (*acc_cell_ptr229 );
           // ----------
           ({ /* cicili#Progn235 */
-            printf ("TAKE CELL: %zx %zx\n", (*((size_t *)acc_cell_ptr229 )), (acc_cell228 . adr ));
+            printf ("TAKEN CELL: %zx %zx\n", (*((size_t *)acc_cell_ptr229 )), (acc_cell228 . adr ));
           });
           free (((void *)(acc_cell228 . ptr )));
           (acc_cell228 . ptr ) = 0;

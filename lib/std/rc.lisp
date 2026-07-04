@@ -100,10 +100,11 @@
              (a ** ,rc-ptr . (FUNCTION (cast (a **) ($ ,rc-acc ptr)))))
          (when (and ,rc-ptr (== (cof (cast (size_t *) ,rc-ptr)) ($ ,rc-acc adr)))
            (let ((auto ,obj . ,obj-val))
-             (syslog! (printf "TAKE RC: %zx %zx\n" (cof (cast (size_t *) ,rc-ptr)) ($ ,rc-acc adr)))
-             (free (cast (void *) ($ ,rc-acc ptr)))
-             (set ($ ,rc-acc ptr) 0)
-             ,@body)))))
+             (when (== (cof (cast (size_t *) (+ (cast (uintptr_t *) ($ ,rc-acc ptr)) 1))) 1)
+               (syslog! (printf "TAKE RC: %zx %zx\n" (cof (cast (size_t *) ,rc-ptr)) ($ ,rc-acc adr)))
+               (free (cast (void *) ($ ,rc-acc ptr)))
+               (set ($ ,rc-acc ptr) 0)
+               ,@body))))))
   
 
   (DEFMACRO (<> taken type) ((obj rc default &OPTIONAL is-ptr) &REST body)
@@ -118,10 +119,13 @@
               (a ** ,rc-ptr . (FUNCTION (cast (a **) ($ ,rc-acc ptr)))))
          (? (and ,rc-ptr (== (cof (cast (size_t *) ,rc-ptr)) ($ ,rc-acc adr)))
            (letn ((auto ,obj . ,obj-val))
-             (syslog! (printf "TAKE RC: %zx %zx\n" (cof (cast (size_t *) ,rc-ptr)) ($ ,rc-acc adr)))
-             (free (cast (void *) ($ ,rc-acc ptr)))
-             (set ($ ,rc-acc ptr) 0)
-             ,@body)
+             (? (== (cof (cast (size_t *) (+ (cast (uintptr_t *) ($ ,rc-acc ptr)) 1))) 1)
+               (progn
+                 (syslog! (printf "TAKEN RC: %zx %zx\n" (cof (cast (size_t *) ,rc-ptr)) ($ ,rc-acc adr)))
+                 (free (cast (void *) ($ ,rc-acc ptr)))
+                 (set ($ ,rc-acc ptr) 0)
+                 ,@body)
+               ,default))
            ,default))))
 
   ) ; import-rc

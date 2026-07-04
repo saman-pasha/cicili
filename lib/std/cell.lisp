@@ -101,7 +101,7 @@
               (a ** ,cell-ptr . (FUNCTION (cast (a **) ($ ,cell-acc ptr)))))
          (? (and ,cell-ptr (== (cof (cast (size_t *) ,cell-ptr)) ($ ,cell-acc adr)))
            (letn ((auto ,obj . ,obj-val))
-             (syslog! (printf "TAKE CELL: %zx %zx\n" (cof (cast (size_t *) ,cell-ptr)) ($ ,cell-acc adr)))
+             (syslog! (printf "TAKEN CELL: %zx %zx\n" (cof (cast (size_t *) ,cell-ptr)) ($ ,cell-acc adr)))
              (free (cast (void *) ($ ,cell-acc ptr)))
              (set ($ ,cell-acc ptr) 0)
              ,@body)

@@ -45,11 +45,11 @@
     )) ; cell.c
 
 
-;; NEW CELL: 60000019c050 60000019c040
+;; NEW CELL: 600001db4050 600001db4040
 ;; 1 cell01 arr len: 5
 ;; 2 cell01 arr len: 5
 ;; 3 cell01 arr len: 5
-;; TAKE CELL: 60000019c040 60000019c040
+;; TAKE CELL: 600001db4040 600001db4040
 ;; 4 cell01 arr len: 5
-;; FREE ARR: 600000399200
+;; FREE ARR: 600001fb1200
 ;; 5 cell01 arr len: default path
