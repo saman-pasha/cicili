@@ -2,11 +2,8 @@
 ;;; test cicili std rc
 (source "rc.c"
   (make :std #t
-        :compile ("-O3" "-c" "rc.c")
+        :compile ("-O3" "-ffast-math" "-c" "rc.c")
         :link ("-lrc.o" "-o" "rc_test"))
-
-  (include <sys/time.h>)
-  (include <limits.h>)
 
   (decl-array array^int int)
   (import-array array^int int)
@@ -14,117 +11,50 @@
   (decl-rc rc^array^int array^int)
   (import-rc rc^array^int array^int)
 
-  (func ms_now ()
-        (out llong)
-        (let (((struct timeval) tv))
-          (gettimeofday (aof tv) nil)
-          (return (+ (* ($ tv tv_sec) 1000LL) + (/ ($ tv tv_usec) 1000LL)))))
-
-  (var int N    . 1000000000) ; total operations
-  (var int STEP . 1000)       ; elements per epoch
-
-  (func bench_a_nth ()
-        (out long)
-        ;; (let ((defer () ((<> free array int) (aof v)))
-        ;;       ((<> array int) v . #'(new^array^int '{
-        ;;                               0  1  2  3  4  5  6  7  8  9
-        ;;                               10 11 12 13 14 15 16 17 18 19
-        ;;                               20 21 22 23 24 25 26 27 28 29
-        ;;                               30 31 32 33 34 35 36 37 38 39
-        ;;                               40 41 42 43 44 45 46 47 48 49 }))
-        (letin* ((v (new^array^int '{
-                      0  1  2  3  4  5  6  7  8  9
-                      10 11 12 13 14 15 16 17 18 19
-                      20 21 22 23 24 25 26 27 28 29
-                      30 31 32 33 34 35 36 37 38 39
-                      40 41 42 43 44 45 46 47 48 49 })
-                    (<> free array int))
-                 ) ; decls
-
-          (let ((i64 sum . 0)
-                (llong t0 . #'(ms_now)))
-            
-            ;; ((<> let array int) (arr len v)
-            ;;  (cast void len)
-            ;;  (for ((int i . 0)) (< i N) ((++ i))
-            ;;       (+= sum (nth (% i 50) arr))))
-
-            (for ((int i . 0)) (< i N) ((++ i))
-                 ;; (+= sum ((<> nth array int) (% i 50) v :unchecked T))))
-                 (+= sum ((<> nth array int) (% i 50) v :default 0)))
-            
-            ;; (let ((int val . #'((<> nth array int) (% i 50) v :default -1)))
-            ;;   (if (> val -1) (set sum (+ sum val))))
-            (let ((llong elapsed . #'(- (ms_now) t0)))
-              (printf "  (nth checksum: %lld)\n" sum)  ; after timer — forces liveness
-              (return elapsed)))))
-
-  (func bench_b_nth ()
-        (out long)
-        ;; (let ((defer () ((<> free array int) (aof v)))
-        ;;       ((<> array int) v . #'(new^array^int '{
-        ;;                               0  1  2  3  4  5  6  7  8  9
-        ;;                               10 11 12 13 14 15 16 17 18 19
-        ;;                               20 21 22 23 24 25 26 27 28 29
-        ;;                               30 31 32 33 34 35 36 37 38 39
-        ;;                               40 41 42 43 44 45 46 47 48 49 }))
-        (letin* ((v (new^array^int '{
-                      0  1  2  3  4  5  6  7  8  9
-                      10 11 12 13 14 15 16 17 18 19
-                      20 21 22 23 24 25 26 27 28 29
-                      30 31 32 33 34 35 36 37 38 39
-                      40 41 42 43 44 45 46 47 48 49 })
-                    (<> free array int))
-                 (rcv (new^rc^array^int v) (<> free rc (<> array int)))
-                 ) ; decls
-
-          ;; (printf "rc count: %zu\n" ((<> count rc array int) rcv))
-          
-          (let ((i64 sum . 0)
-                (llong t0 . #'(ms_now)))
-            
-            ;; ((<> let array int) (arr len v)
-            ;;  (cast void len)
-            ;;  (for ((int i . 0)) (< i N) ((++ i))
-            ;;       (+= sum (nth (% i 50) arr))))
-
-            (for ((int i . 0)) (< i N) ((++ i))
-                 ;; (+= sum ((<> nth array int) (% i 50) v :unchecked T))))
-                 (+= sum ((<> nth array int) (% i 50) v :default 0)))
-            
-            ;; (let ((int val . #'((<> nth array int) (% i 50) v :default -1)))
-            ;;   (if (> val -1) (set sum (+ sum val))))
-            (let ((llong elapsed . #'(- (ms_now) t0)))
-              (printf "  (nth checksum: %lld)\n" sum)  ; after timer — forces liveness
-              (return elapsed)))))
   
   (main
-    (printf "sizeof %s: %zu\n" (symbol-name (<> array int)) (sizeof (<> array int)))
-    (printf "sizeof %s: %zu\n" (symbol-name (<> rc array int)) (sizeof (<> rc array int)))
-    (fflush nil)
-    
-    ;; (let ((defer () (free^array^int arr01))
-    ;;       (array^int arr01 . #'(new^array^int '{ 1 2 3 4 5 })))
+    (let ((defer () (free^rc^array^int (aof rc01)))
+          (rc^array^int rc01 . #'(new^rc^array^int '{ 1 2 3 4 5 }))
+          ) ; decls
 
-    ;;   (printf "arr01 len: %zu\n" (len^array^int arr01))
+      (let^rc^array^int (arr rc01)
+        (printf "1 rc01 arr len: %zu\n" (len^array^int arr)))
 
-    ;;   (printf "print int array using Unsafe nth: ")
-    ;;   (for ((size_t i . 0)) (< i (len^array^int arr01)) ((++ i))
-    ;;        (printf "%d" (nth^array^int i arr01 :unchecked T)))
-    ;;   (putchar #\Newline)
+      (let^rc^array^int (* arr rc01)
+        (printf "2 rc01 arr len: %zu\n" (len^array^int (cof arr)))
+        ;; uncomment error: shouldn't free an object where ordered to be used inside Rc: array^int
+        ;; (free^array^int arr)
+        )
 
-    ;;   (printf "print int array using Safe nth: ")
-    ;;   (for ((size_t i . 0)) (< i 7) ((++ i))
-    ;;        (printf "%d" (nth^array^int i arr01 :default 0)))
-    ;;   (putchar #\Newline)
+      (printf "3 rc01 arr len: %zu\n"
+        (letn^rc^array^int (arr rc01 -1)
+          (len^array^int arr)))
 
-    ;;   ) ; let
+      ;; (take^rc^array^int (arr (clone^rc^array^int rc01))
+      ;;   (printf "4 rc01 arr len: %zu\n" (len^array^int arr))
+      ;;   ;; uncomment cause segfault, use-after-free interior arr
+      ;;   ;; (force^free^array^int (aof arr)) ; needed for taken rc
+      ;;   )
 
-    (printf "  nth (bounds-checked) %d times: %ld ms\n"
-      N (bench_b_nth))
+      (let ((auto cloned . #'(clone^rc^array^int rc01)))
+        (free^rc^array^int (aof cloned)))
+      
+      (taken^rc^array^int
+          (* arr rc01
+             (printf "5 rc01 arr len: default path\n")) ; default path
+        (printf "5 rc01 arr len: %zu\n" (len^array^int (cof arr)))
+        (force^free^array^int arr))
 
-    )) ; array.c
+      ) ; let
+    )) ; rc.c
 
-;; (nth) bench result:
-;; Cicili 414 412 417 413 416
-;; Rust   439 435 437 439 436
+
+;; NEW RC: 600001e94050 600001e94040
+;; 1 rc01 arr len: 5
+;; 2 rc01 arr len: 5
+;; 3 rc01 arr len: 5
+;; FREE RC: 600001e94040 600001e94040
+;; FREE RC: counter: 2
+;; TAKE RC: 600001e94040 600001e94040
+;; 5 rc01 arr len: 5
+;; FREE ARR: 600001c91200

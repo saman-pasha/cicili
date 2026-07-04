@@ -1,97 +1,127 @@
-;;;; reference counting
-;;; Cicili std rc
-;;; uses 17-bit address space after 47-bit virtual memory
-;;; most minimal performant rc
-;;; rc with max count of (2^16 - 1) 131071
+;;;; Cicili std rc
 (generic decl-rc
   (type a)
 
   (struct type
-    ;; using cicili direct c code for bit fields definition
-    (struct
-      (code '{ const size_t    cnt #\: 17 })
-      (code '{ const uintptr_t ptr #\: 47 })
-      (declare * pay))
-    (code '{ const unsigned      #\: 17 })
-    (code '{ const size_t    adr #\: 47 }))
-
+          (member uintptr_t ptr)
+          (member size_t    adr))
+  
   (inline)
   (func (<> free type) ((type * rc))
-        ;; (when (and (== (-> rc cnt) 1) (== (cast size_t (-> rc ptr)) (-> rc adr)))
-        ;;   (free (cast (void *) (-> rc ptr))))
-        ;; (-- (-> rc cnt))
-        )
+        (when (and (-> rc ptr) (== (cof (cast (size_t *) (-> rc ptr))) (-> rc adr))) ; liveness
+          (syslog! (printf "FREE RC: %zx %zx\n" (cof (cast (size_t *) (-> rc ptr))) (-> rc adr)))
+          (let ((size_t counter . (FUNCTION (cof (cast (size_t *) (+ (cast (uintptr_t *) (-> rc ptr)) 1))))))
+            (syslog! (printf "FREE RC: counter: %zu\n" counter))
+            (if (> counter 1)
+                (-- (cof (cast (size_t *) (+ (cast (uintptr_t *) (-> rc ptr)) 1))))
+                (when (== counter 1)
+                  ((<> free a) (cof (cast (void **) (-> rc ptr))))
+                  (free (cast (void *) (-> rc ptr)))
+                  (set (cof (cast (uintptr_t *) (-> rc ptr))) 0)
+                  (set (-> rc ptr) 0))))))
 
+  (inline)
+  (func (<> force free a) ((a * obj))
+        ((<> free a) obj))
+  
   ) ; decl-rc
 
 
 (generic import-rc
   (type a)
-
-  (DEFMACRO (<> new type) (obj)
-    (LET ((ptr-name (GENSYM "tmp_rc")))
-      `(letn (
-              (size_t * ,ptr-name . (FUNCTION (malloc (sizeof size_t))))
-              ;; (size_t ** pp . (FUNCTION (aof ,ptr-name))) ; (malloc (sizeof size_t))))
-              (size_t snp . (FUNCTION (cof ,ptr-name)))
-              )
-         (printf "CCCCC: %zx   %zx    %zx\n" (cast size_t ,ptr-name) (cof ,ptr-name) snp)
-         ;; (memcpy ,ptr-name (aof ,obj) (sizeof a))
-         ;; (set (cof pp) ,ptr-name)
-         
-         (printf "CCCCC: %zx   %zx    %zx\n" (cast size_t ,ptr-name) (cof ,ptr-name) snp)
-         ;; (free ,ptr-name)
-         ;; (set ,ptr-name nil)
-         ;; (set (cof pp) nil)
-         ;; (free pp)
-         (printf "CCCCC: %zx   %zx    %zx\n" (cast size_t ,ptr-name) (cof ,ptr-name) snp)
-         ;; (set ,ptr-name (malloc (* 10 (sizeof size_t))))
-         ;; (free ,ptr-name)
-         ;; (set (cof pp) (malloc (sizeof size_t)))
-         (printf "CCCCC: %zx   %zx    %zx\n" (cast size_t ,ptr-name) (cof ,ptr-name) snp)
-         (cast type '{ })
-         ;; (cast type '{ 1 (cast uintptr_t ,ptr-name) (cast size_t ,ptr-name) })
-         )))
-
-
-  (DEFMACRO (<> count type) (pointer)
-    `($ array cnt))
-
-
-  (DEFMACRO (<> clone type) (index array &KEY unchecked default)
-    (LET ((index index)
-          (array array)
-          (unchecked unchecked)
-          (default default)
-          (arr-name (GENSYM "acc_arr"))
-          (arr-indx (GENSYM "acc_arr_idx")))
-      (WHEN (AND (NULL unchecked) (NULL default)) (ERROR (FORMAT NIL "checked nth of array needs default value ~A" array)))
-      (IF unchecked
-          `(nth ,index (cast type (bitand (cast uintptr_t ,array) 0x7FFFFFFFFFFF)))
-          `(letn ((uintptr_t ,arr-name . (FUNCTION ($ ,array arr)))
-                  (const size_t ,arr-indx . (FUNCTION ,index)))
-             (? (< ,arr-indx (cast size_t (>> ,arr-name 47)))
-                (nth ,arr-indx (cast type (bitand ,arr-name 0x7FFFFFFFFFFF)))
-                ,default)))))
-
   
-  (DEFMACRO (<> let type) ((ptr cnt pointer) &REST body)
-    (LET ((cnt cnt)
-          (ptr-name (GENSYM "acc_rc")))
-      `(let ((uintptr_t ,ptr-name . (FUNCTION (cast uintptr_t ,pointer)))
-             (type ,ptr . (FUNCTION (cast type (bitand (cof (+ (cast (size_t *) ,ptr-name) 1)) 0x7FFFFFFFFFFF))))
-             (size_t ,cnt . (FUNCTION (>> (cof (cast (size_t *) ,ptr-name)) 47))))
-         (if (> ,cnt 0) (block ,@body)))))
+  ;; interior guard
+  (DEFMACRO (<> free a) (obj)
+    (ERROR (FORMAT NIL "shouldn't free an object where ordered to be used inside Rc: ~A" 'a)))
+  
+  
+  (DEFMACRO (<> new type) (&REST args)
+    (LET* ((args args)
+           (ptr-name (GENSYM "tmp_ptr"))
+           (dptr-name (GENSYM "tmp_rc_ptr")))
+      `(letn ((a * ,ptr-name . (FUNCTION (malloc (sizeof a))))
+              (uintptr_t * ,dptr-name . (FUNCTION (malloc (+ (sizeof uintptr_t) (sizeof size_t))))))
+         (set (cof ,ptr-name) ((<> new a) ,@args))
+         (set (cof ,dptr-name) (cast uintptr_t ,ptr-name))
+         (set (cof (cast (size_t *) (+ ,dptr-name 1))) 1UL)
+         (syslog! (printf "NEW RC: %zx %zx\n" (cast uintptr_t ,dptr-name) (cof (cast (size_t *) ,dptr-name))))
+         (cast type '{ (cast uintptr_t ,dptr-name) (cof (cast (size_t *) ,dptr-name)) }))))
 
 
-  (DEFMACRO (<> letn type) ((ptr cnt pointer def) &REST body)
-    (LET ((cnt cnt)
-          (ptr-name (GENSYM "acc_rc")))
-      `(let ((uintptr_t ,ptr-name . (FUNCTION (cast uintptr_t ,pointer)))
-             (type ,ptr . (FUNCTION (cast type (bitand (cof (+ (cast (size_t *) ,ptr-name) 1)) 0x7FFFFFFFFFFF))))
-             (size_t ,cnt . (FUNCTION (>> (cof (cast (size_t *) ,ptr-name)) 47))))
-         (? (> ,cnt 0) (progn ,@body) def))))
+  (DEFMACRO (<> clone type) (rc)
+    (LET* ((rc rc)
+           (rc-acc (GENSYM "acc_rc"))
+           (rc-ptr (GENSYM "acc_rc_ptr")))
+      `(letn ((type ,rc-acc . ,rc)
+              (a ** ,rc-ptr . (FUNCTION (cast (a **) ($ ,rc-acc ptr)))))
+         (when (and ,rc-ptr (== (cof (cast (size_t *) ,rc-ptr)) ($ ,rc-acc adr)))
+           (++ (cof (cast (size_t *) (+ (cast (uintptr_t *) ,rc-ptr) 1)))))
+         ,rc-acc)))
 
+
+  (DEFMACRO (<> let type) ((obj rc &OPTIONAL is-ptr) &REST body)
+    (LET* ((is-ptr is-ptr)
+           (obj (IF is-ptr rc obj))
+           (rc (IF is-ptr `(FUNCTION ,is-ptr) `(FUNCTION ,rc)))
+           (rc-acc (GENSYM "acc_rc"))
+           (rc-ptr (GENSYM "acc_rc_ptr"))
+           (obj-val (IF is-ptr `(FUNCTION (cof ,rc-ptr)) `(FUNCTION (cof (cof ,rc-ptr))))))
+      `(let ((type ,rc-acc . ,rc)
+             (a ** ,rc-ptr . (FUNCTION (cast (a **) ($ ,rc-acc ptr)))))
+         (when (and ,rc-ptr (== (cof (cast (size_t *) ,rc-ptr)) ($ ,rc-acc adr)))
+           (let ((auto ,obj . ,obj-val))
+             ,@body)))))
+
+
+  (DEFMACRO (<> letn type) ((obj rc default &OPTIONAL is-ptr) &REST body)
+    (LET* ((is-ptr is-ptr)
+           (obj (IF is-ptr rc obj))
+           (rc (IF is-ptr `(FUNCTION ,default) `(FUNCTION ,rc)))
+           (default (IF is-ptr is-ptr default))
+           (rc-acc (GENSYM "acc_rc"))
+           (rc-ptr (GENSYM "acc_rc_ptr"))
+           (obj-val (IF is-ptr `(FUNCTION (cof ,rc-ptr)) `(FUNCTION (cof (cof ,rc-ptr))))))
+      `(letn ((type ,rc-acc . ,rc)
+              (a ** ,rc-ptr . (FUNCTION (cast (a **) ($ ,rc-acc ptr)))))
+         (? (and ,rc-ptr (== (cof (cast (size_t *) ,rc-ptr)) ($ ,rc-acc adr)))
+           (letn ((auto ,obj . ,obj-val))
+             ,@body)
+           ,default))))
+
+
+  (DEFMACRO (<> take type) ((obj rc &OPTIONAL is-ptr) &REST body)
+    (LET* ((is-ptr is-ptr)
+           (obj (IF is-ptr rc obj))
+           (rc (IF is-ptr `(FUNCTION ,is-ptr) `(FUNCTION ,rc)))
+           (rc-acc (GENSYM "acc_rc"))
+           (rc-ptr (GENSYM "acc_rc_ptr"))
+           (obj-val (IF is-ptr `(FUNCTION (cof ,rc-ptr)) `(FUNCTION (cof (cof ,rc-ptr))))))
+      `(let ((type ,rc-acc . ,rc)
+             (a ** ,rc-ptr . (FUNCTION (cast (a **) ($ ,rc-acc ptr)))))
+         (when (and ,rc-ptr (== (cof (cast (size_t *) ,rc-ptr)) ($ ,rc-acc adr)))
+           (let ((auto ,obj . ,obj-val))
+             (syslog! (printf "TAKE RC: %zx %zx\n" (cof (cast (size_t *) ,rc-ptr)) ($ ,rc-acc adr)))
+             (free (cast (void *) ($ ,rc-acc ptr)))
+             (set ($ ,rc-acc ptr) 0)
+             ,@body)))))
+  
+
+  (DEFMACRO (<> taken type) ((obj rc default &OPTIONAL is-ptr) &REST body)
+    (LET* ((is-ptr is-ptr)
+           (obj (IF is-ptr rc obj))
+           (rc (IF is-ptr `(FUNCTION ,default) `(FUNCTION ,rc)))
+           (default (IF is-ptr is-ptr default))
+           (rc-acc (GENSYM "acc_rc"))
+           (rc-ptr (GENSYM "acc_rc_ptr"))
+           (obj-val (IF is-ptr `(FUNCTION (cof ,rc-ptr)) `(FUNCTION (cof (cof ,rc-ptr))))))
+      `(letn ((type ,rc-acc . ,rc)
+              (a ** ,rc-ptr . (FUNCTION (cast (a **) ($ ,rc-acc ptr)))))
+         (? (and ,rc-ptr (== (cof (cast (size_t *) ,rc-ptr)) ($ ,rc-acc adr)))
+           (letn ((auto ,obj . ,obj-val))
+             (syslog! (printf "TAKE RC: %zx %zx\n" (cof (cast (size_t *) ,rc-ptr)) ($ ,rc-acc adr)))
+             (free (cast (void *) ($ ,rc-acc ptr)))
+             (set ($ ,rc-acc ptr) 0)
+             ,@body)
+           ,default))))
 
   ) ; import-rc
-

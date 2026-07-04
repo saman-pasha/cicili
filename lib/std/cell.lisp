@@ -15,7 +15,11 @@
           (set (cof (cast (uintptr_t *) (-> cell ptr))) 0)
           (set (-> cell ptr) 0)))
 
-  ) ; decl-vector
+  (inline)
+  (func (<> force free a) ((a * obj))
+    ((<> free a) obj))
+  
+  ) ; decl-cell
 
 
 (generic import-cell
@@ -79,6 +83,8 @@
              (a ** ,cell-ptr . (FUNCTION (cast (a **) ($ ,cell-acc ptr)))))
          (when (and ,cell-ptr (== (cof (cast (size_t *) ,cell-ptr)) ($ ,cell-acc adr)))
            (let ((auto ,obj . ,obj-val))
+             (syslog! (printf "TAKE CELL: %zx %zx\n" (cof (cast (size_t *) ,cell-ptr)) ($ ,cell-acc adr)))
+             (free (cast (void *) ($ ,cell-acc ptr)))
              (set ($ ,cell-acc ptr) 0)
              ,@body)))))
   
@@ -95,8 +101,10 @@
               (a ** ,cell-ptr . (FUNCTION (cast (a **) ($ ,cell-acc ptr)))))
          (? (and ,cell-ptr (== (cof (cast (size_t *) ,cell-ptr)) ($ ,cell-acc adr)))
            (letn ((auto ,obj . ,obj-val))
+             (syslog! (printf "TAKE CELL: %zx %zx\n" (cof (cast (size_t *) ,cell-ptr)) ($ ,cell-acc adr)))
+             (free (cast (void *) ($ ,cell-acc ptr)))
              (set ($ ,cell-acc ptr) 0)
              ,@body)
            ,default))))
 
-  ) ; import-vector
+  ) ; import-cell

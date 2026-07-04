@@ -4,108 +4,139 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
-#include <sys/time.h>
-#include <limits.h>
 typedef struct array_int {
-  const size_t len : 17 ;
-  const uintptr_t arr : 47 ;
+  uintptr_t arr ;
+  size_t len ;
 } array_int;
 __attribute__((weak)) void free_array_int (array_int * array ) {
+  ({ /* cicili#Progn107 */
+    printf ("FREE ARR: %zx\n", (array -> arr ));
+  });
   free (((void *)(array -> arr )));
+  (array -> arr ) = 0;
 }
 typedef struct rc_array_int {
-  struct { /* ciciliStruct129 */
-    const size_t cnt : 17 ;
-    const uintptr_t ptr : 47 ;
-  } * pay ;
-  const unsigned : 17 ;
-  const size_t adr : 47 ;
+  uintptr_t ptr ;
+  size_t adr ;
 } rc_array_int;
 __attribute__((weak)) void free_rc_array_int (rc_array_int * rc ) {
-}
-long long ms_now () {
-  { /* cicili#Let154 */
-    struct timeval tv ;
-    // ----------
-    gettimeofday ((&tv ), NULL );
-    return (((tv . tv_sec ) *  1000LL  ) +  +  +  ((tv . tv_usec ) /  1000LL  ) );
-  }
-}
-int N  = 1000000000;
-int STEP  = 1000;
-long bench_a_nth () {
-  ({ /* cicili#Let158 */
-    __auto_type v  __attribute__((__cleanup__(free_array_int ))) = ({ /* cicili#Let162 */
-      int * tmp_arr160  = calloc (50, sizeof(int));
-      // ----------
-      memcpy (tmp_arr160 , ((int[]){ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49}), (50 *  sizeof(int) ));
-      ((array_int){ ((unsigned)50), ((uintptr_t)tmp_arr160 )});
-    });
-    // ----------
-    { /* cicili#Let165 */
-      int64_t sum  = 0;
-      long long t0  = ms_now ();
-      // ----------
-      for (int i  = 0; (i  <  N  ); (++i )) {
-          sum  +=  ({ /* cicili#Let173 */
-                const uintptr_t acc_arr171  = (v . arr );
-                const size_t acc_arr_idx172  = (i  %  50 );
-                // ----------
-                (((acc_arr_idx172  <  (v . len ) )) ? ((int *)acc_arr171 )[acc_arr_idx172 ] : 0);
-              }) ;
-      }
-      { /* cicili#Let175 */
-        long long elapsed  = (ms_now () -  t0  );
+  if ((rc -> ptr ) &&  ((*((size_t *)(rc -> ptr ))) ==  (rc -> adr ) ) )
+    { /* cicili#Block132 */
+      ({ /* cicili#Progn135 */
+        printf ("FREE RC: %zx %zx\n", (*((size_t *)(rc -> ptr ))), (rc -> adr ));
+      });
+      { /* cicili#Let137 */
+        size_t counter  = (*((size_t *)(((uintptr_t *)(rc -> ptr )) +  1 )));
         // ----------
-        printf ("  (nth checksum: %lld)\n", sum );
-        return elapsed ;
-      }
+        ({ /* cicili#Progn140 */
+          printf ("FREE RC: counter: %zu\n", counter );
+        });
+        if (counter  >  1 )
+          (--(*((size_t *)(((uintptr_t *)(rc -> ptr )) +  1 ))));
+        else
+          {
+          if (counter  ==  1 )
+            { /* cicili#Block146 */
+              free_array_int ((*((void **)(rc -> ptr ))));
+              free (((void *)(rc -> ptr )));
+              (*((uintptr_t *)(rc -> ptr ))) = 0;
+              (rc -> ptr ) = 0;
+            }
+            }      }
     }
-  });
 }
-long bench_b_nth () {
-  ({ /* cicili#Let179 */
-    __auto_type v  __attribute__((__cleanup__(free_array_int ))) = ({ /* cicili#Let183 */
-      int * tmp_arr181  = calloc (50, sizeof(int));
-      // ----------
-      memcpy (tmp_arr181 , ((int[]){ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49}), (50 *  sizeof(int) ));
-      ((array_int){ ((unsigned)50), ((uintptr_t)tmp_arr181 )});
-    });
-    __auto_type rcv  __attribute__((__cleanup__(free_rc_array_int ))) = ({ /* cicili#Let188 */
-      size_t * tmp_rc186  = malloc (sizeof(size_t));
-      size_t snp  = (*tmp_rc186 );
-      // ----------
-      printf ("CCCCC: %zx   %zx    %zx\n", ((size_t)tmp_rc186 ), (*tmp_rc186 ), snp );
-      printf ("CCCCC: %zx   %zx    %zx\n", ((size_t)tmp_rc186 ), (*tmp_rc186 ), snp );
-      printf ("CCCCC: %zx   %zx    %zx\n", ((size_t)tmp_rc186 ), (*tmp_rc186 ), snp );
-      printf ("CCCCC: %zx   %zx    %zx\n", ((size_t)tmp_rc186 ), (*tmp_rc186 ), snp );
-      ((rc_array_int){ });
-    });
-    // ----------
-    { /* cicili#Let191 */
-      int64_t sum  = 0;
-      long long t0  = ms_now ();
-      // ----------
-      for (int i  = 0; (i  <  N  ); (++i )) {
-          sum  +=  ({ /* cicili#Let199 */
-                const uintptr_t acc_arr197  = (v . arr );
-                const size_t acc_arr_idx198  = (i  %  50 );
-                // ----------
-                (((acc_arr_idx198  <  (v . len ) )) ? ((int *)acc_arr197 )[acc_arr_idx198 ] : 0);
-              }) ;
-      }
-      { /* cicili#Let201 */
-        long long elapsed  = (ms_now () -  t0  );
-        // ----------
-        printf ("  (nth checksum: %lld)\n", sum );
-        return elapsed ;
-      }
-    }
-  });
+__attribute__((weak)) void force_free_array_int (array_int * obj ) {
+  free_array_int (obj );
+}
+void __ciciliL_181 (rc_array_int * rc01_ptr ) {
+  rc_array_int rc01  = (*rc01_ptr );
+  free_rc_array_int ((&rc01 ));
 }
 int main () {
-  printf ("sizeof %s: %zu\n", "array_int", sizeof(array_int ));
-  printf ("sizeof %s: %zu\n", "rc_array_int", sizeof(rc_array_int ));
-  fflush (NULL );
-  printf ("  nth (bounds-checked) %d times: %ld ms\n", N , bench_b_nth ());
+  { /* cicili#Let177 */
+    rc_array_int rc01  __attribute__((__cleanup__(__ciciliL_181 ))) = ({ /* cicili#Let183 */
+      array_int * tmp_ptr179  = malloc (sizeof(array_int));
+      uintptr_t * tmp_rc_ptr180  = malloc ((sizeof(uintptr_t) +  sizeof(size_t) ));
+      // ----------
+      (*tmp_ptr179 ) = ({ /* cicili#Let188 */
+            int * tmp_arr187  = calloc (5, sizeof(int));
+            // ----------
+            memcpy (tmp_arr187 , ((int[]){ 1, 2, 3, 4, 5}), (5 *  sizeof(int) ));
+            ((array_int){ ((uintptr_t)tmp_arr187 ), ((size_t)5)});
+          });
+      (*tmp_rc_ptr180 ) = ((uintptr_t)tmp_ptr179 );
+      (*((size_t *)(tmp_rc_ptr180  +  1 ))) = 1UL ;
+      ({ /* cicili#Progn191 */
+        printf ("NEW RC: %zx %zx\n", ((uintptr_t)tmp_rc_ptr180 ), (*((size_t *)tmp_rc_ptr180 )));
+      });
+      ((rc_array_int){ ((uintptr_t)tmp_rc_ptr180 ), (*((size_t *)tmp_rc_ptr180 ))});
+    });
+    // ----------
+    { /* cicili#Let197 */
+      rc_array_int acc_rc195  = rc01 ;
+      array_int ** acc_rc_ptr196  = ((array_int **)(acc_rc195 . ptr ));
+      // ----------
+      if (acc_rc_ptr196  &&  ((*((size_t *)acc_rc_ptr196 )) ==  (acc_rc195 . adr ) ) )
+        { /* cicili#Block201 */
+          { /* cicili#Let203 */
+            __auto_type arr  = (*(*acc_rc_ptr196 ));
+            // ----------
+            printf ("1 rc01 arr len: %zu\n", (arr . len ));
+          }
+        }
+    }
+    { /* cicili#Let209 */
+      rc_array_int acc_rc207  = rc01 ;
+      array_int ** acc_rc_ptr208  = ((array_int **)(acc_rc207 . ptr ));
+      // ----------
+      if (acc_rc_ptr208  &&  ((*((size_t *)acc_rc_ptr208 )) ==  (acc_rc207 . adr ) ) )
+        { /* cicili#Block213 */
+          { /* cicili#Let215 */
+            __auto_type arr  = (*acc_rc_ptr208 );
+            // ----------
+            printf ("2 rc01 arr len: %zu\n", ((*arr ). len ));
+          }
+        }
+    }
+    printf ("3 rc01 arr len: %zu\n", ({ /* cicili#Let221 */
+        rc_array_int acc_rc219  = rc01 ;
+        array_int ** acc_rc_ptr220  = ((array_int **)(acc_rc219 . ptr ));
+        // ----------
+        (((acc_rc_ptr220  &&  ((*((size_t *)acc_rc_ptr220 )) ==  (acc_rc219 . adr ) ) )) ? ({ /* cicili#Let223 */
+            __auto_type arr  = (*(*acc_rc_ptr220 ));
+            // ----------
+            (arr . len );
+          }) : -1);
+      }));
+    { /* cicili#Let226 */
+      __auto_type cloned  = ({ /* cicili#Let230 */
+        rc_array_int acc_rc228  = rc01 ;
+        array_int ** acc_rc_ptr229  = ((array_int **)(acc_rc228 . ptr ));
+        // ----------
+        if (acc_rc_ptr229  &&  ((*((size_t *)acc_rc_ptr229 )) ==  (acc_rc228 . adr ) ) )
+          { /* cicili#Block234 */
+            (++(*((size_t *)(((uintptr_t *)acc_rc_ptr229 ) +  1 ))));
+          }
+        acc_rc228 ;
+      });
+      // ----------
+      free_rc_array_int ((&cloned ));
+    }
+    ({ /* cicili#Let240 */
+      rc_array_int acc_rc238  = rc01 ;
+      array_int ** acc_rc_ptr239  = ((array_int **)(acc_rc238 . ptr ));
+      // ----------
+      (((acc_rc_ptr239  &&  ((*((size_t *)acc_rc_ptr239 )) ==  (acc_rc238 . adr ) ) )) ? ({ /* cicili#Let242 */
+          __auto_type arr  = (*acc_rc_ptr239 );
+          // ----------
+          ({ /* cicili#Progn245 */
+            printf ("TAKE RC: %zx %zx\n", (*((size_t *)acc_rc_ptr239 )), (acc_rc238 . adr ));
+          });
+          free (((void *)(acc_rc238 . ptr )));
+          (acc_rc238 . ptr ) = 0;
+          printf ("5 rc01 arr len: %zu\n", ((*arr ). len ));
+          force_free_array_int (arr );
+        }) : printf ("5 rc01 arr len: default path\n"));
+    });
+  }
 }

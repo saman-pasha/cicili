@@ -31,9 +31,10 @@
           (len^array^int arr)))
 
       (take^cell^array^int (arr cell01)
-        (printf "4 cell01 arr len: %zu\n" (len^array^int arr)))
+        (printf "4 cell01 arr len: %zu\n" (len^array^int arr))
+        (force^free^array^int (aof arr))) ; needed for taken cell
 
-      (free^cell^array^int (aof cell01))
+      ;; (free^cell^array^int (aof cell01))
       
       (taken^cell^array^int
           (* arr cell01
@@ -44,11 +45,11 @@
     )) ; cell.c
 
 
-;; NEW CELL: 600001854050 600001854040
+;; NEW CELL: 60000019c050 60000019c040
 ;; 1 cell01 arr len: 5
 ;; 2 cell01 arr len: 5
 ;; 3 cell01 arr len: 5
+;; TAKE CELL: 60000019c040 60000019c040
 ;; 4 cell01 arr len: 5
-;; FREE CELL: 600001854040 600001854040
-;; FREE ARR: 600001a51200
+;; FREE ARR: 600000399200
 ;; 5 cell01 arr len: default path
