@@ -49,7 +49,7 @@
 
             (for ((int i . 0)) (< i N) ((++ i))
                  ;; (+= sum ((<> nth array int) (% i 50) v :unchecked T))))
-                 (+= sum ((<> nth array int) (% i 50) v :default 0)))
+                 (+= sum ((<> nth array int) (% i 50) v :default (constant int 0))))
             
             ;; (let ((int val . #'((<> nth array int) (% i 50) v :default -1)))
             ;;   (if (> val -1) (set sum (+ sum val))))
@@ -72,7 +72,7 @@
 
       (printf "print int array using Safe nth: ")
       (for ((size_t i . 0)) (< i 7) ((++ i))
-           (printf "%d" (nth^array^int i arr01 :default 0)))
+           (printf "%d" (nth^array^int i arr01 :default (constant int 0))))
       (putchar #\Newline)
 
       ) ; let
@@ -98,5 +98,5 @@
 ;;   nth (bounds-checked) 1000000000 times: 416 ms
 
 ;; (nth) bench result: with letin* has 40ms latency
-;; Cicili 408 411 413 415 416
+;; Cicili 413 412 413 410 411
 ;; Rust   439 435 437 439 436

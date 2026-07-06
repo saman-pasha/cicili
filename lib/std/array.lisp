@@ -21,11 +21,11 @@
                   (memcpy new_arr arr (* len (sizeof a)))
                   (cast type '{ (cast uintptr_t new_arr) len }))))
   
-  (func (<> nth type impl) ((const size_t index) (type array) (const func default_ () (out a * const)))
+  (func (<> nth type impl) ((const size_t index) (type array) (const a * default_))
         (out a)
         (return (? (< index ($ array len))
                    (nth index (cast (a *) ($ array arr)))
-                   (cof (default_)))))
+                   (cof default_))))
 
   (func (<> free type) ((type * array))
         (syslog! (printf "FREE ARR: %zx\n" (-> array arr)))
@@ -57,6 +57,7 @@
   ;; there are two path Safe and Unsafe
   ;; Safe with default to check bounds
   ;; Unsafe without default and check bounds
+  ;; default should be pointer or a constant
   (DEFMACRO (<> nth type) (index array &KEY unchecked default)
     (LET ((index index)
           (array array)
@@ -65,7 +66,7 @@
       (WHEN (AND (NULL unchecked) (NULL default)) (ERROR (FORMAT NIL "checked nth of array needs default value ~A" array)))
       (IF unchecked
           `(nth ,index (cast (a *) ($ ,array arr)))
-          `((<> nth type impl) ,index ,array (constant a ,default)))))
+          `((<> nth type impl) ,index ,array ,default))))
 
   
   (DEFMACRO (<> let type) ((arr len array) &REST body)
