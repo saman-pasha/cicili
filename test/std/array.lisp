@@ -9,6 +9,7 @@
   (include <limits.h>)
 
   (decl-array array^int int)
+  (impl-array array^int int)
   (import-array array^int int)
 
   (func ms_now ()
@@ -82,15 +83,20 @@
 
     )) ; array.c
 
+;; sbcl --script cicili.lisp --syslog ./test/std/array.lisp
+;; arr_test
+
 ;; sizeof array_int: 16
+;; NEW ARR: array_int 7ff7b1807ed0 5
 ;; arr01 len: 5
 ;; print int array using Unsafe nth: 12345
 ;; print int array using Safe nth: 1234500
-;; FREE ARR: 6000035cd200
+;; FREE ARR: 6000038211e0
+;; NEW ARR: array_int 7ff7b1807db8 50
 ;;   (nth checksum: 24500000000)
-;; FREE ARR: 600000ecc000
-;;   nth (bounds-checked) 1000000000 times: 415 ms
+;; FREE ARR: 600000320000
+;;   nth (bounds-checked) 1000000000 times: 416 ms
 
 ;; (nth) bench result: with letin* has 40ms latency
-;; Cicili 415 411 408 407 419
+;; Cicili 408 411 413 415 416
 ;; Rust   439 435 437 439 436

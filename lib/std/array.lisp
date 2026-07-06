@@ -8,13 +8,31 @@
           (member uintptr_t arr)
           (member size_t    len))
 
-  (inline)
+  ) ; decl-array
+
+
+(generic impl-array
+  (type a)
+
+  (func (<> new type impl) ((a * arr) (const size_t len))
+        (out type)
+        (return (letn ((a * new_arr .  #'(calloc len (sizeof a))))
+                  (syslog! (printf "NEW ARR: %s %zx %zu\n" (symbol-name type) (cast size_t arr) len))
+                  (memcpy new_arr arr (* len (sizeof a)))
+                  (cast type '{ (cast uintptr_t new_arr) len }))))
+  
+  (func (<> nth type impl) ((const size_t index) (type array) (const func default_ () (out a * const)))
+        (out a)
+        (return (? (< index ($ array len))
+                   (nth index (cast (a *) ($ array arr)))
+                   (cof (default_)))))
+
   (func (<> free type) ((type * array))
         (syslog! (printf "FREE ARR: %zx\n" (-> array arr)))
         (free (cast (void *) (-> array arr)))
         (set (-> array arr) 0))
 
-  ) ; decl-array
+  ) ; impl-array
 
 
 (generic import-array
@@ -26,15 +44,9 @@
            (cal-len (IF len len
                         (IF (STRINGP arr) (LENGTH arr)
                             (IF (AND (LISTP arr) (EQUAL (CAR arr) 'QUOTE)) (LENGTH (CADR arr))
-                                NIL))))
-           (arr-len (GENSYM "tmp_len"))
-           (arr-name (GENSYM "tmp_arr")))
+                                NIL)))))
       (IF cal-len
-          `(letn ((const size_t ,arr-len . (FUNCTION ,cal-len))
-                  (a * ,arr-name . (FUNCTION (calloc ,arr-len (sizeof a)))))
-             (syslog! (printf "NEW ARR: %s %zx %zu\n" (symbol-name type) (cast size_t ,arr-name) ,arr-len))
-             (memcpy ,arr-name (cast (a []) ,arr) (* ,arr-len (sizeof a)))
-             (cast type '{ (cast uintptr_t ,arr-name) ,arr-len }))
+          `((<> new type impl) (cast (a []) ,arr) ,cal-len)
           (ERROR (FORMAT NIL "new^~A len required for dynamic array input: ~A" (symbol-name type) arr)))))
 
 
@@ -49,17 +61,11 @@
     (LET ((index index)
           (array array)
           (unchecked unchecked)
-          (default default)
-          (arr-name (GENSYM "acc_arr"))
-          (arr-idx (GENSYM "acc_arr_idx")))
+          (default default))
       (WHEN (AND (NULL unchecked) (NULL default)) (ERROR (FORMAT NIL "checked nth of array needs default value ~A" array)))
       (IF unchecked
           `(nth ,index (cast (a *) ($ ,array arr)))
-          `(letn ((uintptr_t ,arr-name . (FUNCTION ($ ,array arr)))
-                  (const size_t ,arr-idx . (FUNCTION ,index)))
-             (? (< ,arr-idx ($ ,array len))
-               (nth ,arr-idx (cast (a *) ,arr-name))
-               ,default)))))
+          `((<> nth type impl) ,index ,array (constant a ,default)))))
 
   
   (DEFMACRO (<> let type) ((arr len array) &REST body)

@@ -110,6 +110,13 @@
 (DEFMACRO method-func-name (struct method)
   (INTERN (FORMAT NIL "~A_m_~A" struct method)))
 
+(DEFMACRO constant (a const_val)
+  (LET ((a a))
+    `'(lambda ()
+       (out const ,a * const)
+       (static) (var const ,a constant_value . (FUNCTION ,const_val)) 
+       (return (aof constant_value)))))
+
 ;;; each struct which implements string can write itself to a FILE *
 ;;; notice inline methods won't be resolved and -> is point to, not method access
 (DEFMACRO IString (struct)
