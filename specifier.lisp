@@ -114,18 +114,29 @@
 (defmethod print-object ((spec sp) stream)
   (print-unreadable-object (spec stream :type t :identity t)
     (princ
-     (format nil
-       "~A ~:[~A ~;~*~]~:[~A ~;~*~]~:[~A ~;~*~]~:[~A ~;~*~]~:[~A ~;~*~]~:[~{~A~} ~;~*~]~:[= ~A ~;~*~]~:[{~{~A~^ ~}}~;~*~]~:[~;A~]"
-	   (construct spec)
-       (null (name spec))      (name spec)
-       (null (const spec))     (const spec)
-       (null (typeof spec))    (typeof spec)
-       (null (modifier spec))  (modifier spec)
-       (null (const-ptr spec)) (const-ptr spec)
-	   (null (array-def spec)) (array-def spec)
-       (null (default spec))   (default spec)
-	   (null (attrs spec))     (attrs spec)
-       (anonymous spec))
+     (cond ((or (eql (construct spec) '|@LET|)
+                (eql (construct spec) '|@LETN|))
+            (format nil
+              "~A ~:[~A ~;~*~]~:[~A ~;~*~]"
+	          (construct spec)
+              (null (name spec))   (name spec)
+	          (null (params spec)) (let ((lkv '()))
+                                     (maphash #'(lambda (k v)
+                                                  (push v lkv))
+                                              (params spec))
+                                     lkv)))
+           (t (format nil
+                "~A ~:[~A ~;~*~]~:[~A ~;~*~]~:[~A ~;~*~]~:[~A ~;~*~]~:[~A ~;~*~]~:[~{~A~} ~;~*~]~:[= ~A ~;~*~]~:[{~{~A~^ ~}}~;~*~]~:[~;A~]"
+	            (construct spec)
+                (null (name spec))      (name spec)
+                (null (const spec))     (const spec)
+                (null (typeof spec))    (typeof spec)
+                (null (modifier spec))  (modifier spec)
+                (null (const-ptr spec)) (const-ptr spec)
+	            (null (array-def spec)) (array-def spec)
+                (null (default spec))   (default spec)
+	            (null (attrs spec))     (attrs spec)
+                (anonymous spec))))
      stream)))
 
 (defun copy-specifiers (table)

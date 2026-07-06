@@ -100,15 +100,15 @@ int main () {
       if (acc_cell_ptr214  &&  ((*((size_t *)acc_cell_ptr214 )) ==  (acc_cell213 . adr ) ) )
         { /* cicili#Block219 */
           { /* cicili#Let221 */
-            __auto_type arr  = (*(*acc_cell_ptr214 ));
+            __auto_type arr  = (*acc_cell_ptr214 );
             // ----------
             ({ /* cicili#Progn224 */
               printf ("TAKE CELL: %zx %zx\n", (*((size_t *)acc_cell_ptr214 )), (acc_cell213 . adr ));
             });
             free (((void *)(acc_cell213 . ptr )));
             (acc_cell213 . ptr ) = 0;
-            printf ("4 cell01 arr len: %zu\n", (arr . len ));
-            force_free_array_int ((&arr ));
+            printf ("4 cell01 arr len: %zu\n", ((*arr ). len ));
+            force_free_array_int (arr );
           }
         }
     }

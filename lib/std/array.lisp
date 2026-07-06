@@ -1,8 +1,6 @@
 ;;;; Cicili std array
 ;;; contigous memory allocation
-;;; uses 16-bit address free space beside 47-bit virtual memory
 ;;; most minimal performant indexable array
-;;; arrays with max length of (2^16 - 1) 65535
 (generic decl-array
   (type a)
 
@@ -25,21 +23,19 @@
   (DEFMACRO (<> new type) (arr &OPTIONAL len)
     (LET* ((arr arr)
            (len len)
-           (arr-len (IF len len (IF (STRINGP arr) (LENGTH arr) (IF (LISTP arr) (LENGTH (CADR arr)) -1))))
+           (cal-len (IF len len
+                        (IF (STRINGP arr) (LENGTH arr)
+                            (IF (AND (LISTP arr) (EQUAL (CAR arr) 'QUOTE)) (LENGTH (CADR arr))
+                                NIL))))
+           (arr-len (GENSYM "tmp_len"))
            (arr-name (GENSYM "tmp_arr")))
-      (IF len
-          `(letn ((a * ,arr-name . (FUNCTION (calloc ,arr-len (sizeof a)))))
+      (IF cal-len
+          `(letn ((const size_t ,arr-len . (FUNCTION ,cal-len))
+                  (a * ,arr-name . (FUNCTION (calloc ,arr-len (sizeof a)))))
+             (syslog! (printf "NEW ARR: %s %zx %zu\n" (symbol-name type) (cast size_t ,arr-name) ,arr-len))
              (memcpy ,arr-name (cast (a []) ,arr) (* ,arr-len (sizeof a)))
-             (cast type '{ (cast uintptr_t ,arr-name) (cast size_t ,arr-len) }))
-          (IF (STRINGP arr)
-              `(letn ((a * ,arr-name . (FUNCTION (calloc ,arr-len (sizeof a)))))
-                 (memcpy ,arr-name (cast (a []) ,arr) (* ,arr-len (sizeof a)))
-                 (cast type '{ (cast uintptr_t ,arr-name) (cast size_t ,arr-len) }))
-              (IF (AND (LISTP arr) (EQUAL (CAR arr) 'QUOTE))
-                  `(letn ((a * ,arr-name . (FUNCTION (calloc ,arr-len (sizeof a)))))
-                     (memcpy ,arr-name (cast (a []) ,arr) (* ,arr-len (sizeof a)))
-                     (cast type '{ (cast uintptr_t ,arr-name) (cast size_t ,arr-len) }))
-                  (ERROR (FORMAT NIL "new^~A len required for dynamic array input: ~A" (symbol-name type) arr)))))))
+             (cast type '{ (cast uintptr_t ,arr-name) ,arr-len }))
+          (ERROR (FORMAT NIL "new^~A len required for dynamic array input: ~A" (symbol-name type) arr)))))
 
 
   (DEFMACRO (<> len type) (array)

@@ -43,12 +43,16 @@
 
 
   (DEFMACRO (<> let type) ((obj cell &OPTIONAL is-ptr) &REST body)
-    (LET* ((is-ptr is-ptr)
-           (obj (IF is-ptr cell obj))
+    (LET* ((ptrs obj)
+           (is-ptr is-ptr)
+           (obj (IF is-ptr cell ptrs))
            (cell (IF is-ptr `(FUNCTION ,is-ptr) `(FUNCTION ,cell)))
            (cell-acc (GENSYM "acc_cell"))
            (cell-ptr (GENSYM "acc_cell_ptr"))
            (obj-val (IF is-ptr `(FUNCTION (cof ,cell-ptr)) `(FUNCTION (cof (cof ,cell-ptr))))))
+      (WHEN is-ptr
+        (UNLESS (EQUAL ptrs '*)
+          (ERROR (FORMAT NIL "cell let: pointer should be '* in ~A" (LIST ptrs obj cell is-ptr)))))
       `(let ((type ,cell-acc . ,cell)
              (a ** ,cell-ptr . (FUNCTION (cast (a **) ($ ,cell-acc ptr)))))
          (when (and ,cell-ptr (== (cof (cast (size_t *) ,cell-ptr)) ($ ,cell-acc adr)))
@@ -57,13 +61,17 @@
 
 
   (DEFMACRO (<> letn type) ((obj cell default &OPTIONAL is-ptr) &REST body)
-    (LET* ((is-ptr is-ptr)
-           (obj (IF is-ptr cell obj))
+    (LET* ((ptrs obj)
+           (is-ptr is-ptr)
+           (obj (IF is-ptr cell ptrs))
            (cell (IF is-ptr `(FUNCTION ,default) `(FUNCTION ,cell)))
            (default (IF is-ptr is-ptr default))
            (cell-acc (GENSYM "acc_cell"))
            (cell-ptr (GENSYM "acc_cell_ptr"))
            (obj-val (IF is-ptr `(FUNCTION (cof ,cell-ptr)) `(FUNCTION (cof (cof ,cell-ptr))))))
+      (WHEN is-ptr
+        (UNLESS (EQUAL ptrs '*)
+          (ERROR (FORMAT NIL "cell letn: pointer should be '* in ~A" (LIST ptrs obj cell default is-ptr)))))
       `(letn ((type ,cell-acc . ,cell)
               (a ** ,cell-ptr . (FUNCTION (cast (a **) ($ ,cell-acc ptr)))))
          (? (and ,cell-ptr (== (cof (cast (size_t *) ,cell-ptr)) ($ ,cell-acc adr)))
@@ -72,13 +80,17 @@
            ,default))))
 
 
-  (DEFMACRO (<> take type) ((obj cell &OPTIONAL is-ptr) &REST body)
-    (LET* ((is-ptr is-ptr)
-           (obj (IF is-ptr cell obj))
+  (DEFMACRO (<> take type) ((obj cell is-ptr) &REST body)
+    (LET* ((ptrs obj)
+           (is-ptr is-ptr)
+           (obj (IF is-ptr cell ptrs))
            (cell (IF is-ptr `(FUNCTION ,is-ptr) `(FUNCTION ,cell)))
            (cell-acc (GENSYM "acc_cell"))
            (cell-ptr (GENSYM "acc_cell_ptr"))
            (obj-val (IF is-ptr `(FUNCTION (cof ,cell-ptr)) `(FUNCTION (cof (cof ,cell-ptr))))))
+      (WHEN is-ptr
+        (UNLESS (EQUAL ptrs '*)
+          (ERROR (FORMAT NIL "cell take: pointer should be '* in ~A" (LIST ptrs obj cell is-ptr)))))
       `(let ((type ,cell-acc . ,cell)
              (a ** ,cell-ptr . (FUNCTION (cast (a **) ($ ,cell-acc ptr)))))
          (when (and ,cell-ptr (== (cof (cast (size_t *) ,cell-ptr)) ($ ,cell-acc adr)))
@@ -89,14 +101,18 @@
              ,@body)))))
   
 
-  (DEFMACRO (<> taken type) ((obj cell default &OPTIONAL is-ptr) &REST body)
-    (LET* ((is-ptr is-ptr)
-           (obj (IF is-ptr cell obj))
+  (DEFMACRO (<> taken type) ((obj cell default is-ptr) &REST body)
+    (LET* ((ptrs obj)
+           (is-ptr is-ptr)
+           (obj (IF is-ptr cell ptrs))
            (cell (IF is-ptr `(FUNCTION ,default) `(FUNCTION ,cell)))
            (default (IF is-ptr is-ptr default))
            (cell-acc (GENSYM "acc_cell"))
            (cell-ptr (GENSYM "acc_cell_ptr"))
            (obj-val (IF is-ptr `(FUNCTION (cof ,cell-ptr)) `(FUNCTION (cof (cof ,cell-ptr))))))
+      (WHEN is-ptr
+        (UNLESS (EQUAL ptrs '*)
+          (ERROR (FORMAT NIL "cell taken: pointer should be '* in ~A" (LIST ptrs obj cell default is-ptr)))))
       `(letn ((type ,cell-acc . ,cell)
               (a ** ,cell-ptr . (FUNCTION (cast (a **) ($ ,cell-acc ptr)))))
          (? (and ,cell-ptr (== (cof (cast (size_t *) ,cell-ptr)) ($ ,cell-acc adr)))

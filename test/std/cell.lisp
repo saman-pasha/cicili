@@ -30,9 +30,9 @@
         (letn^cell^array^int (arr cell01 -1)
           (len^array^int arr)))
 
-      (take^cell^array^int (arr cell01)
-        (printf "4 cell01 arr len: %zu\n" (len^array^int arr))
-        (force^free^array^int (aof arr))) ; needed for taken cell
+      (take^cell^array^int (* arr cell01)
+        (printf "4 cell01 arr len: %zu\n" (len^array^int (cof arr)))
+        (force^free^array^int arr)) ; needed for taken cell
 
       ;; (free^cell^array^int (aof cell01))
       
