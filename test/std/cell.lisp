@@ -1,55 +1,48 @@
 
-;;; test cicili std cell
+;;; test Cicili std cell
 (source "cell.c"
   (make :std #t
         :compile ("-O3" "-ffast-math" "-c" "cell.c")
         :link ("-lcell.o" "-o" "cell_test"))
 
   (decl-array array^int int)
-  (import-array array^int int)
-
   (decl-cell cell^array^int array^int)
-  (import-cell cell^array^int array^int)
-
   
   (main
-    (let ((defer () (free^cell^array^int (aof cell01)))
-          (cell^array^int cell01 . #'(new^cell^array^int '{ 1 2 3 4 5 }))
-          ) ; decls
+    ;; new array call inside new cell call
+    ;; pass constructor and args
+    (letin ((cell01 (new^cell new^array (cast (int []) '{ 1 2 3 4 5 }))) 
+            ) ; decls
 
-      (let^cell^array^int (arr cell01)
-        (printf "1 cell01 arr len: %zu\n" (len^array^int arr)))
+      (let^cell (arr cell01)
+        (printf "1. cell01 arr len: %zu\n" (len^array arr)))
 
-      (let^cell^array^int (* arr cell01)
-        (printf "2 cell01 arr len: %zu\n" (len^array^int (cof arr)))
-        ;; uncomment error: shouldn't free an object where ordered to be used inside Cell: array^int
-        ;; (free^array^int arr)
-        )
+      (printf "2. cell01 arr len: %zu\n"
+        (letn^cell (arr cell01 -1)
+          (len^array arr)))
 
-      (printf "3 cell01 arr len: %zu\n"
-        (letn^cell^array^int (arr cell01 -1)
-          (len^array^int arr)))
+      (take^cell (arr_ptr cell01)
+        (printf "3. cell01 arr len: %zu\n" (len^array (cof arr_ptr)))
+        (force^free^array^int arr_ptr)) ; needed for taken cell
 
-      (take^cell^array^int (* arr cell01)
-        (printf "4 cell01 arr len: %zu\n" (len^array^int (cof arr)))
-        (force^free^array^int arr)) ; needed for taken cell
-
-      ;; (free^cell^array^int (aof cell01))
+      (free^cell (aof cell01))
       
-      (taken^cell^array^int
-          (* arr cell01
-             (printf "5 cell01 arr len: default path\n")) ; default path
-        (printf "5 cell01 arr len: %zu\n" (len^array^int (cof arr))))
+      (taken^cell (arr_ptr cell01
+                    (printf "4 cell01 arr len: default path\n")) ; default path
+        (printf "4. cell01 arr len: %zu\n" (len^array (cof arr_ptr))))
 
-      ) ; let
+      ) ; letin
     )) ; cell.c
 
 
-;; NEW CELL: 600001db4050 600001db4040
-;; 1 cell01 arr len: 5
-;; 2 cell01 arr len: 5
-;; 3 cell01 arr len: 5
-;; TAKE CELL: 600001db4040 600001db4040
-;; 4 cell01 arr len: 5
-;; FREE ARR: 600001fb1200
-;; 5 cell01 arr len: default path
+;; sbcl --script cicili.lisp --syslog ./test/std/cell.lisp
+;; arr_test
+
+;; NEW ARR: int * 0x6000033d5200 5
+;; NEW CELL: 6000031d0050 6000031d0040
+;; 1. cell01 arr len: 5
+;; 2. cell01 arr len: 5
+;; TAKE CELL: 6000031d0040 6000031d0040
+;; 3. cell01 arr len: 5
+;; FREE ARR: 0x6000033d5200
+;; 4 cell01 arr len: default path

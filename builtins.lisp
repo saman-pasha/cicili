@@ -93,7 +93,7 @@
                                 (WHEN (/= (LENGTH var) 2)
                                   (ERROR (FORMAT NIL "wrong letin variable definition: ~A" var)))
                                 (LET ((type (CICILI:INFER-TYPE (CADR var))))
-                                  (WHEN (> (LENGTH type) 1) (ERROR (FORMAT NIL "letin gets invalid type ~A for ~A" type var)))
+                                  (WHEN (> (LENGTH type) 1) (ERROR (FORMAT NIL "letin gets invalid type ~A for~%  ~A" type var)))
                                   `((defer () (<> free ,@type)) (,@type ,(CAR var) . (FUNCTION ,(CADR var))))))
                       var-list))
      ,@body))
@@ -336,7 +336,11 @@
 
 ;; compile-time symbol to C "constant string"
 (DEFMACRO symbol-name (symb)
-  `(QUASIQUOTE (SUBSTITUTE #\_ #\^ (SYMBOL-NAME ',(CICILI::EXPAND-MACROS symb)))))
+  (LET ((symb (CICILI::EXPAND-MACROS symb)))
+    (IF (LISTP symb)
+        (LET ((symbs (STR:JOIN " " (MAP 'LIST #'(LAMBDA (psymb) (SUBSTITUTE #\_ #\^ (SYMBOL-NAME psymb))) symb))))
+          `,symbs)
+        `(QUASIQUOTE (SUBSTITUTE #\_ #\^ (SYMBOL-NAME ',symb))))))
 
 (DEFUN find-subseq (itm lst &OPTIONAL &KEY (test #'EQUAL))
   (DO* ((lst (CDR lst) (CDR lst))

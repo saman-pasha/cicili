@@ -64,7 +64,7 @@
            (printf "%d" (nth^array i arr01 :default 0)))
       (putchar #\Newline)
 
-      ) ; let
+      ) ; letin
 
     (printf "  nth (bounds-checked) %d times: %ld ms\n" N (bench_a_nth))
 

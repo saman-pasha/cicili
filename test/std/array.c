@@ -34,7 +34,7 @@ array_int new_array_int_G122 (const size_t len ) {
       int * new_arr  = calloc (len , sizeof(int));
       // ----------
       ({ /* progn130 */
-        printf ("NEW ARR: %s %p %zu\n", "type", new_arr , len );
+        printf ("NEW ARR: %s %p %zu\n", "const int *", new_arr , len );
       });
       memcpy (new_arr , ((const int[]){ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49}), (len  *  sizeof(int) ));
       ((array_int){ new_arr , len });
@@ -68,7 +68,7 @@ array_int new_array_int_G159 (const size_t len ) {
       int * new_arr  = calloc (len , sizeof(int));
       // ----------
       ({ /* progn167 */
-        printf ("NEW ARR: %s %p %zu\n", "type", new_arr , len );
+        printf ("NEW ARR: %s %p %zu\n", "const int *", new_arr , len );
       });
       memcpy (new_arr , ((const int[]){ 1, 2, 3, 4, 5}), (len  *  sizeof(int) ));
       ((array_int){ new_arr , len });

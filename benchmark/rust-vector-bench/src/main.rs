@@ -53,6 +53,20 @@ fn bench_a_nth(n: usize) -> u128 {
     elapsed
 }
 
+fn bench_a_nth_rc(n: usize) -> u128 {
+    let v: Rc<RefCell<Vec<i32>>> = Rc::new(RefCell::new((0..50).collect()));
+    let mut sum: i64 = 0;
+    let start = Instant::now();
+    for i in 0..n {
+        if let Some(&val) = v.borrow().get(i % 50) {
+            sum = sum.wrapping_add(val as i64);
+        }
+    }
+    let elapsed = start.elapsed().as_millis();
+    println!("  (nth rc checksum: {})", sum);  // after timer — forces liveness
+    elapsed
+}
+
 fn bench_a_slice(mut n: usize) -> u128 {
     // mirrors Cicili drop/take: produce a &[T] view, O(1)
     let v: Vec<i32> = (0..50 as i32).collect();
@@ -191,6 +205,9 @@ fn main() {
 
     let t = bench_a_nth(N);
     println!("  nth (bounds-checked get) {} times: {} ms", N, t);
+
+    let t = bench_a_nth_rc(N);
+    println!("  nth rc (bounds-checked get) {} times: {} ms", N, t);
 
     let t = bench_a_slice(N);
     println!("  slice/drop (zero-copy &[T]) {} times: {} * {} ms", N, N, t);
