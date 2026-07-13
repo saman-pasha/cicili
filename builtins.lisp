@@ -351,3 +351,10 @@
           (IF res (RETURN-FROM find-subseq T) NIL))
         (WHEN (FUNCALL test itm elm)
           (RETURN-FROM find-subseq T)))))
+
+(DEFMACRO closure ((name &REST captures) &REST body)
+  (LET ((captures captures)
+        (params (LOOP FOR (param value) ON captures BY #'CDDR
+                      COLLECT (CICILI:INFER-TYPE value :WITH-NAME param)))
+        (args (LOOP FOR (_ value) ON captures BY #'CDDR COLLECT value)))
+    `('(lambda* ,name ,params ,@body) ,@args)))

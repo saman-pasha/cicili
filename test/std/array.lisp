@@ -34,11 +34,6 @@
           (let ((i64 sum . 0)
                 (llong t0 . #'(ms_now)))
             
-            ;; (let^array (arr len v)
-            ;;   (cast void len)
-            ;;   (for ((int i . 0)) (< i N) ((++ i))
-            ;;        (+= sum (nth (% i 50) arr))))
-            
             (for ((int i . 0)) (< i N) ((++ i))
                  ;; (+= sum ((<> nth array) (% i 50) v :unchecked T)))
                  (+= sum ((<> nth array) (% i 50) v :default 0)))
@@ -49,22 +44,33 @@
   
   (main
     (printf "sizeof %s: %zu\n" (symbol-name (<> array int)) (sizeof (<> array int)))
-    
-    (letin ((arr01 (new^array (cast (const int []) '{ 1 2 3 4 5 }))))
 
-      (printf "arr01 len: %zu\n" (len^array arr01))
+    (let ((int * iarr . #'(alloc 2 (sizeof int)))) ; alloc is auto free allocation
+      (letin ((arr01 (new^array (cast (const int []) '{ 1 2 3 4 5 })))
+              (arr02 (new^array iarr 2)))
 
-      (printf "print int array using Unsafe nth: ")
-      (for ((size_t i . 0)) (< i (len^array arr01)) ((++ i))
-           (printf "%d" (nth^array i arr01 :unchecked T)))
-      (putchar #\Newline)
+        (printf "arr01 len: %zu\n" (len^array arr01))
+        (printf "arr02 len: %zu\n" (len^array arr02))
 
-      (printf "print int array using Safe nth: ")
-      (for ((size_t i . 0)) (< i 7) ((++ i))
-           (printf "%d" (nth^array i arr01 :default 0)))
-      (putchar #\Newline)
+        (printf "print int array using Unsafe nth: ")
+        (for ((size_t i . 0)) (< i (len^array arr01)) ((++ i))
+             (printf "%d" (nth^array i arr01 :unchecked T)))
+        (putchar #\Newline)
 
-      ) ; letin
+        (printf "print int array using Safe nth: ")
+        (for ((size_t i . 0)) (< i 7) ((++ i))
+             (printf "%d" (nth^array i arr01 :default 0)))
+        (putchar #\Newline)
+
+        (let ((i64 sum . 0))
+          (printf "letn sum: %lld\n"
+            (letn^array (arr len arr01 :sum (aof sum))
+              (cast void len)
+              (for ((int i . 0)) (< i N) ((++ i))
+                   (+= (cof sum) (nth (% i 5) arr)))
+              (cof sum))))
+        
+      )) ; let
 
     (printf "  nth (bounds-checked) %d times: %ld ms\n" N (bench_a_nth))
 
@@ -74,16 +80,20 @@
 ;; arr_test
 
 ;; sizeof array_int: 16
-;; NEW ARR: type 0x60000027d200 5
+;; NEW ARR: const int * 0x600001c391e0 5
+;; NEW ARR: int * 0x600001e3c040 2
 ;; arr01 len: 5
+;; arr02 len: 2
 ;; print int array using Unsafe nth: 12345
 ;; print int array using Safe nth: 1234500
-;; FREE ARR: 0x60000027d200
-;; NEW ARR: type 0x60000397c000 50
+;; letn sum: 3000000000
+;; FREE ARR: 0x600001e3c040
+;; FREE ARR: 0x600001c391e0
+;; NEW ARR: const int * 0x600002738000 50
 ;;   (nth checksum: 24500000000)
-;; FREE ARR: 0x60000397c000
-;;   nth (bounds-checked) 1000000000 times: 417 ms
+;; FREE ARR: 0x600002738000
+;;   nth (bounds-checked) 1000000000 times: 413 ms
 
 ;; (nth) bench result:
-;; Cicili 408 415 418 408 417
+;; Cicili 400 413 405 401 411
 ;; Rust   439 435 437 439 436
