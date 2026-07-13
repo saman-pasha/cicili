@@ -10,15 +10,16 @@ typedef struct array_int {
   int * arr ;
   size_t len ;
 } array_int;
+typedef int array_int_item_t ;
 __attribute__((weak)) void free_array_int (array_int * array ) {
-  ({ /* progn109 */
+  ({ /* progn110 */
     printf ("FREE ARR: %p\n", (array -> arr ));
   });
   free ((array -> arr ));
   (array -> arr ) = 0;
 }
 long long ms_now () {
-  { /* let131 */
+  { /* let113 */
     struct timespec ts ;
     // ----------
     timespec_get ((&ts ), TIME_UTC );
@@ -28,32 +29,32 @@ long long ms_now () {
 }
 int N  = 1000000000;
 int STEP  = 1000;
-array_int new_array_int_G137 (const size_t len ) {
-  return ({ /* letn141 */
+array_int new_array_int_G122 (const size_t len ) {
+  return ({ /* letn127 */
       int * new_arr  = calloc (len , sizeof(int));
       // ----------
-      ({ /* progn144 */
-        printf ("NEW ARR: %s %p %zu\n", "array_int", new_arr , len );
+      ({ /* progn130 */
+        printf ("NEW ARR: %s %p %zu\n", "type", new_arr , len );
       });
-      memcpy (new_arr , ((int[]){ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49}), (len  *  sizeof(int) ));
+      memcpy (new_arr , ((const int[]){ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49}), (len  *  sizeof(int) ));
       ((array_int){ new_arr , len });
     });
 }
-int nth_array_int_G155 (const size_t index , const array_int * array ) {
+array_int_item_t nth_array_int_G142 (const size_t index , const array_int * array ) {
   return (((index  <  (array -> len ) )) ? (array -> arr )[index ] : 0);
 }
 long bench_a_nth () {
-  ({ /* letn135 */
-    __auto_type v  __attribute__((__cleanup__(free_array_int ))) = new_array_int_G137 (50);
+  ({ /* letn119 */
+    array_int v  __attribute__((__cleanup__(free_array_int ))) = new_array_int_G122 (50);
     // ----------
-    { /* let148 */
+    { /* let135 */
       int64_t sum  = 0;
       long long t0  = ms_now ();
       // ----------
       for (int i  = 0; (i  <  N  ); (++i )) {
-          sum  +=  nth_array_int_G155 ((i  %  50 ), (&v )) ;
+          sum  +=  nth_array_int_G142 ((i  %  50 ), (&v )) ;
       }
-      { /* let158 */
+      { /* let146 */
         long long elapsed  = (ms_now () -  t0  );
         // ----------
         printf ("  (nth checksum: %lld)\n", sum );
@@ -62,27 +63,24 @@ long bench_a_nth () {
     }
   });
 }
-void __ciciliL_168 (array_int * arr01 ) {
-  free_array_int (arr01 );
-}
-array_int new_array_int_G167 (const size_t len ) {
-  return ({ /* letn172 */
+array_int new_array_int_G159 (const size_t len ) {
+  return ({ /* letn164 */
       int * new_arr  = calloc (len , sizeof(int));
       // ----------
-      ({ /* progn175 */
-        printf ("NEW ARR: %s %p %zu\n", "array_int", new_arr , len );
+      ({ /* progn167 */
+        printf ("NEW ARR: %s %p %zu\n", "type", new_arr , len );
       });
-      memcpy (new_arr , ((int[]){ 1, 2, 3, 4, 5}), (len  *  sizeof(int) ));
+      memcpy (new_arr , ((const int[]){ 1, 2, 3, 4, 5}), (len  *  sizeof(int) ));
       ((array_int){ new_arr , len });
     });
 }
-int nth_array_int_G189 (const size_t index , const array_int * array ) {
+array_int_item_t nth_array_int_G182 (const size_t index , const array_int * array ) {
   return (((index  <  (array -> len ) )) ? (array -> arr )[index ] : 0);
 }
 int main () {
   printf ("sizeof %s: %zu\n", "array_int", sizeof(array_int ));
-  { /* let165 */
-    array_int arr01  __attribute__((__cleanup__(__ciciliL_168 ))) = new_array_int_G167 (5);
+  ({ /* letn156 */
+    array_int arr01  __attribute__((__cleanup__(free_array_int ))) = new_array_int_G159 (5);
     // ----------
     printf ("arr01 len: %zu\n", (arr01 . len ));
     printf ("print int array using Unsafe nth: ");
@@ -92,9 +90,9 @@ int main () {
     putchar ('\n');
     printf ("print int array using Safe nth: ");
     for (size_t i  = 0; (i  <  7 ); (++i )) {
-        printf ("%d", nth_array_int_G189 (i , (&arr01 )));
+        printf ("%d", nth_array_int_G182 (i , (&arr01 )));
     }
     putchar ('\n');
-  }
+  });
   printf ("  nth (bounds-checked) %d times: %ld ms\n", N , bench_a_nth ());
 }

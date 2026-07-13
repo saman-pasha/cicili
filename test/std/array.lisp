@@ -9,8 +9,6 @@
   (include <limits.h>)
 
   (decl-array array^int int)
-  (impl-array array^int int)
-  (import-array array^int int)
 
   (func ms_now ()
         (out llong)
@@ -25,33 +23,25 @@
 
   (func bench_a_nth ()
         (out long)
-        ;; (let ((defer () ((<> free array int) v))
-        ;;       ((<> array int) v . #'(new^array^int '{
-        ;;                               0  1  2  3  4  5  6  7  8  9
-        ;;                               10 11 12 13 14 15 16 17 18 19
-        ;;                               20 21 22 23 24 25 26 27 28 29
-        ;;                               30 31 32 33 34 35 36 37 38 39
-        ;;                               40 41 42 43 44 45 46 47 48 49 }))
-        (letin* ((v (new^array^int '{
-                      0  1  2  3  4  5  6  7  8  9
-                      10 11 12 13 14 15 16 17 18 19
-                      20 21 22 23 24 25 26 27 28 29
-                      30 31 32 33 34 35 36 37 38 39
-                      40 41 42 43 44 45 46 47 48 49 })
-                    (<> free array int))
-                 ) ; decls
+        (letin ((v (new^array (cast (const int []) '{
+                                    0  1  2  3  4  5  6  7  8  9
+                                    10 11 12 13 14 15 16 17 18 19
+                                    20 21 22 23 24 25 26 27 28 29
+                                    30 31 32 33 34 35 36 37 38 39
+                                    40 41 42 43 44 45 46 47 48 49 })))
+                ) ; decls
           
           (let ((i64 sum . 0)
                 (llong t0 . #'(ms_now)))
             
-            ;; ((<> let array int) (arr len v)
-            ;;  (cast void len)
-            ;;  (for ((int i . 0)) (< i N) ((++ i))
-            ;;       (+= sum (nth (% i 50) arr))))
+            ;; (let^array (arr len v)
+            ;;   (cast void len)
+            ;;   (for ((int i . 0)) (< i N) ((++ i))
+            ;;        (+= sum (nth (% i 50) arr))))
             
             (for ((int i . 0)) (< i N) ((++ i))
-                 ;; (+= sum ((<> nth array int) (% i 50) v :unchecked T)))
-                 (+= sum ((<> nth array int) (% i 50) v :default 0)))
+                 ;; (+= sum ((<> nth array) (% i 50) v :unchecked T)))
+                 (+= sum ((<> nth array) (% i 50) v :default 0)))
             
             (let ((llong elapsed . #'(- (ms_now) t0)))
               (printf "  (nth checksum: %lld)\n" sum)  ; after timer — forces liveness
@@ -60,19 +50,18 @@
   (main
     (printf "sizeof %s: %zu\n" (symbol-name (<> array int)) (sizeof (<> array int)))
     
-    (let ((defer () (free^array^int arr01))
-          (array^int arr01 . #'(new^array^int '{ 1 2 3 4 5 })))
+    (letin ((arr01 (new^array (cast (const int []) '{ 1 2 3 4 5 }))))
 
-      (printf "arr01 len: %zu\n" (len^array^int arr01))
+      (printf "arr01 len: %zu\n" (len^array arr01))
 
       (printf "print int array using Unsafe nth: ")
-      (for ((size_t i . 0)) (< i (len^array^int arr01)) ((++ i))
-           (printf "%d" (nth^array^int i arr01 :unchecked T)))
+      (for ((size_t i . 0)) (< i (len^array arr01)) ((++ i))
+           (printf "%d" (nth^array i arr01 :unchecked T)))
       (putchar #\Newline)
 
       (printf "print int array using Safe nth: ")
       (for ((size_t i . 0)) (< i 7) ((++ i))
-           (printf "%d" (nth^array^int i arr01 :default 0)))
+           (printf "%d" (nth^array i arr01 :default 0)))
       (putchar #\Newline)
 
       ) ; let
@@ -85,16 +74,16 @@
 ;; arr_test
 
 ;; sizeof array_int: 16
-;; NEW ARR: array_int 0x600000879200 5
+;; NEW ARR: type 0x60000027d200 5
 ;; arr01 len: 5
 ;; print int array using Unsafe nth: 12345
 ;; print int array using Safe nth: 1234500
-;; FREE ARR: 0x600000879200
-;; NEW ARR: array_int 0x600003378000 50
+;; FREE ARR: 0x60000027d200
+;; NEW ARR: type 0x60000397c000 50
 ;;   (nth checksum: 24500000000)
-;; FREE ARR: 0x600003378000
-;;   nth (bounds-checked) 1000000000 times: 416 ms
+;; FREE ARR: 0x60000397c000
+;;   nth (bounds-checked) 1000000000 times: 417 ms
 
 ;; (nth) bench result:
-;; Cicili 415 410 415 405 406
+;; Cicili 408 415 418 408 417
 ;; Rust   439 435 437 439 436
