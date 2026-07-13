@@ -373,10 +373,10 @@
           (set-ast-line (output "if ")))
         (set-ast-line (output "if ")))
 
-    (let* ((cond-const (construct (name spec)))
-           (is-atom (find cond-const (list '|@ATOM| '|@SYMBOL| '|@CALL| '|@-->| '|@->| '|@=>|) :test #'key-eq)))
+    (let* ((condition (const spec))
+           (is-atom (find (construct condition) (list '|@ATOM| '|@SYMBOL| '|@CALL| '|@-->| '|@->| '|@=>|) :test #'key-eq)))
       (when is-atom (output "("))
-      (compile-form (name spec) lvl globals (name spec)) ; condition
+      (compile-form condition lvl globals spec) ; condition
       (when is-atom (output ")")))
     (set-ast-line (output "~%"))
     (compile-body (default spec) (- lvl 1) locals spec)
@@ -399,14 +399,14 @@
 
 (defun compile-switch (spec lvl globals parent-spec)
   (set-ast-line (output "switch ("))
-  (compile-form (name spec) lvl globals spec)
+  (compile-form (const spec) lvl globals spec)
   (set-ast-line (output ") {~%"))
   (dolist (ch-form (default spec))
     (let ((constr (construct ch-form)))
       (cond ((key-eq constr '|@CASE|)
              (output "~&~A" (indent lvl))
              (set-ast-line (output "case "))
-             (compile-form (name ch-form) lvl globals spec)
+             (compile-form (const ch-form) lvl globals spec)
              (output ":~%")
              (compile-body (body ch-form) (+ lvl 1) globals spec))
 	        ((key-eq constr '|@DEFAULT|)
@@ -419,7 +419,7 @@
 (defun compile-while (spec lvl globals parent-spec)
   (let ((locals (copy-specifiers globals)))
     (set-ast-line (output "while ("))
-    (compile-form (name spec) lvl locals spec) ; condition
+    (compile-form (const spec) lvl locals spec) ; condition
     (set-ast-line (output ") {~%"))
     (compile-body (body spec) lvl locals spec)
     (output "~&~A" (indent (- lvl 2)))
@@ -431,7 +431,7 @@
     (compile-body (body spec) lvl locals spec)
     (output "~&~A" (indent (- lvl 1)))
     (output "} while (")
-    (compile-form (name spec) lvl globals spec) ; condition
+    (compile-form (const spec) lvl globals spec) ; condition
     (set-ast-line (output ");"))))
 
 (defun compile-for (spec lvl globals parent-spec)
@@ -445,7 +445,7 @@
                (compile-spec-type-value var lvl locals spec)
                (when (< i lc) (output ", "))))
     (output "; ")
-    (compile-form (name spec) lvl locals spec) ; condition
+    (compile-form (const spec) lvl locals spec) ; condition
     (set-ast-line (output "; "))
     (let ((forms (body (default spec))))
       (loop for form in forms

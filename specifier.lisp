@@ -502,11 +502,16 @@
 		       (specify-type< (without-last wl))
 		     (values const type modifier const-ptr variable array l)))
 
-          ;; ' list, lambda and closure  initializer
+          ;; ' list, lambda and closure initializer
           ((and (listp l) (> (length desc) 2) (key-eq (nth (- (length desc) 2) desc) 'QUOTE))
            (let* ((def (nthcdr (- (length desc) 2) desc))
                   (quoted (cadr def)))
              (cond ((key-eq (car quoted) '|closure|) ; closure initializer
+                    (multiple-value-bind (const type modifier const-ptr variable array)
+		                (specify-type< (without-last wl))
+		              (values const type modifier const-ptr variable array def)))
+
+                   ((key-eq (car quoted) '|closure*|) ; closure* initializer (has name)
                     (multiple-value-bind (const type modifier const-ptr variable array)
 		                (specify-type< (without-last wl))
 		              (values const type modifier const-ptr variable array def)))
@@ -516,12 +521,12 @@
 		                (specify-type< (without-last wl))
 		              (values const type modifier const-ptr variable array def)))
                    
-                   ((key-eq (car quoted) '|lambda*|) ; lambda* initializer
+                   ((key-eq (car quoted) '|lambda*|) ; lambda* initializer (has name)
                     (multiple-value-bind (const type modifier const-ptr variable array)
 		                (specify-type< (without-last wl))
 		              (values const type modifier const-ptr variable array def)))
                    
-                   ((key-eq (car quoted) '|closure*|) ; closure* initializer
+                   ((key-eq (car quoted) '|def-closure*|) ; def-closure* initializer (has struct name) for def-closure
                     (multiple-value-bind (const type modifier const-ptr variable array)
 		                (specify-type< (without-last wl))
 		              (values const type modifier const-ptr variable array def)))
@@ -852,7 +857,7 @@
                 (error (format nil "auto type variable can't have lambda destructor, only defined function ~%~A" def)))
               (if (symbolp symb)
                   (push (cons '|defer| (specify-expr symb)) attributes)
-                  (let ((ptr-name (intern (format nil "~A_ptr" variable))))
+                  (let ((ptr-name (intern (format nil "~A" variable)))) ; ~A_ptr
                     (push (cons '|defer|
                                 (specify-expr
                                     `'(|lambda|
@@ -870,11 +875,12 @@
           
           (setf (attrs var-spec) attributes)
           (setf *variable-spec* tmp-variable-spec)
-          var-spec)))))
+          (*puts* (name var-spec) var-spec))))))
 
 (defun specify-let (def &optional as-expr)
   (when (or (< (length def) 2) (not (listp (nth 1 def)))) (error (format nil "wrong let form ~A" def)))
-  (let ((let-var (make-specifier (gensym "cicili#Let") (if as-expr '|@LETN| '|@LET|) nil nil nil nil nil nil '())))
+  (let ((let-var (make-specifier (*push* (gensym (if as-expr "letn" "let")))
+                   (if as-expr '|@LETN| '|@LET|) nil nil nil nil nil nil '())))
     (let ((is-static   nil)
           (is-register nil)
           (is-volatile nil)
@@ -945,7 +951,7 @@
                            (error (format nil "auto type variable can't have lambda destructor, only defined function ~%~A" type-desc)))
                          (if (symbolp symb)
                              (push (cons '|defer| (specify-expr symb)) attributes)
-                             (let ((ptr-name (intern (format nil "~A_ptr" variable))))
+                             (let ((ptr-name (intern (format nil "~A" variable)))) ; "~A_ptr" here
                                (push (cons '|defer|
                                            (specify-expr
                                                `'(|lambda|
@@ -958,20 +964,23 @@
                                                                   ((key-eq '|**| modifier) '|***|)
                                                                   (t '|*|))
                                                                ,const-ptr ,ptr-name ,array)))
-                                                  ,(remove nil `(|var| ,const ,typeof ,modifier ,const-ptr
-                                                                       ,variable ,array . #'(|cof| ,ptr-name)))
+                                                  ;; cof variable assign to variable name if pointer assign to ~A_ptr above
+                                                  ;; ,(remove nil `(|var| ,const ,typeof ,modifier ,const-ptr
+                                                  ;;                      ,variable ,array . #'(|cof| ,ptr-name)))
                                                   ,@has-defer)))
                                  attributes)))))
 
                      (add-param
-                         (make-specifier (specify-decl-name< variable) '|@VAR| const typeof modifier const-ptr array
-                                         (if (null value)
-                                             nil
-                                             (let ((app (specify-expr value)))
-                                               (if (symbolp app)
-                                                   (specify-call-expr (list app))
-                                                   app)))
-                                         attributes)
+                         (let ((var-name (specify-decl-name< variable)))
+                           (*puts* var-name
+                             (make-specifier var-name '|@VAR| const typeof modifier const-ptr array
+                                             (if (null value)
+                                                 nil
+                                                 (let ((app (specify-expr value)))
+                                                   (if (symbolp app)
+                                                       (specify-call-expr (list app))
+                                                       app)))
+                                             attributes)))
                        let-var))
                    (setq is-static   nil)
                    (setq is-register nil)
@@ -981,17 +990,17 @@
                    (setq is-atomic   nil)
                    (setq has-defer   nil))))))
     (setf (body let-var) (specify-body (nthcdr 2 def)))
-    let-var))
+    (*pop* let-var)))
 
 (defun specify-block (def)
-  (let ((block-var (make-specifier (gensym "cicili#Block") '|@BLOCK| nil nil nil nil nil nil '())))
+  (let ((block-var (make-specifier (*push* (gensym "block")) '|@BLOCK| nil nil nil nil nil nil '())))
     (setf (body block-var) (specify-body (cdr def)))
-    block-var))
+    (*pop* block-var)))
 
 (defun specify-progn (def)
-  (let ((progn-var (make-specifier (gensym "cicili#Progn") '|@PROGN| nil nil nil nil nil nil '())))
+  (let ((progn-var (make-specifier (*push* (gensym "progn")) '|@PROGN| nil nil nil nil nil nil '())))
     (setf (body progn-var) (specify-body (cdr def)))
-    progn-var))
+    (*pop* progn-var)))
 
 (defun specify-set-expr (def)
   (when (= (rem (length (cdr def)) 2) 1) (error (format nil "wrong set form ~A" def)))
@@ -1034,50 +1043,50 @@
 (defun specify-if (def)
   (when (or (< (length def) 3) (> (length def) 4)) (error (format nil "wrong if form ~A" def)))
   (let* ((condition (specify-if-condition (nth 1 def)))
-         (if-var (make-specifier condition '|@IF| nil nil nil nil nil nil '())))
+         (if-var (make-specifier (*push* (gensym "if")) '|@IF| condition nil nil nil nil nil '())))
     (setf (default if-var) (specify-body (list (nth 2 def))))
     (when (> (length def) 3)
       (setf (body if-var) (specify-body (list (nth 3 def)))))
-    if-var))
+    (*pop* if-var)))
 
 (defun specify-switch (def)
   (when (< (length def) 2) (error (format nil "wrong switch form ~A" def)))
   (let* ((expre (specify-expr (nth 1 def)))
-         (switch-var (make-specifier expre '|@SWITCH| nil nil nil nil nil nil '()))
+         (switch-var (make-specifier (*push* (gensym "switch")) '|@SWITCH| expre nil nil nil nil nil '()))
          (cases '()))
     (dolist (ch-form (nthcdr 2 def))
       (cond ((key-eq (car ch-form) '|case|)
              (setq expre (specify-expr (cadr ch-form)))
-             (let ((case-var (make-specifier expre '|@CASE| nil nil nil nil nil nil '())))
+             (let ((case-var (make-specifier (*push* (gensym "case")) '|@CASE| expre nil nil nil nil nil '())))
                (setf (body case-var) (specify-body (nthcdr 2 ch-form)))
-               (push case-var cases)))
+               (push (*pop* case-var) cases)))
 	        ((key-eq (car ch-form) '|default|)
-             (let ((case-var (make-specifier expre '|@DEFAULT| nil nil nil nil nil nil '())))
+             (let ((case-var (make-specifier (*push* (gensym "case")) '|@DEFAULT| nil nil nil nil nil nil '())))
                (setf (body case-var) (specify-body (nthcdr 1 ch-form)))
-               (push case-var cases)))
+               (push (*pop* case-var) cases)))
 	        (t (error (format nil "only case or default form ~A" ch-form)))))
     (setf (default switch-var) (reverse cases))
-    switch-var))
+    (*pop* switch-var)))
 
 (defun specify-while (def)
   (when (< (length def) 2) (error (format nil "wrong while form ~A" def)))
   (let* ((condition (specify-expr (nth 1 def)))
-         (while-var (make-specifier condition '|@WHILE| nil nil nil nil nil nil '())))
+         (while-var (make-specifier (*push* (gensym "while")) '|@WHILE| condition nil nil nil nil nil '())))
     (setf (body while-var) (specify-body (nthcdr 2 def)))
-    while-var))
+    (*pop* while-var)))
 
 (defun specify-do (def)
   (when (< (length def) 2) (error (format nil "wrong while form ~A" def)))
   (let* ((condition (specify-expr (car (last def))))
-         (do-var (make-specifier condition '|@DO| nil nil nil nil nil nil '())))
+         (do-var (make-specifier (*push* (gensym "do")) '|@DO| condition nil nil nil nil nil '())))
     (setf (body do-var) (specify-body (cdr (without-last def))))
-    do-var))
+    (*pop* do-var)))
 
 (defun specify-for (def)
   (when (or (< (length def) 3) (not (listp (nth 1 def)))) (error (format nil "wrong for form ~A" def)))
   (let* ((is-register nil)
          (condition (specify-expr (nth 2 def)))
-         (for-var (make-specifier condition '|@FOR| nil nil nil nil nil (specify-body (nth 3 def)) '())))
+         (for-var (make-specifier (*push* (gensym "for")) '|@FOR| condition nil nil nil nil (specify-body (nth 3 def)) '())))
     (dolist (type-desc (nth 1 def))
       (unless (and (not (null type-desc)) (listp type-desc))
         (error (format nil "wrong variable definition form ~A" type-desc)))
@@ -1087,14 +1096,16 @@
 		         (let ((attributes '()))
 		           (when is-register (push (cons '|register| t) attributes))
                    (add-param
-                       (if (null variable)
-                           (make-specifier (specify-decl-name< typeof) '|@VAR| const variable modifier const-ptr array
-                                           (if (null value) nil (specify-expr value)) attributes)
-                           (make-specifier (specify-decl-name< variable) '|@VAR| const typeof modifier const-ptr array
-                                           (if (null value) nil (specify-expr value)) attributes))
+                       (let ((var-name (if (null variable) (specify-decl-name< typeof) (specify-decl-name< variable))))
+                         (*puts* var-name
+                           (if (null variable)
+                               (make-specifier var-name '|@VAR| const variable modifier const-ptr array
+                                               (if (null value) nil (specify-expr value)) attributes)
+                               (make-specifier var-name '|@VAR| const typeof modifier const-ptr array
+                                               (if (null value) nil (specify-expr value)) attributes))))
                      for-var))))))
     (setf (body for-var) (specify-body (nthcdr 4 def)))
-    for-var))
+    (*pop* for-var)))
 
 (defun specify-if-condition (cond)
   (if (atom cond)
@@ -1108,11 +1119,11 @@
 
 (defun specify-cond (def)
   (when (< (length def) 2) (error (format nil "wrong cond form ~A" def)))
-  (let ((cond-var (make-specifier nil '|@COND| nil nil nil nil nil nil '()))
+  (let ((cond-var (make-specifier (*push* (gensym "cond")) '|@COND| nil nil nil nil nil nil '()))
         (nodes (loop for node in (cdr def)
                      collect (list (specify-if-condition (car node)) (specify-body (cdr node))))))
     (setf (body cond-var) nodes)
-    cond-var))
+    (*pop* cond-var)))
 
 (defun specify-macrolet (def)
   (when (< (length def) 2) (error (format nil "wrong macrolet form ~A" def)))
@@ -1192,8 +1203,9 @@
 	  (when is-declare  (push (cons '|decl|     t) attributes))
 	  (when do-resolve  (push (cons '|resolve|  do-resolve) attributes))
       ;; guard *function-spec* for inline structs and lambdas
-      (setq function-specifier (make-specifier name (if is-method '|@METHOD| '|@FUNC|)
-                                               nil nil nil nil nil nil attributes)) ;; for specify out
+      (setq function-specifier (*puts* name (make-specifier name (if is-method '|@METHOD| '|@FUNC|)
+                                                            nil nil nil nil nil nil attributes))) ;; for specify out
+      (*push* name)
       (setq tmp-specifier *function-spec*)
       (setq tmp-outp      *function-outp*)
       (setf *function-spec* function-specifier)
@@ -1211,11 +1223,13 @@
       (setf (body function-specifier) (specify-body body))
 	  (when is-method
         (add-param
-            (make-specifier (specify-decl-name< '|this|) '|@PARAM| nil
-                            (if *module-path*
-                                (free-name *module-path* (car name))
-                                (car name))
-                            '|*| nil nil nil '())
+            (let ((var-name (specify-decl-name< '|this|)))
+              (*puts* var-name
+                (make-specifier var-name '|@PARAM| nil
+                                (if *module-path*
+                                    (free-name *module-path* (car name))
+                                    (car name))
+                                '|*| nil nil nil '())))
           function-specifier))
       (loop for param in params
             for i from 0 to (length params)
@@ -1236,13 +1250,15 @@
                            do (setf (attrs func-prm) (push (cons '|volatile| t) (attrs func-prm)))))
                    
                    (add-param
-                       (make-specifier
-                           (specify-decl-name< variable)
-                         '@|PARAM| const type modifier const-ptr array nil
-                         (if is-volatile (list (cons '|volatile| t)) nil) is-anonymous)
+                       (let ((var-name (specify-decl-name< variable)))
+                         (*puts* var-name
+                           (make-specifier
+                               var-name
+                             '@|PARAM| const type modifier const-ptr array nil
+                             (if is-volatile (list (cons '|volatile| t)) nil) is-anonymous)))
                      function-specifier))))
       (setf *function-spec* tmp-specifier)) ; end of guard, revert *function-spec*
-    function-specifier))
+    (*pop* function-specifier)))
 
 (defun specify-preprocessor (def attrs)
   (when (> (length attrs) 0) (error (format nil "wrong attributes ~A" attrs)))
@@ -1282,14 +1298,15 @@
       (setf (const-ptr typedef-spec) const-ptr)
       (setf (array-def typedef-spec) array)
       (setf *typedef-spec* tmp-typedef-spec)
-      typedef-spec)))
+      (*puts* (name typedef-spec) typedef-spec))))
 
 (defun specify-enum (def attrs &key ((:nested is-nested) nil))
   (when (> (length attrs) 0) (error (format nil "wrong attributes ~A" attrs)))
   (let* ((is-anonymous (or (= (length def) 1) (not (symbolp (nth 1 def)))))
 	     (name (specify-decl-name< (if is-anonymous (gensym "ciciliEnum") (nth 1 def))))
 	     (constants (if is-anonymous (nthcdr 1 def) (nthcdr 2 def)))
-	     (enum-specifier (make-specifier name '|@ENUM| nil nil nil nil nil nil nil)))
+	     (enum-specifier (*puts* name (make-specifier name '|@ENUM| nil nil nil nil nil nil nil))))
+    (*push* name)
     (setf (anonymous enum-specifier) is-anonymous)
     (loop for const in constants
 	      with l = (length constants)
@@ -1299,9 +1316,13 @@
 	           (let ((key (car const))
 		             (value (cdr const)))
 		         (unless (or (null value) (numberp value) (symbolp value)) (error (format nil "syntax error ~A" const)))
-		         (add-inner (make-specifier (specify-expr key) '|@VAR| nil nil nil nil nil
-                                            (if (null value) nil (specify-expr value)) nil) enum-specifier))))
-    enum-specifier))
+		         (add-inner
+                     (let ((var-name (specify-expr key)))
+                       (*puts* var-name
+                         (make-specifier var-name '|@VAR| nil nil nil nil nil
+                                         (if (null value) nil (specify-expr value)) nil)))
+                   enum-specifier))))
+    (*pop* enum-specifier)))
 
 (defun specify-struct (def attrs &key ((:nested is-nested) nil) ((:inline is-inline) nil))
   (when (and is-nested (> (length attrs) 0)) (error (format nil "wrong attributes ~A" attrs)))
@@ -1317,7 +1338,8 @@
                                            (expand-macros (nth 1 def))
                                            (nth 1 def)))))
 	     (clauses (if is-anonymous (nthcdr 1 def) (nthcdr 2 def)))
-	     (struct-specifier (make-specifier name '|@STRUCT| nil nil nil nil nil nil nil)))
+	     (struct-specifier (*puts* name (make-specifier name '|@STRUCT| nil nil nil nil nil nil nil))))
+    (*push* name)
     (when (and is-anonymous (not is-nested)) (error (format nil "only nested structs could be anonymous")))
     ;; (when (and (not is-anonymous) is-nested) (error (format nil "nested structs should be anonymous")))
     (setf (anonymous struct-specifier) is-anonymous)
@@ -1347,7 +1369,7 @@
                                         (specify-decl-name< variable)
                                       '@|PARAM| const type modifier const-ptr array default attributes is-anonymous)))
                             (setq attributes '())
-	                        (add-inner param-spec struct-specifier))))
+	                        (add-inner (*puts* (name param-spec) param-spec) struct-specifier))))
                     
                     ((find (char (symbol-name construct) 0) "@#")
 		             (add-inner (specify-preprocessor clause attributes) struct-specifier)
@@ -1384,7 +1406,7 @@
                                    do (setf (attrs func-prm) (push (cons '|volatile| t) (attrs func-prm))))))
                          
                          (setq attributes '())
-	                     (add-inner param-spec struct-specifier))))
+	                     (add-inner (*puts* (name param-spec) param-spec) struct-specifier))))
                     
 		            ((key-eq construct '|enum|)
 		             (add-inner (specify-enum     clause attributes :nested t) struct-specifier) (setq attributes '()))
@@ -1400,6 +1422,7 @@
 	        (error (format nil "syntax error ~A" clause))))
       (when (and (not is-anonymous) (> (length declares) 0))
 	    (error (format nil "declare must be inside anonymous struct ~A" name)))
+      (*pop* struct-specifier)
       (dolist (decl (reverse declares))
         (let ((var-spec (specify-variable (push '|var| decl) '())))
           (setf (construct var-spec) '|@DECLARE|)
@@ -1412,7 +1435,8 @@
   (let* ((is-anonymous (or (= (length def) 1) (not (symbolp (nth 1 def)))))
 	     (name (specify-decl-name< (if is-anonymous (gensym "ciciliUnion") (nth 1 def))))
 	     (clauses (if is-anonymous (nthcdr 1 def) (nthcdr 2 def)))
-	     (union-specifier (make-specifier name '|@UNION| nil nil nil nil nil nil nil)))
+	     (union-specifier (*puts name (make-specifier name '|@UNION| nil nil nil nil nil nil nil))))
+    (*push* name)
     (when (and is-anonymous (not is-nested)) (error (format nil "only nested unions could be anonymous")))
     (setf (anonymous union-specifier) is-anonymous)
     (let ((attributes '())
@@ -1439,6 +1463,7 @@
 	        (error (format nil "syntax error ~A" clause))))
       (when (and (not is-anonymous) (> (length declares) 0))
 	    (error (format nil "declare must be inside anonymous union ~A" name)))
+      (*pop* union-specifier)
       (dolist (decl (reverse declares))
         (let ((var-spec (specify-variable (push '|var| decl) '())))
           (setf (construct var-spec) '|@DECLARE|)

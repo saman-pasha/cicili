@@ -7,6 +7,100 @@
 (defvar *trait-regex* "'(?:\\w+?\\s)?(\\w+?)(?:\\[\\d*\\]|\\s\\*)?'.*'(?:\\w+?\\s)?(\\w+?)(?:\\[\\d*\\]|\\s\\*)?'")
 (defvar *globals* (make-hash-table :test 'eql))
 
+;; Symbol Table
+(defparameter *symbols* (make-hash-table :test 'equal))
+;; Lex Id, push and pop to create id segments
+(defvar *lexemes-id* '())
+;; pushes a segment to lexemes id path
+(defun *push* (id)
+  (let ((segment (if (symbolp id) (symbol-name id) id)))
+    (push segment *lexemes-id*)
+    id))
+;; pops a segment from lexemes id path
+(defun *pop* (spec)
+  (pop *lexemes-id*)
+  spec)
+;; puts id and its def to *symbols* by creating id from *lexemes-id*
+(defun *puts* (id def)
+  (let ((lex-id (str:join "/" (append (list (symbol-name id)) *lexemes-id*))))
+    (setf (gethash lex-id *symbols*) def)))
+;; 'gets and 'gets-of helper get def by id from *symbols* by creating id from *lexemes-id*
+(defun *gets-from* (id lexemes-id &optional default)
+  (let ((lex-id (str:join "/" (append (list (symbol-name id)) lexemes-id))))
+    (let ((def (gethash lex-id *symbols*)))
+      (if def def (if lexemes-id (*gets-from* id (cdr lexemes-id) default) nil)))))
+(defun *gets* (id &optional default)
+  (let ((lex-id (str:join "/" (append (list (symbol-name id)) *lexemes-id*))))
+    (let ((def (gethash lex-id *symbols*)))
+      (if def def (if *lexemes-id* (*gets-from* id (cdr *lexemes-id*) default) nil)))))
+;; deeply traverse spec tree to find lexeme id
+(defun deep-typeof (id &optional spec)
+  (let ((spec (if spec spec (*gets* id))))
+    ;; (format t "TYPEOF REQUESTED: ~A~%" spec)
+    (if spec
+        (let ((const-val (construct spec)))
+          (cond ((and (eql const-val '|@ATOM|) (eql (typeof spec) '|@SYMBOL|)) (*gets* (name spec)))
+                ((key-eq (typeof spec) '|auto|) (deep-typeof id (default spec)))
+                ((eql const-val '|@CALL|)
+                 (let ((name-val (name spec)))
+                   (if (typep name-val 'sp) (deep-typeof id name-val) (*gets* name-val))))
+                ((eql const-val '|@VAR|) spec)
+                ((eql const-val '|@PARAM|) spec)
+                ((eql const-val '|@FUNC|) spec)
+                (t nil)))
+        nil)))
+;; (type inference) tries to infer from lexeme id or throw error
+;; without :with-name presence: compiles type without name
+;; with :with-name presence but NIL: compiles with name of the spec
+;; with :with-name presence non NIL: compiles with the specified name
+(defun infer-type (id &key (with-name nil with-name-p))
+  ;; (format t "INFER REQUESTED: ~A~%" id)
+  (let* ((id (expand-macros id))
+         (spec (cond ((stringp id) (specify-cast-expr (list '|cast| (list '|const| '|char| '[]) id)))
+                     ((listp id) (if (key-eq (car id) '|cast|)
+                                     (specify-cast-expr id)
+                                     (let ((func (car (expand-macros id))))
+                                       (if (symbolp func)
+                                           (*gets* func)
+                                           (if (eql (car func) '|QUOTE|)
+                                               (let ((func (cadr func)))
+                                                 (if (key-eq (car func) '|lambda|)
+                                                     (let ((out (nth 2 func)))
+                                                       (if (key-eq (car out) '|out|)
+                                                           (return-from infer-type (expand-macros (cdr out)))
+                                                           (list '|void|)))
+                                                     (if (key-eq (car func) '|lambda*|)
+                                                         (let ((out (nth 3 func)))
+                                                           (if (key-eq (car out) '|out|)
+                                                               (return-from infer-type (expand-macros (cdr out)))
+                                                               (list '|void|)))))))))
+
+                                     ))
+                     (t (deep-typeof id)))))
+    (if spec
+        (let ((arr-val (if (array-def spec) '* nil)))
+          (remove nil
+                  (if with-name-p
+                      (if with-name (list (const     spec)
+	                                      (typeof    spec)
+	                                      (modifier  spec)
+                                          (const-ptr spec)
+	                                      with-name
+	                                      arr-val)
+                          (list (const     spec)
+	                            (typeof    spec)
+	                            (modifier  spec)
+                                (const-ptr spec)
+	                            (name      spec)
+	                            arr-val))
+                      (list (const     spec)
+	                        (typeof    spec)
+	                        (modifier  spec)
+                            (const-ptr spec)
+	                        arr-val))))
+        (error (format nil "type inference failed for: ~A" id)))))
+
+;; cicili script path
 (defvar *cicili-path* (uiop/os:getcwd))
 ;; current output file
 (defvar *output* t)

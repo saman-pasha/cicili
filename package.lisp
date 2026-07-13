@@ -14,11 +14,12 @@
     :*debug-dump*
     :*debug-warnings*
     :*debug-analyze*
-    :compile-form
-    :compile-body
     :compile-ast
     :compile-cicili-file
     :expand-macros
     :load-macro-file
-    :specify-type<         ; could be used inside macros to destructure variable definition without default value 
-    :specify-type-value<)) ; could be used inside macros to destructure variable definition with default value extra bind
+    :specify-type<       ; could be used inside macros to destructure variable definition without default value 
+    :specify-type-value< ; could be used inside macros to destructure variable definition with default value extra bind
+    :*gets*
+    :infer-type
+    )) ; cicili

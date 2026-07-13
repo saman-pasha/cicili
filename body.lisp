@@ -20,6 +20,14 @@
                                                               lname))))
                                    progn-spec))
 
+                                ((key-eq (car quoted) '|closure*|) ; nested function gcc extension, named-closure
+                                 (let* ((lname (expand-macros (cadr quoted)))
+                                        (progn-spec (specify-progn
+                                                        (list '|progn|
+                                                              (append (list '|func| lname) (cddr quoted))
+                                                              lname))))
+                                   progn-spec))
+
                                 ((key-eq (car quoted) '|lambda|) ; annonymous lambda
                                  (let* ((lname (gensym "__ciciliL_"))
                                         (func-spec (specify-function (append (list '|lambda| lname) (cdr quoted)) '())))
@@ -39,7 +47,7 @@
                                                     fname)))
                                      (specify-symbol-expr (if *module-path* (free-name *module-path* name) name)))))
 
-                                ((key-eq (car quoted) '|closure*|) ; closure*
+                                ((key-eq (car quoted) '|def-closure*|) ; def-closure*
                                  (let ((struct-spec (specify-struct (cadr quoted) '())))
                                    (add-inner struct-spec (if *function-spec* *function-spec* *variable-spec*))
                                    (specify-expr (caddr quoted))))
@@ -60,21 +68,21 @@
                        ((key-eq func '|sizeof|) (specify-sizeof-expr def))
                        ((key-eq func '|typeof|) (specify-typeof-expr def))
 
-                       ((key-eq func '|macrolet|)  (specify-macrolet      def)) 
-		               ((key-eq func '|let|)       (specify-let           def)) 
-		               ((key-eq func '|letn|)      (specify-let           def t)) 
-		               ((key-eq func '|block|)     (specify-block         def)) 
-		               ((key-eq func '|progn|)     (specify-progn         def)) 
-		               ((key-eq func '|set|)       (specify-set-expr      def))
-		               ((key-eq func '|return|)    (specify-return-expr   def))
-		               ((key-eq func '|break|)     (specify-symbol-expr   (car def)))
-		               ((key-eq func '|continue|)  (specify-symbol-expr   (car def)))
-		               ((key-eq func '|if|)        (specify-if            def)) 
-		               ((key-eq func '|switch|)    (specify-switch        def)) 
-		               ((key-eq func '|while|)     (specify-while         def)) 
-		               ((key-eq func '|do|)        (specify-do            def)) 
-		               ((key-eq func '|for|)       (specify-for           def)) 
-		               ((key-eq func '|cond|)      (specify-cond          def))
+                       ((key-eq func '|macrolet|) (specify-macrolet      def)) 
+		               ((key-eq func '|let|)      (specify-let           def)) 
+		               ((key-eq func '|letn|)     (specify-let           def t)) 
+		               ((key-eq func '|block|)    (specify-block         def)) 
+		               ((key-eq func '|progn|)    (specify-progn         def)) 
+		               ((key-eq func '|set|)      (specify-set-expr      def))
+		               ((key-eq func '|return|)   (specify-return-expr   def))
+		               ((key-eq func '|break|)    (specify-symbol-expr   (car def)))
+		               ((key-eq func '|continue|) (specify-symbol-expr   (car def)))
+		               ((key-eq func '|if|)       (specify-if            def)) 
+		               ((key-eq func '|switch|)   (specify-switch        def)) 
+		               ((key-eq func '|while|)    (specify-while         def)) 
+		               ((key-eq func '|do|)       (specify-do            def)) 
+		               ((key-eq func '|for|)      (specify-for           def)) 
+		               ((key-eq func '|cond|)     (specify-cond          def))
 
                        ((key-eq func '|include|) (specify-include     def '()))
 		               ((key-eq func '|typedef|) (specify-typedef     def '()))

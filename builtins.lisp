@@ -3,11 +3,13 @@
 (DEFUN import (file-name &OPTIONAL pack init-args)
   (CICILI:LOAD-MACRO-FILE file-name pack init-args (OR *LOAD-TRUENAME* *COMPILE-FILE-TRUENAME*)))
 
-(DEFMACRO make (&KEY (std '#f) (haskell '#f) (compile '#f) (link '#f))
+(DEFMACRO make (&KEY (std '#f) (cpp '#f) (haskell '#f) (compile '#f) (link '#f))
   (LET ((std std)
+        (cpp cpp)
         (compile compile)
         (link link))
     `(,@(IF std (LIST ':std std) (LIST '#f))
+        ,@(IF std (LIST ':cpp cpp) (LIST '#f))
         ,@(IF haskell (LIST ':haskell haskell) (LIST '#f))
         ,@(IF compile (LIST ':compile compile) (LIST '#f))
         ,@(IF link (LIST ':link link) (LIST '#f)))))
@@ -72,15 +74,27 @@
                                   (MACROEXPAND reso)))
                           body))))
 
-;; accepts all variables if the 3rd argument specified, will use it as destructor
-(DEFMACRO letin* (var-list &REST body)
+;; ;; accepts all variables if the 3rd argument specified, will use it as destructor
+;; (DEFMACRO letin* (var-list &REST body)
+;;   `(letn ,(APPLY 'APPEND
+;;                  (MAP 'LIST #'(LAMBDA (var)
+;;                                 (WHEN (OR (< (LENGTH var) 2) (> (LENGTH var) 3))
+;;                                   (ERROR (FORMAT NIL "wrong letin* variable definition: ~A" var)))
+;;                                 (IF (= (LENGTH var) 2)
+;;                                     `((auto ,(CAR var) . (FUNCTION ,(CADR var))))
+;;                                     `((defer () ,(CADDR var)) (auto ,(CAR var) . (FUNCTION ,(CADR var))))))
+;;                       var-list))
+;;      ,@body))
+
+;; accepts all variables inferene type to find destructor
+(DEFMACRO letin (var-list &REST body)
   `(letn ,(APPLY 'APPEND
                  (MAP 'LIST #'(LAMBDA (var)
-                                (WHEN (OR (< (LENGTH var) 2) (> (LENGTH var) 3))
-                                  (ERROR (FORMAT NIL "wrong letin* variable definition: ~A" var)))
-                                (IF (= (LENGTH var) 2)
-                                    `((auto ,(CAR var) . (FUNCTION ,(CADR var))))
-                                    `((defer () ,(CADDR var)) (auto ,(CAR var) . (FUNCTION ,(CADR var))))))
+                                (WHEN (/= (LENGTH var) 2)
+                                  (ERROR (FORMAT NIL "wrong letin variable definition: ~A" var)))
+                                (LET ((type (CICILI:INFER-TYPE (CADR var))))
+                                  (WHEN (> (LENGTH type) 1) (ERROR (FORMAT NIL "letin gets invalid type ~A for ~A" type var)))
+                                  `((defer () (<> free ,@type)) (,@type ,(CAR var) . (FUNCTION ,(CADR var))))))
                       var-list))
      ,@body))
 
@@ -215,10 +229,10 @@
                      (IF (EQL (CAADDR lm) 'out)
                          (APPEND (LIST (CADDR lm)) vars (CDDDR lm))
                          (APPEND vars (CDDR lm))))))
-    `'(closure* (struct ,sname
-                  (member func routine (((struct ,sname) * context) ,@(CADADR lambda))
-                          ,(IF (EQL (CAR (CAR body)) 'out) (CAR body) (LIST 'out 'void)))
-                  (struct ,@members (declare context)))
+    `'(def-closure* (struct ,sname
+                            (member func routine (((struct ,sname) * context) ,@(CADADR lambda))
+                                    ,(IF (EQL (CAR (CAR body)) 'out) (CAR body) (LIST 'out 'void)))
+                            (struct ,@members (declare context)))
        (cast (struct ,sname) '{ '(lambda* (<> ,sname ,lname)
                                   (((struct ,sname) * context) ,@(CADADR lambda)) ,@body)
              '{ ,@values } }))))
