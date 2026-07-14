@@ -1014,31 +1014,43 @@
 (defun specify-return-expr (def)
   (when (> (length def) 2) (error (format nil "wrong return form ~A" def)))
   (let ((output (expand-macros (nth 1 def))))
-    (if (and *function-spec* (or (listp (typeof *function-spec*))
-                               (and (listp output) (key-eq (car output) '|QUOTE|))))
-        (let ((clause (if (and (listp output) (listp (cadr output))) (caadr output) nil)))
-          (if (or (key-eq clause '|closure|) (key-eq clause '|lambda|))
-              (let ((out (if (null output) nil (specify-expr output))))
-                (when (and (listp output)
-                        (key-eq (car output) '|def-closure|)
-                        *function-spec* (key-eq (typeof *function-spec*) '|auto|))
-                  (setf (typeof *function-spec*) (list '|struct| (name (car (body out))))))
-                (make-specifier nil '|@RETURN| nil nil nil nil nil out '()))
-              (make-specifier nil '|@RETURN| nil nil nil nil nil
-                              (specify-cast-expr (list '|cast|
-                                                       (remove nil (list
-                                                                    (const *function-spec*)
-                                                                    (typeof *function-spec*)
-                                                                    (modifier *function-spec*)
-                                                                    (const-ptr *function-spec*)
-                                                                    (array-def *function-spec*)))
-                                                       output)) '())))
-        (let ((out (if (null output) nil (specify-expr output))))
-          (when (and (listp output)
-                  (key-eq (car output) '|def-closure|)
-                  *function-spec* (key-eq (typeof *function-spec*) '|auto|))
-            (setf (typeof *function-spec*) (list '|struct| (name (car (body out))))))
-          (make-specifier nil '|@RETURN| nil nil nil nil nil out '())))))
+    (cond ((and *function-spec* (or (listp (typeof *function-spec*))
+                                    (and (listp output) (key-eq (car output) '|QUOTE|))))
+           (let ((clause (if (and (listp output) (listp (cadr output))) (caadr output) nil)))
+             (if (or (key-eq clause '|closure|) (key-eq clause '|lambda|))
+                 (let ((out (if (null output) nil (specify-expr output))))
+                   (when (and (listp output)
+                              (key-eq (car output) '|def-closure|)
+                              *function-spec* (key-eq (typeof *function-spec*) '|auto|))
+                     (setf (typeof *function-spec*) (list '|struct| (name (car (body out))))))
+                   (make-specifier nil '|@RETURN| nil nil nil nil nil out '()))
+                 (make-specifier nil '|@RETURN| nil nil nil nil nil
+                                 (specify-cast-expr (list '|cast|
+                                                          (remove nil (list
+                                                                       (const *function-spec*)
+                                                                       (typeof *function-spec*)
+                                                                       (modifier *function-spec*)
+                                                                       (const-ptr *function-spec*)
+                                                                       (array-def *function-spec*)))
+                                                          output)) '()))))
+          ((and (listp output)
+                (key-eq (car output) '|def-closure|)
+                *function-spec* (key-eq (typeof *function-spec*) '|auto|))
+           (setf (typeof *function-spec*) (list '|struct| (name (car (body (specify-expr output)))))))
+          ;; tries to infer output type from return expression
+          ((and *function-spec* (key-eq (typeof *function-spec*) '|auto|))
+           (format t "FFFFFFFFFFR ~A~%" (typeof *function-spec*))
+           (let* ((out (specify-expr output))
+                  (typ (deep-typeof "" out)))
+             (format t "TYTYTYTYTY ~A~%" typ)
+             (when typ
+               (setf (const *function-spec*) (const typ))
+               (setf (typeof *function-spec*) (typeof typ))
+               (setf (modifier *function-spec*) (modifier typ))
+               (setf (const-ptr *function-spec*) (const-ptr typ))
+               (setf (array-def *function-spec*) (array-def typ)))
+             (make-specifier nil '|@RETURN| nil nil nil nil nil out '())))
+          (t (make-specifier nil '|@RETURN| nil nil nil nil nil (specify-expr output) '())))))
 
 (defun specify-if (def)
   (when (or (< (length def) 3) (> (length def) 4)) (error (format nil "wrong if form ~A" def)))
@@ -1209,7 +1221,7 @@
       (setq tmp-specifier *function-spec*)
       (setq tmp-outp      *function-outp*)
       (setf *function-spec* function-specifier)
-      (setf *function-outp* t)
+      (setf *function-outp* t)      
 
       (multiple-value-bind (const type modifier const-ptr variable array)
 	      (specify-type< (cdr returns))
@@ -1219,7 +1231,7 @@
         (setf (modifier function-specifier) modifier)
         (setf (const-ptr function-specifier) const-ptr)
         (setf (array-def function-specifier) array))
-      
+
       (setf (body function-specifier) (specify-body body))
 	  (when is-method
         (add-param
@@ -1257,6 +1269,9 @@
                              '@|PARAM| const type modifier const-ptr array nil
                              (if is-volatile (list (cons '|volatile| t)) nil) is-anonymous)))
                      function-specifier))))
+
+      (when (key-eq (typeof *function-spec*) '|auto|)
+        (error (format nil "function: '~A with 'auto return type but without return statement" name)))
       (setf *function-spec* tmp-specifier)) ; end of guard, revert *function-spec*
     (*pop* function-specifier)))
 

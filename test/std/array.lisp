@@ -45,9 +45,10 @@
   (main
     (printf "sizeof %s: %zu\n" (symbol-name (<> array int)) (sizeof (<> array int)))
 
+    ;; example to ues new generic constructor
     (let ((int * iarr . #'(alloc 2 (sizeof int)))) ; alloc is auto free allocation
-      (letin ((arr01 (new^array (cast (const int []) '{ 1 2 3 4 5 })))
-              (arr02 (new^array iarr 2)))
+      (letin ((arr01 (new array (cast (const int []) '{ 1 2 3 4 5 })))
+              (arr02 (new array iarr 2)))
 
         (printf "arr01 len: %zu\n" (len^array arr01))
         (printf "arr02 len: %zu\n" (len^array arr02))

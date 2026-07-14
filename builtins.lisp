@@ -352,9 +352,13 @@
         (WHEN (FUNCALL test itm elm)
           (RETURN-FROM find-subseq T)))))
 
+;; helpers using cicili type inference
 (DEFMACRO closure ((name &REST captures) &REST body)
   (LET ((captures captures)
         (params (LOOP FOR (param value) ON captures BY #'CDDR
                       COLLECT (CICILI:INFER-TYPE value :WITH-NAME param)))
         (args (LOOP FOR (_ value) ON captures BY #'CDDR COLLECT value)))
     `('(lambda* ,name ,params ,@body) ,@args)))
+
+(DEFMACRO new (type &REST args)
+  `((<> new ,type) ,@args))

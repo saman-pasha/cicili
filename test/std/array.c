@@ -40,8 +40,8 @@ array_int new_array_int_G122 (const int * arr , const int len ) {
       ((array_int){ new_arr , len });
     });
 }
-array_int_item_t nth_array_int_G142 (int index , array_int array ) {
-  return (((index  <  (array . len ) )) ? (array . arr )[index ] : 0);
+array_int_item_t nth_array_int_G142 (int index , array_int array , const int default_value ) {
+  return (((index  <  (array . len ) )) ? (array . arr )[index ] : default_value );
 }
 long bench_a_nth () {
   ({ /* letn119 */
@@ -52,7 +52,7 @@ long bench_a_nth () {
       long long t0  = ms_now ();
       // ----------
       for (int i  = 0; (i  <  N  ); (++i )) {
-          sum  +=  nth_array_int_G142 ((i  %  50 ), v ) ;
+          sum  +=  nth_array_int_G142 ((i  %  50 ), v , 0) ;
       }
       { /* let146 */
         long long elapsed  = (ms_now () -  t0  );
@@ -66,35 +66,35 @@ long bench_a_nth () {
 void __ciciliL_154 (int ** iarr ) {
   free (((void *)(*iarr )));
 }
-array_int new_array_int_G165 (const int * arr , const int len ) {
-  return ({ /* letn170 */
+array_int new_array_int_G172 (const int * arr , const int len ) {
+  return ({ /* letn176 */
       int * new_arr  = calloc (len , sizeof(int));
       // ----------
-      ({ /* progn173 */
+      ({ /* progn179 */
         printf ("NEW ARR: %s %p %zu\n", "const int *", new_arr , ((size_t)len ));
       });
       memcpy (new_arr , arr , (len  *  sizeof(int) ));
       ((array_int){ new_arr , len });
     });
 }
-array_int new_array_int_G179 (int * arr , const int len ) {
-  return ({ /* letn184 */
+array_int new_array_int_G188 (int * arr , const int len ) {
+  return ({ /* letn192 */
       int * new_arr  = calloc (len , sizeof(int));
       // ----------
-      ({ /* progn187 */
+      ({ /* progn195 */
         printf ("NEW ARR: %s %p %zu\n", "int *", new_arr , ((size_t)len ));
       });
       memcpy (new_arr , arr , (len  *  sizeof(int) ));
       ((array_int){ new_arr , len });
     });
 }
-array_int_item_t nth_array_int_G203 (size_t index , array_int array ) {
-  return (((index  <  (array . len ) )) ? (array . arr )[index ] : 0);
+array_int_item_t nth_array_int_G211 (size_t index , array_int array , const int default_value ) {
+  return (((index  <  (array . len ) )) ? (array . arr )[index ] : default_value );
 }
-int64_t let_array_int_G211 (array_int acc_arr210 , int64_t * sum ) {
-  return ({ /* letn214 */
-      array_int_item_t * arr  = (acc_arr210 . arr );
-      size_t len  = (acc_arr210 . len );
+int64_t letn_array_int_G219 (array_int acc_arr218 , int64_t * sum ) {
+  return ({ /* letn222 */
+      array_int_item_t * arr  = (acc_arr218 . arr );
+      size_t len  = (acc_arr218 . len );
       // ----------
       ((void)len );
       for (int i  = 0; (i  <  N  ); (++i )) {
@@ -108,9 +108,9 @@ int main () {
   { /* let153 */
     int * iarr  __attribute__((__cleanup__(__ciciliL_154 ))) = ((int *)calloc (2, sizeof(int)));
     // ----------
-    ({ /* letn162 */
-      array_int arr01  __attribute__((__cleanup__(free_array_int ))) = new_array_int_G165 (((const int[]){ 1, 2, 3, 4, 5}), 5);
-      array_int arr02  __attribute__((__cleanup__(free_array_int ))) = new_array_int_G179 (iarr , 2);
+    ({ /* letn166 */
+      array_int arr01  __attribute__((__cleanup__(free_array_int ))) = new_array_int_G172 (((const int[]){ 1, 2, 3, 4, 5}), 5);
+      array_int arr02  __attribute__((__cleanup__(free_array_int ))) = new_array_int_G188 (iarr , 2);
       // ----------
       printf ("arr01 len: %zu\n", (arr01 . len ));
       printf ("arr02 len: %zu\n", (arr02 . len ));
@@ -121,13 +121,13 @@ int main () {
       putchar ('\n');
       printf ("print int array using Safe nth: ");
       for (size_t i  = 0; (i  <  7 ); (++i )) {
-          printf ("%d", nth_array_int_G203 (i , arr01 ));
+          printf ("%d", nth_array_int_G211 (i , arr01 , 0));
       }
       putchar ('\n');
-      { /* let207 */
+      { /* let215 */
         int64_t sum  = 0;
         // ----------
-        printf ("letn sum: %lld\n", let_array_int_G211 (arr01 , (&sum )));
+        printf ("letn sum: %lld\n", letn_array_int_G219 (arr01 , (&sum )));
       }
     });
   }

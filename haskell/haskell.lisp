@@ -49,17 +49,17 @@
      ,@body))
 
 
-(DEFMACRO new (obj)
-  (LET ((obj obj))
-    `((\.* new ,obj) ,obj)))
+;; (DEFMACRO new (obj)
+;;   (LET ((obj obj))
+;;     `((\.* new ,obj) ,obj)))
 
-(DEFMACRO copy (obj)
-  (LET ((obj obj))
-    `((\.* copy ,obj) ,obj)))
+;; (DEFMACRO copy (obj)
+;;   (LET ((obj obj))
+;;     `((\.* copy ,obj) ,obj)))
 
-(DEFMACRO show (obj)
-  (LET ((obj obj))
-    `((\.* show ,obj) stdout ,obj)))
+;; (DEFMACRO show (obj)
+;;   (LET ((obj obj))
+;;     `((\.* show ,obj) stdout ,obj)))
 
 (DEFMACRO iterate (args &REST body)
   (DESTRUCTURING-BIND (begin end vector &KEY reverse) args
