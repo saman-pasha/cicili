@@ -358,6 +358,7 @@
         (params (LOOP FOR (param value) ON captures BY #'CDDR
                       COLLECT (CICILI:INFER-TYPE value :WITH-NAME param)))
         (args (LOOP FOR (_ value) ON captures BY #'CDDR COLLECT value)))
+    (FORMAT T "PAPPAPAPARAMA ~A~%" params)
     `('(lambda* ,name ,params ,@body) ,@args)))
 
 (DEFMACRO new (type &REST args)

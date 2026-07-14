@@ -1,60 +1,50 @@
 
-;;; test cicili std rc
+;;; test Cicili std rc
 (source "rc.c"
   (make :std #t
         :compile ("-O3" "-ffast-math" "-c" "rc.c")
         :link ("-lrc.o" "-o" "rc_test"))
 
   (decl-array array^int int)
-  (import-array array^int int)
-
   (decl-rc rc^array^int array^int)
-  (import-rc rc^array^int array^int)
-
   
   (main
-    (let ((defer () (free^rc^array^int (aof rc01)))
-          (rc^array^int rc01 . #'(new^rc^array^int '{ 1 2 3 4 5 }))
-          ) ; decls
+    (letin ((rc01 (new rc array (cast (const int []) '{ 1 2 3 4 5 })))
+            ) ; decls
 
-      (let^rc^array^int (arr rc01)
-        (printf "1 rc01 arr len: %zu\n" (len^array^int arr)))
+      (let^rc (arr rc01)
+        (printf "1. rc01 arr len: %zu\n" (len^array arr)))
 
-      (let^rc^array^int (* arr rc01)
-        (printf "2 rc01 arr len: %zu\n" (len^array^int (cof arr)))
-        ;; uncomment error: shouldn't free an object where ordered to be used inside Rc: array^int
-        ;; (free^array^int arr)
-        )
+      (printf "2. rc01 arr len: %zu\n"
+        (letn^rc (arr rc01 -1)
+          (len^array arr)))
 
-      (printf "3 rc01 arr len: %zu\n"
-        (letn^rc^array^int (arr rc01 -1)
-          (len^array^int arr)))
+      ;; could not take because of counter is 2
+      (take^rc (arr_ptr (clone^rc rc01))
+        (printf "3. rc01 arr len: %zu\n" (len^array (cof arr_ptr)))
+        (force^free^array^int arr_ptr)) ; needed for taken rc
 
-      ;; (take^rc^array^int (arr (clone^rc^array^int rc01))
-      ;;   (printf "4 rc01 arr len: %zu\n" (len^array^int arr))
-      ;;   ;; uncomment cause segfault, use-after-free interior arr
-      ;;   ;; (force^free^array^int (aof arr)) ; needed for taken rc
-      ;;   )
-
-      (let ((auto cloned . #'(clone^rc^array^int rc01)))
-        (free^rc^array^int (aof cloned)))
+      (letin ((week_copy rc01))
+        (free^rc (aof week_copy))) ; two free: one by free call, second by letin deferal free call
       
-      (taken^rc^array^int
-          (* arr rc01
-             (printf "5 rc01 arr len: default path\n")) ; default path
-        (printf "5 rc01 arr len: %zu\n" (len^array^int (cof arr)))
-        (force^free^array^int arr))
+      (taken^rc (arr_ptr rc01
+                  (printf "5 rc01 arr len: default path\n")) ; default path
+        (printf "5 rc01 arr len: %zu\n" (len^array (cof arr_ptr))))
 
-      ) ; let
+      ) ; letin
     )) ; rc.c
 
 
-;; NEW RC: 600001dcc050 600001dcc040
-;; 1 rc01 arr len: 5
-;; 2 rc01 arr len: 5
-;; 3 rc01 arr len: 5
-;; FREE RC: 600001dcc040 600001dcc040
+;; sbcl --script cicili.lisp --syslog ./test/std/rc.lisp
+;; rc_test
+
+;; NEW ARR: const int * 0x6000034f51e0 5
+;; NEW RC: 0x6000036f0040 6000036f0050 6000036f0040
+;; 1. rc01 arr len: 5
+;; 2. rc01 arr len: 5
+;; FREE RC: 0x6000036f0040 0x6000036f0050 6000036f0040
 ;; FREE RC: counter: 2
-;; TAKEN RC: 600001dcc040 600001dcc040
-;; 5 rc01 arr len: 5
-;; FREE ARR: 600001fc9200
+;; FREE RC: 0x6000036f0040 0x6000036f0050 6000036f0040
+;; FREE RC: counter: 1
+;; FREE ARR: 0x6000034f51e0
+;; 5 rc01 arr len: default path
