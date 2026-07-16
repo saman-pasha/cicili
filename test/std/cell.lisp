@@ -40,11 +40,12 @@
 ;; sbcl --script cicili.lisp --syslog ./test/std/cell.lisp
 ;; arr_test
 
-;; NEW ARR: int * 0x6000031651e0 5
-;; NEW CELL: 600003360050
+;; NEW ARR: int * 0x600000c311e0 5
+;; NEW CELL: 600000e34050
 ;; 1. cell01 arr len: 5
 ;; 2. cell01 arr len + over: 15
-;; TAKE CELL: 600003360040
+;; TAKE CELL: 600000e34040
 ;; 3. cell01 arr len: 5
-;; FREE ARR: 0x6000031651e0
+;; FREE ARR: 0x600000c311e0
 ;; 4 cell01 arr len: default path
+;; FREE CELL: 0

@@ -12,10 +12,10 @@
   (func (<> free type) ((type ** cell_ptr))
         (let ((type * cell . (FUNCTION (cof cell_ptr))))
           (when (-> cell ptr) ; liveness
-            (syslog! (printf "FREE CELL: %zx\n" (-> cell ptr)))
             ((<> free a) (cast (void *) (-> cell ptr)))
-            (set (-> cell ptr) 0)
-            (free cell))))
+            (set (-> cell ptr) 0))
+          (syslog! (printf "FREE CELL: %zx\n" (-> cell ptr)))
+          (free cell)))
 
   (inline)
   (func (<> force free a) ((a * obj))

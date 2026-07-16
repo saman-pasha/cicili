@@ -26,13 +26,13 @@ __attribute__((weak)) void free_cell_array_int (cell_array_int ** cell_ptr ) {
     // ----------
     if ((cell -> ptr ))
       { /* block120 */
-        ({ /* progn123 */
-          printf ("FREE CELL: %zx\n", (cell -> ptr ));
-        });
         free_array_int (((void *)(cell -> ptr )));
         (cell -> ptr ) = 0;
-        free (cell );
       }
+    ({ /* progn124 */
+      printf ("FREE CELL: %zx\n", (cell -> ptr ));
+    });
+    free (cell );
   }
 }
 __attribute__((weak)) void force_free_array_int (array_int * obj ) {
