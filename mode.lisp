@@ -315,6 +315,7 @@
    (1 . thread-local)
    (1 . define)
    (0 . atomic)
+   (0 . non-copy)
    ))
 
 (cicili-add-attributes

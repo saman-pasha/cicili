@@ -871,9 +871,10 @@
                                                        (t '|*|))
                                                     ,const-ptr ,ptr-name ,array)))
                                        ,@has-defer)))
-                      attributes)))))
-          
+                      attributes)))))          
           (setf (attrs var-spec) attributes)
+          (assign-check var-spec (default var-spec)) ; authority check
+          
           (setf *variable-spec* tmp-variable-spec)
           (*puts* (name var-spec) var-spec))))))
 
@@ -971,16 +972,18 @@
                                  attributes)))))
 
                      (add-param
-                         (let ((var-name (specify-decl-name< variable)))
-                           (*puts* var-name
-                             (make-specifier var-name '|@VAR| const typeof modifier const-ptr array
-                                             (if (null value)
-                                                 nil
-                                                 (let ((app (specify-expr value)))
-                                                   (if (symbolp app)
-                                                       (specify-call-expr (list app))
-                                                       app)))
-                                             attributes)))
+                         (let* ((var-name (specify-decl-name< variable))
+                                (param-spec (*puts* var-name
+                                              (make-specifier var-name '|@VAR| const typeof modifier const-ptr array
+                                                              (if (null value)
+                                                                  nil
+                                                                  (let ((app (specify-expr value)))
+                                                                    (if (symbolp app)
+                                                                        (specify-call-expr (list app))
+                                                                        app)))
+                                                              attributes))))
+                           (assign-check param-spec (default param-spec)) ; authority check
+                           param-spec)
                        let-var))
                    (setq is-static   nil)
                    (setq is-register nil)
@@ -1008,49 +1011,55 @@
          (items (loop for i from 0 to (1- len)
                       for (x y) on (cdr def)
                       when (and (= (mod i 2) 0) (not (null y)))
-                      collect (list (specify-expr x) (specify-expr y)))))
+                      collect (let ((left-spec (specify-expr x))
+                                    (right-spec (specify-expr y)))
+                                (assign-check left-spec right-spec) ; authority check
+                                (list left-spec right-spec)))))
     (make-specifier nil '|@SET| nil nil nil nil nil items '())))
 
 (defun specify-return-expr (def)
   (when (> (length def) 2) (error (format nil "wrong return form ~A" def)))
-  (let ((output (expand-macros (nth 1 def))))
-    (cond ((and *function-spec* (or (listp (typeof *function-spec*))
-                                    (and (listp output) (key-eq (car output) '|QUOTE|))))
-           (let ((clause (if (and (listp output) (listp (cadr output))) (caadr output) nil)))
-             (if (or (key-eq clause '|closure|) (key-eq clause '|lambda|))
-                 (let ((out (if (null output) nil (specify-expr output))))
-                   (when (and (listp output)
-                              (key-eq (car output) '|def-closure|)
-                              *function-spec* (key-eq (typeof *function-spec*) '|auto|))
-                     (setf (typeof *function-spec*) (list '|struct| (name (car (body out))))))
-                   (make-specifier nil '|@RETURN| nil nil nil nil nil out '()))
-                 (make-specifier nil '|@RETURN| nil nil nil nil nil
-                                 (specify-cast-expr (list '|cast|
-                                                          (remove nil (list
-                                                                       (const *function-spec*)
-                                                                       (typeof *function-spec*)
-                                                                       (modifier *function-spec*)
-                                                                       (const-ptr *function-spec*)
-                                                                       (array-def *function-spec*)))
-                                                          output)) '()))))
-          ((and (listp output)
-                (key-eq (car output) '|def-closure|)
-                *function-spec* (key-eq (typeof *function-spec*) '|auto|))
-           (setf (typeof *function-spec*) (list '|struct| (name (car (body (specify-expr output)))))))
-          ;; tries to infer output type from return expression
-          ((and *function-spec* (key-eq (typeof *function-spec*) '|auto|))
-           (format t "FFFFFFFFFFR ~A~%" (typeof *function-spec*))
-           (let* ((out (specify-expr output))
-                  (typ (deep-typeof "" out)))
-             (format t "TYTYTYTYTY ~A~%" typ)
-             (when typ
-               (setf (const *function-spec*) (const typ))
-               (setf (typeof *function-spec*) (typeof typ))
-               (setf (modifier *function-spec*) (modifier typ))
-               (setf (const-ptr *function-spec*) (const-ptr typ))
-               (setf (array-def *function-spec*) (array-def typ)))
-             (make-specifier nil '|@RETURN| nil nil nil nil nil out '())))
-          (t (make-specifier nil '|@RETURN| nil nil nil nil nil (specify-expr output) '())))))
+  (let ((current-spec
+            (let ((output (expand-macros (nth 1 def))))
+              (cond ((and *function-spec* (or (listp (typeof *function-spec*))
+                                              (and (listp output) (key-eq (car output) '|QUOTE|))))
+                     (let ((clause (if (and (listp output) (listp (cadr output))) (caadr output) nil)))
+                       (if (or (key-eq clause '|closure|) (key-eq clause '|lambda|))
+                           (let ((out (if (null output) nil (specify-expr output))))
+                             (when (and (listp output)
+                                        (key-eq (car output) '|def-closure|)
+                                        *function-spec* (key-eq (typeof *function-spec*) '|auto|))
+                               (setf (typeof *function-spec*) (list '|struct| (name (car (body out))))))
+                             (make-specifier nil '|@RETURN| nil nil nil nil nil out '()))
+                           (make-specifier nil '|@RETURN| nil nil nil nil nil
+                                           (specify-cast-expr (list '|cast|
+                                                                    (remove nil (list
+                                                                                 (const *function-spec*)
+                                                                                 (typeof *function-spec*)
+                                                                                 (modifier *function-spec*)
+                                                                                 (const-ptr *function-spec*)
+                                                                                 (array-def *function-spec*)))
+                                                                    output)) '()))))
+                    ((and (listp output)
+                          (key-eq (car output) '|def-closure|)
+                          *function-spec* (key-eq (typeof *function-spec*) '|auto|))
+                     (setf (typeof *function-spec*) (list '|struct| (name (car (body (specify-expr output)))))))
+                    ;; tries to infer output type from return expression
+                    ((and *function-spec* (key-eq (typeof *function-spec*) '|auto|))
+                     (format t "FFFFFFFFFFR ~A~%" (typeof *function-spec*))
+                     (let* ((out (specify-expr output))
+                            (typ (deep-typeof "" out)))
+                       (format t "TYTYTYTYTY ~A~%" typ)
+                       (when typ
+                         (setf (const *function-spec*) (const typ))
+                         (setf (typeof *function-spec*) (typeof typ))
+                         (setf (modifier *function-spec*) (modifier typ))
+                         (setf (const-ptr *function-spec*) (const-ptr typ))
+                         (setf (array-def *function-spec*) (array-def typ)))
+                       (make-specifier nil '|@RETURN| nil nil nil nil nil out '())))
+                    (t (make-specifier nil '|@RETURN| nil nil nil nil nil (specify-expr output) '()))))))
+    (assign-check current-spec nil) ; authority check
+    current-spec))
 
 (defun specify-if (def)
   (when (or (< (length def) 3) (> (length def) 4)) (error (format nil "wrong if form ~A" def)))
@@ -1232,7 +1241,6 @@
         (setf (const-ptr function-specifier) const-ptr)
         (setf (array-def function-specifier) array))
 
-      (setf (body function-specifier) (specify-body body))
 	  (when is-method
         (add-param
             (let ((var-name (specify-decl-name< '|this|)))
@@ -1262,13 +1270,16 @@
                            do (setf (attrs func-prm) (push (cons '|volatile| t) (attrs func-prm)))))
                    
                    (add-param
-                       (let ((var-name (specify-decl-name< variable)))
-                         (*puts* var-name
-                           (make-specifier
-                               var-name
-                             '@|PARAM| const type modifier const-ptr array nil
-                             (if is-volatile (list (cons '|volatile| t)) nil) is-anonymous)))
+                       (let* ((var-name (specify-decl-name< variable))
+                              (param-spec (*puts* var-name
+                                            (make-specifier var-name
+                                              '@|PARAM| const type modifier const-ptr array nil
+                                              (if is-volatile (list (cons '|volatile| t)) nil) is-anonymous))))
+                         (assign-check param-spec nil) ; authority check                              
+                         param-spec)
                      function-specifier))))
+
+      (setf (body function-specifier) (specify-body body))
 
       (when (key-eq (typeof *function-spec*) '|auto|)
         (error (format nil "function: '~A with 'auto return type but without return statement" name)))
@@ -1341,8 +1352,9 @@
 
 (defun specify-struct (def attrs &key ((:nested is-nested) nil) ((:inline is-inline) nil))
   (when (and is-nested (> (length attrs) 0)) (error (format nil "wrong attributes ~A" attrs)))
-  (let* ((is-static  nil)
-	     (is-declare nil)
+  (let* ((is-static   nil)
+	     (is-declare  nil)
+	     (is-non-copy nil)
          (is-anonymous (or (= (length def) 1)
                          (not (or (and (listp (nth 1 def)) (key-eq (car (nth 1 def)) '<>))
                                 (symbolp (nth 1 def))))))
@@ -1361,16 +1373,18 @@
 
     (dolist (attr attrs)
       (let ((name (car attr)))
-	    (cond ((key-eq name '|static|)  (setq is-static  t))
-	          ((key-eq name '|decl|)    (setq is-declare t))
+	    (cond ((key-eq name '|static|)   (setq is-static   t))
+	          ((key-eq name '|decl|)     (setq is-declare  t))
+	          ((key-eq name '|non-copy|) (setq is-non-copy t))
 	          (t (error (format nil "unknown struct attribute ~A" attr))))))
 
     (let ((struct-attrs '())
           (attributes '())
 	      (declares '()))
 
-      (when is-static  (push (cons '|static| t) struct-attrs))
-	  (when is-declare (push (cons '|decl| t) struct-attrs))
+      (when is-static   (push (cons '|static|   t) struct-attrs))
+	  (when is-declare  (push (cons '|decl|     t) struct-attrs))
+	  (when is-non-copy (push (cons '|non-copy| t) struct-attrs))
       (setf (attrs struct-specifier) struct-attrs)
       
       (dolist (clause clauses)
@@ -1389,12 +1403,7 @@
                     ((find (char (symbol-name construct) 0) "@#")
 		             (add-inner (specify-preprocessor clause attributes) struct-specifier)
 		             (setq attributes '()))
-		            ((key-eq construct '|static|)   (push clause attributes))
-		            ((key-eq construct '|decl|)     (push clause attributes))
-		            ((key-eq construct '|inline|)   (push clause attributes))
-		            ((key-eq construct '|register|) (push clause attributes))
-		            ((key-eq construct '|extern|)   (push clause attributes))
-		            ((key-eq construct '|volatile|) (push clause attributes))
+                    ((find construct *attributes* :test #'key-eq) (push clause attributes))
                     ;; compatibility
                     ((key-eq construct '|code|) (add-inner (specify-code-expr clause) struct-specifier))
                     ;; members
@@ -1498,16 +1507,7 @@
 	          (cond ((find (char (symbol-name construct) 0) "@#")
 		             (add-inner (specify-preprocessor clause attributes) guard-specifier)
 		             (setq attributes '()))
-		            ((key-eq construct '|static|)       (push clause attributes))
-		            ((key-eq construct '|decl|)         (push clause attributes))
-		            ((key-eq construct '|inline|)       (push clause attributes))
-		            ((key-eq construct '|register|)     (push clause attributes))
-		            ((key-eq construct '|extern|)       (push clause attributes))
-		            ((key-eq construct '|volatile|)     (push clause attributes))
-		            ((key-eq construct '|thread-local|) (push clause attributes))
-		            ((key-eq construct '|resolve|)      (push clause attributes))
-		            ((key-eq construct '|atomic|)       (push clause attributes))
-		            ((key-eq construct '|defer|)        (push clause attributes))
+                    ((find construct *attributes* :test #'key-eq) (push clause attributes))
 		            ((key-eq construct '|include|)
 		             (add-inner (specify-include  clause attributes) guard-specifier) (setq attributes '()))
 		            ((key-eq construct '|var|)

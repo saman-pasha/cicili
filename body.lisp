@@ -31,7 +31,8 @@
                                 ((key-eq (car quoted) '|lambda|) ; annonymous lambda
                                  (let* ((lname (gensym "__ciciliL_"))
                                         (func-spec (specify-function (append (list '|lambda| lname) (cdr quoted)) '())))
-                                   (add-inner func-spec (if *function-spec* *function-spec* *variable-spec*))
+                                   (unless *type-inference-time*
+                                     (add-inner func-spec (if *function-spec* *function-spec* *variable-spec*)))
                                    (let* ((fname (name func-spec))
                                           (name (if (listp fname)
                                                     (intern (make-shared-name (car fname) (cdr fname)))
@@ -40,7 +41,8 @@
                                 
                                 ((key-eq (car quoted) '|lambda*|) ; named lambda 
                                  (let* ((func-spec (specify-function quoted '())))
-                                   (add-inner func-spec (if *function-spec* *function-spec* *variable-spec*))
+                                   (unless *type-inference-time*
+                                     (add-inner func-spec (if *function-spec* *function-spec* *variable-spec*)))
                                    (let* ((fname (name func-spec))
                                           (name (if (listp fname)
                                                     (intern (make-shared-name (car fname) (cdr fname)))
@@ -111,7 +113,7 @@
                  (specify-call-expr def))))))
 
 (defun specify-body (def)
-  (let ((body-specifier (make-specifier (gensym "cicili#Body") '@|BODY| nil nil nil nil nil nil nil))
+  (let ((body-specifier (make-specifier (gensym "body") '@|BODY| nil nil nil nil nil nil nil))
         (lbody '())
         (attributes '()))
     (dolist (form def)
@@ -142,17 +144,8 @@
 		                      ((key-eq func '|for|)       (specify-for           form)) 
 		                      ((key-eq func '|cond|)      (specify-cond          form))
                               
-		                      ((key-eq func '|static|)       (push form attributes) nil)     
-		                      ((key-eq func '|decl|)         (push form attributes) nil)
-		                      ((key-eq func '|inline|)       (push form attributes) nil)
-		                      ((key-eq func '|register|)     (push form attributes) nil)
-		                      ((key-eq func '|extern|)       (push form attributes) nil)
-		                      ((key-eq func '|volatile|)     (push form attributes) nil)
-		                      ((key-eq func '|auto|)         (push form attributes) nil)
-		                      ((key-eq func '|thread-local|) (push form attributes) nil)
-		                      ((key-eq func '|resolve|)      (push form attributes) nil)
-		                      ((key-eq func '|defer|)        (push form attributes) nil)
-                              
+                              ((find func *attributes* :test #'key-eq) (push form attributes) nil)
+
                               (t (let ((out-res
                                            (cond ((key-eq func '|include|) (specify-include     form attributes))
 		                                         ((key-eq func '|typedef|) (specify-typedef     form attributes))

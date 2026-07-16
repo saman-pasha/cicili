@@ -92,9 +92,11 @@
                  (MAP 'LIST #'(LAMBDA (var)
                                 (WHEN (/= (LENGTH var) 2)
                                   (ERROR (FORMAT NIL "wrong letin variable definition: ~A" var)))
-                                (LET ((type (CICILI:INFER-TYPE (CADR var))))
-                                  (WHEN (> (LENGTH type) 1) (ERROR (FORMAT NIL "letin gets invalid type ~A for~%  ~A" type var)))
-                                  `((defer () (<> free ,@type)) (,@type ,(CAR var) . (FUNCTION ,(CADR var))))))
+                                (FORMAT T "LETIIIIIIIIINNNN1 ~A~%" (CAR var) (CADR var))
+                                (MULTIPLE-VALUE-BIND (_ full-type) (CICILI:INFER-TYPE (CADR var))
+                                  (FORMAT T "LETIIIIIIIIINNNN2 ~A~%" full-type)
+                                  (LET ((type-name (NTH 1 full-type)))
+                                    `((defer () (<> free ,type-name)) (,type-name * ,(CAR var) . (FUNCTION ,(CADR var)))))))
                       var-list))
      ,@body))
 
@@ -358,7 +360,7 @@
         (params (LOOP FOR (param value) ON captures BY #'CDDR
                       COLLECT (CICILI:INFER-TYPE value :WITH-NAME param)))
         (args (LOOP FOR (_ value) ON captures BY #'CDDR COLLECT value)))
-    (FORMAT T "PAPPAPAPARAMA ~A~%" params)
+    (FORMAT T "PAPPAPAPARAMA ~A  ~A~%" name params)
     `('(lambda* ,name ,params ,@body) ,@args)))
 
 (DEFMACRO new (type &REST args)

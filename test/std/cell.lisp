@@ -16,7 +16,7 @@
       (let ((int aInt . 10)) ; to capture
         (let^cell (arr cell01)
           (printf "1. cell01 arr len: %zu\n" (len^array arr)))
-
+        
         ;; default value used in case of DEAD cell
         ;; -1 as default_value presented in letn scope
         (printf "2. cell01 arr len + over: %zu\n"
@@ -27,24 +27,24 @@
           (printf "3. cell01 arr len: %zu\n" (len^array (cof arr_ptr)))
           (force^free^array^int arr_ptr)) ; needed for taken cell
 
-      ;; (free^cell (aof cell01))
-      
+        ;; (free^cell (aof cell01))
+        
         (taken^cell (arr_ptr cell01
                       (printf "4 cell01 arr len: default path\n")) ; default path
           (printf "4. cell01 arr len: %zu\n" (len^array (cof arr_ptr))))
 
-      )) ; letin
+        )) ; letin
     )) ; cell.c
 
 
 ;; sbcl --script cicili.lisp --syslog ./test/std/cell.lisp
 ;; arr_test
 
-;; NEW ARR: int * 0x6000009a51e0 5
-;; NEW CELL: 600000ba0050 600000ba0040
+;; NEW ARR: int * 0x6000031651e0 5
+;; NEW CELL: 600003360050
 ;; 1. cell01 arr len: 5
 ;; 2. cell01 arr len + over: 15
-;; TAKE CELL: 600000ba0040 600000ba0040
+;; TAKE CELL: 600003360040
 ;; 3. cell01 arr len: 5
-;; FREE ARR: 0x6000009a51e0
+;; FREE ARR: 0x6000031651e0
 ;; 4 cell01 arr len: default path
