@@ -94,9 +94,10 @@
                                   (ERROR (FORMAT NIL "wrong letin variable definition: ~A" var)))
                                 (FORMAT T "LETIIIIIIIIINNNN1 ~A~%" (CAR var) (CADR var))
                                 (MULTIPLE-VALUE-BIND (_ full-type) (CICILI:INFER-TYPE (CADR var))
-                                  (FORMAT T "LETIIIIIIIIINNNN2 ~A~%" full-type)
+                                  (FORMAT T "LETIIIIIIIIINNNN2 ~A  ~A~%" full-type (CADR var))
                                   (LET ((type-name (NTH 1 full-type)))
-                                    `((defer () (<> free ,type-name)) (,type-name * ,(CAR var) . (FUNCTION ,(CADR var)))))))
+                                    `((defer () (<> free ,type-name))
+                                      (,type-name ,@(REMOVE NIL (LIST (NTH 2 full-type))) ,(CAR var) . (FUNCTION ,(CADR var)))))))
                       var-list))
      ,@body))
 

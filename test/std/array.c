@@ -44,7 +44,7 @@ array_int_item_t nth_array_int_G142 (int index , array_int array , const int def
   return (((index  <  (array . len ) )) ? (array . arr )[index ] : default_value );
 }
 long bench_a_nth () {
-  ({ /* letn119 */
+  ({ /* letn120 */
     array_int v  __attribute__((__cleanup__(free_array_int ))) = new_array_int_G122 (((const int[]){ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49}), 50);
     // ----------
     { /* let135 */
@@ -66,11 +66,11 @@ long bench_a_nth () {
 void __ciciliL_154 (int ** iarr ) {
   free (((void *)(*iarr )));
 }
-array_int new_array_int_G172 (const int * arr , const int len ) {
-  return ({ /* letn176 */
+array_int new_array_int_G173 (const int * arr , const int len ) {
+  return ({ /* letn177 */
       int * new_arr  = calloc (len , sizeof(int));
       // ----------
-      ({ /* progn179 */
+      ({ /* progn180 */
         printf ("NEW ARR: %s %p %zu\n", "const int *", new_arr , ((size_t)len ));
       });
       memcpy (new_arr , arr , (len  *  sizeof(int) ));
@@ -108,8 +108,8 @@ int main () {
   { /* let153 */
     int * iarr  __attribute__((__cleanup__(__ciciliL_154 ))) = ((int *)calloc (2, sizeof(int)));
     // ----------
-    ({ /* letn166 */
-      array_int arr01  __attribute__((__cleanup__(free_array_int ))) = new_array_int_G172 (((const int[]){ 1, 2, 3, 4, 5}), 5);
+    ({ /* letn168 */
+      array_int arr01  __attribute__((__cleanup__(free_array_int ))) = new_array_int_G173 (((const int[]){ 1, 2, 3, 4, 5}), 5);
       array_int arr02  __attribute__((__cleanup__(free_array_int ))) = new_array_int_G188 (iarr , 2);
       // ----------
       printf ("arr01 len: %zu\n", (arr01 . len ));

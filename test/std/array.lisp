@@ -71,7 +71,7 @@
                    (+= (cof sum) (nth (% i 5) arr)))
               (cof sum))))
         
-      )) ; let
+        )) ; let
 
     (printf "  nth (bounds-checked) %d times: %ld ms\n" N (bench_a_nth))
 
@@ -81,20 +81,20 @@
 ;; arr_test
 
 ;; sizeof array_int: 16
-;; NEW ARR: const int * 0x600001c391e0 5
-;; NEW ARR: int * 0x600001e3c040 2
+;; NEW ARR: const int * 0x6000029e11e0 5
+;; NEW ARR: int * 0x600002be4040 2
 ;; arr01 len: 5
 ;; arr02 len: 2
 ;; print int array using Unsafe nth: 12345
 ;; print int array using Safe nth: 1234500
 ;; letn sum: 3000000000
-;; FREE ARR: 0x600001e3c040
-;; FREE ARR: 0x600001c391e0
-;; NEW ARR: const int * 0x600002738000 50
+;; FREE ARR: 0x600002be4040
+;; FREE ARR: 0x6000029e11e0
+;; NEW ARR: const int * 0x6000012e0000 50
 ;;   (nth checksum: 24500000000)
-;; FREE ARR: 0x600002738000
-;;   nth (bounds-checked) 1000000000 times: 413 ms
+;; FREE ARR: 0x6000012e0000
+;;   nth (bounds-checked) 1000000000 times: 412 ms
 
 ;; (nth) bench result:
-;; Cicili 400 413 405 401 411
+;; Cicili 414 421 412 422 412
 ;; Rust   439 435 437 439 436

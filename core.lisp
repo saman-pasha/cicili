@@ -42,7 +42,8 @@
 ;; deeply traverse spec tree to find lexeme id
 ;; type inference back-end
 (defun deep-typeof (id &optional spec)
-  (let ((spec (if spec spec (*gets* id))))
+  (let* ((id (if (and (listp id) (key-eq (car id) '|struct|)) (cadr id) id))
+         (spec (if spec spec (*gets* id))))
     (format t "TYPEOF REQUESTED: ~A~%" spec)
     (if spec
         (let ((const-val (construct spec)))
@@ -63,7 +64,13 @@
                  (*push* (name spec))
                  (*pop* (deep-typeof id (car (last (body (body spec)))))))
                 ((eql const-val '|@?|) (deep-typeof id (car (default spec))))
-                ((eql const-val '|@UNARY|) (deep-typeof id (default spec)))
+                ((eql const-val '|@UNARY|)
+                 (let ((ty (deep-typeof id (default spec))))
+                   (cond ((eql (name spec) '&)
+                          (specify-variable (append (list '|var|) (infer-type (list '|aof| (name ty)))) '()))
+                         ((eql (name spec) '*)
+                          (specify-variable (append (list '|var|) (infer-type (list '|cof| (name ty)))) '()))
+                         (t ty))))
                 ((eql const-val '|@OPR|) (deep-typeof id (car (default spec))))
                 ((or (eql const-val '|@$|) (eql const-val '|@->|))
                  (let ((struct (deep-typeof id (name spec))))
@@ -170,10 +177,27 @@
 		                                          (specify-type< ty)
                                                 (let ((ty-def (list const typeof
                                                                     (cond
+                                                                      ((null modifier)         '|*|)
                                                                       ((key-eq '|*|  modifier) '|**|)
                                                                       ((key-eq '|**| modifier) '|***|)
-                                                                      (t '|*|))
+                                                                      (t (error (format nil "'aof of a heavy-pointer: ~A" clause))))
                                                                     const-ptr variable array)))
+                                                  (values (remove nil ty-def) ty-def))))))
+                                         ((key-eq func '|cof|)
+                                          (format t "RRRRR4 ~A~%" (expand-macros (cadr clause)))
+                                          (return-from infer-type
+                                            (let ((ty (infer-type (expand-macros (cadr clause))
+                                                        :with-name with-name :copy-name copy-name)))
+                                              (multiple-value-bind (const typeof modifier const-ptr variable array)
+		                                          (specify-type< ty)
+                                                (let ((ty-def (list const typeof
+                                                                    (cond
+                                                                      ((key-eq '|***| modifier) '|**|)
+                                                                      ((key-eq '|**|  modifier) '|*|)
+                                                                      ((key-eq '|*|   modifier) nil)
+                                                                      (t (error (format nil "'cof of a non-pointer: ~A" clause))))
+                                                                    const-ptr variable array)))
+                                                  (format t "RRRRR5 ~A~%" ty-def)
                                                   (values (remove nil ty-def) ty-def))))))
                                          ((and (= (length clause) 2) (find func *unaries* :test #'key-eq))
                                           (return-from infer-type (infer-type (cadr clause)
@@ -191,7 +215,16 @@
                                          ((key-eq func '?) (return-from infer-type
                                                              (infer-type (cadr clause)
                                                                :with-name with-name :copy-name copy-name)))
-                                         ((symbolp func) (*gets* func))
+                                         ((symbolp func) ; a function call or type descriptor
+                                          (let ((ty (*gets* func)))
+                                            (cond ((key-eq (construct ty) '|@FUNC|) ty)
+                                                  ((key-eq (construct ty) '|@STRUCT|)
+                                                   (multiple-value-bind (const typeof modifier const-ptr variable array)
+		                                               (specify-type< clause)
+                                                     (let ((ty-def (list const typeof modifier const-ptr variable array)))
+                                                       (format t "RRRRR6 ~A~%" ty-def)
+                                                       (return-from infer-type (values (remove nil ty-def) ty-def)))))
+                                                  (t ty))))
                                          ) ; cond
                                    ))
                      (t (deep-typeof id)))))
