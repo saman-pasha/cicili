@@ -86,18 +86,24 @@
 ;;                       var-list))
 ;;      ,@body))
 
-;; accepts all variables inferene type to find destructor
+;; accepts all variables, inferes type to find destructor
 (DEFMACRO letin (var-list &REST body)
   `(letn ,(APPLY 'APPEND
                  (MAP 'LIST #'(LAMBDA (var)
                                 (WHEN (/= (LENGTH var) 2)
                                   (ERROR (FORMAT NIL "wrong letin variable definition: ~A" var)))
                                 (FORMAT T "LETIIIIIIIIINNNN1 ~A~%" (CAR var) (CADR var))
-                                (MULTIPLE-VALUE-BIND (_ full-type) (CICILI:INFER-TYPE (CADR var))
+                                (MULTIPLE-VALUE-BIND (type full-type) (CICILI:INFER-TYPE (CADR var))
                                   (FORMAT T "LETIIIIIIIIINNNN2 ~A  ~A~%" full-type (CADR var))
-                                  (LET ((type-name (NTH 1 full-type)))
-                                    `((defer () (<> free ,type-name))
-                                      (,type-name ,@(REMOVE NIL (LIST (NTH 2 full-type))) ,(CAR var) . (FUNCTION ,(CADR var)))))))
+                                  (LET ((type-name (NTH 1 full-type)))                                    
+                                    (IF (NTH 2 full-type) ; check has any modifier
+                                        `((defer () (<> free ,type-name))
+                                          (,@type ,(CAR var) . (FUNCTION ,(CADR var))))
+                                        (IF (CICILI:IS-NON-COPY (NTH 1 full-type)) ; define non-copy instances as 'move
+                                            `((defer () (<> free ,type-name))
+                                              (,@type move ,(CAR var) . (FUNCTION ,(CADR var))))
+                                            `((defer () (<> free ,type-name))
+                                              (,@type ,(CAR var) . (FUNCTION ,(CADR var)))))))))
                       var-list))
      ,@body))
 

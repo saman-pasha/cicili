@@ -22,4 +22,6 @@
     :specify-type-value< ; could be used inside macros to destructure variable definition with default value extra bind
     :*gets*
     :infer-type
+    :is-non-copy
+    :is-inside-loop
     )) ; cicili

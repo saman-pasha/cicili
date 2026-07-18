@@ -45,13 +45,13 @@
       
       ((string= os "Darwin")
        (list
-        ;; C
+        ;; C      /usr/local/bin/gcc-16 "-Wno-maybe-uninitialized" "-g"
         'dumper   '()
-        'compiler `("glibtool" "--tag=CC" "--mode=compile" "gcc" "-Werror" "-Wall" *verbose*) ; "-Wno-maybe-uninitialized"
+        'compiler `("glibtool" "--tag=CC" "--mode=compile" "gcc" "-Werror" "-Wall" *verbose*)
         'linker   `("glibtool" "--tag=CC" "--mode=link" "gcc" *verbose*)
         ;; C++
         'cpp-dumper   '()
-        'cpp-compiler `("glibtool" "--tag=CXX" "--mode=compile" "g++" "-O3" "-Werror" *verbose*) ; "-g"
+        'cpp-compiler `("glibtool" "--tag=CXX" "--mode=compile" "g++" "-O3" "-Werror" *verbose*)
         'cpp-linker   `("glibtool" "--tag=CXX" "--mode=link" "g++" *verbose*)))
       
       (t (list

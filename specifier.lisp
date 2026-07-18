@@ -18,7 +18,9 @@
    (body          :initform nil :accessor body)
    (params        :initform nil :accessor params)
    (lambdas       :initform nil :accessor lambdas)
-   (inners        :initform nil :accessor inners)))
+   (inners        :initform nil :accessor inners)
+   (is-moved      :initform nil :accessor is-moved) ; compile-time 'move modifier helper
+   )) ; sp
 
 (defun make-specifier (name construct const typeof modifier const-ptr array-def default attrs &optional (anonymous nil))
   (let ((instance (make-instance 'sp
@@ -334,7 +336,7 @@
 			                             (setq type nth-1-desc)
 			                             (setq variable nth-2-desc))))
 		                       (if (find nth-1-desc *modifiers* :test #'key-eq)
-			                       (if (key-eq nth-2-desc '|const|)
+			                       (if (or (key-eq nth-2-desc '|const|) (key-eq nth-2-desc '|restrict|))
 			                           (progn
 				                         (setq type nth-0-desc)
 				                         (setq modifier nth-1-desc)
@@ -367,7 +369,7 @@
                                      (setq variable nth-2-desc)
 				                     (setq array (specify-function (cdr desc) (list '(|decl|)))))
                                    (if (find nth-2-desc *modifiers* :test #'key-eq)
-			                           (if (key-eq nth-3-desc '|const|)
+			                           (if (or (key-eq nth-3-desc '|const|) (key-eq nth-3-desc '|restrict|))
 				                           (progn
 				                             (setq const nth-0-desc)
 				                             (setq type nth-1-desc)
@@ -384,7 +386,7 @@
 				                                 (setq type nth-1-desc)
 				                                 (setq modifier nth-2-desc)
 				                                 (setq variable nth-3-desc))))
-		                               (if (key-eq nth-2-desc '|const|)
+		                               (if (or (key-eq nth-2-desc '|const|) (key-eq nth-2-desc '|restrict|))
 			                               (if (is-array nth-3-desc)
 			                                   (progn
 				                                 (setq type nth-0-desc)
@@ -408,7 +410,7 @@
 			                                     (setq variable nth-2-desc)
 			                                     (setq array nth-3-desc))))))
                                (if (find nth-1-desc *modifiers* :test #'key-eq)
-			                       (if (key-eq nth-2-desc '|const|)
+			                       (if (or (key-eq nth-2-desc '|const|) (key-eq nth-2-desc '|restrict|))
 			                           (if (is-array nth-3-desc)
 				                           (progn
 				                             (setq type nth-0-desc)
@@ -478,9 +480,11 @@
               (key-eq modifier '&)
               (key-eq modifier '*)
               (key-eq modifier '**)
-              (key-eq modifier '***))
+              (key-eq modifier '***)
+              (key-eq modifier '|move|)
+              (key-eq modifier '|ref|))
       (setq status -3))
-    (unless (or (null const-ptr) (key-eq const-ptr '|const|)) (setq status -4))
+    (unless (or (null const-ptr) (key-eq const-ptr '|const|) (key-eq const-ptr '|restrict|)) (setq status -4))
     (unless (or (null const-ptr)
               (key-eq modifier '*)
               (key-eq modifier '**)
@@ -773,7 +777,22 @@
             (make-specifier (specify-expr (nth 0 app)) '|@CALL| nil nil nil nil nil
                             (if (> (length app) 1)
                                 (loop for item in (nthcdr 1 app)
-                                      collect (specify-expr (expand-macros item)))
+                                      collect (let* ((arg-spec (specify-expr (expand-macros item)))
+                                                     (origin (deep-typeof "" arg-spec))) ; check for moved vars
+                                                (when (and origin
+                                                           (find (construct origin) '(|@VAR| |@PARAM|))
+                                                           (or (key-eq (modifier origin) '|move|)
+                                                               (key-eq (modifier origin) '|ref|)))
+                                                  (format t "CCCCCCCCCCCCCCCCCCCCCCCCCCCCCC ~A  ~A~%" (is-moved origin) origin)
+                                                  (if (is-moved origin)
+                                                      (error (format nil "trying to move already moved var: ~A~%  in call: ~A"
+                                                                     origin app))
+                                                      (if (and (key-eq (modifier origin) '|move|) (is-inside-loop))
+                                                          (error (format nil "using 'move var: ~A~%  inside loop~%  in call: ~A"
+                                                                     origin app))
+                                                          (when (key-eq (modifier origin) '|move|)
+                                                            (setf (is-moved origin) t)))))
+                                                arg-spec))
                                 nil)
                             '()))
         (specify-expr app))))
@@ -884,7 +903,7 @@
                                        ,@has-defer)))
                       attributes)))))          
           (setf (attrs var-spec) attributes)
-          (assign-check var-spec (default var-spec)) ; authority check
+          (assign-check var-spec var-spec (default var-spec)) ; authority check
           
           (setf *variable-spec* tmp-variable-spec)
           (*puts* (name var-spec) var-spec))))))
@@ -993,7 +1012,7 @@
                                                                         (specify-call-expr (list app))
                                                                         app)))
                                                               attributes))))
-                           (assign-check param-spec (default param-spec)) ; authority check
+                           (assign-check let-var param-spec (default param-spec)) ; authority check
                            param-spec)
                        let-var))
                    (setq is-static   nil)
@@ -1018,15 +1037,17 @@
 
 (defun specify-set-expr (def)
   (when (= (rem (length (cdr def)) 2) 1) (error (format nil "wrong set form ~A" def)))
-  (let* ((len (length (cdr def)))
+  (let* ((set-spec (make-specifier nil '|@SET| nil nil nil nil nil nil '()))
+         (len (length (cdr def)))
          (items (loop for i from 0 to (1- len)
                       for (x y) on (cdr def)
                       when (and (= (mod i 2) 0) (not (null y)))
                       collect (let ((left-spec (specify-expr x))
                                     (right-spec (specify-expr y)))
-                                (assign-check left-spec right-spec) ; authority check
+                                (assign-check set-spec left-spec right-spec) ; authority check
                                 (list left-spec right-spec)))))
-    (make-specifier nil '|@SET| nil nil nil nil nil items '())))
+    (setf (default set-spec) items)
+    set-spec))
 
 (defun specify-return-expr (def)
   (when (> (length def) 2) (error (format nil "wrong return form ~A" def)))
@@ -1069,7 +1090,7 @@
                          (setf (array-def *function-spec*) (array-def typ)))
                        (make-specifier nil '|@RETURN| nil nil nil nil nil out '())))
                     (t (make-specifier nil '|@RETURN| nil nil nil nil nil (specify-expr output) '()))))))
-    (assign-check current-spec nil) ; authority check
+    ;; (assign-check current-spec nil) ; authority check
     current-spec))
 
 (defun specify-if (def)
@@ -1286,7 +1307,7 @@
                                             (make-specifier var-name
                                               '@|PARAM| const type modifier const-ptr array nil
                                               (if is-volatile (list (cons '|volatile| t)) nil) is-anonymous))))
-                         (assign-check param-spec nil) ; authority check                              
+                         (assign-check function-specifier param-spec nil) ; authority check                              
                          param-spec)
                      function-specifier))))
 

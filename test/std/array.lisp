@@ -21,6 +21,28 @@
   (var int N    . 1000000000) ; total operations
   (var int STEP . 1000)       ; elements per epoch
 
+  ;; if uncomment function, compile-time error:
+  ;; non-copy struct assignment for: #<SP @PARAM arr array_int  {12037AAC33}>
+  ;; by: NIL
+  ;; inside: #<SP @FUNC a_func_copy_array void  {12037AA8D3}>
+  ;; (func a_func_copy_array ((array^int arr))
+  ;;       (format #t "length of copied array %zu\n" (len^array arr)))
+
+  ;; but allows to use 'move instance modifier
+  (func a_func_move_array ((array^int move arr))
+        (format #t "length of moved array %zu\n" (len^array arr)))
+
+  ;; and also allows 'ref instance modifier
+  ;; references are pointers
+  (func a_func_referenced_array ((array^int ref referred_arr))
+        (format #t "length of referenced array %zu\n" (len^array (cof referred_arr)))
+        ;; new ctor return type is 'copy but Cicili rejects to assign to a 'copy instance happend by 'cof
+        ;; non-copy struct assignment for: #<SP @UNARY * = #<SP @ATOM referred_arr @SYMBOL  {120235DD13}>  {120235DDC3}>
+        ;; by: #<SP @CALL #<SP @ATOM new_array_int_G124 @SYMBOL  {12023884F3}> = (#<SP @CAST const int #<SP @NIL  {12023885A3}> ...
+        ;; inside: #<SP @SET  {120235DC63}>
+        ;; (set (cof referred_arr) (new array (cast (const int []) '{ 1 2 3 })))
+        )
+
   (func bench_a_nth ()
         (out long)
         (letin ((v (new^array (cast (const int []) '{
@@ -33,7 +55,11 @@
           
           (let ((i64 sum . 0)
                 (llong t0 . #'(ms_now)))
-            
+
+            ;; if try to call v instead of by ref causes
+            ;; using 'move var: #<SP @VAR v array_int move = #<SP @CALL #<SP @ATOM new_array_int_G127 @SYMBOL  {12022CEBF3}> = ...
+            ;; inside loop
+            ;; in call: ('(lambda* (<> nth array_int G145) ...
             (for ((int i . 0)) (< i N) ((++ i))
                  ;; (+= sum ((<> nth array) (% i 50) v :unchecked T)))
                  (+= sum ((<> nth array) (% i 50) v :default 0)))
@@ -46,30 +72,59 @@
     (printf "sizeof %s: %zu\n" (symbol-name (<> array int)) (sizeof (<> array int)))
 
     ;; example to ues new generic constructor
-    (let ((int * iarr . #'(alloc 2 (sizeof int)))) ; alloc is auto free allocation
+    (let ((int * iarr . #'(alloc 2 (sizeof int))) ; alloc is auto free allocation
+          ;; try to get copy instance of a 'non-copy struct fails with:
+          ;; non-copy struct assignment for: #<SP @VAR copyarr array_int = #<SP @CAST array_int = #<SP @CALL #<SP @ATOM iarr @SYMBOL ...
+          ;; by: #<SP @CAST array_int = #<SP @CALL #<SP @ATOM iarr @SYMBOL  {120389DE53}> = (#<SP @ATOM 2 @NUMBER  {120389DF03}>) ...
+          ;; inside: #<SP @FUNC main int {(static . T)} {1203887623}>
+          ;; (array^int copyarr . #'(cast array^int { iarr 2 }))
+          ) ; decls
+      
+      ;; letin use 'move instance modifier for 'non-copy structs variables
       (letin ((arr01 (new array (cast (const int []) '{ 1 2 3 4 5 })))
-              (arr02 (new array iarr 2)))
+              (arr02 (new array iarr 2))
+              ) ; decls
 
         (printf "arr01 len: %zu\n" (len^array arr01))
         (printf "arr02 len: %zu\n" (len^array arr02))
 
+        (a_func_referenced_array (aof arr02))
+        (a_func_referenced_array (aof arr02))
+        (a_func_move_array arr02)
+        ;; cause moving moved object error
+        ;; trying to move already moved var: #<SP @VAR arr02 array_int ref  {1205476273}>
+        ;; in call: (a_func_referenced_array (aof arr02))
+        ;; (a_func_referenced_array (aof arr02))
+        
+        ;; using unchecked does not consume arr01
         (printf "print int array using Unsafe nth: ")
         (for ((size_t i . 0)) (< i (len^array arr01)) ((++ i))
              (printf "%d" (nth^array i arr01 :unchecked T)))
         (putchar #\Newline)
 
+        ;; with default arr01 is consumed by nth
         (printf "print int array using Safe nth: ")
         (for ((size_t i . 0)) (< i 7) ((++ i))
              (printf "%d" (nth^array i arr01 :default 0)))
         (putchar #\Newline)
-
+                
         (let ((i64 sum . 0))
-          (printf "letn sum: %lld\n"
+          (printf "letn sum1: %lld\n"
             (letn^array (arr len arr01 :sum (aof sum))
               (cast void len)
               (for ((int i . 0)) (< i N) ((++ i))
                    (+= (cof sum) (nth (% i 5) arr)))
-              (cof sum))))
+              (cof sum)))
+
+          ;; trying to move already moved var: #<SP @VAR arr01 array_int move = #<SP @CALL #<SP @ATOM new_array_int_G176 @SYMBOL ...
+          ;; in call: ('(lambda* (<> letn array_int G229)
+          ;; (printf "letn sum2: %lld\n"
+          ;;   (letn^array (arr len arr01 :sum (aof sum))
+          ;;     (cast void len)
+          ;;     (for ((int i . 0)) (< i N) ((++ i))
+          ;;          (+= (cof sum) (nth (% i 5) arr)))
+          ;;     (cof sum)))
+          ) ; let sum
         
         )) ; let
 
@@ -81,20 +136,23 @@
 ;; arr_test
 
 ;; sizeof array_int: 16
-;; NEW ARR: const int * 0x6000029e11e0 5
-;; NEW ARR: int * 0x600002be4040 2
+;; NEW ARR: const int * 0x6000008e5200 5
+;; NEW ARR: int * 0x600000ae0040 2
 ;; arr01 len: 5
 ;; arr02 len: 2
+;; length of referenced array 2
+;; length of referenced array 2
+;; length of moved array 2
 ;; print int array using Unsafe nth: 12345
 ;; print int array using Safe nth: 1234500
-;; letn sum: 3000000000
-;; FREE ARR: 0x600002be4040
-;; FREE ARR: 0x6000029e11e0
-;; NEW ARR: const int * 0x6000012e0000 50
+;; letn sum1: 3000000000
+;; FREE ARR: 0x600000ae0040
+;; FREE ARR: 0x6000008e5200
+;; NEW ARR: const int * 0x6000033e4000 50
 ;;   (nth checksum: 24500000000)
-;; FREE ARR: 0x6000012e0000
-;;   nth (bounds-checked) 1000000000 times: 412 ms
+;; FREE ARR: 0x6000033e4000
+;;   nth (bounds-checked) 1000000000 times: 448 ms
 
 ;; (nth) bench result:
-;; Cicili 414 421 412 422 412
+;; Cicili 415 410 422 412 414
 ;; Rust   439 435 437 439 436

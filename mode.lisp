@@ -25,6 +25,7 @@
  'font-lock-type-face
  '((0 . main)
    (1 . const)
+   (1 . restrict)
    (1 . function)
    (0 . block)
    (1 . func)
@@ -127,6 +128,8 @@
    (1 . <!>)
    (1 . ~)
    (1 . Thunk)
+   (1 . move)
+   (1 . ref)
    ))
 
 (defun cicili-add-keywords (face-name keyword-rules)
