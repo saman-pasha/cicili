@@ -32,35 +32,32 @@ void a_func_move_array (array_int arr ) {
   fprintf (stdout , "length of moved array %zu\n", (arr . len ));
   free_array_int ((&arr ));
 }
-void a_func_referenced_array (array_int * restrict referred_arr ) {
-  fprintf (stdout , "length of referenced array %zu\n", ((*referred_arr ). len ));
-}
-array_int new_array_int_G129 (const int * arr , const int len ) {
-  return ({ /* letn134 */
+array_int new_array_int_G126 (const int * arr , const int len ) {
+  return ({ /* letn131 */
       int * new_arr  = calloc (len , sizeof(int));
       // ----------
-      ({ /* progn137 */
+      ({ /* progn134 */
         printf ("NEW ARR: %s %p %zu\n", "const int *", new_arr , ((size_t)len ));
       });
       memcpy (new_arr , arr , (len  *  sizeof(int) ));
       ((array_int){ new_arr , len });
     });
 }
-array_int_item_t nth_array_int_G149 (size_t index , array_int * restrict array , const int default_value ) {
+array_int_item_t nth_array_int_G146 (size_t index , array_int * restrict array , const int default_value ) {
   return (((index  <  (array -> len ) )) ? (array -> arr )[index ] : default_value );
 }
 long bench_a_nth () {
-  ({ /* letn127 */
-    array_int v  __attribute__((__cleanup__(free_array_int ))) = new_array_int_G129 (((const int[]){ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49}), 50);
+  ({ /* letn124 */
+    array_int v  __attribute__((__cleanup__(free_array_int ))) = new_array_int_G126 (((const int[]){ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49}), 50);
     // ----------
-    { /* let142 */
+    { /* let139 */
       int64_t sum  = 0;
       long long t0  = ms_now ();
       // ----------
       for (int i  = 0; (i  <  N  ); (++i )) {
-          sum  +=  nth_array_int_G149 (((size_t)(i  %  50 )), (&v ), 0) ;
+          sum  +=  nth_array_int_G146 (((size_t)(i  %  50 )), (&v ), 0) ;
       }
-      { /* let153 */
+      { /* let150 */
         long long elapsed  = (ms_now () -  t0  );
         // ----------
         printf ("  (nth checksum: %lld)\n", sum );
@@ -68,6 +65,9 @@ long bench_a_nth () {
       }
     }
   });
+}
+void a_func_referenced_array (array_int * restrict referred_arr ) {
+  fprintf (stdout , "length of referenced array %zu\n", ((*referred_arr ). len ));
 }
 void __ciciliL_161 (int ** iarr ) {
   free (((void *)(*iarr )));

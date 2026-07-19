@@ -33,17 +33,6 @@
         (format #t "length of moved array %zu\n" (len^array arr))
         ((<> free array^int) (aof arr)))
 
-  ;; and also allows 'ref instance modifier
-  ;; references are pointers
-  (func a_func_referenced_array ((array^int ref referred_arr))
-        (format #t "length of referenced array %zu\n" (len^array (cof referred_arr)))
-        ;; new ctor return type is 'copy but Cicili rejects to assign to a 'copy instance happend by 'cof
-        ;; non-copy struct assignment for: #<SP @UNARY * = #<SP @ATOM referred_arr @SYMBOL  {120235DD13}>  {120235DDC3}>
-        ;; by: #<SP @CALL #<SP @ATOM new_array_int_G124 @SYMBOL  {12023884F3}> = (#<SP @CAST const int #<SP @NIL  {12023885A3}> ...
-        ;; inside: #<SP @SET  {120235DC63}>
-        ;; (set (cof referred_arr) (new array (cast (const int []) '{ 1 2 3 })))
-        )
-
   (func bench_a_nth ()
         (out long)
         (letin ((v (new^array (cast (const int []) '{
@@ -69,6 +58,17 @@
               (printf "  (nth checksum: %lld)\n" sum)  ; after timer — forces liveness
               (return elapsed)))))
   
+  ;; and also allows 'ref instance modifier
+  ;; references are pointers
+  (func a_func_referenced_array ((array^int ref referred_arr))
+        (format #t "length of referenced array %zu\n" (len^array (cof referred_arr)))
+        ;; new ctor return type is 'copy but Cicili rejects to assign to a 'copy instance happend by 'cof
+        ;; non-copy struct assignment for: #<SP @UNARY * = #<SP @ATOM referred_arr @SYMBOL  {120235DD13}>  {120235DDC3}>
+        ;; by: #<SP @CALL #<SP @ATOM new_array_int_G124 @SYMBOL  {12023884F3}> = (#<SP @CAST const int #<SP @NIL  {12023885A3}> ...
+        ;; inside: #<SP @SET  {120235DC63}>
+        ;; (set (cof referred_arr) (new array (cast (const int []) '{ 1 2 3 })))
+        )
+
   (main
     (printf "sizeof %s: %zu\n" (symbol-name (<> array int)) (sizeof (<> array int)))
 
@@ -108,7 +108,7 @@
         (for ((size_t i . 0)) (< i 7) ((++ i))
              (printf "%d" (nth^array i arr01 :default 0)))
         (putchar #\Newline)
-                
+        
         (let ((i64 sum . 0))
           (printf "letn sum1: %lld\n"
             (letn^array (arr len arr01 :sum (aof sum))
@@ -158,5 +158,5 @@
 ;;   nth (bounds-checked) 1000000000 times: 464 ms
 
 ;; (nth) bench result:
-;; Cicili 415 410 422 412 414
+;; Cicili 418 417 413 418 418
 ;; Rust   439 435 437 439 436
