@@ -19,7 +19,7 @@
 (defun assign-check (spec left right)
   (let ((initializing (when (find (construct spec) '(|@VAR| |@LET| |@LETN| |@FUNC|)) t))
         (left-type (deep-typeof "" left)))
-    (format t "CHECKLEFT ~A~%" initializing left-type)
+    (format t "CHECKLEFT ~A   ~A~%" initializing left-type)
     (if left-type
         (unless (or (and initializing (modifier left-type))
                     (and (modifier left-type) (not (key-eq (modifier left-type) '|move|))))
@@ -28,7 +28,7 @@
               (error (format nil "non-copy struct assignment for: ~A~%  by: ~A~%  inside: ~A~%" left right spec )))))
         (when right
           (let ((right-type (deep-typeof "" right)))
-            (format t "CHECKRIGHT ~A~%" initializing right-type)
+            (format t "CHECKRIGHT ~A   ~A~%" initializing right-type)
             (when right-type
               (unless (or (and initializing (modifier left-type))
                           (and (modifier right-type) (not (key-eq (modifier right-type) '|move|))))

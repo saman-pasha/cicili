@@ -30,7 +30,8 @@
 
   ;; but allows to use 'move instance modifier
   (func a_func_move_array ((array^int move arr))
-        (format #t "length of moved array %zu\n" (len^array arr)))
+        (format #t "length of moved array %zu\n" (len^array arr))
+        ((<> free array^int) (aof arr)))
 
   ;; and also allows 'ref instance modifier
   ;; references are pointers
@@ -114,6 +115,7 @@
               (cast void len)
               (for ((int i . 0)) (< i N) ((++ i))
                    (+= (cof sum) (nth (% i 5) arr)))
+              ((<> free array^int) (aof arr01)) ; arr01 referred to movedin param in letn no local in main
               (cof sum)))
 
           ;; trying to move already moved var: #<SP @VAR arr01 array_int move = #<SP @CALL #<SP @ATOM new_array_int_G176 @SYMBOL ...
@@ -136,22 +138,24 @@
 ;; arr_test
 
 ;; sizeof array_int: 16
-;; NEW ARR: const int * 0x6000008e5200 5
-;; NEW ARR: int * 0x600000ae0040 2
+;; NEW ARR: const int * 0x600001cc1200 5
+;; NEW ARR: int * 0x600001ec4040 2
 ;; arr01 len: 5
 ;; arr02 len: 2
 ;; length of referenced array 2
 ;; length of referenced array 2
 ;; length of moved array 2
+;; FREE ARR: 0x600001ec4040
 ;; print int array using Unsafe nth: 12345
 ;; print int array using Safe nth: 1234500
+;; FREE ARR: 0x600001cc1200
 ;; letn sum1: 3000000000
-;; FREE ARR: 0x600000ae0040
-;; FREE ARR: 0x6000008e5200
-;; NEW ARR: const int * 0x6000033e4000 50
+;; FREE ARR: 0x0
+;; FREE ARR: 0x0
+;; NEW ARR: const int * 0x6000027c0000 50
 ;;   (nth checksum: 24500000000)
-;; FREE ARR: 0x6000033e4000
-;;   nth (bounds-checked) 1000000000 times: 448 ms
+;; FREE ARR: 0x6000027c0000
+;;   nth (bounds-checked) 1000000000 times: 464 ms
 
 ;; (nth) bench result:
 ;; Cicili 415 410 422 412 414
