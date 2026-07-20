@@ -4,7 +4,7 @@
 
   (non-copy)
   (struct type
-          (member const uintptr_t ptr))
+          (member a * const ptr))
 
   (typedef a (<> type interior_t))
 
@@ -12,8 +12,8 @@
   (inline)
   ;; needed for letin
   (func (<> free type) ((type * cell))        
-        (syslog! (printf "FREE CELL: %zx\n" (-> cell ptr)))
-        (when (-> cell ptr) ((<> free a) (cast (a *) (-> cell ptr)))))
+        (syslog! (printf "FREE CELL: %p\n" (-> cell ptr)))
+        (when (-> cell ptr) ((<> free a) (-> cell ptr))))
 
   (inline)
   ;; needed for pass move to function
@@ -46,9 +46,9 @@
     (WHEN (> (LENGTH a) 1) (ERROR (FORMAT NIL "new cell got invalid type ~A for ~A" a ctor)))
     `(letn ((,@a * ,ptr-name . (FUNCTION (malloc (sizeof ,@a))))
             (,@a move ,obj-name . (FUNCTION (,ctor ,@args))))
-       (syslog! (printf "NEW CELL: %zx\n" (cast uintptr_t ,ptr-name)))
+       (syslog! (printf "NEW CELL: %p\n" ,ptr-name))
        (memcpy ,ptr-name (aof ,obj-name) (sizeof ,obj-name))
-       (cast (<> cell ,@a) '{ (cast uintptr_t ,ptr-name) }))))
+       (cast (<> cell ,@a) '{ ,ptr-name }))))
 
 
 (DEFMACRO let^cell ((obj cell &REST captures) &REST body)
@@ -60,8 +60,7 @@
             (cell-acc (NTH 4 full-type)))
         `(closure ((<> let ,type-name ,(GENSYM)) ,cell-acc (aof ,cell) ,@captures)
            (when (-> ,cell-acc ptr)
-             (let (((<> ,type-name interior_t) move ,obj .
-                    (FUNCTION (cof (cast ((<> ,type-name interior_t) *) (-> ,cell-acc ptr))))))
+             (let (((<> ,type-name interior_t) ref ,obj . (FUNCTION (-> ,cell-acc ptr))))
                ,@body)))))))
 
 
@@ -76,8 +75,7 @@
         `(closure ((<> letn ,type-name ,(GENSYM)) ,cell-acc (aof ,cell) :default_value ,default ,@captures)
            (out auto)
            (return (? (-> ,cell-acc ptr)
-                     (letn (((<> ,type-name interior_t) move ,obj .
-                             (FUNCTION (cof (cast ((<> ,type-name interior_t) *) (-> ,cell-acc ptr))))))
+                     (letn (((<> ,type-name interior_t) ref ,obj . (FUNCTION (-> ,cell-acc ptr))))
                        ,@body)
                      default_value)))))))
 
@@ -87,12 +85,12 @@
         (cell cell))
     ;; full-type is list of inferred type details
     (MULTIPLE-VALUE-BIND (_ full-type) (CICILI:INFER-TYPE cell :WITH-NAME T :COPY-NAME T)
-      (LET ((type-name (NTH 1 full-type))
-            (cell-acc (NTH 4 full-type)))
-        `(closure ((<> let ,type-name ,(GENSYM)) ,cell-acc ,cell ,@captures)
+      (LET* ((type-name (NTH 1 full-type))
+             (cell-acc (NTH 4 full-type))
+             (a (NTH-VALUE 1 (CICILI:INFER-TYPE `(<> ,type-name interior_t)))))
+        `(closure ((<> take ,type-name ,(GENSYM)) ,cell-acc ,cell ,@captures)
            (when ($ ,cell-acc ptr)
-             (let (((<> ,type-name interior_t) move ,obj .
-                    (FUNCTION (cof (cast ((<> ,type-name interior_t) *) ($ ,cell-acc ptr))))))
+             (letin ((,obj (cof ($ ,cell-acc ptr))))
                ,@body)))))))
 
 
@@ -102,12 +100,12 @@
         (default default))
     ;; full-type is list of inferred type details
     (MULTIPLE-VALUE-BIND (_ full-type) (CICILI:INFER-TYPE cell :WITH-NAME T :COPY-NAME T)
-      (LET ((type-name (NTH 1 full-type))
-            (cell-acc (NTH 4 full-type)))
-        `(closure ((<> letn ,type-name ,(GENSYM)) ,cell-acc ,cell :default_value ,default ,@captures)
+      (LET* ((type-name (NTH 1 full-type))
+             (cell-acc (NTH 4 full-type))
+             (a (NTH-VALUE 1 (CICILI:INFER-TYPE `(<> ,type-name interior_t)))))
+        `(closure ((<> taken ,type-name ,(GENSYM)) ,cell-acc ,cell :default_value ,default ,@captures)
            (out auto)
            (return (? ($ ,cell-acc ptr)
-                     (letn (((<> ,type-name interior_t) move ,obj .
-                             (FUNCTION (cof (cast ((<> ,type-name interior_t) *) ($ ,cell-acc ptr))))))
+                     (letin ((,obj (cof ($ ,cell-acc ptr)))) ; should zeroed ($ ,cell-acc ptr)
                        ,@body)
                      default_value)))))))

@@ -16,14 +16,14 @@
             ) ; decls
       (let ((int aInt . 10)) ; to capture
         
-        (let^cell (arr cell01)
-          (printf "1. cell01 arr len: %zu\n" (len^array arr)))
+        (let^cell (arr_ref cell01)
+          (printf "1. cell01 arr len: %zu\n" (len^array (cof arr_ref))))
         
         ;; default value used in case of DEAD cell
         ;; -1 as default_value presented in letn scope
         (printf "2. cell02 arr len + over: %zu\n"
-          (letn^cell (arr cell02 -1 :over aInt)
-            (+ (len^array arr) over)))
+          (letn^cell (arr_ref cell02 -1 :over aInt)
+            (+ (len^array (cof arr_ref)) over)))
 
         (take^cell (arr cell01)
           (printf "3. cell01 arr len: %zu\n" (len^array arr)))
@@ -39,32 +39,20 @@
 ;; sbcl --script cicili.lisp --syslog ./test/std/cell.lisp
 ;; arr_test
 
-;; result without those two take
-;; NEW ARR: int * 0x600002d58050 4
-;; NEW CELL: 600002d58040
-;; NEW ARR: int * 0x600002f5d200 5
-;; NEW CELL: 600002d58060
-;; 1. cell01 arr len: 4
-;; 2. cell02 arr len + over: 15
-;; FREE CELL: 600002d58060
-;; FREE ARR: 0x600002f5d200
-;; FREE CELL: 600002d58040
-;; FREE ARR: 0x600002d58050
-
-
-;; result with those two take
-;; NEW ARR: int * 0x600000f6c050 4
-;; NEW CELL: 600000f6c040
-;; NEW ARR: int * 0x600000d69200 5
-;; NEW CELL: 600000f6c060
+;; NEW ARR: int * 0x600001604050 4
+;; NEW CELL: 0x600001604040
+;; NEW ARR: int * 0x600001401200 5
+;; NEW CELL: 0x600001604060
 ;; 1. cell01 arr len: 4
 ;; 2. cell02 arr len + over: 15
 ;; 3. cell01 arr len: 4
-;; FREE CELL: 600000f6c040
-;; FREE ARR: 0x600000f6c050
+;; FREE ARR: 0x600001604050
+;; FREE CELL: 0x600001604040
+;; FREE ARR: 0x0
 ;; 4. default value is strict
 ;; 4. cell02 arr len: 5
-;; FREE CELL: 600000f6c060
-;; FREE ARR: 0x600000d69200
-;; FREE CELL: 0
-;; FREE CELL: 0
+;; FREE ARR: 0x600001401200
+;; FREE CELL: 0x600001604060
+;; FREE ARR: 0x0
+;; FREE CELL: 0x0
+;; FREE CELL: 0x0

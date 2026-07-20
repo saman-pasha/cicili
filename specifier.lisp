@@ -777,47 +777,7 @@
             (make-specifier (specify-expr (nth 0 app)) '|@CALL| nil nil nil nil nil
                             (if (> (length app) 1)
                                 (loop for item in (nthcdr 1 app)
-                                      collect (let* ((arg-spec (specify-expr (expand-macros item)))
-                                                     (origin (deep-typeof "" arg-spec))) ; check for moved vars
-                                                (if (and origin
-                                                         (find (construct origin) '(|@VAR| |@PARAM|))
-                                                         (or (key-eq (modifier origin) '|move|)
-                                                             (key-eq (modifier origin) '|ref|)))
-                                                    (progn
-                                                      (format t "CCCCCCCCCCCCCCCCCCC1 ~A  ~A~%" (is-moved origin) origin)
-                                                      (if (is-moved origin)
-                                                          (error (format nil "trying to move already moved var: ~A~%  in call: ~A"
-                                                                         origin app))
-                                                          (if (and (key-eq (modifier origin) '|move|) (is-inside-loop))
-                                                              (error (format nil "using 'move var: ~A~%  inside loop~%  in call: ~A"
-                                                                             origin app))
-                                                              (if (key-eq (modifier origin) '|move|)
-                                                                  (let* ((moved-name (GENSYM "moved_var"))
-                                                                         (moved-var (make-specifier moved-name '|@VAR| nil '|auto|
-                                                                                                    nil nil nil arg-spec '()))
-                                                                         (call-var (make-specifier (specify-symbol-expr '|memset|)
-                                                                                     '|@CALL| nil nil nil nil nil
-                                                                                     (list
-                                                                                      (specify-symbol-expr
-                                                                                          (intern (format nil "&~A" (name origin))))
-                                                                                      (specify-atom-expr 0)
-                                                                                      (specify-code-expr
-                                                                                          (list '|code|
-                                                                                                (format nil
-                                                                                                  "sizeof(typeof(~A))" (name origin)))))
-                                                                                     '()))
-                                                                         (let-var (make-specifier 'letnmove '|@LETN|
-                                                                                                  nil nil nil nil nil nil '()))
-                                                                         (body-var (make-specifier 'bodynmove '|@BODY|
-                                                                                                   nil nil nil nil nil nil '())))
-                                                                    (setf (is-moved origin) t)
-                                                                    (add-param moved-var let-var)
-                                                                    (setf (body body-var) (list call-var (specify-symbol-expr moved-name)))
-                                                                    (setf (body let-var) body-var)
-                                                                    let-var
-                                                                    ) ; copy, set zero moved arg, pass 
-                                                                  arg-spec))))
-                                                    arg-spec)))
+                                      collect (move-var (specify-expr (expand-macros item)) app))
                                 nil)
                             '()))
         (specify-expr app))))
@@ -1034,10 +994,11 @@
                                               (make-specifier var-name '|@VAR| const typeof modifier const-ptr array
                                                               (if (null value)
                                                                   nil
-                                                                  (let ((app (specify-expr value)))
-                                                                    (if (symbolp app)
-                                                                        (specify-call-expr (list app))
-                                                                        app)))
+                                                                  (move-var (let ((app (specify-expr value)))
+                                                                              (if (symbolp app)
+                                                                                  (specify-call-expr (list app))
+                                                                                  app))
+                                                                    value))
                                                               attributes))))
                            (assign-check let-var param-spec (default param-spec)) ; authority check
                            param-spec)
