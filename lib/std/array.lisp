@@ -17,6 +17,10 @@
         (syslog! (printf "FREE ARR: %p\n" (-> array arr)))
         (free (-> array arr)))
 
+  (inline)
+  (func (<> free type pointer) ((type ** array))
+        ((<> free type) (cof array)))
+
   ) ; decl-array
 
 
@@ -66,7 +70,9 @@
                          default_value))))))))
 
 (DEFMACRO let^array ((arr len array &REST captures) &REST body)
-  (LET* ((array array))
+  (LET ((arr arr)
+        (len len)
+        (array array))
     (MULTIPLE-VALUE-BIND (_ full-type) (CICILI:INFER-TYPE array :WITH-NAME T :COPY-NAME T)
       (LET ((type-name (NTH 1 full-type)))
         `(closure ((<> let ,type-name ,(GENSYM)) ,(NTH 4 full-type) ,array ,@captures)
@@ -75,8 +81,10 @@
              ,@body))))))
 
 (DEFMACRO letn^array ((arr len array &REST captures) &REST body)
-  (LET* ((array array)
-         (body body))
+  (LET ((arr arr)
+        (len len)
+        (array array)
+        (body body))
     (MULTIPLE-VALUE-BIND (_ full-type) (CICILI:INFER-TYPE array :WITH-NAME T :COPY-NAME T)
       (LET ((type-name (NTH 1 full-type)))
         `(closure ((<> letn ,type-name ,(GENSYM)) ,(NTH 4 full-type) ,array ,@captures)

@@ -1334,9 +1334,19 @@
                                             (make-specifier var-name
                                               '@|PARAM| const type modifier const-ptr array nil
                                               (if is-volatile (list (cons '|volatile| t)) nil) is-anonymous))))
-                         (assign-check function-specifier param-spec nil) ; authority check                              
+                         (assign-check function-specifier param-spec nil) ; authority check
+                         ;; auto destructor for 'move modifier
+                         (when (key-eq modifier '|move|)
+                           (push (list '|code| (list 'quote (list type #\*
+                                                                  (format nil "__moved_~A" var-name)
+                                                                  "__attribute__((__cleanup__("
+                                                                  (format nil "free_~A_pointer))) = (&" type type)
+                                                                  (format nil "~A)" var-name))))
+                             body))
+                         
                          param-spec)
-                     function-specifier))))
+                     function-specifier)
+                   )))
 
       (setf (body function-specifier) (specify-body body))
 

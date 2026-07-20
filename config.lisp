@@ -47,7 +47,7 @@
        (list
         ;; C      /usr/local/bin/gcc-16 "-Wno-maybe-uninitialized" "-g"
         'dumper   '()
-        'compiler `("glibtool" "--tag=CC" "--mode=compile" "gcc" "-Werror" "-Wall" *verbose*)
+        'compiler `("glibtool" "--tag=CC" "--mode=compile" "gcc" "-Werror" "-Wall" "-Wno-shadow" *verbose*)
         'linker   `("glibtool" "--tag=CC" "--mode=link" "gcc" *verbose*)
         ;; C++
         'cpp-dumper   '()

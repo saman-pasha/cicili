@@ -31,7 +31,9 @@
   ;; but allows to use 'move instance modifier
   (func a_func_move_array ((array^int move arr))
         (format #t "length of moved array %zu\n" (len^array arr))
-        ((<> free array^int) (aof arr)))
+        ;; arr is 'move so no need to free here manually
+        ;; ((<> free array^int) (aof arr))
+        )
 
   (func bench_a_nth ()
         (out long)
@@ -112,10 +114,12 @@
         (let ((i64 sum . 0))
           (printf "letn sum1: %lld\n"
             (letn^array (arr len arr01 :sum (aof sum))
+              ;; arr01 will refer to movedin param in letn no local in main
               (cast void len)
               (for ((int i . 0)) (< i N) ((++ i))
                    (+= (cof sum) (nth (% i 5) arr)))
-              ((<> free array^int) (aof arr01)) ; arr01 referred to movedin param in letn no local in main
+              ;; arr01 is 'move so it will be freed here deferred, no need to free manually
+              ;; ((<> free array^int) (aof arr01)) 
               (cof sum)))
 
           ;; trying to move already moved var: #<SP @VAR arr01 array_int move = #<SP @CALL #<SP @ATOM new_array_int_G176 @SYMBOL ...
