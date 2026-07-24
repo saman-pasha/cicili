@@ -10,8 +10,8 @@
     (load quicklisp-init)))
 
 ;; error handling and debuging
-;; (setf *print-pretty* t)
-;; (setf *print-vector-length* 500)
+(setf *print-pretty* t)
+(setf *print-vector-length* 500)
 (format t "~&sbcl reserved memory size: ~D Bs~%" (sb-ext:dynamic-space-size))
 
 (asdf:load-system "cicili")

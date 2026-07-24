@@ -13,7 +13,7 @@
                      (compile-typeof name lvl globals parent-spec))
                     ((key-eq '|@BODY| (construct name))
                      (compile-form (car (body name)) lvl globals parent-spec))
-                    (t (error (format nil "wrong complex name: ~A" name)))))
+                    (t (compile-name (typeof name) lvl globals parent-spec))))
             (let ((type (expand-macros (car name))))
               (cond ((or (key-eq '|struct| type) (key-eq '|union| type))
                      (set-ast-line (output (symbol-name type)))

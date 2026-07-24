@@ -308,3 +308,6 @@ test/std/arr_test
 test/std/rc_test
 test/std/vec_test
 test/std/cell_test
+test/std/array.c.run1.c
+test/std/cell.c.run1.c
+test/std/rc.c.run1.c

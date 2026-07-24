@@ -8,7 +8,7 @@
   (include <time.h>)
   (include <limits.h>)
 
-  (decl-array array^int int)
+  (decl-array int)
 
   (func ms_now ()
         (out llong)
@@ -118,14 +118,22 @@
               (cast void len)
               (for ((int i . 0)) (< i N) ((++ i))
                    (+= (cof sum) (nth (% i 5) arr)))
-              ;; arr01 is 'move so it will be freed here deferred, no need to free manually
-              ;; ((<> free array^int) (aof arr01)) 
               (cof sum)))
 
+          (take^array (arr len arr01 :sum (aof sum))
+            ;; arr01 will refer to movedin param in letn no local in main
+            (cast void len)
+            (for ((int i . 0)) (< i N) ((++ i))
+                 (+= (cof sum) (nth (% i 5) arr)))
+            ;; arr01 is 'move so it will be freed here deferred, no need to free manually
+            ;; ((<> free array^int) (aof arr01))
+            ;; but needs to free C array itself because it is not Cicili std type
+            (printf "take sum2: %lld\n" (cof sum)))
+
           ;; trying to move already moved var: #<SP @VAR arr01 array_int move = #<SP @CALL #<SP @ATOM new_array_int_G176 @SYMBOL ...
-          ;; in call: ('(lambda* (<> letn array_int G229)
-          ;; (printf "letn sum2: %lld\n"
-          ;;   (letn^array (arr len arr01 :sum (aof sum))
+          ;; in call: ('(lambda* (<> taken array_int G229)
+          ;; (printf "taken sum3: %lld\n"
+          ;;   (taken^array (arr len arr01 :sum (aof sum))
           ;;     (cast void len)
           ;;     (for ((int i . 0)) (< i N) ((++ i))
           ;;          (+= (cof sum) (nth (% i 5) arr)))
@@ -139,7 +147,7 @@
     )) ; array.c
 
 ;; sbcl --script cicili.lisp --syslog ./test/std/array.lisp
-;; arr_test
+;; ./test/std/arr_test
 
 ;; sizeof array_int: 16
 ;; NEW ARR: const int * 0x600001cc1200 5

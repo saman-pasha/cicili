@@ -11,8 +11,13 @@ typedef struct array_int {
   size_t len ;
 } array_int;
 typedef int array_int_item_t ;
+#ifndef __ARRAY_TYPE_H_
+#define __ARRAY_TYPE_H_
+typedef struct std_array std_array ;
+#endif /* __ARRAY_TYPE_H_ */ 
+typedef std_array array_int_type_t ;
 __attribute__((weak)) void free_array_int (array_int * array ) {
-  ({ /* progn110 */
+  ({ /* progn115 */
     printf ("FREE ARR: %p\n", (array -> arr ));
   });
   free ((array -> arr ));
@@ -21,7 +26,7 @@ __attribute__((weak)) void free_array_int_pointer (array_int ** array ) {
   free_array_int ((*array ));
 }
 long long ms_now () {
-  { /* let116 */
+  { /* let122 */
     struct timespec ts ;
     // ----------
     timespec_get ((&ts ), TIME_UTC );
@@ -35,32 +40,32 @@ void a_func_move_array (array_int arr ) {
   array_int * __moved_arr __attribute__((__cleanup__( free_array_int_pointer))) = (& arr) ;
   fprintf (stdout , "length of moved array %zu\n", (arr . len ));
 }
-array_int new_array_int_G129 (const int * arr , const int len ) {
-  return ({ /* letn134 */
+array_int new_array_int_G136 (const int * arr , const int len ) {
+  return ({ /* letn141 */
       int * new_arr  = calloc (len , sizeof(int));
       // ----------
-      ({ /* progn137 */
+      ({ /* progn144 */
         printf ("NEW ARR: %s %p %zu\n", "const int *", new_arr , ((size_t)len ));
       });
       memcpy (new_arr , arr , (len  *  sizeof(int) ));
       ((array_int){ new_arr , len });
     });
 }
-array_int_item_t nth_array_int_G149 (size_t index , array_int * restrict array , const int default_value ) {
+array_int_item_t nth_array_int_G157 (size_t index , array_int * restrict array , const int default_value ) {
   return (((index  <  (array -> len ) )) ? (array -> arr )[index ] : default_value );
 }
 long bench_a_nth () {
-  ({ /* letn127 */
-    array_int v  __attribute__((__cleanup__(free_array_int ))) = new_array_int_G129 (((const int[]){ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49}), 50);
+  ({ /* letn134 */
+    array_int v  __attribute__((__cleanup__(free_array_int ))) = new_array_int_G136 (((const int[]){ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49}), 50);
     // ----------
-    { /* let142 */
+    { /* let149 */
       int64_t sum  = 0;
       long long t0  = ms_now ();
       // ----------
       for (int i  = 0; (i  <  N  ); (++i )) {
-          sum  +=  nth_array_int_G149 (((size_t)(i  %  50 )), (&v ), 0) ;
+          sum  +=  nth_array_int_G157 (((size_t)(i  %  50 )), (&v ), 0) ;
       }
-      { /* let153 */
+      { /* let161 */
         long long elapsed  = (ms_now () -  t0  );
         // ----------
         printf ("  (nth checksum: %lld)\n", sum );
@@ -72,39 +77,38 @@ long bench_a_nth () {
 void a_func_referenced_array (array_int * restrict referred_arr ) {
   fprintf (stdout , "length of referenced array %zu\n", ((*referred_arr ). len ));
 }
-void __ciciliL_164 (int ** iarr ) {
+void __ciciliL_173 (int ** iarr ) {
   free (((void *)(*iarr )));
 }
-array_int new_array_int_G183 (const int * arr , const int len ) {
-  return ({ /* letn187 */
+array_int new_array_int_G192 (const int * arr , const int len ) {
+  return ({ /* letn196 */
       int * new_arr  = calloc (len , sizeof(int));
       // ----------
-      ({ /* progn190 */
+      ({ /* progn199 */
         printf ("NEW ARR: %s %p %zu\n", "const int *", new_arr , ((size_t)len ));
       });
       memcpy (new_arr , arr , (len  *  sizeof(int) ));
       ((array_int){ new_arr , len });
     });
 }
-array_int new_array_int_G198 (int * arr , const int len ) {
-  return ({ /* letn202 */
+array_int new_array_int_G207 (int * arr , const int len ) {
+  return ({ /* letn211 */
       int * new_arr  = calloc (len , sizeof(int));
       // ----------
-      ({ /* progn205 */
+      ({ /* progn214 */
         printf ("NEW ARR: %s %p %zu\n", "int *", new_arr , ((size_t)len ));
       });
       memcpy (new_arr , arr , (len  *  sizeof(int) ));
       ((array_int){ new_arr , len });
     });
 }
-array_int_item_t nth_array_int_G223 (size_t index , array_int * restrict array , const int default_value ) {
+array_int_item_t nth_array_int_G238 (size_t index , array_int * restrict array , const int default_value ) {
   return (((index  <  (array -> len ) )) ? (array -> arr )[index ] : default_value );
 }
-int64_t letn_array_int_G230 (array_int arr01 , int64_t * sum ) {
-  array_int * __moved_arr01 __attribute__((__cleanup__( free_array_int_pointer))) = (& arr01) ;
-  return ({ /* letn234 */
-      array_int_item_t * arr  = (arr01 . arr );
-      size_t len  = (arr01 . len );
+int64_t letn_array_int_G246 (array_int * restrict array , int64_t * sum ) {
+  return ({ /* letn249 */
+      array_int_item_t * arr  = (array -> arr );
+      size_t len  = (array -> len );
       // ----------
       ((void)len );
       for (int i  = 0; (i  <  N  ); (++i )) {
@@ -113,24 +117,37 @@ int64_t letn_array_int_G230 (array_int arr01 , int64_t * sum ) {
       (*sum );
     });
 }
+void take_array_int_G257 (array_int array , int64_t * sum ) {
+  array_int * __moved_array __attribute__((__cleanup__( free_array_int_pointer))) = (& array) ;
+  { /* let261 */
+    array_int_item_t * arr  = (array . arr );
+    size_t len  = (array . len );
+    // ----------
+    ((void)len );
+    for (int i  = 0; (i  <  N  ); (++i )) {
+        (*sum ) +=  arr [(i  %  5 )] ;
+    }
+    printf ("take sum2: %lld\n", (*sum ));
+  }
+}
 int main () {
   printf ("sizeof %s: %zu\n", "array_int", sizeof(array_int ));
-  { /* let163 */
-    int * iarr  __attribute__((__cleanup__(__ciciliL_164 ))) = ((int *)calloc (2, sizeof(int)));
+  { /* let172 */
+    int * iarr  __attribute__((__cleanup__(__ciciliL_173 ))) = ((int *)calloc (2, sizeof(int)));
     // ----------
-    ({ /* letn178 */
-      array_int arr01  __attribute__((__cleanup__(free_array_int ))) = new_array_int_G183 (((const int[]){ 1, 2, 3, 4, 5}), 5);
-      array_int arr02  __attribute__((__cleanup__(free_array_int ))) = new_array_int_G198 (iarr , 2);
+    ({ /* letn187 */
+      array_int arr01  __attribute__((__cleanup__(free_array_int ))) = new_array_int_G192 (((const int[]){ 1, 2, 3, 4, 5}), 5);
+      array_int arr02  __attribute__((__cleanup__(free_array_int ))) = new_array_int_G207 (iarr , 2);
       // ----------
       printf ("arr01 len: %zu\n", (arr01 . len ));
       printf ("arr02 len: %zu\n", (arr02 . len ));
       a_func_referenced_array ((&arr02 ));
       a_func_referenced_array ((&arr02 ));
-      a_func_move_array (({ /* LETNMOVE */
-          __auto_type moved_var212  = arr02 ;
+      a_func_move_array (({ /* letnmove224 */
+          __auto_type moved_var223  = arr02 ;
           // ----------
-          memset (&arr02 , 0, sizeof(typeof(arr02)) );
-          moved_var212 ;
+          memset ((&arr02 ), 0, sizeof(arr02 ));
+          moved_var223 ;
         }));
       printf ("print int array using Unsafe nth: ");
       for (size_t i  = 0; (i  <  (arr01 . len ) ); (++i )) {
@@ -139,18 +156,19 @@ int main () {
       putchar ('\n');
       printf ("print int array using Safe nth: ");
       for (size_t i  = 0; (i  <  7 ); (++i )) {
-          printf ("%d", nth_array_int_G223 (((size_t)i ), (&arr01 ), 0));
+          printf ("%d", nth_array_int_G238 (((size_t)i ), (&arr01 ), 0));
       }
       putchar ('\n');
-      { /* let227 */
+      { /* let242 */
         int64_t sum  = 0;
         // ----------
-        printf ("letn sum1: %lld\n", letn_array_int_G230 (({ /* LETNMOVE */
-            __auto_type moved_var240  = arr01 ;
+        printf ("letn sum1: %lld\n", letn_array_int_G246 ((&arr01 ), (&sum )));
+        take_array_int_G257 (({ /* letnmove268 */
+            __auto_type moved_var267  = arr01 ;
             // ----------
-            memset (&arr01 , 0, sizeof(typeof(arr01)) );
-            moved_var240 ;
-          }), (&sum )));
+            memset ((&arr01 ), 0, sizeof(arr01 ));
+            moved_var267 ;
+          }), (&sum ));
       }
     });
   }

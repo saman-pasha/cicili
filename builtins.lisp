@@ -92,10 +92,13 @@
                  (MAP 'LIST #'(LAMBDA (var)
                                 (WHEN (/= (LENGTH var) 2)
                                   (ERROR (FORMAT NIL "wrong letin variable definition: ~A" var)))
-                                (FORMAT T "LETIIIIIIIIINNNN1 ~A~%" (CAR var) (CADR var))
+                                (FORMAT T "LETIIIIIIIIINNNN1 ~A  ~A~%" (CAR var) (CADR var))
                                 (MULTIPLE-VALUE-BIND (type full-type) (CICILI:INFER-TYPE (CADR var))
                                   (FORMAT T "LETIIIIIIIIINNNN2 ~A  ~A~%" full-type (CADR var))
-                                  (LET ((type-name (NTH 1 full-type)))                                    
+                                  (LET ((type-name (NTH 1 full-type)))
+                                    (UNLESS (SYMBOLP (NTH 1 full-type))
+                                      (MULTIPLE-VALUE-SETQ (type full-type) (CICILI:INFER-TYPE-SPEC "" (NTH 1 full-type)))
+                                      (SETQ type-name (NTH 1 full-type)))
                                     (IF (NTH 2 full-type) ; check has any modifier
                                         `((defer () (<> free ,type-name))
                                           (,@type ,(CAR var) . (FUNCTION ,(CADR var))))
@@ -365,9 +368,11 @@
 (DEFMACRO closure ((name &REST captures) &REST body)
   (LET ((captures captures)
         (params (LOOP FOR (param value) ON captures BY #'CDDR
-                      COLLECT (CICILI:INFER-TYPE value :WITH-NAME param)))
+                      COLLECT (IF param
+                                  (CICILI:INFER-TYPE value :WITH-NAME param)
+                                  (ERROR (FORMAT NIL "closure: paramter name passed: ~A inside: ~A" param (LIST name captures))))))
         (args (LOOP FOR (_ value) ON captures BY #'CDDR COLLECT value)))
-    (FORMAT T "PAPPAPAPARAMA ~A  ~A~%" name params)
+    (FORMAT T "PAPPAPAPARAMA ~A   ~A  ~A~%" captures name params)
     `('(lambda* ,name ,params ,@body) ,@args)))
 
 (DEFMACRO new (type &REST args)

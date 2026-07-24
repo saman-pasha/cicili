@@ -1,24 +1,29 @@
 ;;;; Cicili std cell
 (generic decl-cell
-  (type a)
+  (a)
 
   (non-copy)
-  (struct type
-          (member a * const ptr))
+  (struct (<> cell a)
+          (member a ref ptr))
 
-  (typedef a (<> type interior_t))
+  (typedef a (<> cell a interior_t))
 
+  ;; super type declaration to use in 'type-check
+  (guard __CELL_TYPE_H_
+    (decl) (struct (<> std cell)))
+  (typedef (<> std cell) (<> cell a type_t))
   
   (inline)
   ;; needed for letin
-  (func (<> free type) ((type * cell))        
+  (func (<> free cell a) (((<> cell a) * cell))        
         (syslog! (printf "FREE CELL: %p\n" (-> cell ptr)))
-        (when (-> cell ptr) ((<> free a) (-> cell ptr))))
+        (when (-> cell ptr) ((<> free a) (-> cell ptr)))
+        (free (-> cell ptr)))
 
   (inline)
   ;; needed for pass move to function
-  (func (<> free type pointer) ((type ** cell))        
-        ((<> free type) (cof cell)))
+  (func (<> free cell a pointer) (((<> cell a) ** cell))        
+        ((<> free cell a) (cof cell)))
 
   (inline)
   (func (<> force free a) ((a * obj))
@@ -32,9 +37,8 @@
 
 (DEFMACRO free^cell (cell)
   (LET ((cell cell)
-        (type (CICILI:INFER-TYPE cell)))
-    (WHEN (OR (/= (LENGTH type) 2) (NOT (EQL (CADR type) '*))) (ERROR (FORMAT NIL "free cell got invalid type ~A for ~A" type cell)))
-    `((<> free ,(CAR type)) ,cell)))
+        (full-type (NTH-VALUE 1 (CICILI:TYPE-CHECK cell :TYPEOF :std^cell :MODIFIER :ref))))
+    `((<> free ,(NTH 1 full-type)) ,cell)))
 
 
 (DEFMACRO new^cell (type &REST args)
@@ -55,12 +59,11 @@
   (LET ((obj obj)
         (cell cell))
     ;; full-type is list of inferred type details
-    (MULTIPLE-VALUE-BIND (_ full-type) (CICILI:INFER-TYPE cell :WITH-NAME T :COPY-NAME T)
-      (LET ((type-name (NTH 1 full-type))
-            (cell-acc (NTH 4 full-type)))
-        `(closure ((<> let ,type-name ,(GENSYM)) ,cell-acc (aof ,cell) ,@captures)
-           (when (-> ,cell-acc ptr)
-             (let (((<> ,type-name interior_t) ref ,obj . (FUNCTION (-> ,cell-acc ptr))))
+    (MULTIPLE-VALUE-BIND (_ full-type) (CICILI:TYPE-CHECK cell :TYPEOF :std^cell :MODIFIER :move)
+      (LET ((type-name (NTH 1 full-type)))
+        `(closure ((<> let ,type-name ,(GENSYM)) :cell (aof ,cell) ,@captures)
+           (when (-> cell ptr)
+             (let (((<> ,type-name interior_t) ref ,obj . (FUNCTION (-> cell ptr))))
                ,@body)))))))
 
 
@@ -69,13 +72,12 @@
         (cell cell)
         (default default))
     ;; full-type is list of inferred type details
-    (MULTIPLE-VALUE-BIND (_ full-type) (CICILI:INFER-TYPE cell :WITH-NAME T :COPY-NAME T)
-      (LET ((type-name (NTH 1 full-type))
-            (cell-acc (NTH 4 full-type)))
-        `(closure ((<> letn ,type-name ,(GENSYM)) ,cell-acc (aof ,cell) :default_value ,default ,@captures)
+    (MULTIPLE-VALUE-BIND (_ full-type) (CICILI:TYPE-CHECK cell :TYPEOF :std^cell :MODIFIER :move)
+      (LET ((type-name (NTH 1 full-type)))
+        `(closure ((<> letn ,type-name ,(GENSYM)) :cell (aof ,cell) :default_value ,default ,@captures)
            (out auto)
-           (return (? (-> ,cell-acc ptr)
-                     (letn (((<> ,type-name interior_t) ref ,obj . (FUNCTION (-> ,cell-acc ptr))))
+           (return (? (-> cell ptr)
+                     (letn (((<> ,type-name interior_t) ref ,obj . (FUNCTION (-> cell ptr))))
                        ,@body)
                      default_value)))))))
 
@@ -84,13 +86,11 @@
   (LET ((obj obj)
         (cell cell))
     ;; full-type is list of inferred type details
-    (MULTIPLE-VALUE-BIND (_ full-type) (CICILI:INFER-TYPE cell :WITH-NAME T :COPY-NAME T)
-      (LET* ((type-name (NTH 1 full-type))
-             (cell-acc (NTH 4 full-type))
-             (a (NTH-VALUE 1 (CICILI:INFER-TYPE `(<> ,type-name interior_t)))))
-        `(closure ((<> take ,type-name ,(GENSYM)) ,cell-acc ,cell ,@captures)
-           (when ($ ,cell-acc ptr)
-             (letin ((,obj (cof ($ ,cell-acc ptr))))
+    (MULTIPLE-VALUE-BIND (_ full-type) (CICILI:TYPE-CHECK cell :TYPEOF :std^cell :MODIFIER :move)
+      (LET* ((type-name (NTH 1 full-type)))
+        `(closure ((<> take ,type-name ,(GENSYM)) :cell ,cell ,@captures)
+           (when ($ cell ptr)
+             (letin ((,obj (cof ($ cell ptr))))
                ,@body)))))))
 
 
@@ -99,13 +99,11 @@
         (cell cell)
         (default default))
     ;; full-type is list of inferred type details
-    (MULTIPLE-VALUE-BIND (_ full-type) (CICILI:INFER-TYPE cell :WITH-NAME T :COPY-NAME T)
-      (LET* ((type-name (NTH 1 full-type))
-             (cell-acc (NTH 4 full-type))
-             (a (NTH-VALUE 1 (CICILI:INFER-TYPE `(<> ,type-name interior_t)))))
-        `(closure ((<> taken ,type-name ,(GENSYM)) ,cell-acc ,cell :default_value ,default ,@captures)
+    (MULTIPLE-VALUE-BIND (_ full-type) (CICILI:TYPE-CHECK cell :TYPEOF :std^cell :MODIFIER :move)
+      (LET* ((type-name (NTH 1 full-type)))
+        `(closure ((<> taken ,type-name ,(GENSYM)) :cell ,cell :default_value ,default ,@captures)
            (out auto)
-           (return (? ($ ,cell-acc ptr)
-                     (letin ((,obj (cof ($ ,cell-acc ptr)))) ; should zeroed ($ ,cell-acc ptr)
+           (return (? ($ cell ptr)
+                     (letin ((,obj (cof ($ cell ptr)))) ; should zeroed ($ cell ptr)
                        ,@body)
                      default_value)))))))

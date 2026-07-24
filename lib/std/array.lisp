@@ -1,28 +1,36 @@
 ;;;; Cicili std array
 ;;; contigous memory allocation
 ;;; most minimal performant indexable array
-
 (generic decl-array
-  (type a)
+  (a)
 
   (non-copy)
-  (struct type
+  (struct (<> array a)
           (member a * const arr)
           (member size_t len))
 
-  (typedef a (<> type item_t))
+  (typedef a (<> array a item_t))
+
+  ;; super type declaration to use in 'type-check
+  (guard __ARRAY_TYPE_H_
+    (decl) (struct (<> std array)))
+  (typedef (<> std array) (<> array a type_t))
 
   (inline)
-  (func (<> free type) ((type * array))
+  (func (<> free array a) (((<> array a) * array))
         (syslog! (printf "FREE ARR: %p\n" (-> array arr)))
         (free (-> array arr)))
 
   (inline)
-  (func (<> free type pointer) ((type ** array))
-        ((<> free type) (cof array)))
+  (func (<> free array a pointer) (((<> array a) ** array))
+        ((<> free array a) (cof array)))
 
   ) ; decl-array
 
+(DEFMACRO free^array (array)
+  (LET ((array array)
+        (full-type (NTH-VALUE 1 (CICILI:TYPE-CHECK array :TYPEOF :std^array :MODIFIER :ref))))
+    `((<> free ,(NTH 1 full-type)) ,array)))
 
 (DEFMACRO new^array (arr &OPTIONAL len)
   (LET* ((arr arr)
@@ -48,7 +56,9 @@
 
 
 (DEFMACRO len^array (array)
-  `($ ,array len))
+  (LET ((array array))
+    (MULTIPLE-VALUE-BIND (_ full-type) (CICILI:TYPE-CHECK array :TYPEOF :std^array :MODIFIER '(move ref))
+      `($ ,(IF (CICILI:KEY-EQ (NTH 2 full-type) 'ref) `(cof ,array) array) len))))
 
 (DEFMACRO nth^array (index array &KEY unchecked default)
   (LET ((index index)
@@ -56,28 +66,30 @@
         (unchecked unchecked)
         (default default))
     (WHEN (AND (NULL unchecked) (NULL default)) (ERROR (FORMAT NIL "checked nth of array needs default value ~A" array)))
-    (MULTIPLE-VALUE-BIND (_ full-type) (CICILI:INFER-TYPE array)
-      (LET ((type-name (NTH 1 full-type)))
         (IF unchecked
-            `(nth ,index ($ ,array arr))
-            `(closure ((<> nth ,type-name ,(GENSYM))
-                       :index (cast size_t ,index)
-                       :array (aof ,array)
-                       :default_value ,default)
-               (out (<> ,type-name item_t))
-               (return (? (< index (-> array len))
-                         (nth index (-> array arr))
-                         default_value))))))))
+            (MULTIPLE-VALUE-BIND (_ full-type) (CICILI:TYPE-CHECK array :TYPEOF :std^array :MODIFIER :move)
+              (LET ((type-name (NTH 1 full-type)))
+                `(nth ,index ($ ,array arr))))
+            (MULTIPLE-VALUE-BIND (_ full-type) (CICILI:TYPE-CHECK array :TYPEOF :std^array :MODIFIER '(move ref))
+              (LET ((type-name (NTH 1 full-type)))
+                `(closure ((<> nth ,type-name ,(GENSYM))
+                           :index (cast size_t ,index)
+                           :array ,(IF (CICILI:KEY-EQ (NTH 2 full-type) 'move) `(aof ,array) array)
+                           :default_value ,default)
+                   (out (<> ,type-name item_t))
+                   (return (? (< index (-> array len))
+                             (nth index (-> array arr))
+                             default_value))))))))
 
 (DEFMACRO let^array ((arr len array &REST captures) &REST body)
   (LET ((arr arr)
         (len len)
         (array array))
-    (MULTIPLE-VALUE-BIND (_ full-type) (CICILI:INFER-TYPE array :WITH-NAME T :COPY-NAME T)
+    (MULTIPLE-VALUE-BIND (_ full-type) (CICILI:TYPE-CHECK array :TYPEOF :std^array :MODIFIER :move)
       (LET ((type-name (NTH 1 full-type)))
-        `(closure ((<> let ,type-name ,(GENSYM)) ,(NTH 4 full-type) ,array ,@captures)
-           (let (((<> ,type-name item_t) * ,arr . (FUNCTION ($ ,(NTH 4 full-type) arr)))
-                 (size_t ,len . (FUNCTION ($ ,(NTH 4 full-type) len))))
+        `(closure ((<> let ,type-name ,(GENSYM)) :array (aof ,array) ,@captures)
+           (let (((<> ,type-name item_t) * ,arr . (FUNCTION (-> array arr)))
+                 (size_t ,len . (FUNCTION (-> array len))))
              ,@body))))))
 
 (DEFMACRO letn^array ((arr len array &REST captures) &REST body)
@@ -85,10 +97,34 @@
         (len len)
         (array array)
         (body body))
-    (MULTIPLE-VALUE-BIND (_ full-type) (CICILI:INFER-TYPE array :WITH-NAME T :COPY-NAME T)
+    (MULTIPLE-VALUE-BIND (_ full-type) (CICILI:TYPE-CHECK array :TYPEOF :std^array :MODIFIER :move)
       (LET ((type-name (NTH 1 full-type)))
-        `(closure ((<> letn ,type-name ,(GENSYM)) ,(NTH 4 full-type) ,array ,@captures)
+        `(closure ((<> letn ,type-name ,(GENSYM)) :array (aof ,array) ,@captures)
            (out auto)
-           (return (letn (((<> ,type-name item_t) * ,arr . (FUNCTION ($ ,(NTH 4 full-type) arr)))
-                          (size_t ,len . (FUNCTION ($ ,(NTH 4 full-type) len))))
+           (return (letn (((<> ,type-name item_t) * ,arr . (FUNCTION (-> array arr)))
+                          (size_t ,len . (FUNCTION (-> array len))))
+                     ,@body)))))))
+
+(DEFMACRO take^array ((arr len array &REST captures) &REST body)
+  (LET ((arr arr)
+        (len len)
+        (array array))
+    (MULTIPLE-VALUE-BIND (_ full-type) (CICILI:TYPE-CHECK array :TYPEOF :std^array :MODIFIER :move)
+      (LET ((type-name (NTH 1 full-type)))
+        `(closure ((<> take ,type-name ,(GENSYM)) :array ,array ,@captures)
+           (let (((<> ,type-name item_t) * ,arr . (FUNCTION ($ array arr)))
+                 (size_t ,len . (FUNCTION ($ array len))))
+             ,@body))))))
+
+(DEFMACRO taken^array ((arr len array &REST captures) &REST body)
+  (LET ((arr arr)
+        (len len)
+        (array array)
+        (body body))
+    (MULTIPLE-VALUE-BIND (_ full-type) (CICILI:TYPE-CHECK array :TYPEOF :std^array :MODIFIER :move)
+      (LET ((type-name (NTH 1 full-type)))
+        `(closure ((<> taken ,type-name ,(GENSYM)) :array ,array ,@captures)
+           (out auto)
+           (return (letn (((<> ,type-name item_t) * ,arr . (FUNCTION ($ array arr)))
+                          (size_t ,len . (FUNCTION ($ array len))))
                      ,@body)))))))

@@ -5,8 +5,8 @@
         :compile ("-O3" "-ffast-math" "-c" "cell.c")
         :link ("-lcell.o" "-o" "cell_test"))
 
-  (decl-array array^int int)
-  (decl-cell cell^array^int array^int)
+  (decl-array int)
+  (decl-cell array^int)
   
   (main
     ;; new array call inside new cell call
@@ -32,12 +32,15 @@
                       (printf "4. default value is strict\n"))
           (printf "4. cell02 arr len: %zu\n" (len^array arr)))
 
+        ;; type-check: invalid modifier value: (ref) of: (NIL cell_array_int move NIL NIL) for: cell02
+        ;; (free^cell cell02)
+        
         )) ; letin
     )) ; cell.c
 
 
 ;; sbcl --script cicili.lisp --syslog ./test/std/cell.lisp
-;; arr_test
+;; ./test/std/cell_test
 
 ;; NEW ARR: int * 0x600001604050 4
 ;; NEW CELL: 0x600001604040

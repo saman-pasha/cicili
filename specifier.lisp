@@ -108,37 +108,27 @@
   (let ((name (name spec)))
     (when (find-if #'(lambda (attr) (if (key-eq '|decl| (car attr)) t nil)) (attrs spec))
       (setq name (intern (format nil "~A-~A" '|decl| (name spec)))))
-    (if (gethash name (inners parent))
-        (error (format nil "inner exists: ~A in ~A" spec parent))
-        (setf (gethash name (inners parent)) spec))))
+    ;; (if (gethash name (inners parent))
+    ;; (error (format nil "inner exists: ~A in ~A" spec parent))
+    (setf (gethash name (inners parent)) spec)
+    ;; )
+    ))
 
-;;;; specifier
+;;;; print specifier
 (defmethod print-object ((spec sp) stream)
-  (print-unreadable-object (spec stream :type t :identity t)
+  (print-unreadable-object (spec stream :type nil :identity nil)
     (princ
      (cond ((or (eql (construct spec) '|@LET|)
                 (eql (construct spec) '|@LETN|))
-            (format nil
-              "~A ~:[~A ~;~*~]~:[~A ~;~*~]"
-	          (construct spec)
-              (null (name spec))   (name spec)
-	          (null (params spec)) (let ((lkv '()))
-                                     (maphash #'(lambda (k v)
-                                                  (push v lkv))
-                                              (params spec))
-                                     lkv)))
-           (t (format nil
-                "~A ~:[~A ~;~*~]~:[~A ~;~*~]~:[~A ~;~*~]~:[~A ~;~*~]~:[~A ~;~*~]~:[~{~A~} ~;~*~]~:[= ~A ~;~*~]~:[{~{~A~^ ~}}~;~*~]~:[~;A~]"
-	            (construct spec)
-                (null (name spec))      (name spec)
-                (null (const spec))     (const spec)
-                (null (typeof spec))    (typeof spec)
-                (null (modifier spec))  (modifier spec)
-                (null (const-ptr spec)) (const-ptr spec)
-	            (null (array-def spec)) (array-def spec)
-                (null (default spec))   (default spec)
-	            (null (attrs spec))     (attrs spec)
-                (anonymous spec))))
+            (remove nil (list (construct spec) (name spec)
+                              (let ((lkv '()))
+                                (maphash #'(lambda (k v)
+                                             (push v lkv))
+                                         (params spec))
+                                lkv)
+                              (last (body (body spec))))))
+           (t (remove nil (list (construct spec) (const spec) (typeof spec) (modifier spec) (const-ptr spec)
+                                (name spec) (array-def spec) (list "=" (default spec)) (attrs spec)))))
      stream)))
 
 (defun copy-specifiers (table)
@@ -563,7 +553,7 @@
 	             (specify-type< wl)
 	           (values const type modifier const-ptr variable array l))))))
 
-(defun specify-nil-expr ()
+(defun specify-nil-expr (def)
   (make-specifier '|NULL| '|@ATOM| nil '|@SYMBOL| nil nil nil nil '()))
 
 (defun specify-number-expr (def)
@@ -582,8 +572,7 @@
 
 (defun specify-atom-expr (def)
   (cond ((null       def) (make-specifier nil '|@NIL| nil nil nil nil nil nil '())) ; ignore nil values like ([ NIL ])
-        ((key-eq     def '|nil|) (specify-nil-expr))
-        ((key-eq     def '|NIL|) (specify-nil-expr))
+        ((key-eq     def '|nil|) (specify-nil-expr def))
         ((numberp    def)        (specify-number-expr def))
 	    ((characterp def)        (specify-character-expr def))
 	    ((stringp    def)        (specify-string-expr def))
@@ -837,10 +826,11 @@
 				                (list '|calloc| (nth 1 value) (nth 2 value))))))
         (setf (default var-spec) (if (null value)
                                      nil
-                                     (let ((app (specify-expr value)))
-                                       (if (symbolp app)
-                                           (specify-call-expr (list app))
-                                           app))))
+                                     (move-var (let ((app (specify-expr value)))
+                                                 (if (symbolp app)
+                                                     (specify-call-expr (list app))
+                                                     app))
+                                       value)))
 
 	    (let ((attributes '()))
 	      (when is-extern   (push (cons '|extern|       t) attributes))
@@ -857,7 +847,7 @@
                           (specify-expr
                               `'(|lambda|
                                  (,(remove nil
-                                           `(,const ,(if (key-eq '|auto| typeof) `(|typeof| ,value) typeof)
+                                           `(,const ,typeof
                                               ,(cond
                                                  ((key-eq '|auto| typeof) '|*|)
                                                  ((key-eq '|*|  modifier) '|**|)
@@ -877,7 +867,7 @@
                                 (specify-expr
                                     `'(|lambda|
                                        (,(remove nil
-                                                 `(,const ,(if (key-eq '|auto| typeof) `(|typeof| ,value) typeof)
+                                                 `(,const ,typeof
                                                     ,(cond
                                                        ((null  modifier) '|*|)
                                                        ((key-eq '|auto| typeof) '|*|)
@@ -888,6 +878,18 @@
                                        ,@has-defer)))
                       attributes)))))          
           (setf (attrs var-spec) attributes)
+
+          ;; 'auto type inference 
+          (when (key-eq '|auto| (typeof var-spec))
+            (let ((typ (deep-typeof "" (default var-spec))))
+              (format t "VARTYTYTYTYTY ~A~%" typ)
+              (when typ
+                (setf (const var-spec) (const typ))
+                (setf (typeof var-spec) (typeof typ))
+                (setf (modifier var-spec) (modifier typ))
+                (setf (const-ptr var-spec) (const-ptr typ))
+                (setf (array-def var-spec) (array-def typ)))))
+
           (assign-check var-spec var-spec (default var-spec)) ; authority check
           
           (setf *variable-spec* tmp-variable-spec)
@@ -950,7 +952,7 @@
                                      (specify-expr
                                          `'(|lambda|
                                             (,(remove nil
-                                                      `(,const ,(if (key-eq '|auto| typeof) `(|typeof| ,value) typeof)
+                                                      `(,const ,typeof
                                                          ,(cond
                                                             ((key-eq '|auto| typeof) '|*|)
                                                             ((key-eq '|*|  modifier) '|**|)
@@ -974,7 +976,7 @@
                                            (specify-expr
                                                `'(|lambda|
                                                   (,(remove nil
-                                                            `(,const ,(if (key-eq '|auto| typeof) `(|typeof| ,value) typeof)
+                                                            `(,const ,typeof
                                                                ,(cond
                                                                   ((null  modifier) '|*|)
                                                                   ((key-eq '|auto| typeof) '|*|)
@@ -1000,6 +1002,18 @@
                                                                                   app))
                                                                     value))
                                                               attributes))))
+
+                           ;; 'auto type inference 
+                           (when (key-eq '|auto| (typeof param-spec))
+                             (let ((typ (deep-typeof "" (default param-spec))))
+                               (format t "LETTYTYTYTYTY ~A~%" typ)
+                               (when typ
+                                 (setf (const param-spec) (const typ))
+                                 (setf (typeof param-spec) (typeof typ))
+                                 (setf (modifier param-spec) (modifier typ))
+                                 (setf (const-ptr param-spec) (const-ptr typ))
+                                 (setf (array-def param-spec) (array-def typ)))))
+
                            (assign-check let-var param-spec (default param-spec)) ; authority check
                            param-spec)
                        let-var))
@@ -1078,7 +1092,8 @@
                          (setf (array-def *function-spec*) (array-def typ)))
                        (make-specifier nil '|@RETURN| nil nil nil nil nil out '())))
                     (t (make-specifier nil '|@RETURN| nil nil nil nil nil (specify-expr output) '()))))))
-    ;; (assign-check current-spec nil) ; authority check
+    (setf (default current-spec) (move-var (default current-spec) def)) ; move check
+    ;; (assign-check current-spec (default current-spec) nil) ; authority check
     current-spec))
 
 (defun specify-if (def)
