@@ -153,6 +153,28 @@ void take_cell_rc_array_int_context_G434 (cell_rc_array_int_context cell ) {
       });
     }
 }
+size_t taken_cell_rc_array_int_context_G473 (cell_rc_array_int_context cell , size_t default_value ) {
+  cell_rc_array_int_context * __moved_cell __attribute__((__cleanup__( free_cell_rc_array_int_context_pointer))) = (& cell) ;
+  return (((cell . ptr )) ? ({ /* letn478 */
+        rc_array_int_context arr_cell_rc_array_int_context_interior_t  __attribute__((__cleanup__(free_rc_array_int_context ))) = ((rc_array_int_context   )({ /* letnmove482 */
+          rc_array_int_context moved_var481  = (*(cell . ptr ));
+          // ----------
+          memset ((&(*(cell . ptr ))), 0, sizeof((*(cell . ptr ))));
+          moved_var481 ;
+        }));
+        // ----------
+        ((((arr_cell_rc_array_int_context_interior_t . ptr ) &&  (arr_cell_rc_array_int_context_interior_t . count ) &&  ((*(arr_cell_rc_array_int_context_interior_t . count )) ==  1 ) )) ? ({ /* letn488 */
+            array_int arr  = ((array_int   )({ /* letnmove491 */
+              array_int moved_var490  = (*(arr_cell_rc_array_int_context_interior_t . ptr ));
+              // ----------
+              memset ((&(*(arr_cell_rc_array_int_context_interior_t . ptr ))), 0, sizeof((*(arr_cell_rc_array_int_context_interior_t . ptr ))));
+              moved_var490 ;
+            }));
+            // ----------
+            printf ("4. rc01 arr len: %zu\n", (arr . len ));
+          }) : default_value );
+      }) : default_value );
+}
 int main () {
   ({ /* letn247 */
     cell_rc_array_int_context rc01  __attribute__((__cleanup__(free_cell_rc_array_int_context ))) = ({ /* letn283 */
@@ -194,6 +216,12 @@ int main () {
           moved_var467 ;
         })));
     });
+    taken_cell_rc_array_int_context_G473 (((cell_rc_array_int_context   )({ /* letnmove497 */
+        cell_rc_array_int_context moved_var496  = rc01 ;
+        // ----------
+        memset ((&rc01 ), 0, sizeof(rc01 ));
+        moved_var496 ;
+      })), printf ("4. default value is strict\n"));
     fprintf (stdout , "Done\n");
   });
 }
