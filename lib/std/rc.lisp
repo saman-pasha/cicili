@@ -104,7 +104,7 @@
                 (when (and ($ (<> ,obj ,a) ptr)
                            ($ (<> ,obj ,a) count)
                            (== (cof ($ (<> ,obj ,a) count)) 1))
-                  (let ((auto ,obj . (FUNCTION (cof ($ (<> ,obj ,a) ptr))))) ; (<> ,obj ,a) is rc^context
+                  (letin ((,obj (cof ($ (<> ,obj ,a) ptr)))) ; (<> ,obj ,a) is rc^context
                     ,@body)))))
 
 
@@ -116,6 +116,6 @@
                  (? (and ($ (<> ,obj ,a) ptr)
                          ($ (<> ,obj ,a) count)
                          (== (cof ($ (<> ,obj ,a) count)) 1))
-                   (letn ((auto ,obj . (FUNCTION (cof ($ (<> ,obj ,a) ptr))))) ; (<> ,obj ,a) is rc^context
+                   (letin ((,obj (cof ($ (<> ,obj ,a) ptr)))) ; (<> ,obj ,a) is rc^context
                      ,@body)
                    default_value))))

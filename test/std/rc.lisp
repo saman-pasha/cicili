@@ -36,22 +36,23 @@
 ;; sbcl --script cicili.lisp --syslog ./test/std/rc.lisp
 ;; ./test/std/rc_test
 
-;; NEW ARR: const int * 0x600002dd91e0 5
-;; NEW RC CTX: 0x600002fdc050
-;; NEW CELL: 0x600002fdc040
+;; NEW ARR: const int * 0x6000004111e0 5
+;; NEW RC CTX: 0x600000614050
+;; NEW CELL: 0x600000614040
 ;; 1. rc01 arr len: 5
 ;; 2. rc01 arr len: 5
-;; FREE RC CTX: 0x600002fdc050
+;; FREE RC CTX: 0x600000614050
 ;; FREE RC COUNT: 2
-;; FREE CELL: 0x600002fdc070
+;; FREE CELL: 0x600000614070
 ;; FREE RC CTX: 0x0
 ;; FREE CELL: 0x0
 ;; 4. default value is strict
 ;; 4. rc01 arr len: 5
-;; FREE RC CTX: 0x600002fdc050
+;; FREE ARR: 0x6000004111e0
+;; FREE RC CTX: 0x600000614050
 ;; FREE RC COUNT: 1
 ;; FREE ARR: 0x0
-;; FREE CELL: 0x600002fdc040
+;; FREE CELL: 0x600000614040
 ;; FREE RC CTX: 0x0
 ;; Done
 ;; FREE CELL: 0x0

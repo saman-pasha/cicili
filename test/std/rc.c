@@ -139,36 +139,36 @@ void take_cell_rc_array_int_context_G434 (cell_rc_array_int_context cell ) {
         // ----------
         if ((arr_cell_rc_array_int_context_interior_t . ptr ) &&  (arr_cell_rc_array_int_context_interior_t . count ) &&  ((*(arr_cell_rc_array_int_context_interior_t . count )) ==  1 ) )
           { /* block457 */
-            { /* let459 */
-              array_int arr  = ((array_int   )({ /* letnmove462 */
-                array_int moved_var461  = (*(arr_cell_rc_array_int_context_interior_t . ptr ));
+            ({ /* letn461 */
+              array_int arr  __attribute__((__cleanup__(free_array_int ))) = ((array_int   )({ /* letnmove465 */
+                array_int moved_var464  = (*(arr_cell_rc_array_int_context_interior_t . ptr ));
                 // ----------
                 memset ((&(*(arr_cell_rc_array_int_context_interior_t . ptr ))), 0, sizeof((*(arr_cell_rc_array_int_context_interior_t . ptr ))));
-                moved_var461 ;
+                moved_var464 ;
               }));
               // ----------
               printf ("3. rc01 arr len: %zu\n", (arr . len ));
-            }
+            });
           }
       });
     }
 }
-size_t taken_cell_rc_array_int_context_G473 (cell_rc_array_int_context cell , size_t default_value ) {
+size_t taken_cell_rc_array_int_context_G476 (cell_rc_array_int_context cell , size_t default_value ) {
   cell_rc_array_int_context * __moved_cell __attribute__((__cleanup__( free_cell_rc_array_int_context_pointer))) = (& cell) ;
-  return (((cell . ptr )) ? ({ /* letn478 */
-        rc_array_int_context arr_cell_rc_array_int_context_interior_t  __attribute__((__cleanup__(free_rc_array_int_context ))) = ((rc_array_int_context   )({ /* letnmove482 */
-          rc_array_int_context moved_var481  = (*(cell . ptr ));
+  return (((cell . ptr )) ? ({ /* letn481 */
+        rc_array_int_context arr_cell_rc_array_int_context_interior_t  __attribute__((__cleanup__(free_rc_array_int_context ))) = ((rc_array_int_context   )({ /* letnmove485 */
+          rc_array_int_context moved_var484  = (*(cell . ptr ));
           // ----------
           memset ((&(*(cell . ptr ))), 0, sizeof((*(cell . ptr ))));
-          moved_var481 ;
+          moved_var484 ;
         }));
         // ----------
-        ((((arr_cell_rc_array_int_context_interior_t . ptr ) &&  (arr_cell_rc_array_int_context_interior_t . count ) &&  ((*(arr_cell_rc_array_int_context_interior_t . count )) ==  1 ) )) ? ({ /* letn488 */
-            array_int arr  = ((array_int   )({ /* letnmove491 */
-              array_int moved_var490  = (*(arr_cell_rc_array_int_context_interior_t . ptr ));
+        ((((arr_cell_rc_array_int_context_interior_t . ptr ) &&  (arr_cell_rc_array_int_context_interior_t . count ) &&  ((*(arr_cell_rc_array_int_context_interior_t . count )) ==  1 ) )) ? ({ /* letn493 */
+            array_int arr  __attribute__((__cleanup__(free_array_int ))) = ((array_int   )({ /* letnmove497 */
+              array_int moved_var496  = (*(arr_cell_rc_array_int_context_interior_t . ptr ));
               // ----------
               memset ((&(*(arr_cell_rc_array_int_context_interior_t . ptr ))), 0, sizeof((*(arr_cell_rc_array_int_context_interior_t . ptr ))));
-              moved_var490 ;
+              moved_var496 ;
             }));
             // ----------
             printf ("4. rc01 arr len: %zu\n", (arr . len ));
@@ -209,18 +209,18 @@ int main () {
         letn_cell_rc_array_int_context_G413 ((&(*tmp_rc406 )), def_value );
       });
       // ----------
-      take_cell_rc_array_int_context_G434 (((cell_rc_array_int_context   )({ /* letnmove468 */
-          cell_rc_array_int_context moved_var467  = cl01 ;
+      take_cell_rc_array_int_context_G434 (((cell_rc_array_int_context   )({ /* letnmove471 */
+          cell_rc_array_int_context moved_var470  = cl01 ;
           // ----------
           memset ((&cl01 ), 0, sizeof(cl01 ));
-          moved_var467 ;
+          moved_var470 ;
         })));
     });
-    taken_cell_rc_array_int_context_G473 (((cell_rc_array_int_context   )({ /* letnmove497 */
-        cell_rc_array_int_context moved_var496  = rc01 ;
+    taken_cell_rc_array_int_context_G476 (((cell_rc_array_int_context   )({ /* letnmove503 */
+        cell_rc_array_int_context moved_var502  = rc01 ;
         // ----------
         memset ((&rc01 ), 0, sizeof(rc01 ));
-        moved_var496 ;
+        moved_var502 ;
       })), printf ("4. default value is strict\n"));
     fprintf (stdout , "Done\n");
   });
