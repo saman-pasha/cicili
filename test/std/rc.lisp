@@ -28,6 +28,7 @@
                   (printf "4. default value is strict\n"))
         (printf "4. rc01 arr len: %zu\n" (len^array arr)))
 
+      (format #t "Done\n")
       ) ; letin
     )) ; rc.c
 
@@ -35,16 +36,22 @@
 ;; sbcl --script cicili.lisp --syslog ./test/std/rc.lisp
 ;; ./test/std/rc_test
 
-;; NEW ARR: const int * 0x600000be11e0 5
-;; NEW RC CTX: 0x6000009e4050
-;; NEW CELL: 0x6000009e4040
+;; NEW ARR: const int * 0x60000221d1e0 5
+;; NEW RC CTX: 0x600002018050
+;; NEW CELL: 0x600002018040
 ;; 1. rc01 arr len: 5
 ;; 2. rc01 arr len: 5
-;; FREE CELL: 0x0
+;; FREE RC CTX: 0x600002018050
+;; FREE RC COUNT: 2
+;; FREE CELL: 0x600002018070
+;; FREE RC CTX: 0x0
 ;; FREE CELL: 0x0
 ;; 4. default value is strict
 ;; 4. rc01 arr len: 5
-;; FREE RC CTX: 0x6000009e4050
-;; FREE CELL: 0x6000009e4040
+;; FREE RC CTX: 0x600002018050
+;; FREE RC COUNT: 1
+;; FREE ARR: 0x60000221d1e0
+;; FREE CELL: 0x600002018040
 ;; FREE RC CTX: 0x0
+;; Done
 ;; FREE CELL: 0x0

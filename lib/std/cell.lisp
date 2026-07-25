@@ -17,8 +17,9 @@
   ;; needed for letin
   (func (<> free cell a) (((<> cell a) * cell))        
         (syslog! (printf "FREE CELL: %p\n" (-> cell ptr)))
-        (when (-> cell ptr) ((<> free a) (-> cell ptr)))
-        (free (-> cell ptr)))
+        (when (-> cell ptr)
+          ((<> free a) (-> cell ptr))
+          (free (-> cell ptr))))
 
   (inline)
   ;; needed for pass move to function
