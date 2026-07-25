@@ -4,7 +4,7 @@
 
   (non-copy)
   (struct (<> rc a context)
-          (member a ref ptr)
+          (member a * const ptr)
           (member size_t * count))
 
   (inline)
@@ -61,7 +61,8 @@
   (LET* ((rc rc)
          (types (MULTIPLE-VALUE-LIST (CICILI:TYPE-CHECK rc :CONST NIL :TYPEOF :std^cell :MODIFIER :move)))
          (a (CICILI:INFER-TYPE `(<> ,(NTH 1 (NTH 1 types)) interior_t)))
-         (rc-name (GENSYM "tmp_rc")))
+         (rc-name (GENSYM "tmp_rc"))
+         (new-rc-name (GENSYM "tmp_rc")))
     (WHEN (> (LENGTH a) 1) (ERROR (FORMAT NIL "clone rc got invalid type ~A for ~A" a rc)))
     `(letn ((,(NTH 0 (CAR types)) ref ,rc-name . (FUNCTION (aof ,rc)))
             (auto def_value . (FUNCTION (cast (typeof (cof ,rc-name)) '{ 0 }))))
@@ -71,9 +72,9 @@
                  (>= (cof (-> (<> ctx ,@a) count)) 1))
            (progn
              (++ (cof (-> (<> ctx ,@a) count)))
-             (letn ((,@a * ,rc-name . (FUNCTION (malloc (sizeof ,@a)))))
-               (memcpy ,rc-name (<> ctx ,@a) (sizeof ,@a))
-               (cast (<> cell ,@a) '{ ,rc-name })))
+             (letn ((,@a * ,new-rc-name . (FUNCTION (malloc (sizeof ,@a)))))
+               (memcpy ,new-rc-name (<> ctx ,@a) (sizeof ,@a))
+               (cast (<> cell ,@a) '{ ,new-rc-name })))
            default_value)))))
 
 
@@ -103,7 +104,7 @@
                 (when (and ($ (<> ,obj ,a) ptr)
                            ($ (<> ,obj ,a) count)
                            (== (cof ($ (<> ,obj ,a) count)) 1))
-                  (let ((auto ,obj . (FUNCTION ($ (<> ,obj ,a) ptr)))) ; (<> ,obj ,a) is rc^context
+                  (let ((auto ,obj . (FUNCTION (cof ($ (<> ,obj ,a) ptr))))) ; (<> ,obj ,a) is rc^context
                     ,@body)))))
 
 
@@ -115,6 +116,6 @@
                  (? (and ($ (<> ,obj ,a) ptr)
                          ($ (<> ,obj ,a) count)
                          (== (cof ($ (<> ,obj ,a) count)) 1))
-                   (letn ((auto ,obj . (FUNCTION ($ (<> ,obj ,a) ptr)))) ; (<> ,obj ,a) is rc^context
+                   (letn ((auto ,obj . (FUNCTION (cof ($ (<> ,obj ,a) ptr))))) ; (<> ,obj ,a) is rc^context
                      ,@body)
                    default_value))))

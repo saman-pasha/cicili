@@ -87,7 +87,9 @@
           (when name      (output " ")
                 (setq line-n  (funcall *line-num* 0))
                 (setq col-n   (funcall *col-num* 0))
-                (set-ast-line (output "~A " (if (str:starts-with-p "_ciciliParam_" (symbol-name name)) " " name))))
+                (set-ast-line (output "~A " (if (or (str:starts-with-p "_ciciliParam_" (symbol-name name))
+                                                    (key-eq '|LETNMOVECAST| name))
+                                                " " name))))
           (compile-array array-def lvl globals parent-spec)))
     (values line-n col-n)))
 

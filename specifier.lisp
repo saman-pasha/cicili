@@ -126,9 +126,15 @@
                                              (push v lkv))
                                          (params spec))
                                 lkv)
-                              (last (body (body spec))))))
-           (t (remove nil (list (construct spec) (const spec) (typeof spec) (modifier spec) (const-ptr spec)
-                                (name spec) (array-def spec) (list "=" (default spec)) (attrs spec)))))
+                              (when (body spec) (last (body (body spec)))))))
+           (t (remove nil (list (construct spec)
+                                (when (const spec) (list "c:" (const spec)))
+                                (when (typeof spec) (list "t:" (typeof spec)))
+                                (when (modifier spec) (list "m:" (modifier spec)))
+                                (when (const-ptr spec) (list "p:" (const-ptr spec)))
+                                (when (name spec) (list "n:" (name spec)))
+                                (array-def spec)
+                                (when (default spec) (list "=" (default spec))) (attrs spec)))))
      stream)))
 
 (defun copy-specifiers (table)
@@ -672,9 +678,8 @@
                                      (list ty)
                                      ty)
                                  (list ty))))
-      (make-specifier
-          (specify-decl-name< variable)
-        '|@CAST| const type modifier const-ptr array (specify-expr (expand-macros (nth 2 def))) '()))))
+      (make-specifier nil '|@CAST|
+                      const type modifier const-ptr array (specify-expr (expand-macros (nth 2 def))) '()))))
 
 (defun specify-$-expr (def)
   (let ((len (length def))

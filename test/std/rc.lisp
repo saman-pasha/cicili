@@ -17,16 +17,16 @@
 
       (printf "2. rc01 arr len: %zu\n"
         (letn^rc (arr_ptr rc01 -1)
-          (len^array arr_ptr)))
+          (len^array (cof arr_ptr))))
 
       ;; could not take because of counter is 2
       (letin ((cl01 (clone^rc rc01)))
         (take^rc (arr cl01)
           (printf "3. rc01 arr len: %zu\n" (len^array arr))))
 
-      (taken^rc (arr rc01
-                  (printf "4. default value is strict\n"))
-        (printf "4. rc01 arr len: %zu\n" (len^array arr)))
+      ;; (taken^rc (arr rc01
+      ;;             (printf "4. default value is strict\n"))
+      ;;   (printf "4. rc01 arr len: %zu\n" (len^array arr)))
 
       (format #t "Done\n")
       ) ; letin

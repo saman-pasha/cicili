@@ -31,9 +31,9 @@
                                 ((key-eq (car quoted) '|lambda|) ; annonymous lambda
                                  (let* ((lname (gensym "__ciciliL_"))
                                         (func-spec (specify-function (append (list '|lambda| lname) (cdr quoted)) '())))
-                                   ;; (unless *type-infer-time-lambda*
-                                   (add-inner func-spec (if *function-spec* *function-spec* *variable-spec*))
-                                   ;; )
+                                   (unless *type-infer-time-lambda*
+                                     (add-inner func-spec (if *function-spec* *function-spec* *variable-spec*))
+                                     )
                                    (let* ((fname (name func-spec))
                                           (name (if (listp fname)
                                                     (intern (make-shared-name (car fname) (cdr fname)))
@@ -42,9 +42,9 @@
                                 
                                 ((key-eq (car quoted) '|lambda*|) ; named lambda 
                                  (let* ((func-spec (specify-function quoted '())))
-                                   ;; (unless *type-infer-time-lambda*
-                                   (add-inner func-spec (if *function-spec* *function-spec* *variable-spec*))
-                                   ;; )
+                                   (unless *type-infer-time-lambda*
+                                     (add-inner func-spec (if *function-spec* *function-spec* *variable-spec*))
+                                     )
                                    (let* ((fname (name func-spec))
                                           (name (if (listp fname)
                                                     (intern (make-shared-name (car fname) (cdr fname)))

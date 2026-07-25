@@ -24,7 +24,7 @@ __attribute__((weak)) void free_array_int_pointer (array_int ** array ) {
   free_array_int ((*array ));
 }
 typedef struct rc_array_int_context {
-  array_int * restrict ptr ;
+  array_int * const ptr ;
   size_t * count ;
 } rc_array_int_context;
 __attribute__((weak)) void free_rc_array_int_context (rc_array_int_context * ctx ) {
@@ -74,39 +74,6 @@ __attribute__((weak)) void free_cell_rc_array_int_context_pointer (cell_rc_array
 __attribute__((weak)) void force_free_rc_array_int_context (rc_array_int_context * obj ) {
   free_rc_array_int_context (obj );
 }
-array_int new_array_int_G193 (const int * arr , const int len ) {
-  return ({ /* letn197 */
-      int * new_arr  = calloc (len , sizeof(int));
-      // ----------
-      ({ /* progn200 */
-        printf ("NEW ARR: %s %p %zu\n", "const int *", new_arr , ((size_t)len ));
-      });
-      memcpy (new_arr , arr , (len  *  sizeof(int) ));
-      ((array_int){ new_arr , len });
-    });
-}
-array_int new_array_int_G225 (const int * arr , const int len ) {
-  return ({ /* letn229 */
-      int * new_arr  = calloc (len , sizeof(int));
-      // ----------
-      ({ /* progn232 */
-        printf ("NEW ARR: %s %p %zu\n", "const int *", new_arr , ((size_t)len ));
-      });
-      memcpy (new_arr , arr , (len  *  sizeof(int) ));
-      ((array_int){ new_arr , len });
-    });
-}
-array_int new_array_int_G264 (const int * arr , const int len ) {
-  return ({ /* letn268 */
-      int * new_arr  = calloc (len , sizeof(int));
-      // ----------
-      ({ /* progn271 */
-        printf ("NEW ARR: %s %p %zu\n", "const int *", new_arr , ((size_t)len ));
-      });
-      memcpy (new_arr , arr , (len  *  sizeof(int) ));
-      ((array_int){ new_arr , len });
-    });
-}
 array_int new_array_int_G296 (const int * arr , const int len ) {
   return ({ /* letn300 */
       int * new_arr  = calloc (len , sizeof(int));
@@ -125,7 +92,7 @@ void let_cell_rc_array_int_context_G321 (cell_rc_array_int_context * restrict ce
         cell_rc_array_int_context_interior_t * restrict arr_ptr_cell_rc_array_int_context_interior_t  = (cell -> ptr );
         // ----------
         { /* let333 */
-          array_int * restrict arr_ptr  = (arr_ptr_cell_rc_array_int_context_interior_t -> ptr );
+          array_int * const arr_ptr  = (arr_ptr_cell_rc_array_int_context_interior_t -> ptr );
           // ----------
           printf ("1. rc01 arr len: %zu\n", ((*arr_ptr ). len ));
         }
@@ -137,81 +104,54 @@ size_t letn_cell_rc_array_int_context_G341 (cell_rc_array_int_context * restrict
         cell_rc_array_int_context_interior_t * restrict arr_ptr_cell_rc_array_int_context_interior_t  = (cell -> ptr );
         // ----------
         ({ /* letn348 */
-          array_int * restrict arr_ptr  = (arr_ptr_cell_rc_array_int_context_interior_t -> ptr );
+          array_int * const arr_ptr  = (arr_ptr_cell_rc_array_int_context_interior_t -> ptr );
           // ----------
           ((*arr_ptr ). len );
         });
       }) : default_value );
 }
-cell_rc_array_int_context letn_cell_rc_array_int_context_G362 (cell_rc_array_int_context * restrict cell , cell_rc_array_int_context default_value ) {
-  return (((cell -> ptr )) ? ({ /* letn365 */
+cell_rc_array_int_context letn_cell_rc_array_int_context_G413 (cell_rc_array_int_context * restrict cell , cell_rc_array_int_context default_value ) {
+  return (((cell -> ptr )) ? ({ /* letn416 */
         cell_rc_array_int_context_interior_t * restrict ctx_rc_array_int_context  = (cell -> ptr );
         // ----------
-        ((((ctx_rc_array_int_context -> ptr ) &&  (ctx_rc_array_int_context -> count ) &&  ((*(ctx_rc_array_int_context -> count )) >=  1 ) )) ? ({ /* progn372 */
+        ((((ctx_rc_array_int_context -> ptr ) &&  (ctx_rc_array_int_context -> count ) &&  ((*(ctx_rc_array_int_context -> count )) >=  1 ) )) ? ({ /* progn423 */
             (++(*(ctx_rc_array_int_context -> count )));
-            ({ /* letn375 */
-              rc_array_int_context * tmp_rc357  = malloc (sizeof(rc_array_int_context));
+            ({ /* letn426 */
+              rc_array_int_context * tmp_rc407  = malloc (sizeof(rc_array_int_context));
               // ----------
-              memcpy (tmp_rc357 , ctx_rc_array_int_context , sizeof(rc_array_int_context));
-              ((cell_rc_array_int_context){ tmp_rc357 });
+              memcpy (tmp_rc407 , ctx_rc_array_int_context , sizeof(rc_array_int_context));
+              ((cell_rc_array_int_context){ tmp_rc407 });
             });
           }) : default_value );
       }) : default_value );
 }
-cell_rc_array_int_context letn_cell_rc_array_int_context_G411 (cell_rc_array_int_context * restrict cell , cell_rc_array_int_context default_value ) {
-  return (((cell -> ptr )) ? ({ /* letn414 */
-        cell_rc_array_int_context_interior_t * restrict ctx_rc_array_int_context  = (cell -> ptr );
-        // ----------
-        ((((ctx_rc_array_int_context -> ptr ) &&  (ctx_rc_array_int_context -> count ) &&  ((*(ctx_rc_array_int_context -> count )) >=  1 ) )) ? ({ /* progn421 */
-            (++(*(ctx_rc_array_int_context -> count )));
-            ({ /* letn424 */
-              rc_array_int_context * tmp_rc405  = malloc (sizeof(rc_array_int_context));
-              // ----------
-              memcpy (tmp_rc405 , ctx_rc_array_int_context , sizeof(rc_array_int_context));
-              ((cell_rc_array_int_context){ tmp_rc405 });
-            });
-          }) : default_value );
-      }) : default_value );
-}
-void take_cell_rc_array_int_context_G432 (cell_rc_array_int_context cell ) {
+void take_cell_rc_array_int_context_G434 (cell_rc_array_int_context cell ) {
   cell_rc_array_int_context * __moved_cell __attribute__((__cleanup__( free_cell_rc_array_int_context_pointer))) = (& cell) ;
   if (cell . ptr )
-    { /* block439 */
-      ({ /* letn442 */
-        rc_array_int_context arr_cell_rc_array_int_context_interior_t  __attribute__((__cleanup__(free_rc_array_int_context ))) = ({ /* letnmove446 */
-          __auto_type moved_var445  = (*(cell . ptr ));
+    { /* block441 */
+      ({ /* letn444 */
+        rc_array_int_context arr_cell_rc_array_int_context_interior_t  __attribute__((__cleanup__(free_rc_array_int_context ))) = ((rc_array_int_context   )({ /* letnmove448 */
+          rc_array_int_context moved_var447  = (*(cell . ptr ));
           // ----------
           memset ((&(*(cell . ptr ))), 0, sizeof((*(cell . ptr ))));
-          moved_var445 ;
-        });
+          moved_var447 ;
+        }));
         // ----------
         if ((arr_cell_rc_array_int_context_interior_t . ptr ) &&  (arr_cell_rc_array_int_context_interior_t . count ) &&  ((*(arr_cell_rc_array_int_context_interior_t . count )) ==  1 ) )
-          { /* block455 */
-            { /* let457 */
-              array_int * restrict arr  = (arr_cell_rc_array_int_context_interior_t . ptr );
+          { /* block457 */
+            { /* let459 */
+              array_int arr  = ((array_int   )({ /* letnmove462 */
+                array_int moved_var461  = (*(arr_cell_rc_array_int_context_interior_t . ptr ));
+                // ----------
+                memset ((&(*(arr_cell_rc_array_int_context_interior_t . ptr ))), 0, sizeof((*(arr_cell_rc_array_int_context_interior_t . ptr ))));
+                moved_var461 ;
+              }));
               // ----------
-              printf ("3. rc01 arr len: %zu\n", ((*arr ). len ));
+              printf ("3. rc01 arr len: %zu\n", (arr . len ));
             }
           }
       });
     }
-}
-size_t taken_cell_rc_array_int_context_G468 (cell_rc_array_int_context cell , size_t default_value ) {
-  cell_rc_array_int_context * __moved_cell __attribute__((__cleanup__( free_cell_rc_array_int_context_pointer))) = (& cell) ;
-  return (((cell . ptr )) ? ({ /* letn473 */
-        rc_array_int_context arr_cell_rc_array_int_context_interior_t  __attribute__((__cleanup__(free_rc_array_int_context ))) = ({ /* letnmove477 */
-          __auto_type moved_var476  = (*(cell . ptr ));
-          // ----------
-          memset ((&(*(cell . ptr ))), 0, sizeof((*(cell . ptr ))));
-          moved_var476 ;
-        });
-        // ----------
-        ((((arr_cell_rc_array_int_context_interior_t . ptr ) &&  (arr_cell_rc_array_int_context_interior_t . count ) &&  ((*(arr_cell_rc_array_int_context_interior_t . count )) ==  1 ) )) ? ({ /* letn483 */
-            array_int * restrict arr  = (arr_cell_rc_array_int_context_interior_t . ptr );
-            // ----------
-            printf ("4. rc01 arr len: %zu\n", ((*arr ). len ));
-          }) : default_value );
-      }) : default_value );
 }
 int main () {
   ({ /* letn247 */
@@ -239,27 +179,21 @@ int main () {
     // ----------
     let_cell_rc_array_int_context_G321 ((&rc01 ));
     printf ("2. rc01 arr len: %zu\n", letn_cell_rc_array_int_context_G341 ((&rc01 ), -1));
-    ({ /* letn401 */
-      cell_rc_array_int_context cl01  __attribute__((__cleanup__(free_cell_rc_array_int_context ))) = ({ /* letn407 */
-        cell_rc_array_int_context * restrict tmp_rc405  = (&rc01 );
-        typeof((*tmp_rc405 )) def_value  = ((typeof((*tmp_rc405 ))){ 0});
+    ({ /* letn402 */
+      cell_rc_array_int_context cl01  __attribute__((__cleanup__(free_cell_rc_array_int_context ))) = ({ /* letn409 */
+        cell_rc_array_int_context * restrict tmp_rc406  = (&rc01 );
+        typeof((*tmp_rc406 )) def_value  = ((typeof((*tmp_rc406 ))){ 0});
         // ----------
-        letn_cell_rc_array_int_context_G411 ((&(*tmp_rc405 )), def_value );
+        letn_cell_rc_array_int_context_G413 ((&(*tmp_rc406 )), def_value );
       });
       // ----------
-      take_cell_rc_array_int_context_G432 (({ /* letnmove463 */
-          __auto_type moved_var462  = cl01 ;
+      take_cell_rc_array_int_context_G434 (((cell_rc_array_int_context   )({ /* letnmove468 */
+          cell_rc_array_int_context moved_var467  = cl01 ;
           // ----------
           memset ((&cl01 ), 0, sizeof(cl01 ));
-          moved_var462 ;
-        }));
+          moved_var467 ;
+        })));
     });
-    taken_cell_rc_array_int_context_G468 (({ /* letnmove489 */
-        __auto_type moved_var488  = rc01 ;
-        // ----------
-        memset ((&rc01 ), 0, sizeof(rc01 ));
-        moved_var488 ;
-      }), printf ("4. default value is strict\n"));
     fprintf (stdout , "Done\n");
   });
 }
