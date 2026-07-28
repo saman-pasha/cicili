@@ -8,7 +8,7 @@ All types use size_t for sizes and indices, ensuring compatibility with C memory
 
 Declaration
 
-```lisp
+```cicili
 (generic decl-StringBuffer (a))  ; a is the element type (typically char)
 ```
 
@@ -23,7 +23,7 @@ Constructors
 
 new
 
-```lisp
+```cicili
 (func new ((size_t step) (bool null_terminated)) (out (<> StringBuffer a)))
 ```
 
@@ -35,7 +35,7 @@ null_terminated #t for C-string mode, #f for raw binary mode
 
 Example:
 
-```lisp
+```cicili
 ;; Character buffer for text (null-terminated)
 (letin ((sb ((<> new StringBuffer char) 16 #t)))
   ...)
@@ -47,7 +47,7 @@ Example:
 
 newCapacity
 
-```lisp
+```cicili
 (func newCapacity ((size_t capacity) (size_t step) (bool null_terminated)) (out (<> StringBuffer a)))
 ```
 
@@ -60,7 +60,7 @@ null_terminated Buffer mode
 
 Example:
 
-```lisp
+```cicili
 ;; Preallocate 1MB for large data
 (letin ((sb ((<> newCapacity StringBuffer char) 1048576 65536 #t)))
   ...)
@@ -70,7 +70,7 @@ Core Operations
 
 print — Append Data
 
-```lisp
+```cicili
 (func print (((<> StringBuffer a) sb) (const a* data) (size_t len)) (out (<> StringBuffer a)))
 ```
 
@@ -78,13 +78,13 @@ Appends len elements from data to the buffer. Returns the buffer (may be new if 
 
 Example:
 
-```lisp
+```cicili
 (set sb ((<> print StringBuffer char) sb "Hello" 5))
 ```
 
 put — Append Single Element
 
-```lisp
+```cicili
 (func put (((<> StringBuffer a) sb) (const a data)) (out (<> StringBuffer a)))
 ```
 
@@ -92,14 +92,14 @@ Appends a single element to the buffer.
 
 Example:
 
-```lisp
+```cicili
 (set sb ((<> put StringBuffer char) sb #\H))
 (set sb ((<> put StringBuffer char) sb #\i))
 ```
 
 copy — Deep Copy
 
-```lisp
+```cicili
 (func copy (((<> StringBuffer a) sb)) (out (<> StringBuffer a)))
 ```
 
@@ -107,7 +107,7 @@ Creates an independent copy of the entire buffer. The new buffer has the same mo
 
 Example:
 
-```lisp
+```cicili
 (letin ((original ((<> new StringBuffer char) 16 #t)))
   (set original ((<> print StringBuffer char) original "Hello" 5))
   (letin ((clone ((<> copy StringBuffer char) original)))
@@ -117,7 +117,7 @@ Example:
 
 copySlice — Extract Substring
 
-```lisp
+```cicili
 (func copySlice (((<> StringBuffer a) sb) (size_t pos) (size_t len)) (out (<> StringBuffer a)))
 ```
 
@@ -125,7 +125,7 @@ Extracts a portion of the buffer starting at pos for len elements. Returns a new
 
 Example:
 
-```lisp
+```cicili
 (letin ((sb ((<> new StringBuffer char) 16 #t)))
   (set sb ((<> print StringBuffer char) sb "Hello, World!" 13))
   (letin ((sub ((<> copySlice StringBuffer char) sb 7 5)))
@@ -135,7 +135,7 @@ Example:
 
 resize — Change Buffer Capacity
 
-```lisp
+```cicili
 (func resize (((<> StringBuffer a) sb) (size_t size)) (out (<> StringBuffer a)))
 ```
 
@@ -143,7 +143,7 @@ Resizes the buffer to the new capacity. If shrinking, data beyond new size is lo
 
 Example:
 
-```lisp
+```cicili
 (letin ((sb ((<> new StringBuffer char) 16 #t)))
   (set sb ((<> print StringBuffer char) sb "Hello" 5))
   (set sb ((<> resize StringBuffer char) sb 32))  ; Grow to 32 elements
@@ -153,7 +153,7 @@ Example:
 
 free — Destructor
 
-```lisp
+```cicili
 (free (io this ...))
 ```
 
@@ -196,7 +196,7 @@ Error Handling
 
 All operations return the buffer (or a new buffer) on success. The Freed state represents a deallocated buffer:
 
-```lisp
+```cicili
 (match sb
   (Buffered buffer cursor size step ...)
   (NullTerminated buffer cursor size step ...)
@@ -209,7 +209,7 @@ Memory Management (RAII)
 
 Always use letin (not let) to ensure automatic cleanup:
 
-```lisp
+```cicili
 ;; ✓ Correct — auto-freed
 (letin ((sb ((<> new StringBuffer char) 16 #t)))
   ((<> print StringBuffer char) sb "Hello" 5))
@@ -232,7 +232,7 @@ Usage Examples
 
 Building a String
 
-```lisp
+```cicili
 (import-StringBuffer char)
 
 (letin ((sb ((<> new StringBuffer char) 16 #t)))
@@ -248,7 +248,7 @@ Building a String
 
 Building JSON Dynamically
 
-```lisp
+```cicili
 (letin ((sb ((<> new StringBuffer char) 256 #t)))
   (set sb ((<> print StringBuffer char) sb "{" 1))
   (set sb ((<> print StringBuffer char) sb "\"name\":\"Saman\"" 15))
@@ -267,7 +267,7 @@ Building JSON Dynamically
 
 Reading File into Buffer
 
-```lisp
+```cicili
 (func read-file ((CStr filename))
   (out (<> StringBuffer char))
   (letin ((sb ((<> new StringBuffer char) 4096 #f)))
@@ -286,7 +286,7 @@ Reading File into Buffer
 
 Substring Extraction
 
-```lisp
+```cicili
 (letin ((sb ((<> new StringBuffer char) 32 #t)))
   (set sb ((<> print StringBuffer char) sb "The Quick Brown Fox" 19))
   
@@ -299,7 +299,7 @@ Substring Extraction
 
 Resizing for Efficiency
 
-```lisp
+```cicili
 ;; Build large string efficiently by pre-sizing
 (letin ((sb ((<> newCapacity StringBuffer char) 1000000 65536 #t)))
   (for ((size_t i 0)) (< i 1000000) ((++ i))
@@ -312,7 +312,7 @@ Integration with Other Types
 
 With String (Persistent)
 
-```lisp
+```cicili
 ;; Build mutable buffer, then convert to persistent String
 (letin ((sb ((<> new StringBuffer char) 64 #t)))
   (set sb ((<> print StringBuffer char) sb "Hello" 5))
@@ -322,7 +322,7 @@ With String (Persistent)
 
 With DynamicType
 
-```lisp
+```cicili
 ;; Generate JSON into buffer, then parse
 (letin ((sb ((<> new StringBuffer char) 256 #t)))
   ((<> toJson DynamicType) sb dt14)

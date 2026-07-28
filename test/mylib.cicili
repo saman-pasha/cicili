@@ -3,9 +3,9 @@
   (:compile #f)
 
   (guard __MYMATH_H__
-    {decl} (func obj1_does ((int) (int)) (out int))
-    {decl} (func obj2_does ((int) (int)) (out int))
-    {decl} (func obj3_does ((int) (int)) (out int))))
+    (decl) (func obj1_does ((int) (int)) (out int))
+    (decl) (func obj2_does ((int) (int)) (out int))
+    (decl) (func obj3_does ((int) (int)) (out int))))
 
 ;; Default compilation
 (source "obj1.c"

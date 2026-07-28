@@ -17,20 +17,20 @@
       (let ((int aInt . 10)) ; to capture
         
         (let^cell (arr_ref cell01)
-          (printf "1. cell01 arr len: %zu\n" (len^array (cof arr_ref))))
+                  (printf "1. cell01 arr len: %zu\n" (len^array (cof arr_ref))))
         
         ;; default value used in case of DEAD cell
         ;; -1 as default_value presented in letn scope
         (printf "2. cell02 arr len + over: %zu\n"
           (letn^cell (arr_ref cell02 -1 :over aInt)
-            (+ (len^array (cof arr_ref)) over)))
+                     (+ (len^array (cof arr_ref)) over)))
 
         (take^cell (arr cell01)
-          (printf "3. cell01 arr len: %zu\n" (len^array arr)))
+                   (printf "3. cell01 arr len: %zu\n" (len^array arr)))
 
         (taken^cell (arr cell02
-                      (printf "4. default value is strict\n"))
-          (printf "4. cell02 arr len: %zu\n" (len^array arr)))
+                         (printf "4. default value is strict\n"))
+                    (printf "4. cell02 arr len: %zu\n" (len^array arr)))
 
         ;; type-check: invalid modifier value: (ref) of: (NIL cell_array_int move NIL NIL) for: cell02
         ;; (free^cell cell02)

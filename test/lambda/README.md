@@ -25,7 +25,7 @@ This threading layer turns low-level C threading into concise, declarative const
 
 Creates and starts a new thread using a captured closure.
 
-```lisp
+```cicili
 (go ((int input . 42))
   (format #t "Running in thread: %d\n" input))
 ```
@@ -40,7 +40,7 @@ Supports:
 
 Same as `go` but automatically detaches the thread (fire-and-forget).
 
-```lisp
+```cicili
 (detach ((int val . 99))
   (format #t "Detached thread with val: %d\n" val))
 ```
@@ -49,7 +49,7 @@ Same as `go` but automatically detaches the thread (fire-and-forget).
 
 Waits for a thread to finish. Optionally captures the return value.
 
-```lisp
+```cicili
 (join thread-id)
 
 (join thread-id (int * result))
@@ -61,7 +61,7 @@ Waits for a thread to finish. Optionally captures the return value.
 
 Cancels a running thread.
 
-```lisp
+```cicili
 (cancel thread-id)
 ```
 
@@ -69,7 +69,7 @@ Cancels a running thread.
 
 Exits from inside a thread early.
 
-```lisp
+```cicili
 (exit nil)
 ```
 
@@ -77,7 +77,7 @@ Exits from inside a thread early.
 
 Returns the current thread's ID.
 
-```lisp
+```cicili
 (format #t "Thread ID: %lu\n" (cast ulong (self)))
 ```
 
@@ -85,7 +85,7 @@ Returns the current thread's ID.
 
 ## 📘 Full Example
 
-```lisp
+```cicili
 (source "thread.c" (:std #t :compile #t :link "-lpthread -o thread_main")
   (include <unistd.h>)
   (include <pthread.h>)
@@ -139,7 +139,7 @@ Returns the current thread's ID.
 
 Cicili encourages safe resource management using `defer*`, which attaches cleanup logic to variables, including return values from threads:
 
-```lisp
+```cicili
 (join id3 (int * result))
 (defer* ((int * result)) (free result))
 ```
@@ -152,7 +152,7 @@ This guarantees cleanup when the scope ends, similar to `defer` in Go or `RAII` 
 
 Define thread logic as lambdas that return thread IDs or result pointers:
 
-```lisp
+```cicili
 (auto runner . '(lambda () (out pthread_t)
   (return (go () (out void *)
     ;; do work, return pointer

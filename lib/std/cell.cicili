@@ -74,9 +74,9 @@
         `(closure ((<> letn ,type-name ,(GENSYM)) :cell (aof ,cell) :default_value ,default ,@captures)
            (out auto)
            (return (? (-> cell ptr)
-                     (letn (((<> ,type-name interior_t) ref ,obj . (FUNCTION (-> cell ptr))))
-                       ,@body)
-                     default_value)))))))
+                      (letn (((<> ,type-name interior_t) ref ,obj . (FUNCTION (-> cell ptr))))
+                        ,@body)
+                      default_value)))))))
 
 
 (DEFMACRO take^cell ((obj cell &REST captures) &REST body)
@@ -101,6 +101,6 @@
         `(closure ((<> taken ,type-name ,(GENSYM)) :cell ,cell :default_value ,default ,@captures)
            (out auto)
            (return (? ($ cell ptr)
-                     (letin ((,obj (cof ($ cell ptr)))) ; should zeroed ($ cell ptr)
-                       ,@body)
-                     default_value)))))))
+                      (letin ((,obj (cof ($ cell ptr)))) ; should zeroed ($ cell ptr)
+                        ,@body)
+                      default_value)))))))

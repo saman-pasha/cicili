@@ -77,7 +77,7 @@ Developers can simply specify a list of pairs in a route and not worry about wri
 
 ### 3.1 Adding an Individual Route
 To add a new standalone route (with no special pre‑ or post‑handlers):
-```lisp
+```cicili
 (route GET "/newpage" nil
   (FCGX_PutS "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n\r\n" ($ req out))
   (FCGX_PutS "This is a new page!\n" ($ req out)))
@@ -86,7 +86,7 @@ Simply call the `route` macro with the HTTP method, path, and a `nil` parameter 
 
 ### 3.2 Adding a Node (Grouped Routes)
 If you have a set of similar endpoints, create a node:
-```lisp
+```cicili
 (node setup_custom_routes "/custom" 
   '(lambda ((FCGX_Request * req)) (format #t "Entering Custom route\n"))
   '(lambda ((FCGX_Request * req)) (format #t "Exiting Custom route\n"))
@@ -104,7 +104,7 @@ This node will group routes under `/custom` (so the route paths become `/custom/
 
 ### 3.3 Parameter Management
 When you define a route with parameters, the macro automatically copies each parameter. For example, in the route:
-```lisp
+```cicili
 (route GET "/list" ((userId uid))
   (if uid
       (format #t "API List: userId=%s\n" uid)

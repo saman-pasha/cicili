@@ -123,11 +123,11 @@ grok review:
 ### What changed?
 
 You replaced every indirect vtable dispatch:
-```lisp
+```cicili
 ((\.* function instance) ...)   ; instance->__h_table->function(...)
 ```
 with a direct static call:
-```lisp
+```cicili
 (<> function type)                ; function_type(...) — resolved at compile time
 ```
 

@@ -191,45 +191,45 @@
 	                    (declare ctx)))
 
                ;; * SHA-1 *
-               {extern} {decl} (func SHA1Reset ((SHA1Context *)) (out int))
-               {extern} {decl} (func SHA1Input ((SHA1Context *) (const uint8_t * bytes) (uint bytecount)) (out int))
-               {extern} {decl} (func SHA1FinalBits ((SHA1Context *) (uint8_t bits) (uint bit_count)) (out int))
-               {extern} {decl} (func SHA1Result ((SHA1Context *) (uint8_t Message_Digest[SHA1HashSize])) (out int))
+               (extern) (decl) (func SHA1Reset ((SHA1Context *)) (out int))
+               (extern) (decl) (func SHA1Input ((SHA1Context *) (const uint8_t * bytes) (uint bytecount)) (out int))
+               (extern) (decl) (func SHA1FinalBits ((SHA1Context *) (uint8_t bits) (uint bit_count)) (out int))
+               (extern) (decl) (func SHA1Result ((SHA1Context *) (uint8_t Message_Digest[SHA1HashSize])) (out int))
 
                ;; * SHA-224 *
-               {extern} {decl} (func SHA224Reset ((SHA224Context *)) (out int))
-               {extern} {decl} (func SHA224Input ((SHA224Context *) (const uint8_t * bytes) (uint bytecount)) (out int))
-               {extern} {decl} (func SHA224FinalBits ((SHA224Context *) (uint8_t bits) (uint bit_count)) (out int))
-               {extern} {decl} (func SHA224Result ((SHA224Context *) (uint8_t Message_Digest[SHA224HashSize])) (out int))
+               (extern) (decl) (func SHA224Reset ((SHA224Context *)) (out int))
+               (extern) (decl) (func SHA224Input ((SHA224Context *) (const uint8_t * bytes) (uint bytecount)) (out int))
+               (extern) (decl) (func SHA224FinalBits ((SHA224Context *) (uint8_t bits) (uint bit_count)) (out int))
+               (extern) (decl) (func SHA224Result ((SHA224Context *) (uint8_t Message_Digest[SHA224HashSize])) (out int))
 
                ;; * SHA-256 *
-               {extern} {decl} (func SHA256Reset ((SHA256Context *)) (out int))
-               {extern} {decl} (func SHA256Input ((SHA256Context *) (const uint8_t * bytes) (uint bytecount)) (out int))
-               {extern} {decl} (func SHA256FinalBits ((SHA256Context *) (uint8_t bits) (uint bit_count)) (out int))
-               {extern} {decl} (func SHA256Result ((SHA256Context *) (uint8_t Message_Digest[SHA256HashSize])) (out int))
+               (extern) (decl) (func SHA256Reset ((SHA256Context *)) (out int))
+               (extern) (decl) (func SHA256Input ((SHA256Context *) (const uint8_t * bytes) (uint bytecount)) (out int))
+               (extern) (decl) (func SHA256FinalBits ((SHA256Context *) (uint8_t bits) (uint bit_count)) (out int))
+               (extern) (decl) (func SHA256Result ((SHA256Context *) (uint8_t Message_Digest[SHA256HashSize])) (out int))
 
                ;; * SHA-384 *
-               {extern} {decl} (func SHA384Reset ((SHA384Context *)) (out int))
-               {extern} {decl} (func SHA384Input ((SHA384Context *) (const uint8_t * bytes) (uint bytecount)) (out int))
-               {extern} {decl} (func SHA384FinalBits ((SHA384Context *) (uint8_t bits) (uint bit_count)) (out int))
-               {extern} {decl} (func SHA384Result ((SHA384Context *) (uint8_t Message_Digest[SHA384HashSize])) (out int))
+               (extern) (decl) (func SHA384Reset ((SHA384Context *)) (out int))
+               (extern) (decl) (func SHA384Input ((SHA384Context *) (const uint8_t * bytes) (uint bytecount)) (out int))
+               (extern) (decl) (func SHA384FinalBits ((SHA384Context *) (uint8_t bits) (uint bit_count)) (out int))
+               (extern) (decl) (func SHA384Result ((SHA384Context *) (uint8_t Message_Digest[SHA384HashSize])) (out int))
 
                ;; * SHA-512 *
-               {extern} {decl} (func SHA512Reset ((SHA512Context *)) (out int))
-               {extern} {decl} (func SHA512Input ((SHA512Context *) (const uint8_t * bytes) (uint bytecount)) (out int))
-               {extern} {decl} (func SHA512FinalBits ((SHA512Context *) (uint8_t bits) (uint bit_count)) (out int))
-               {extern} {decl} (func SHA512Result ((SHA512Context *) (uint8_t Message_Digest[SHA512HashSize])) (out int))
+               (extern) (decl) (func SHA512Reset ((SHA512Context *)) (out int))
+               (extern) (decl) (func SHA512Input ((SHA512Context *) (const uint8_t * bytes) (uint bytecount)) (out int))
+               (extern) (decl) (func SHA512FinalBits ((SHA512Context *) (uint8_t bits) (uint bit_count)) (out int))
+               (extern) (decl) (func SHA512Result ((SHA512Context *) (uint8_t Message_Digest[SHA512HashSize])) (out int))
 
                ;; * Unified SHA functions, chosen by whichSha *
-               {extern} {decl} (func USHAReset ((USHAContext * context) (SHAversion whichSha)) (out int))
-               {extern} {decl} (func USHAInput ((USHAContext * context) (const uint8_t * bytes) (uint bytecount)) (out int))
-               {extern} {decl} (func USHAFinalBits ((USHAContext * context) (uint8_t bits) (uint bit_count)) (out int))
-               {extern} {decl} (func USHAResult ((USHAContext * context) (uint8_t Message_Digest[USHAMaxHashSize]))(out int))
+               (extern) (decl) (func USHAReset ((USHAContext * context) (SHAversion whichSha)) (out int))
+               (extern) (decl) (func USHAInput ((USHAContext * context) (const uint8_t * bytes) (uint bytecount)) (out int))
+               (extern) (decl) (func USHAFinalBits ((USHAContext * context) (uint8_t bits) (uint bit_count)) (out int))
+               (extern) (decl) (func USHAResult ((USHAContext * context) (uint8_t Message_Digest[USHAMaxHashSize]))(out int))
 
-               {extern} {decl} (func USHABlockSize ((SHAversion whichSha)) (out int))
-               {extern} {decl} (func USHAHashSize ((SHAversion whichSha)) (out int))
-               {extern} {decl} (func USHAHashSizeBits ((SHAversion whichSha)) (out int))
-               {extern} {decl} (func USHAHashName ((SHAversion whichSha)) (out const char *))
+               (extern) (decl) (func USHABlockSize ((SHAversion whichSha)) (out int))
+               (extern) (decl) (func USHAHashSize ((SHAversion whichSha)) (out int))
+               (extern) (decl) (func USHAHashSizeBits ((SHAversion whichSha)) (out int))
+               (extern) (decl) (func USHAHashName ((SHAversion whichSha)) (out const char *))
                
                )) ; target sha.h
 
@@ -284,7 +284,7 @@
         ;; * Add "length" to the length.
         ;; * Set Corrupted when overflow has occurred.
         ;; *
-        {static} (var uint32_t addTemp)
+        (static) (var uint32_t addTemp)
         (@define (code "SHA1AddLength(context, length) \\
 (addTemp = (context)->Length_Low, \\
 (context)->Corrupted = \\
@@ -293,9 +293,9 @@
 : (context)->Corrupted)"))
 
         ;; * Local Function Prototypes *
-        {decl} {static} (func SHA1ProcessMessageBlock ((SHA1Context * context)))
-        {decl} {static} (func SHA1Finalize ((SHA1Context * context) (uint8_t Pad_Byte)))
-        {decl} {static} (func SHA1PadMessage ((SHA1Context * context) (uint8_t Pad_Byte)))
+        (decl) (static) (func SHA1ProcessMessageBlock ((SHA1Context * context)))
+        (decl) (static) (func SHA1Finalize ((SHA1Context * context) (uint8_t Pad_Byte)))
+        (decl) (static) (func SHA1PadMessage ((SHA1Context * context) (uint8_t Pad_Byte)))
         
         ;; *
         ;; *  SHA1Reset
@@ -312,7 +312,7 @@
         ;; *      sha Error Code.
         ;; *
         ;; *
-        {resolve #f}
+        (resolve #f)
         (func SHA1Reset ((SHA1Context * context)) (out int)
 	              (if (not context) (return shaNull))
 
@@ -351,7 +351,7 @@
         ;; *      sha Error Code.
         ;; *
         ;; *
-        {resolve #f}
+        (resolve #f)
         (func SHA1Input ((SHA1Context * context) (const uint8_t * message_array) (unsigned length)) (out int)
 	              (if (not context)          (return shaNull))
 	              (if (not length)           (return shaSuccess))
@@ -393,7 +393,7 @@
         ;; * Returns:
         ;; *   sha Error Code.
         ;; *
-        {resolve #f}
+        (resolve #f)
         (func SHA1FinalBits ((SHA1Context * context) (uint8_t message_bits) (uint length)) (out int)
 	              (if (not context) (return shaNull))
 	              (if (not length)  (return shaSuccess))
@@ -406,8 +406,8 @@
 			                          (return (-> context Corrupted))))
 	              
 	              (SHA1AddLength context length)
-	              (let ({static} (uint8_t masks   [8] . '{0x00 0x80 0xC0 0xE0 0xF0 0xF8 0xFC 0xFE})
-		                {static} (uint8_t markbit [8] . '{0x80 0x40 0x20 0x10 0x08 0x04 0x02 0x01}))
+	              (let ((static) (uint8_t masks   [8] . '{0x00 0x80 0xC0 0xE0 0xF0 0xF8 0xFC 0xFE})
+		                (static) (uint8_t markbit [8] . '{0x80 0x40 0x20 0x10 0x08 0x04 0x02 0x01}))
 	                (SHA1Finalize  context (cast (uint8_t)
 					                             (bitor (bitand message_bits (nth length masks))
 						                                (nth length markbit)))))
@@ -433,11 +433,11 @@
         ;; *   single character names, were used because those were the
         ;; *   names used in the Secure Hash Standard.
         ;; *
-        {static}
-        {resolve #f}
+        (static)
+        (resolve #f)
         (func SHA224_256ProcessMessageBlock ((SHA256Context * context))
 	              ;; Constants defined in FIPS 180-3, section 4.2.2
-	          (let ({static}
+	          (let ((static)
                     (const uint32_t K [64] . '{
                            0x428a2f98 0x71374491 0xb5c0fbcf 0xe9b5dba5 0x3956c25b
 						   0x59f111f1 0x923f82a4 0xab1c5ed5 0xd807aa98 0x12835b01

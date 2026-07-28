@@ -12,7 +12,7 @@ target. The real declarations still come from the real C header at compile time.
 
 `lib/std/prelude.cicili` imports both aggregators, above the std modules:
 
-```lisp
+```cicili
 (import "./c/c.cicili")      ; whole C17 standard library
 (import "./c/posix.cicili")  ; common POSIX headers (needs c.cicili first)
 ```
@@ -24,7 +24,7 @@ registered first.
 Or take only what you need — each header is independent apart from the ownership
 rules below:
 
-```lisp
+```cicili
 (import "./c/stddef.cicili")
 (import "./c/stdio.cicili")
 (import "./c/string.cicili")
@@ -37,7 +37,7 @@ written in terms of, and `posix/sys-types.cicili` does the same for `ssize_t`, `
 
 In your target you still write what you always wrote:
 
-```lisp
+```cicili
 (source "main.c" (:std #t :compile #t :link "-o app")
   (include <time.h>)
   ...)
@@ -45,7 +45,7 @@ In your target you still write what you always wrote:
 
 ## What a declaration file looks like
 
-```lisp
+```cicili
 ;;;; Cicili declarations for <stdio.h>
 
 (DEFMACRO init-macro ()
@@ -78,7 +78,7 @@ C types whose real spelling is `struct X` — `tm`, `timeval`, `stat`, `dirent`,
 `sockaddr`, `pollfd`, `addrinfo`, ... — are declared here under the **bare** name,
 because that is what Cicili emits when it writes the type out:
 
-```lisp
+```cicili
 (decl) (struct tm
          (member int tm_sec)
          ...)
@@ -86,7 +86,7 @@ because that is what Cicili emits when it writes the type out:
 
 If you declare a variable of such a type, C needs a name for it. Two ways:
 
-```lisp
+```cicili
 ;; in a header target — a (decl) struct compiles to exactly the forward typedef:
 (header "types.h" (:compile #f)
   (guard __MY_TYPES_H__
@@ -94,7 +94,7 @@ If you declare a variable of such a type, C needs a name for it. Two ways:
     (decl) (struct tm)))       ; => typedef struct tm tm;
 ```
 
-```lisp
+```cicili
 ;; or a one-liner define in any target:
 (@define (code "tm struct tm"))  ; => #define tm struct tm
 ```

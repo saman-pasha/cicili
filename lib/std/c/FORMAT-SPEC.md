@@ -11,7 +11,7 @@ C header at compile time via `(include <stdio.h>)` in the developer's target.
 
 ## File skeleton
 
-```lisp
+```cicili
 ;;;; Cicili declarations for <stdio.h>
 ;;;; Import from lib/std/prelude.cicili:  (import "./c/stdio.cicili")
 ;;;; Requires in target: (include <stdio.h>)  or  (:std #t)
@@ -33,7 +33,7 @@ the same order as the C standard's synopsis, so the file reads like the header.
 
 ## 1. Type aliases
 
-```lisp
+```cicili
 (typedef ulong size_t)
 (typedef long  ptrdiff_t)
 (typedef i64   time_t)
@@ -46,7 +46,7 @@ it only feeds inference, it is never emitted.
 
 ## 2. Opaque types
 
-```lisp
+```cicili
 (decl) (struct FILE)
 (decl) (struct DIR)
 ```
@@ -58,7 +58,7 @@ it emits only `typedef struct FILE FILE;` — never a body.
 
 Declare the members so `$` / `->` member access resolves:
 
-```lisp
+```cicili
 (decl) (struct tm
          (member int tm_sec)
          (member int tm_min)
@@ -77,7 +77,7 @@ name here. The developer emits the matching `typedef struct X X;` by repeating t
 
 Use the `typedef` idiom already used by `lib/std/prelude.cicili` for `stdout`:
 
-```lisp
+```cicili
 (typedef FILE * stdout)
 (typedef int errno)
 ```
@@ -89,7 +89,7 @@ inference needs for a symbol whose type we want to pin down without emitting any
 
 Same idiom — the point is the *type*, the value still comes from the real header:
 
-```lisp
+```cicili
 (typedef int    EOF)
 (typedef int    SEEK_SET)
 (typedef double M_PI)
@@ -100,7 +100,7 @@ Do not use `(enum ...)` for these: enum would pin a value that differs per platf
 
 ## 6. Functions
 
-```lisp
+```cicili
 (decl) (func fopen ((const char * restrict path) (const char * restrict mode)) (out FILE *))
 (decl) (func free ((void * ptr)))
 (decl) (func printf ((const char * restrict format) ($$$)) (out size_t))

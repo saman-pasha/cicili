@@ -14,6 +14,34 @@ top-level `mode.lisp`, which has been removed.
 your init file: `M-x eval-buffer` in `cicili-mode.el`, then `M-x cicili-mode` in a
 Cicili buffer.
 
+## Recommended: Cicili fences in Markdown
+
+Every Cicili code block in this project's documentation is tagged ```` ```cicili ````. With
+[markdown-mode](https://jblevins.org/projects/markdown-mode/) installed, this makes those
+blocks fontify with `cicili-mode` instead of rendering as flat text:
+
+```elisp
+(with-eval-after-load 'markdown-mode
+  (setq markdown-fontify-code-blocks-natively t)
+  (dolist (lang '("cicili" "lisp"))
+    (add-to-list 'markdown-code-lang-modes (cons lang 'cicili-mode))))
+```
+
+`lisp` is mapped too, because Cicili blocks were tagged ```` ```lisp ```` before the
+`.cicili` extension existed and older documents still use it. The cost is that a genuine
+Common Lisp fence in some unrelated document also opens in `cicili-mode` — which is mild,
+since `cicili-mode` derives from `lisp-mode` and only adds faces on top. Drop `"lisp"` from
+the list if you read a lot of Common Lisp in Markdown.
+
+`markdown-fontify-code-blocks-natively` is not optional here: it defaults to `nil`, so the
+language-to-mode entries do nothing on their own — you get correctly mapped modes that are
+never asked to fontify anything. `C-c C-x C-f` toggles native fontification per buffer, to
+check it is working or to turn it off in a large file.
+
+`with-eval-after-load` matters too: `markdown-code-lang-modes` is defined *by*
+markdown-mode, so a bare `add-to-list` at top level fails with a void-variable error
+whenever markdown-mode has not been loaded yet.
+
 ## What it gives you
 
 `define-derived-mode cicili-mode lisp-mode`, autoloaded onto `\.cicili\'`.

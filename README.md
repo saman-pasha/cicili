@@ -31,7 +31,7 @@ Its vision is to make programming both philosophical and practical, enabling dev
 
 This code is a sample of Cicili's power, demonstrating how it builds high-level functional abstractions (like Either for error handling, List processing, and RAII) on top of low-level C file I/O operations.
 
-```lisp
+```cicili
 ;;; sample code
 ;;; writes many sentences to a temporary file
 ;;; reads file part by part

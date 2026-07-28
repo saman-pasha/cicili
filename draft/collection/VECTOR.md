@@ -33,7 +33,7 @@ case explicitly.
 
 ## 2. Type Definition
 
-```lisp
+```cicili
 (decl-box (Vector type)
   (= Buffer (<> Buffer a) ((<> StringBuffer a) buffer))
   (= Slice  (<> Slice a)  (type vector) (size_t cursor) (size_t size))
@@ -50,7 +50,7 @@ Three constructors:
 
 ### Associated types
 
-```lisp
+```cicili
 (typedef a *                               (<> Vector a pointer_t))
 (typedef (Tuple pointer_t pointer_t)       (<> Vector a iterator_t))
 ```
@@ -136,7 +136,7 @@ Every mutating operation on a `Buffer`-backed `Vector` calls `take` on its
 own Rc handle before proceeding. As of the current implementation, `take`
 only succeeds when `count == 1` — the caller is the **sole owner**.
 
-```lisp
+```cicili
 (match ((<> take Box Vector a) (aof vector))
   (Just ptr (progn (free ptr) ... mutate ...))   ; exclusive — proceed
   (default  ((<> None a))))                      ; shared — refuse, return None
@@ -163,7 +163,7 @@ To mutate, either:
 
 ### Demonstrated behaviour
 
-```lisp
+```cicili
 ;; BLOCKED — v01C1 is a clone of v01, count == 2
 (letin ((v01C1 (clone^Box^Vector^int v01))
         (v01P1 (push^Vector^int 40 v01C1)))
@@ -209,7 +209,7 @@ that copy. The referenced `Buffer` is untouched.
 
 ### `iterator`
 
-```lisp
+```cicili
 (func iterator ((type vector)) (out (<> Vector a iterator_t)))
 ```
 
@@ -217,7 +217,7 @@ Returns a `(begin, end)` raw pointer pair. `begin` points to the first
 element, `end` to one past the last. For a `Slice`, both pointers are offset
 into the referenced `Buffer`'s storage — no copy occurs.
 
-```lisp
+```cicili
 (io ((<> iterator Vector^char) v)
   ((\, begin end)
    (while (!= begin end)
@@ -232,7 +232,7 @@ iteration DSL. It clones the vector's Rc handle for the duration of the loop
 (preventing premature deallocation) and automatically frees the clone on
 exit.
 
-```lisp
+```cicili
 ;; forward — begin is the live cursor, pre-incremented by the loop
 (iterate (begin end vector)
   (printf "%d " (cof begin)))
@@ -252,7 +252,7 @@ Use `letin` to bind `Vector` values — it infers the type via `auto` and
 registers automatic `free` via `__h_free_data_router` at scope exit. No
 explicit type annotation or manual `free` call is needed.
 
-```lisp
+```cicili
 (letin ((v (new^Vector^int '{ 1 2 3 4 5 }))   ; no type annotation
         (s (drop^Vector^int 2 v)))             ; Slice, O(1)
   ...
@@ -271,7 +271,7 @@ A `Slice` may be constructed directly without cloning — it does not increment
 referenced vector remains alive and unmodified. This is the caller's
 responsibility; use `letin` with a clone for automatic safety:
 
-```lisp
+```cicili
 ;; unsafe — valid only while v03 is alive and not mutated
 (var (Slice^int) s (Slice^int v03_raw_ptr 2 2))
 
@@ -317,7 +317,7 @@ tree versions, anything that needs structural sharing across time.
 
 ## 12. Complete Example
 
-```lisp
+```cicili
 ;; Instantiation (once per translation unit)
 (decl-Vector Vector^int int)
 (impl-Vector Vector^int int (\\ -f -v (fprintf -f "%d" -v)) " " NIL)

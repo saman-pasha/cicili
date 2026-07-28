@@ -131,8 +131,8 @@ known clause is compiled as a **function call**.
 
 ### Attributes
 
-Attributes are written in front of the clause they modify, in braces or parentheses —
-`{decl}` and `(decl)` are the same thing. An attribute applies to **the next clause only**.
+An attribute is a parenthesised form written in front of the clause it modifies, and it
+applies to **the next clause only**. Several may be stacked: `(extern) (decl) (func …)`.
 
 | attribute | applies to | effect |
 |---|---|---|
@@ -163,7 +163,7 @@ Source is read with case preserved, so `Employee` and `employee` are different n
 Common Lisp forms inside macro files are conventionally written in upper case (`DEFMACRO`,
 `LET*`) to keep them visually distinct from Cicili clauses.
 
-```lisp
+```cicili
 (var int amount)
 (var double total)
 (var double * total2)
@@ -176,7 +176,7 @@ double * total2;
 
 ## Constants
 
-```lisp
+```cicili
 (var const int SIDE . 10)
 (var const int * SIDE1 . #'(aof SIDE))
 (var const int * const SIDE2 . #'(aof SIDE1))
@@ -206,7 +206,7 @@ cicili | C
 Binary operators are n-ary: `(+ a b c)` is `(a + b + c )`. Every operator expression is
 emitted fully parenthesised, so C precedence never surprises you.
 
-```lisp
+```cicili
 (set total (+ total amount))
 
 (let ((int i . 3)
@@ -237,7 +237,7 @@ cicili | C
 > `1+` and `1-` are **postfix** `++` / `--`, not Lisp's "add one". Both families take
 > exactly one operand.
 
-```lisp
+```cicili
 (source "main.c" ()
   (include <stdio.h>)
 
@@ -327,7 +327,7 @@ cicili | C
 
 `?` takes exactly four elements; both arms are mandatory.
 
-```lisp
+```cicili
 (set a (? (== b 2) 20 30))
 ```
 ```c
@@ -349,7 +349,7 @@ cicili | C
 `(sizeof (nth 0 digits))`; otherwise it is a type descriptor, `(sizeof int)`,
 `(sizeof const char *)`.
 
-```lisp
+```cicili
 (printf "%zu %zu\n" (sizeof int) (sizeof (nth 0 digits)))
 ```
 ```c
@@ -423,7 +423,7 @@ Every place a type appears — a variable, a parameter, a struct member, a retur
 * **array** is `[]`, `[N]` or `[N][M]`; at most two dimensions.
 * the name may be omitted, which is how you declare an unnamed parameter.
 
-```lisp
+```cicili
 (const char * restrict format)   ; const char * restrict format
 (char * const argv [])           ; char * const argv []
 (int)                            ; int          -- unnamed parameter
@@ -435,7 +435,7 @@ all, `ref` emits `* restrict`.
 
 ## Variable
 
-```lisp
+```cicili
 (source "main.c" ()
         (func main ()
               (let ((double price . 500.4)                         ; atom initialization
@@ -473,21 +473,21 @@ Inside a brace list, an element written `$field` becomes a designated initialize
 
 A free variable is a global; use `let` for variables inside a function. Attributes:
 
-* `{static}`
-* `{extern}`
-* `{register}`
-* `{volatile}`
-* `{thread-local}`
-* `{atomic}`
-* `{defer …}`
+* `(static)`
+* `(extern)`
+* `(register)`
+* `(volatile)`
+* `(thread-local)`
+* `(atomic)`
+* `(defer …)`
 
-```lisp
-{register} (var int height . 5)
+```cicili
+(register) (var int height . 5)
 (var char letter . #\A)
 (var float age)
-{extern} (var float area)
-{static} (var double d)
-{thread-local} (var int slot)
+(extern) (var float area)
+(static) (var double d)
+(thread-local) (var int slot)
 
 ;; actual initialization
 (set age 26.5)
@@ -504,7 +504,7 @@ __thread int slot;
 age = 26.5;
 ```
 
-> `{auto}` is **not** a variable attribute. In Cicili `auto` is a *type* — `__auto_type` —
+> `(auto)` is **not** a variable attribute. In Cicili `auto` is a *type* — `__auto_type` —
 > not a storage class. It is accepted as an attribute on `func` only.
 
 ### Scoped Variable Declaration and Initialization
@@ -519,7 +519,7 @@ inside the binding list and apply to **the binding that follows**:
 * `(atomic)`
 * `(defer …)` — a destructor, see [Deferred cleanup](#deferred-cleanup)
 
-```lisp
+```cicili
 (source "main.c" ()
         (func main ()
               (let ((static) (int width . 3)
@@ -562,7 +562,7 @@ write reads exactly like the code around it.
 
 `letn` is how you introduce locals in the middle of an expression:
 
-```lisp
+```cicili
 (printf "%d\n" (letn ((int a . 2) (int b . 3)) (* a b)))
 ```
 ```c
@@ -584,7 +584,7 @@ whose types are tedious or impossible to spell.
 `typeof` names a type by pointing at an expression. The expression is never evaluated, so
 dummy arguments are idiomatic.
 
-```lisp
+```cicili
 (var auto u2 . 1)
 (var (typeof u2) u3 [1])
 (var int u4 [] . '{ 2 3 })
@@ -602,7 +602,7 @@ function declared `(out auto)` must contain a `return`.
 
 ### Assignment
 
-```lisp
+```cicili
 (set width 60)
 (set age 35)
 (set width 65 age 40) ; multi assignment
@@ -617,7 +617,7 @@ age = 40;
 `set` takes any even number of arguments and assigns them **in order** — `(set a b b a)`
 does not swap.
 
-```lisp
+```cicili
 (source "main.c" ()
   (include <stdio.h>)
 
@@ -639,7 +639,7 @@ int main()
 
 ## Type Casting
 
-```lisp
+```cicili
 (source "main.c" ()
   (include <stdio.h>)
   (func main ()
@@ -672,7 +672,7 @@ resolved, compiled and linked.
 
 ### Targets
 
-```lisp
+```cicili
 (source "path/to/file.c" (:key value …) clause…)
 (header "path/to/file.h" (:key value …) clause…)
 ```
@@ -686,7 +686,7 @@ Every feature may be omitted. `#t` selects the default behaviour, `#f` does noth
 
 * **`:std`** — writes the standard library includes at the top of the file.
 
-```lisp
+```cicili
 (source "main.c"
   (:std #t)
   ;; some forms
@@ -718,15 +718,15 @@ Two placeholders are substituted in `:compile` and `:link`:
 * `{$CWD}` — the current working directory.
 * `{$CCL}` — the Cicili installation directory.
 
-```lisp
+```cicili
 ;; MyMath library declaration
 (header "mymath.h"
   (:compile #f)
 
   (guard __MYMATH_H__
-    {decl} (func obj1_does ((int) (int)) (out int))
-    {decl} (func obj2_does ((int) (int)) (out int))
-    {decl} (func obj3_does ((int) (int)) (out int))))
+    (decl) (func obj1_does ((int) (int)) (out int))
+    (decl) (func obj2_does ((int) (int)) (out int))
+    (decl) (func obj3_does ((int) (int)) (out int))))
 
 ;; Default compilation
 (source "obj1.c"
@@ -790,7 +790,7 @@ glibtool: link: clang -g -O "" -o CompileTest .libs/main.o -L{$CWD} libMyMath.a
 * **Documentation** — anything after `;`. The convention is `;;;;` for a file, `;;;` for a
   target, `;;` for a block, and a trailing `;` for one form.
 
-```lisp
+```cicili
 ;;;; about a cicili file
 ;;; author, licence and/or documentation about each target
 (var long height) ; description of a form
@@ -804,7 +804,7 @@ glibtool: link: clang -g -O "" -o CompileTest .libs/main.o -L{$CWD} libMyMath.a
 * **Main function** — every program has exactly one. `(main …)` and `(main* …)` are macros
   for the two usual shapes:
 
-```lisp
+```cicili
 (main (printf "hello\n") (return 0))
 (main* (printf "%s\n" (nth 0 argv)) (return 0))
 ```
@@ -817,7 +817,7 @@ int main (int argc, char * argv []) { printf ("%s\n", argv[0]); return 0; }
 
 `include` takes one or more headers. A symbol prints bare, a string prints quoted.
 
-```lisp
+```cicili
 (include <stdio.h> <stdlib.h> "basic.h")
 ```
 ```c
@@ -831,7 +831,7 @@ int main (int argc, char * argv []) { printf ("%s\n", argv[0]); return 0; }
 `import` loads a **macro file** — a file of `DEFMACRO`, `DEFUN` and `generic` definitions,
 plus further imports. It runs while your file is being read, before any target is specified.
 
-```lisp
+```cicili
 (import "lib/std/prelude.cicili")   ; from the cicili installation directory
 (import "./mymacros.cicili")        ; relative to this file
 (import "/opt/shared/macros.cicili"); absolute
@@ -843,7 +843,7 @@ directory.
 
 ### Guard
 
-```lisp
+```cicili
 (guard __STUDENT_H__
   (struct Student
     (member char name [50])
@@ -869,7 +869,7 @@ Any clause whose head starts with `@` becomes a preprocessor directive of the sa
 It takes at most two arguments, and the payload is normally a `code` clause, because `code`
 passes text through untouched.
 
-```lisp
+```cicili
 (@define (code "SHA1_ROTL(bits, word) (((word) << (bits)) | ((word) >> (32-(bits))))"))
 
 (struct SHA512Context
@@ -913,7 +913,7 @@ function bodies.
 `code` emits its argument verbatim. It is valid as an expression, as a statement, and in
 type position.
 
-```lisp
+```cicili
 (code "__builtin_unreachable()")
 (cast (code "struct sockaddr *") p)
 ```
@@ -925,7 +925,7 @@ type position.
 `if` takes a condition, a then-form, and an optional else-form. **Each branch is exactly one
 form** — use `block` for several.
 
-```lisp
+```cicili
 (let ((int a . 5)
       (int b . 6))
   (if (> a b)
@@ -943,7 +943,7 @@ form** — use `block` for several.
 }
 ```
 
-```lisp
+```cicili
 (let ((int a . 5)
       (int b . 6))
   (if (> a b)
@@ -973,7 +973,7 @@ form** — use `block` for several.
 `cond` is an `if` / `else if` chain. Unlike `if`, each clause body may hold any number of
 forms, and every body is braced.
 
-```lisp
+```cicili
 (cond ((== x 1) (printf "x is 1\n"))
       ((== x 2) (printf "x is 2\n")
                 (set x 0))
@@ -997,7 +997,7 @@ else if (true) {
 
 ### switch
 
-```lisp
+```cicili
 (let ((int a))
   (printf "Please enter a number between 1 and 5: ")
   (scanf "%d" (aof a))
@@ -1046,7 +1046,7 @@ explicit `break`.
 
 ### while
 
-```lisp
+```cicili
 (let ((int n . 1)
       (int times . 5))
   (while (<= n times)
@@ -1067,7 +1067,7 @@ explicit `break`.
 
 ### do
 
-```lisp
+```cicili
 (let ((int n . 1)
       (int times . 5))
   (do
@@ -1093,7 +1093,7 @@ explicit `break`.
 
 `for` takes an initializer list, a test, a **list** of step forms, and a body.
 
-```lisp
+```cicili
 (let ((int n)
       (int times))
   (for ((n . 1)
@@ -1129,7 +1129,7 @@ atoms, unary operators, assignments, `set`, and calls.
 
 Both are bare symbols, usable anywhere C allows them.
 
-```lisp
+```cicili
 (while (!= c EOF)
   (if (== c #\Space) continue)
   (if (== c #\Newline) break)
@@ -1145,7 +1145,7 @@ Both are bare symbols, usable anywhere C allows them.
 | usable as an expression | no | yes |
 | portability | ISO C | GCC / Clang extension |
 
-```lisp
+```cicili
 (block
   (printf "step one\n")
   (printf "step two\n"))
@@ -1170,21 +1170,21 @@ Points to know:
 
 * `out` sets the return type and must be the **first form after the parameter list**. A
   function with no `out` returns `void` — except `main`, which returns `int`.
-* Attributes are set at declaration time, in braces or parentheses:
-  * `{decl}` — declaration only, no body
-  * `{static}`
-  * `{inline}` — emits `__attribute__((weak))`
-  * `{extern}`
-  * `{auto}`
-  * `{volatile}`
-  * `{resolve #f}` — do not resolve this function
+* Attributes are set at declaration time, each in its own parentheses:
+  * `(decl)` — declaration only, no body
+  * `(static)`
+  * `(inline)` — emits `__attribute__((weak))`
+  * `(extern)`
+  * `(auto)`
+  * `(volatile)`
+  * `(resolve #f)` — do not resolve this function
 
-```lisp
+```cicili
 (source "main.c"
   (:std #t :compile #t :link #t)
 
   ;; function declaration
-  {decl} (func addition ((int * a) (int * b)) (out int))
+  (decl) (func addition ((int * a) (int * b)) (out int))
 
   (func main ()
         ;; local variable definition
@@ -1237,7 +1237,7 @@ int addition (int * a, int * b) {
 
 A parameter is a type descriptor. Three shapes are worth naming:
 
-```lisp
+```cicili
 (func f ((int) (int)) (out int))              ; unnamed parameters, for a declaration
 (func g ((const char * restrict fmt) ($$$)))  ; ($$$) is C's ...
 (func h ((func cmp ((int a) (int b)) (out int))))  ; a function-pointer parameter
@@ -1253,7 +1253,7 @@ void h (int (*cmp) (int a, int b));
 A `func` clause **in type position** is a function pointer. It is spelled exactly like a
 function declaration, and works as a parameter, a struct member, or a variable:
 
-```lisp
+```cicili
 (var func handler ((int sig)) . my_handler)
 (member func resolve ((char * prob)) (out char *))
 (cast (func _ ((void * args)) (out int)) p)
@@ -1271,7 +1271,7 @@ Use `_` as the pointer's name to get an unnamed `(*)`.
 An **inline struct** in `out` position lets a function return several values. Its members
 are bare declarators — no `member` keyword.
 
-```lisp
+```cicili
 (source "main.c" (:std #t :compile #t :link #t)
         (static) (func aMultiReturnFunc ((int x) (int y)) (out '{(int a) (int b)})
                        (return '{ x y }))
@@ -1336,7 +1336,7 @@ A function that belongs to a type is an ordinary `func` that takes the value as 
 parameter. The name ties it to the type, and `<>` builds that name out of parts so the same
 code can be generated for many types:
 
-```lisp
+```cicili
 (struct Employee
   (member int id)
   (member char * name))
@@ -1365,7 +1365,7 @@ int main () {
 `lib/std/vector.cicili` writes one `free` that works for `(<> vector int)`,
 `(<> vector char)` and everything else:
 
-```lisp
+```cicili
 (generic decl-vector (a)
   (struct (<> vector a)
           (member (<> rc (<> array a)) vec)
@@ -1395,7 +1395,7 @@ A lambda is a quoted `lambda` form. It is lifted to a top-level C function named
 `__ciciliL_<n>`, and the expression's value is that function's name — so it works as an
 argument, an initializer, or a `defer` destructor.
 
-```lisp
+```cicili
 (let ((auto inc . '(lambda ((int x)) (out int) (return (+ x 1)))))
   (printf "%d\n" (inc 41)))
 ```
@@ -1417,7 +1417,7 @@ locals. When you need capture, use a closure.
 
 ### Closures
 
-```lisp
+```cicili
 '(closure  (param…) (out TYPE)? body…)
 '(closure* NAME (param…) (out TYPE)? body…)
 ```
@@ -1425,7 +1425,7 @@ locals. When you need capture, use a closure.
 A closure becomes a GCC nested function inside a statement expression, so it *can* read the
 enclosing function's locals:
 
-```lisp
+```cicili
 (let ((int n . 10)
       (auto add_n . '(closure ((int x)) (out int) (return (+ x n)))))
   (printf "%d\n" (add_n 5)))
@@ -1446,7 +1446,7 @@ enclosing function's locals:
 For a closure that must outlive its scope — handed to a thread, stored in an event loop —
 use `def-closure`, which copies the captured values into a struct:
 
-```lisp
+```cicili
 (def-closure ((int * state_counter))
   '(lambda ((Coroutine * ctx)) (out int)
      (++ (cof state_counter))
@@ -1462,13 +1462,13 @@ heap — this is exactly how `lib/std/pthread` implements `go`.
 
 ### Define
 
-```lisp
+```cicili
 (var double amount [5])
 ```
 
 ### Initialize
 
-```lisp
+```cicili
 (var int digits [] . '{ 1 2 3 4 5 })
 (var char hw [][6] . '{ "Hello" "World" })
 ```
@@ -1481,7 +1481,7 @@ char hw[][6] = { "Hello", "World" };
 
 `nth` takes the **index first**, then the base — the reverse of C.
 
-```lisp
+```cicili
 (var int myArray [5])
 
 ;; Initializing elements of the array separately
@@ -1502,7 +1502,7 @@ for (int n = 0; n < sizeof(myArray) / sizeof(int); n++)
 
 ## String
 
-```lisp
+```cicili
 (var char name [6] . '{#\C #\l #\o #\u #\d #\Null})
 (var char name []  . "Cloud")
 (var char * name   . "Cloud")
@@ -1534,7 +1534,7 @@ Any other character prints as itself: `#\A` is `'A'`.
 
 ## Pointer
 
-```lisp
+```cicili
 (var int * width)
 (var char * letter)
 ```
@@ -1543,7 +1543,7 @@ int  *width;
 char *letter;
 ```
 
-```lisp
+```cicili
 (source "main.c" ()
   (include <stdio.h>)
 
@@ -1587,7 +1587,7 @@ C's `malloc()`, `calloc()`, `realloc()` and `free()` are available directly. On 
 Cicili adds `alloc`, which casts for you and installs an automatic `free`, and `defer`,
 which lets you attach any destructor to any variable.
 
-```lisp
+```cicili
 (let ((char * mem_alloc . #'(malloc (* 15 (sizeof char))))) ; allocated by hand
   (if (== mem_alloc nil) (printf "Couldn't allocate the requested memory\n"))
   (free mem_alloc))
@@ -1613,7 +1613,7 @@ The cast is built from the variable's own declared type, so it always matches. A
 `alloc`-initialized variable with no explicit `defer` **automatically gets one** that frees
 it at the end of the scope.
 
-```lisp
+```cicili
 (func main ()
       (let ((defer () (printf "x was %d\n" (cof x)))
             (int x . 6)
@@ -1636,7 +1636,7 @@ int main () {
 }
 ```
 
-```lisp
+```cicili
 (let ((int n_rows . 4)
       (int n_columns . 5)
       (int ** matrix . #'(alloc (* (* n_rows n_columns) (sizeof int)))))
@@ -1680,7 +1680,7 @@ With the generated form, `(defer () form…)`, you never see that. Cicili rebind
 variable's own name and type on the first line of the destructor, so the body reads exactly
 like the surrounding code:
 
-```lisp
+```cicili
 (func file_close ((FILE ** file_ptr))
       (printf "file closed\n")
       (fclose (cof file_ptr)))
@@ -1725,7 +1725,7 @@ for the memory. An `auto`-typed variable may only use the `(defer () func_name)`
 `defer*` defers a block to the end of the current scope, capturing the values it names at
 the point the `defer*` runs:
 
-```lisp
+```cicili
 (defer* ((FILE * file) (char * message))
   (fprintf file "%s\n" message)
   (fclose file))
@@ -1764,14 +1764,14 @@ belongs to the type is a plain `func` taking the value as its first parameter �
 `declare` names the variable(s) of an **anonymous nested** struct or union; it is only legal
 there.
 
-```lisp
+```cicili
 (header "course.h" ()
         (struct Course
           (member char WebSite [50])
           (member char Subject [50])
           (member int  Price))
 
-        {decl} (func printCourse ((Course co))))
+        (decl) (func printCourse ((Course co))))
 
 (source "course.c" (:std #t :compile #t :link #t)
         (include "course.h")
@@ -1812,7 +1812,7 @@ int main () {
 
 ### Nested and anonymous members
 
-```lisp
+```cicili
 (struct Employee
   (member int id)
   (member char * name)
@@ -1844,10 +1844,10 @@ Anonymous struct and union members are legal **only nested**, and they need a `d
 
 ### Forward declaration
 
-`{decl}` on a struct emits only the typedef — the body you write is used for type inference
+`(decl)` on a struct emits only the typedef — the body you write is used for type inference
 but never printed. This is how you declare an opaque type:
 
-```lisp
+```cicili
 (decl) (struct FILE)
 ```
 ```c
@@ -1856,8 +1856,8 @@ typedef struct FILE FILE;
 
 ### Structure attributes
 
-* `{decl}` — forward declaration, as above.
-* `{non-copy}` — values of this type may only be moved, never copied. Used by the functional
+* `(decl)` — forward declaration, as above.
+* `(non-copy)` — values of this type may only be moved, never copied. Used by the functional
   layer's ownership model.
 
 ## Union
@@ -1865,7 +1865,7 @@ typedef struct FILE FILE;
 `declare` names the variable(s) of an anonymous nested union. Unions support the resolver
 like structs.
 
-```lisp
+```cicili
 (union Mixed
   (member int x)
   (member float y))
@@ -1906,7 +1906,7 @@ typedef struct USHAContext {
 Each constant is a dotted pair: `(NAME . value)`, or `(NAME)` to continue the sequence.
 `(NAME value)` is a syntax error.
 
-```lisp
+```cicili
 (enum
   (shaSuccess . 0)
   (shaNull)            ; Null pointer parameter
@@ -1937,7 +1937,7 @@ attributes.
 
 ## Guard
 
-```lisp
+```cicili
 (guard __STUDENT_H__
   (struct Student
     (member char name [50])
@@ -1957,7 +1957,7 @@ typedef struct Student {
 
 ## Typedef
 
-```lisp
+```cicili
 (typedef int * intptr_t)
 (typedef FILE * cfile_t)
 (typedef func handler_t ((int sig)))
@@ -1976,7 +1976,7 @@ are errors. `typedef` takes no attributes.
 Cicili's macros are **Common Lisp macros** that run at specify time and produce Cicili
 forms. They are why the functional layer can exist at all.
 
-```lisp
+```cicili
 (DEFMACRO swap (a b)
   (LET ((tmp (GENSYM "tmp")))
     `(let ((auto ,tmp . ,a))
@@ -1989,7 +1989,7 @@ forms. They are why the functional layer can exist at all.
   the `syslog!` / `debug!` / `warn!` / `info!` logging macros vanish below their debug level.
 * **`macrolet`** defines macros for one body:
 
-```lisp
+```cicili
 (macrolet ((twice (x) `(* ,x 2)))
   (printf "%d\n" (twice 21)))
 ```
@@ -1999,7 +1999,7 @@ printf ("%d\n", (21 * 2));
 
 * **`generic`** defines a macro parameterised by type, and **`<>`** joins name parts:
 
-```lisp
+```cicili
 (generic decl-box (a)
   (struct (<> box a)
           (member a value)))
