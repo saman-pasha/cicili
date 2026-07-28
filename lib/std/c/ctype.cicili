@@ -1,0 +1,24 @@
+;;;; Cicili declarations for <ctype.h>
+;;;; Import from lib/std/prelude.cicili:  (import "./c/ctype.cicili")
+;;;; Requires in target: (include <ctype.h>)  or  (:std #t)
+
+(DEFMACRO init-macro ()
+  `($$$
+     ;;; ---- character classification functions ----
+     (decl) (func isalnum  ((int c)) (out int))
+     (decl) (func isalpha  ((int c)) (out int))
+     (decl) (func isblank  ((int c)) (out int))
+     (decl) (func iscntrl  ((int c)) (out int))
+     (decl) (func isdigit  ((int c)) (out int))
+     (decl) (func isgraph  ((int c)) (out int))
+     (decl) (func islower  ((int c)) (out int))
+     (decl) (func isprint  ((int c)) (out int))
+     (decl) (func ispunct  ((int c)) (out int))
+     (decl) (func isspace  ((int c)) (out int))
+     (decl) (func isupper  ((int c)) (out int))
+     (decl) (func isxdigit ((int c)) (out int))
+
+     ;;; ---- character mapping functions ----
+     (decl) (func tolower ((int c)) (out int))
+     (decl) (func toupper ((int c)) (out int))
+     ))

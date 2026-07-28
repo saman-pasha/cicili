@@ -1,0 +1,17 @@
+;;;; Cicili declarations for <stddef.h>
+;;;; Import from lib/std/prelude.cicili:  (import "./c/stddef.cicili")
+;;;; Requires in target: (include <stddef.h>)  or  (:std #t)
+;;;;
+;;;; NULL is spelled `nil` in Cicili and is deliberately not declared here.
+;;;; offsetof is a function-like macro that takes a *type* argument
+;;;; (offsetof(type, member)); Cicili's declaration grammar has no way to
+;;;; express a type-argument macro, so it is deliberately skipped.
+
+(DEFMACRO init-macro ()
+  `($$$
+     ;;; ---- types ----
+     (typedef ulong size_t)       ; unsigned result of sizeof, LP64
+     (typedef long  ptrdiff_t)    ; signed result of pointer subtraction, LP64
+     (typedef int   wchar_t)      ; 4-byte signed wide char, mainstream Linux LP64
+     (typedef real  max_align_t)  ; type with the most stringent scalar alignment
+     ))

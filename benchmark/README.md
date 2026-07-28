@@ -10,7 +10,7 @@ A word counting program which does 1,000,000 times a specific task. Which has fo
  - Counts the splitted and prints them
 
 Not all the code is the same for Cicili and Haskell but almost near.
-The Cicili code is [here](word-count-bench.lisp).
+The Cicili code is [here](word-count-bench.cicili).
 The Haskell code is [here](word_count.hs).
 Because of Cicili is a expressive language, it is important to see what C code is produced to handle expresiveness of Cicili.
 The generated C ocde is [here](word_count_bench.c).
@@ -40,7 +40,7 @@ Originally written by Gordon Matzigkeit, 1996
 sbcl --version
 SBCL 2.5.10
 
-sbcl --script cicili.lisp --separate ./benchmark/word-count-bench.lisp
+sbcl --script cicili.lisp --separate ./benchmark/word-count-bench.cicili
 
 glibtool: compile:  gcc -O -Wno-incompatible-pointer-types -c word_count_bench.c  -fno-common -DPIC -o .libs/word_count_bench.o 
 glibtool: compile:  gcc -O -Wno-incompatible-pointer-types -c word_count_bench.c -o word_count_bench.o >/dev/null 2>&1 

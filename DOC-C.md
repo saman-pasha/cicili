@@ -19,19 +19,19 @@ In essence, Lisp allows you to break free from conventional constraints. Where t
 
 ## Features
 * Cicili now uses `IR` (Intermediate Representation) to handle more clauses and features.
-* Cicili macro system lets developers to code in extremely higher order syntax but produce low level C code by using cicili clauses. there are builtins macros here [builtins](builtins.lisp) and macro test folder [macro](test/macro) containing tests and a basic fastcgi web server.
-* `lambda` clause allows developer to write in-place function for sending as other function argument or `defer` destructure. refer to [lambda](test/lambda) test folder `lambda.lisp` sample.
-* `defer` attribute. only available for variables defined by `let` expression. Allows developers to set a function how to destruct a variable or a pointer. refer to [defer](test/lambda) test folder `defer.lisp` sample.
-* Auto deferral is a way let expressions will defined to automatically release dynamic memory allocated by `alloc` clause. refer to [alloc](test/lambda) test folder `defer.lisp` sample. Notice only functions with (declaration in `header` and definition in `source`) or static function only in `source` can use `defer*` capturing way deferment.
-* `closure` In essence, Cicili's closure mechanism provides a high-level, Lisp-style syntax to generate the complex C plumbing required to implement closures, making a powerful programming pattern accessible while still generating efficient C code. refer to [closure](test/lambda) test folder `defer.lisp` sample.
+* Cicili macro system lets developers to code in extremely higher order syntax but produce low level C code by using cicili clauses. there are builtins macros here [builtins](builtins.cicili) and macro test folder [macro](test/macro) containing tests and a basic fastcgi web server.
+* `lambda` clause allows developer to write in-place function for sending as other function argument or `defer` destructure. refer to [lambda](test/lambda) test folder `lambda.cicili` sample.
+* `defer` attribute. only available for variables defined by `let` expression. Allows developers to set a function how to destruct a variable or a pointer. refer to [defer](test/lambda) test folder `defer.cicili` sample.
+* Auto deferral is a way let expressions will defined to automatically release dynamic memory allocated by `alloc` clause. refer to [alloc](test/lambda) test folder `defer.cicili` sample. Notice only functions with (declaration in `header` and definition in `source`) or static function only in `source` can use `defer*` capturing way deferment.
+* `closure` In essence, Cicili's closure mechanism provides a high-level, Lisp-style syntax to generate the complex C plumbing required to implement closures, making a powerful programming pattern accessible while still generating efficient C code. refer to [closure](test/lambda) test folder `defer.cicili` sample.
 * `auto` variable type simplifies lambda and function pointer variables. also `typeof` clause is added to use other variables type for define another variable.
-* `inline struct` can be defined in variable declaration, function parameters or outputs which permits to return multiple values from a function. refer to [multi](test) `multi.lisp` file for complex samples.
+* `inline struct` can be defined in variable declaration, function parameters or outputs which permits to return multiple values from a function. refer to [multi](test) `multi.cicili` file for complex samples.
 * `func` type allows developer to define a function pointer which wasn't available before.
-* Refer to [basic](test) `basic.lisp` file for some struct definition samples.
-* Refer to [control](test) `control.lisp` file for some control structures samples.
+* Refer to [basic](test) `basic.cicili` file for some struct definition samples.
+* Refer to [control](test) `control.cicili` file for some control structures samples.
 
 ## Identifiers
-For basic variable definition refer to [var](test) `var.lisp` file.
+For basic variable definition refer to [var](test) `var.cicili` file.
 ```lisp
 (var int amount)
 (var double total)
@@ -413,9 +413,9 @@ All features could be omitted or if available accept `#t` for default behaviour 
 	    (return EXIT_SUCCESS)))
 ```
 ```
-cicili % sbcl --script cicili.lisp test/test.lisp
+cicili % sbcl --script cicili.lisp test/test.cicili
 software type: "Darwin"
-arg specified: test/mylib.lisp
+arg specified: test/mylib.cicili
 cicili: specifying target mymath.h
 cicili: resolving target mymath.h
 cicili: specifying target obj1.c
@@ -1093,7 +1093,7 @@ typedef struct Student {
 typedef int * intptr_t;
 ```
 ## cicili.lisp Command Line Arguments
-`sbcl --script {--dynamic-space-size=4096MB}? /path/to/cicili.lisp {space separated arg}* {/path/to/cicili-files.lisp}+`
+`sbcl --script {--dynamic-space-size=4096MB}? /path/to/cicili.lisp {space separated arg}* {/path/to/cicili-files.cicili}+`
 Available arguments:
 * --debug : will prints too many details about specifying, resolving and compiling.
 * --verbose : adds `-v` option to `gcc` and `libtool` commands to print more details about compiling and linking. usefull when linking many complex libraries.

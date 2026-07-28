@@ -1,7 +1,7 @@
 # `lib/std/c` — Cicili declarations for the C standard library and POSIX
 
 621 functions, 48 struct/opaque types and 702 typedefs across 34 files, in the same
-declaration style `lib/std/prelude.lisp` already uses for `FILE`, `malloc` and `printf`.
+declaration style `lib/std/prelude.cicili` already uses for `FILE`, `malloc` and `printf`.
 
 These files exist so **Cicili can infer types**. Nothing in them is emitted as C.
 `load-macro-file` specifies each file's `init-macro` body at load time, and
@@ -10,14 +10,14 @@ target. The real declarations still come from the real C header at compile time.
 
 ## Wiring it up
 
-`lib/std/prelude.lisp` imports both aggregators, above the std modules:
+`lib/std/prelude.cicili` imports both aggregators, above the std modules:
 
 ```lisp
-(import "./c/c.lisp")      ; whole C17 standard library
-(import "./c/posix.lisp")  ; common POSIX headers (needs c.lisp first)
+(import "./c/c.cicili")      ; whole C17 standard library
+(import "./c/posix.cicili")  ; common POSIX headers (needs c.cicili first)
 ```
 
-That order matters: `array.lisp`, `cell.lisp`, `rc.lisp` and `vector.lisp` use
+That order matters: `array.cicili`, `cell.cicili`, `rc.cicili` and `vector.cicili` use
 `malloc` / `free` / `memcpy` at specification time, so the C declarations have to be
 registered first.
 
@@ -25,14 +25,14 @@ Or take only what you need — each header is independent apart from the ownersh
 rules below:
 
 ```lisp
-(import "./c/stddef.lisp")
-(import "./c/stdio.lisp")
-(import "./c/string.lisp")
+(import "./c/stddef.cicili")
+(import "./c/stdio.cicili")
+(import "./c/string.cicili")
 ```
 
-Import order matters in one direction only: `stddef.lisp` and `stdint.lisp` define the
+Import order matters in one direction only: `stddef.cicili` and `stdint.cicili` define the
 scalar aliases (`size_t`, `ptrdiff_t`, `intN_t`) that every other file's signatures are
-written in terms of, and `posix/sys-types.lisp` does the same for `ssize_t`, `off_t`,
+written in terms of, and `posix/sys-types.cicili` does the same for `ssize_t`, `off_t`,
 `pid_t` and friends. The aggregators already order this correctly.
 
 In your target you still write what you always wrote:
@@ -64,7 +64,7 @@ In your target you still write what you always wrote:
 Exactly one `init-macro` per file, body always starts with `$$$`.
 
 Globals and macro constants both use the `typedef` idiom — the same one
-`lib/std/prelude.lisp` already uses for `stdout`/`stderr`/`stdin`. `@TYPEDEF` resolves
+`lib/std/prelude.cicili` already uses for `stdout`/`stderr`/`stdin`. `@TYPEDEF` resolves
 through `deep-typeof` to the underlying type, which is exactly what inference needs
 for a symbol whose type we want to pin down without emitting anything. The *value*
 of a constant like `SEEK_SET` or `M_PI` still comes from the real header, so nothing
@@ -110,25 +110,25 @@ under a `_t` suffix here — use the `@define` form for these:
 ## Symbol ownership
 
 Each symbol is declared in exactly one file; other files use it by name.
-`lib/std/prelude.lisp` now declares only Cicili's own primitive type names
+`lib/std/prelude.cicili` now declares only Cicili's own primitive type names
 (`char`, `int`, `i32`, `real`, `auto`, ...) — every C symbol it used to carry has
 moved into the file below that owns it.
 
 | symbol | home |
 |---|---|
-| `FILE`, `stdin`, `stdout`, `stderr`, `printf`, `fprintf` | `stdio.lisp` |
-| `malloc`, `calloc`, `free` | `stdlib.lisp` |
-| `memcpy`, `memset` | `string.lisp` |
-| `size_t`, `ptrdiff_t`, `wchar_t`, `max_align_t` | `stddef.lisp` |
-| `intN_t`, `uintN_t`, `intptr_t`, `intmax_t`, `SIZE_MAX`, `WCHAR_MIN/MAX` | `stdint.lisp` |
-| `time_t`, `clock_t`, `tm`, `timespec` | `time.lisp` |
-| `va_list` | `stdarg.lisp` |
-| `wint_t`, `mbstate_t` | `wchar.lisp` |
-| `errno` and every `E*` | `errno.lisp` |
-| `SEEK_SET`/`SEEK_CUR`/`SEEK_END` | `stdio.lisp` |
-| `alarm`, `pause`, `sigset_t` | `signal.lisp` |
-| `ssize_t`, `off_t`, `pid_t`, `uid_t`, `gid_t`, `mode_t`, `dev_t`, `ino_t`, ... | `posix/sys-types.lisp` |
-| `socklen_t`, `sockaddr`, `in_addr` | `posix/socket.lisp` |
+| `FILE`, `stdin`, `stdout`, `stderr`, `printf`, `fprintf` | `stdio.cicili` |
+| `malloc`, `calloc`, `free` | `stdlib.cicili` |
+| `memcpy`, `memset` | `string.cicili` |
+| `size_t`, `ptrdiff_t`, `wchar_t`, `max_align_t` | `stddef.cicili` |
+| `intN_t`, `uintN_t`, `intptr_t`, `intmax_t`, `SIZE_MAX`, `WCHAR_MIN/MAX` | `stdint.cicili` |
+| `time_t`, `clock_t`, `tm`, `timespec` | `time.cicili` |
+| `va_list` | `stdarg.cicili` |
+| `wint_t`, `mbstate_t` | `wchar.cicili` |
+| `errno` and every `E*` | `errno.cicili` |
+| `SEEK_SET`/`SEEK_CUR`/`SEEK_END` | `stdio.cicili` |
+| `alarm`, `pause`, `sigset_t` | `signal.cicili` |
+| `ssize_t`, `off_t`, `pid_t`, `uid_t`, `gid_t`, `mode_t`, `dev_t`, `ino_t`, ... | `posix/sys-types.cicili` |
+| `socklen_t`, `sockaddr`, `in_addr` | `posix/socket.cicili` |
 
 ## Files
 
@@ -139,8 +139,8 @@ moved into the file below that owns it.
 **POSIX** (`posix/`) — `sys-types` `unistd` `fcntl` `sys-stat` `dirent` `sys-wait`
 `sys-time` `poll` `sys-mman` `dlfcn` `socket` `netdb` `pthread`
 
-`posix/pthread.lisp` declares the pthread types and functions only. The ergonomic
-macro layer (`go`, `detach`, `join`, `lock`, ...) stays in `lib/std/pthread/pthread.lisp`.
+`posix/pthread.cicili` declares the pthread types and functions only. The ergonomic
+macro layer (`go`, `detach`, `join`, `lock`, ...) stays in `lib/std/pthread/pthread.cicili`.
 
 ## Deliberately not declared
 

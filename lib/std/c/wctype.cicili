@@ -1,0 +1,38 @@
+;;;; Cicili declarations for <wctype.h>
+;;;; Import from lib/std/prelude.cicili:  (import "./c/wctype.cicili")
+;;;; Requires in target: (include <wctype.h>)  or  (:std #t)
+;;;;
+;;;; wint_t is declared by wchar.cicili and is not repeated here.
+
+(DEFMACRO init-macro ()
+  `($$$
+     ;;; ---- types ----
+     (typedef ulong wctype_t)
+     (typedef ulong wctrans_t)
+
+     ;;; ---- wide character classification functions ----
+     (decl) (func iswalnum  ((wint_t wc)) (out int))
+     (decl) (func iswalpha  ((wint_t wc)) (out int))
+     (decl) (func iswblank  ((wint_t wc)) (out int))
+     (decl) (func iswcntrl  ((wint_t wc)) (out int))
+     (decl) (func iswdigit  ((wint_t wc)) (out int))
+     (decl) (func iswgraph  ((wint_t wc)) (out int))
+     (decl) (func iswlower  ((wint_t wc)) (out int))
+     (decl) (func iswprint  ((wint_t wc)) (out int))
+     (decl) (func iswpunct  ((wint_t wc)) (out int))
+     (decl) (func iswspace  ((wint_t wc)) (out int))
+     (decl) (func iswupper  ((wint_t wc)) (out int))
+     (decl) (func iswxdigit ((wint_t wc)) (out int))
+
+     ;;; ---- extensible wide character classification functions ----
+     (decl) (func iswctype ((wint_t wc) (wctype_t desc)) (out int))
+     (decl) (func wctype   ((const char * property)) (out wctype_t))
+
+     ;;; ---- wide character case mapping functions ----
+     (decl) (func towlower ((wint_t wc)) (out wint_t))
+     (decl) (func towupper ((wint_t wc)) (out wint_t))
+
+     ;;; ---- extensible wide character case mapping functions ----
+     (decl) (func towctrans ((wint_t wc) (wctrans_t desc)) (out wint_t))
+     (decl) (func wctrans   ((const char * property)) (out wctrans_t))
+     ))

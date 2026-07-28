@@ -1,0 +1,59 @@
+;;;; Cicili declarations for <time.h>
+;;;; Import from lib/std/prelude.cicili:  (import "./c/time.cicili")
+;;;; Requires in target: (include <time.h>)  or  (:std #t)
+;;;;
+;;;; size_t is declared by stddef.cicili and is deliberately not repeated here.
+
+(DEFMACRO init-macro ()
+  `($$$
+     ;;; ---- types ----
+     (typedef i64   time_t)
+     (typedef ulong clock_t)
+     (typedef int   clockid_t)  ; POSIX
+
+     ;;; ---- constants ----
+     (typedef clock_t   CLOCKS_PER_SEC)
+     (typedef int       TIME_UTC)
+     (typedef clockid_t CLOCK_REALTIME)   ; POSIX
+     (typedef clockid_t CLOCK_MONOTONIC)  ; POSIX
+
+     ;;; ---- structs ----
+     (decl) (struct tm
+              (member int tm_sec)
+              (member int tm_min)
+              (member int tm_hour)
+              (member int tm_mday)
+              (member int tm_mon)
+              (member int tm_year)
+              (member int tm_wday)
+              (member int tm_yday)
+              (member int tm_isdst))
+
+     (decl) (struct timespec
+              (member time_t tv_sec)
+              (member long   tv_nsec))
+
+     ;;; ---- time manipulation ----
+     (decl) (func clock () (out clock_t))
+     (decl) (func time ((time_t * timer)) (out time_t))
+     (decl) (func difftime ((time_t time1) (time_t time0)) (out double))
+     (decl) (func mktime ((tm * timeptr)) (out time_t))
+     (decl) (func timegm ((tm * timeptr)) (out time_t))                             ; POSIX
+     (decl) (func timespec_get ((timespec * ts) (int base)) (out int))
+
+     ;;; ---- time conversion ----
+     (decl) (func strftime ((char * restrict s) (size_t maxsize) (const char * restrict format) (const tm * restrict timeptr)) (out size_t))
+     (decl) (func asctime ((const tm * timeptr)) (out char *))
+     (decl) (func ctime ((const time_t * timer)) (out char *))
+     (decl) (func gmtime ((const time_t * timer)) (out tm *))
+     (decl) (func localtime ((const time_t * timer)) (out tm *))
+     (decl) (func gmtime_r ((const time_t * restrict timer) (tm * restrict result)) (out tm *)) ; POSIX
+     (decl) (func localtime_r ((const time_t * restrict timer) (tm * restrict result)) (out tm *)) ; POSIX
+     (decl) (func asctime_r ((const tm * restrict timeptr) (char * restrict buf)) (out char *))        ; POSIX
+     (decl) (func ctime_r ((const time_t * restrict timer) (char * restrict buf)) (out char *))               ; POSIX
+
+     ;;; ---- sleeping / POSIX clocks ----
+     (decl) (func nanosleep ((const timespec * duration) (timespec * rem)) (out int)) ; POSIX
+     (decl) (func clock_gettime ((clockid_t clockid) (timespec * tp)) (out int))              ; POSIX
+     (decl) (func clock_getres ((clockid_t clockid) (timespec * res)) (out int))              ; POSIX
+     ))

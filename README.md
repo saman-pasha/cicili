@@ -175,12 +175,12 @@ file closed deferred
 
 ## Features
 ### Basic
-The [basic.lisp](test/haskell/basic.lisp) file is a comprehensive test suite that demonstrates almost every core feature of the Cicili language, showing how it merges functional paradigms with C-level control and an object-oriented-style V-Table system.
+The [basic.cicili](test/haskell/basic.cicili) file is a comprehensive test suite that demonstrates almost every core feature of the Cicili language, showing how it merges functional paradigms with C-level control and an object-oriented-style V-Table system.
 ### Concepts
-The [concepts.lisp](test/haskell/concepts.lisp) file is a comprehensive test suite that demonstrates the full power of Cicili's Haskell-style type class system, showing how Functors, Applicatives, and Monoids all work together on concrete data structures.
+The [concepts.cicili](test/haskell/concepts.cicili) file is a comprehensive test suite that demonstrates the full power of Cicili's Haskell-style type class system, showing how Functors, Applicatives, and Monoids all work together on concrete data structures.
 It's a practical showcase of how these high-level abstractions are implemented and used in Cicili.
 ### Monadic
-The [monadic.lisp](test/haskell/monadic.lisp) file is a powerful, practical demonstration of monadic computation in Cicili, specifically showcasing the Either monad for robust error handling.
+The [monadic.cicili](test/haskell/monadic.cicili) file is a powerful, practical demonstration of monadic computation in Cicili, specifically showcasing the Either monad for robust error handling.
 Its entire purpose is to safely validate and construct an Employee object ((Tuple String int int)) by chaining together a series of operations that can each fail.
 ### Definitions
 The [haskell](haskell) folder contains all Cicili's Haskell definitions. review them to fully understand how they are developed by Cicili's C core clauses. Follow Cicili Standard definition model by using generics `decl-`, `impl-`, `import-`.
@@ -194,8 +194,13 @@ Cicili's C core clauses are described in another doc [here](DOC-C.md).
 * Download and copy cicili folder to `~/common-lisp` for enabling [ASDF](https://common-lisp.net/project/asdf) access to cicili package.
 * Install [Quicklisp](https://quicklisp.org)
 * Run `(ql:quickload "cicili")` in `sbcl`
-* Write your own cicili code and save it in `.cicili` or `.lisp` extension.
+* Write your own cicili code and save it in `.cicili` extension.
 * Copy `cicili.lisp` file from source folder into your project path.
-* Send your file as an argument to cicili.lisp. `sbcl --script cicili.lisp test.lisp`
-* If you are using EMACS editor, copy `mode.lisp` file content into `.emacs` or `.emacs.d/init.el` file for syntax highlighting.
+* Send your file as an argument to cicili.lisp. `sbcl --script cicili.lisp test.cicili`
+* If you are using EMACS editor, add `emacs/cicili-mode.el` to your `load-path` and require it in `.emacs` or `.emacs.d/init.el`:
+```elisp
+(add-to-list 'load-path "/path/to/cicili/emacs")
+(require 'cicili-mode)
+```
+`.cicili` files then open in `cicili-mode` automatically, with Cicili's clauses, types, attributes and indent rules. See [emacs/README.md](emacs/README.md) for what it highlights and how to add a keyword.
 

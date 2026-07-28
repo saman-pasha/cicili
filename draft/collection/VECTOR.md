@@ -227,7 +227,7 @@ into the referenced `Buffer`'s storage — no copy occurs.
 
 ### `iterate` macro
 
-The `iterate` macro (defined in `haskell.lisp`) provides a safe, concise
+The `iterate` macro (defined in `haskell.cicili`) provides a safe, concise
 iteration DSL. It clones the vector's Rc handle for the duration of the loop
 (preventing premature deallocation) and automatically frees the clone on
 exit.

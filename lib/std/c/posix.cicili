@@ -1,0 +1,44 @@
+;;;; Cicili declarations for the common POSIX headers
+;;;;
+;;;; Aggregator. Import this from lib/std/prelude.cicili, after ./c/c.cicili:
+;;;;
+;;;;     (import "./c/c.cicili")
+;;;;     (import "./c/posix.cicili")
+;;;;
+;;;; Or import only what you need:
+;;;;
+;;;;     (import "./c/posix/sys-types.cicili")
+;;;;     (import "./c/posix/unistd.cicili")
+;;;;
+;;;; These files depend on ./c/c.cicili for size_t, time_t, timespec and sigset_t,
+;;;; so import c.cicili (or at least stddef.cicili, time.cicili and signal.cicili) first.
+;;;;
+;;;; Nothing here emits C. Keep using (include <unistd.h>) etc. in your target,
+;;;; and link what you need (-lpthread, -ldl, ...).
+
+;;; foundation types -- everything else uses these
+(import "./posix/sys-types.cicili")
+
+;;; files and directories
+(import "./posix/unistd.cicili")
+(import "./posix/fcntl.cicili")
+(import "./posix/sys-stat.cicili")
+(import "./posix/dirent.cicili")
+
+;;; processes and time
+(import "./posix/sys-wait.cicili")
+(import "./posix/sys-time.cicili")
+
+;;; multiplexing
+(import "./posix/poll.cicili")
+
+;;; memory and dynamic loading
+(import "./posix/sys-mman.cicili")
+(import "./posix/dlfcn.cicili")
+
+;;; networking
+(import "./posix/socket.cicili")
+(import "./posix/netdb.cicili")
+
+;;; threads -- the ergonomic macro layer lives in lib/std/pthread/pthread.cicili
+(import "./posix/pthread.cicili")

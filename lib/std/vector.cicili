@@ -1,0 +1,190 @@
+
+;;;; Cicili std vector
+;;; contigous memory reallocation 
+;;; most minimal performant indexable vector
+(generic decl-vector
+  (a)
+
+  (decl-array a)
+  (decl-rc (<> array a))
+  
+  (struct (<> vector a)
+          (member (<> rc (<> array a)) vec)
+          (member size_t low)
+          (member size_t high))
+
+  (inline)
+  (func (<> free (<> vector a)) (((<> vector a) * vector))
+        (syslog! (printf "FREE VECTOR: %p\n" vector))
+        ((<> free rc (<> array a)) (aof (-> vector vec))))
+
+  (inline)
+  (func arraySize ((size_t size))
+        (out size_t)
+        (let ((size_t two_pow . 0x10))
+          (while (< two_pow size)
+            (set two_pow (<< two_pow 1)))
+          (return two_pow)))
+
+  ) ; decl-vector
+
+
+(DEFMACRO new^vector (arr &OPTIONAL len)
+  (LET* ((arr arr)
+         (len (IF len len
+                  (LET ((value (IF (EQL (CAR arr) 'cast) (CADDR arr) NIL)))
+                    (IF (AND value (LISTP value) (EQUAL (CAR value) 'QUOTE))
+                        (LENGTH (CADR value))
+                        (ERROR (FORMAT NIL "new vector can't infer length ~A" arr))))))
+         (vec-len (GENSYM "tmp_len"))
+         (arr-len (GENSYM "arr_len")))
+    (MULTIPLE-VALUE-BIND (type full-type) (CICILI:TYPE-CHECK arr :MODIFIER '(* ** ***))
+      (LET ((a (NTH 1 full-type)))
+        (FORMAT T "VEEEEEVEC2 ~A~%" full-type)
+        (IF len
+            `(letn ((const size_t ,vec-len . (FUNCTION ,len))
+                    (const size_t ,arr-len . (FUNCTION (arraySize ,len))))
+               (syslog! (printf "NEW VECTOR: %s %zu %zu\n" (symbol-name (<> vector ,a)) ,vec-len ,arr-len))
+               (cast (<> vector ,a) '{ ((<> new rc) ,arr ,arr-len) 0 ,vec-len }))
+            (ERROR (FORMAT NIL "new^~A len required for dynamic vector input: ~A" `(<> vector ,a) arr)))))))
+
+
+;; (DEFMACRO new^vector (arr &OPTIONAL len)
+;;   (LET* ((arr arr)
+;;          (len (IF len len
+;;                   (LET ((value (IF (EQL (CAR arr) 'cast) (CADDR arr) NIL)))
+;;                     (IF (AND value (LISTP value) (EQUAL (CAR value) 'QUOTE))
+;;                         (LENGTH (CADR value))
+;;                         (ERROR (FORMAT NIL "new vector can't infer length ~A" arr))))))
+;;          (vec-len (GENSYM "tmp_len"))
+;;          (arr-len (GENSYM "arr_len")))
+;;     (IF cal-len
+;;         (PROGN
+;;           (FORMAT T "VEEEEEVEC1 ~A~%" vec)
+;;         (MULTIPLE-VALUE-BIND (type full-type) (CICILI:TYPE-CHECK vec :MODIFIER '(* ** ***))
+;;           (LET ((a (NTH 1 full-type)))
+;;             (FORMAT T "VEEEEEVEC2 ~A~%" full-type)
+;;             (IF len
+;;                 `(letn ((const size_t ,vec-len . (FUNCTION ,cal-len))
+;;                         (const size_t ,arr-len . (FUNCTION (arraySize ,cal-len))))
+;;                    (syslog! (printf "NEW VECTOR: %s %zu %zu\n" (symbol-name (<> vector ,a)) ,vec-len ,arr-len))
+;;                    (cast (<> vector ,a) '{ ((<> new rc (<> array ,a)) ,vec ,arr-len) 0 ,vec-len }))
+;;                 `(letn ((const size_t ,vec-len . (FUNCTION ,cal-len))
+;;                         (const size_t ,arr-len . (FUNCTION (arraySize ,cal-len))))
+;;                    (syslog! (printf "NEW VECTOR: %s %zu %zu\n" (symbol-name (<> vector ,a)) ,vec-len ,arr-len))
+;;                    (cast (<> vector ,a) '{ ((<> new rc (<> array ,a)) ,vec) 0 ,vec-len })))))
+;;         )
+;;         (ERROR (FORMAT NIL "new^~A len required for dynamic vector input: ~A" (symbol-name (<> vector a)) vec)))))
+
+
+;; (DEFMACRO (<> append type) (vector vec &OPTIONAL len)
+;;   (LET* ((vector vector)
+;;          (vec vec)
+;;          (len len)
+;;          (cal-len (IF len len
+;;                       (IF (STRINGP vec) (LENGTH vec)
+;;                           (IF (AND (LISTP vec) (EQUAL (CAR vec) 'QUOTE)) (LENGTH (CADR vec))
+;;                               NIL))))
+;;          (vec-tmp (GENSYM "tmp_vec"))     
+;;          (vec-acc (GENSYM "tmp_acc"))     
+;;          (vec-len (GENSYM "tmp_len"))
+;;          (arr-len (GENSYM "arr_len"))
+;;          (arr-name (GENSYM "acc_vec_arr")))
+;;     (IF cal-len
+;;         `(letn ((type ,vec-acc . (FUNCTION ,vector))
+;;                 (const size_t ,vec-len . (FUNCTION ,cal-len))
+;;                 (const size_t ,arr-len . (FUNCTION ((<> arraySize type) (+ ($ ,vec-acc high) ,vec-len)))))
+;;            ((<> excln rc (<> array a)) (* ,arr-name ($ ,vec-acc vec) (cast type '{ 0 }))
+;;             (syslog! (printf "APPEND VECTOR: %s %zu %zu\n" (symbol-name type) ,vec-len ,arr-len))
+;;             (letn ((a * ,vec-tmp . (FUNCTION (cast (a []) ,vec))))
+;;               (? (<= (+ ($ ,vec-acc high) ,vec-len) (-> ,arr-name len)) ; has space
+;;                 (progn (memcpy (+ (-> ,arr-name arr) ($ ,vec-acc high)) ,vec-tmp ,vec-len)
+;;                        (set ($ ,vec-acc high) (+ ($ ,vec-acc high) ,vec-len))
+;;                        ,vec-acc)
+;;                 (progn (set (-> ,arr-name arr) (realloc (-> ,arr-name arr) (* ,arr-len (sizeof a))))
+;;                        (set (-> ,arr-name len) ,arr-len)
+;;                        (memcpy (+ (-> ,arr-name arr) ($ ,vec-acc high)) ,vec-tmp ,vec-len)
+;;                        (set ($ ,vec-acc high) (+ ($ ,vec-acc high) ,vec-len))
+;;                        (cast type '{ ((<> new rc (<> array a)) (-> ,arr-name arr) ,arr-len)
+;;                              ($ ,vec-acc low) ($ ,vec-acc high) }))))))
+;;         (ERROR (FORMAT NIL "new^~A len required for dynamic vector input: ~A" (symbol-name type) vec)))))
+
+
+;; (DEFMACRO (<> slice type) (vector &OPTIONAL (low 0) (high NIL))
+;;   (LET* ((vector vector)
+;;          (vec-acc (GENSYM "acc_slc"))
+;;          (low low)
+;;          (high (IF high high `(- ($ ,vec-acc high) ($ ,vec-acc low))))
+;;          (slc-low (GENSYM "acc_slc_low"))
+;;          (slc-high (GENSYM "acc_slc_high")))
+;;     `(letn ((type ,vec-acc . (FUNCTION ,vector))
+;;             (const size_t ,slc-low . (FUNCTION (cast size_t ,low)))
+;;             (const size_t ,slc-high . (FUNCTION (cast size_t ,high))))
+;;        (syslog! (printf "slice %s: low: (%zu -> %zu), high: (%zu -> %zu)\n"
+;;                   (symbol-name type)
+;;                   ,slc-low (+ ($ ,vec-acc low) ,slc-low)
+;;                   ,slc-high (+ ($ ,vec-acc low) ,slc-high)))
+;;        (? (or (< ,slc-low 0)
+;;               (> ,slc-low ,slc-high)
+;;               (> ,slc-high (- ($ ,vec-acc high) ($ ,vec-acc low)))) ; check out of bounds
+;;          (cast type '{ 0 })
+;;          (cast type '{
+;;                ((<> clone rc (<> array a)) ($ ,vec-acc vec))
+;;                (+ ($ ,vec-acc low) ,slc-low)
+;;                (+ ($ ,vec-acc low) ,slc-high) })))))
+
+
+;; ;; (DEFMACRO (<> len type) (vector)
+;; ;;   (LET ((vector vector)
+;; ;;         (vec-acc (GENSYM "acc_slc")))
+;; ;;     '(letn ((type ,vec-acc . (FUNCTION ,vector)))
+;; ;;       (- ($ ,vec-acc high) ($ ,vec-acc low)))))
+
+;; (DEFMACRO (<> len type) (vector)
+;;   (LET ((vector vector))
+;;     (FORMAT T "VVVVVVVV ~A~%  ~A~%" (CICILI:*GETS* vector) vector)
+;;     ;; lambda* lets define named-lambda in Cicili
+;;     `('(closure* (<> len type) (,(CICILI:INFER-TYPE vector :WITH-NAME 'vector))
+;;         (out size_t)
+;;         (return (- ($ vector high) ($ vector low))))
+;;        ,vector)))
+
+
+;; ;; there are two path Safe and Unsafe
+;; ;; force with default
+;; ;; checks bounds and aliveness
+;; (DEFMACRO (<> nth type) (index vector &KEY default)
+;;   (LET* ((index index)
+;;          (vector vector)
+;;          (default default)
+;;          (vec-acc (GENSYM "acc_vec"))
+;;          (arr-name (GENSYM "acc_vec_arr"))
+;;          (arr-idx (GENSYM "acc_vec_idx")))
+;;     (WHEN (NULL default) (ERROR (FORMAT NIL "nth of vector needs default value ~A" vector)))
+;;     `(letn ((type ,vec-acc . (FUNCTION ,vector))
+;;             (const size_t ,arr-idx . (FUNCTION (+ ($ ,vec-acc low) ,index))))
+;;        (? (< ,arr-idx ($ ,vec-acc high))
+;;          ((<> letn rc (<> array a)) (,arr-name ($ ,vec-acc vec) ,default)
+;;           (nth ,arr-idx (cast (a *) ($ ,arr-name arr))))
+;;          ,default))))
+
+
+;; (DEFMACRO (<> let type) ((arr len vector) &REST body)
+;;   (LET ((vec-acc (GENSYM "acc_vec"))
+;;         (arr-name (GENSYM "acc_vec_arr")))
+;;     `(let ((type ,vec-acc . (FUNCTION ,vector)))
+;;        ((<> let rc (<> array a)) (,arr-name ($ ,vec-acc vec))
+;;         (let ((a * ,arr . (FUNCTION (+ (cast (a *) ($ ,arr-name arr)) ($ ,vec-acc low))))
+;;               (size_t ,len . (FUNCTION (- ($ ,vec-acc high) ($ ,vec-acc low)))))
+;;           ,@body)))))
+
+
+;; (DEFMACRO (<> letn type) ((arr len vector default) &REST body)
+;;   (LET ((default default)
+;;         (vec-acc (GENSYM "acc_vec"))
+;;         (arr-name (GENSYM "acc_vec_mem")))
+;;     `(letn ((type ,vec-acc . (FUNCTION ,vector)))
+;;        ((<> letn rc (<> array a)) (,arr-name ($ ,vec-acc vec) ,default)
+;;         (letn ((a * ,arr . (FUNCTION (+ (cast (a *) ($ ,arr-name arr)) ($ ,vec-acc low))))
+;;                (size_t ,len . (FUNCTION (- ($ ,vec-acc high) ($ ,vec-acc low)))))
+;;           ,@body)))))

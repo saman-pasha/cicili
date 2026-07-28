@@ -1,6 +1,9 @@
 *.lisp#
 *.h~
 *.lisp~
+*.cicili#
+*.cicili~
+.\#*.cicili
 test/lambda/lambda.o
 test/lambda/lambda.lo
 /test/method/.libs

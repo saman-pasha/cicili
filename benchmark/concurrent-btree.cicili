@@ -1,0 +1,261 @@
+
+;;; concurrent B-Tree type, (database alike)
+;;; Multi Version Concurrent System
+;;; using Rc
+;;; Rc cooperation with lock makes it atomic
+;;; and guarantees versioning access to btree
+;;; Single Writer, Multi Reader
+
+(import "draft/collection/btree.cicili")
+(import "lib/std/pthread/pthread.cicili")
+
+(source "concurrent_btree.c"
+  (make :std #t
+        :haskell #t
+        :compile #t
+        :link "concurrent_btree.o -o concurrent_btree")
+
+  (include "haskell.h")
+  (include <pthread.h>)
+  (include <unistd.h>)
+  
+  ;; Define a simple User type, contains name and salary
+  ;; id is not included in User type, chosen as key
+  (typedef (Tuple (<> Cell String) int) User)
+
+  (func compareKey ((int lkey) (int rkey))
+        (out Ordering)
+        (return (case (<  lkey rkey) (LT)
+                      (== lkey rkey) (EQ)
+                      otherwise      (GT))))
+
+  ;; reducible functions, curry form call
+  (fn showKey -file -key
+      (fprintf -file "%d" -key))
+
+  (fn showValue -file -u
+      (match -u
+        ((\, wname salary)
+         (match ((<> get Cell String) wname)
+           (Just name (+ (fprintf -file "('")
+                         (show^String -file name)
+                         (fprintf -file "', %d)" salary)))
+           (default (fprintf -file "item is deleted in another version!"))))
+        (default 0)))
+  
+  (fn showItem -file -item
+      (match -item
+        ((\, id (\, wname salary)) (match ((<> get Cell String) wname)
+                                     (Just name (+ (fprintf -file "(%d, '" id)
+                                                   (show^String -file name)
+                                                   (fprintf -file "', %d)" salary)))
+                                     (default (fprintf -file "%d, but item is deleted in another version!" id))))
+        (default 0)))
+
+  (decl-List List^User User)
+  (impl-List List^User User showValue " ")
+
+  (generic tree-type
+    (3t) ; 3t is BTree^int^User type
+    
+    (decl-B-Tree 3t ; 3t is BTree^int^User type
+      ;;   item : (Tuple int User)
+      int       ; int  : key type, user id
+      User)     ; User : value type
+    
+    (impl-B-Tree 3t ; 3t is BTree^int^User type
+      ;;    item : (Tuple int User)
+      int        ; int  : key type, user id
+      User       ; User : value type
+      3          ; m    : order (degree)
+      compareKey ; key comparision function
+      showKey    ; show key function
+      showItem)  ; show item function
+
+    (var Bool doQuit)
+    (define-mutex treeArc) ; should be recursive for using in Arc, init in main
+    (define-mutex outlock :init T)
+
+    ;; B-Tree itself uses Rc for handling child references in all tree versions
+    ;; for the concurrent root access and manipulation (Pure Functional) we need Arc
+    (decl-Arc 3t)
+    (impl-Arc 3t)
+    
+    (func insertMany (((<> Arc 3t) * pwtree) (int from) (int to))
+          (let ((char keyStr [10]))
+            (for ((int i . from)) (<= i to) ((++ i))
+                 (sprintf keyStr "%d" i)
+                 (let ((String name . #'(letin ((* r1 (new^String^Const "User "))
+                                                (* r2 (new^String^Const keyStr)))
+                                          (append^String r1 r2))))
+                   ((<> lock Arc 3t)
+                    (cof pwtree)
+                    ;; alive callback
+                    ;; closure instead of lambda because of using 'i and 'name
+                    '(closure ((3t tree))
+                      (io ((<> insert 3t) tree i (cast User '{ ((<> new Cell String) name) (+ i 2000) }))
+                        (Right new_tree (block (lock
+                                                 (aof outlock)
+                                                 (format #t "Inserted: %d, " i)
+                                                 (show^String stdout name)
+                                                 (putchar #\Newline))
+
+                                               ;; trace counting with --info arg
+                                               (info! (io (cof pwtree)
+                                                        (Hold pointer count address
+                                                              (lock (aof outlock)
+                                                                    (printf "+++++++++++++++++++++++++++++ %p, %p, %d, %p\n"
+                                                                      pointer *pointer *count (cast (void *) address))))))
+                                               
+                                               ((<> free Arc 3t) pwtree)
+                                               (set (cof pwtree) ((<> new Arc 3t) new_tree (aof treeArc)))
+
+                                               (info! (io (cof pwtree)
+                                                        (Hold pointer count address
+                                                              (lock (aof outlock)
+                                                                    (printf "++++++++++++++++++++++++++new %p, %p, %d, %p\n"
+                                                                      pointer *pointer *count (cast (void *) address))))))))
+                        (Left err (lock (aof outlock)
+                                        ;; redirects stdout to stderr
+                                        (error! (printf "Error during insertion: ")
+                                                ((<> show 3t Error) err)
+                                                (putchar #\Newline)
+                                                (exit -1))))))
+                    ;; dead callback
+                    '(lambda ()
+                      (error! (printf "Bad Rc! (writer i)\n")
+                              (exit -1))))
+
+                   (usleep 5) ; let readers read some
+                   ))))
+
+    (func deleteMany (((<> Arc 3t) * pwtree) (int from) (int to))
+          ;; callback to release item resources
+          (let ((auto item_deallocator . '(lambda (((<> 3t pair_t) item))
+                                           (io item
+                                             ((\, key (\, wname)) (lock (aof outlock)
+                                                                        (printf "Deleted: %d, " key)
+                                                                        (io ((<> get Cell String) wname)
+                                                                          (Just name (show^String stdout name)))
+                                                                        (putchar #\Newline)
+                                                                        ((<> free Cell String) (aof wname))))))))
+            (for ((int i . from)) (<= i to) ((++ i))
+                 ((<> lock Arc 3t)
+                  (cof pwtree)
+                  '(closure ((3t tree))
+                    (io ((<> delete 3t) tree i item_deallocator)
+                      (Right new_tree (block
+                                        ;; trace reference counting with --info arg
+                                        (info! (io (cof pwtree)
+                                                 (Hold pointer count address
+                                                       (lock (aof outlock)
+                                                             (printf "----------------------------- %p, %p, %d, %p\n"
+                                                               pointer *pointer *count (cast (void *) address))))))
+
+                                        ((<> free Arc 3t) pwtree)
+                                        (set (cof pwtree) ((<> new Arc 3t) new_tree (aof treeArc)))
+
+                                        (info! (io (cof pwtree)
+                                                 (Hold pointer count address
+                                                       (lock (aof outlock)
+                                                             (printf "--------------------------new %p, %p, %d, %p\n"
+                                                               pointer *pointer *count (cast (void *) address))))))))
+                      (Left err (lock (aof outlock)
+                                      (error! (printf "Error during deletion: ")
+                                              ((<> show 3t Error) err)
+                                              (putchar #\Newline)
+                                              (exit -1))))))
+                  '(lambda ()
+                    (error! (printf "Bad Rc! (writer d)\n")
+                            (exit -1))))
+
+                 (usleep 5) ; let readers read some
+                 )))
+
+    (func freeRcTree (((<> Arc 3t) * pnwtree))
+          ;; trace counting with --info arg
+          (info! (io (cof pnwtree)
+                   (Hold pointer count address
+                         (lock (aof outlock)
+                               (printf "OOOOOOOOOOOOOOOOOOOOOOOOOOOOO %p, %p, %d, %p\n"
+                                 pointer *pointer *count (cast (void *) address))))))
+          
+          ((<> free Arc 3t) pnwtree))
+    
+    (func searchMany (((<> Arc 3t) * pwtree) (int from) (int to))
+          (while #t
+            (io doQuit (True (return))) ; stop reader
+            
+            ;; cloning in reader threads is locked
+            ;; freeRcTree will be called deferral
+            ;;
+            ;; declaring instead of letin*, no need define function
+            ;;
+            ;; (let ((defer () ((<> free Arc 3t) (aof nwtree)))
+            ;;       ((<> Arc 3t) nwtree . #'((<> clone Arc 3t) (cof pwtree))))
+
+            (letin* ((nwtree ((<> clone Arc 3t) (cof pwtree)) freeRcTree))
+              
+              ;; read whatever from cloned version, either current or one of latest versions
+              (io ((<> get Arc 3t) nwtree)
+                (Just tree
+                  (for ((int i . from)) (<= i to) ((++ i))
+                       (io ((<> search 3t) tree i)
+                         (Just item (lock (aof outlock) (format #t "thread: %lu, Search Found: " (cast (unsigned long) (self)))
+                                          ($> showItem stdout item)
+                                          (putchar #\Newline)))
+                         (Nothing (lock (aof outlock) (error! (printf "thread: %lu, Search Not Found: %d" (cast (unsigned long) (self)) i)
+                                                              (putchar #\Newline)))))))))
+            
+            )) ; searchMany
+
+    ;; 1 Writer, 4 Reader
+    (func main ()
+          (format #t "Multi-thread pure functional manipulation of '%s' type into and from '%s' structure using '%s' key type.\n"
+                  (symbol-name User) (symbol-name 3t) (symbol-name int))
+
+          (set doQuit (False))
+
+          (init-mutex-recursive (aof treeArc))
+
+          ;; shared data between threads
+          (let (((<> Arc 3t) wtree . #'((<> new Arc 3t) ((<> Leaf 3t) ((<> Nil 3t pair_t))) (aof treeArc)))
+                ((<> Arc 3t) * pwtree . #'(aof wtree))
+                ;; 4 readers search for exact value too many times
+                (auto reader1 . #'(go (((<> Arc 3t) * pwtree)) (searchMany pwtree 200 200)))
+                (auto reader2 . #'(go (((<> Arc 3t) * pwtree)) (searchMany pwtree 500 500)))
+                (auto reader3 . #'(go (((<> Arc 3t) * pwtree)) (searchMany pwtree 700 700)))
+                (auto reader4 . #'(go (((<> Arc 3t) * pwtree)) (searchMany pwtree 1000 1000)))
+                ) ; decls
+
+            ;; main thread, insertion and deletion
+            (insertMany pwtree 1   250)              
+            (insertMany pwtree 501 750)
+            (insertMany pwtree 251 500)
+            (insertMany pwtree 751 1000)
+            
+            (deleteMany pwtree 1   250)
+            (deleteMany pwtree 501 750)
+            (deleteMany pwtree 251 500)
+            (deleteMany pwtree 751 1000)
+
+            (usleep 100)
+            (set doQuit (True))
+
+            ;; (__h_stack_show)
+            
+            (join reader1)
+            (join reader2)
+            (join reader3)
+            (join reader4)
+
+            ((<> free Arc 3t) pwtree)
+            (format #t "Done\n")
+            
+            )) ; main
+    
+    ) ; tree-type
+  
+  (tree-type (<> BTree int User)) ; use 3t to avoid using BTree^int^User type name too many times
+  
+  ) ; btree.c

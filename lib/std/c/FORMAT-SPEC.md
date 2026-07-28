@@ -2,7 +2,7 @@
 
 These files declare (never define) C library types, globals, constants and functions so
 Cicili's specifier/resolver can infer types. They are loaded as **macro files** via
-`(import "./c/<name>.lisp")` from `lib/std/prelude.lisp`.
+`(import "./c/<name>.lisp")` from `lib/std/prelude.cicili`.
 
 Nothing in these files is emitted as C. `load-macro-file` specifies the `init-macro`
 body at load time; specification only registers symbols in Cicili's symbol table,
@@ -13,7 +13,7 @@ C header at compile time via `(include <stdio.h>)` in the developer's target.
 
 ```lisp
 ;;;; Cicili declarations for <stdio.h>
-;;;; Import from lib/std/prelude.lisp:  (import "./c/stdio.lisp")
+;;;; Import from lib/std/prelude.cicili:  (import "./c/stdio.cicili")
 ;;;; Requires in target: (include <stdio.h>)  or  (:std #t)
 
 (DEFMACRO init-macro ()
@@ -75,7 +75,7 @@ name here. The developer emits the matching `typedef struct X X;` by repeating t
 
 ## 4. Globals
 
-Use the `typedef` idiom already used by `lib/std/prelude.lisp` for `stdout`:
+Use the `typedef` idiom already used by `lib/std/prelude.cicili` for `stdout`:
 
 ```lisp
 (typedef FILE * stdout)
@@ -127,11 +127,11 @@ Do not use `(enum ...)` for these: enum would pin a value that differs per platf
 * No function *definitions* — declaration only.
 * Never declare the same symbol twice within a file, and prefer to leave a symbol
   to its "home" header when two headers both expose it (e.g. `size_t` lives in
-  `stddef.lisp` only; other files just use it).
+  `stddef.cicili` only; other files just use it).
 * `NULL` is spelled `nil` in Cicili — do not declare `NULL`.
-* `lib/std/prelude.lisp` declares only Cicili's own primitive type names
+* `lib/std/prelude.cicili` declares only Cicili's own primitive type names
   (`char`, `int`, `i32`, `real`, `auto`, ...). The C symbols it used to carry now
   live here: `FILE` / `stdin` / `stdout` / `stderr` / `printf` / `fprintf` in
-  `stdio.lisp`, `malloc` / `calloc` / `free` in `stdlib.lisp`, `memcpy` / `memset`
-  in `string.lisp`.
+  `stdio.cicili`, `malloc` / `calloc` / `free` in `stdlib.cicili`, `memcpy` / `memset`
+  in `string.cicili`.
 * ASCII only, LF line endings, two-space indentation inside `$$$`.

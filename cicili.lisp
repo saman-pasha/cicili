@@ -16,10 +16,10 @@
 
 (asdf:load-system "cicili")
 
-(cicili:load-macro-file "builtins.lisp" nil () "CICILI")
-(cicili:load-macro-file "cpp.lisp"      nil () "CICILI")
-(cicili:load-macro-file "lib/std/prelude.lisp" nil () "CICILI")
-(cicili:load-macro-file "haskell/prelude.lisp" nil () "CICILI")
+(cicili:load-macro-file "builtins.cicili" nil () "CICILI")
+(cicili:load-macro-file "cpp.cicili"      nil () "CICILI")
+(cicili:load-macro-file "lib/std/prelude.cicili" nil () "CICILI")
+(cicili:load-macro-file "haskell/prelude.cicili" nil () "CICILI")
 
 (let ((argv (uiop:command-line-arguments)))
   (if (> (length argv) 0)
