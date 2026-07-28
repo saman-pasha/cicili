@@ -25,14 +25,18 @@
 ;; puts id and its def to *symbols* by creating id from *lexemes-id*
 (defun *puts* (id def)
   (let ((lex-id (str:join "/" (append (list (substitute #\_ #\^ (symbol-name id))) *lexemes-id*))))
+    (format t "LEEEEEXXXXXXXXPUT ~A ~A~%" lex-id def)
     ;; (format t "LEEEEXPUTS ~A~%" lex-id)
     (setf (gethash lex-id *symbols*) def)))
 ;; 'gets and 'gets-of helper get def by id from *symbols* by creating id from *lexemes-id*
 (defun *gets-from* (id lexemes-id &optional default)
   (let ((lex-id (str:join "/" (append (list (substitute #\_ #\^ (symbol-name id))) lexemes-id))))
     (let ((def (gethash lex-id *symbols*)))
+      (format t "LEEEEEXXXXXXXXFROM ~A ~A~%" id lex-id)
       (if def def (if lexemes-id (*gets-from* id (cdr lexemes-id) default) nil)))))
+;; *gets* front-end
 (defun *gets* (id &optional default)
+  (format t "LEEEEEXXXXXXXX11 ~A ~A~%" id (expand-macros id))
   (let* ((id (expand-macros id))
          (lex-id (str:join "/" (append (list (substitute #\_ #\^ (symbol-name id))) *lexemes-id*))))
     (format t "LEEEEEXXXXXXXX ~A~%" lex-id)
@@ -41,6 +45,11 @@
 ;; distinct type inference time macro expantion from real specifying time
 (defparameter *type-infer-time-var* nil)
 (defparameter *type-infer-time-lambda* nil)
+;; AST Table, keeps metadata attached to any ast object
+(defparameter *ast-table* (make-hash-table :test 'eq))
+;; keeps expanded version if any for any ast object
+(defparameter *expanded-table* (make-hash-table :test 'eq))
+
 
 ;; cicili script path
 (defvar *cicili-path* (uiop/os:getcwd))
@@ -99,24 +108,28 @@
 ;; expands all defined macros
 ;; for type specification only
 (defun expand-macros (def)
-  (if (atom def) def
-      (let* ((func (car def))
-             (macro (if (symbolp func) (gethash (symbol-name func) *macros*) nil)))
-        (if (and (symbolp func) (key-eq func 'QUASIQUOTE))
-            (eval (car (macroexpand `(,(cadr def) ,@(cddr def)))))
-            (if (or macro (and (symbolp func) (macro-function func)))
-                (let ((tmp-expantion *macroexpand*)
-                      (id (gensym "ME:"))
-                      (result nil))
-                  (when *debug-macroexpand* (format t "~A ~A~%" id def))
-                  (setf *macroexpand* t)
-                  (setq result (if macro (macroexpand `(,macro ,@(cdr def))) (macroexpand def)))
-                  (when (and (listp result) (listp (cadr result)) (key-eq (caadr result) 'EVAL-WHEN)) ; outputs macro
-                    (setq result (eval result)))
-                  (when *debug-macroexpand* (format t "~A macro: ~A result: ~A~%" id macro result))
-                  (setf *macroexpand* tmp-expantion)
-                  result)
-                def)))))
+  (let ((cached (gethash def *expanded-table*)))
+    (if cached
+        cached
+        (setf (gethash def *expanded-table*)
+              (if (atom def) def
+                  (let* ((func (car def))
+                         (macro (if (symbolp func) (gethash (symbol-name func) *macros*) nil)))
+                    (if (and (symbolp func) (key-eq func 'QUASIQUOTE))
+                        (eval (car (macroexpand `(,(cadr def) ,@(cddr def)))))
+                        (if (or macro (and (symbolp func) (macro-function func)))
+                            (let ((tmp-expantion *macroexpand*)
+                                  (id (gensym "ME:"))
+                                  (result nil))
+                              (when *debug-macroexpand* (format t "~A ~A~%" id def))
+                              (setf *macroexpand* t)
+                              (setq result (if macro (macroexpand `(,macro ,@(cdr def))) (macroexpand def)))
+                              (when (and (listp result) (listp (cadr result)) (key-eq (caadr result) 'EVAL-WHEN)) ; outputs macro
+                                (setq result (eval result)))
+                              (when *debug-macroexpand* (format t "~A macro: ~A result: ~A~%" id macro result))
+                              (setf *macroexpand* tmp-expantion)
+                              result)
+                            def))))))))
 
 (defparameter *macro-counter*
   (let ((count 100))
@@ -370,3 +383,19 @@
 
 (defun lvl-value (lvl)
   (if (listp lvl) (car lvl) lvl))
+
+(defmacro set-ast-obj (def spec)
+  (let ((def def))
+    `,spec))
+    ;; `(let ((saved-spec (gethash ,def *ast-table*)))
+    ;;    (if saved-spec
+    ;;        saved-spec
+    ;;        (setf (gethash ,def *ast-table*) ,spec)))))
+
+(defmacro set-ast-vals (def vals)
+  (let ((def def))
+    `,vals))
+    ;; `(let ((saved-spec (gethash ,def *ast-table*)))
+    ;;    (if saved-spec
+    ;;        (values-list saved-spec)
+    ;;        (values-list (setf (gethash ,def *ast-table*) (multiple-value-list ,vals)))))))

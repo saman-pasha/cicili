@@ -1,0 +1,100 @@
+;;;; Cicili declarations for <wchar.h>
+;;;; Import from lib/std/prelude.lisp:  (import "./c/wchar.lisp")
+;;;; Requires in target: (include <wchar.h>)  or  (:std #t)
+;;;;
+;;;; wchar_t is declared by stddef.lisp and is not repeated here.
+;;;; FILE, va_list, memcpy and memset are already declared elsewhere
+;;;; (prelude.lisp / stdarg.lisp) and are deliberately not repeated here.
+;;;; struct tm is owned by time.lisp; wcsftime only uses it here.
+
+(DEFMACRO init-macro ()
+  `($$$
+     ;;; ---- types ----
+     (typedef uint  wint_t)
+     (decl) (struct mbstate_t)
+
+     ;;; ---- constants ----
+     (typedef wint_t   WEOF)
+     ;; WCHAR_MIN / WCHAR_MAX are owned by stdint.lisp
+
+     ;;; ---- formatted wide character input/output functions ----
+     (decl) (func fwprintf  ((FILE * restrict stream) (const wchar_t * restrict format) ($$$)) (out int))
+     (decl) (func fwscanf   ((FILE * restrict stream) (const wchar_t * restrict format) ($$$)) (out int))
+     (decl) (func swprintf  ((wchar_t * restrict s) (size_t n) (const wchar_t * restrict format) ($$$)) (out int))
+     (decl) (func swscanf   ((const wchar_t * restrict s) (const wchar_t * restrict format) ($$$)) (out int))
+     (decl) (func vfwprintf ((FILE * restrict stream) (const wchar_t * restrict format) (va_list arg)) (out int))
+     (decl) (func vfwscanf  ((FILE * restrict stream) (const wchar_t * restrict format) (va_list arg)) (out int))
+     (decl) (func vswprintf ((wchar_t * restrict s) (size_t n) (const wchar_t * restrict format) (va_list arg)) (out int))
+     (decl) (func vswscanf  ((const wchar_t * restrict s) (const wchar_t * restrict format) (va_list arg)) (out int))
+     (decl) (func vwprintf  ((const wchar_t * restrict format) (va_list arg)) (out int))
+     (decl) (func vwscanf   ((const wchar_t * restrict format) (va_list arg)) (out int))
+     (decl) (func wprintf   ((const wchar_t * restrict format) ($$$)) (out int))
+     (decl) (func wscanf    ((const wchar_t * restrict format) ($$$)) (out int))
+
+     ;;; ---- wide character input/output functions ----
+     (decl) (func fgetwc  ((FILE * stream)) (out wint_t))
+     (decl) (func fgetws  ((wchar_t * restrict s) (int n) (FILE * restrict stream)) (out wchar_t *))
+     (decl) (func fputwc  ((wchar_t c) (FILE * stream)) (out wint_t))
+     (decl) (func fputws  ((const wchar_t * restrict s) (FILE * restrict stream)) (out int))
+     (decl) (func fwide   ((FILE * stream) (int mode)) (out int))
+     (decl) (func getwc   ((FILE * stream)) (out wint_t))
+     (decl) (func getwchar () (out wint_t))
+     (decl) (func putwc   ((wchar_t c) (FILE * stream)) (out wint_t))
+     (decl) (func putwchar ((wchar_t c)) (out wint_t))
+     (decl) (func ungetwc ((wint_t c) (FILE * stream)) (out wint_t))
+
+     ;;; ---- numeric conversion functions ----
+     (decl) (func wcstod   ((const wchar_t * restrict nptr) (wchar_t ** restrict endptr)) (out double))
+     (decl) (func wcstof   ((const wchar_t * restrict nptr) (wchar_t ** restrict endptr)) (out float))
+     (decl) (func wcstold  ((const wchar_t * restrict nptr) (wchar_t ** restrict endptr)) (out real))
+     (decl) (func wcstol   ((const wchar_t * restrict nptr) (wchar_t ** restrict endptr) (int base)) (out long))
+     (decl) (func wcstoll  ((const wchar_t * restrict nptr) (wchar_t ** restrict endptr) (int base)) (out llong))
+     (decl) (func wcstoul  ((const wchar_t * restrict nptr) (wchar_t ** restrict endptr) (int base)) (out ulong))
+     (decl) (func wcstoull ((const wchar_t * restrict nptr) (wchar_t ** restrict endptr) (int base)) (out ullong))
+
+     ;;; ---- wide string copying functions ----
+     (decl) (func wcscpy  ((wchar_t * restrict s1) (const wchar_t * restrict s2)) (out wchar_t *))
+     (decl) (func wcsncpy ((wchar_t * restrict s1) (const wchar_t * restrict s2) (size_t n)) (out wchar_t *))
+     (decl) (func wmemcpy ((wchar_t * restrict s1) (const wchar_t * restrict s2) (size_t n)) (out wchar_t *))
+     (decl) (func wmemmove ((wchar_t * s1) (const wchar_t * s2) (size_t n)) (out wchar_t *))
+
+     ;;; ---- wide string concatenation functions ----
+     (decl) (func wcscat  ((wchar_t * restrict s1) (const wchar_t * restrict s2)) (out wchar_t *))
+     (decl) (func wcsncat ((wchar_t * restrict s1) (const wchar_t * restrict s2) (size_t n)) (out wchar_t *))
+
+     ;;; ---- wide string comparison functions ----
+     (decl) (func wcscmp  ((const wchar_t * s1) (const wchar_t * s2)) (out int))
+     (decl) (func wcsncmp ((const wchar_t * s1) (const wchar_t * s2) (size_t n)) (out int))
+     (decl) (func wcscoll ((const wchar_t * s1) (const wchar_t * s2)) (out int))
+     (decl) (func wcsxfrm ((wchar_t * restrict s1) (const wchar_t * restrict s2) (size_t n)) (out size_t))
+     (decl) (func wmemcmp ((const wchar_t * s1) (const wchar_t * s2) (size_t n)) (out int))
+
+     ;;; ---- wide string search functions ----
+     (decl) (func wcschr  ((const wchar_t * s) (wchar_t c)) (out wchar_t *))
+     (decl) (func wcscspn ((const wchar_t * s1) (const wchar_t * s2)) (out size_t))
+     (decl) (func wcspbrk ((const wchar_t * s1) (const wchar_t * s2)) (out wchar_t *))
+     (decl) (func wcsrchr ((const wchar_t * s) (wchar_t c)) (out wchar_t *))
+     (decl) (func wcsspn  ((const wchar_t * s1) (const wchar_t * s2)) (out size_t))
+     (decl) (func wcsstr  ((const wchar_t * s1) (const wchar_t * s2)) (out wchar_t *))
+     (decl) (func wcstok  ((wchar_t * restrict s1) (const wchar_t * restrict s2) (wchar_t ** restrict ptr)) (out wchar_t *))
+     (decl) (func wmemchr ((const wchar_t * s) (wchar_t c) (size_t n)) (out wchar_t *))
+
+     ;;; ---- miscellaneous functions ----
+     (decl) (func wcslen  ((const wchar_t * s)) (out size_t))
+     (decl) (func wmemset ((wchar_t * s) (wchar_t c) (size_t n)) (out wchar_t *))
+
+     ;;; ---- wide date and time function ----
+     (decl) (func wcsftime ((wchar_t * restrict s) (size_t maxsize) (const wchar_t * restrict format) (const tm * restrict timeptr)) (out size_t))
+
+     ;;; ---- single/wide character conversion functions ----
+     (decl) (func btowc ((int c)) (out wint_t))
+     (decl) (func wctob ((wint_t c)) (out int))
+
+     ;;; ---- restartable multibyte/wide character conversion functions ----
+     (decl) (func mbsinit  ((const mbstate_t * ps)) (out int))
+     (decl) (func mbrlen   ((const char * restrict s) (size_t n) (mbstate_t * restrict ps)) (out size_t))
+     (decl) (func mbrtowc  ((wchar_t * restrict pwc) (const char * restrict s) (size_t n) (mbstate_t * restrict ps)) (out size_t))
+     (decl) (func wcrtomb  ((char * restrict s) (wchar_t wc) (mbstate_t * restrict ps)) (out size_t))
+     (decl) (func mbsrtowcs ((wchar_t * restrict dst) (const char ** src) (size_t len) (mbstate_t * restrict ps)) (out size_t))
+     (decl) (func wcsrtombs ((char * restrict dst) (const wchar_t ** src) (size_t len) (mbstate_t * restrict ps)) (out size_t))
+     ))

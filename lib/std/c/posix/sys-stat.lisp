@@ -1,0 +1,74 @@
+;;;; Cicili declarations for <sys/stat.h>
+;;;; Import from lib/std/prelude.lisp:  (import "./c/posix/sys-stat.lisp")
+;;;; Requires in target: (include <sys/stat.h>)  or  (:std #t)
+;;;;
+;;;; S_ISREG/S_ISDIR/S_ISCHR/S_ISBLK/S_ISFIFO/S_ISLNK/S_ISSOCK are really
+;;;; type-generic-ish C macros that take a mode value, not true functions;
+;;;; they are declared here as functions of (mode_t) -> int purely so
+;;;; Cicili's inference can resolve calls to them.
+
+(DEFMACRO init-macro ()
+  `($$$
+     ;;; ---- types ----
+     (decl) (struct stat_t                        ; C spelling is `struct stat`; see README
+              (member dev_t     st_dev)
+              (member ino_t     st_ino)
+              (member mode_t    st_mode)
+              (member nlink_t   st_nlink)
+              (member uid_t     st_uid)
+              (member gid_t     st_gid)
+              (member dev_t     st_rdev)
+              (member off_t     st_size)
+              (member blksize_t st_blksize)
+              (member blkcnt_t  st_blocks)
+              (member time_t    st_atime)
+              (member time_t    st_mtime)
+              (member time_t    st_ctime))
+
+     ;;; ---- file type / mode constants ----
+     (typedef mode_t S_IFMT)
+     (typedef mode_t S_IFBLK)
+     (typedef mode_t S_IFCHR)
+     (typedef mode_t S_IFIFO)
+     (typedef mode_t S_IFREG)
+     (typedef mode_t S_IFDIR)
+     (typedef mode_t S_IFLNK)
+     (typedef mode_t S_IFSOCK)
+     (typedef mode_t S_IRWXU)
+     (typedef mode_t S_IRUSR)
+     (typedef mode_t S_IWUSR)
+     (typedef mode_t S_IXUSR)
+     (typedef mode_t S_IRWXG)
+     (typedef mode_t S_IRGRP)
+     (typedef mode_t S_IWGRP)
+     (typedef mode_t S_IXGRP)
+     (typedef mode_t S_IRWXO)
+     (typedef mode_t S_IROTH)
+     (typedef mode_t S_IWOTH)
+     (typedef mode_t S_IXOTH)
+     (typedef mode_t S_ISUID)
+     (typedef mode_t S_ISGID)
+     (typedef mode_t S_ISVTX)
+
+     ;;; ---- mode test "macros" (declared as functions, see header note) ----
+     (decl) (func S_ISREG  ((mode_t m)) (out int))
+     (decl) (func S_ISDIR  ((mode_t m)) (out int))
+     (decl) (func S_ISCHR  ((mode_t m)) (out int))
+     (decl) (func S_ISBLK  ((mode_t m)) (out int))
+     (decl) (func S_ISFIFO ((mode_t m)) (out int))
+     (decl) (func S_ISLNK  ((mode_t m)) (out int))
+     (decl) (func S_ISSOCK ((mode_t m)) (out int))
+
+     ;;; ---- functions ----
+     (decl) (func stat    ((const char * restrict pathname) (stat_t * restrict statbuf)) (out int))
+     (decl) (func fstat   ((int fd) (stat_t * statbuf)) (out int))
+     (decl) (func lstat   ((const char * restrict pathname) (stat_t * restrict statbuf)) (out int))
+     (decl) (func fstatat ((int dirfd) (const char * restrict pathname) (stat_t * restrict statbuf) (int flags)) (out int))
+     (decl) (func chmod   ((const char * path) (mode_t mode)) (out int))
+     (decl) (func fchmod  ((int fd) (mode_t mode)) (out int))
+     (decl) (func mkdir   ((const char * path) (mode_t mode)) (out int))
+     (decl) (func mkdirat ((int dirfd) (const char * pathname) (mode_t mode)) (out int))
+     (decl) (func mkfifo  ((const char * path) (mode_t mode)) (out int))
+     (decl) (func mknod   ((const char * path) (mode_t mode) (dev_t dev)) (out int))
+     (decl) (func umask   ((mode_t mask)) (out mode_t))
+     ))

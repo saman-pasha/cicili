@@ -295,7 +295,10 @@
                                       (symbol-name s-name)
                                       (format nil "~A.~A" pack (symbol-name s-name)))))
                      (if (key-eq s-name '|init-macro|) ; init macro should return $$$
-                         (specify-body (macroexpand (LIST (eval (macroexpand target)))))
+                         (let ((bd (macroexpand (LIST (eval (macroexpand target))))))
+                           (if (and (listp bd) (key-eq (car bd) '$$$))
+                               (specify-body (cdr bd))
+                               (specify-call-expr bd)))
                          (progn
                            (setf (nth 1 target) (intern m-name))
                            (let ((symb (eval (macroexpand target))))

@@ -1,0 +1,116 @@
+;;;; Cicili declarations for <stdint.h>
+;;;; Import from lib/std/prelude.lisp:  (import "./c/stdint.lisp")
+;;;; Requires in target: (include <stdint.h>)  or  (:std #t)
+;;;;
+;;;; Cicili already has i8/u8/i16/u16/i32/u32/i64/u64 as primitives; the
+;;;; typedefs below just pin the C spellings onto them for a mainstream
+;;;; LP64 target. `int_fastN_t`/`uint_fastN_t` follow glibc's LP64 choice
+;;;; of widening 16/32-bit "fast" types to the native 64-bit register size;
+;;;; 8-bit fast types stay 8-bit. The INTN_C()/UINTN_C()/INTMAX_C()/UINTMAX_C()
+;;;; value-pasting macros take a literal argument and cannot be expressed as
+;;;; a typedef, so they are deliberately skipped.
+
+(DEFMACRO init-macro ()
+  `($$$
+     ;;; ---- exact-width integer types ----
+     (typedef i8 int8_t)
+     (typedef u8 uint8_t)
+     (typedef i16 int16_t)
+     (typedef u16 uint16_t)
+     (typedef i32 int32_t)
+     (typedef u32 uint32_t)
+     (typedef i64 int64_t)
+     (typedef u64 uint64_t)
+
+     ;;; ---- minimum-width integer types ----
+     (typedef i8 int_least8_t)
+     (typedef u8 uint_least8_t)
+     (typedef i16 int_least16_t)
+     (typedef u16 uint_least16_t)
+     (typedef i32 int_least32_t)
+     (typedef u32 uint_least32_t)
+     (typedef i64 int_least64_t)
+     (typedef u64 uint_least64_t)
+
+     ;;; ---- fastest minimum-width integer types ----
+     (typedef i8 int_fast8_t)
+     (typedef u8 uint_fast8_t)
+     (typedef i64 int_fast16_t)
+     (typedef u64 uint_fast16_t)
+     (typedef i64 int_fast32_t)
+     (typedef u64 uint_fast32_t)
+     (typedef i64 int_fast64_t)
+     (typedef u64 uint_fast64_t)
+
+     ;;; ---- integer types capable of holding object pointers ----
+     (typedef i64 intptr_t)
+     (typedef u64 uintptr_t)
+
+     ;;; ---- greatest-width integer types ----
+     (typedef i64 intmax_t)
+     (typedef u64 uintmax_t)
+
+     ;;; ---- limits of exact-width integer types ----
+     (typedef i8 INT8_MIN)
+     (typedef i8 INT8_MAX)
+     (typedef u8 UINT8_MAX)
+     (typedef i16 INT16_MIN)
+     (typedef i16 INT16_MAX)
+     (typedef u16 UINT16_MAX)
+     (typedef i32 INT32_MIN)
+     (typedef i32 INT32_MAX)
+     (typedef u32 UINT32_MAX)
+     (typedef i64 INT64_MIN)
+     (typedef i64 INT64_MAX)
+     (typedef u64 UINT64_MAX)
+
+     ;;; ---- limits of minimum-width integer types ----
+     (typedef i8 INT_LEAST8_MIN)
+     (typedef i8 INT_LEAST8_MAX)
+     (typedef u8 UINT_LEAST8_MAX)
+     (typedef i16 INT_LEAST16_MIN)
+     (typedef i16 INT_LEAST16_MAX)
+     (typedef u16 UINT_LEAST16_MAX)
+     (typedef i32 INT_LEAST32_MIN)
+     (typedef i32 INT_LEAST32_MAX)
+     (typedef u32 UINT_LEAST32_MAX)
+     (typedef i64 INT_LEAST64_MIN)
+     (typedef i64 INT_LEAST64_MAX)
+     (typedef u64 UINT_LEAST64_MAX)
+
+     ;;; ---- limits of fastest minimum-width integer types ----
+     (typedef i8 INT_FAST8_MIN)
+     (typedef i8 INT_FAST8_MAX)
+     (typedef u8 UINT_FAST8_MAX)
+     (typedef i64 INT_FAST16_MIN)
+     (typedef i64 INT_FAST16_MAX)
+     (typedef u64 UINT_FAST16_MAX)
+     (typedef i64 INT_FAST32_MIN)
+     (typedef i64 INT_FAST32_MAX)
+     (typedef u64 UINT_FAST32_MAX)
+     (typedef i64 INT_FAST64_MIN)
+     (typedef i64 INT_FAST64_MAX)
+     (typedef u64 UINT_FAST64_MAX)
+
+     ;;; ---- limits of integer types capable of holding object pointers ----
+     (typedef i64 INTPTR_MIN)
+     (typedef i64 INTPTR_MAX)
+     (typedef u64 UINTPTR_MAX)
+
+     ;;; ---- limits of greatest-width integer types ----
+     (typedef i64 INTMAX_MIN)
+     (typedef i64 INTMAX_MAX)
+     (typedef u64 UINTMAX_MAX)
+
+     ;;; ---- limits of other integer types ----
+     (typedef long   PTRDIFF_MIN)     ; matches ptrdiff_t, see stddef.lisp
+     (typedef long   PTRDIFF_MAX)
+     (typedef ulong  SIZE_MAX)        ; matches size_t, see stddef.lisp
+     (typedef int    SIG_ATOMIC_MIN)
+     (typedef int    SIG_ATOMIC_MAX)
+     (typedef int    WCHAR_MIN)       ; matches wchar_t, see stddef.lisp
+     (typedef int    WCHAR_MAX)
+     (typedef uint   WINT_MIN)
+     (typedef uint   WINT_MAX)
+
+     ))

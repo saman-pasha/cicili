@@ -1,0 +1,23 @@
+;;;; Cicili declarations for <setjmp.h>
+;;;; Import from lib/std/prelude.lisp:  (import "./c/setjmp.lisp")
+;;;; Requires in target: (include <setjmp.h>)  or  (:std #t)
+;;;;
+;;;; `setjmp` (and POSIX `sigsetjmp`) are macros in real C, not functions --
+;;;; they must expand in the caller's own stack frame to work at all. Cicili
+;;;; has no macro-argument-capture form here, so they are declared as plain
+;;;; `func`s for inference purposes only; the compiler emits the call
+;;;; verbatim and relies on the real `(include <setjmp.h>)` macro expansion
+;;;; to make it work at the call site.
+
+(DEFMACRO init-macro ()
+  `($$$
+     ;;; ---- types ----
+     (decl) (struct jmp_buf)                       ; opaque
+     (decl) (struct sigjmp_buf)                     ; opaque; POSIX
+
+     ;;; ---- functions ----
+     (decl) (func setjmp    ((jmp_buf env)) (out int))                     ; macro in C
+     (decl) (func longjmp   ((jmp_buf env) (int val)))
+     (decl) (func sigsetjmp ((sigjmp_buf env) (int savesigs)) (out int))   ; POSIX; macro in C
+     (decl) (func siglongjmp ((sigjmp_buf env) (int val)))                 ; POSIX
+     ))

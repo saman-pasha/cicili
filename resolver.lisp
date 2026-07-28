@@ -178,7 +178,7 @@
              (set-ast-line (output ". "))
              (setf (getf (gethash (ast-key< line-n col-n) (nth 0 *ast-lines*)) 'mtd)
                    (ast-key< (funcall *line-num* 0) (funcall *col-num* 0)))
-             (compile-form member (1+ lvl) globals spec)
+             (compile-name member (1+ lvl) globals spec) ; compile-form
              (setf (getf (gethash (ast-key< line-n col-n) (nth 0 *ast-lines*)) 'end)
                    (ast-key< (funcall *line-num* 0) (funcall *col-num* 0)))
              (output ")"))
@@ -256,7 +256,7 @@
              (set-ast-line (output "-> "))
              (setf (getf (gethash (ast-key< line-n col-n) (nth 0 *ast-lines*)) 'mtd)
                    (ast-key< (funcall *line-num* 0) (funcall *col-num* 0)))
-             (compile-form method (1+ lvl) globals spec)
+             (compile-name method (1+ lvl) globals spec) ; compile-form
              (compile-args (default args) lvl globals spec t :sep "-> ")
              (setf (getf (gethash (ast-key< line-n col-n) (nth 0 *ast-lines*)) 'end)
                    (ast-key< (funcall *line-num* 0) (funcall *col-num* 0)))

@@ -1,78 +1,76 @@
 (in-package :cicili)
 
 ;; deeply traverse spec tree to find lexeme id for a storage
-(defun deep-storageof-name (id full-name spec)
-  (format t "STORAGEOF REQUESTED: ~A~%" spec)
-  (if spec
-      (let ((const-val (construct spec)))
-        (cond ((eql const-val '|@ATOM|)
-               (cond ((eql (typeof spec) '|@SYMBOL|) (*gets* (name spec)))
-                     (t spec)))
-              ((eql const-val '|@VAR|)   spec)
-              ((eql const-val '|@PARAM|) spec)
-              ((eql const-val '|@FUNC|)  spec)
-              ((eql const-val '|@UNARY|)
-               (cond ((eql (name spec) '&) nil)
-                     ((eql (name spec) '*)
-                      (let ((ty (deep-storageof-name id full-name (default spec))))
-                        (if ty
-                            (let* ((storage-id (intern (format nil "cof/~A~:[~{~A~^/~}~;~*~]" (name ty) full-name full-name)))
-                                   (storage (*gets* storage-id)))
-                              (format t "COCOCOCOCOCOCOCOCOCOF1 ~A  ~A~%" (typeof ty) ty)
-                              (if storage
-                                  storage
-                                  (let* ((modifier (modifier ty))
-                                         (mod-val (cond
-                                                    ((key-eq '|ref| modifier)  '|move|)
-                                                    ((key-eq '|***| modifier)  '|**|)
-                                                    ((key-eq '|**|  modifier)  '|*|)
-                                                    ((key-eq '|*|   modifier)  (when (is-non-copy (typeof ty)) '|move|))
-                                                    ((is-non-copy (typeof ty)) '|move|)
-                                                    (t (error (format nil "'cof not allowed for: ~A~%  in: ~A" ty spec)))))
-                                         (ptr-mod (cond
-                                                    ((null mod-val) nil)
-                                                    ((key-eq '|move| mod-val) nil)
-                                                    ((key-eq '|ref|  mod-val) nil)
-                                                    (t (const-ptr ty))))
-                                         (new-storage (make-specifier (name ty) (construct ty) (const ty) (typeof ty)
-                                                                      mod-val ptr-mod (array-def ty)
-                                                                      nil nil (anonymous ty))))
-                                    (format t "COCOCOCOCOCOCOCOCOCOF2 ~A  ~A~%" (is-non-copy (typeof ty)) new-storage)
-                                    (*puts* storage-id new-storage))))
-                            nil)))
-                     (t nil)))
-              ((or (eql const-val '|@$|) (eql const-val '|@->|))
-               (let ((struct (deep-storageof-name id (cons (name spec) full-name) (name spec))))
-                 (when struct
-                   (format t "STRUCTTTT11 ~A   ~A~%" (typeof struct) struct)
-                   (let* ((storage-id (intern (format nil "~A/~A" (name (default spec)) (name struct))))
-                          (storage (*gets* storage-id)))
-                     (if storage
-                         storage
-                         (let ((end-type (if (typep (typeof struct) 'sp)
-                                             (deep-typeof "" (typeof struct))
-                                             (deep-typeof (typeof struct)))))
-                           (unless end-type (error "unknown struct type: ~A~%  accessed in: ~A~%" (typeof struct) spec))
-                           (format t "STRUCTTTT22 ~A~%" end-type)
-                           (setq storage-id (intern (format nil "~A/~A"  (name (default spec)) (typeof end-type))))
-                           (setq storage (*gets* storage-id))
-                           (format t "STRUCTTTT22 STORAGE ~A, ~A~%" storage-id storage)
-                           (let ((new-storage (make-specifier storage-id (construct storage) (const storage) (typeof storage)
-                                                              (modifier storage) (const-ptr storage) (array-def storage)
-                                                              (default storage) (attrs storage) (anonymous storage))))
-                             (*puts* storage-id new-storage))))))))
-              ((eql const-val '|@CAST|)   (deep-storageof-name id (cons (name spec) full-name) (default spec)))
-              ((eql const-val '|@RETURN|) (deep-storageof-name id (cons (name spec) full-name) (default spec)))
-              ((eql const-val '|@TYPEOF|)
-               (deep-storageof-name id (cons (name spec) full-name) (default spec))
-               ;; (combine-types (deep-storageof-name id (cons (name spec) full-name) (default spec)) spec)
-               )
-              (t nil)))
-      nil))
-
 (defun deep-storageof (id &optional spec)
   (let ((spec (if spec spec (*gets* id))))
-      (deep-storageof-name id (list (name spec)) spec)))
+    (format t "STORAGEOF REQUESTED: ~A~%" spec)
+    (if spec
+        (let ((const-val (construct spec)))
+          (cond ((eql const-val '|@ATOM|)
+                 (if (key-eq (name spec) '|@SYMBOL|)
+                     (deep-typeof(default spec))
+                     spec))
+                ((eql const-val '|@VAR|)   spec)
+                ((eql const-val '|@PARAM|) spec)
+                ((eql const-val '|@FUNC|)  spec)
+                ((eql const-val '|@UNARY|)
+                 (cond ((eql (name spec) '&) nil)
+                       ((eql (name spec) '*)
+                        (let ((ty (deep-storageof id (default spec))))
+                          (if ty
+                              (let* ((storage-id (intern (format nil "cof/~A" (name ty) (name spec))))
+                                     (storage (*gets* storage-id)))
+                                (format t "COCOCOCOCOCOCOCOCOCOF1 ~A  ~A~%" (typeof ty) ty)
+                                (if storage
+                                    storage
+                                    (let* ((modifier (modifier ty))
+                                           (mod-val (cond
+                                                      ((key-eq '|ref| modifier)  '|move|)
+                                                      ((key-eq '|***| modifier)  '|**|)
+                                                      ((key-eq '|**|  modifier)  '|*|)
+                                                      ((key-eq '|*|   modifier)  (when (is-non-copy (typeof ty)) '|move|))
+                                                      ((is-non-copy (typeof ty)) '|move|)
+                                                      (t (error (format nil "'cof not allowed for: ~A~%  in: ~A" ty spec)))))
+                                           (ptr-mod (cond
+                                                      ((null mod-val) nil)
+                                                      ((key-eq '|move| mod-val) nil)
+                                                      ((key-eq '|ref|  mod-val) nil)
+                                                      (t (const-ptr ty))))
+                                           (new-storage (make-specifier (name ty) (construct ty) (const ty) (typeof ty)
+                                                                        mod-val ptr-mod (array-def ty)
+                                                                        (default ty) (attrs ty))))
+                                      (format t "COCOCOCOCOCOCOCOCOCOF2 ~A  ~A~%" (is-non-copy (typeof ty)) new-storage)
+                                      (*puts* storage-id new-storage))))
+                              nil)))
+                       (t nil)))
+                ((or (eql const-val '|@$|) (eql const-val '|@->|))
+                 (let ((struct (deep-storageof id (name spec))))
+                   (when struct
+                     (format t "STRUCTTTT11 ~A   ~A~%" (typeof struct) struct)
+                     (let* ((storage-id (typeof struct))
+                            (storage (*gets* storage-id)))
+                       (if storage
+                           storage
+                           (let ((end-type (if (typep (typeof struct) 'sp)
+                                               (deep-typeof "" (typeof struct))
+                                               (deep-typeof (typeof struct)))))
+                             (unless end-type (error "unknown struct type: ~A~%  accessed in: ~A~%" (typeof struct) spec))
+                             (format t "STRUCTTTT22 ~A~%" end-type)
+                             (setq storage-id (intern (format nil "~A/~A" (default spec) (typeof end-type))))
+                             (setq storage (*gets* storage-id))
+                             (format t "STRUCTTTT22 STORAGE ~A, ~A~%" storage-id storage)
+                             (let ((new-storage (make-specifier storage-id (construct storage) (const storage) (typeof storage)
+                                                                (modifier storage) (const-ptr storage) (array-def storage)
+                                                                (default storage) (attrs storage))))
+                               (*puts* storage-id new-storage))))))))
+                ((eql const-val '|@CAST|)   (deep-storageof id (default spec)))
+                ((eql const-val '|@RETURN|) (deep-storageof id (default spec)))
+                ((eql const-val '|@TYPEOF|)
+                 (deep-storageof id  (default spec))
+                 ;; (combine-types (deep-storageof-name id (cons (name spec) full-name) (default spec)) spec)
+                 )
+                (t nil)))
+        nil)))
 
 ;; deeply traverse spec tree to find lexeme id for a type
 ;; type inference back-end
@@ -83,9 +81,7 @@
               (format t "TYPEOF REQUESTED: ~A~%" spec)
               (if spec
                   (let ((const-val (construct spec)))
-                    (cond ((eql const-val '|@ATOM|)
-                           (cond ((eql (typeof spec) '|@SYMBOL|) (*gets* (name spec)))
-                                 (t spec)))
+                    (cond ((eql const-val '|@ATOM|) spec)
                           ((key-eq (typeof spec) '|auto|) (deep-typeof id (default spec))) ; var or param
                           ((eql const-val '|@CALL|)
                            (let ((name-val (name spec)))
@@ -101,7 +97,7 @@
                            (*pop* (deep-typeof id (car (last (body (body spec)))))))
                           ((eql const-val '|@?|) (deep-typeof id (car (default spec))))
                           ((eql const-val '|@UNARY|)
-                           (let ((ty (deep-storageof-name id '() spec)))
+                           (let ((ty (deep-storageof id spec)))
                              (format t "UUUUUUUUNARYYYYYYYYYYY2 ~A~%" ty)                   
                              (if ty
                                  (cond ((eql (name spec) '&) ty)
@@ -130,11 +126,11 @@
                           ((or (eql const-val '|@$|) (eql const-val '|@->|))
                            (let ((struct (deep-typeof id (name spec))))
                              (when struct
-                               (format t "STRUCTTTT1 ~A   ~A~%" (typeof struct) struct)
+                               (format t "STRUCTTTT1 ~A   ~A~%" spec struct)
                                (let ((end-type (deep-typeof (typeof struct))))
                                  (unless end-type (error "unknown struct type: ~A~%  accessed in: ~A~%" (typeof struct) spec))
                                  (format t "STRUCTTTT2 ~A~%" end-type)
-                                 (*gets* (intern (format nil "~A/~A"  (name (default spec)) (typeof end-type))))))))
+                                 (*gets* (intern (format nil "~A/~A"  (default spec) (typeof end-type))))))))
                           ((eql const-val '|@TYPEDEF|)
                            (deep-typeof (typeof spec))
                            ;; (combine-types (deep-typeof (typeof spec)) spec)
@@ -238,9 +234,10 @@
 (defun infer-type (id &key with-name copy-name)
   (format t "INFER REQUESTED: ~A    WITH:~A~%" id with-name)
   (let* ((id (expand-macros id))
-         (spec (cond ((numberp id) (return-from infer-type
-                                     (values (list '|const| '|int| with-name)
-                                             (list '|const| '|int| NIL NIL with-name))))
+         (spec (cond ((numberp id) (specify-expr id))
+                      ;; (return-from infer-type
+                      ;;                (values (list '|const| '|int| with-name)
+                      ;;                        (list '|const| '|int| NIL NIL with-name)))                      
                      ((stringp id) (specify-cast-expr (list '|cast| (list '|const| '|char| '[]) id)))
                      ((listp id) (let* ((clause (expand-macros id))
                                         (func (expand-macros (car clause))))
@@ -258,11 +255,15 @@
                                                   (if (key-eq (car out) '|out|)
                                                       (let ((out-ext (expand-macros (cadr out))))
                                                         (if (key-eq out-ext '|auto|)
-                                                            (let ((ret-val (find-clause '|return| (nthcdr 2 func))))
+                                                            (let ((ret-val (find-clause '|return| (nthcdr 2 func)))
+                                                                  (tmp-type-infer-time (prog1 *type-infer-time-lambda*
+                                                                                         (setq *type-infer-time-lambda* t)))
+                                                                  (lamb-spec (specify-function func '())))
+                                                              (setq *type-infer-time-lambda* tmp-type-infer-time)
                                                               (format t "GOUTOUTOUTOUT1 ~A~%" ret-val)
                                                               (return-from infer-type
-                                                                (infer-type ret-val
-                                                                  :with-name with-name :copy-name copy-name)))
+                                                                (infer-type-spec "" lamb-spec
+                                                                                 :with-name with-name :copy-name copy-name)))
                                                             (return-from infer-type
                                                               (infer-type out-ext
                                                                 :with-name with-name :copy-name copy-name))))
@@ -457,7 +458,7 @@
                     (error (format nil "non-copy struct assignment for: ~A~%  by: ~A~%  inside: ~A~%" left right spec )))))))))))
 
 (defun move-var (spec inside)
-  (let ((origin (deep-storageof-name "" (list (name spec)) spec))) ; check for moved vars
+  (let ((origin (deep-storageof "" spec))) ; check for moved vars
     (format t "CCCCCCCCCCCCCCCCCCC1 ~A~%  SPECCCC ~A~%" origin spec)
     (if (and origin
              (find (construct origin) '(|@VAR| |@PARAM|))
@@ -476,14 +477,16 @@
                              (moved-var (make-specifier moved-name '|@VAR| nil (typeof origin) nil nil nil spec '()))
                              (call-var (make-specifier (specify-symbol-expr '|memset|) '|@CALL| nil nil nil nil nil
                                                        (list (make-specifier '|&| '|@UNARY| nil nil nil nil nil spec '())
-                                                             (make-specifier 0 '|@ATOM| nil '|@NUMBER| nil nil nil nil '())
+                                                             (make-specifier '|@NUMBER| '|@ATOM| nil '|int| nil nil nil 0 '())
                                                              (make-specifier nil '|@SIZEOF| nil nil nil nil nil spec '()))
                                                        '()))
                              (let-var (make-specifier (GENSYM "letnmove") '|@LETN| nil nil nil nil nil nil '()))
                              (body-var (make-specifier (GENSYM "bodymove") '|@BODY| nil nil nil nil nil nil '())))
                         (setf (is-moved origin) inside)
                         (add-param moved-var let-var)
-                        (setf (body body-var) (list call-var (make-specifier moved-name '|@ATOM| nil '|@SYMBOL| nil nil nil nil '())))
+                        (setf (body body-var) (list call-var (make-specifier '|@SYMBOL| '|@ATOM| (const origin) (typeof origin)
+                                                                             (modifier origin) (const-ptr origin) (array-def origin)
+                                                                             moved-name '())))
                         (setf (body let-var) body-var)
                         (make-specifier '|LETNMOVECAST| '|@CAST| nil (typeof origin) '|move| nil nil let-var '())
                         ) ; copy, set zero moved arg, pass 

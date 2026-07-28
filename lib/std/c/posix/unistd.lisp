@@ -1,0 +1,92 @@
+;;;; Cicili declarations for <unistd.h>
+;;;; Import from lib/std/prelude.lisp:  (import "./c/posix/unistd.lisp")
+;;;; Requires in target: (include <unistd.h>)  or  (:std #t)
+;;;;
+;;;; SEEK_SET, SEEK_CUR, SEEK_END are declared by stdio.lisp and are
+;;;; deliberately not repeated here. alarm and pause are declared by
+;;;; signal.lisp and are deliberately not repeated here. _SC_* is too large
+;;;; a family to enumerate in full; only the most commonly used values are
+;;;; declared.
+
+(DEFMACRO init-macro ()
+  `($$$
+     ;;; ---- standard file descriptors ----
+     (typedef int STDIN_FILENO)
+     (typedef int STDOUT_FILENO)
+     (typedef int STDERR_FILENO)
+
+     ;;; ---- access() mode constants ----
+     (typedef int F_OK)
+     (typedef int R_OK)
+     (typedef int W_OK)
+     (typedef int X_OK)
+
+     ;;; ---- sysconf() name constants (partial) ----
+     (typedef int _SC_PAGESIZE)
+     (typedef int _SC_NPROCESSORS_ONLN)
+     (typedef int _SC_OPEN_MAX)
+     (typedef int _SC_CLK_TCK)
+
+     ;;; ---- file I/O ----
+     (decl) (func read  ((int fd) (void * buf) (size_t count)) (out ssize_t))
+     (decl) (func write ((int fd) (const void * buf) (size_t count)) (out ssize_t))
+     (decl) (func close ((int fd)) (out int))
+     (decl) (func lseek ((int fd) (off_t offset) (int whence)) (out off_t))
+     (decl) (func pipe  ((int * pipefd)) (out int))
+     (decl) (func dup   ((int oldfd)) (out int))
+     (decl) (func dup2  ((int oldfd) (int newfd)) (out int))
+
+     ;;; ---- filesystem operations ----
+     (decl) (func unlink   ((const char * pathname)) (out int))
+     (decl) (func rmdir    ((const char * pathname)) (out int))
+     (decl) (func link     ((const char * oldpath) (const char * newpath)) (out int))
+     (decl) (func symlink  ((const char * target) (const char * linkpath)) (out int))
+     (decl) (func readlink ((const char * restrict pathname) (char * restrict buf) (size_t bufsiz)) (out ssize_t))
+     (decl) (func access   ((const char * pathname) (int mode)) (out int))
+     (decl) (func chdir    ((const char * path)) (out int))
+     (decl) (func fchdir   ((int fd)) (out int))
+     (decl) (func getcwd   ((char * buf) (size_t size)) (out char *))
+
+     ;;; ---- process identity ----
+     (decl) (func getpid  () (out pid_t))
+     (decl) (func getppid () (out pid_t))
+     (decl) (func getuid  () (out uid_t))
+     (decl) (func geteuid () (out uid_t))
+     (decl) (func getgid  () (out gid_t))
+     (decl) (func getegid () (out gid_t))
+     (decl) (func setuid  ((uid_t uid)) (out int))
+     (decl) (func setgid  ((gid_t gid)) (out int))
+
+     ;;; ---- process creation/execution ----
+     (decl) (func fork   () (out pid_t))
+     (decl) (func execl  ((const char * path) (const char * arg) ($$$)) (out int))
+     (decl) (func execlp ((const char * file) (const char * arg) ($$$)) (out int))
+     (decl) (func execle ((const char * path) (const char * arg) ($$$)) (out int))
+     (decl) (func execv  ((const char * path) (char ** argv)) (out int))
+     (decl) (func execvp ((const char * file) (char ** argv)) (out int))
+     (decl) (func execve ((const char * path) (char ** argv) (char ** envp)) (out int))
+     (decl) (func _exit  ((int status)))
+
+     ;;; ---- delays ----
+     (decl) (func sleep  ((uint seconds)) (out uint))
+     (decl) (func usleep ((useconds_t usec)) (out int))
+
+     ;;; ---- terminal / sysconf ----
+     (decl) (func isatty  ((int fd)) (out int))
+     (decl) (func ttyname ((int fd)) (out char *))
+     (decl) (func sysconf ((int name)) (out long))
+     (decl) (func getpagesize () (out int))
+
+     ;;; ---- file size / sync ----
+     (decl) (func truncate  ((const char * path) (off_t length)) (out int))
+     (decl) (func ftruncate ((int fd) (off_t length)) (out int))
+     (decl) (func fsync     ((int fd)) (out int))
+     (decl) (func fdatasync ((int fd)) (out int))
+     (decl) (func sync      ())
+
+     ;;; ---- host / ownership / scheduling ----
+     (decl) (func gethostname ((char * name) (size_t len)) (out int))
+     (decl) (func chown       ((const char * pathname) (uid_t owner) (gid_t group)) (out int))
+     (decl) (func fchown      ((int fd) (uid_t owner) (gid_t group)) (out int))
+     (decl) (func nice        ((int inc)) (out int))
+     ))

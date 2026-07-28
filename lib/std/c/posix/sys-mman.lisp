@@ -1,0 +1,38 @@
+;;;; Cicili declarations for <sys/mman.h>
+;;;; Import from lib/std/prelude.lisp:  (import "./c/posix/sys-mman.lisp")
+;;;; Requires in target: (include <sys/mman.h>)  or  (:std #t)
+;;;;
+;;;; size_t is declared by stddef.lisp and off_t and mode_t are declared by
+;;;; posix/sys-types.lisp; all are only used (not repeated) here.
+
+(DEFMACRO init-macro ()
+  `($$$
+     ;;; ---- constants: mmap() protection ----
+     (typedef int PROT_NONE)
+     (typedef int PROT_READ)
+     (typedef int PROT_WRITE)
+     (typedef int PROT_EXEC)
+
+     ;;; ---- constants: mmap() flags ----
+     (typedef int MAP_SHARED)
+     (typedef int MAP_PRIVATE)
+     (typedef int MAP_ANONYMOUS)
+     (typedef int MAP_FIXED)
+     (typedef void * MAP_FAILED)  ; really ((void *) -1)
+
+     ;;; ---- constants: msync() flags ----
+     (typedef int MS_ASYNC)
+     (typedef int MS_SYNC)
+     (typedef int MS_INVALIDATE)
+
+     ;;; ---- functions ----
+     (decl) (func mmap    ((void * addr) (size_t length) (int prot) (int flags) (int fd) (off_t offset)) (out void *))
+     (decl) (func munmap  ((void * addr) (size_t length)) (out int))
+     (decl) (func mprotect ((void * addr) (size_t length) (int prot)) (out int))
+     (decl) (func msync   ((void * addr) (size_t length) (int flags)) (out int))
+     (decl) (func mlock   ((const void * addr) (size_t len)) (out int))
+     (decl) (func munlock ((const void * addr) (size_t len)) (out int))
+     (decl) (func madvise ((void * addr) (size_t length) (int advice)) (out int))
+     (decl) (func shm_open   ((const char * name) (int oflag) (mode_t mode)) (out int))
+     (decl) (func shm_unlink ((const char * name)) (out int))
+     ))

@@ -311,3 +311,5 @@ test/std/cell_test
 test/std/array.c.run1.c
 test/std/cell.c.run1.c
 test/std/rc.c.run1.c
+test/std/vector.c.run1.c
+/_to_delete

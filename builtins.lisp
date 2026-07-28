@@ -373,6 +373,12 @@
                                   (ERROR (FORMAT NIL "closure: paramter name passed: ~A inside: ~A" param (LIST name captures))))))
         (args (LOOP FOR (_ value) ON captures BY #'CDDR COLLECT value)))
     (FORMAT T "PAPPAPAPARAMA ~A   ~A  ~A~%" captures name params)
+    ;; `((QUOTE ,(LET ((body body))
+    ;;             (PUSH params body)
+    ;;             (PUSH name body)
+    ;;             (PUSH 'lambda* body)
+    ;;             body))
+    ;;   ,@args)))
     `('(lambda* ,name ,params ,@body) ,@args)))
 
 (DEFMACRO new (type &REST args)

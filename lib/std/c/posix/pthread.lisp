@@ -1,0 +1,107 @@
+;;;; Cicili declarations for <pthread.h>
+;;;; Import from lib/std/prelude.lisp:  (import "./c/posix/pthread.lisp")
+;;;; Requires in target: (include <pthread.h>)  or  (:std #t)
+;;;;
+;;;; size_t is declared by stddef.lisp and struct timespec is declared by
+;;;; time.lisp; both are only used (not repeated) here. This file only
+;;;; declares the pthread TYPEs and FUNCTIONs; the ergonomic macro layer
+;;;; (go, join, lock, define-mutex, ...) already lives at
+;;;; lib/std/pthread/pthread.lisp and is deliberately not duplicated here.
+;;;; All pthread_*_t types have a real C typedef (to an opaque struct,
+;;;; union or scalar, platform-dependent), so they are referenced bare,
+;;;; matching real C usage, the same way FILE and DIR are elsewhere.
+
+(DEFMACRO init-macro ()
+  `($$$
+     ;;; ---- types (opaque) ----
+     (decl) (struct pthread_t)
+     (decl) (struct pthread_attr_t)
+     (decl) (struct pthread_mutex_t)
+     (decl) (struct pthread_mutexattr_t)
+     (decl) (struct pthread_cond_t)
+     (decl) (struct pthread_condattr_t)
+     (decl) (struct pthread_rwlock_t)
+     (decl) (struct pthread_rwlockattr_t)
+     (decl) (struct pthread_key_t)
+     (decl) (struct pthread_once_t)
+     (decl) (struct pthread_barrier_t)
+     (decl) (struct pthread_spinlock_t)
+
+     ;;; ---- constants: mutex types ----
+     (typedef int PTHREAD_MUTEX_NORMAL)
+     (typedef int PTHREAD_MUTEX_ERRORCHECK)
+     (typedef int PTHREAD_MUTEX_RECURSIVE)
+     (typedef int PTHREAD_MUTEX_DEFAULT)
+
+     ;;; ---- constants: thread creation / cancellation ----
+     (typedef int PTHREAD_CREATE_JOINABLE)
+     (typedef int PTHREAD_CREATE_DETACHED)
+     (typedef int PTHREAD_CANCEL_ENABLE)
+     (typedef int PTHREAD_CANCEL_DISABLE)
+
+     ;;; ---- constants: process-shared attribute ----
+     (typedef int PTHREAD_PROCESS_PRIVATE)
+     (typedef int PTHREAD_PROCESS_SHARED)
+
+     ;;; ---- constants: static initializers (really struct/union literals) ----
+     (typedef pthread_mutex_t  PTHREAD_MUTEX_INITIALIZER)
+     (typedef pthread_cond_t   PTHREAD_COND_INITIALIZER)
+     (typedef pthread_rwlock_t PTHREAD_RWLOCK_INITIALIZER)
+     (typedef pthread_once_t   PTHREAD_ONCE_INIT)
+
+     ;;; ---- thread management ----
+     (decl) (func pthread_create ((pthread_t * restrict thread) (const pthread_attr_t * restrict attr)
+                                   (func start_routine ((void * arg)) (out void *))
+                                   (void * restrict arg))
+                                  (out int))
+     (decl) (func pthread_join  ((pthread_t thread) (void ** retval)) (out int))
+     (decl) (func pthread_detach ((pthread_t thread)) (out int))
+     (decl) (func pthread_exit  ((void * retval)))
+     (decl) (func pthread_self  () (out pthread_t))
+     (decl) (func pthread_equal ((pthread_t t1) (pthread_t t2)) (out int))
+     (decl) (func pthread_cancel ((pthread_t thread)) (out int))
+
+     ;;; ---- thread attributes ----
+     (decl) (func pthread_attr_init    ((pthread_attr_t * attr)) (out int))
+     (decl) (func pthread_attr_destroy ((pthread_attr_t * attr)) (out int))
+     (decl) (func pthread_attr_setdetachstate ((pthread_attr_t * attr) (int detachstate)) (out int))
+     (decl) (func pthread_attr_getdetachstate ((const pthread_attr_t * attr) (int * detachstate)) (out int))
+     (decl) (func pthread_attr_setstacksize   ((pthread_attr_t * attr) (size_t stacksize)) (out int))
+
+     ;;; ---- mutexes ----
+     (decl) (func pthread_mutex_init    ((pthread_mutex_t * restrict mutex) (const pthread_mutexattr_t * restrict attr)) (out int))
+     (decl) (func pthread_mutex_destroy ((pthread_mutex_t * mutex)) (out int))
+     (decl) (func pthread_mutex_lock    ((pthread_mutex_t * mutex)) (out int))
+     (decl) (func pthread_mutex_trylock ((pthread_mutex_t * mutex)) (out int))
+     (decl) (func pthread_mutex_unlock  ((pthread_mutex_t * mutex)) (out int))
+
+     ;;; ---- mutex attributes ----
+     (decl) (func pthread_mutexattr_init    ((pthread_mutexattr_t * attr)) (out int))
+     (decl) (func pthread_mutexattr_destroy ((pthread_mutexattr_t * attr)) (out int))
+     (decl) (func pthread_mutexattr_settype ((pthread_mutexattr_t * attr) (int type)) (out int))
+     (decl) (func pthread_mutexattr_gettype ((const pthread_mutexattr_t * restrict attr) (int * restrict type)) (out int))
+
+     ;;; ---- condition variables ----
+     (decl) (func pthread_cond_init      ((pthread_cond_t * restrict cond) (const pthread_condattr_t * restrict attr)) (out int))
+     (decl) (func pthread_cond_destroy   ((pthread_cond_t * cond)) (out int))
+     (decl) (func pthread_cond_wait      ((pthread_cond_t * restrict cond) (pthread_mutex_t * restrict mutex)) (out int))
+     (decl) (func pthread_cond_timedwait ((pthread_cond_t * restrict cond) (pthread_mutex_t * restrict mutex) (const timespec * restrict abstime)) (out int))
+     (decl) (func pthread_cond_signal    ((pthread_cond_t * cond)) (out int))
+     (decl) (func pthread_cond_broadcast ((pthread_cond_t * cond)) (out int))
+
+     ;;; ---- read-write locks ----
+     (decl) (func pthread_rwlock_init    ((pthread_rwlock_t * restrict rwlock) (const pthread_rwlockattr_t * restrict attr)) (out int))
+     (decl) (func pthread_rwlock_destroy ((pthread_rwlock_t * rwlock)) (out int))
+     (decl) (func pthread_rwlock_rdlock  ((pthread_rwlock_t * rwlock)) (out int))
+     (decl) (func pthread_rwlock_wrlock  ((pthread_rwlock_t * rwlock)) (out int))
+     (decl) (func pthread_rwlock_unlock  ((pthread_rwlock_t * rwlock)) (out int))
+
+     ;;; ---- thread-specific data ----
+     (decl) (func pthread_key_create  ((pthread_key_t * key) (func destructor ((void * arg)))) (out int))
+     (decl) (func pthread_key_delete  ((pthread_key_t key)) (out int))
+     (decl) (func pthread_setspecific ((pthread_key_t key) (const void * value)) (out int))
+     (decl) (func pthread_getspecific ((pthread_key_t key)) (out void *))
+
+     ;;; ---- one-time initialization ----
+     (decl) (func pthread_once ((pthread_once_t * once_control) (func init_routine ())) (out int))
+     ))

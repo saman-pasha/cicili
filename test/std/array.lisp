@@ -8,32 +8,18 @@
   (include <time.h>)
   (include <limits.h>)
 
+  (var int N    . 1000000000) ; total operations
+  (var int STEP . 1000)       ; elements per epoch
+
   (decl-array int)
+  (impl-array int)
 
   (func ms_now ()
         (out llong)
         (let (((struct timespec) ts))
           (timespec_get (aof ts) TIME_UTC)
-          (return (+ (* (cast llong ts.tv_sec) 1000) (/ ts.tv_nsec 1000000))))
-        (return 0)
-        ) ; ms-now
-
-  (var int N    . 1000000000) ; total operations
-  (var int STEP . 1000)       ; elements per epoch
-
-  ;; if uncomment function, compile-time error:
-  ;; non-copy struct assignment for: #<SP @PARAM arr array_int  {12037AAC33}>
-  ;; by: NIL
-  ;; inside: #<SP @FUNC a_func_copy_array void  {12037AA8D3}>
-  ;; (func a_func_copy_array ((array^int arr))
-  ;;       (format #t "length of copied array %zu\n" (len^array arr)))
-
-  ;; but allows to use 'move instance modifier
-  (func a_func_move_array ((array^int move arr))
-        (format #t "length of moved array %zu\n" (len^array arr))
-        ;; arr is 'move so no need to free here manually
-        ;; ((<> free array^int) (aof arr))
-        )
+          (return (+ (* (cast llong ($ ts tv_sec)) 1000) (/ ($ ts tv_nsec) 1000000))))
+        (return 0))
 
   (func bench_a_nth ()
         (out long)
@@ -59,7 +45,21 @@
             (let ((llong elapsed . #'(- (ms_now) t0)))
               (printf "  (nth checksum: %lld)\n" sum)  ; after timer — forces liveness
               (return elapsed)))))
-  
+
+  ;; if uncomment function, compile-time error:
+  ;; non-copy struct assignment for: #<SP @PARAM arr array_int  {12037AAC33}>
+  ;; by: NIL
+  ;; inside: #<SP @FUNC a_func_copy_array void  {12037AA8D3}>
+  ;; (func a_func_copy_array ((array^int arr))
+  ;;       (format #t "length of copied array %zu\n" (len^array arr)))
+
+  ;; but allows to use 'move instance modifier
+  (func a_func_move_array ((array^int move arr))
+        (format #t "length of moved array %zu\n" (len^array arr))
+        ;; arr is 'move so no need to free here manually
+        ;; ((<> free array^int) (aof arr))
+        )
+
   ;; and also allows 'ref instance modifier
   ;; references are pointers
   (func a_func_referenced_array ((array^int ref referred_arr))
@@ -150,25 +150,26 @@
 ;; ./test/std/arr_test
 
 ;; sizeof array_int: 16
-;; NEW ARR: const int * 0x600001cc1200 5
-;; NEW ARR: int * 0x600001ec4040 2
+;; NEW ARR: array_int 0x600002c011e0 5
+;; NEW ARR: array_int 0x600002e04040 2
 ;; arr01 len: 5
 ;; arr02 len: 2
 ;; length of referenced array 2
 ;; length of referenced array 2
 ;; length of moved array 2
-;; FREE ARR: 0x600001ec4040
+;; FREE ARR: 0x600002e04040
 ;; print int array using Unsafe nth: 12345
 ;; print int array using Safe nth: 1234500
-;; FREE ARR: 0x600001cc1200
 ;; letn sum1: 3000000000
+;; take sum2: 6000000000
+;; FREE ARR: 0x600002c011e0
 ;; FREE ARR: 0x0
 ;; FREE ARR: 0x0
-;; NEW ARR: const int * 0x6000027c0000 50
+;; NEW ARR: array_int 0x600001700000 50
 ;;   (nth checksum: 24500000000)
-;; FREE ARR: 0x6000027c0000
-;;   nth (bounds-checked) 1000000000 times: 464 ms
+;; FREE ARR: 0x600001700000
+;;   nth (bounds-checked) 1000000000 times: 419 ms
 
 ;; (nth) bench result:
-;; Cicili 418 417 413 418 418
+;; Cicili 413 416 417 417 419
 ;; Rust   439 435 437 439 436

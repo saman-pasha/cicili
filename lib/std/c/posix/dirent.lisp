@@ -1,0 +1,49 @@
+;;;; Cicili declarations for <dirent.h>
+;;;; Import from lib/std/prelude.lisp:  (import "./c/posix/dirent.lisp")
+;;;; Requires in target: (include <dirent.h>)  or  (:std #t)
+;;;;
+;;;; ino_t and off_t are declared by sys-types.lisp and are only used
+;;;; (not repeated) here. `struct dirent` has no C typedef, so it is
+;;;; referenced as `struct dirent` at use sites, matching real C usage.
+;;;; DIR has a real C typedef, so it is referenced bare.
+
+(DEFMACRO init-macro ()
+  `($$$
+     ;;; ---- types ----
+     (decl) (struct DIR)  ; opaque
+
+     (decl) (struct dirent
+              (member ino_t  d_ino)
+              (member off_t  d_off)
+              (member ushort d_reclen)
+              (member uchar  d_type)
+              (member char d_name [256]))
+
+     ;;; ---- constants: d_type values ----
+     (typedef int DT_UNKNOWN)
+     (typedef int DT_FIFO)
+     (typedef int DT_CHR)
+     (typedef int DT_DIR)
+     (typedef int DT_BLK)
+     (typedef int DT_REG)
+     (typedef int DT_LNK)
+     (typedef int DT_SOCK)
+
+     ;;; ---- directory stream operations ----
+     (decl) (func opendir   ((const char * name)) (out DIR *))
+     (decl) (func fdopendir ((int fd)) (out DIR *))
+     (decl) (func readdir   ((DIR * dirp)) (out dirent *))
+     (decl) (func readdir_r ((DIR * restrict dirp) (dirent * restrict entry) (dirent ** restrict result)) (out int)) ; POSIX, deprecated
+     (decl) (func closedir  ((DIR * dirp)) (out int))
+     (decl) (func rewinddir ((DIR * dirp)))
+     (decl) (func seekdir   ((DIR * dirp) (long loc)))
+     (decl) (func telldir   ((DIR * dirp)) (out long))
+     (decl) (func dirfd     ((DIR * dirp)) (out int))
+
+     ;;; ---- directory scanning ----
+     (decl) (func scandir ((const char * dirp) (dirent *** namelist)
+                            (func filter ((const dirent * d)) (out int))
+                            (func compar ((const dirent ** a) (const dirent ** b)) (out int)))
+                           (out int))
+     (decl) (func alphasort ((const dirent ** a) (const dirent ** b)) (out int))
+     ))

@@ -1,0 +1,42 @@
+;;;; Cicili declarations for <fenv.h>
+;;;; Import from lib/std/prelude.lisp:  (import "./c/fenv.lisp")
+;;;; Requires in target: (include <fenv.h>)  or  (:std #t)
+
+(DEFMACRO init-macro ()
+  `($$$
+     ;;; ---- types ----
+     (decl) (struct fenv_t)
+     (decl) (struct fexcept_t)
+     (typedef fenv_t * FE_DFL_ENV)
+
+     ;;; ---- constants: floating-point exceptions ----
+     (typedef int FE_DIVBYZERO)
+     (typedef int FE_INEXACT)
+     (typedef int FE_INVALID)
+     (typedef int FE_OVERFLOW)
+     (typedef int FE_UNDERFLOW)
+     (typedef int FE_ALL_EXCEPT)
+
+     ;;; ---- constants: rounding directions ----
+     (typedef int FE_DOWNWARD)
+     (typedef int FE_TONEAREST)
+     (typedef int FE_TOWARDZERO)
+     (typedef int FE_UPWARD)
+
+     ;;; ---- floating-point exceptions ----
+     (decl) (func feclearexcept   ((int excepts)) (out int))
+     (decl) (func fegetexceptflag ((fexcept_t * flagp) (int excepts)) (out int))
+     (decl) (func feraiseexcept   ((int excepts)) (out int))
+     (decl) (func fesetexceptflag ((const fexcept_t * flagp) (int excepts)) (out int))
+     (decl) (func fetestexcept    ((int excepts)) (out int))
+
+     ;;; ---- rounding ----
+     (decl) (func fegetround () (out int))
+     (decl) (func fesetround ((int round)) (out int))
+
+     ;;; ---- environment ----
+     (decl) (func fegetenv    ((fenv_t * envp)) (out int))
+     (decl) (func feholdexcept ((fenv_t * envp)) (out int))
+     (decl) (func fesetenv    ((const fenv_t * envp)) (out int))
+     (decl) (func feupdateenv ((const fenv_t * envp)) (out int))
+     ))

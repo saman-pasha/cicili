@@ -1,0 +1,161 @@
+;;;; Cicili declarations for <sys/socket.h>, <netinet/in.h> and <arpa/inet.h>
+;;;; Import from lib/std/prelude.lisp:  (import "./c/posix/socket.lisp")
+;;;; Requires in target: (include <sys/socket.h>) (include <netinet/in.h>)
+;;;;                      (include <arpa/inet.h>)  or  (:std #t)
+;;;;
+;;;; size_t is declared by stddef.lisp and ssize_t is declared by
+;;;; posix/sys-types.lisp; both are only used (not repeated) here.
+;;;; `struct sockaddr`, `struct sockaddr_in`, `struct sockaddr_in6`,
+;;;; `struct sockaddr_storage`, `struct in_addr`, `struct in6_addr`,
+;;;; `struct msghdr`, `struct iovec` and `struct linger` have no C typedef,
+;;;; so they are referenced as `struct X` at use sites, matching real C usage.
+
+(DEFMACRO init-macro ()
+  `($$$
+     ;;; ---- sys/socket.h: types ----
+     (typedef uint   socklen_t)
+     (typedef ushort sa_family_t)
+
+     ;;; ---- sys/socket.h: structs ----
+     (decl) (struct sockaddr
+              (member sa_family_t sa_family)
+              (member char sa_data [14]))
+
+     (decl) (struct sockaddr_storage
+              (member sa_family_t ss_family))
+
+     (decl) (struct iovec
+              (member void * iov_base)
+              (member size_t iov_len))
+
+     (decl) (struct msghdr
+              (member void *   msg_name)
+              (member socklen_t msg_namelen)
+              (member iovec * msg_iov)
+              (member size_t   msg_iovlen)
+              (member void *   msg_control)
+              (member size_t   msg_controllen)
+              (member int      msg_flags))
+
+     (decl) (struct linger
+              (member int l_onoff)
+              (member int l_linger))
+
+     ;;; ---- sys/socket.h: address family / protocol family constants ----
+     (typedef int AF_UNSPEC)
+     (typedef int AF_INET)
+     (typedef int AF_INET6)
+     (typedef int AF_UNIX)
+     (typedef int PF_INET)
+     (typedef int PF_INET6)
+     (typedef int PF_UNIX)
+
+     ;;; ---- sys/socket.h: socket type constants ----
+     (typedef int SOCK_STREAM)
+     (typedef int SOCK_DGRAM)
+     (typedef int SOCK_RAW)
+     (typedef int SOCK_SEQPACKET)
+
+     ;;; ---- sys/socket.h: socket option level / names ----
+     (typedef int SOL_SOCKET)
+     (typedef int SO_REUSEADDR)
+     (typedef int SO_REUSEPORT)
+     (typedef int SO_KEEPALIVE)
+     (typedef int SO_BROADCAST)
+     (typedef int SO_LINGER)
+     (typedef int SO_SNDBUF)
+     (typedef int SO_RCVBUF)
+     (typedef int SO_SNDTIMEO)
+     (typedef int SO_RCVTIMEO)
+     (typedef int SO_ERROR)
+     (typedef int SO_TYPE)
+
+     ;;; ---- sys/socket.h: recv()/send() flags ----
+     (typedef int MSG_PEEK)
+     (typedef int MSG_OOB)
+     (typedef int MSG_WAITALL)
+     (typedef int MSG_DONTWAIT)
+     (typedef int MSG_NOSIGNAL)
+
+     ;;; ---- sys/socket.h: shutdown() how ----
+     (typedef int SHUT_RD)
+     (typedef int SHUT_WR)
+     (typedef int SHUT_RDWR)
+
+     ;;; ---- sys/socket.h: listen() backlog ----
+     (typedef int SOMAXCONN)
+
+     ;;; ---- sys/socket.h: functions ----
+     (decl) (func socket     ((int domain) (int type) (int protocol)) (out int))
+     (decl) (func socketpair ((int domain) (int type) (int protocol) (int * sv)) (out int))
+     (decl) (func bind       ((int sockfd) (const sockaddr * addr) (socklen_t addrlen)) (out int))
+     (decl) (func listen     ((int sockfd) (int backlog)) (out int))
+     (decl) (func accept     ((int sockfd) (sockaddr * restrict addr) (socklen_t * restrict addrlen)) (out int))
+     (decl) (func connect    ((int sockfd) (const sockaddr * addr) (socklen_t addrlen)) (out int))
+     (decl) (func send       ((int sockfd) (const void * buf) (size_t len) (int flags)) (out ssize_t))
+     (decl) (func recv       ((int sockfd) (void * buf) (size_t len) (int flags)) (out ssize_t))
+     (decl) (func sendto     ((int sockfd) (const void * buf) (size_t len) (int flags) (const sockaddr * dest_addr) (socklen_t addrlen)) (out ssize_t))
+     (decl) (func recvfrom   ((int sockfd) (void * restrict buf) (size_t len) (int flags) (sockaddr * restrict src_addr) (socklen_t * restrict addrlen)) (out ssize_t))
+     (decl) (func sendmsg    ((int sockfd) (const msghdr * msg) (int flags)) (out ssize_t))
+     (decl) (func recvmsg    ((int sockfd) (msghdr * msg) (int flags)) (out ssize_t))
+     (decl) (func shutdown   ((int sockfd) (int how)) (out int))
+     (decl) (func getsockopt ((int sockfd) (int level) (int optname) (void * restrict optval) (socklen_t * restrict optlen)) (out int))
+     (decl) (func setsockopt ((int sockfd) (int level) (int optname) (const void * optval) (socklen_t optlen)) (out int))
+     (decl) (func getsockname ((int sockfd) (sockaddr * restrict addr) (socklen_t * restrict addrlen)) (out int))
+     (decl) (func getpeername ((int sockfd) (sockaddr * restrict addr) (socklen_t * restrict addrlen)) (out int))
+
+     ;;; ---- netinet/in.h: types ----
+     (typedef uint   in_addr_t)
+     (typedef ushort in_port_t)
+
+     ;;; ---- netinet/in.h: structs ----
+     (decl) (struct in_addr
+              (member in_addr_t s_addr))
+
+     (decl) (struct sockaddr_in
+              (member sa_family_t sin_family)
+              (member in_port_t   sin_port)
+              (member in_addr sin_addr)
+              (member char sin_zero [8]))
+
+     (decl) (struct in6_addr
+              (member uchar s6_addr [16]))
+
+     (decl) (struct sockaddr_in6
+              (member sa_family_t sin6_family)
+              (member in_port_t   sin6_port)
+              (member uint        sin6_flowinfo)
+              (member in6_addr sin6_addr)
+              (member uint        sin6_scope_id))
+
+     ;;; ---- netinet/in.h: protocol constants ----
+     (typedef int IPPROTO_IP)
+     (typedef int IPPROTO_TCP)
+     (typedef int IPPROTO_UDP)
+     (typedef int IPPROTO_ICMP)
+     (typedef int IPPROTO_IPV6)
+
+     ;;; ---- netinet/tcp.h: socket option (grouped here, small header) ----
+     (typedef int TCP_NODELAY)
+
+     ;;; ---- netinet/in.h: well-known addresses ----
+     (typedef in_addr_t INADDR_ANY)
+     (typedef in_addr_t INADDR_LOOPBACK)
+     (typedef in_addr_t INADDR_BROADCAST)
+
+     ;;; ---- netinet/in.h / arpa/inet.h: presentation buffer sizes ----
+     (typedef int INET_ADDRSTRLEN)
+     (typedef int INET6_ADDRSTRLEN)
+
+     ;;; ---- netinet/in.h: byte order functions ----
+     (decl) (func htons ((ushort hostshort)) (out ushort))
+     (decl) (func htonl ((uint hostlong)) (out uint))
+     (decl) (func ntohs ((ushort netshort)) (out ushort))
+     (decl) (func ntohl ((uint netlong)) (out uint))
+
+     ;;; ---- arpa/inet.h: address conversion functions ----
+     (decl) (func inet_addr ((const char * cp)) (out in_addr_t))
+     (decl) (func inet_ntoa ((in_addr in)) (out char *))
+     (decl) (func inet_pton ((int af) (const char * restrict src) (void * restrict dst)) (out int))
+     (decl) (func inet_ntop ((int af) (const void * restrict src) (char * restrict dst) (socklen_t size)) (out char *))
+     ))

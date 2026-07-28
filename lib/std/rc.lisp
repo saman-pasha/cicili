@@ -12,7 +12,7 @@
         (syslog! (printf "FREE RC CTX: %p\n" (-> ctx ptr)))
         (when (and (-> ctx ptr)
                    (-> ctx count))
-          (syslog! (printf "FREE RC COUNT: %zu\n" (cof (-> ctx count))))
+          (syslog! (printf "FREE RC CTX COUNT: %zu\n" (cof (-> ctx count))))
           (if (== (cof (-> ctx count)) 1)
               (block
                 ((<> free a) (-> ctx ptr))
@@ -25,6 +25,21 @@
         ((<> free rc a context) (cof ctx)))
 
   (decl-cell (<> rc a context))
+
+  ;; (typedef (<> cell rc a context) (<> rc a))
+  ;; ;; super type declaration to use in 'type-check
+  ;; (guard __RC_TYPE_H_
+  ;;   (decl) (struct (<> std rc)))
+  ;; (typedef (<> std rc) (<> rc a type_t))
+
+  ;; (inline)
+  ;; (func (<> free rc a) (((<> rc a) * rc))
+  ;;       (syslog! (printf "FREE RC: %p\n" (-> rc ptr)))
+  ;;       ((<> free rc a context) (-> rc ptr)))
+
+  ;; (inline)
+  ;; (func (<> free rc a pointer) (((<> rc a) ** rc))
+  ;;       ((<> free rc a) (cof rc)))
 
   ) ; decl-rc
 
@@ -49,7 +64,7 @@
 
 (DEFMACRO free^rc (rc)
   (LET ((rc rc)
-        (full-type (NTH-VALUE 1 (CICILI:TYPE-CHECK rc :TYPEOF :std^cell :MODIFIER :ref))))
+        (full-type (NTH-VALUE 1 (CICILI:TYPE-CHECK rc :TYPEOF '(std^cell std^rc) :MODIFIER :ref))))
     `((<> free ,(NTH 1 full-type) context) ,rc)))
 
 
@@ -59,7 +74,7 @@
 
 (DEFMACRO clone^rc (rc)
   (LET* ((rc rc)
-         (types (MULTIPLE-VALUE-LIST (CICILI:TYPE-CHECK rc :CONST NIL :TYPEOF :std^cell :MODIFIER :move)))
+         (types (MULTIPLE-VALUE-LIST (CICILI:TYPE-CHECK rc :CONST NIL :TYPEOF '(std^cell std^rc) :MODIFIER :move)))
          (a (CICILI:INFER-TYPE `(<> ,(NTH 1 (NTH 1 types)) interior_t)))
          (rc-name (GENSYM "tmp_rc"))
          (new-rc-name (GENSYM "tmp_rc")))
@@ -80,7 +95,7 @@
 
 (DEFMACRO let^rc ((obj rc &REST captures) &REST body)
   (LET* ((obj obj)
-         (types (MULTIPLE-VALUE-LIST (CICILI:TYPE-CHECK rc :TYPEOF :std^cell :MODIFIER :move)))
+         (types (MULTIPLE-VALUE-LIST (CICILI:TYPE-CHECK rc :TYPEOF '(std^cell std^rc) :MODIFIER :move)))
          (a `(<> ,(NTH 1 (NTH 1 types)) interior_t)))
     `(let^cell ((<> ,obj ,a) ,rc) ,@captures
                (let ((auto ,obj . (FUNCTION (-> (<> ,obj ,a) ptr)))) ; (<> ,obj ,a) is rc^context
@@ -89,7 +104,7 @@
 
 (DEFMACRO letn^rc ((obj rc default &REST captures) &REST body)
   (LET* ((obj obj)
-         (types (MULTIPLE-VALUE-LIST (CICILI:TYPE-CHECK rc :TYPEOF :std^cell :MODIFIER :move)))
+         (types (MULTIPLE-VALUE-LIST (CICILI:TYPE-CHECK rc :TYPEOF '(std^cell std^rc) :MODIFIER :move)))
          (a `(<> ,(NTH 1 (NTH 1 types)) interior_t)))
     `(letn^cell ((<> ,obj ,a) ,rc ,default) ,@captures
                 (letn ((auto ,obj . (FUNCTION (-> (<> ,obj ,a) ptr)))) ; (<> ,obj ,a) is rc^context
@@ -98,7 +113,7 @@
 
 (DEFMACRO take^rc ((obj rc &REST captures) &REST body)
   (LET* ((obj obj)
-         (types (MULTIPLE-VALUE-LIST (CICILI:TYPE-CHECK rc :TYPEOF :std^cell :MODIFIER :move)))
+         (types (MULTIPLE-VALUE-LIST (CICILI:TYPE-CHECK rc :TYPEOF '(std^cell std^rc) :MODIFIER :move)))
          (a `(<> ,(NTH 1 (NTH 1 types)) interior_t)))
     `(take^cell ((<> ,obj ,a) ,rc) ,@captures
                 (when (and ($ (<> ,obj ,a) ptr)
@@ -110,7 +125,7 @@
 
 (DEFMACRO taken^rc ((obj rc default &REST captures) &REST body)
   (LET* ((obj obj)
-         (types (MULTIPLE-VALUE-LIST (CICILI:TYPE-CHECK rc :TYPEOF :std^cell :MODIFIER :move)))
+         (types (MULTIPLE-VALUE-LIST (CICILI:TYPE-CHECK rc :TYPEOF '(std^cell std^rc) :MODIFIER :move)))
          (a `(<> ,(NTH 1 (NTH 1 types)) interior_t)))
     `(taken^cell ((<> ,obj ,a) ,rc ,default) ,@captures
                  (? (and ($ (<> ,obj ,a) ptr)

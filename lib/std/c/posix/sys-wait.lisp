@@ -1,0 +1,41 @@
+;;;; Cicili declarations for <sys/wait.h>
+;;;; Import from lib/std/prelude.lisp:  (import "./c/posix/sys-wait.lisp")
+;;;; Requires in target: (include <sys/wait.h>)  or  (:std #t)
+;;;;
+;;;; pid_t and id_t are declared by sys-types.lisp and are only used
+;;;; (not repeated) here.
+
+(DEFMACRO init-macro ()
+  `($$$
+     ;;; ---- types ----
+     (typedef int idtype_t)
+     (decl) (struct siginfo_t)  ; opaque; siginfo_t has a real C typedef, referenced bare
+
+     ;;; ---- constants: waitpid()/waitid() options ----
+     (typedef int WNOHANG)
+     (typedef int WUNTRACED)
+     (typedef int WCONTINUED)
+     (typedef int WEXITED)
+     (typedef int WSTOPPED)
+     (typedef int WNOWAIT)
+
+     ;;; ---- constants: waitid() idtype ----
+     (typedef idtype_t P_ALL)
+     (typedef idtype_t P_PID)
+     (typedef idtype_t P_PGID)
+
+     ;;; ---- functions ----
+     (decl) (func wait    ((int * stat_loc)) (out pid_t))
+     (decl) (func waitpid ((pid_t pid) (int * stat_loc) (int options)) (out pid_t))
+     (decl) (func waitid  ((idtype_t idtype) (id_t id) (siginfo_t * infop) (int options)) (out int))
+
+     ;;; ---- status inspection (really C macros) ----
+     (decl) (func WIFEXITED   ((int status)) (out int))  ; really a macro
+     (decl) (func WEXITSTATUS ((int status)) (out int))  ; really a macro
+     (decl) (func WIFSIGNALED ((int status)) (out int))  ; really a macro
+     (decl) (func WTERMSIG    ((int status)) (out int))  ; really a macro
+     (decl) (func WIFSTOPPED  ((int status)) (out int))  ; really a macro
+     (decl) (func WSTOPSIG    ((int status)) (out int))  ; really a macro
+     (decl) (func WIFCONTINUED ((int status)) (out int)) ; really a macro
+     (decl) (func WCOREDUMP   ((int status)) (out int))  ; really a macro; GNU/BSD extension
+     ))

@@ -1,12 +1,45 @@
+;;;; Cicili std prelude
+
+;;; C standard library and POSIX declarations for type inference.
+;;; These carry FILE, the standard streams, malloc/calloc/free, memcpy/memset,
+;;; printf/fprintf and the rest of C17 + POSIX. Nothing in them emits C --
+;;; see ./c/README.md. They must be imported before the std modules below,
+;;; which use malloc/free/memcpy at specification time.
+(import "./c/c.lisp")
+(import "./c/posix.lisp")
+
 (import "./array.lisp")
-(import "./vector.lisp")
 (import "./cell.lisp")
 (import "./rc.lisp")
+(import "./vector.lisp")
 
 
 (DEFMACRO init-macro ()
   `($$$
-     ;; imports-...
-    (decl) (func printf ((const char * fmt) ($$$ args)) (out size_t))
-     )
+     ;; Cicili primitive types
+     (decl) (struct char)
+     (decl) (struct uchar)
+     (decl) (struct short)
+     (decl) (struct ushort)
+     (decl) (struct int)
+     (decl) (struct uint)
+     (decl) (struct long)
+     (decl) (struct ulong)
+     (decl) (struct llong)
+     (decl) (struct ullong)
+     (decl) (struct i8)
+     (decl) (struct u8)
+     (decl) (struct i16)
+     (decl) (struct u16)
+     (decl) (struct i32)
+     (decl) (struct u32)
+     (decl) (struct i64)
+     (decl) (struct u64)
+     (decl) (struct i128)
+     (decl) (struct u128)
+     (decl) (struct float)
+     (decl) (struct double)
+     (decl) (struct real)
+     (decl) (struct auto)
+    )
   ) ; init-macro

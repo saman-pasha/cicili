@@ -26,10 +26,6 @@
   (func (<> free cell a pointer) (((<> cell a) ** cell))        
         ((<> free cell a) (cof cell)))
 
-  (inline)
-  (func (<> force free a) ((a * obj))
-        ((<> free a) obj))
-
   ;; interior guard
   (DEFMACRO (<> free a) (obj)
     (ERROR (FORMAT NIL "shouldn't free an object where ordered to be used inside Cell: ~A" (symbol-name a))))
