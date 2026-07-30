@@ -1,0 +1,87 @@
+;;;; Cicili std maybe
+;;; presence of a value at the return of a function
+;;;
+;;; The lower case `maybe' / `just' / `nothing' are the std, struct-based
+;;; version. They coexist with the Haskell layer's ADT `Maybe' / `Just' /
+;;; `Nothing' -- case is what tells them apart, so both can be in scope and
+;;; `match' can dispatch on either.
+;;;
+;;; A function that may or may not have an answer returns (<> maybe a) instead
+;;; of a bare `a' plus a sentinel, so "is there a value" cannot be forgotten:
+;;;
+;;;   (func (<> find array a) ((a needle) ((<> array a) ref array))
+;;;         (out (<> maybe size_t))
+;;;         (for ((size_t i . 0)) (< i (-> array len)) ((1+ i))
+;;;           (when (== (nth i (-> array arr)) needle)
+;;;             (return ((<> just maybe size_t) i))))
+;;;         (return ((<> nothing maybe size_t))))
+;;;
+;;; Unlike a sentinel return, `present' is independent of the payload, so zero
+;;; and NULL are perfectly good values.
+;;;
+;;; maybe is a plain value carrier: it owns nothing and has no destructor. Keep
+;;; the payload copyable -- for an owned resource carry a (<> cell T) or a
+;;; pointer, not the resource itself, or the copy in `value' and the original
+;;; will both be freed.
+;;;
+;;; The constructors carry (inline), which emits __attribute__((weak)) so one
+;;; definition serves every translation unit -- but a weak symbol is replaceable
+;;; at link time, so gcc will not inline it. In a hot loop build the struct
+;;; directly instead, (cast (<> maybe a) '{ #t v }) / '{ #f (cast a '{ 0 }) },
+;;; the way (<> nth array a) does; the member order is present then value.
+;;;
+;;; `present' and `value' are the representation, not the interface. Open a
+;;; maybe with `match', which infers the type and expands to a bare `if':
+;;;
+;;;   (match ((<> find array int) 7 (aof arr))
+;;;     (just    at (printf "7 is at %zu\n" at))
+;;;     (nothing    (printf "not there\n")))
+;;;
+;;;   (printf "index: %zu\n"
+;;;     (matchn ((<> find array int) 7 (aof arr))
+;;;       (just    at at)
+;;;       (nothing    0)))
+
+(generic decl-maybe
+  (a)
+
+  (struct (<> maybe a)
+          (member bool present)
+          (member a value))
+
+  (typedef a (<> maybe a interior_t))
+
+  ;; super type declaration to use in 'type-check and 'match dispatch
+  (guard __MAYBE_TYPE_H_
+    (decl) (struct (<> std maybe)))
+  (typedef (<> std maybe) (<> maybe a type_t))
+
+  ;; teaches 'match how to take a maybe apart; keyed on the opaque super type,
+  ;; so it is the same registration whatever `a' is. emits nothing.
+  (def-matchable std^maybe
+    (just    ($ % present)       ($ % value))
+    (nothing (not ($ % present)) NIL))
+
+  (decl) (func (<> just    maybe a) ((a value)) (out (<> maybe a)))
+  (decl) (func (<> nothing maybe a) ()          (out (<> maybe a)))
+
+  ) ; decl-maybe
+
+
+(generic impl-maybe
+  (a)
+
+  ;; positional init: present first, then the payload, in struct order
+  (inline)
+  (func (<> just maybe a) ((a value))
+        (out (<> maybe a))
+        (return (cast (<> maybe a) '{ #t value })))
+
+  ;; nothing still carries a well defined payload -- the zero of its type -- so
+  ;; reading `value' without checking is wrong but never undefined
+  (inline)
+  (func (<> nothing maybe a) ()
+        (out (<> maybe a))
+        (return (cast (<> maybe a) '{ #f (cast a '{ 0 }) })))
+
+  ) ; impl-maybe

@@ -40,7 +40,8 @@
             ;; in call: ('(lambda* (<> nth array_int G145) ...
             (for ((int i . 0)) (< i N) ((++ i))
                  ;; (+= sum ((<> nth array) (% i 50) v :unchecked T)))
-                 (+= sum ((<> nth array) (% i 50) v :default 0)))
+                 (match ((<> nth array) (% i 50) v)
+                   (just val (+= sum val))))
             
             (let ((llong elapsed . #'(- (ms_now) t0)))
               (printf "  (nth checksum: %lld)\n" sum)  ; after timer — forces liveness
@@ -88,8 +89,8 @@
               (arr02 (new array iarr 2))
               ) ; decls
 
-        (printf "arr01 len: %zu\n" (len^array arr01))
-        (printf "arr02 len: %zu\n" (len^array arr02))
+        ;; (printf "arr01 len: %zu\n" (len^array arr01))       ; by access move
+        (printf "arr02 len: %zu\n" (len^array (aof arr02))) ; by ref
 
         (a_func_referenced_array (aof arr02))
         (a_func_referenced_array (aof arr02))
@@ -105,10 +106,24 @@
              (printf "%d" (nth^array i arr01 :unchecked T)))
         (putchar #\Newline)
 
-        ;; with default arr01 is consumed by nth
+        ;; with default arr01 is consumed by nth.
+        ;; i deliberately runs two past the end, so the last two are 'nothing.
+        ;; 'match is the statement form and may be partial, but here both cases
+        ;; are listed to show the out of range answer.
         (printf "print int array using Safe nth: ")
         (for ((size_t i . 0)) (< i 7) ((++ i))
-             (printf "%d" (nth^array i arr01 :default 0)))
+             (match (nth^array i arr01)
+               (just val (printf "%d" val))
+               (nothing  (printf "-"))))
+        (putchar #\Newline)
+
+        ;; 'matchn is the expression form, so it has to cover every case or
+        ;; carry a default -- 'match/'matchn read the type, nothing is declared
+        (printf "the same run through matchn:    ")
+        (for ((size_t i . 0)) (< i 7) ((++ i))
+             (printf "%d" (matchn (nth^array i arr01)
+                            (just val val)
+                            (nothing  0))))
         (putchar #\Newline)
         
         (let ((i64 sum . 0))
@@ -150,26 +165,33 @@
 ;; ./test/std/arr_test
 
 ;; sizeof array_int: 16
-;; NEW ARR: array_int 0x600002c011e0 5
-;; NEW ARR: array_int 0x600002e04040 2
-;; arr01 len: 5
+;; NEW ARR: array_int 0x6000000a11e0 5
+;; NEW ARR: array_int 0x6000002a4040 2
 ;; arr02 len: 2
 ;; length of referenced array 2
 ;; length of referenced array 2
 ;; length of moved array 2
-;; FREE ARR: 0x600002e04040
+;; FREE ARR: 0x6000002a4040
 ;; print int array using Unsafe nth: 12345
-;; print int array using Safe nth: 1234500
+;; print int array using Safe nth: 12345--
+;; the same run through matchn:    1234500
 ;; letn sum1: 3000000000
 ;; take sum2: 6000000000
-;; FREE ARR: 0x600002c011e0
+;; FREE ARR: 0x6000000a11e0
 ;; FREE ARR: 0x0
 ;; FREE ARR: 0x0
-;; NEW ARR: array_int 0x600001700000 50
+;; NEW ARR: array_int 0x600003ba0000 50
 ;;   (nth checksum: 24500000000)
-;; FREE ARR: 0x600001700000
-;;   nth (bounds-checked) 1000000000 times: 419 ms
+;; FREE ARR: 0x600003ba0000
+;;   nth (bounds-checked) 1000000000 times: 411 ms
 
 ;; (nth) bench result:
-;; Cicili 413 416 417 417 419
+;; Cicili 422 419 417 410 411
 ;; Rust   439 435 437 439 436
+
+;; after nth moved from an inline struct '{ p v } to (<> maybe a),
+;; built with clang -O3 -ffast-math:
+;; Cicili 430 431 428 428 432
+;; Building the maybe through (<> just maybe int) instead of by cast costs 1692 ms
+;; -- (inline) emits __attribute__((weak)), which the compiler is not allowed
+;; to inline.

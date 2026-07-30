@@ -1,14 +1,28 @@
 (in-package :cicili)
 
+;; Peel a type down to the bare name used as the "<member>/<type>" symbol-table
+;; key. A type reaches here in several shapes:
+;;   Mixed                          a plain symbol, already the name
+;;                                  inline struct behind a multi-value return
+;;                                  arrives
+;; Anything else -- a specifier in particular -- is handed back untouched for the
+;; caller to resolve further.
+(defun peel-type-tag< (ty)
+  (loop while (and ty (listp ty) (not (typep ty 'sp))) do
+    (setq ty (if (and (cdr ty) (symbolp (car ty))
+                      (or (key-eq (car ty) '|struct|) (key-eq (car ty) '|union|)))
+                 (cadr ty)
+                 (car ty))))
+  ty)
+
 ;; deeply traverse spec tree to find lexeme id for a storage
 (defun deep-storageof (id &optional spec)
   (let ((spec (if spec spec (*gets* id))))
-    (format t "STORAGEOF REQUESTED: ~A~%" spec)
     (if spec
         (let ((const-val (construct spec)))
           (cond ((eql const-val '|@ATOM|)
                  (if (key-eq (name spec) '|@SYMBOL|)
-                     (deep-typeof(default spec))
+                     (*gets* (peel-type-tag< (default spec)))
                      spec))
                 ((eql const-val '|@VAR|)   spec)
                 ((eql const-val '|@PARAM|) spec)
@@ -18,9 +32,15 @@
                        ((eql (name spec) '*)
                         (let ((ty (deep-storageof id (default spec))))
                           (if ty
-                              (let* ((storage-id (intern (format nil "cof/~A" (name ty) (name spec))))
+                              ;; The key carries the type as well as the name. A
+                              ;; bare "cof/<name>" collided across every struct
+                              ;; with a member of that name -- (cof ($ cell ptr))
+                              ;; and (cof ($ ctx ptr)) came back as one storage,
+                              ;; so moving one reported the other as moved.
+                              (let* ((ty-type (peel-type-tag< (typeof ty)))
+                                     (storage-id (intern (format nil "cof/~A/~A" (name ty)
+                                                                 (if (typep ty-type 'sp) (name ty-type) ty-type))))
                                      (storage (*gets* storage-id)))
-                                (format t "COCOCOCOCOCOCOCOCOCOF1 ~A  ~A~%" (typeof ty) ty)
                                 (if storage
                                     storage
                                     (let* ((modifier (modifier ty))
@@ -39,26 +59,31 @@
                                            (new-storage (make-specifier (name ty) (construct ty) (const ty) (typeof ty)
                                                                         mod-val ptr-mod (array-def ty)
                                                                         (default ty) (attrs ty))))
-                                      (format t "COCOCOCOCOCOCOCOCOCOF2 ~A  ~A~%" (is-non-copy (typeof ty)) new-storage)
                                       (*puts* storage-id new-storage))))
                               nil)))
                        (t nil)))
                 ((or (eql const-val '|@$|) (eql const-val '|@->|))
                  (let ((struct (deep-storageof id (name spec))))
                    (when struct
-                     (format t "STRUCTTTT11 ~A   ~A~%" (typeof struct) struct)
-                     (let* ((storage-id (typeof struct))
+                     (let* ((ty (peel-type-tag< (typeof struct)))
+                            (storage-id (intern (format nil "~A/~A" (default spec) ty)))
                             (storage (*gets* storage-id)))
                        (if storage
                            storage
-                           (let ((end-type (if (typep (typeof struct) 'sp)
-                                               (deep-typeof "" (typeof struct))
-                                               (deep-typeof (typeof struct)))))
-                             (unless end-type (error "unknown struct type: ~A~%  accessed in: ~A~%" (typeof struct) spec))
-                             (format t "STRUCTTTT22 ~A~%" end-type)
-                             (setq storage-id (intern (format nil "~A/~A" (default spec) (typeof end-type))))
+                           (let ((end-type (if (typep ty 'sp)
+                                               (deep-typeof "" ty)
+                                               (deep-typeof ty))))
+                             (unless end-type (error "unknown struct type: ~A~%  accessed in: ~A~%" ty spec))
+                             (setq storage-id (intern (format nil "~A/~A" (default spec)
+                                                             (peel-type-tag< (typeof end-type)))))
                              (setq storage (*gets* storage-id))
-                             (format t "STRUCTTTT22 STORAGE ~A, ~A~%" storage-id storage)
+                             ;; If the member still is not in the table, say so.
+                             ;; Falling through to (construct nil) raised
+                             ;; "no applicable method for CONSTRUCT (NIL)", which
+                             ;; named neither the member nor the type.
+                             (unless storage
+                               (error "unknown member: ~A of type: ~A~%  accessed in: ~A~%"
+                                      (default spec) (typeof end-type) spec))
                              (let ((new-storage (make-specifier storage-id (construct storage) (const storage) (typeof storage)
                                                                 (modifier storage) (const-ptr storage) (array-def storage)
                                                                 (default storage) (attrs storage))))
@@ -78,7 +103,6 @@
   (let ((deep-res 
             (let* ((id (if (and (listp id) (key-eq (car id) '|struct|)) (cadr id) id))
                    (spec (if spec spec (*gets* id))))
-              (format t "TYPEOF REQUESTED: ~A~%" spec)
               (if spec
                   (let ((const-val (construct spec)))
                     (cond ((eql const-val '|@ATOM|) spec)
@@ -98,27 +122,10 @@
                           ((eql const-val '|@?|) (deep-typeof id (car (default spec))))
                           ((eql const-val '|@UNARY|)
                            (let ((ty (deep-storageof id spec)))
-                             (format t "UUUUUUUUNARYYYYYYYYYYY2 ~A~%" ty)                   
                              (if ty
                                  (cond ((eql (name spec) '&) ty)
-                                       ;; (let ((tmp-type-infer-time (prog1 *type-infer-time-var*
-                                       ;;                                  (setq *type-infer-time-var* t)))
-                                       ;;       (new_spec (specify-variable (let ((tmp-name (if (name ty) (name ty) (GENSYM "AOF"))))
-                                       ;;                                     (append (list '|var|)
-                                       ;;                                       (infer-type (list '|aof| tmp-name) :with-name tmp-name)))
-                                       ;;                   '())))
-                                       ;;   (setq *type-infer-time-var* tmp-type-infer-time)
-                                       ;;   (setf (is-moved new_spec) (is-moved ty))
                                        ;;   new_spec))
                                        ((eql (name spec) '*) ty)
-                                       ;; (let ((tmp-type-infer-time (prog1 *type-infer-time-var*
-                                       ;;                                  (setq *type-infer-time-var* t)))
-                                       ;;       (new_spec (specify-variable (let ((tmp-name (if (name ty) (name ty) (GENSYM "COF"))))
-                                       ;;                                     (append (list '|var|)
-                                       ;;                                       (infer-type (list '|cof| tmp-name) :with-name tmp-name)))
-                                       ;;                   '())))
-                                       ;;   (setq *type-infer-time-var* tmp-type-infer-time)
-                                       ;;   (setf (is-moved new_spec) (is-moved ty))
                                        ;;   new_spec))
                                        (t ty))
                                  nil)))
@@ -126,16 +133,17 @@
                           ((or (eql const-val '|@$|) (eql const-val '|@->|))
                            (let ((struct (deep-typeof id (name spec))))
                              (when struct
-                               (format t "STRUCTTTT1 ~A   ~A~%" spec struct)
                                (let ((end-type (deep-typeof (typeof struct))))
                                  (unless end-type (error "unknown struct type: ~A~%  accessed in: ~A~%" (typeof struct) spec))
-                                 (format t "STRUCTTTT2 ~A~%" end-type)
                                  (*gets* (intern (format nil "~A/~A"  (default spec) (typeof end-type))))))))
                           ((eql const-val '|@TYPEDEF|)
                            (deep-typeof (typeof spec))
                            ;; (combine-types (deep-typeof (typeof spec)) spec)
                            )
-                          ((eql const-val '|@STRUCT|) spec)
+                          ;; a union is an aggregate exactly like a struct here --
+                          ;; without the @UNION case ($ m i) on a union value fell
+                          ;; through to nil and raised "unknown struct type"
+                          ((or (eql const-val '|@STRUCT|) (eql const-val '|@UNION|)) spec)
                           ((eql const-val '|@CAST|) spec)
                           ((eql const-val '|@RETURN|) (deep-typeof id (default spec)))
                           ((eql const-val '|@TYPEOF|)
@@ -150,7 +158,8 @@
             (if (or (eql deep-res spec) (key-eq (typeof deep-res) (typeof spec)))
                 deep-res
                 (deep-typeof (typeof deep-res)))
-            (if (and deep-res (not (eql (construct deep-res) '|@STRUCT|)))
+            (if (and deep-res (not (or (eql (construct deep-res) '|@STRUCT|)
+                                       (eql (construct deep-res) '|@UNION|))))
                 (deep-typeof (typeof deep-res))
                 deep-res))
         deep-res)))
@@ -177,9 +186,68 @@
                           (make-specifier (nth 4 type) '|@VAR| (or (const base) (nth 0 type)) (typeof base)
                                           (combine-modifiers base type (modifier base) (nth 2 type))
                                           (nth 3 type) nil nil '()))))
-        (format t "TYPE COMBINATOIN: ~A ~A ~A~%" base type def-spec)
         def-spec)
       type))
+
+
+
+;;;; ---------------------------------------------------------------------
+;;;; Type ancestry
+;;;;
+;;;; 'type-root and 'type-origin are exported for use inside macros, so both
+;;;; take and return *names*, never 'sp objects.  Input may be a symbol
+;;;; written either way round -- array^int^item_t or array_int_item_t -- a
+;;;; (<> ...) form, a (struct X) / (union X) list, or an 'sp; output is
+;;;; always the underscore-joined symbol *symbols* is keyed by.
+;;;; ---------------------------------------------------------------------
+
+;; normalizes anything that denotes a type into the symbol *symbols* is keyed by
+;; never recurses into a nested 'sp, so it cannot loop on a cyclic spec tree
+(defun type-name< (ty)
+  (let ((ty (if (typep ty 'sp) ty (expand-macros ty))))
+    (cond ((null ty) nil)
+          ((typep ty 'sp)
+           (let* ((resolved (or (deep-typeof "" ty t) ty))
+                  (candidate (cond ((and (typeof resolved) (not (typep (typeof resolved) 'sp)))
+                                    (typeof resolved))
+                                   (t (name resolved)))))
+             (unless (typep candidate 'sp) (type-name< candidate))))
+          ((symbolp ty) (intern (substitute #\_ #\^ (symbol-name ty))))
+          ((listp ty)
+           (when (and (cdr ty) (or (key-eq (car ty) '|struct|) (key-eq (car ty) '|union|)))
+             (type-name< (cadr ty))))
+          (t nil))))
+
+;; walks the @TYPEDEF chain nearest first: the type asked about, then every
+;; typedef it resolves through, ending at the first non-typedef -- its origin
+;; a name that resolves to nothing still ends the walk as its own origin
+(defun type-chain< (ty)
+  (let ((name (type-name< ty))
+        (chain '())
+        (seen  (make-hash-table :test 'equal)))
+    (loop while name do
+      (if (gethash (symbol-name name) seen)
+          (setq name nil) ; typedef cycle
+          (progn
+            (setf (gethash (symbol-name name) seen) t)
+            (push name chain)
+            (let ((spec (*gets* name)))
+              (setq name (when (and spec (eql (construct spec) '|@TYPEDEF|))
+                           (type-name< (typeof spec))))))))
+    (nreverse chain)))
+
+;; every type name from the origin down to the specific type, origin first
+(defun type-root (ty)
+  (reverse (type-chain< ty)))
+
+;; the opaque super type declared by the nearest step of the chain carrying a
+;; `<name>^type_t' typedef, or NIL when no step declares one
+(defun type-origin (ty)
+  (dolist (step (type-chain< ty) nil)
+    (let ((marker (*gets* (intern (format nil "~A_type_t" (symbol-name step))))))
+      (when (and marker (eql (construct marker) '|@TYPEDEF|) (typeof marker))
+        (let ((origin (type-name< (typeof marker))))
+          (when origin (return (car (type-root origin)))))))))
 
 
 ;; (type inference) tries to infer from lexeme id or throw error
@@ -187,7 +255,6 @@
 ;; with :with-name presence but NIL: compiles with name of the spec
 ;; with :with-name presence non NIL: compiles with the specified name
 (defun infer-type-spec (id spec &key with-name copy-name)
-  (format t "INFER SPEC REQUESTED: ~A  ~A~%   WITH:~A~%" id spec with-name)
   (let* ((mod-val (modifier spec))
          (arr-val (if (array-def spec)
                       (cond
@@ -202,28 +269,31 @@
                     (t (const-ptr spec)))))
     (let ((full-type (if with-name
                          (if copy-name (list (const     spec)
-	                                         (if (and (typep (typeof spec) 'sp) (key-eq (construct (typeof spec)) '|@TYPEOF|))
-                                                 ;; (infer-type-spec id (deep-typeof id (typeof spec))
-                                                 ;;                  :with-name with-name :copy-name copy-name)
-                                                 (deep-typeof id (typeof spec))
+	                                         (if (and (typep (typeof spec) 'sp) (or (key-eq (construct (typeof spec)) '|@TYPEDEF|)
+                                                                                    (key-eq (construct (typeof spec)) '|@TYPEOF|)))
+                                                 (infer-type-spec id (deep-typeof id (typeof spec))
+                                                                  :with-name with-name :copy-name copy-name)
+                                                 ;; (deep-typeof id (typeof spec))
                                                  (typeof spec))
 	                                         (if arr-val arr-val mod-val)
                                              ptr-mod
 	                                         (name      spec))
                              (list (const     spec)
-	                               (if (and (typep (typeof spec) 'sp) (key-eq (construct (typeof spec)) '|@TYPEOF|))
-                                       ;; (infer-type-spec id (deep-typeof id (typeof spec))
-                                       ;;                  :with-name with-name :copy-name copy-name)
-                                       (deep-typeof id (typeof spec))
+	                               (if (and (typep (typeof spec) 'sp) (or (key-eq (construct (typeof spec)) '|@TYPEDEF|)
+                                                                          (key-eq (construct (typeof spec)) '|@TYPEOF|)))
+                                       (infer-type-spec id (deep-typeof id (typeof spec))
+                                                        :with-name with-name :copy-name copy-name)
+                                       ;; (deep-typeof id (typeof spec))
                                        (typeof spec))
 	                               (if arr-val arr-val mod-val)
                                    ptr-mod
 	                               with-name))
                          (list (const     spec)
-	                           (if (and (typep (typeof spec) 'sp) (key-eq (construct (typeof spec)) '|@TYPEOF|))
-                                   ;; (infer-type-spec id (deep-typeof id (typeof spec))
-                                   ;;                  :with-name with-name :copy-name copy-name)
-                                   (deep-typeof id (typeof spec))
+	                           (if (and (typep (typeof spec) 'sp) (or (key-eq (construct (typeof spec)) '|@TYPEDEF|)
+                                                                      (key-eq (construct (typeof spec)) '|@TYPEOF|)))
+                                   (infer-type-spec id (deep-typeof id (typeof spec))
+                                                    :with-name with-name :copy-name copy-name)
+                                   ;; (deep-typeof id (typeof spec))
                                    (typeof spec))
 	                           (if arr-val arr-val mod-val)
                                ptr-mod
@@ -232,21 +302,15 @@
 
 ;; type inference front-end, exported
 (defun infer-type (id &key with-name copy-name)
-  (format t "INFER REQUESTED: ~A    WITH:~A~%" id with-name)
   (let* ((id (expand-macros id))
          (spec (cond ((numberp id) (specify-expr id))
-                      ;; (return-from infer-type
-                      ;;                (values (list '|const| '|int| with-name)
-                      ;;                        (list '|const| '|int| NIL NIL with-name)))                      
                      ((stringp id) (specify-cast-expr (list '|cast| (list '|const| '|char| '[]) id)))
                      ((listp id) (let* ((clause (expand-macros id))
                                         (func (expand-macros (car clause))))
                                    (setq clause (expand-macros (append (list func) (cdr clause))))
                                    (setq func (expand-macros (car clause)))
-                                   (format t "TTTTT ~A   of    ~A~%" func clause)
                                    (cond ((key-eq func '|cast|)
                                           (let ((expr (specify-cast-expr clause)))
-                                            (format t "EEEEE ~A~%" expr)
                                             expr))
                                          ((and (listp func) (eql (car func) '|QUOTE|))
                                           (let ((func (cadr func)))
@@ -260,7 +324,6 @@
                                                                                          (setq *type-infer-time-lambda* t)))
                                                                   (lamb-spec (specify-function func '())))
                                                               (setq *type-infer-time-lambda* tmp-type-infer-time)
-                                                              (format t "GOUTOUTOUTOUT1 ~A~%" ret-val)
                                                               (return-from infer-type
                                                                 (infer-type-spec "" lamb-spec
                                                                                  :with-name with-name :copy-name copy-name)))
@@ -278,7 +341,6 @@
                                                                                              (setq *type-infer-time-lambda* t)))
                                                                       (lamb-spec (specify-function func '())))
                                                                   (setq *type-infer-time-lambda* tmp-type-infer-time)
-                                                                  (format t "GOUTOUTOUTOUT2 ~A~%" ret-val)
                                                                   (return-from infer-type
                                                                     (infer-type-spec "" lamb-spec
                                                                                      :with-name with-name :copy-name copy-name)))
@@ -292,7 +354,6 @@
                                                 (letn-spec (specify-let clause)))
                                             (setq *type-infer-time-lambda* tmp-type-infer-time)
                                             (*push* (name letn-spec))
-                                            (format t "RRRRR1 ~A~%" (expand-macros (car (last clause))))
                                             (let ((ty (multiple-value-list (infer-type (expand-macros (car (last clause)))
                                                                              :with-name with-name :copy-name copy-name))))
                                               (*pop* ty)
@@ -303,13 +364,11 @@
                                                 (progn-spec (specify-progn clause)))
                                             (setq *type-infer-time-lambda* tmp-type-infer-time)
                                             (*push* (name progn-spec))
-                                            (format t "RRRRR2 ~A~%" (expand-macros (car (last clause))))
                                             (let ((ty (multiple-value-list (infer-type (expand-macros (car (last clause)))
                                                                              :with-name with-name :copy-name copy-name))))
                                               (*pop* ty)
                                               (return-from infer-type (values-list ty)))))
                                          ((key-eq func '|aof|)
-                                          (format t "RRRRR3 ~A~%" (expand-macros (cadr clause)))
                                           (return-from infer-type
                                             (let ((ty (infer-type (expand-macros (cadr clause))
                                                         :with-name with-name :copy-name copy-name)))
@@ -325,7 +384,6 @@
                                                                     const-ptr variable array)))
                                                   (values (remove nil ty-def) ty-def))))))
                                          ((key-eq func '|cof|)
-                                          (format t "RRRRR4 ~A~%" (expand-macros (cadr clause)))
                                           (return-from infer-type
                                             (let ((ty (infer-type (expand-macros (cadr clause))
                                                         :with-name with-name :copy-name copy-name)))
@@ -345,7 +403,6 @@
                                                                   ((key-eq '|ref|  mod-val) nil)
                                                                   (t const-ptr)))
                                                        (ty-def (list const typeof mod-val ptr-mod variable)))
-                                                  (format t "RRRRR5 ~A~%" ty-def)
                                                   (values (remove nil ty-def) ty-def))))))
                                          ((and (= (length clause) 2) (find func *unaries* :test #'key-eq))
                                           (return-from infer-type (infer-type (cadr clause)
@@ -356,14 +413,11 @@
                                          ((key-eq func '->)
                                           (let ((struct (nth-value 1 (infer-type (cadr clause)
                                                                        :with-name with-name :copy-name copy-name))))
-                                            (format t "SSSSSS1 ~A~%" struct)
                                             (when struct
-                                              (format t "STRUCTTTT1II-> ~A  ~A~%" (typep (nth 1 struct) 'sp) struct)
                                               (let ((end-type (if (typep (nth 1 struct) 'sp)
                                                                   (deep-typeof id (nth 1 struct))
                                                                   (deep-typeof (nth 1 struct)))))
                                                 (unless end-type (error "unknown struct type: ~A~%  accessed in: ~A~%" struct clause))
-                                                (format t "STRUCTTTT2II-> ~A~%" end-type)
                                                 (return-from infer-type
                                                   (infer-type-spec
                                                       ""
@@ -371,14 +425,11 @@
                                          ((key-eq func '$)
                                           (let ((struct (nth-value 1 (infer-type (cadr clause)
                                                                        :with-name with-name :copy-name copy-name))))
-                                            (format t "SSSSSS2 ~A~%" struct)
                                             (when struct
-                                              (format t "STRUCTTTT1PII ~A~%" struct)
                                               (let ((end-type (if (typep (nth 1 struct) 'sp)
                                                                   (deep-typeof id (nth 1 struct))
                                                                   (deep-typeof (nth 1 struct)))))
                                                 (unless end-type (error "unknown struct type: ~A~%  accessed in: ~A~%" struct clause))
-                                                (format t "STRUCTTTT2PII ~A~%" end-type)
                                                 (return-from infer-type
                                                   (infer-type-spec
                                                       ""
@@ -396,7 +447,6 @@
                                                    (multiple-value-bind (const typeof modifier const-ptr variable array)
 		                                               (specify-type< clause)
                                                      (let ((ty-def (list const typeof modifier const-ptr variable array)))
-                                                       (format t "RRRRR6 ~A~%" ty-def)
                                                        (return-from infer-type (values (remove nil ty-def) ty-def)))))
                                                   (t ty))))
                                          ) ; cond
@@ -434,44 +484,41 @@
 (defun assign-check (spec left right)
   (let ((initializing (when (find (construct spec) '(|@VAR| |@PARAM| |@LET| |@LETN| |@FUNC|)) t))
         (left-type (deep-typeof "" left)))
-    (format t "CHECKLEFT ~A   ~A~%" initializing left-type)
     (if left-type
         (unless (or (and initializing (modifier left-type))
                     (and (modifier left-type) (not (key-eq (modifier left-type) '|move|))))
           (let ((left-origin (if (typep (typeof left-type) 'sp)
                                  (deep-typeof "" (typeof left-type))
                                  (deep-typeof (typeof left-type)))))
-            (when (and left-origin (or (null right) (not (key-eq (name right) '|LETNMOVECAST|)))
+            (when (and left-origin
+                       ;; (or (null right) (not (key-eq (name right) '|LETNMOVECAST|)))
                        (key-eq (construct left-origin) '|@STRUCT|) (find-attr left-origin '|non-copy|))
               (error (format nil "non-copy struct assignment for: ~A~%  by: ~A~%  inside: ~A~%" left right spec )))))
         (when right
           (let ((right-type (deep-typeof "" right)))
-            (format t "CHECKRIGHT ~A   ~A~%" initializing right-type)
             (when right-type
               (unless (or (and initializing (modifier left-type))
                           (and (modifier right-type) (not (key-eq (modifier right-type) '|move|))))
                 (let ((right-origin (if (typep (typeof right-type) 'sp)
                                  (deep-typeof "" (typeof right-type))
                                  (deep-typeof (typeof right-type)))))
-                  (when (and right-origin (not (key-eq (name right-origin) '|LETNMOVECAST|))
+                  (when (and right-origin
+                             ;; (not (key-eq (name right-origin) '|LETNMOVECAST|))
                              (key-eq (construct right-origin) '|@STRUCT|) (find-attr right-origin '|non-copy|))
                     (error (format nil "non-copy struct assignment for: ~A~%  by: ~A~%  inside: ~A~%" left right spec )))))))))))
 
 (defun move-var (spec inside)
   (let ((origin (deep-storageof "" spec))) ; check for moved vars
-    (format t "CCCCCCCCCCCCCCCCCCC1 ~A~%  SPECCCC ~A~%" origin spec)
     (if (and origin
-             (find (construct origin) '(|@VAR| |@PARAM|))
+             (find (construct origin) '(|@VAR| |@PARAM|) :test #'key-eq)
              (or (key-eq (modifier origin) '|move|)
                  (key-eq (modifier origin) '|ref|)))
         (progn
-          (format t "CCCCCCCCCCCCCCCCCCC2 ~A~%" (is-moved origin))
           (if (is-moved origin)
               (error (format nil "trying to move already moved var: ~A~%  in call: ~A~%  moved before here: ~A~%"
                              origin inside (is-moved origin)))
               (if (and (key-eq (modifier origin) '|move|) (is-inside-loop))
-                  (error (format nil "using 'move var: ~A~%  inside loop~%  in call: ~A"
-                                 origin inside))
+                  (error (format nil "using 'move var: ~A~%  inside loop~%  in call: ~A" origin inside))
                   (if (key-eq (modifier origin) '|move|)
                       (let* ((moved-name (GENSYM "moved_var"))
                              (moved-var (make-specifier moved-name '|@VAR| nil (typeof origin) nil nil nil spec '()))
@@ -497,9 +544,6 @@
 (defun type-check (value &key const typeof modifier const-ptr has-name with-name copy-name)
   (let ((value (expand-macros value)))
     (multiple-value-bind (desc-type full-type) (infer-type value :with-name with-name :copy-name copy-name)
-      (FORMAT T "TYPE-CHECK: ~A~%        , ~A~%"
-              (list value const typeof modifier const-ptr has-name with-name copy-name)
-              full-type)
       (when const
         (when (atom const) (setq const (list const)))
         (unless (find (nth 0 full-type) const :test #'key-eq)
@@ -512,12 +556,8 @@
         (when (atom typeof) (setq typeof (list typeof)))
         (setq typeof (loop for symb in typeof
                            collect (intern (substitute #\_ #\^ (symbol-name (expand-macros symb))))))
-        (let* ((cur-type (nth 1 full-type))
-               (origin (if (typep cur-type 'sp)
-                           (deep-typeof "" (*gets* `(<> ,(typeof (deep-typeof "" cur-type T)) |type_t|)))
-                           (deep-typeof "" (*gets* `(<> ,(typeof (*gets* cur-type)) |type_t|)) T))))
-          (format t "TTTTTTTTTTTTTTTTOF ~A~%" origin)
-          (unless (and origin (find (typeof origin) typeof :test #'key-eq))
+        (let ((origin (type-origin (nth 1 full-type))))
+          (unless (and origin (find origin typeof :test #'key-eq))
             (error (format nil "type-check: invalid type value: ~A~%  of: ~A~%  for: ~A" typeof full-type value)))))
       (when modifier
         (when (atom modifier) (setq modifier (list modifier)))
@@ -530,4 +570,5 @@
       (when has-name
         (unless (nth 4 full-type)
           (error (format nil "type-check: missing name of: ~A~%  for: ~A" full-type value))))
-      (values desc-type full-type))))
+      (let ((cur-type (nth 1 full-type)))
+        (values desc-type full-type (type-root cur-type) (type-origin cur-type))))))

@@ -7,6 +7,24 @@
           (member a * const ptr)
           (member size_t * count))
 
+  (decl) (func (<> free rc a context) (((<> rc a context) * ctx)))
+  (decl) (func (<> free rc a context pointer) (((<> rc a context) ** ctx)))
+
+  ;; an rc IS a cell over the context: free_cell_rc_<a>_context calls
+  ;; (<> free rc a context), declared just above
+  (decl-cell (<> rc a context))
+
+  ;; takes a reference to an rc cell, hands back a new one sharing the payload
+  (decl) (func (<> clone rc a context) (((<> cell rc a context) ref ctx_cell))
+               (out (<> cell rc a context)))
+
+  ) ; decl-rc
+
+(generic impl-rc
+  (a)
+
+  (impl-cell (<> rc a context))
+
   (inline)
   (func (<> free rc a context) (((<> rc a context) * ctx))
         (syslog! (printf "FREE RC CTX: %p\n" (-> ctx ptr)))
@@ -24,25 +42,29 @@
   (func (<> free rc a context pointer) (((<> rc a context) ** ctx))
         ((<> free rc a context) (cof ctx)))
 
-  (decl-cell (<> rc a context))
+  ;; A NEW cell holding a COPY of the context, with the shared count bumped.
+  ;; The context is copied rather than shared because free_cell frees the one it
+  ;; points at -- two cells on one context would double free it. The copies
+  ;; share `ptr' and `count', so the payload is freed once, when the last goes.
+  ;; A dead or empty rc clones to an empty cell rather than resurrecting it.
+  (func (<> clone rc a context) (((<> cell rc a context) ref ctx_cell))
+        (out (<> cell rc a context))
+        (if (and (-> ctx_cell ptr)
+                 (-> (-> ctx_cell ptr) ptr)
+                 (-> (-> ctx_cell ptr) count)
+                 (>= (cof (-> (-> ctx_cell ptr) count)) 1))
+            (return
+                (letn (((<> rc a context) * new_ctx .
+                        #'(malloc (sizeof (cof (-> ctx_cell ptr))))))
+                  (++ (cof (-> (-> ctx_cell ptr) count)))
+                  (memcpy new_ctx (-> ctx_cell ptr) (sizeof (cof (-> ctx_cell ptr))))
+                  (syslog! (printf "CLONE RC CTX: %p to %p, count %zu\n"
+                                   (-> ctx_cell ptr) new_ctx
+                                   (cof (-> (-> ctx_cell ptr) count))))
+                  (cast (<> cell rc a context) '{ new_ctx })))
+          (return (cast (<> cell rc a context) '{ nil }))))
 
-  ;; (typedef (<> cell rc a context) (<> rc a))
-  ;; ;; super type declaration to use in 'type-check
-  ;; (guard __RC_TYPE_H_
-  ;;   (decl) (struct (<> std rc)))
-  ;; (typedef (<> std rc) (<> rc a type_t))
-
-  ;; (inline)
-  ;; (func (<> free rc a) (((<> rc a) * rc))
-  ;;       (syslog! (printf "FREE RC: %p\n" (-> rc ptr)))
-  ;;       ((<> free rc a context) (-> rc ptr)))
-
-  ;; (inline)
-  ;; (func (<> free rc a pointer) (((<> rc a) ** rc))
-  ;;       ((<> free rc a) (cof rc)))
-
-  ) ; decl-rc
-
+  ) ; impl-rc
 
 (DEFMACRO new^rc^context (type &REST args)
   (LET* ((ctor `(<> new ,type))
@@ -51,7 +73,6 @@
          (ptr-name (GENSYM (FORMAT NIL "~A_ptr" (SYMBOL-NAME (CAR a)))))
          (obj-name (GENSYM (FORMAT NIL "~A_obj" (SYMBOL-NAME (CAR a)))))
          (count-name (GENSYM (FORMAT NIL "~A_count" (SYMBOL-NAME (CAR a))))))
-    (FORMAT T "NEW^RC^CONTEXT   ~A~%" a)
     (WHEN (> (LENGTH a) 1) (ERROR (FORMAT NIL "new rc context got invalid type ~A for ~A" a ctor)))
     `(letn ((,@a * ,ptr-name . (FUNCTION (malloc (sizeof ,@a))))
             (,@a move ,obj-name . (FUNCTION (,ctor ,@args)))
@@ -62,40 +83,39 @@
        (cast (<> rc ,@a context) '{ ,ptr-name ,count-name }))))
 
 
+;;; Freeing an rc is freeing its cell -- the cell's destructor walks down to the
+;;; context and drops the count.
 (DEFMACRO free^rc (rc)
   (LET ((rc rc)
-        (full-type (NTH-VALUE 1 (CICILI:TYPE-CHECK rc :TYPEOF '(std^cell std^rc) :MODIFIER :ref))))
-    `((<> free ,(NTH 1 full-type) context) ,rc)))
+        (full-type (NTH-VALUE 1 (CICILI:TYPE-CHECK rc :TYPEOF :std^cell :MODIFIER '(move ref)))))
+    (IF (CICILI:KEY-EQ (NTH 2 full-type) 'move)
+        `((<> free ,(NTH 1 full-type)) (aof ,rc))
+      `((<> free ,(NTH 1 full-type)) ,rc))))
 
 
 (DEFMACRO new^rc (type &REST args)
   `(new^cell rc^context ,type ,@args))
 
 
+;;; Nothing but a type inferrer: it works out which instantiation of the
+;;; generic (<> clone rc a context) the given cell belongs to and calls it.
+;;; The cell's own interior_t names the context, so
+;;;   cell<rc<array<int>>context> -> interior_t -> rc^array^int^context
+;;; and (<> clone rc^array^int^context) is the very name the generic emits
+;;; for a = array^int. An owned cell is passed by address, a ref cell as is.
 (DEFMACRO clone^rc (rc)
   (LET* ((rc rc)
-         (types (MULTIPLE-VALUE-LIST (CICILI:TYPE-CHECK rc :CONST NIL :TYPEOF '(std^cell std^rc) :MODIFIER :move)))
-         (a (CICILI:INFER-TYPE `(<> ,(NTH 1 (NTH 1 types)) interior_t)))
-         (rc-name (GENSYM "tmp_rc"))
-         (new-rc-name (GENSYM "tmp_rc")))
+         (full-type (NTH-VALUE 1 (CICILI:TYPE-CHECK rc :TYPEOF :std^cell :MODIFIER '(move ref))))
+         (a (CICILI:INFER-TYPE `(<> ,(NTH 1 full-type) interior_t))))
     (WHEN (> (LENGTH a) 1) (ERROR (FORMAT NIL "clone rc got invalid type ~A for ~A" a rc)))
-    `(letn ((,(NTH 0 (CAR types)) ref ,rc-name . (FUNCTION (aof ,rc)))
-            (auto def_value . (FUNCTION (cast (typeof (cof ,rc-name)) '{ 0 }))))
-       (letn^cell ((<> ctx ,@a) (cof ,rc-name) def_value)
-         (? (and (-> (<> ctx ,@a) ptr)
-                 (-> (<> ctx ,@a) count)
-                 (>= (cof (-> (<> ctx ,@a) count)) 1))
-           (progn
-             (++ (cof (-> (<> ctx ,@a) count)))
-             (letn ((,@a * ,new-rc-name . (FUNCTION (malloc (sizeof ,@a)))))
-               (memcpy ,new-rc-name (<> ctx ,@a) (sizeof ,@a))
-               (cast (<> cell ,@a) '{ ,new-rc-name })))
-           default_value)))))
+    (IF (CICILI:KEY-EQ (NTH 2 full-type) 'move)
+        `((<> clone ,@a) (aof ,rc))
+      `((<> clone ,@a) ,rc))))
 
 
 (DEFMACRO let^rc ((obj rc &REST captures) &REST body)
   (LET* ((obj obj)
-         (types (MULTIPLE-VALUE-LIST (CICILI:TYPE-CHECK rc :TYPEOF '(std^cell std^rc) :MODIFIER :move)))
+         (types (MULTIPLE-VALUE-LIST (CICILI:TYPE-CHECK rc :TYPEOF :std^cell :MODIFIER :move)))
          (a `(<> ,(NTH 1 (NTH 1 types)) interior_t)))
     `(let^cell ((<> ,obj ,a) ,rc) ,@captures
                (let ((auto ,obj . (FUNCTION (-> (<> ,obj ,a) ptr)))) ; (<> ,obj ,a) is rc^context
@@ -104,7 +124,7 @@
 
 (DEFMACRO letn^rc ((obj rc default &REST captures) &REST body)
   (LET* ((obj obj)
-         (types (MULTIPLE-VALUE-LIST (CICILI:TYPE-CHECK rc :TYPEOF '(std^cell std^rc) :MODIFIER :move)))
+         (types (MULTIPLE-VALUE-LIST (CICILI:TYPE-CHECK rc :TYPEOF :std^cell :MODIFIER :move)))
          (a `(<> ,(NTH 1 (NTH 1 types)) interior_t)))
     `(letn^cell ((<> ,obj ,a) ,rc ,default) ,@captures
                 (letn ((auto ,obj . (FUNCTION (-> (<> ,obj ,a) ptr)))) ; (<> ,obj ,a) is rc^context
@@ -113,7 +133,7 @@
 
 (DEFMACRO take^rc ((obj rc &REST captures) &REST body)
   (LET* ((obj obj)
-         (types (MULTIPLE-VALUE-LIST (CICILI:TYPE-CHECK rc :TYPEOF '(std^cell std^rc) :MODIFIER :move)))
+         (types (MULTIPLE-VALUE-LIST (CICILI:TYPE-CHECK rc :TYPEOF :std^cell :MODIFIER :move)))
          (a `(<> ,(NTH 1 (NTH 1 types)) interior_t)))
     `(take^cell ((<> ,obj ,a) ,rc) ,@captures
                 (when (and ($ (<> ,obj ,a) ptr)
@@ -125,7 +145,7 @@
 
 (DEFMACRO taken^rc ((obj rc default &REST captures) &REST body)
   (LET* ((obj obj)
-         (types (MULTIPLE-VALUE-LIST (CICILI:TYPE-CHECK rc :TYPEOF '(std^cell std^rc) :MODIFIER :move)))
+         (types (MULTIPLE-VALUE-LIST (CICILI:TYPE-CHECK rc :TYPEOF :std^cell :MODIFIER :move)))
          (a `(<> ,(NTH 1 (NTH 1 types)) interior_t)))
     `(taken^cell ((<> ,obj ,a) ,rc ,default) ,@captures
                  (? (and ($ (<> ,obj ,a) ptr)

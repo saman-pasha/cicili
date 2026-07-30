@@ -4,6 +4,9 @@
 (generic decl-array
   (a)
 
+  ;; the payload carrier for (<> nth array a)
+  (decl-maybe a)
+
   (non-copy)
   (struct (<> array a)
           (member a * const arr)
@@ -18,14 +21,22 @@
 
   (decl) (func (<> free array a) (((<> array a) ref array)))
   (decl) (func (<> free array a pointer) (((<> array a) ** array)))
-  (decl) (func (<> new array a) ((const a * arr) (size_t len)) (out (<> array a)))
+  ;; `cap' cells are allocated and zeroed, the first `len' of them copied from
+  ;; `arr'. The array's own `len' IS the capacity; a vector carries the headroom
+  ;; (<> arraySize vector a) asks for by passing cap > len.
+  (decl) (func (<> new array a) ((const a * arr) (size_t len) (size_t cap)) (out (<> array a)))
   (decl) (func (<> len array a) (((<> array a) ref array)) (out size_t))
-  (decl) (func (<> nth array a) ((size_t index) ((<> array a) ref array) (a default_value)) (out a))
+  ;; bounds-checked access cannot answer for an out of range index, so it hands
+  ;; back a maybe rather than a sentinel -- open it with 'match
+  (decl) (func (<> nth array a) ((size_t index) ((<> array a) ref array)) (out (<> maybe a)))
 
   ) ; decl-array
 
 (generic impl-array
   (a)
+
+  ;; the payload carrier for (<> nth array a)
+  (impl-maybe a)
   
   (inline)
   (func (<> free array a) (((<> array a) ref array))
@@ -36,69 +47,84 @@
   (func (<> free array a pointer) (((<> array a) ** array))
         ((<> free array a) (cof array)))
 
-  (func (<> new array a) ((const a * arr) (size_t len))
+  (func (<> new array a) ((const a * arr) (size_t len) (size_t cap))
         (out (<> array a))
-        (return (letn ((a * new_arr . #'(calloc len (sizeof a))))
-                  (syslog! (printf "NEW ARR: %s %p %zu\n" (symbol-name (<> array a)) new_arr len))
-                  (memcpy new_arr arr (* len (sizeof a)))
-                  (cast (<> array a) '{ new_arr len }))))
+        (return (letn ((a * new_arr . #'(calloc cap (sizeof a))))
+                  (syslog! (printf "NEW ARR: %s %p %zu of %zu\n" (symbol-name (<> array a)) new_arr len cap))
+                  (when (and arr len) (memcpy new_arr arr (* len (sizeof a))))
+                  (cast (<> array a) '{ new_arr cap }))))
 
   (func (<> len array a) (((<> array a) ref array))
         (out size_t)
         (return (-> array len)))
   
-  (func (<> nth array a) ((size_t index) ((<> array a) ref array) (a default_value))
-        (out a)
-        (return (? (< index (-> array len))
-                   (nth index (-> array arr))
-                   default_value)))
+  ;; built by cast, not through (<> just maybe a): those are (inline), which is
+  ;; __attribute__((weak)) and therefore never inlined -- a real call per
+  ;; element, 4x on the nth benchmark. The struct order is present, value.
+  (func (<> nth array a) ((size_t index) ((<> array a) ref array))
+        (out (<> maybe a))
+        (if (< index (-> array len))
+            (return (cast (<> maybe a) '{ #t (nth index (-> array arr)) }))
+          (return (cast (<> maybe a) '{ #f (cast a '{ 0 }) }))))
   
   ) ; impl-array
 
 (DEFMACRO free^array (array)
   (LET ((array array)
         (full-type (NTH-VALUE 1 (CICILI:TYPE-CHECK array :TYPEOF :std^array :MODIFIER '(move ref)))))
-    (IF (EQL (NTH 2 full-type) 'move)
+    (IF (CICILI:KEY-EQ (NTH 2 full-type) 'move)
         `((<> free ,(NTH 1 full-type)) (aof ,array))
       `((<> free ,(NTH 1 full-type)) ,array))))
 
-(DEFMACRO new^array (arr &OPTIONAL len)
+;;; (new array ARR [LEN [CAP]]) -- LEN is inferred from a brace list or a
+;;; string, CAP defaults to LEN. A caller that wants headroom passes it: this is
+;;; the path new^rc / new^cell forward their extra arguments through, which is
+;;; how vector asks for an over-allocated buffer.
+(DEFMACRO new^array (arr &OPTIONAL len cap)
   (LET* ((arr arr)
          (type (CICILI:INFER-TYPE arr))
-         (elem (IF (AND (= (LENGTH type) 2) (EQL (NTH 1 type) '*))
-                   (CAR type)
-                 (IF (AND (= (LENGTH type) 3) (EQL (CAR type) 'const) (EQL (NTH 2 type) '*))
-                     (CADR type)
-                   (ERROR (FORMAT NIL "new array got invalid type ~A of ~A" type arr)))))
+         ;; a pointer to the element, however it is qualified: (T *),
+         ;; (const T *), (T * const) -- the last is what a member declared
+         ;; `a * const', an array's own buffer, infers as -- or both
+         (elem (COND ((AND (= (LENGTH type) 2) (CICILI:KEY-EQ (NTH 1 type) '*))
+                      (CAR type))
+                     ((AND (= (LENGTH type) 3) (CICILI:KEY-EQ (NTH 1 type) '*)
+                           (CICILI:KEY-EQ (NTH 2 type) 'const))
+                      (CAR type))
+                     ((AND (= (LENGTH type) 3) (CICILI:KEY-EQ (CAR type) 'const)
+                           (CICILI:KEY-EQ (NTH 2 type) '*))
+                      (CADR type))
+                     ((AND (= (LENGTH type) 4) (CICILI:KEY-EQ (CAR type) 'const)
+                           (CICILI:KEY-EQ (NTH 2 type) '*) (CICILI:KEY-EQ (NTH 3 type) 'const))
+                      (CADR type))
+                     (T (ERROR (FORMAT NIL "new array got invalid type ~A of ~A" type arr)))))
          (len (IF len len
-                (LET ((value (IF (EQL (CAR arr) 'cast) (CADDR arr) NIL)))
-                  (IF (AND value (LISTP value) (EQUAL (CAR value) 'QUOTE))
+                (LET ((value (IF (CICILI:KEY-EQ (CAR arr) 'cast) (CADDR arr) NIL)))
+                  (IF (AND value (LISTP value) (CICILI:KEY-EQ (CAR value) 'QUOTE))
                       (LENGTH (CADR value))
                     (IF (STRINGP value)
                         (LENGTH value)
                       (ERROR (FORMAT NIL "new array can't infer length ~A" arr))))))))
     (IF len
-        `((<> new array ,elem) ,arr ,len)
+        `((<> new array ,elem) ,arr ,len ,(IF cap cap len))
       (ERROR (FORMAT NIL "new^~A len required for dynamic array input: ~A" type arr)))))
 
 (DEFMACRO len^array (array)
   (LET ((array array))
-    (MULTIPLE-VALUE-BIND (_ full-type) (CICILI:TYPE-CHECK array :TYPEOF :std^array :MODIFIER '(move ref))
-      `($ ,(IF (EQL (NTH 2 full-type) 'ref) `((<> len array a) ,array) array) len))))
+    (MULTIPLE-VALUE-BIND (desc full-type root-type origin) (CICILI:TYPE-CHECK array :TYPEOF :std^array :MODIFIER '(move ref))
+      (IF (CICILI:KEY-EQ (NTH 2 full-type) 'ref) `((<> len ,(CAR root-type)) ,array) `($ ,array len)))))
 
-(DEFMACRO nth^array (index array &KEY unchecked default)
+(DEFMACRO nth^array (index array &KEY unchecked)
   (LET ((index index)
         (array array)
-        (unchecked unchecked)
-        (default default))
-    (WHEN (AND (NULL unchecked) (NULL default)) (ERROR (FORMAT NIL "checked nth of array needs default value ~A" array)))
+        (unchecked unchecked))
     (IF unchecked
         (MULTIPLE-VALUE-BIND (_ full-type) (CICILI:TYPE-CHECK array :TYPEOF :std^array :MODIFIER :move)
           (LET ((type-name (NTH 1 full-type)))
             `(nth ,index ($ ,array arr))))
       (MULTIPLE-VALUE-BIND (_ full-type) (CICILI:TYPE-CHECK array :TYPEOF :std^array :MODIFIER '(move ref))
         (LET ((type-name (NTH 1 full-type)))
-          `((<> nth ,type-name) ,index (aof ,array) ,default))))))
+          `((<> nth ,type-name) ,index (aof ,array)))))))
 
 (DEFMACRO let^array ((arr len array &REST captures) &REST body)
   (LET ((arr arr)

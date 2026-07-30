@@ -6,7 +6,9 @@
         :link ("-lrc.o" "-o" "rc_test"))
 
   (decl-array int)
+  (impl-array int)
   (decl-rc array^int)
+  (impl-rc array^int)
   
   (main
     (letin ((rc01 (new rc array (cast (const int []) '{ 1 2 3 4 5 })))

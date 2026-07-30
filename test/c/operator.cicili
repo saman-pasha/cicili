@@ -1,0 +1,137 @@
+;;;; Cicili C clauses: operators
+;;; arithmetic / increment-decrement / relational / logical / bitwise
+;;; assignment / conditional / sizeof / typeof / aof / cof / nth
+
+(source "operator.c"
+  (make :std #t :compile #t :link ("-loperator.o" "-o" "operator_test"))
+
+  (func check ((const char * what) (llong got) (llong want))
+        (out int)
+        (if (== got want)
+            (block (printf "ok   %-30s %lld\n" what got) (return 0))
+          (block (printf "FAIL %-30s got %lld want %lld\n" what got want) (return 1)))
+        (return 1))
+
+  (main
+    (let ((int bad . 0))
+
+      ;; ---- arithmetic -------------------------------------------------
+      (+= bad (check "+"  (+ 2 3)     5))
+      (+= bad (check "-"  (- 9 4)     5))
+      (+= bad (check "*"  (* 3 4)     12))
+      (+= bad (check "/"  (/ 20 4)    5))
+      (+= bad (check "%"  (% 23 5)    3))
+      ;; n-ary: the operator is folded across every argument
+      (+= bad (check "+ n-ary"  (+ 1 2 3 4)  10))
+      (+= bad (check "* n-ary"  (* 2 2 2)    8))
+      ;; unary minus and plus
+      (+= bad (check "unary -"  (- 7)       -7))
+      (+= bad (check "unary +"  (+ 7)        7))
+
+      ;; ---- increment and decrement ------------------------------------
+      ;; ++ and -- are PREFIX; 1+ and 1- are the postfix forms
+      (let ((int n . 5))
+        (+= bad (check "++ prefix returns new"  (++ n)  6))
+        (+= bad (check "n after ++"             n       6)))
+      (let ((int n . 5))
+        (+= bad (check "1+ postfix returns old" (1+ n)  5))
+        (+= bad (check "n after 1+"             n       6)))
+      (let ((int n . 5))
+        (+= bad (check "-- prefix"              (-- n)  4)))
+      (let ((int n . 5))
+        (+= bad (check "1- postfix"             (1- n)  5))
+        (+= bad (check "n after 1-"             n       4)))
+
+      ;; ---- relational -------------------------------------------------
+      (+= bad (check "=="  (== 3 3)  1))
+      (+= bad (check "!="  (!= 3 4)  1))
+      (+= bad (check ">"   (>  4 3)  1))
+      (+= bad (check "<"   (<  3 4)  1))
+      (+= bad (check ">="  (>= 3 3)  1))
+      (+= bad (check "<="  (<= 3 3)  1))
+      (+= bad (check "== false" (== 3 4) 0))
+
+      ;; ---- logical ----------------------------------------------------
+      (+= bad (check "and"      (and 1 1)  1))
+      (+= bad (check "and false"(and 1 0)  0))
+      (+= bad (check "or"       (or 0 1)   1))
+      (+= bad (check "or false" (or 0 0)   0))
+      (+= bad (check "not"      (not 0)    1))
+      (+= bad (check "not true" (not 5)    0))
+      ;; and / or are n-ary too, and short-circuit as in C
+      (+= bad (check "and n-ary" (and 1 1 1) 1))
+
+      ;; ---- bitwise ----------------------------------------------------
+      (+= bad (check "bitand" (bitand 12 10)  8))   ; 1100 & 1010
+      (+= bad (check "bitor"  (bitor  12 10) 14))   ; 1100 | 1010
+      (+= bad (check "xor"    (xor    12 10)  6))   ; 1100 ^ 1010
+      (+= bad (check "^"      (^      12 10)  6))   ; ^ is the same as xor
+      (+= bad (check "~"      (~ 0)          -1))
+      (+= bad (check "<<"     (<< 1 4)       16))
+      (+= bad (check ">>"     (>> 16 4)       1))
+
+      ;; ---- assignment: set, and the compound operators ----------------
+      ;; set is the assignment CLAUSE; += and friends are operators
+      (let ((int n . 0))
+        (set n 5)
+        (+= bad (check "set" n 5))
+        ;; set takes many pairs at once
+        (let ((int a . 0) (int b . 0))
+          (set a 1 b 2)
+          (+= bad (check "set two pairs" (+ (* a 10) b) 12))))
+
+      (let ((int n . 10))
+        (+= n 5)  (+= bad (check "+="  n 15))
+        (-= n 3)  (+= bad (check "-="  n 12))
+        (*= n 2)  (+= bad (check "*="  n 24))
+        (/= n 4)  (+= bad (check "/="  n 6))
+        (%= n 4)  (+= bad (check "%="  n 2))
+        (<<= n 3) (+= bad (check "<<=" n 16))
+        (>>= n 2) (+= bad (check ">>=" n 4)))
+
+      ;; ---- conditional ------------------------------------------------
+      (+= bad (check "?"  (? (> 2 1) 10 20) 10))
+      ;; nested, and it is an expression so it composes
+      (+= bad (check "? nested" (? (< 2 1) 1 (? (> 3 2) 2 3)) 2))
+
+      ;; ---- sizeof and typeof ------------------------------------------
+      (+= bad (check "sizeof int"    (sizeof int)          4))
+      (+= bad (check "sizeof i64"    (sizeof i64)          8))
+      (let ((double d . 1.5))
+        (+= bad (check "sizeof expr" (sizeof d)            8))
+        ;; typeof gives a type, usable wherever a type goes
+        (let (((typeof d) copy . 2.5))
+          (+= bad (check "typeof declares" (sizeof copy)   8))))
+
+      ;; ---- aof and cof: & and * ---------------------------------------
+      (let ((int n . 42)
+            (int * p . #f))
+        (set p (aof n))                  ; &n
+        (+= bad (check "cof reads"  (cof p)  42))
+        (set (cof p) 43)                 ; *p = 43
+        (+= bad (check "cof writes" n        43))
+        (+= bad (check "aof/cof round trip" (cof (aof n)) 43)))
+
+      ;; ---- nth: index FIRST -------------------------------------------
+      (let ((int xs [] . '{ 10 20 30 40 }))
+        (+= bad (check "nth 0" (nth 0 xs) 10))
+        (+= bad (check "nth 3" (nth 3 xs) 40))
+        (set (nth 1 xs) 99)
+        (+= bad (check "nth assigns" (nth 1 xs) 99))
+        ;; a pointer indexes the same way
+        (let ((int * p . #'(aof (nth 2 xs))))
+          (+= bad (check "nth through pointer" (nth 0 p) 30))))
+
+      ;; ---- cast -------------------------------------------------------
+      (+= bad (check "cast truncates" (cast int 3.9)   3))
+      (+= bad (check "cast widens"    (cast llong 7)   7))
+      (let ((double d . #'(/ (cast double 7) 2)))
+        (+= bad (check "cast forces real division" (cast int (* d 10)) 35)))
+
+      (if (== bad 0)
+          (printf "operator: all ok\n")
+        (printf "operator: %d FAILED\n" bad))
+      (return bad))))
+
+;; sbcl --script cicili.lisp ./test/c/operator.cicili
+;; ./test/c/operator_test

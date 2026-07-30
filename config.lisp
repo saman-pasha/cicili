@@ -3,7 +3,6 @@
 ;; prints too many details about compiling ast
 (defparameter *debug-ast* nil)
 ;; prints resolved members and methods
-(defparameter *debug-resolve* nil)
 ;; prints verbosity of compilation and link
 (defparameter *verbose* "")
 ;; debug all loaded macros with namespace
@@ -45,14 +44,17 @@
       
       ((string= os "Darwin")
        (list
-        ;; C      /usr/local/bin/gcc-16 "-Wno-maybe-uninitialized" "-g"
+        ;; C. clang by name rather than gcc: on macOS `gcc' is only a shim over
+        ;; clang, so naming it directly is what actually runs and keeps the
+        ;; benchmark honest about the toolchain it measures.
+        ;;        /usr/local/bin/gcc-16 "-Wno-maybe-uninitialized" "-g"
         'dumper   '()
-        'compiler `("glibtool" "--tag=CC" "--mode=compile" "gcc" "-Werror" "-Wall" "-Wno-shadow" *verbose*)
-        'linker   `("glibtool" "--tag=CC" "--mode=link" "gcc" *verbose*)
+        'compiler `("glibtool" "--tag=CC" "--mode=compile" "clang" "-Werror" "-Wall" *verbose*)
+        'linker   `("glibtool" "--tag=CC" "--mode=link" "clang" *verbose*)
         ;; C++
         'cpp-dumper   '()
-        'cpp-compiler `("glibtool" "--tag=CXX" "--mode=compile" "g++" "-O3" "-Werror" *verbose*)
-        'cpp-linker   `("glibtool" "--tag=CXX" "--mode=link" "g++" *verbose*)))
+        'cpp-compiler `("glibtool" "--tag=CXX" "--mode=compile" "clang++" "-Werror" "-Wall" *verbose*)
+        'cpp-linker   `("glibtool" "--tag=CXX" "--mode=link" "clang++" *verbose*)))
       
       (t (list
           ;; C

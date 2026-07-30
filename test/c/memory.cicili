@@ -1,0 +1,139 @@
+;;;; Cicili C clauses: pointers and dynamic memory
+;;; pointer arithmetic / alloc / the defer attribute / defer* / RAII cleanup
+
+(source "memory.c"
+  (make :std #t :compile #t :link ("-lmemory.o" "-o" "memory_test"))
+
+  (var int frees . 0)          ; counts destructor calls, checked at the end
+
+  (struct Employee
+    (member int id)
+    (member int * payload))
+
+  ;; a destructor takes a POINTER TO the variable's type. The compiler emits the
+  ;; rebinding line for you, so the body works with the ordinary name and type.
+  (func free_Employee ((Employee * emp_ptr))
+        (++ frees)
+        (when (-> emp_ptr payload)
+          (free (-> emp_ptr payload))
+          (set (-> emp_ptr payload) #f)))
+
+  (func check ((const char * what) (llong got) (llong want))
+        (out int)
+        (if (== got want)
+            (block (printf "ok   %-32s %lld\n" what got) (return 0))
+          (block (printf "FAIL %-32s got %lld want %lld\n" what got want) (return 1)))
+        (return 1))
+
+  ;; a scope that ends, so the deferred cleanup runs before we check the count
+  (func scoped_cleanup ()
+        (let ((defer () free_Employee)
+              (Employee e . '{ 7 #f }))
+          (set ($ e payload) (cast (int *) (malloc (sizeof int))))
+          (set (cof ($ e payload)) 42)))
+
+  ;; (defer #t) means a plain free of the variable itself
+  (func scoped_plain_free ()
+        (out int)
+        (let ((defer #t) (int * block . #'(malloc (* 4 (sizeof int)))))
+          (set (nth 0 block) 11)
+          (return (nth 0 block)))
+        (return 0))
+
+  ;; (defer () forms...) runs the forms at scope exit
+  (func scoped_forms ()
+        (let ((defer () (++ frees))
+              (int n . 1))
+          (cast void n)))
+
+  ;; defer* captures the listed variables and runs the body at scope exit. It
+  ;; must be (static) in a source, like any multi-value form, because it builds
+  ;; an inline struct to hold the capture list.
+  (static) (func scoped_defer_star ((int * out_id) (int id))
+                 (defer* ((int * out_id) (int id))
+                   (set (cof out_id) id))
+                 (set (cof out_id) 0))
+
+  (main
+    (let ((int bad . 0))
+
+      ;; ---- pointers -------------------------------------------------
+      (let ((int n . 42)
+            (int * p . #f))
+        (set p (aof n))
+        (+= bad (check "deref"        (cof p) 42))
+        (set (cof p) 43)
+        (+= bad (check "write through" n 43))
+        ;; a null pointer is #f
+        (let ((int * q . #f))
+          (+= bad (check "null pointer" (? q 1 0) 0))))
+
+      ;; pointer arithmetic and indexing
+      (let ((int xs [] . '{ 10 20 30 40 })
+            (int * p . #f))
+        (set p xs)
+        (+= bad (check "p[0]"        (nth 0 p) 10))
+        (+= bad (check "p[2]"        (nth 2 p) 30))
+        (set p (+ p 1))
+        (+= bad (check "after p + 1" (nth 0 p) 20))
+        (+= bad (check "pointer difference" (- p xs) 1)))
+
+      ;; pointer to pointer
+      (let ((int n . 7)
+            (int * p . #f)
+            (int ** pp . #f))
+        (set p (aof n))
+        (set pp (aof p))
+        (+= bad (check "double deref" (cof (cof pp)) 7)))
+
+      ;; ---- alloc: malloc/calloc with automatic free -----------------
+      ;; one argument is a byte count, two is count + size like calloc
+      (let ((int * one . #'(alloc (sizeof int))))
+        (set (cof one) 42)
+        (+= bad (check "alloc one" (cof one) 42)))
+
+      (let ((int * many . #'(alloc 4 (sizeof int))))
+        (set (nth 3 many) 42)
+        (+= bad (check "alloc many" (nth 3 many) 42))
+        ;; calloc zeroes
+        (+= bad (check "alloc zeroes" (nth 0 many) 0)))
+
+      ;; ---- plain malloc / free -------------------------------------
+      (let ((int * raw . #'(cast (int *) (malloc (* 2 (sizeof int))))))
+        (set (nth 1 raw) 42)
+        (+= bad (check "malloc/free" (nth 1 raw) 42))
+        (free raw))
+
+      ;; ---- memcpy / memset -----------------------------------------
+      (let ((int src [] . '{ 1 2 3 4 })
+            (int dst [4]))
+        (memset dst 0 (sizeof dst))
+        (+= bad (check "memset" (nth 2 dst) 0))
+        (memcpy dst src (sizeof src))
+        (+= bad (check "memcpy" (nth 2 dst) 3)))
+
+      ;; ---- the defer attribute -------------------------------------
+      (set frees 0)
+      (scoped_cleanup)
+      (+= bad (check "defer ran destructor" frees 1))
+
+      (+= bad (check "defer #t plain free" (scoped_plain_free) 11))
+
+      (set frees 0)
+      (scoped_forms)
+      (+= bad (check "defer () forms ran" frees 1))
+
+      ;; the body sets it to 42 at scope exit, after the function set it to 0
+      (let ((int seen . -1))
+        (scoped_defer_star (aof seen) 42)
+        (+= bad (check "defer* ran at scope exit" seen 42)))
+
+      ;; a deferred destructor in main's own scope runs after this point, so it
+      ;; is only proved by the counter above, not here
+      (if (== bad 0)
+          (printf "memory: all ok\n")
+        (printf "memory: %d FAILED\n" bad))
+      (return bad))))
+
+;; sbcl --script cicili.lisp ./test/c/memory.cicili
+;; ./test/c/memory_test

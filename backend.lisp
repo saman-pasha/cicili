@@ -66,13 +66,22 @@
          (set-ast-line (output "]")))
         (t (error (format nil "wrong array description, maybe #' missed for function initializer ~A" desc)))))
 
-(defun format-type (const typeof modifier const-ptr name array-def anonymous lvl globals parent-spec &key (func-out nil))
+;; DECL-SPEC is the specifier being declared, when there is one. It is what a
+;; diagnostic landing on the declared name belongs to -- "unused variable",
+;; "conflicting types", "redefinition of" all point at the name, and without
+;; this probe none of them were ever matched back to a Cicili form: every other
+;; ast-info< site is an expression, so a declaration could only ever fail later,
+;; as a bare C compilation failure.
+(defun format-type (const typeof modifier const-ptr name array-def anonymous lvl globals parent-spec
+                    &key (func-out nil) (decl-spec nil))
   (let ((line-n   -1)
         (col-n    -1))
     (if (key-eq typeof '|func|)
         (progn
           (when const (set-ast-line (output "const ")))
-          (compile-function (car array-def) lvl globals parent-spec :type t :func-out func-out))
+          ;; car is the function, cdr the [] dimensions if it is an array of them
+          (compile-function (car array-def) lvl globals parent-spec
+                            :type t :func-out func-out :array-dims (cdr array-def)))
         (progn
           (when anonymous (setq name (format nil "/* ~A */" name)))
           (when const     (set-ast-line (output "~A " const)))
@@ -87,6 +96,9 @@
           (when name      (output " ")
                 (setq line-n  (funcall *line-num* 0))
                 (setq col-n   (funcall *col-num* 0))
+                (when decl-spec
+                  (let ((info (ast-info< decl-spec 'key-name)))
+                    (when info (ast-error< "declaration" info decl-spec))))
                 (set-ast-line (output "~A " (if (or (str:starts-with-p "_ciciliParam_" (symbol-name name))
                                                     (key-eq '|LETNMOVECAST| name))
                                                 " " name))))
@@ -105,7 +117,8 @@
         (progn
           (when const (set-ast-line (output "const ")))
           (compile-function (car array-def) lvl globals spec :type t))
-        (format-type const typeof modifier const-ptr name array-def anonymous lvl globals parent-spec))))
+        (format-type const typeof modifier const-ptr name array-def anonymous lvl globals parent-spec
+                     :decl-spec spec))))
 
 (defun compile-spec-type-value (spec lvl globals parent-spec &optional defer &key ((:unique is-unique) nil))
   (let ((const     (const      spec))
@@ -120,14 +133,21 @@
     (if (key-eq typeof '|func|)
         (progn
           (when const (set-ast-line (output "const ")))
-          (compile-function (car array-def) lvl globals spec :type t)
+          (compile-function (car array-def) lvl globals spec :type t :array-dims (cdr array-def))
           (when (and (not (null default)) (not (key-eq (construct default) '|@NIL|)))
             (output " ")
             (set-ast-line (output "= "))
-            (set-ast-line (output "~A" (if is-unique (unique default) (name default))))))
+            ;; A specifier carries its VALUE in `default', for an @ATOM and an
+            ;; @LIST alike -- `name' holds a marker (@SYMBOL) or nothing at all.
+            ;; Reading (name default) here emitted a literal "@SYMBOL" for
+            ;; through the value, so it covers a call or a cast as well.
+            (if is-unique
+                (set-ast-line (output "~A" (unique default)))
+                (compile-form default lvl globals spec))))
         (format-type-value const typeof modifier const-ptr
                            (if is-unique (unique spec) name)
-                           array-def default anonymous lvl globals parent-spec defer))))
+                           array-def default anonymous lvl globals parent-spec defer
+                           :decl-spec spec))))
 
 (defun compile-atom (spec lvl globals parent-spec)
   (with-slots (construct (value default) name) spec
@@ -516,7 +536,7 @@
                    (set-ast-line (output "}~%"))
                    (set-ast-line (output "}")))))))
 
-(defun compile-function (spec lvl globals parent-spec &key ((:type as-type) nil) (func-out nil))
+(defun compile-function (spec lvl globals parent-spec &key ((:type as-type) nil) (func-out nil) (array-dims nil))
   ;; resolve ?
   (let ((is-static   nil)
 	    (is-declare  as-type)
@@ -524,8 +544,8 @@
 	    (is-extern   nil)
 	    (is-volatile nil)
 	    (is-auto     nil)
-        (do-resolve  nil)
         (is-unique  (unique spec)))
+    
     (dolist (attr (attrs spec))
       (case (car attr)
 	    ('|static|   (setq is-static   t))
@@ -534,8 +554,7 @@
 	    ('|extern|   (setq is-extern   t))
 	    ('|volatile| (setq is-volatile t))
 	    ('|auto|     (setq is-auto     t))
-        ('|resolve|  (setq do-resolve  (cdr attr)))))
-    (when (and (> *ast-run* 1) (key-eq '|false| do-resolve)) (setq *resolve* nil))
+        ))
 
     ;; compile lambdas and inline structs before function
     (unless as-type
@@ -543,8 +562,9 @@
             do (progn
                  (cond ((key-eq '|@STRUCT| (construct los)) ; inline structs
                         (when (or (null (default los))
-                                (and (null is-static) *target-header*)
-                                (and is-static *target-source*))
+                                  (and (null is-static) *target-header*)
+                                  (and (null is-static) is-declare)
+                                  (and is-static *target-source*))
                           (compile-struct los lvl globals spec) ; :no-typedef t
                           (output "~%")))
                        ((key-eq '|@FUNC| (construct los)) ; lambdas
@@ -570,10 +590,6 @@
 	             params)
 
         ;; destroyer initizlizer definition
-        ;; (when (key-eq name '|main|)
-        ;;   (output "static BoxedList_CVoid ")
-        ;;   (output "__h_destroyer_stack")
-        ;;   (output ";~%"))
         
         (output "~&~A" (indent (- lvl 1)))
         (when is-extern   (set-ast-line (output "extern ")))
@@ -598,6 +614,14 @@
         (cond ((key-eq (typeof spec) '|func|) t)
               ((and as-type (key-eq name '_))
                (if is-volatile (set-ast-line (output "(* volatile)")) (set-ast-line (output "(*)"))))
+              ;; an ARRAY of function pointers: int (*ops[])(int a, int b). The
+              ;; dimensions go inside the parens, right after the name, so this is
+              ;; emitted in pieces rather than through one format string.
+              ((and as-type array-dims (not func-out) (not is-method) (not is-shared) (not is-unique))
+               (set-ast-line (output "(*"))
+               (set-ast-line (output "~A" name))
+               (compile-array array-dims lvl globals parent-spec)
+               (set-ast-line (output ") ")))
               (t (when func-out (output "(")) 
                  (set-ast-line
                      (output "~A " (if is-unique
@@ -678,11 +702,15 @@
 	        (compile-body body lvl locals spec)
             (output "~&~A" (indent (- lvl 1)))
             (output "}"))))))
-  (setq *resolve* t))
+  )
 
 (defun compile-preprocessor (spec lvl globals parent-spec)
   (with-slots ((directive const) (name typeof) (macro default)) spec
-    (compile-form directive lvl globals spec)
+    ;; a directive is a bare symbol (#define, #ifdef, ...) and always starts its
+    ;; own line -- the preprocessor requires the # in column one
+    (if (symbolp directive)
+        (set-ast-line (output "~&~A " directive))
+        (compile-form directive lvl globals spec))
     (when name (compile-form name lvl globals spec))
     (when macro (compile-form macro (1+ lvl) globals spec))))
 
@@ -696,10 +724,14 @@
                       (set-ast-line (output "~A~%" header))
                       (set-ast-line (output "~A" header))))
 	             ((stringp header)
+                  ;; the quotes are written out rather than left to ~S: cicili.lisp
+                  ;; sets *print-vector-length* to 0, so ~S on a string prints
+                  ;; #<(SIMPLE-ARRAY CHARACTER (8)) ...> and every local-header
+                  ;; include came out as garbage
                   (set-ast-line (output "~&#include "))
                   (if (< i l)
-                      (set-ast-line (output "~S~%" header))
-                      (set-ast-line (output "~S" header))))
+                      (set-ast-line (output "\"~A\"~%" header))
+                      (set-ast-line (output "\"~A\"" header))))
 	             (t (error "wrong inclusion")))))
 
 (defun compile-typedef (spec lvl globals parent-spec)
@@ -744,7 +776,10 @@
 		         (case (construct in-spec)
 		           ('|@VAR|
                     (output "~&~A" (indent lvl))
-		            (set-ast-line (output "~A" (if is-unique (unique in-spec) (name in-name))))
+                    ;; the constant's name comes off the SPEC. (name in-name) only
+                    ;; worked while specify-enum keyed inners by a specifier
+                    ;; instead of by the constant's symbol.
+		            (set-ast-line (output "~A" (if is-unique (unique in-spec) (name in-spec))))
                     (unless (null (default in-spec))
                       (set-ast-line (output " = "))
                       (compile-form (default in-spec) (1+ lvl) locals spec))
@@ -845,3 +880,134 @@
     (set-ast-line (output "~&#define ~A~%" name))
     (compile-body-map (inners spec) lvl globals spec)
     (set-ast-line (output "~&#endif /* ~A */ ~%" name))))
+
+;;;; ------------------------------------------------------------------
+;;;; Moved here from the old resolver.lisp, which is gone.
+;;;;
+;;;; That file held two things: the compile- functions below, and a feedback loop
+;;;; that re-read the C compiler's diagnostics between runs to patch its own
+;;;; output. The loop existed to resolve `method', which is deprecated, so it was
+;;;; removed and these compile straight through like every other compile-
+;;;; function.
+;;;; ------------------------------------------------------------------
+
+(defun format-type-value (const typeof modifier const-ptr name array-def default anonymous
+                                lvl globals parent-spec &optional defer &key (decl-spec nil))
+  (when anonymous (setq name (format nil "/* ~A */" name)))
+  (format-type const typeof modifier const-ptr name array-def anonymous lvl globals parent-spec
+               :decl-spec decl-spec)
+
+  (when defer
+    (output " ")
+    (set-ast-line (output "__attribute__(("))
+    (set-ast-line (output "__cleanup__("))
+    (compile-form defer (1+ lvl) globals parent-spec)
+    (set-ast-line (output ")))")))
+
+  ;; The initializer is compiled as written: a mismatched one is a C error to fix,
+  ;; not something the transpiler rewrites behind your back.
+  (when (and default (not (key-eq (construct default) '|@NIL|)))
+    (output " ")
+    (set-ast-line (output "= "))
+    (let ((info (ast-info< default 'key-def)))
+      (when info (ast-error< "initializer" info default)))
+    (compile-form default (1+ lvl) globals parent-spec)))
+
+
+(defun compile-symbol (spec symbol)
+  ;; Emits the symbol, preferring its module-unique name when one is registered.
+  ;; This used to read the C compiler's diagnostics back between resolver runs to
+  ;; patch itself -- inserting `&', swallowing "no member named" / "format
+  ;; specifies type" / "incompatible pointer types", or falling back to the
+  ;; unique name on "use of undeclared identifier". That was the resolver, and it
+  ;; is gone; what is left is the branch every first run already took.
+  (let* ((sym-name  (symbol-name symbol))
+         (has-slash (and (> (length sym-name) 1) (str:starts-with-p "/" sym-name)))
+         (info      (ast-info< spec 'key-sym)))
+    (when info (ast-error< "symbol" info spec))
+    ;; a leading / means "resolve globally", and is not part of the name
+    (when has-slash (setq symbol (intern (str:substring 1 t sym-name))))
+    (let ((m-name (unique spec)))
+      (if (and (null has-slash) (gethash m-name *globals*))
+          (set-ast-line (output "~A " m-name))
+          (set-ast-line (output "~A " symbol))))))
+
+(defun compile-$ (spec lvl globals parent-spec)
+  ;; `$' is value member access and always emits `.', so there is nothing to
+  ;; learn from the C compiler's diagnostics between resolver runs. This used to
+  ;; read back `member reference type ... is a pointer' to rewrite itself as
+  ;; `->', request another run, and otherwise raise "unresolved member reference
+  ;; type" -- machinery that existed for `method' resolution. It compiles
+  ;; straight through now, like every other compile- function.
+  (with-slots ((receiver name) (member default)) spec
+    (let ((info (ast-info< spec 'key-$)))
+      (when info (ast-error< "member access" info spec)))
+    (set-ast-line (output "("))
+    (compile-form receiver (1+ lvl) globals spec)
+    (set-ast-line (output ". "))
+    (compile-name member (1+ lvl) globals spec)
+    (output ")")))
+
+(defun compile--> (spec lvl globals parent-spec no-call)
+  ;; `->' is member access through a pointer and always emits `->'. Like
+  ;; compile-$ this used to read the C compiler's diagnostics back between
+  ;; resolver runs -- rewriting itself into a shared/method call name, asking for
+  ;; another run, or raising "unresolved method reference type". All of that
+  ;; served `method' resolution and is gone.
+  (declare (ignore no-call))
+  (with-slots ((receiver name) (member default) (args body)) spec
+    (when (and args (default args))
+      (error (format nil "cicili: -> is member access only; the (-> ptr method args...) call form is removed.~%  use (=> obj member args...) for a member holding a function.~%  in: ~A~%" spec)))
+    (let ((info (ast-info< spec 'key-->)))
+      (when info (ast-error< "member access through a pointer" info spec)))
+    (set-ast-line (output "("))
+    (compile-form receiver (1+ lvl) globals spec)
+    (set-ast-line (output "-> "))
+    (compile-name member (1+ lvl) globals spec)
+    (output ")")))
+
+(defun compile-=> (spec lvl globals parent-spec)
+  ;; `=>' calls a function stored in a member: obj.member (args). The member is
+  ;; reached with `.' for the same reason compile-$ uses it -- use (=> (cof p) m)
+  ;; for a pointer. No resolver feedback; this is what the old first-run branch
+  ;; emitted, minus the bookkeeping that fed the next run.
+  (with-slots ((receiver name) (member default) (args body)) spec
+    (let ((info (ast-info< spec 'key-=>)))
+      (when info (ast-error< "member function call" info spec)))
+    (set-ast-line (output "("))
+    (compile-form receiver (1+ lvl) globals spec)
+    (set-ast-line (output ". "))
+    (compile-form member (1+ lvl) globals spec)
+    (set-ast-line (output "("))
+    (compile-args (default args) lvl globals spec nil)
+    (output "))")))
+
+(defun compile-args (args lvl globals parent-spec comma-first &key (no-comma nil) (sep ", "))
+  ;; each argument is compiled as written, see format-type-value above
+  (when (and (null no-comma) comma-first (> (length args) 0)) (output sep))
+  (loop for arg in args
+        with l = (1- (length args))
+        for i from 0 to l
+        do (progn
+             (let ((info (ast-info< arg 'key-arg)))
+               (when info (ast-error< "argument" info arg)))
+             (compile-form arg lvl globals parent-spec)
+             (when (and (null no-comma) (< i l)) (output sep)))))
+
+
+(defun compile-set (spec lvl globals parent-spec)
+  ;; plain assignment; see format-type-value on why nothing is rewritten here
+  (let ((items (default spec)))
+    (loop for item in items
+          with l = (length items)
+          for i from 1 to l
+          do (progn
+               (compile-form (nth 0 item) (1+ lvl) globals spec)
+               (output " ")
+               (set-ast-line (output "= "))
+               (let ((info (ast-info< (nth 1 item) 'key-set)))
+                 (when info (ast-error< "assignment" info spec)))
+	           (compile-form (nth 1 item) (1+ lvl) globals spec))
+          (when (< i l)
+            (output ";~%")
+            (output "~&~A" (indent (- lvl 2)))))))

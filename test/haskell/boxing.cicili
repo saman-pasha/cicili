@@ -1,5 +1,5 @@
 
-(import "../../haskell/box.cicili")
+(import "../../lib/haskell/box.cicili")
 
 (source "boxing.c" (:std #t :compile #t :link "-L{$CCL} -lhaskell.o -L{$CWD} boxing.o -o main")
         (include "../../haskell.h")

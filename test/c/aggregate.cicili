@@ -1,0 +1,190 @@
+;;;; Cicili C clauses: struct / union / enum / member / declare
+;;; plus nested and anonymous members, forward declaration, struct attributes,
+;;; positional and designated initializers, and the $ / -> access operators
+
+(source "aggregate.c"
+  (make :std #t :compile #t :link ("-laggregate.o" "-o" "aggregate_test"))
+
+  ;; ---- enum: constants are DOTTED pairs, (RED . 0) not (RED 0) -------
+  ;; a bare name continues from the previous value
+  (enum Colors
+    (RED . 0)
+    (GREEN)
+    (BLUE)
+    (VIOLET . 10)
+    (INDIGO))
+
+  ;; ---- union --------------------------------------------------------
+  (union Mixed
+    (member int i)
+    (member float f))
+
+  ;; a named struct, used below as a member so its fields stay readable
+  (struct Role
+    (member int role_id)
+    (member const char * role_name)
+    (member func describe ((int who)) (out int)))
+
+  ;; ---- forward declaration ------------------------------------------
+  ;; (decl) on a struct emits ONLY the typedef. The body still feeds type
+  ;; inference but is never printed, so in C the type stays INCOMPLETE: fine to
+  ;; point at, but it cannot be instantiated or read through in this target.
+  (decl) (struct Opaque
+           (member int hidden))
+
+  ;; A struct may point at its own type, but the member has to name it with the
+  ;; struct tag -- (member Node * next) emits `Node * next' inside the typedef,
+  ;; where the alias does not exist yet ("must use 'struct' tag to refer to Node")
+  (struct Node
+    (member int value)
+    (member (struct Node) * next))
+
+  ;; ---- struct, with everything nested inside it ---------------------
+  (struct Employee
+    (member int id)
+    (member const char * name)
+    ;; a named union as a member: ($ e extra i) walks into it
+    (member Mixed extra)
+
+    ;; a nested named enum
+    (enum Grade
+      (JUNIOR . 1)
+      (SENIOR))
+
+    ;; an ANONYMOUS union needs a declare to name the member; the tag is
+    ;; registered like any other member, so ($ e tag tag_id) walks into it
+    (union
+        (member int tag_id)
+      (member const char * custom_tag)
+      (declare tag))
+
+    ;; an anonymous struct, with a function-pointer member and two declares
+    (struct
+        (member int role_id)
+      (member const char * role_name)
+      (member func describe ((int who)) (out int))
+      (declare role)
+      (declare * alt_role))
+
+    ;; a named nested struct as a member, for comparison with the anonymous one
+    (member Role duty))
+
+  (struct Chain
+    (member int head)
+    (member Node * tail)
+    (member Opaque * opaque))   ; only ever a pointer
+
+  (func describe_impl ((int who)) (out int) (return (* who 3)))
+
+  (func check ((const char * what) (llong got) (llong want))
+        (out int)
+        (if (== got want)
+            (block (printf "ok   %-34s %lld\n" what got) (return 0))
+          (block (printf "FAIL %-34s got %lld want %lld\n" what got want) (return 1)))
+        (return 1))
+
+  (main
+    (let ((int bad . 0))
+
+      ;; ---- enum values ----------------------------------------------
+      (+= bad (check "enum explicit"     RED     0))
+      (+= bad (check "enum continues"    GREEN   1))
+      (+= bad (check "enum continues 2"  BLUE    2))
+      (+= bad (check "enum restarts"     VIOLET 10))
+      (+= bad (check "enum after restart" INDIGO 11))
+      ;; a nested enum's constants are still at file scope in C
+      (+= bad (check "nested enum"       SENIOR  2))
+
+      ;; ---- union: one storage, two views ----------------------------
+      (let ((Mixed m . '{ 0 }))
+        (set ($ m i) 1065353216)   ; the bit pattern of 1.0f
+        (+= bad (check "union int view" ($ m i) 1065353216))
+        (+= bad (check "union float view" (cast int ($ m f)) 1))
+        (+= bad (check "sizeof union" (sizeof Mixed) 4)))
+
+      ;; ---- struct: positional initializer ---------------------------
+      (let ((Employee e . '{ 7 "Ada" }))
+        (+= bad (check "positional id"   ($ e id) 7))
+        (+= bad (check "positional name" (strlen ($ e name)) 3)))
+
+      ;; ---- struct: designated initializer, '{ $member value } -------
+      (let ((Employee e . '{ $id 8 $name "Grace" }))
+        (+= bad (check "designated id"   ($ e id) 8))
+        (+= bad (check "designated name" (strlen ($ e name)) 5)))
+
+      ;; designators nest by concatenating: $extra$i -> .extra.i
+      (let ((Employee e . '{ $id 9 $extra$i 1001 }))
+        (+= bad (check "nested designator" ($ e extra i) 1001))
+        (+= bad (check "designator with nesting" ($ e id) 9)))
+
+      ;; a named union member, read and written through $
+      (let ((Employee e . '{ 1 "u" }))
+        (set ($ e extra i) 5)
+        (+= bad (check "$ into union member" ($ e extra i) 5)))
+
+      ;; ---- through the tag of an ANONYMOUS union / struct -----------
+      (let ((Employee e . '{ 1 "anon" }))
+        (set ($ e tag tag_id) 1001)
+        (+= bad (check "$ into anonymous union" ($ e tag tag_id) 1001))
+        (set ($ e role role_id) 55)
+        (+= bad (check "$ into anonymous struct" ($ e role role_id) 55)))
+
+      ;; and by tag in a designated initializer
+      (let ((Employee e . '{ $id 4 $tag$tag_id 2002 }))
+        (+= bad (check "designated through tag" ($ e tag tag_id) 2002))
+        (+= bad (check "designated sibling"     ($ e id) 4)))
+
+      ;; ---- an array of structs --------------------------------------
+      (let ((Employee es [] . '{ '{ 1 "one" } '{ 2 "two" } }))
+        (+= bad (check "array of struct 0" ($ (nth 0 es) id) 1))
+        (+= bad (check "array of struct 1" ($ (nth 1 es) id) 2))
+        (+= bad (check "array of struct name" (strlen ($ (nth 1 es) name)) 3)))
+
+      ;; ---- $ for values, -> through a pointer -----------------------
+      (let ((Employee e . '{ 3 "Bob" })
+            (Employee * p . #f))
+        (set p (aof e))
+        (+= bad (check "-> reads"  (-> p id) 3))
+        (set (-> p id) 4)
+        (+= bad (check "-> writes" ($ e id) 4))
+        ;; $ walks as many levels as you give it
+        (set ($ e duty role_id) 55)
+        (+= bad (check "$ nested write" ($ e duty role_id) 55))
+        (+= bad (check "-> then $ nested" ($ (cof p) duty role_id) 55)))
+
+      ;; ---- a function-pointer member -------------------------------
+      (let ((Employee e . '{ 1 "fn" }))
+        (set ($ e duty describe) describe_impl)
+        (+= bad (check "call member fn ptr" (($ e duty describe) 5) 15))
+        ;; => calls a function stored in a member. It takes ONE level, so a
+        ;; nested member is reached by handing it ($ e duty) as the object.
+        (+= bad (check "=> calls member fn" (=> ($ e duty) describe 6) 18)))
+
+      ;; ---- self-referential struct, walked through pointers ---------
+      (let ((Node b . '{ 22 #f })
+            (Node a . '{ 11 #f })
+            (Chain c . '{ 1 #f #f }))
+        (set ($ a next) (aof b))
+        (set ($ c tail) (aof a))
+        (+= bad (check "chain head"        ($ c head) 1))
+        (+= bad (check "through pointer"   (-> ($ c tail) value) 11))
+        (+= bad (check "two links deep"    (-> (-> ($ c tail) next) value) 22))
+        ;; an incomplete type is fine to hold as a pointer
+        (+= bad (check "opaque ptr is null" (? ($ c opaque) 1 0) 0)))
+
+      ;; ---- cast to a tagged type ------------------------------------
+      ;; (struct X) is ONE type. Handed to `cast' it used to be read as a
+      ;; positional descriptor -- `struct' the type, X a variable name -- so the
+      ;; result came out typed plain `struct' and any member access on it died
+      ;; with "unknown struct type: struct".
+      (let ((Node n . #'(cast (struct Node) '{ 7 #f })))
+        (+= bad (check "cast (struct T)"        ($ n value) 7))
+        (+= bad (check "member of a cast value" ($ (cast (struct Node) '{ 9 #f }) value) 9)))
+
+      (if (== bad 0)
+          (printf "aggregate: all ok\n")
+        (printf "aggregate: %d FAILED\n" bad))
+      (return bad))))
+
+;; sbcl --script cicili.lisp ./test/c/aggregate.cicili
+;; ./test/c/aggregate_test

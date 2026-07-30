@@ -1,0 +1,122 @@
+;;;; Cicili C clauses: variables
+;;; var (file scope) / let / letn / the storage and qualifier attributes
+
+(source "variable.c"
+  (make :std #t :compile #t :link ("-lvariable.o" "-o" "variable_test"))
+
+  (include <stdatomic.h>)
+
+  ;; ---- var: file scope ----------------------------------------------
+  (var int plain_global . 7)
+  (static) (var int static_global . 8)
+  (var const int const_global . 9)
+  ;; no initializer: zero by static storage duration
+  (var int uninit_global)
+  ;; an array, and a 2-D array
+  (var int global_arr [] . '{ 1 2 3 4 })
+  (var int grid [2] [3] . '{ '{ 1 2 3 } '{ 4 5 6 } })
+  ;; qualifiers
+  (volatile) (var int volatile_global . 10)
+  (thread-local) (var int tls_global . 11)
+  (atomic) (var int atomic_global . 12)
+
+  (func check ((const char * what) (llong got) (llong want))
+        (out int)
+        (if (== got want)
+            (block (printf "ok   %-32s %lld\n" what got) (return 0))
+          (block (printf "FAIL %-32s got %lld want %lld\n" what got want) (return 1)))
+        (return 1))
+
+  ;; a static local keeps its value across calls. `var' is file scope only, so
+  ;; inside a function the static goes on a `let' binding instead.
+  (func bump ()
+        (out int)
+        ;; an attribute is a SIBLING element of the binding list, not a wrapper
+        (let ((static) (int calls . 0))
+          (++ calls)
+          (return calls))
+        (return 0))
+
+  (main
+    (let ((int bad . 0))
+
+      ;; ---- the file scope variables ---------------------------------
+      (+= bad (check "var plain"      plain_global      7))
+      (+= bad (check "var static"     static_global     8))
+      (+= bad (check "var const"      const_global      9))
+      (+= bad (check "var uninit is 0" uninit_global    0))
+      (+= bad (check "var volatile"   volatile_global  10))
+      (+= bad (check "var thread-local" tls_global     11))
+      (+= bad (check "var atomic"     atomic_global    12))
+      (+= bad (check "var array"      (nth 2 global_arr) 3))
+      (+= bad (check "var 2-D array"  (nth 2 (nth 1 grid)) 6))
+
+      ;; ---- static local ---------------------------------------------
+      (cast void (bump))
+      (cast void (bump))
+      (+= bad (check "static local persists" (bump) 3))
+
+      ;; ---- let: a scoped block, one declaration per line ------------
+      (let ((int a . 1)
+            (int b . 2)
+            (int c))          ; no initializer
+        (set c (+ a b))
+        (+= bad (check "let declares and initializes" c 3)))
+
+      ;; a later binding can use an earlier one
+      (let ((int a . 5)
+            (int b . #'(* a 2)))
+        (+= bad (check "let sees earlier binding" b 10)))
+
+      ;; let nests, and inner names shadow
+      (let ((int n . 1))
+        (let ((int n . 2))
+          (+= bad (check "inner let shadows" n 2)))
+        (+= bad (check "outer survives" n 1)))
+
+      ;; ---- let binding attributes ----------------------------------
+      ;; An attribute is a sibling element of the binding list and applies to
+      ;; every binding after it in the SAME let -- the flag is never reset. So
+      ;; one attribute per let, or you get `static register int'.
+      (let ((static) (int kept . 100))
+        (+= bad (check "let static" kept 100)))
+      (let ((register) (int fast . 101))
+        (+= bad (check "let register" fast 101)))
+      (let ((volatile) (int vol . 102))
+        (+= bad (check "let volatile" vol 102)))
+      ;; const is part of the type descriptor, not an attribute
+      (let ((const int fixed . 103))
+        (+= bad (check "let const" fixed 103)))
+
+      ;; ---- letn: like let, but it is an expression with a value -----
+      (let ((int got . #'(letn ((int a . 20)
+                                (int b . 22))
+                           (+ a b))))
+        (+= bad (check "letn yields its last form" got 42)))
+
+      ;; letn nests inside an expression
+      (+= bad (check "letn inline"
+                     (letn ((int a . 6)) (* a 7))
+                     42))
+
+      ;; ---- arrays and pointers in let ------------------------------
+      (let ((int xs [] . '{ 5 6 7 })
+            (int * p . #f)
+            (int n . 0))
+        (set p xs)                      ; array decays to a pointer
+        (+= bad (check "array decays"   (nth 1 p) 6))
+        (set n (sizeof xs))
+        (+= bad (check "sizeof array"   n 12)))
+
+      ;; ---- assignment to a whole struct-free scalar chain ----------
+      (let ((int a . 0) (int b . 0) (int c . 0))
+        (set a 1 b 2 c 3)
+        (+= bad (check "set many pairs" (+ (* a 100) (* b 10) c) 123)))
+
+      (if (== bad 0)
+          (printf "variable: all ok\n")
+        (printf "variable: %d FAILED\n" bad))
+      (return bad))))
+
+;; sbcl --script cicili.lisp ./test/c/variable.cicili
+;; ./test/c/variable_test

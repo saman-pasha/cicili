@@ -10,7 +10,7 @@
    (const-ptr     :initarg :const-ptr :accessor const-ptr)
    (array-def     :initarg :array-def :accessor array-def)
    (default       :initarg :default   :accessor default)
-   (keys          :initform nil :accessor keys) ; resolver keys
+   (keys          :initform nil :accessor keys)
    (module        :initform nil :accessor module)
    (unique        :initform nil :accessor unique)
    (attrs         :initarg :attrs     :accessor attrs)
@@ -170,6 +170,24 @@
     (if (is-decl-name name) name
         (error (format nil "wrong declaration name ~S" name)))))
 
+;; Register the `declare' tag of an anonymous struct/union in the symbol table as
+;; an ordinary member of the ENCLOSING aggregate, typed with the anonymous one:
+;;
+;;
+;;   tag/Employee          -> type ciciliUnion102   (this entry)
+;;   tag_id/ciciliUnion102 -> int                   (the union's own member)
+;;
+;; so ($ e tag tag_id) can walk in, and the tag is reachable by name the way any
+;; other member is. This is a lookup-only entry: `emitted' keeps a blank typeof,
+;; because the backend prints the anonymous body in front of the tag and must not
+;; also print a type name.
+(defun put-declare-tag< (emitted anon-spec enclosing-spec)
+  (let ((*struct-spec* enclosing-spec))
+    (*puts* (name emitted)
+      (make-specifier (name emitted) '|@VAR| (const emitted) (name anon-spec)
+                      (modifier emitted) (const-ptr emitted) (array-def emitted)
+                      nil (attrs emitted)))))
+
 (defun specify-name< (name)
   ;; for incomplete type error, field of its own type
   (let ((name (expand-macros name)))
@@ -283,6 +301,9 @@
 	       (const-ptr nil)
 	       (variable nil)
 	       (array nil)
+           ;; the [] of an ARRAY of function pointers, kept apart from `array'
+           ;; because for a func type `array' already carries the function spec
+           (func-array nil)
 	       (status 0))
       ;; code has unextractable content
       (when (and (listp desc) (key-eq (car desc) '|code|))
@@ -352,11 +373,23 @@
 			                           (setq variable nth-1-desc)
 			                           (setq array nth-2-desc))))))
 	          ((= len 4) (if (key-eq nth-0-desc '|func|)
-                             (progn
-                               (setq type nth-0-desc)
-		                       (setq modifier '|*|)
-                               (setq variable nth-1-desc)
-				               (setq array (specify-function desc (list '(|decl|)))))
+                             ;; the [] sits after the NAME, before the parameters,
+                             ;; the same as any other variable:
+                             ;;   (func ops [] ((int a) (int b)))
+                             (if (is-array nth-2-desc)
+                                 (progn
+                                   (setq type nth-0-desc)
+		                           (setq modifier '|*|)
+                                   (setq variable nth-1-desc)
+                                   (setq func-array nth-2-desc)
+                                   (setq array (specify-function
+                                                   (list nth-0-desc nth-1-desc nth-3-desc)
+                                                   (list '(|decl|)))))
+                                 (progn
+                                   (setq type nth-0-desc)
+		                           (setq modifier '|*|)
+                                   (setq variable nth-1-desc)
+				                   (setq array (specify-function desc (list '(|decl|))))))
                              (if (key-eq nth-0-desc '|const|)
                                  (if (key-eq nth-1-desc '|func|)
                                      (progn
@@ -428,7 +461,17 @@
                                        (setq type nth-0-desc)
 				                       (setq variable nth-1-desc)
                                        (setq array (list nth-2-desc nth-3-desc)))))))
-	          ((= len 5) (if (key-eq nth-0-desc '|const|)
+	          ((= len 5) (if (and (key-eq nth-0-desc '|func|) (is-array nth-2-desc))
+                             ;; (func ops [] ((int a) (int b)) (out int))
+                             (progn
+                               (setq type nth-0-desc)
+		                       (setq modifier '|*|)
+                               (setq variable nth-1-desc)
+                               (setq func-array nth-2-desc)
+                               (setq array (specify-function
+                                               (list nth-0-desc nth-1-desc nth-3-desc nth-4-desc)
+                                               (list '(|decl|)))))
+                         (if (key-eq nth-0-desc '|const|)
                              (if (key-eq nth-1-desc '|func|)
                                  (progn
                                    (setq const nth-0-desc)
@@ -460,7 +503,7 @@
 			                   (setq modifier nth-1-desc)
 			                   (setq const-ptr nth-2-desc)
                                (setq variable nth-3-desc)
-			                   (setq array nth-4-desc))))
+			                   (setq array nth-4-desc)))))
 	          ((= len 6) (progn
 		                   (setq const nth-0-desc)
 		                   (setq type nth-1-desc)
@@ -491,7 +534,14 @@
       (if (key-eq type '|func|) ; func type
           (progn
             (when (null array) (setq status -7))
-            (setq array (list array)))
+            ;; (<func spec> . <array dims>) -- the backend takes the function from
+            ;; the car and the dimensions, if any, from the cdr
+            (setq array (cons array
+                              (when func-array
+                                (if (= (length func-array) 3)
+                                    (list (specify-expr (nth 1 func-array)))
+                                    (list (specify-expr (nth 1 (car func-array)))
+                                          (specify-expr (nth 1 (cadr func-array)))))))))
           (if (and (= (length array) 2) (is-array (car array)) (is-array (cadr array)))
               (setq array (list (specify-expr (nth 1 (car array))) (specify-expr (nth 1 (cadr array)))))
               (when (= (length array) 3)
@@ -499,6 +549,36 @@
       (when (< status 0) (error (format nil "wrong type descriptor ~D ~A" status desc)))
       (values const (if type (if (typep type 'sp) type (specify-name< type)) type)
               modifier const-ptr (when variable (specify-name< variable)) array))))
+
+;; The (lambda ...) / (lambda* ...) form directly inside a ' quote, or NIL.
+;; A CALL of a quoted lambda -- ('(lambda ...) arg) -- is deliberately not
+;; matched: there the value is whatever the lambda returns, not the lambda.
+(defun quoted-lambda< (value)
+  (let ((value (expand-macros value)))
+    (when (and (listp value) (= (length value) 2) (key-eq (car value) 'QUOTE))
+      (let ((quoted (cadr value)))
+        (when (and (listp quoted) (symbolp (car quoted))
+                   (or (key-eq (car quoted) '|lambda|) (key-eq (car quoted) '|lambda*|)))
+          quoted)))))
+
+;; Descriptor for a variable BOUND TO a quoted lambda: (func <name> <params>
+;; (out <ret>)), i.e. a pointer to that function -- exactly what a user writes by
+;; hand, so it goes through specify-type< unchanged.
+;; `ret-spec' is the already-specified value, used only when the lambda's own out
+;; clause is itself `auto' and the return type has to be read back off the lifted
+;; function.
+(defun lambda-func-desc< (quoted variable ret-spec)
+  (let* ((starred (key-eq (car quoted) '|lambda*|))
+         (params  (nth (if starred 2 1) quoted))
+         (out     (nth (if starred 3 2) quoted)))
+    (if (and (listp out) (key-eq (car out) '|out|))
+        (let ((ret (expand-macros (cadr out))))
+          (if (key-eq ret '|auto|)
+              (let ((typ (deep-typeof "" ret-spec)))
+                (list '|func| variable params (list '|out| (if typ (typeof typ) '|void|))))
+              (list '|func| variable params out)))
+        ;; no out clause means the lambda returns void
+        (list '|func| variable params))))
 
 (defun specify-type-value< (desc)
   (set-ast-vals desc
@@ -565,7 +645,10 @@
   (set-ast-obj def (make-specifier '|@SYMBOL| '|@ATOM| nil '|void| '|*| nil nil '|NULL| '())))
 
 (defun specify-number-expr (def)
-  (make-specifier '|@NUMBER| '|@ATOM| '|const| '|int| nil nil nil def '()))
+  ;; a literal with a fraction is a double, as in C -- typing every literal `int'
+  ;; made (let ((auto d . 2.5))) come out as `const int d = 2.5'
+  (make-specifier '|@NUMBER| '|@ATOM| '|const| (if (floatp def) '|double| '|int|)
+                  nil nil nil def '()))
 
 (defun specify-character-expr (def)
   (if (eql def #\Null)
@@ -585,8 +668,13 @@
                                  (find symb *operators* :test #'key-eq)
                                  (find symb *assignments* :test #'key-eq))
                              (make-specifier '|@OPERATOR| '|@ATOM| nil nil nil nil nil symb '())
-                             (error (format nil "unknown symbol: ~A~%  inside function: ~A~%"
-                                            def *function-spec*)))))))
+                             ;; break / continue name nothing, they are emitted verbatim.
+                             ;; Covers both spellings: the bare symbol and (break) / (continue),
+                             ;; since body.lisp routes the list form here too.
+                             (if (find symb *keywords* :test #'key-eq)
+                                 (make-specifier '|@SYMBOL| '|@ATOM| nil nil nil nil nil symb '())
+                                 (error (format nil "unknown symbol: ~A~%  inside function: ~A~%"
+                                                def *function-spec*))))))))
 
 (defun specify-atom-expr (def)
   (set-ast-obj def
@@ -595,9 +683,16 @@
           ((numberp    def)        (specify-number-expr def))
 	      ((characterp def)        (specify-character-expr def))
 	      ((stringp    def)        (specify-string-expr def))
+          ;; a $-prefixed name inside a '{ } list is a designated initializer:
+          ;; '{ $id 1 } -> { .id = 1 }, and $tag$tag_id nests. It names nothing,
+          ;; so it must not go through the symbol table. compile-list looks for
+          ;; exactly this shape -- the symbol in `name', @SYMBOL in `typeof'.
+          ((and (symbolp def) (> (length (symbol-name def)) 1)
+                (eql (char (symbol-name def) 0) #\$))
+           (make-specifier def '|@ATOM| nil '|@SYMBOL| nil nil nil nil '()))
           ((and (symbolp def) (is-symbol def))
 	       (if (eql (char (symbol-name def) 0) #\0) ; 0x12af..
-	           (specify-symbol-expr def)
+	           (specify-number-expr def)
                (specify-symbol-expr def))) ; name
           ((symbolp def) (specify-symbol-expr def)) ; operators
 	      (t (error (format nil "syntax error \"~A\"" def))))))
@@ -638,7 +733,6 @@
       (cond ((key-eq oprt '|not|) (setq oprt '|!|))
 	        ((key-eq oprt '|cof|) (setq oprt '|*|))
             ((key-eq oprt '|aof|) (setq oprt '|&|))
-            ((key-eq oprt '|stringize|) (setq oprt '|#|))  ; maybe inside a macro
             ((key-eq oprt '|1+|)  (setq oprt '|++|) (setq is-postfix t))
 	        ((key-eq oprt '|1-|)  (setq oprt '|--|) (setq is-postfix t)))
       (if is-postfix
@@ -691,16 +785,27 @@
 (defun specify-cast-expr (def)
   (unless (= (length def) 3) (error (format nil "wrong cast form ~A" def)))
   (set-ast-obj def
-    (let ((ty (expand-macros (nth 1 def))))
-      (format t "CACACACASTSTSTS1 ~A~%" ty)
+    (let* ((ty (expand-macros (nth 1 def)))
+           ;; (struct X) / (union X) / (enum X) is ONE type, not a descriptor.
+           ;; Everything else that arrives as a list -- (int *), (const char *),
+           ;; (a []) -- is a descriptor and specify-type< reads it positionally.
+           ;; Handing it a tagged type unwrapped made it read the tag as the type
+           ;; and the tag's name as a variable name, so (cast (struct S) …) came
+           ;; out typed plain `struct'. That is what left def-closure's context
+           ;; variable with (t: struct) and failed later as
+           ;; "unknown struct type: struct".
+           (tagged (and (listp ty) (or (key-eq '|struct| (car ty))
+                                       (key-eq '|union|  (car ty))
+                                       (key-eq '|enum|   (car ty)))))
+           ;; still routed through specify-typeof<, which is what resolves the
+           ;; tag's name against the module path
+           (desc (specify-typeof< (if (listp ty)
+                                      (if (key-eq '|typeof| (car ty))
+                                          (list ty)
+                                          ty)
+                                      (list ty)))))
       (multiple-value-bind (const type modifier const-ptr variable array)
-	      (specify-type<
-              (specify-typeof< (if (listp ty)
-                                   (if (key-eq '|typeof| (car ty))
-                                       (list ty)
-                                       ty)
-                                   (list ty))))
-        (format t "CACACACASTSTSTS2 ~A~%" ty)
+	      (specify-type< (if tagged (list desc) desc))
         (make-specifier nil '|@CAST|
                         const type modifier const-ptr array (specify-expr (expand-macros (nth 2 def))) '())))))
 
@@ -735,11 +840,31 @@
   (when (< (length def) 3) (error (format nil "wrong access member function => form: ~A" def)))
   ;; (unless (is-symbol (nth 2 def)) (error (format nil "wrong access method name ~A" def)))
   (set-ast-obj def
-    (let ((method-var (make-specifier (specify-expr (nth 1 def)) '|@=>| nil nil nil nil nil
-                                      ;; (specify-symbol-expr (nth 2 def)) '())))
-                                      (specify-expr (nth 2 def)) '())))
-      (setf (body method-var) (specify-list-expr (nthcdr 3 def)))
-      method-var)))
+    (let* ((obj (specify-expr (nth 1 def)))
+           (holder (deep-storageof "" obj))
+           ;; The member is scoped to the object's TYPE -- (typeof holder), not
+           ;; (name holder). deep-storageof hands back the storage itself, whose
+           ;; name is the variable or member (`duty'); its type is the aggregate
+           ;; the member lives in (`Role').
+           (scope (when holder (peel-type-tag< (typeof holder))))
+           (scope-name (when scope (if (typep scope 'sp) (name scope) scope))))
+      (unless scope-name
+        (error (format nil "type of the object not found: ~A~%  in: ~A~%" (nth 1 def) def)))
+      ;; *lexemes-id* is BOUND rather than pushed. *gets* joins the id with the
+      ;; whole path and then walks up by dropping from the FRONT, so a pushed
+      ;; scope is the first thing discarded -- describe/Role was never tried on
+      ;; its own and every => raised "unknown symbol: <member>". Binding the path
+      ;; to just the type makes the first lookup describe/Role, with the bare
+      ;; global name as the only fallback.
+      (let ((method-var
+                (make-specifier obj '|@=>| nil nil nil nil nil
+                  (let ((*lexemes-id* (list (symbol-name scope-name))))
+                    (specify-expr (nth 2 def)))
+                  '())))
+        ;; the arguments belong to the CALLER's scope, so they are specified
+        ;; outside that binding
+        (setf (body method-var) (specify-list-expr (nthcdr 3 def)))
+        method-var))))
 
 (defun specify-sizeof-expr (def)
   (when (< (length def) 2) (error (format nil "sizeof syntax error ~A" def)))
@@ -755,18 +880,12 @@
   (set-ast-obj def
     (make-specifier nil '|@TYPEOF| nil nil nil nil nil (specify-expr (expand-macros (cadr def))) '())))
 
-;; (((<> a b) 1) 2)
-;; ((<> a b) 1)
-;; (<> a b)
 ;; a_b
 ;; (a_b 1)
 ;; if returns a_b_0
 ;; then       (a_b_0 2) ; curry lambda call form
 ;; else       (a_b 1 2)
 
-;; (((p0 2) 3) 4)
-;; ((p0 2) 3)
-;; (p0 2)
 ;; p1
 (defun specify-call-expand (def)
   (let ((def (expand-macros def)))
@@ -865,12 +984,8 @@
 				                  (list '|calloc| (nth 1 value) (nth 2 value))))))
           (setf (default var-spec) (if (null value)
                                        nil
-                                       (move-var (let ((app (specify-expr value)))
-                                                   (if (symbolp app)
-                                                       (specify-call-expr (list app))
-                                                       app))
-                                         value)))
-
+                                       (move-var (specify-expr (expand-macros value)) value)))
+          
 	      (let ((attributes '()))
 	        (when is-extern   (push (cons '|extern|       t) attributes))
 		    (when is-static   (push (cons '|static|       t) attributes))
@@ -918,16 +1033,28 @@
                         attributes)))))          
             (setf (attrs var-spec) attributes)
 
-            ;; 'auto type inference 
+            ;; 'auto type inference -- see the matching comment in specify-let:
+            ;; the quoted lambda ITSELF gives a pointer to that function, a CALL
+            ;; of one gives what the call returns
             (when (key-eq '|auto| (typeof var-spec))
-              (let ((typ (deep-typeof "" (default var-spec))))
-                (format t "VARTYTYTYTYTY ~A~%" typ)
-                (when typ
-                  (setf (const var-spec) (const typ))
-                  (setf (typeof var-spec) (typeof typ))
-                  (setf (modifier var-spec) (modifier typ))
-                  (setf (const-ptr var-spec) (const-ptr typ))
-                  (setf (array-def var-spec) (array-def typ)))))
+              (let ((quoted (quoted-lambda< value)))
+                (if quoted
+                    (multiple-value-bind (l-const l-type l-mod l-cptr l-var l-array)
+                        (specify-type<
+                            (lambda-func-desc< quoted variable (default var-spec)))
+                      (declare (ignore l-var))
+                      (setf (const var-spec) l-const)
+                      (setf (typeof var-spec) l-type)
+                      (setf (modifier var-spec) l-mod)
+                      (setf (const-ptr var-spec) l-cptr)
+                      (setf (array-def var-spec) l-array))
+                    (let ((typ (deep-typeof "" (default var-spec))))
+                      (when typ
+                        (setf (const var-spec) (const typ))
+                        (setf (typeof var-spec) (typeof typ))
+                        (setf (modifier var-spec) (modifier typ))
+                        (setf (const-ptr var-spec) (const-ptr typ))
+                        (setf (array-def var-spec) (array-def typ)))))))
 
             (assign-check var-spec var-spec (default var-spec)) ; authority check
             
@@ -1036,23 +1163,36 @@
                                                 (make-specifier var-name '|@VAR| const typeof modifier const-ptr array
                                                                 (if (null value)
                                                                     nil
-                                                                    (move-var (let ((app (specify-expr value)))
-                                                                                (if (symbolp app)
-                                                                                    (specify-call-expr (list app))
-                                                                                    app))
-                                                                      value))
+                                                                    (move-var (specify-expr (expand-macros value)) value))
                                                                 attributes))))
 
-                             ;; 'auto type inference 
+                             ;; 'auto type inference
+                             ;; Bound to a quoted lambda/lambda* ITSELF -> the type
+                             ;; is a pointer to that function. Bound to a CALL of
+                             ;; one -> the type is what the call returns, which is
+                             ;; the deep-typeof path below. Without the split,
+                             ;; (auto square . '(lambda ((int n)) (out int) ...))
+                             ;; took the lambda's return type and emitted
+                             ;; `int square = __ciciliL_138;'.
                              (when (key-eq '|auto| (typeof param-spec))
-                               (let ((typ (deep-typeof "" (default param-spec))))
-                                 (format t "LETTYTYTYTYTY ~A~%" typ)
-                                 (when typ
-                                   (setf (const param-spec) (const typ))
-                                   (setf (typeof param-spec) (typeof typ))
-                                   (setf (modifier param-spec) (modifier typ))
-                                   (setf (const-ptr param-spec) (const-ptr typ))
-                                   (setf (array-def param-spec) (array-def typ)))))
+                               (let ((quoted (quoted-lambda< value)))
+                                 (if quoted
+                                     (multiple-value-bind (l-const l-type l-mod l-cptr l-var l-array)
+                                         (specify-type<
+                                             (lambda-func-desc< quoted variable (default param-spec)))
+                                       (declare (ignore l-var))
+                                       (setf (const param-spec) l-const)
+                                       (setf (typeof param-spec) l-type)
+                                       (setf (modifier param-spec) l-mod)
+                                       (setf (const-ptr param-spec) l-cptr)
+                                       (setf (array-def param-spec) l-array))
+                                     (let ((typ (deep-typeof "" (default param-spec))))
+                                       (when typ
+                                         (setf (const param-spec) (const typ))
+                                         (setf (typeof param-spec) (typeof typ))
+                                         (setf (modifier param-spec) (modifier typ))
+                                         (setf (const-ptr param-spec) (const-ptr typ))
+                                         (setf (array-def param-spec) (array-def typ)))))))
 
                              (assign-check let-var param-spec (default param-spec)) ; authority check
                              param-spec)
@@ -1124,10 +1264,8 @@
                        (setf (typeof *function-spec*) (list '|struct| (name (car (body (specify-expr output)))))))
                       ;; tries to infer output type from return expression
                       ((and *function-spec* (key-eq (typeof *function-spec*) '|auto|))
-                       (format t "FFFFFFFFFFR ~A~%" (typeof *function-spec*))
                        (let* ((out (specify-expr output))
                               (typ (deep-typeof "" out)))
-                         (format t "TYTYTYTYTY ~A~%" typ)
                          (when typ
                            (setf (const *function-spec*) (const typ))
                            (setf (typeof *function-spec*) (typeof typ))
@@ -1269,7 +1407,6 @@
 	       (is-extern   nil)
 	       (is-volatile nil)
 	       (is-auto     nil)
-	       (do-resolve  nil)
 	       (is-method (if (key-eq (car def) '|method|) t nil))
            (is-shared (and (listp name) (not is-method)))
 	       (params (nth 2 def))
@@ -1286,7 +1423,7 @@
 	       (body (if has-out (nthcdr 4 def) (nthcdr 3 def)))
            (function-specifier nil))
 
-      (when (key-eq (car def) '|lambda*|) (format t "lAMBDA*************** ~A   ~A~%" (cadr def) (gethash def *ast-table*)))
+      (when (key-eq (car def) '|lambda*|) )
       
       (dolist (attr attrs)
         (let ((name (car attr)))
@@ -1296,7 +1433,6 @@
 	            ((key-eq name '|extern|)   (setq is-extern   t))
 	            ((key-eq name '|volatile|) (setq is-volatile t))
 	            ((key-eq name '|auto|)     (setq is-auto     t))
-	            ((key-eq name '|resolve|)  (setq do-resolve  (cadr attr)))
 	            (t (error (format nil "unknown function attribute ~A" attr))))))
       (when (and is-declare is-inline) (error (format nil "inline functions should be defined ~A" def)))
       (when (< (length def) 3) (error (format nil "wrong function definition ~A" def)))
@@ -1311,7 +1447,6 @@
 	    (when is-static   (push (cons '|static|   t) attributes))
 	    (when is-auto     (push (cons '|auto|     t) attributes))
 	    (when is-declare  (push (cons '|decl|     t) attributes))
-	    (when do-resolve  (push (cons '|resolve|  do-resolve) attributes))
         ;; guard *function-spec* for inline structs and lambdas
         (setq function-specifier (*puts* name (make-specifier name (if is-method '|@METHOD| '|@FUNC|)
                                                               nil nil nil nil nil nil attributes))) ;; for specify out
@@ -1387,10 +1522,17 @@
   (when (> (length attrs) 0) (error (format nil "wrong attributes ~A" attrs)))
   (when (> (length def) 3) (error (format nil "wrong preprocessor definition ~A" def)))
   (set-ast-obj def
+    ;; The directive names nothing, so it is kept as a plain symbol with its
+    ;; leading @ swapped for # and printed verbatim by compile-preprocessor.
+    ;; specify-symbol-expr used to be called on it, which could only fail
+    ;; ("unknown symbol: @define"); worse, the line below it then rewrote the
+    ;; first character of the returned spec's name IN PLACE -- and that name is
+    ;; the interned marker @SYMBOL, shared by every atom in the program.
     (let ((preproc-specifier
               (make-specifier (gensym "cicili#PreProc")
-                '|@PREPROC| (specify-symbol-expr (car def)) nil nil nil nil nil nil)))
-      (setf (char (symbol-name (name (const preproc-specifier))) 0) #\#)
+                '|@PREPROC|
+                (intern (concatenate 'string "#" (subseq (symbol-name (car def)) 1)))
+                nil nil nil nil nil nil)))
       (unless (null (cadr  def)) (setf (typeof  preproc-specifier) (specify-expr (cadr  def))))
       (unless (null (caddr def)) (setf (default preproc-specifier) (specify-expr (caddr def))))
       preproc-specifier)))
@@ -1433,23 +1575,34 @@
 	       (name (specify-decl-name< (if is-anonymous (gensym "ciciliEnum") (nth 1 def))))
 	       (constants (if is-anonymous (nthcdr 1 def) (nthcdr 2 def)))
 	       (enum-specifier (*puts* name (make-specifier name '|@ENUM| nil name nil nil nil nil nil))))
-      (*push* name)
       (setf (anonymous enum-specifier) is-anonymous)
-      (loop for const in constants
-	        with l = (length constants)
-	        for i from 0 to l
-	        do (progn
-	             (unless (and (consp const) (symbolp (car const))) (error (format nil "syntax error ~A" const)))
-	             (let ((key (car const))
-		               (value (cdr const)))
-		           (unless (or (null value) (numberp value) (symbolp value)) (error (format nil "syntax error ~A" const)))
-		           (add-inner
-                       (let ((var-name (specify-expr key)))
-                         (*puts* var-name
-                           (make-specifier var-name '|@VAR| nil nil nil nil nil
-                                           (if (null value) nil (specify-expr value)) nil)))
-                     enum-specifier))))
-      (*pop* enum-specifier))))
+      ;; An enum's constants live at FILE scope in C, however deeply the enum is
+      ;; nested -- so they are registered with no enum name pushed, no enclosing
+      ;; struct and an empty lexeme path. Previously the enum name was pushed
+      ;; first, keying them RED/Colors, and a nested enum picked up the struct,
+      ;; keying them SENIOR/Employee; either way a reference from a function died
+      ;; with "unknown symbol: RED".
+      (let ((*struct-spec* nil)
+            (*lexemes-id* '()))
+        (loop for const in constants
+	          with l = (length constants)
+	          for i from 0 to l
+	          do (progn
+	               (unless (and (consp const) (symbolp (car const))) (error (format nil "syntax error ~A" const)))
+	               (let ((key (car const))
+		                 (value (cdr const)))
+		             (unless (or (null value) (numberp value) (symbolp value)) (error (format nil "syntax error ~A" const)))
+		             (add-inner
+                         ;; the constant's name is being DECLARED here, so it goes
+                         ;; through specify-decl-name< like any other declarator.
+                         ;; specify-expr tried to resolve it and every enum died
+                         ;; with "unknown symbol: <first constant>".
+                         (let ((var-name (specify-decl-name< key)))
+                           (*puts* var-name
+                             (make-specifier var-name '|@VAR| nil nil nil nil nil
+                                             (if (null value) nil (specify-expr value)) nil)))
+                       enum-specifier)))))
+      enum-specifier)))
 
 (defun specify-struct (def attrs &key ((:nested is-nested) nil) ((:inline is-inline) nil))
   (when (and is-nested (> (length attrs) 0)) (error (format nil "wrong attributes ~A" attrs)))
@@ -1467,7 +1620,11 @@
                                              (expand-macros (nth 1 def))
                                              (nth 1 def)))))
 	       (clauses (if is-anonymous (nthcdr 1 def) (nthcdr 2 def)))
-	       (struct-specifier (*puts* name (make-specifier name '|@STRUCT| nil name nil nil nil nil nil))))
+	       (struct-specifier (make-specifier name '|@STRUCT| nil name nil nil nil nil nil))
+           (tmp-struct-spec *struct-spec*))
+      
+      (setq *struct-spec* struct-specifier)
+      (*puts* name struct-specifier)
       (*push* name)
       (when (and is-anonymous (not is-nested)) (error (format nil "only nested structs could be anonymous")))
       ;; (when (and (not is-anonymous) is-nested) (error (format nil "nested structs should be anonymous")))
@@ -1553,7 +1710,10 @@
           (let ((var-spec (specify-variable (push '|var| decl) '())))
             (setf (construct var-spec) '|@DECLARE|)
 	        (add-param var-spec struct-specifier)
-            (setf (typeof var-spec) '||))))
+            (setf (typeof var-spec) '||)
+            (put-declare-tag< var-spec struct-specifier tmp-struct-spec))))
+
+      (setq *struct-spec* tmp-struct-spec)
       struct-specifier)))
 
 (defun specify-union (def attrs &key ((:nested is-nested) nil))
@@ -1562,7 +1722,16 @@
     (let* ((is-anonymous (or (= (length def) 1) (not (symbolp (nth 1 def)))))
 	       (name (specify-decl-name< (if is-anonymous (gensym "ciciliUnion") (nth 1 def))))
 	       (clauses (if is-anonymous (nthcdr 1 def) (nthcdr 2 def)))
-	       (union-specifier (*puts name (make-specifier name '|@UNION| nil name nil nil nil nil nil))))
+	       (union-specifier (make-specifier name '|@UNION| nil name nil nil nil nil nil))
+           (tmp-struct-spec *struct-spec*))
+      ;; Scope this union to itself before registering it, the way specify-struct
+      ;; does. Left alone, an anonymous union nested in a struct inherited that
+      ;; struct as *struct-spec*, so the union landed under ciciliUnion102/Employee
+      ;; and its members under tag_id/Employee -- nothing could walk into it.
+      ;; *puts* keys a spec under its own bare name when it IS *struct-spec*.
+      ;; For a named union at top level every key is unchanged.
+      (setq *struct-spec* union-specifier)
+      (*puts* name union-specifier)
       (*push* name)
       (when (and is-anonymous (not is-nested)) (error (format nil "only nested unions could be anonymous")))
       (setf (anonymous union-specifier) is-anonymous)
@@ -1578,7 +1747,12 @@
                       ;; members
 		              ((key-eq construct '|member|)
                        (let ((var-spec (specify-variable clause attributes)))
-		                 (add-inner (*puts* (intern (format nil "~A/~A" (name var-spec) name)) var-spec) union-specifier)
+                         ;; just the member name: *puts* qualifies it with
+                         ;; *lexemes-id*, which already carries this union's name
+                         ;; from the *push* above. Pre-joining it here produced
+                         ;; i/Mixed/Mixed, so ($ m i) could not find the member
+                         ;; and died with "unknown struct type: Mixed".
+		                 (add-inner (*puts* (name var-spec) var-spec) union-specifier)
                            (setq attributes '())))
 		              ((key-eq construct '|struct|)
 		               (add-inner (specify-struct   clause attributes :nested t) union-specifier) (setq attributes '()))
@@ -1597,7 +1771,9 @@
           (let ((var-spec (specify-variable (push '|var| decl) '())))
             (setf (construct var-spec) '|@DECLARE|)
 	        (add-param var-spec union-specifier)
-            (setf (typeof var-spec) '||))))
+            (setf (typeof var-spec) '||)
+            (put-declare-tag< var-spec union-specifier tmp-struct-spec))))
+      (setq *struct-spec* tmp-struct-spec)
       union-specifier)))
 
 (defun specify-guard (def attrs)

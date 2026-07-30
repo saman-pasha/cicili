@@ -1,0 +1,107 @@
+;;;; Cicili C clauses: the metaprogramming layer
+;;; DEFMACRO / macrolet / generic / <> / $$$ / import
+;;;
+;;; These run in Common Lisp at specification time. Nothing here survives into
+;;; the C beyond what the macros expand to.
+
+;;; a macro file, brought in under the :util namespace; its init function
+;;; receives the trailing arguments at import time
+(import "./helpers.cicili" :util "from macro test")
+
+(source "macro.c"
+  (make :std #t :compile #t :link ("-lmacro.o" "-o" "macro_test"))
+
+  (func check ((const char * what) (llong got) (llong want))
+        (out int)
+        (if (== got want)
+            (block (printf "ok   %-32s %lld\n" what got) (return 0))
+          (block (printf "FAIL %-32s got %lld want %lld\n" what got want) (return 1)))
+        (return 1))
+
+  ;; ---- DEFMACRO: an ordinary Common Lisp macro ----------------------
+  ;; it receives unevaluated Cicili forms and returns a Cicili form
+  (DEFMACRO twice (x)
+    `(* 2 ,x))
+
+  ;; a macro that expands to several forms splices them with $$$
+  (DEFMACRO two-adders (suffix)
+    (LET ((one (INTERN (FORMAT NIL "add_one_~A" suffix)))
+          (two (INTERN (FORMAT NIL "add_two_~A" suffix))))
+      `($$$
+        (func ,one ((int n)) (out int) (return (+ n 1)))
+        (func ,two ((int n)) (out int) (return (+ n 2))))))
+
+  (two-adders a)
+
+  ;; To get a string from a symbol at macro time, use symbol-name -- a Cicili
+  ;; macro over the Lisp function.
+
+  ;; ---- generic / <> : type-parameterised code ----------------------
+  ;; <> joins its parts with ^, which becomes _ in the C name, so
+  ;; (<> box int) is box_int
+  (generic decl-box
+    (a)
+    (struct (<> box a)
+            (member a value))
+    (decl) (func (<> make box a) ((a v)) (out (<> box a)))
+    (decl) (func (<> get box a) (((<> box a) * b)) (out a)))
+
+  (generic impl-box
+    (a)
+    (func (<> make box a) ((a v))
+          (out (<> box a))
+          (return (cast (<> box a) '{ v })))
+    (func (<> get box a) (((<> box a) * b))
+          (out a)
+          (return (-> b value))))
+
+  ;; instantiate for two different types
+  (decl-box int)
+  (impl-box int)
+  (decl-box double)
+  (impl-box double)
+
+  (main
+    (let ((int bad . 0))
+
+      ;; ---- DEFMACRO ------------------------------------------------
+      (+= bad (check "DEFMACRO expands" (twice 21) 42))
+      ;; it is a source transform, so it composes like any other form
+      (+= bad (check "DEFMACRO nests" (twice (twice 10)) 40))
+
+      ;; the $$$ macro defined two real functions
+      (+= bad (check "$$$ spliced first"  (add_one_a 41) 42))
+      (+= bad (check "$$$ spliced second" (add_two_a 40) 42))
+
+      ;; ---- symbol-name: the symbol of a type, as a C string --------
+      (+= bad (check "symbol-name of a generic"
+                     (strlen (symbol-name (<> box int)))
+                     7))                              ; "box_int"
+
+      ;; ---- import: macros from another file, namespaced ------------
+      (+= bad (check "imported macro"        (util.half 84) 42))
+      (+= bad (check "imported macro nests"  (util.clamp (util.half 200) 0 42) 42))
+
+      ;; ---- macrolet: macros for one body only ----------------------
+      (macrolet ((thrice (x) `(* 3 ,x)))
+        (+= bad (check "macrolet" (thrice 14) 42)))
+
+      ;; ---- generic instantiations ---------------------------------
+      (let (((<> box int) bi . #'((<> make box int) 42)))
+        (+= bad (check "generic int box" ((<> get box int) (aof bi)) 42)))
+
+      (let (((<> box double) bd . #'((<> make box double) 2.5)))
+        (+= bad (check "generic double box"
+                       (cast int (* ((<> get box double) (aof bd)) 4))
+                       10)))
+
+      ;; the generated C name joins with _
+      (+= bad (check "generic name is box_int" (sizeof (<> box int)) 4))
+
+      (if (== bad 0)
+          (printf "macro: all ok\n")
+        (printf "macro: %d FAILED\n" bad))
+      (return bad))))
+
+;; sbcl --script cicili.lisp ./test/c/macro.cicili
+;; ./test/c/macro_test

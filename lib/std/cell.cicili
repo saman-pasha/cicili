@@ -12,30 +12,40 @@
   (guard __CELL_TYPE_H_
     (decl) (struct (<> std cell)))
   (typedef (<> std cell) (<> cell a type_t))
-  
+
+  (decl) (func (<> free cell a) (((<> cell a) * cell)))          ; needed for letin
+  (decl) (func (<> free cell a pointer) (((<> cell a) ** cell))) ; needed for pass move to function
+
+  ) ; decl-cell
+
+
+;;; Reach a cell's interior through let^cell / take^cell, never free it
+;;; yourself. This cannot be guarded by a (DEFMACRO (<> free a)): that name IS
+;;; the back-end free of the celled type, so the guard shadows the function
+;;; free_cell itself has to call.
+
+(generic impl-cell
+  (a)
+
   (inline)
-  ;; needed for letin
-  (func (<> free cell a) (((<> cell a) * cell))        
+  (func (<> free cell a) (((<> cell a) * cell))
         (syslog! (printf "FREE CELL: %p\n" (-> cell ptr)))
         (when (-> cell ptr)
           ((<> free a) (-> cell ptr))
           (free (-> cell ptr))))
 
   (inline)
-  ;; needed for pass move to function
-  (func (<> free cell a pointer) (((<> cell a) ** cell))        
+  (func (<> free cell a pointer) (((<> cell a) ** cell))
         ((<> free cell a) (cof cell)))
 
-  ;; interior guard
-  (DEFMACRO (<> free a) (obj)
-    (ERROR (FORMAT NIL "shouldn't free an object where ordered to be used inside Cell: ~A" (symbol-name a))))
-
-  ) ; decl-cell
+  ) ; impl-cell
 
 (DEFMACRO free^cell (cell)
   (LET ((cell cell)
-        (full-type (NTH-VALUE 1 (CICILI:TYPE-CHECK cell :TYPEOF :std^cell :MODIFIER :ref))))
-    `((<> free ,(NTH 1 full-type)) ,cell)))
+        (full-type (NTH-VALUE 1 (CICILI:TYPE-CHECK cell :TYPEOF :std^cell :MODIFIER '(move ref)))))
+    (IF (CICILI:KEY-EQ (NTH 2 full-type) 'move)
+        `((<> free ,(NTH 1 full-type)) (aof ,cell))
+      `((<> free ,(NTH 1 full-type)) ,cell))))
 
 
 (DEFMACRO new^cell (type &REST args)

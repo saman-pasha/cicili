@@ -1,0 +1,19 @@
+;;;; a macro file, loaded by macro.cicili through `import' -- it may only hold
+;;;; DEFUN / DEFMACRO / generic / import / cicili / IN-PACKAGE at top level.
+;;;; import creates the :util package before reading, so IN-PACKAGE is enough;
+;;;; init lands in it and is what import calls with its trailing arguments.
+
+(IN-PACKAGE :util)
+
+;;; called once at import time, with the arguments the import form passes
+(DEFUN init (args)
+  (WHEN CICILI:*DEBUG-MACROS*
+    (FORMAT T "helpers.cicili loaded with: ~A~%" args)))
+
+;;; imported under the :util namespace, so the call site is (util.half x)
+(DEFMACRO half (x)
+  `(/ ,x 2))
+
+(DEFMACRO clamp (x low high)
+  (LET ((x x))
+    `(? (< ,x ,low) ,low (? (> ,x ,high) ,high ,x))))

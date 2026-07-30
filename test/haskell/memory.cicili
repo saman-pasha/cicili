@@ -1,5 +1,5 @@
 
-(import "../../haskell/rc.cicili")
+(import "../../lib/haskell/rc.cicili")
 
 ;;;; Memory management tests
 (source "memory.c" (:std #t :compile #t :link "-L{$CCL} -lhaskell.o -L{$CWD} memory.o -o main")

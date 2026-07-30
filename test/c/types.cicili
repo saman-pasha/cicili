@@ -1,0 +1,134 @@
+;;;; Cicili C clauses: data types, the type descriptor, typedef, casting
+;;; every primitive spelling / auto / typeof / typedef / cast / sizeof
+
+(source "types.c"
+  (make :std #t :compile #t :link ("-ltypes.o" "-o" "types_test"))
+
+  ;; ---- typedef: a plain alias ---------------------------------------
+  (typedef int Counter)
+  (typedef ulong Size)
+  (typedef char * CString)
+  ;; a func clause in type position is a function POINTER; the alias name comes
+  ;; straight after func, then the parameter list, then out
+  (typedef func BinOp ((int a) (int b)) (out int))
+
+  (func add ((int a) (int b)) (out int) (return (+ a b)))
+
+  (func check ((const char * what) (llong got) (llong want))
+        (out int)
+        (if (== got want)
+            (block (printf "ok   %-32s %lld\n" what got) (return 0))
+          (block (printf "FAIL %-32s got %lld want %lld\n" what got want) (return 1)))
+        (return 1))
+
+  (main
+    (let ((int bad . 0))
+
+      ;; ---- the integer spellings ------------------------------------
+      ;; char uchar short ushort int uint long ulong llong ullong
+      (+= bad (check "sizeof char"   (sizeof char)   1))
+      (+= bad (check "sizeof uchar"  (sizeof uchar)  1))
+      (+= bad (check "sizeof short"  (sizeof short)  2))
+      (+= bad (check "sizeof ushort" (sizeof ushort) 2))
+      (+= bad (check "sizeof int"    (sizeof int)    4))
+      (+= bad (check "sizeof uint"   (sizeof uint)   4))
+      (+= bad (check "sizeof long"   (sizeof long)   8))
+      (+= bad (check "sizeof ulong"  (sizeof ulong)  8))
+      (+= bad (check "sizeof llong"  (sizeof llong)  8))
+      (+= bad (check "sizeof ullong" (sizeof ullong) 8))
+
+      ;; ---- the fixed width spellings, from <stdint.h> ---------------
+      (+= bad (check "sizeof i8"   (sizeof i8)    1))
+      (+= bad (check "sizeof u8"   (sizeof u8)    1))
+      (+= bad (check "sizeof i16"  (sizeof i16)   2))
+      (+= bad (check "sizeof u16"  (sizeof u16)   2))
+      (+= bad (check "sizeof i32"  (sizeof i32)   4))
+      (+= bad (check "sizeof u32"  (sizeof u32)   4))
+      (+= bad (check "sizeof i64"  (sizeof i64)   8))
+      (+= bad (check "sizeof u64"  (sizeof u64)   8))
+      (+= bad (check "sizeof i128" (sizeof i128) 16))
+      (+= bad (check "sizeof u128" (sizeof u128) 16))
+
+      ;; ---- floating point: real is long double ----------------------
+      (+= bad (check "sizeof float"  (sizeof float)  4))
+      (+= bad (check "sizeof double" (sizeof double) 8))
+      (+= bad (check "sizeof real >= double" (? (>= (sizeof real) (sizeof double)) 1 0) 1))
+
+      ;; ---- bool, and the #t / #f literals --------------------------
+      (let ((bool yes . #t)
+            (bool no  . #f))
+        (+= bad (check "#t"  (? yes 1 0) 1))
+        (+= bad (check "#f"  (? no  1 0) 0)))
+
+      ;; ---- signedness actually holds -------------------------------
+      (let ((uchar u . 200)
+            (char  s . 100))
+        (+= bad (check "uchar holds 200" u   200))
+        (+= bad (check "char holds 100"  s   100)))
+      (let ((u32 big . 4000000000))
+        (+= bad (check "u32 holds 4e9" big 4000000000)))
+
+      ;; ---- auto is a TYPE: __auto_type ------------------------------
+      ;; it is not a variable attribute -- (auto) (var int x) is rejected
+      (let ((auto n . #'(+ 20 22)))
+        (+= bad (check "auto infers int" n 42))
+        (+= bad (check "auto sizeof"     (sizeof n) 4)))
+      (let ((auto d . 2.5))
+        (+= bad (check "auto infers double" (sizeof d) 8)))
+
+      ;; ---- typeof: gives back a type -------------------------------
+      (let ((llong big . 7))
+        (let (((typeof big) same . 9))
+          (+= bad (check "typeof of a variable" (sizeof same) 8)))
+        ;; typeof of a call gives the return type
+        (let (((typeof (add 1 2)) r . #'(add 20 22)))
+          (+= bad (check "typeof of a call" r 42))))
+
+      ;; ---- typedef in use ------------------------------------------
+      (let ((Counter c . 5)
+            (Size    n . 9))
+        (+= bad (check "typedef Counter" c 5))
+        (+= bad (check "typedef Size sizeof" (sizeof n) 8)))
+      (let ((CString s . "hi"))
+        (+= bad (check "typedef CString" (strlen s) 2)))
+      ;; a typedef'd function pointer
+      (let ((BinOp op . add))
+        (+= bad (check "typedef function pointer" (op 20 22) 42)))
+
+      ;; ---- the type descriptor: [const] TYPE [mod] [const] name -----
+      (let ((int n . 5))
+        ;; pointer, one and two levels
+        (let ((int * p . #'(aof n)))
+          (+= bad (check "int * "   (cof p) 5))
+          (let ((int ** pp . #'(aof p)))
+            (+= bad (check "int **"  (cof (cof pp)) 5)))))
+
+      ;; const on the pointee, and const on the pointer itself
+      (let ((int n . 5))
+        (let ((const int * cp . #'(aof n)))       ; pointer to const int
+          (+= bad (check "const int *" (cof cp) 5)))
+        (let ((int * const pc . #'(aof n)))       ; const pointer to int
+          (set (cof pc) 6)
+          (+= bad (check "int * const" n 6))))
+
+      ;; ---- cast ----------------------------------------------------
+      (+= bad (check "cast double->int" (cast int 3.99) 3))
+      (+= bad (check "cast int->char"   (cast char 65)  65))
+      (let ((int n . 7))
+        ;; integer division vs forced real division
+        (+= bad (check "int division"  (/ n 2) 3))
+        (+= bad (check "cast then divide" (cast int (* (/ (cast double n) 2) 100)) 350)))
+      ;; cast a pointer
+      (let ((int n . 0)
+            (void * v . #f))
+        (set v (cast (void *) (aof n)))
+        (set (cof (cast (int *) v)) 11)
+        (+= bad (check "cast through void *" n 11)))
+
+      (if (== bad 0)
+          (printf "types: all ok\n")
+        (printf "types: %d FAILED\n" bad))
+      (return bad))))
+
+;; sbcl --script cicili.lisp ./test/c/types.cicili
+;; ./test/c/types_test

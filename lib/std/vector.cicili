@@ -8,183 +8,195 @@
   (decl-array a)
   (decl-rc (<> array a))
   
+  ;; the shared buffer is an rc, and an rc IS a cell over the rc context --
+  ;; (<> cell rc (<> array a) context), the very type (<> new rc) hands back
   (struct (<> vector a)
-          (member (<> rc (<> array a)) vec)
+          (member (<> cell rc (<> array a) context) vec)
           (member size_t low)
           (member size_t high))
+
+  (typedef a (<> vector a item_t))
+
+  ;; super type declaration to use in 'type-check
+  (guard __VECTOR_TYPE_H_
+    (decl) (struct (<> std vector)))
+  (typedef (<> std vector) (<> vector a type_t))
+
+  (decl) (func (<> free (<> vector a)) (((<> vector a) * vector)))
+  ;; rounds a length up to the next power of two, never below 16. Named per
+  ;; instantiation: an ungeneric `arraySize' would be defined twice the moment
+  ;; a second element type is instantiated.
+  (decl) (func (<> arraySize vector a) ((size_t size)) (out size_t))
+  ;; the shared buffer, or nil when the vector is empty or its rc is dead
+  (decl) (func (<> buffer vector a) (((<> vector a) ref vector)) (out (<> array a) *))
+  (decl) (func (<> len vector a) (((<> vector a) ref vector)) (out size_t))
+  ;; bounds-checked like the array's, so it answers with a maybe -- open it
+  ;; with 'match / 'matchn
+  (decl) (func (<> nth vector a) ((size_t index) ((<> vector a) ref vector)) (out (<> maybe a)))
+  ;; both GROW THE VECTOR IN PLACE and hand back the new length. The vector owns
+  ;; exactly one rc cell before and after, so `(push^vector v 6)' is a statement
+  ;; and there is nothing for the caller to re-bind or free.
+  (decl) (func (<> push vector a) (((<> vector a) ref vector) (a item)) (out size_t))
+  (decl) (func (<> append vector a) (((<> vector a) ref vector) (const a * items) (size_t count))
+               (out size_t))
+
+  ) ; decl-vector
+
+
+(generic impl-vector
+  (a)
+
+  (impl-array a)
+  (impl-rc (<> array a))
 
   (inline)
   (func (<> free (<> vector a)) (((<> vector a) * vector))
         (syslog! (printf "FREE VECTOR: %p\n" vector))
-        ((<> free rc (<> array a)) (aof (-> vector vec))))
+        ((<> free cell rc (<> array a) context) (aof (-> vector vec))))
 
-  (inline)
-  (func arraySize ((size_t size))
+  (func (<> arraySize vector a) ((size_t size))
         (out size_t)
         (let ((size_t two_pow . 0x10))
           (while (< two_pow size)
             (set two_pow (<< two_pow 1)))
           (return two_pow)))
 
-  ) ; decl-vector
+  (func (<> buffer vector a) (((<> vector a) ref vector))
+        (out (<> array a) *)
+        (when ($ (-> vector vec) ptr)
+          (return (-> ($ (-> vector vec) ptr) ptr)))
+        (return nil))
+
+  (func (<> len vector a) (((<> vector a) ref vector))
+        (out size_t)
+        (return (- (-> vector high) (-> vector low))))
+
+  (func (<> nth vector a) ((size_t index) ((<> vector a) ref vector))
+        (out (<> maybe a))
+        (let (((<> array a) * arr . #'((<> buffer vector a) vector))
+              (size_t at . #'(+ (-> vector low) index)))
+          (if (and arr (< at (-> vector high)) (< at (-> arr len)))
+              (return (cast (<> maybe a) '{ #t (nth at (-> arr arr)) }))
+            (return (cast (<> maybe a) '{ #f (cast a '{ 0 }) })))))
+
+  (func (<> push vector a) (((<> vector a) ref vector) (a item))
+        (out size_t)
+        (return ((<> append vector a) vector (aof item) 1)))
+
+  ;; The buffer is written in place only while this vector is its sole owner and
+  ;; it still has room -- a shared buffer belongs to a clone or a slice as well,
+  ;; and a write would be visible there. Otherwise a new buffer of
+  ;; (<> arraySize vector a) cells takes over: window and new items copied in,
+  ;; old rc dropped. Either way the vector owns exactly one cell on return.
+  (func (<> append vector a) (((<> vector a) ref vector) (const a * items) (size_t count))
+        (out size_t)
+        (let ((const size_t low  . #'(-> vector low))
+              (const size_t high . #'(-> vector high))
+              (const size_t total . #'(+ (- (-> vector high) (-> vector low)) count))
+              ((<> array a) * arr . #'((<> buffer vector a) vector)))
+
+          (when (and arr
+                     (-> ($ (-> vector vec) ptr) count)
+                     (== (cof (-> ($ (-> vector vec) ptr) count)) 1)
+                     (<= (+ high count) (-> arr len)))
+            (syslog! (printf "APPEND VECTOR: %s %zu in place, %zu of %zu cells used\n"
+                             (symbol-name (<> vector a)) count (+ high count) (-> arr len)))
+            (memcpy (+ (-> arr arr) high) items (* count (sizeof a)))
+            (set (-> vector high) (+ high count))
+            (return total))
+
+          (let ((const size_t cap . #'((<> arraySize vector a) total)))
+            (syslog! (printf "GROW VECTOR: %s %zu to %zu cells\n"
+                             (symbol-name (<> vector a)) (? arr (-> arr len) 0) cap))
+            ;; `move' so the fresh cell is not destructed here: the vector takes
+            ;; it over. Its buffer holds the window, the new items go after it.
+            (let (((<> cell rc (<> array a) context) move fresh .
+                   #'((<> new rc) array (? arr (+ (-> arr arr) low) nil)
+                                        (? arr (- high low) 0) cap)))
+              (memcpy (+ (-> (-> ($ fresh ptr) ptr) arr) (- high low))
+                      items (* count (sizeof a)))
+              ((<> free cell rc (<> array a) context) (aof (-> vector vec)))
+              (set ($ (-> vector vec) ptr) ($ fresh ptr)
+                   (-> vector low)  0
+                   (-> vector high) total)
+              (return total)))))
+
+  ) ; impl-vector
 
 
 (DEFMACRO new^vector (arr &OPTIONAL len)
   (LET* ((arr arr)
          (len (IF len len
-                  (LET ((value (IF (EQL (CAR arr) 'cast) (CADDR arr) NIL)))
-                    (IF (AND value (LISTP value) (EQUAL (CAR value) 'QUOTE))
-                        (LENGTH (CADR value))
-                        (ERROR (FORMAT NIL "new vector can't infer length ~A" arr))))))
+                (LET ((value (IF (EQL (CAR arr) 'cast) (CADDR arr) NIL)))
+                  (IF (AND value (LISTP value) (EQUAL (CAR value) 'QUOTE))
+                      (LENGTH (CADR value))
+                    (IF (STRINGP value)
+                        (LENGTH value)
+                      (ERROR (FORMAT NIL "new vector can't infer length ~A" arr)))))))
          (vec-len (GENSYM "tmp_len"))
          (arr-len (GENSYM "arr_len")))
     (MULTIPLE-VALUE-BIND (type full-type) (CICILI:TYPE-CHECK arr :MODIFIER '(* ** ***))
       (LET ((a (NTH 1 full-type)))
-        (FORMAT T "VEEEEEVEC2 ~A~%" full-type)
         (IF len
             `(letn ((const size_t ,vec-len . (FUNCTION ,len))
-                    (const size_t ,arr-len . (FUNCTION (arraySize ,len))))
+                    (const size_t ,arr-len . (FUNCTION ((<> arraySize vector ,a) ,len))))
                (syslog! (printf "NEW VECTOR: %s %zu %zu\n" (symbol-name (<> vector ,a)) ,vec-len ,arr-len))
-               (cast (<> vector ,a) '{ ((<> new rc) ,arr ,arr-len) 0 ,vec-len }))
+               ;; (<> new rc) is the new^rc macro: the type being wrapped first,
+               ;; then that type's constructor arguments -- the items, how many
+               ;; there are, and the capacity to allocate
+               (cast (<> vector ,a) '{ ((<> new rc) array ,arr ,vec-len ,arr-len) 0 ,vec-len }))
             (ERROR (FORMAT NIL "new^~A len required for dynamic vector input: ~A" `(<> vector ,a) arr)))))))
 
 
-;; (DEFMACRO new^vector (arr &OPTIONAL len)
-;;   (LET* ((arr arr)
-;;          (len (IF len len
-;;                   (LET ((value (IF (EQL (CAR arr) 'cast) (CADDR arr) NIL)))
-;;                     (IF (AND value (LISTP value) (EQUAL (CAR value) 'QUOTE))
-;;                         (LENGTH (CADR value))
-;;                         (ERROR (FORMAT NIL "new vector can't infer length ~A" arr))))))
-;;          (vec-len (GENSYM "tmp_len"))
-;;          (arr-len (GENSYM "arr_len")))
-;;     (IF cal-len
-;;         (PROGN
-;;           (FORMAT T "VEEEEEVEC1 ~A~%" vec)
-;;         (MULTIPLE-VALUE-BIND (type full-type) (CICILI:TYPE-CHECK vec :MODIFIER '(* ** ***))
-;;           (LET ((a (NTH 1 full-type)))
-;;             (FORMAT T "VEEEEEVEC2 ~A~%" full-type)
-;;             (IF len
-;;                 `(letn ((const size_t ,vec-len . (FUNCTION ,cal-len))
-;;                         (const size_t ,arr-len . (FUNCTION (arraySize ,cal-len))))
-;;                    (syslog! (printf "NEW VECTOR: %s %zu %zu\n" (symbol-name (<> vector ,a)) ,vec-len ,arr-len))
-;;                    (cast (<> vector ,a) '{ ((<> new rc (<> array ,a)) ,vec ,arr-len) 0 ,vec-len }))
-;;                 `(letn ((const size_t ,vec-len . (FUNCTION ,cal-len))
-;;                         (const size_t ,arr-len . (FUNCTION (arraySize ,cal-len))))
-;;                    (syslog! (printf "NEW VECTOR: %s %zu %zu\n" (symbol-name (<> vector ,a)) ,vec-len ,arr-len))
-;;                    (cast (<> vector ,a) '{ ((<> new rc (<> array ,a)) ,vec) 0 ,vec-len })))))
-;;         )
-;;         (ERROR (FORMAT NIL "new^~A len required for dynamic vector input: ~A" (symbol-name (<> vector a)) vec)))))
+;;;; ------------------------------------------------------------------
+;;;; front ends: infer which instantiation the vector belongs to and dispatch.
+;;;; An owned vector is passed by address, one already held by reference as is.
+;;;; ------------------------------------------------------------------
 
+;;; the vector's type name and the form to pass for it, as one step.
+;;; A vector is a plain struct, not `non-copy', so an owned one carries no
+;;; modifier at all -- nil belongs in the accepted list next to move. Only a
+;;; `ref' is already an address; everything else is passed by one.
+(DEFUN vector-call< (vector)
+  (LET ((full-type (NTH-VALUE 1 (CICILI:TYPE-CHECK vector :TYPEOF :std^vector
+                                                          :MODIFIER '(move ref nil)))))
+    (VALUES (NTH 1 full-type)
+            (IF (CICILI:KEY-EQ (NTH 2 full-type) 'ref) vector `(aof ,vector)))))
 
-;; (DEFMACRO (<> append type) (vector vec &OPTIONAL len)
-;;   (LET* ((vector vector)
-;;          (vec vec)
-;;          (len len)
-;;          (cal-len (IF len len
-;;                       (IF (STRINGP vec) (LENGTH vec)
-;;                           (IF (AND (LISTP vec) (EQUAL (CAR vec) 'QUOTE)) (LENGTH (CADR vec))
-;;                               NIL))))
-;;          (vec-tmp (GENSYM "tmp_vec"))     
-;;          (vec-acc (GENSYM "tmp_acc"))     
-;;          (vec-len (GENSYM "tmp_len"))
-;;          (arr-len (GENSYM "arr_len"))
-;;          (arr-name (GENSYM "acc_vec_arr")))
-;;     (IF cal-len
-;;         `(letn ((type ,vec-acc . (FUNCTION ,vector))
-;;                 (const size_t ,vec-len . (FUNCTION ,cal-len))
-;;                 (const size_t ,arr-len . (FUNCTION ((<> arraySize type) (+ ($ ,vec-acc high) ,vec-len)))))
-;;            ((<> excln rc (<> array a)) (* ,arr-name ($ ,vec-acc vec) (cast type '{ 0 }))
-;;             (syslog! (printf "APPEND VECTOR: %s %zu %zu\n" (symbol-name type) ,vec-len ,arr-len))
-;;             (letn ((a * ,vec-tmp . (FUNCTION (cast (a []) ,vec))))
-;;               (? (<= (+ ($ ,vec-acc high) ,vec-len) (-> ,arr-name len)) ; has space
-;;                 (progn (memcpy (+ (-> ,arr-name arr) ($ ,vec-acc high)) ,vec-tmp ,vec-len)
-;;                        (set ($ ,vec-acc high) (+ ($ ,vec-acc high) ,vec-len))
-;;                        ,vec-acc)
-;;                 (progn (set (-> ,arr-name arr) (realloc (-> ,arr-name arr) (* ,arr-len (sizeof a))))
-;;                        (set (-> ,arr-name len) ,arr-len)
-;;                        (memcpy (+ (-> ,arr-name arr) ($ ,vec-acc high)) ,vec-tmp ,vec-len)
-;;                        (set ($ ,vec-acc high) (+ ($ ,vec-acc high) ,vec-len))
-;;                        (cast type '{ ((<> new rc (<> array a)) (-> ,arr-name arr) ,arr-len)
-;;                              ($ ,vec-acc low) ($ ,vec-acc high) }))))))
-;;         (ERROR (FORMAT NIL "new^~A len required for dynamic vector input: ~A" (symbol-name type) vec)))))
+(DEFMACRO free^vector (vector)
+  (LET ((vector vector))
+    (MULTIPLE-VALUE-BIND (type-name self) (vector-call< vector)
+      `((<> free ,type-name) ,self))))
 
+(DEFMACRO len^vector (vector)
+  (LET ((vector vector))
+    (MULTIPLE-VALUE-BIND (type-name self) (vector-call< vector)
+      `((<> len ,type-name) ,self))))
 
-;; (DEFMACRO (<> slice type) (vector &OPTIONAL (low 0) (high NIL))
-;;   (LET* ((vector vector)
-;;          (vec-acc (GENSYM "acc_slc"))
-;;          (low low)
-;;          (high (IF high high `(- ($ ,vec-acc high) ($ ,vec-acc low))))
-;;          (slc-low (GENSYM "acc_slc_low"))
-;;          (slc-high (GENSYM "acc_slc_high")))
-;;     `(letn ((type ,vec-acc . (FUNCTION ,vector))
-;;             (const size_t ,slc-low . (FUNCTION (cast size_t ,low)))
-;;             (const size_t ,slc-high . (FUNCTION (cast size_t ,high))))
-;;        (syslog! (printf "slice %s: low: (%zu -> %zu), high: (%zu -> %zu)\n"
-;;                   (symbol-name type)
-;;                   ,slc-low (+ ($ ,vec-acc low) ,slc-low)
-;;                   ,slc-high (+ ($ ,vec-acc low) ,slc-high)))
-;;        (? (or (< ,slc-low 0)
-;;               (> ,slc-low ,slc-high)
-;;               (> ,slc-high (- ($ ,vec-acc high) ($ ,vec-acc low)))) ; check out of bounds
-;;          (cast type '{ 0 })
-;;          (cast type '{
-;;                ((<> clone rc (<> array a)) ($ ,vec-acc vec))
-;;                (+ ($ ,vec-acc low) ,slc-low)
-;;                (+ ($ ,vec-acc low) ,slc-high) })))))
+(DEFMACRO nth^vector (index vector)
+  (LET ((index index) (vector vector))
+    (MULTIPLE-VALUE-BIND (type-name self) (vector-call< vector)
+      `((<> nth ,type-name) ,index ,self))))
 
+(DEFMACRO push^vector (vector item)
+  (LET ((vector vector) (item item))
+    (MULTIPLE-VALUE-BIND (type-name self) (vector-call< vector)
+      `((<> push ,type-name) ,self ,item))))
 
-;; ;; (DEFMACRO (<> len type) (vector)
-;; ;;   (LET ((vector vector)
-;; ;;         (vec-acc (GENSYM "acc_slc")))
-;; ;;     '(letn ((type ,vec-acc . (FUNCTION ,vector)))
-;; ;;       (- ($ ,vec-acc high) ($ ,vec-acc low)))))
-
-;; (DEFMACRO (<> len type) (vector)
-;;   (LET ((vector vector))
-;;     (FORMAT T "VVVVVVVV ~A~%  ~A~%" (CICILI:*GETS* vector) vector)
-;;     ;; lambda* lets define named-lambda in Cicili
-;;     `('(closure* (<> len type) (,(CICILI:INFER-TYPE vector :WITH-NAME 'vector))
-;;         (out size_t)
-;;         (return (- ($ vector high) ($ vector low))))
-;;        ,vector)))
-
-
-;; ;; there are two path Safe and Unsafe
-;; ;; force with default
-;; ;; checks bounds and aliveness
-;; (DEFMACRO (<> nth type) (index vector &KEY default)
-;;   (LET* ((index index)
-;;          (vector vector)
-;;          (default default)
-;;          (vec-acc (GENSYM "acc_vec"))
-;;          (arr-name (GENSYM "acc_vec_arr"))
-;;          (arr-idx (GENSYM "acc_vec_idx")))
-;;     (WHEN (NULL default) (ERROR (FORMAT NIL "nth of vector needs default value ~A" vector)))
-;;     `(letn ((type ,vec-acc . (FUNCTION ,vector))
-;;             (const size_t ,arr-idx . (FUNCTION (+ ($ ,vec-acc low) ,index))))
-;;        (? (< ,arr-idx ($ ,vec-acc high))
-;;          ((<> letn rc (<> array a)) (,arr-name ($ ,vec-acc vec) ,default)
-;;           (nth ,arr-idx (cast (a *) ($ ,arr-name arr))))
-;;          ,default))))
-
-
-;; (DEFMACRO (<> let type) ((arr len vector) &REST body)
-;;   (LET ((vec-acc (GENSYM "acc_vec"))
-;;         (arr-name (GENSYM "acc_vec_arr")))
-;;     `(let ((type ,vec-acc . (FUNCTION ,vector)))
-;;        ((<> let rc (<> array a)) (,arr-name ($ ,vec-acc vec))
-;;         (let ((a * ,arr . (FUNCTION (+ (cast (a *) ($ ,arr-name arr)) ($ ,vec-acc low))))
-;;               (size_t ,len . (FUNCTION (- ($ ,vec-acc high) ($ ,vec-acc low)))))
-;;           ,@body)))))
-
-
-;; (DEFMACRO (<> letn type) ((arr len vector default) &REST body)
-;;   (LET ((default default)
-;;         (vec-acc (GENSYM "acc_vec"))
-;;         (arr-name (GENSYM "acc_vec_mem")))
-;;     `(letn ((type ,vec-acc . (FUNCTION ,vector)))
-;;        ((<> letn rc (<> array a)) (,arr-name ($ ,vec-acc vec) ,default)
-;;         (letn ((a * ,arr . (FUNCTION (+ (cast (a *) ($ ,arr-name arr)) ($ ,vec-acc low))))
-;;                (size_t ,len . (FUNCTION (- ($ ,vec-acc high) ($ ,vec-acc low)))))
-;;           ,@body)))))
+;;; (append^vector v '{ 6 7 8 })       -- a brace list, counted here
+;;; (append^vector v "abc")            -- a string, counted here
+;;; (append^vector v items count)      -- anything else needs its count
+(DEFMACRO append^vector (vector items &OPTIONAL count)
+  (LET* ((vector vector)
+         (items items)
+         (literal (OR (AND (LISTP items) (CICILI:KEY-EQ (CAR items) 'QUOTE)) (STRINGP items)))
+         (count (IF count count
+                  (IF (AND (LISTP items) (CICILI:KEY-EQ (CAR items) 'QUOTE))
+                      (LENGTH (CADR items))
+                    (IF (STRINGP items)
+                        (LENGTH items)
+                      (ERROR (FORMAT NIL "append vector can't infer how many items: ~A" items)))))))
+    (MULTIPLE-VALUE-BIND (type-name self) (vector-call< vector)
+      `((<> append ,type-name) ,self
+        ,(IF literal `(cast (const (<> ,type-name item_t) []) ,items) items)
+        ,count))))

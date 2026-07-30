@@ -11,7 +11,7 @@
 
 ;; error handling and debuging
 (setf *print-pretty* t)
-(setf *print-vector-length* 0)
+(setf *print-vector-length* 500)
 (format t "~&sbcl reserved memory size: ~D Bs~%" (sb-ext:dynamic-space-size))
 
 (asdf:load-system "cicili")
@@ -19,7 +19,9 @@
 (cicili:load-macro-file "builtins.cicili" nil () "CICILI")
 (cicili:load-macro-file "cpp.cicili"      nil () "CICILI")
 (cicili:load-macro-file "lib/std/prelude.cicili" nil () "CICILI")
-(cicili:load-macro-file "haskell/prelude.cicili" nil () "CICILI")
+;; parked while std is the focus -- the haskell layer also defines 'match,
+;; which would shadow the inference-driven one in builtins.cicili
+;; (cicili:load-macro-file "lib/haskell/prelude.cicili" nil () "CICILI")
 
 (let ((argv (uiop:command-line-arguments)))
   (if (> (length argv) 0)
@@ -32,7 +34,6 @@
                    (format t "arg specified: ~A~%" arg)
                    (cond
                      ((string= arg "--debug-ast")   (setf cicili:*debug-ast*          t))
-                     ((string= arg "--resolve")     (setf cicili:*debug-resolve*      t))
                      ((string= arg "--verbose")     (setf cicili:*verbose*         "-v"))
                      ((string= arg "--macros")      (setf cicili:*debug-macros*       t))
                      ((string= arg "--macroexpand") (setf cicili:*debug-macroexpand*  t))

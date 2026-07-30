@@ -1,0 +1,115 @@
+;;;; Cicili C clauses: include / preprocessor forms / raw C
+;;; @define @undef @ifdef @ifndef @if @elif @else @endif, and code
+;;;
+;;; NOTE on the boundary between the two worlds. A macro you @define exists only
+;;; for the C preprocessor -- Cicili's symbol table never learns the name, so
+;;; referring to it from Cicili code fails with "unknown symbol: MAX_AMOUNT".
+;;; Two ways to use one:
+;;;   - from raw C, inside a (code "...") form, as below;
+;;;   - by also declaring it for inference with the (typedef int NAME) idiom in a
+;;;     MACRO file's init-macro, which is how lib/std/c/*.cicili makes CHAR_BIT,
+;;;     INT_MAX and the rest visible. Those emit nothing into the target, so
+;;;     there is no typedef to collide with the #define.
+;;; The constants checked directly at the bottom come through that second route.
+
+(source "preprocess.c"
+  (make :std #t :compile #t :link ("-lpreprocess.o" "-o" "preprocess_test"))
+
+  ;; ---- include: one clause may name several headers ------------------
+  (include <limits.h>)
+  (include <stddef.h> <stdbool.h>)
+
+  ;; ---- @define ------------------------------------------------------
+  ;; the payload is raw C text, so it goes through (code "...")
+  (@define (code "MAX_AMOUNT 1000"))
+  (@define (code "SQUARE(x) ((x) * (x))"))
+  ;; NB a (code "...") string cannot contain a double quote: in a .cicili source
+  ;; \ is not an escape, the text passes through to C untouched -- which is
+  ;; exactly why "%d\n" works. So a char literal, in single quotes, instead.
+  (@define (code "GREETING_INITIAL 'h'"))
+  (@define (code "FEATURE_ON 1"))
+
+  ;; ---- conditional compilation -------------------------------------
+  ;; each directive is its own clause -- nothing is closed for you, so the
+  ;; matching @endif is written out. The condition is raw C text too.
+  (@ifdef (code "FEATURE_ON"))
+  (@define (code "FEATURE_VALUE 10"))
+  (@else)
+  (@define (code "FEATURE_VALUE 99"))
+  (@endif)
+
+  (@ifndef (code "NOT_DEFINED_ANYWHERE"))
+  (@define (code "FALLBACK_VALUE 20"))
+  (@endif)
+
+  ;; @if / @elif take an expression, again as raw text
+  (@if (code "MAX_AMOUNT > 500"))
+  (@define (code "SIZE_CLASS 2"))
+  (@elif (code "MAX_AMOUNT > 100"))
+  (@define (code "SIZE_CLASS 1"))
+  (@endif)
+
+  ;; @undef drops a macro again, so the @ifdef below takes its else arm
+  (@define (code "TEMPORARY 1"))
+  (@undef (code "TEMPORARY"))
+  (@ifdef (code "TEMPORARY"))
+  (@define (code "TEMP_STATE 1"))
+  (@else)
+  (@define (code "TEMP_STATE 0"))
+  (@endif)
+
+  ;; ---- raw C, passed through untouched -----------------------------
+  ;; these are where the @define'd macros are actually read. They are NOT static:
+  ;; the (decl) (func ...) declarations below are not either, and gcc rejects a
+  ;; non-static declaration following a static definition.
+  (code "int c_max_amount (void) { return MAX_AMOUNT; }")
+  (code "int c_square (int n) { return SQUARE(n); }")
+  (code "int c_greeting_initial (void) { return GREETING_INITIAL; }")
+  (code "int c_feature_value (void) { return FEATURE_VALUE; }")
+  (code "int c_fallback_value (void) { return FALLBACK_VALUE; }")
+  (code "int c_size_class (void) { return SIZE_CLASS; }")
+  (code "int c_temp_state (void) { return TEMP_STATE; }")
+
+  ;; a raw C definition still needs a Cicili declaration to be callable from
+  ;; Cicili code -- (decl) (func ...) declares without emitting a body
+  (decl) (func c_max_amount ()      (out int))
+  (decl) (func c_square ((int n))   (out int))
+  (decl) (func c_greeting_initial () (out int))
+  (decl) (func c_feature_value ()   (out int))
+  (decl) (func c_fallback_value ()  (out int))
+  (decl) (func c_size_class ()      (out int))
+  (decl) (func c_temp_state ()      (out int))
+
+  (func check ((const char * what) (llong got) (llong want))
+        (out int)
+        (if (== got want)
+            (block (printf "ok   %-30s %lld\n" what got) (return 0))
+          (block (printf "FAIL %-30s got %lld want %lld\n" what got want) (return 1)))
+        (return 1))
+
+  (main
+    (let ((int bad . 0))
+
+      ;; ---- object-like and function-like macros, read from raw C ----
+      (+= bad (check "@define object-like"   (c_max_amount)          1000))
+      (+= bad (check "@define function-like" (c_square 7)              49))
+      (+= bad (check "@define char literal"  (c_greeting_initial)     104))
+
+      ;; ---- the conditionals fired the way they should --------------
+      (+= bad (check "@ifdef takes then arm" (c_feature_value)         10))
+      (+= bad (check "@ifndef taken"         (c_fallback_value)        20))
+      (+= bad (check "@if first arm"         (c_size_class)             2))
+      (+= bad (check "@undef then @ifdef"    (c_temp_state)             0))
+
+      ;; ---- constants Cicili DOES know, from lib/std/c --------------
+      (+= bad (check "limits.h CHAR_BIT"     CHAR_BIT                   8))
+      (+= bad (check "INT_MAX is positive"   (? (> INT_MAX 0) 1 0)      1))
+      (+= bad (check "EOF is negative"       (? (< EOF 0) 1 0)          1))
+
+      (if (== bad 0)
+          (printf "preprocess: all ok\n")
+        (printf "preprocess: %d FAILED\n" bad))
+      (return bad))))
+
+;; sbcl --script cicili.lisp ./test/c/preprocess.cicili
+;; ./test/c/preprocess_test

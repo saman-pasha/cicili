@@ -151,8 +151,16 @@
                                                              :input nil :output stdout :error-output stderr)
 		                                   (uiop:run-program args :ignore-error-status t
                                                              :input nil :output stdout :error-output stderr))))
-                             (when (and (not (equal (nth 2 exit-status) 0)) (> *ast-run* *ast-total-runs*))
-                               (display (format nil "cicili exited with status: ~A" exit-status) #\Newline))))
+                             ;; Reported on the FINAL pass, so the first one can run the
+                             ;; compiler and gather everything first. Fatal: the old guard
+                             ;; was (> *ast-run* *ast-total-runs*), which the loop never
+                             ;; lets happen, so a C error was silently swallowed and
+                             ;; cicili still exited 0.
+                             (when (and (not (equal (nth 2 exit-status) 0))
+                                        (>= *ast-run* *ast-total-runs*))
+                               (error (format nil "cicili: C compilation failed: ~A~%~A~%"
+                                              (nth 2 exit-status)
+                                              (get-output-stream-string stderr))))))
                          (setq is-compiled t)))
 	                 (when (and (equal (nth 2 exit-status) 0) (not dump) (not header) (key-eq (nth i args) ':|link|))
                        (if is-compiled
@@ -183,8 +191,11 @@
                                            (multiple-value-list
                                                (uiop:run-program args :ignore-error-status t
                                                                  :input nil :output stdout :error-output stderr))))
-                                   (when (and (not (equal (nth 2 exit-status) 0)) (> *ast-run* *ast-total-runs*))
-                                     (display (format nil "cicili exited with status: ~A" exit-status) #\Newline))))))
+                                   (when (and (not (equal (nth 2 exit-status) 0))
+                                              (>= *ast-run* *ast-total-runs*))
+                                     (error (format nil "cicili: C linking failed: ~A~%~A~%"
+                                                    (nth 2 exit-status)
+                                                    (get-output-stream-string stderr))))))))
                            (error (format nil ":link without :compile, compilation is required"))))))))
            (uiop/run-program:subprocess-error (e) (error (format nil "~A~%" e))))
       (unless *only-link*

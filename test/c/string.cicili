@@ -1,0 +1,99 @@
+;;;; Cicili C clauses: arrays, strings and characters
+;;; array definition / initialization / subscript / string literals /
+;;; character literals and the special characters
+
+(source "string.c"
+  (make :std #t :compile #t :link ("-lstring.o" "-o" "string_test"))
+
+  ;; :std #t brings in stdio, stddef, stdint, stdlib, string and stdbool -- not
+  ;; ctype. lib/std/c/ctype.cicili teaches inference about isdigit and friends,
+  ;; but the #include still has to be asked for or gcc sees no declaration.
+  (include <ctype.h>)
+
+  (func check ((const char * what) (llong got) (llong want))
+        (out int)
+        (if (== got want)
+            (block (printf "ok   %-32s %lld\n" what got) (return 0))
+          (block (printf "FAIL %-32s got %lld want %lld\n" what got want) (return 1)))
+        (return 1))
+
+  ;; a file-scope array, and a 2-D one
+  (var int primes [] . '{ 2 3 5 7 11 })
+  (var int grid [2] [3] . '{ '{ 1 2 3 } '{ 4 5 6 } })
+  (var const char * greeting . "hello")
+
+  (main
+    (let ((int bad . 0))
+
+      ;; ---- array definition and subscript --------------------------
+      ;; nth takes the INDEX FIRST
+      (+= bad (check "nth 0"            (nth 0 primes)  2))
+      (+= bad (check "nth 4"            (nth 4 primes) 11))
+      (+= bad (check "sizeof array"     (sizeof primes) 20))
+      (+= bad (check "element count"    (/ (sizeof primes) (sizeof int)) 5))
+
+      ;; a sized array with fewer initializers: the rest are zero
+      (let ((int sparse [5] . '{ 1 2 }))
+        (+= bad (check "partial init set"   (nth 1 sparse) 2))
+        (+= bad (check "partial init zero"  (nth 4 sparse) 0)))
+
+      ;; an uninitialized local array, filled by hand
+      (let ((int scratch [3]))
+        (for ((int i . 0)) (< i 3) ((++ i))
+             (set (nth i scratch) (* i 10)))
+        (+= bad (check "filled by loop" (nth 2 scratch) 20)))
+
+      ;; 2-D
+      (+= bad (check "grid [0][2]" (nth 2 (nth 0 grid)) 3))
+      (+= bad (check "grid [1][0]" (nth 0 (nth 1 grid)) 4))
+      (+= bad (check "sizeof grid" (sizeof grid) 24))
+
+      ;; ---- strings --------------------------------------------------
+      ;; a string literal is a const char *
+      (+= bad (check "strlen literal" (strlen "hello") 5))
+      (+= bad (check "file scope string" (strlen greeting) 5))
+      (+= bad (check "strcmp equal" (strcmp "abc" "abc") 0))
+      (+= bad (check "index into literal" (nth 1 "hello") 101))  ; 'e'
+
+      ;; a char array, and copying into it
+      (let ((char buf [16]))
+        (strcpy buf "hi")
+        (+= bad (check "strcpy" (strlen buf) 2))
+        (strcat buf " there")
+        (+= bad (check "strcat" (strlen buf) 8))
+        (+= bad (check "buf first char" (nth 0 buf) 104)))       ; 'h'
+
+      ;; snprintf into a buffer
+      (let ((char buf [32]))
+        (snprintf buf 32 "%d-%d" 6 7)
+        (+= bad (check "snprintf" (strlen buf) 3))
+        (+= bad (check "snprintf content" (strcmp buf "6-7") 0)))
+
+      ;; ---- characters -----------------------------------------------
+      ;; a character literal is written #\X
+      (+= bad (check "char literal"   #\A        65))
+      (+= bad (check "char digit"     #\7        55))
+      (+= bad (check "char space"     #\Space    32))
+      ;; the named special characters
+      (+= bad (check "newline"        #\Newline  10))
+      (+= bad (check "tab"            #\Tab       9))
+      (+= bad (check "return"         #\Return   13))
+      (+= bad (check "backspace"      #\Backspace 8))
+      (+= bad (check "null"           #\Null      0))
+
+      ;; escapes inside a string literal are passed through to C untouched --
+      ;; a .cicili string is raw text, \ is not a Lisp escape here
+      (+= bad (check "escape in string" (strlen "a\nb") 3))
+
+      ;; ctype on characters
+      (+= bad (check "isdigit" (? (isdigit #\7) 1 0) 1))
+      (+= bad (check "isalpha" (? (isalpha #\A) 1 0) 1))
+      (+= bad (check "toupper" (toupper #\a) 65))
+
+      (if (== bad 0)
+          (printf "string: all ok\n")
+        (printf "string: %d FAILED\n" bad))
+      (return bad))))
+
+;; sbcl --script cicili.lisp ./test/c/string.cicili
+;; ./test/c/string_test

@@ -1,12 +1,14 @@
 (in-package :cicili)
 
-(defvar *unaries* '(|+| |-| |++| |1+| |--| |1-| |~| |not| |cof| |aof| |stringize|))
+(defvar *unaries* '(|+| |-| |++| |1+| |--| |1-| |~| |not| |cof| |aof|))
 (defvar *operators* '(|+| |-| |*| |/| |%| |==| |!=| |>| |<| |>=| |<=| |^| |<<| |>>| |xor| |and| |or| |bitand| |bitor|))
 (defvar *assignments* '(|=| |+=| |-=| |*=| |/=| |%=| |<<=| |>>=|))
 (defvar *modifiers* '(|&| |*| |**| |***| |move| |ref|))
+;; C keywords that stand alone as a statement and name nothing in the symbol
+;; table, so 'specify-symbol-expr must emit them rather than resolve them
+(defvar *keywords* '(|break| |continue|))
 (defvar *attributes* '(|static| |decl|         |inline|  |register| |extern| |volatile|
-                       |auto|   |thread-local| |resolve| |atomic|   |defer|  |non-copy|))
-(defvar *trait-regex* "'(?:\\w+?\\s)?(\\w+?)(?:\\[\\d*\\]|\\s\\*)?'.*'(?:\\w+?\\s)?(\\w+?)(?:\\[\\d*\\]|\\s\\*)?'")
+                       |auto|   |thread-local| |atomic|   |defer|   |non-copy|))
 (defvar *globals* (make-hash-table :test 'eql))
 
 ;; Symbol Table
@@ -24,22 +26,23 @@
   spec)
 ;; puts id and its def to *symbols* by creating id from *lexemes-id*
 (defun *puts* (id def)
-  (let ((lex-id (str:join "/" (append (list (substitute #\_ #\^ (symbol-name id))) *lexemes-id*))))
-    (format t "LEEEEEXXXXXXXXPUT ~A ~A~%" lex-id def)
+  (let ((lex-id (if *struct-spec*
+                    (if (eq def *struct-spec*)
+                        (symbol-name id)
+                        (str:join "/" (append (list (substitute #\_ #\^ (symbol-name id)))
+                                              (list (symbol-name (name *struct-spec*))))))
+                    (str:join "/" (append (list (substitute #\_ #\^ (symbol-name id))) *lexemes-id*)))))
     ;; (format t "LEEEEXPUTS ~A~%" lex-id)
     (setf (gethash lex-id *symbols*) def)))
 ;; 'gets and 'gets-of helper get def by id from *symbols* by creating id from *lexemes-id*
 (defun *gets-from* (id lexemes-id &optional default)
   (let ((lex-id (str:join "/" (append (list (substitute #\_ #\^ (symbol-name id))) lexemes-id))))
     (let ((def (gethash lex-id *symbols*)))
-      (format t "LEEEEEXXXXXXXXFROM ~A ~A~%" id lex-id)
       (if def def (if lexemes-id (*gets-from* id (cdr lexemes-id) default) nil)))))
 ;; *gets* front-end
 (defun *gets* (id &optional default)
-  (format t "LEEEEEXXXXXXXX11 ~A ~A~%" id (expand-macros id))
   (let* ((id (expand-macros id))
          (lex-id (str:join "/" (append (list (substitute #\_ #\^ (symbol-name id))) *lexemes-id*))))
-    (format t "LEEEEEXXXXXXXX ~A~%" lex-id)
     (let ((def (gethash lex-id *symbols*)))
       (if def def (if *lexemes-id* (*gets-from* id (cdr *lexemes-id*) default) nil)))))
 ;; distinct type inference time macro expantion from real specifying time
@@ -77,18 +80,28 @@
 (defparameter *function-spec* nil)
 ;; current function out part is compiling
 (defparameter *function-outp* nil)
+;; current struct spec during struct compiling
+(defparameter *struct-spec* nil)
 ;; resolve current function
-(defparameter *resolve* t)
 ;; storing line num and col num of target's ASTs
 (defparameter *ast-lines* '())
 ;; storing the next hash table for *ast-lines*
 (defparameter *next-ast-line* (make-hash-table :test 'equal))
 ;; stores current resolver run number
+;; A first pass and a final pass. The first runs the C compiler and gathers its
+;; diagnostics; the final one is where a failure is reported, so it is shown with
+;; everything the first pass collected rather than part way through it.
+;;
+;; The pass loop in compile-ast runs (1- *ast-total-runs*) of these; the final
+;; one is the separate run after the loop, the one that writes the real
+;; <target>. --separate depends on the split: every pass in the loop goes to
+;; <target>.run<N>.<ext> and only the final one to <target>. So a failure leaves
+;; run1 holding the whole C that the compiler complained about, and <target>
+;; half written at the point the error was raised.
+(defparameter *ast-total-runs* 2)
 (defparameter *ast-run* 0)
 ;; stores total resolver run number
-(defparameter *ast-total-runs* 1) ; 3 for resolver
 ;; stores whether resolver needs another run run number
-(defparameter *more-run* nil)                 
 ;; stores names symbols of all loaded macros 
 (defvar *macros* (make-hash-table :test 'equal))
 ;; whether cicili is during macro expantion
@@ -208,6 +221,63 @@
 (defun prev-ast-by-key< (ast-key)
   (gethash ast-key (nth 1 *ast-lines*)))
 
+;; Maps a C compiler message back to the Cicili form that wrote it.
+;;
+;; set-ast-line records the line and column every printed symbol lands on. After
+;; the first pass the compiler's `file:line:col: error: ...' lines are filed under
+;; those same positions, so on the final pass each spec asks: did a message land
+;; where I wrote last time? If one did, the error can name the Cicili form instead
+;; of leaving the user to map a C line number back by hand.
+;;
+;; KEY-NAME separates the several positions one spec may write (a symbol, a `.',
+;; an argument, ...). Returns the whole record filed at that position -- the
+;; message under 'info and the compile path under 'bt -- or NIL when no message
+;; landed there, and records this pass's position for the next one.
+;;
+;; Returning the record rather than the bare message is what lets ast-error<
+;; print the path: by the time it runs, the key has already been overwritten
+;; with this pass's position and the record could not be found again.
+(defun ast-info< (spec key-name)
+  (let ((record (prev-ast-by-key< (gethash key-name (keys spec)))))
+    (setf (gethash key-name (keys spec))
+          (ast-key< (funcall *line-num* 0) (funcall *col-num* 0)))
+    (when (getf record 'info) record)))
+
+;; The chain of compile- calls that was on the stack when this position was
+;; written, outermost last: the target, the function, the body, down to the form
+;; that printed the symbol the C compiler complained about. Depth is bounded and
+;; each frame is printed shallowly -- a whole spec tree per frame would bury the
+;; message it is there to explain.
+(defun compile-path< (bt &optional (depth 12))
+  (let ((*print-level* 3)      ; a whole spec tree per frame buries the message
+        (*print-length* 6)
+        (*print-pretty* nil)   ; one frame, one line
+        (shown 0))
+    (with-output-to-string (out)
+      (dolist (frame bt)
+        (when (and (listp frame) (symbolp (car frame))
+                   (let ((n (symbol-name (car frame))))
+                     (or (str:starts-with-p "COMPILE-" n)
+                         (str:starts-with-p "SPECIFY-" n))))
+          (incf shown)
+          (cond ((<= shown depth)
+                 ;; a frame often carries the same spec as both subject and
+                 ;; parent -- print it once
+                 (format out "~%    ~A~{ ~A~}" (car frame)
+                         (remove-duplicates
+                          (remove-if-not #'(lambda (a) (typep a 'sp)) (cdr frame))
+                          :test #'eq)))
+                ((= shown (1+ depth))
+                 (format out "~%    ..."))))))))
+
+;; signalled on the final pass, with the Cicili form the message belongs to
+;; and the compile path that produced it
+(defun ast-error< (what record spec)
+  (let ((path (compile-path< (getf record 'bt))))
+    (error (format nil "cicili: ~A: ~A~&  in: ~A~@[~&  compiled through:~A~]~%"
+                   what (replace-module-names (getf record 'info)) spec
+                   (when (string/= path "") path)))))
+
 ;; logs on last pushed hash table, first, current run
 (defmacro set-ast-line (out)
   (let ((line-n (gensym))
@@ -226,35 +296,21 @@
          (setf (getf ,item 'bt)  (cdr (backtrace))))
        (setf (gethash (ast-key< ,line-n ,col-n) (nth 0 *ast-lines*)) ,item))))
 
+;; The stack from here up to COMPILE-TARGET, one list per frame -- it used to be
+;; appended flat, which lost the frame boundaries compile-path< reads. The head
+;; entry is the invocation itself; set-ast-line stores (cdr …), the frames alone.
+;; A trailing hash table is the globals table and is dropped: it is the same
+;; object in every frame and printing it buries everything else.
 (defun backtrace ()
-  (let ((bt (list (or *compile-file-truename* *load-truename*) (uiop:command-line-arguments))))
+  (let ((bt (list (list (or *compile-file-truename* *load-truename*)
+                        (uiop:command-line-arguments)))))
     (dolist (trace (nthcdr 1 (sb-debug:list-backtrace)))
-      (setq bt (append bt
-                       (if (hash-table-p (car (last trace)))
-                           (without-last trace)
-                           trace)))
+      (setq bt (append bt (list (if (hash-table-p (car (last trace)))
+                                    (without-last trace)
+                                    trace))))
       (when (eq (car trace) 'COMPILE-TARGET) (return t)))
     bt))
 
-;; (setf sb-ext:*invoke-debugger-hook*
-;;       #'(lambda (&rest args)
-;;           (format *error-output* ";~%")
-;;           (format *error-output* "; cicili error:~%")
-;;           (format *error-output* ";~%")
-;;           (format *error-output* "; ~A~%" (car args))
-;;           (format *error-output* ";~%")
-;;           (format *error-output* "; compiling ~S ~A ~%" (or *compile-file-truename* *load-truename*) (uiop:command-line-arguments))
-;;           (format *error-output* ";~%")
-;;           (format *error-output* "Backtrace:~%")
-;;           (let ((counter 0))
-;;             (setq *print-pretty* nil)
-;;             (dolist (trace (sb-debug:list-backtrace))
-;;               (format *error-output* "[~A] ~A~%" counter
-;;                       (if (hash-table-p (car (last trace))) (without-last trace) trace))
-;;               (when (eq (car trace) 'COMPILE-TARGET) (return t))
-;;               (setq counter (1+ counter)))
-;;             (setq *print-pretty* t))
-;;           (sb-ext:exit)))
 
 (defun print-trace ()
   (format t "~A" (sb-debug:list-backtrace)))
@@ -266,7 +322,10 @@
 
 (defun output (ctrl &rest rest)
   (let ((result (apply 'format (append (list nil ctrl) rest))))
-    (apply 'format (list *output* result))
+    ;; write it literally: `result' is finished text, not a control string. Passing
+    ;; it as one made any ~ in the generated C -- a "~/path" literal, a printf of
+    ;; a tilde -- blow up as an unknown format directive.
+    (format *output* "~A" result)
     (let* ((index (search *new-line* result :from-end t))
            (line-count (str:count-substring *new-line* result)))
       (funcall *line-num* line-count)
@@ -279,21 +338,44 @@
       (when *debug-ast* (display result #\NewLine))
       result)))
 
+;; The package a top-level (IN-PACKAGE …) selects, or NIL if TARGET is not one.
+;; The designator is looked up as written first, because read-file reads with
+;; :preserve case -- (IN-PACKAGE :CL-USER) gives :|CL-USER|, which matches, while
+;; a lower case (in-package :cl-user) needs the upcase.
+(defun in-package-form< (target)
+  (when (and (listp target) (cdr target) (key-eq (car target) '|IN-PACKAGE|))
+    (let* ((name (cadr target))
+           (designator (if (symbolp name) (symbol-name name) (string name))))
+      (or (find-package designator)
+          (find-package (string-upcase designator))
+          (error (format nil "in-package: there is no package named ~A" designator))))))
+
+;; Reads every top-level form of a file.
+;;
+;; IN-PACKAGE is honoured HERE, as the forms are read, which is the only place it
+;; can mean anything: a symbol is interned when it is read, so switching packages
+;; after the whole file is in memory changes nothing. That is why the form used to
+;; fall through to compile-ast's `(eval target)' and appear to do nothing --
+;; everything after it had already been interned in the previous package.
+;;
+;; *package* is rebound for the duration, so the switch dies with the file, the
+;; same as CL:LOAD.
 (defun read-file (path)
   (let ((targets '()))
     (with-open-file (file path)
-	  (let ((*readtable* (copy-readtable)))
+	  (let ((*readtable* (copy-readtable))
+            (*package* *package*))
 		(setf (readtable-case *readtable*) :preserve)
-		(DO ((target (READ file) (READ file NIL NIL)))
+		(DO ((target (READ file NIL NIL) (READ file NIL NIL)))
 			((NULL target) T)
+          (let ((pack (in-package-form< target)))
+            (when pack (setq *package* pack)))
 		  (PUSH target targets))))
     (reverse targets)))
 
 (defun indent (lvl)
   (make-string (* lvl 2) :initial-element #\Space))
 
-;; (defun <> (name &rest body)
-;;   (intern (format nil "~{~A~^_~}" name body)))
 
 (defun make-generic-name (name generic)
   (format nil "~A ## _ ~A" name generic))
@@ -396,6 +478,3 @@
   (let ((def def))
     `,vals))
     ;; `(let ((saved-spec (gethash ,def *ast-table*)))
-    ;;    (if saved-spec
-    ;;        (values-list saved-spec)
-    ;;        (values-list (setf (gethash ,def *ast-table*) (multiple-value-list ,vals)))))))

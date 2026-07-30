@@ -34,7 +34,12 @@
 	       (ir    nil)
            (macro (if (symbolp tname) (gethash (symbol-name tname) *macros*) nil))
            (args  (expand-macros (nth 2 target))))
-      (cond ((key-eq tname '|import|)
+      (cond ;; already honoured by read-file, as the forms were read -- evaluating
+            ;; it here would only change *package* for whatever is read next, and
+            ;; leak that change into the rest of the process
+            ((key-eq tname '|IN-PACKAGE|) t)
+
+            ((key-eq tname '|import|)
              (load-macro-file (cadr target) (caddr target) (cadddr target) ast-file-name))
 
             ((key-eq tname '|cicili|)
@@ -67,14 +72,17 @@
                       (setq *ast-lines* '())
                       (push (make-hash-table :test 'equal) *ast-lines*)
                       (setq *ast-run* 0)
-                      (do ((run 0 (1+ run))) ; resolver runs
+                      ;; *ast-total-runs* passes in all, of which this loop does every
+                      ;; one but the last -- the final run below is the last. The
+                      ;; resolver used to extend the count on demand, re-reading the C
+                      ;; compiler's diagnostics until the output stopped changing; that
+                      ;; is gone and the count is fixed. Letting the loop run the final
+                      ;; pass too is what made an error land in <target>.run<N>.<ext>
+                      ;; and leave the real <target> unwritten.
+                      (do ((run 0 (1+ run)))
                           ((or (null has-error)
                              *only-link*
-                             (= run (if (key-eq tname '|header|) 1
-                                        (if (and *more-run* (= run (1+ *ast-total-runs*)))
-                                            (setq *ast-total-runs* (1+ *ast-total-runs*))
-                                            *ast-total-runs*)))))
-                        (setf *more-run* nil)
+                             (= run (if (key-eq tname '|header|) 1 (1- *ast-total-runs*)))))
                         (push *next-ast-line* *ast-lines*)
                         (setf *next-ast-line* (make-hash-table :test 'equal))
 
@@ -85,8 +93,20 @@
                         
 	                    (setq globals (create-globals ir))
                         (setq *ast-run* (1+ run))
-                        (when (and *debug-runs* (key-eq tname '|source|)) ;; --separate
-                          (setq file (format nil "~A.run~D.~A" (nth 1 target) *ast-run* (pathname-type (nth 1 target)))))
+                        ;; --separate keeps every pass of this loop in its own
+                        ;; <target>.run<N>.<ext>; the real <target> is written by the
+                        ;; final run below, after the loop.
+                        ;;
+                        ;; `file' must be reassigned on EVERY pass, not only when the
+                        ;; rename applies. It used to keep the previous pass's name, so
+                        ;; pass 2 wrote over <target>.run1.<ext> -- run1 never held pass
+                        ;; 1's output -- and nothing in the loop ever wrote <target>.
+                        ;; When an error stopped pass 2 the result was a half-written
+                        ;; run1 and no <target> at all.
+                        (setq file (if (and *debug-runs* (key-eq tname '|source|))
+                                       (format nil "~A.run~D.~A" (nth 1 target)
+                                               *ast-run* (pathname-type (nth 1 target)))
+                                       (nth 1 target)))
                         (setq stdout  (make-string-output-stream))
                         (setq stderr  (make-string-output-stream))
                         
@@ -139,8 +159,6 @@
                                 ((eql s nil))
                               (when *debug-dump* (display s #\NewLine))
                               
-                              ;; (unless (or (string= s "") (char= (char s 0) #\Newline))
-                              ;;   (setf (gethash (intern s) *globals*) t))))
                           
                               (let* ((result (multiple-value-list (ppcre:scan-to-strings s-unit s)))
                                      (matches (cadr result))
@@ -263,12 +281,20 @@
          (file-path (make-pathname :directory (pathname-directory file-name)))
          (rt (copy-readtable nil)))
     (uiop:with-current-directory (file-path)
+      ;; The namespace package is made BEFORE the file is read: read-file honours
+      ;; a top-level (IN-PACKAGE …), so a macro file naming its own namespace
+      ;; would otherwise be read before that package exists.
+      ;;
+      ;; It inherits COMMON-LISP. Without a use list a file that switches into
+      ;; this package reads DEFUN, FORMAT and T as fresh symbols of its own, and
+      ;; the first definition dies with "the variable init is unbound".
+      (unless (find-package pack) (make-package pack :use '("COMMON-LISP")))
       (let ((targets (read-file (file-namestring file-name))))
-        (format t "macro file: ~A imported inside: '~A' package, from file: ~A, with init args: ~A~%"
-                file-name pack ast-file-name init-args)
+        (when *debug-macros*
+          (format t "macro file: ~A imported inside: '~A' package, from file: ~A, with init args: ~A~%"
+                  file-name pack ast-file-name init-args))
         
         (let ((package *package*))
-          (unless (find-package pack) (make-package pack))
           (use-package pack)
           (multiple-value-bind (function non-terminating-p)
               (get-macro-character #\| rt)
@@ -311,6 +337,10 @@
                   ;; (load-macro-file (cadr target) (caddr target) (cadddr target) (file-namestring file-name)))
                   
                   ((key-eq tname '|generic|) t)
+
+                  ;; read-file honoured it while reading `targets', and the CL:LOAD
+                  ;; above honoured it for the definitions -- nothing left to do
+                  ((key-eq tname '|IN-PACKAGE|) t)
 
                   (t (error (format nil "unknown form ~A" tname))))))))))
 
@@ -363,10 +393,4 @@
 			      (write char :stream out :escape nil)
                   (setq prev-char char))))))
 
-;; (defvar *semicolon-macro-character* (get-macro-character #\;))
-;; (set-macro-character #\; #'(lambda (stream char)
-;; 		                     ;; (declare (ignore stream))
-;;                              (if (char= (read-char stream nil nil) #\Newline)
-;; 		                         (read-from-string ":EOL")
-;;                                  (funcall *semicolon-macro-character* stream char)))
 ;;                      nil)

@@ -3,6 +3,19 @@
 (DEFUN import (file-name &OPTIONAL pack init-args)
   (CICILI:LOAD-MACRO-FILE file-name pack init-args (OR *LOAD-TRUENAME* *COMPILE-FILE-TRUENAME*)))
 
+;;; A `cicili' form inside a macro file -- targets compiled while the file is
+;;; loaded -- is compiled by load-macro-file's own walk over the forms, so there
+;;; is nothing to do here. It needs a Lisp definition all the same: a macro file
+;;; is also CL:LOADed, which EVALUATES every top-level form, and without one
+;;; (cicili (header …)) is a call to an undefined function whose arguments get
+;;; evaluated -- `#f' reads as the symbol `false', and the load died with "the
+;;; variable false is unbound". `import' and `generic' are the other two Cicili
+;;; forms allowed at that level, and both are real Lisp definitions for the same
+;;; reason; this was the only one missing.
+(DEFMACRO cicili (&REST targets)
+  (DECLARE (IGNORE targets))
+  NIL)
+
 (DEFMACRO make (&KEY (std '#f) (cpp '#f) (haskell '#f) (compile '#f) (link '#f))
   (LET ((std std)
         (cpp cpp)
@@ -92,9 +105,7 @@
                  (MAP 'LIST #'(LAMBDA (var)
                                 (WHEN (/= (LENGTH var) 2)
                                   (ERROR (FORMAT NIL "wrong letin variable definition: ~A" var)))
-                                (FORMAT T "LETIIIIIIIIINNNN1 ~A  ~A~%" (CAR var) (CADR var))
-                                (MULTIPLE-VALUE-BIND (type full-type) (CICILI:INFER-TYPE (CADR var))
-                                  (FORMAT T "LETIIIIIIIIINNNN2 ~A  ~A~%" full-type (CADR var))
+                                (MULTIPLE-VALUE-BIND (type full-type root-type) (CICILI:INFER-TYPE (CADR var))
                                   (LET ((type-name (NTH 1 full-type)))
                                     (UNLESS (SYMBOLP (NTH 1 full-type))
                                       (MULTIPLE-VALUE-SETQ (type full-type) (CICILI:INFER-TYPE-SPEC "" (NTH 1 full-type)))
@@ -198,14 +209,17 @@
 ;;;   (format file "%s\n" message)
 ;;;   (fclose file))
 (DEFMACRO defer* (var-list &REST body)
-  (LET* ((name (GENSYM "ciciliDefer"))
-         (pname (INTERN (FORMAT NIL "~A_ptr" name))))
+  ;; The destructor's parameter is named after the VARIABLE, not <variable>_ptr:
+  ;; specify-let builds the deferred lambda with (intern (format nil "~A" variable))
+  ;; and gives it pointer modifier, so `name' is already the pointer. Reaching for
+  ;; <name>_ptr here left every defer* dead with "unknown symbol: ciciliDeferNNN_ptr".
+  (LET ((name (GENSYM "ciciliDefer")))
     `($$$
        (defer ()
          ,@(MAP 'LIST #'(LAMBDA (var)
                           (MULTIPLE-VALUE-BIND (const type modifier const-ptr variable array-def)
                               (CICILI:SPECIFY-TYPE< var)
-                            `(var ,@var . (FUNCTION (-> ,pname ,variable)))))
+                            `(var ,@var . (FUNCTION (-> ,name ,variable)))))
                 var-list)
          ,@body)
        (var '(,@var-list) ,name . 
@@ -368,11 +382,10 @@
 (DEFMACRO closure ((name &REST captures) &REST body)
   (LET ((captures captures)
         (params (LOOP FOR (param value) ON captures BY #'CDDR
-                      COLLECT (IF param
+                      COLLECT (IF (SYMBOLP param)
                                   (CICILI:INFER-TYPE value :WITH-NAME param)
                                   (ERROR (FORMAT NIL "closure: paramter name passed: ~A inside: ~A" param (LIST name captures))))))
         (args (LOOP FOR (_ value) ON captures BY #'CDDR COLLECT value)))
-    (FORMAT T "PAPPAPAPARAMA ~A   ~A  ~A~%" captures name params)
     ;; `((QUOTE ,(LET ((body body))
     ;;             (PUSH params body)
     ;;             (PUSH name body)
@@ -383,3 +396,151 @@
 
 (DEFMACRO new (type &REST args)
   `((<> new ,type) ,@args))
+
+;;;; ------------------------------------------------------------------
+;;;; match -- pattern matching driven by type inference
+;;;;
+;;;; A matchable type registers its cases once with 'def-matchable, keyed by the
+;;;; opaque super type CICILI:TYPE-ORIGIN reports for it. 'match then infers the
+;;;; scrutinee's origin, looks the cases up and expands to a plain test chain:
+;;;; no tag byte, no v-table, no allocation. What is left in C is the `if' you
+;;;; would have written by hand.
+;;;;
+;;;; This is not the Haskell layer's 'match (lib/haskell/match.cicili), which
+;;;; walks a constructor tag at run time. Here the type does the talking, so the
+;;;; whole dispatch is resolved at specification time.
+;;;;
+;;;; 'match is a statement, 'matchn is an expression that yields a value -- the
+;;;; same n-suffix convention as let / letn and take^cell / taken^cell.
+;;;; ------------------------------------------------------------------
+
+;;; a macro file may only carry DEFUN / DEFMACRO / generic / import / cicili at
+;;; its top level, so the registry hangs off a symbol plist rather than a DEFVAR
+(DEFUN matchable-table< ()
+  (OR (GET 'matchable 'table)
+      (SETF (GET 'matchable 'table) (MAKE-HASH-TABLE :TEST 'EQUAL))))
+
+(DEFUN matchable-key< (origin)
+  (WHEN (AND origin (SYMBOLP origin))
+    (SUBSTITUTE #\_ #\^ (SYMBOL-NAME origin))))
+
+(DEFUN matchable-cases< (origin)
+  (LET ((key (matchable-key< origin)))
+    (WHEN key (GETHASH key (matchable-table<)))))
+
+(DEFUN matchable-put< (origin cases)
+  (LET ((key (matchable-key< origin)))
+    (UNLESS key
+      (ERROR (FORMAT NIL "def-matchable: origin must be a symbol: ~A" origin)))
+    (DOLIST (c cases)
+      (UNLESS (AND (LISTP c) (= (LENGTH c) 3) (CAR c) (SYMBOLP (CAR c)))
+        (ERROR (FORMAT NIL "def-matchable: case needs (name test accessor): ~A" c))))
+    (SETF (GETHASH key (matchable-table<)) cases)
+    origin))
+
+;;; Teaches 'match how to take a type apart. `%' stands for the scrutinee and is
+;;; substituted before anything is specified, so it never reaches C. The
+;;; accessor is NIL for a case that carries no payload.
+;;;
+;;;   (def-matchable std^maybe
+;;;     (just    ($ % present)       ($ % value))
+;;;     (nothing (not ($ % present)) NIL))
+;;;
+;;; The key is the opaque super type a `<name>^type_t' typedef points at, so one
+;;; registration covers every instantiation of the generic. Call it from the
+;;; type's own decl- generic, so declaring the type registers how to open it.
+;;; It emits nothing; re-registering the same origin simply overwrites.
+(DEFMACRO def-matchable (origin &REST cases)
+  (matchable-put< origin cases)
+  `($$$ ))
+
+;;; one written clause -> (test binding body); the payload binds with 'auto
+(DEFUN match-clause< (who spec clause box)
+  (LET ((test (SUBST box '% (NTH 1 spec)))
+        (acc  (NTH 2 spec))
+        (name (CAR clause)))
+    (IF acc
+        (LET ((var (NTH 1 clause)))
+          (UNLESS (AND var (SYMBOLP var))
+            (ERROR (FORMAT NIL "~A: case ~A carries a value, it needs a binding name: ~A"
+                           who name clause)))
+          (LIST test `(auto ,var . (FUNCTION ,(SUBST box '% acc))) (CDDR clause)))
+        (LIST test NIL (CDR clause)))))
+
+;;; walks the clause list once, checking names and collecting coverage
+(DEFUN match-parse< (who value clauses cases box)
+  (LET ((parsed '()) (seen '()) (default NIL))
+    (DOLIST (clause clauses)
+      (UNLESS (AND (LISTP clause) (CAR clause) (SYMBOLP (CAR clause)))
+        (ERROR (FORMAT NIL "~A: bad clause ~A in ~A" who clause value)))
+      (LET ((name (CAR clause)))
+        (IF (CICILI:KEY-EQ name 'default)
+            (PROGN
+              (WHEN default (ERROR (FORMAT NIL "~A: two default clauses in ~A" who value)))
+              (SETQ default (CDR clause)))
+            (LET ((spec (FIND name cases :KEY #'CAR :TEST #'CICILI:KEY-EQ)))
+              (UNLESS spec
+                (ERROR (FORMAT NIL "~A: unknown case ~A of ~A, expected one of ~A"
+                               who name value (MAP 'LIST #'CAR cases))))
+              (WHEN (FIND name seen :TEST #'CICILI:KEY-EQ)
+                (ERROR (FORMAT NIL "~A: case ~A appears twice in ~A" who name value)))
+              (PUSH name seen)
+              (PUSH (match-clause< who spec clause box) parsed)))))
+    (WHEN (NULL parsed)
+      (ERROR (FORMAT NIL "~A: no cases given for ~A" who value)))
+    (VALUES (REVERSE parsed) seen default)))
+
+;;; the origin of the scrutinee plus the cases registered for it
+(DEFUN match-cases-of< (who value)
+  (LET ((origin (NTH-VALUE 3 (CICILI:TYPE-CHECK value))))
+    (LET ((cases (matchable-cases< origin)))
+      (UNLESS cases
+        (ERROR (FORMAT NIL "~A: ~A is not matchable, its origin is ~A~%  register its cases with def-matchable"
+                       who value origin)))
+      cases)))
+
+(DEFUN match-body< (bind body)
+  (IF bind `(letn (,bind) ,@body) `(progn ,@body)))
+
+;;; (match m (just v ...) (nothing ...))  -- a statement, expands to a cond
+;;; Partial is fine: an unlisted case simply does nothing, like `when'.
+(DEFMACRO match (value &REST clauses)
+  (LET* ((value value)
+         (cases (match-cases-of< "match" value))
+         (box (GENSYM "match")))
+    (MULTIPLE-VALUE-BIND (parsed seen default) (match-parse< "match" value clauses cases box)
+      (DECLARE (IGNORE seen))
+      `(let ((auto ,box . (FUNCTION ,value)))
+         (cond ,@(MAP 'LIST
+                      #'(LAMBDA (p)
+                          (LET ((bind (NTH 1 p)) (body (NTH 2 p)))
+                            (IF bind
+                                (LIST (NTH 0 p) `(let (,bind) ,@body))
+                                (CONS (NTH 0 p) body))))
+                      parsed)
+               ,@(WHEN default (LIST (CONS '#t default))))))))
+
+;;; (matchn m (just v ...) (nothing ...))  -- an expression, nested ?
+;;; Must cover every case or carry a default, checked at expansion time.
+(DEFMACRO matchn (value &REST clauses)
+  (LET* ((value value)
+         (cases (match-cases-of< "matchn" value))
+         (box (GENSYM "matchn")))
+    (MULTIPLE-VALUE-BIND (parsed seen default) (match-parse< "matchn" value clauses cases box)
+      (UNLESS (OR default (= (LENGTH seen) (LENGTH cases)))
+        (ERROR (FORMAT NIL "matchn: ~A is not exhaustive, missing ~A~%  add the case or a default"
+                       value (MAP 'LIST #'CAR
+                                  (REMOVE-IF #'(LAMBDA (c)
+                                                 (FIND (CAR c) seen :TEST #'CICILI:KEY-EQ))
+                                             cases)))))
+      ;; fold right: the innermost else is the default, or the last case's value
+      (LET* ((rest (REVERSE parsed))
+             (tail (IF default
+                       `(progn ,@default)
+                       (LET ((last (CAR rest)))
+                         (SETQ rest (CDR rest))
+                         (match-body< (NTH 1 last) (NTH 2 last))))))
+        (DOLIST (p rest)
+          (SETQ tail `(? ,(NTH 0 p) ,(match-body< (NTH 1 p) (NTH 2 p)) ,tail)))
+        `(letn ((auto ,box . (FUNCTION ,value)))
+           ,tail)))))

@@ -8,6 +8,7 @@
 (import "./c/c.cicili")
 (import "./c/posix.cicili")
 
+(import "./maybe.cicili")
 (import "./array.cicili")
 (import "./cell.cicili")
 (import "./rc.cicili")
@@ -41,5 +42,8 @@
      (decl) (struct double)
      (decl) (struct real)
      (decl) (struct auto)
+     (decl) (struct bool)
+     (decl) (struct true)
+     (decl) (struct false)
     )
   ) ; init-macro
