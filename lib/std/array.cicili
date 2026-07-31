@@ -58,14 +58,15 @@
         (out size_t)
         (return (-> array len)))
   
-  ;; built by cast, not through (<> just maybe a): those are (inline), which is
-  ;; __attribute__((weak)) and therefore never inlined -- a real call per
-  ;; element, 4x on the nth benchmark. The struct order is present, value.
+  ;; `just' / `nothing' are the front ends: they read (<> maybe a) off the out
+  ;; type and expand to the struct literal. Calling (<> just maybe a) instead
+  ;; would be a real call per element -- those are (inline), which is
+  ;; __attribute__((weak)) and therefore never inlined, 4x on the nth benchmark.
   (func (<> nth array a) ((size_t index) ((<> array a) ref array))
         (out (<> maybe a))
         (if (< index (-> array len))
-            (return (cast (<> maybe a) '{ #t (nth index (-> array arr)) }))
-          (return (cast (<> maybe a) '{ #f (cast a '{ 0 }) }))))
+            (return (just (nth index (-> array arr))))
+          (return (nothing))))
   
   ) ; impl-array
 

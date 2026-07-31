@@ -5,7 +5,7 @@
 | folder | what it covers | green? |
 |---|---|---|
 | `test/c` | every pure-C Cicili clause, one file per clause family | yes |
-| `test/std` | the `lib/std` collections | array and cell |
+| `test/std` | the `lib/std` types and collections | yes |
 | `test/haskell` | the Haskell layer | no, see below |
 
 ## Running
@@ -44,6 +44,24 @@ inference-driven one in `builtins.cicili`.
 | `string` | arrays, string literals, character literals and the named special characters |
 | `shared` | a `header` target with a `guard`, included by a `source` in the same file |
 | `library` | several sources in one file: three objects, a libtool `.la` library, and an executable linked against it |
+
+## What is in test/std
+
+| file | covers |
+|---|---|
+| `maybe` | `just` / `nothing` reading the out type, `match` / `matchn`, a `let` falling back to the value's type, the back-end constructors |
+| `either` | `right` / `left` reading the out type, `match` / `matchn`, two instantiations sharing neither half, the back-end constructors |
+| `array` | `new^array`, `len^array`, `nth^array`, `let^array` / `take^array`, and the bounds-checked `nth` benchmark |
+| `cell` | `new^cell`, borrow (`let^cell` / `letn^cell`) and consume (`take^cell` / `taken^cell`) |
+| `rc` | `new^rc`, `clone^rc`, `let^rc` / `take^rc`, and the refcount trace under `--syslog` |
+| `vector` | `push^vector`, `append^vector`, `nth^vector`, `len^vector`, growth |
+| `defer` | the `defer` attribute across a `header` and a `source` target |
+| `thread` | `go`, `join`, `detach`, `cancel`, `exit-self` |
+
+`maybe` and `either` are self-checking the way `test/c` is: every assertion
+prints `ok` or `FAIL` and `main` returns the failure count. The collection tests
+print a trace instead and are checked by reading it against the expected output
+recorded at the bottom of each file.
 
 ## Debugging a red test
 

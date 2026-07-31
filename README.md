@@ -28,9 +28,10 @@ That is a growable, reference-counted vector with bounds-checked access answerin
 * **You see the C.** The generated `.c` file is the ground truth, formatted for reading.
   Nothing is hidden in a runtime; a Cicili binary is a C binary.
 * **The macro layer does the thinking.** Cicili's compiler exposes its type inference to
-  macros (`CICILI:TYPE-CHECK`, `CICILI:INFER-TYPE`). A macro can ask "what type is this
-  expression?" and expand accordingly — that is how `match` dispatches, how `free^cell`
-  finds the right destructor, and how `auto` works.
+  macros (`CICILI:TYPE-CHECK`, `CICILI:INFER-TYPE`, `CICILI:OUT-TYPE`). A macro can ask
+  "what type is this expression?" — or "what type does the function I am inside return?" —
+  and expand accordingly. That is how `match` dispatches, how `free^cell` finds the right
+  destructor, how `(nothing)` knows which `maybe` it is, and how `auto` works.
 * **Front-end / back-end.** Every std-library feature is two parts: a *back-end* function
   (declared in `decl-X`, implemented in `impl-X` generics) for anything that touches its
   receiver more than once, and a *front-end* macro that only type-checks, infers, and
@@ -70,7 +71,7 @@ your.cicili ──read──► forms ──specify──► typed IR (sp tree, 
   | compiler | `*.lisp` | reader, specifier (type inference), backend (C emission), authority (ownership checks) |
   | builtins | `builtins.cicili`, `cpp.cicili` | `main`, `letin`, `closure`, `match`, `defer*`, `new`, `import`, … |
   | C declarations | `lib/std/c/` | the C standard library and POSIX, as typed Cicili declarations |
-  | std | `lib/std/` | `maybe`, `array`, `cell`, `rc`, `vector`, `pthread` |
+  | std | `lib/std/` | `maybe`, `either`, `array`, `cell`, `rc`, `vector`, `pthread` |
   | functional | `lib/haskell/` | ADTs, type classes, Functors, Monads — see [doc/FUNCTIONAL.md](doc/FUNCTIONAL.md) |
 
 * **Toolchain.** `config.lisp` drives clang (macOS) or gcc (Linux) through GNU libtool,
@@ -128,11 +129,12 @@ Read `hello.c` — that habit is the fastest way to learn the language. Then:
 
 Everything in `lib/std` follows the decl/impl rule: instantiate both, then use the
 front-end macros. `(decl-vector int) (impl-vector int)` pulls in everything below it
-(array, rc, cell, maybe).
+(array, rc, cell, maybe); `either` stands alone, instantiate it where you need it.
 
 | type | what it is | front ends | test |
 |---|---|---|---|
-| [`maybe`](lib/std/maybe.cicili) | presence of a value, no sentinels | `match` / `matchn` open it by type inference | [array](test/std/array.cicili) |
+| [`maybe`](lib/std/maybe.cicili) | presence of a value, no sentinels | `just` / `nothing` build one without naming it; `match` / `matchn` open it | [maybe](test/std/maybe.cicili) |
+| [`either`](lib/std/either.cicili) | the answer, or why there isn't one | `right` / `left` build one without naming it; `match` / `matchn` open it | [either](test/std/either.cicili) |
 | [`array`](lib/std/array.cicili) | fixed contiguous buffer + length | `new`, `len^array`, `nth^array` (answers a `maybe`), `let^array` / `take^array` | [array](test/std/array.cicili) |
 | [`cell`](lib/std/cell.cicili) | owned heap value, freed exactly once | `new^cell`, `let^cell` / `letn^cell` (borrow), `take^cell` / `taken^cell` (consume) | [cell](test/std/cell.cicili) |
 | [`rc`](lib/std/rc.cicili) | shared heap value, reference counted | `new^rc`, `clone^rc`, `let^rc` / `take^rc` | [rc](test/std/rc.cicili) |
@@ -150,6 +152,59 @@ Conventions worth knowing:
 
 The functional layer on top — ADTs, pattern matching, Functors, Applicatives, Monads —
 is documented in **[doc/FUNCTIONAL.md](doc/FUNCTIONAL.md)**.
+
+## Bounds-checked indexing, against Rust
+
+The claim "zero runtime overhead" is worth only as much as the measurement behind it. So
+here is the one operation where a safe language is supposed to pay: **indexing that cannot
+go out of bounds**. Cicili's `(<> nth array a)` answers a `maybe`; Rust's `Vec::get`
+answers an `Option`. Neither can be read without handling the missing case, and neither
+elides the check.
+
+```cicili
+;; test/std/array.cicili — 1e9 iterations
+(for ((int i . 0)) (< i N) ((++ i))
+  (match ((<> nth array) (% i 50) v)
+    (just val (+= sum val))))
+```
+```rust
+// benchmark/rust-vector-bench/src/main.rs — the same 1e9
+for i in 0..n {
+    if let Some(&val) = v.get(i % 50) {
+        sum = sum.wrapping_add(val as i64);
+    }
+}
+```
+
+| | ms (three interleaved runs) | median |
+|---|---|---|
+| **Cicili** `(<> nth array int)` | 506 · 508 · 507 | **507** |
+| Rust `Vec::<i32>::get` | 532 · 532 · 532 | 532 |
+
+**Cicili is ~5% faster** — on an Intel i9-9880H, Apple clang 21.0.0 vs rustc 1.96.0,
+Cicili at `-O3 -ffast-math -falign-loops=32`, Rust at `opt-level = 3` (`cargo build
+--release`). Runs are interleaved round-robin, never five-of-each, because this laptop
+drifts ~10% as it warms.
+
+Both compile to a 2-way unrolled scalar loop with the `% 50` strength-reduced to a
+multiply-shift. Cicili's is 52 bytes and 14 instructions, Rust's 55 and 15 — the `maybe`
+is two registers, `Option<&i32>` is a niche-encoded pointer, and neither costs a branch
+the other avoids. **This is not a structural win; it is the same loop, and Cicili is a
+hair tighter.** The honest headline is that a bounds-checked, `match`-destructured index
+through a generic std type costs *nothing over Rust* — which is the actual claim, and the
+harder one.
+
+Two caveats stated up front, because a benchmark without them is marketing:
+
+* **Reproduce it before quoting it.** `sh test/run.sh test/std/array` then
+  `cargo build --release && ./target/release/vec_bench` in
+  [benchmark/rust-vector-bench](benchmark/rust-vector-bench).
+* **A 5% gap is inside the alignment lottery.** Dropping `-falign-loops=32` moves Cicili
+  to 562 ms — *slower than Rust* — with byte-identical loop code, purely because the loop
+  lands 16 bytes off a 32-byte boundary and spans three µop-cache windows instead of two.
+  Rust's loop already lands aligned and does not move when the same flag is forced. The
+  measurement at the bottom of [test/std/array.cicili](test/std/array.cicili) walks
+  through how that was isolated; it is the most useful thing in this section.
 
 ## Project layout
 

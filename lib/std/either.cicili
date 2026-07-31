@@ -1,0 +1,146 @@
+;;;; Cicili std either
+;;; one of two answers at the return of a function -- normally why it failed,
+;;; or what it produced
+;;;
+;;; The lower case `either' / `left' / `right' are the std, struct-based
+;;; version. They coexist with the Haskell layer's ADT `Either' / `Left' /
+;;; `Right' -- case is what tells them apart, so both can be in scope and
+;;; `match' can dispatch on either.
+;;;
+;;; Where `maybe' says whether there is an answer, `either' says what went
+;;; wrong when there is not. The parameters read as Haskell's `Either e a':
+;;; the error type first, the value type second. `right' is the answer,
+;;; `left' the error -- the right one is the right one.
+;;;
+;;;   (func (<> parse either int long) ((const char * text))
+;;;         (out (<> either int long))
+;;;         (let ((char * end) (long n))
+;;;           (set errno 0)
+;;;           (set n (strtol text (aof end) 10))
+;;;           (when (== end text) (return (left EINVAL)))
+;;;           (when errno         (return (left errno)))
+;;;           (return (right n))))
+;;;
+;;;   (match ((<> parse either int long) "42")
+;;;     (right n   (printf "n = %ld\n" n))
+;;;     (left  err (printf "no: %s\n" (strerror err))))
+;;;
+;;; `left' and `right' are the front ends: they name no instantiation, they
+;;; read it off the out type of the function they stand in. Neither can be
+;;; inferred from its argument -- one value names one half of an
+;;; (<> either e a) -- so away from a return, name the instantiation:
+;;; ((<> right either int long) n) / ((<> left either int long) EINVAL).
+;;;
+;;; Both payloads are members of one struct, not a union. That costs the size
+;;; of the unused half, and buys what `maybe' buys: reading the wrong one is
+;;; wrong but never undefined, and the constructors stay positional literals.
+;;; Where the two halves are large and the waste matters, carry a (<> cell T)
+;;; or a pointer in one of them.
+;;;
+;;; `left' and `right' are ordinary global macros, so they take those two names
+;;; for the whole program the way `just' / `nothing' / `new' do. A binding of
+;;; your own called `left' or `right' -- a tree node's children, say -- is fine
+;;; as a member (`($ node left)' never expands) but not as something you call.
+;;;
+;;; either is a plain value carrier: it owns nothing and has no destructor.
+;;; Keep both payloads copyable -- for an owned resource carry a (<> cell T)
+;;; or a pointer, not the resource itself, or the copy and the original will
+;;; both be freed.
+;;;
+;;; `right', `value' and `error' are the representation, not the interface.
+;;; Open an either with `match', which infers the type and expands to a bare
+;;; `if':
+;;;
+;;;   (printf "n = %ld\n"
+;;;     (matchn ((<> parse either int long) "42")
+;;;       (right n   n)
+;;;       (left  err (cast long (- err)))))
+
+(generic decl-either
+  (e a)
+
+  ;; `right' is the discriminator as well as the name of the case it selects:
+  ;; the member order is right, value, error
+  (struct (<> either e a)
+          (member bool right)
+          (member a value)
+          (member e error))
+
+  (typedef a (<> either e a right_t))
+  (typedef e (<> either e a left_t))
+
+  ;; super type declaration to use in 'type-check and 'match dispatch
+  (guard __EITHER_TYPE_H_
+    (decl) (struct (<> std either)))
+  (typedef (<> std either) (<> either e a type_t))
+
+  ;; teaches 'match how to take an either apart; keyed on the opaque super
+  ;; type, so it is the same registration whatever `e' and `a' are. emits
+  ;; nothing.
+  (def-matchable std^either
+    (right ($ % right)       ($ % value))
+    (left  (not ($ % right)) ($ % error)))
+
+  (decl) (func (<> right either e a) ((a value)) (out (<> either e a)))
+  (decl) (func (<> left  either e a) ((e error)) (out (<> either e a)))
+
+  ) ; decl-either
+
+
+(generic impl-either
+  (e a)
+
+  ;; positional init: the discriminator first, then the payloads in struct
+  ;; order. The half that is not selected is the zero of its type, so reading
+  ;; it without checking is wrong but never undefined
+  (inline)
+  (func (<> right either e a) ((a value))
+        (out (<> either e a))
+        (return (cast (<> either e a) '{ #t value (cast e '{ 0 }) })))
+
+  (inline)
+  (func (<> left either e a) ((e error))
+        (out (<> either e a))
+        (return (cast (<> either e a) '{ #f (cast a '{ 0 }) error })))
+
+  ) ; impl-either
+
+
+;;;; ------------------------------------------------------------------
+;;;; front ends: build an either without naming its instantiation.
+;;;;
+;;;; One argument names one half of an (<> either e a), so unlike `just' there
+;;;; is nothing to fall back on: both read the out type of the function the
+;;;; form stands in, and both say so when it is not an either.
+;;;;
+;;;; Neither calls the back-end constructor. Those are (inline), which is
+;;;; __attribute__((weak)) and therefore never inlined -- a real call for what
+;;;; is three stores. The expansion is the struct literal, so an either built
+;;;; in a loop costs what writing the braces by hand would.
+;;;; ------------------------------------------------------------------
+
+;;; the either this form belongs to, as its type name, or NIL when the
+;;; enclosing function does not return one
+(DEFUN either-out< ()
+  (out-typeof< 'std^either))
+
+(DEFUN either-out-or-die< (who)
+  (LET ((type-name (either-out<)))
+    (UNLESS type-name
+      (ERROR (FORMAT NIL "~A: the enclosing function does not return an either~%  name the instantiation instead: ((<> ~A either E A) …)"
+                     who who)))
+    type-name))
+
+;;; (right v) -- the answer. The instantiation comes from the out type, so
+;;; `(return (right n))' inside (out (<> either int long)) builds an
+;;; either_int_long whatever `n' is declared as.
+(DEFMACRO right (value)
+  (LET ((value value)
+        (type-name (either-out-or-die< 'right)))
+    `(cast ,type-name '{ #t ,value (cast (<> ,type-name left_t) '{ 0 }) })))
+
+;;; (left err) -- the error, the other half of the same out type
+(DEFMACRO left (error)
+  (LET ((error error)
+        (type-name (either-out-or-die< 'left)))
+    `(cast ,type-name '{ #f (cast (<> ,type-name right_t) '{ 0 }) ,error })))

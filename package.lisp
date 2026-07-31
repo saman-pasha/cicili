@@ -24,6 +24,7 @@
     :is-non-copy
     :is-inside-loop
     :type-check
+    :out-type            ; declared out type of the function being specified, for argument-less front ends
     :type-root           ; typedef chain of a type, origin first, specific last
     :type-origin         ; opaque super type declared by a `<name>^type_t' typedef, or NIL
     :key-eq

@@ -1,9 +1,23 @@
 
 ;;; test Cicili std array
+;;;
+;;; Built at full optimization, and the flags go on BOTH steps -- `:link' used
+;;; to carry none at all, which is a real gap the moment a target has more than
+;;; one object, and the whole point of -flto if it is ever added back.
+;;; -Ofast is not an option: clang 21 deprecated it and this target compiles
+;;; with -Werror. -O3 -ffast-math is its documented replacement.
+;;;
+;;; -falign-loops=32 is not decoration. Without it this benchmark measures the
+;;; linker's byte offsets as much as it measures the library: --syslog came out
+;;; ~10% FASTER than the plain build, purely because the extra printf shifted
+;;; the hot loop onto a 32-byte boundary. See the bottom for the evidence.
+;;;
+;;; -march=native is deliberately NOT here. It is the one flag that looks like
+;;; more optimization and is not: also at the bottom.
 (source "array.c"
   (make :std #t
-        :compile ("-O3" "-ffast-math" "-c" "array.c")
-        :link ("-larray.o" "-o" "arr_test"))
+        :compile ("-O3" "-ffast-math" "-falign-loops=32" "-c" "array.c")
+        :link ("-O3" "-ffast-math" "-falign-loops=32" "-larray.o" "-o" "arr_test"))
 
   (include <time.h>)
   (include <limits.h>)
@@ -165,33 +179,107 @@
 ;; ./test/std/arr_test
 
 ;; sizeof array_int: 16
-;; NEW ARR: array_int 0x6000000a11e0 5
-;; NEW ARR: array_int 0x6000002a4040 2
+;; NEW ARR: array_int 0x7f7f9c706080 5 of 5
+;; NEW ARR: array_int 0x7f7f9c705f60 2 of 2
 ;; arr02 len: 2
 ;; length of referenced array 2
 ;; length of referenced array 2
 ;; length of moved array 2
-;; FREE ARR: 0x6000002a4040
+;; FREE ARR: 0x7f7f9c705f60
 ;; print int array using Unsafe nth: 12345
 ;; print int array using Safe nth: 12345--
 ;; the same run through matchn:    1234500
 ;; letn sum1: 3000000000
 ;; take sum2: 6000000000
-;; FREE ARR: 0x6000000a11e0
+;; FREE ARR: 0x7f7f9c706080
 ;; FREE ARR: 0x0
 ;; FREE ARR: 0x0
-;; NEW ARR: array_int 0x600003ba0000 50
+;; NEW ARR: array_int 0x7f7f9d004080 50 of 50
 ;;   (nth checksum: 24500000000)
-;; FREE ARR: 0x600003ba0000
-;;   nth (bounds-checked) 1000000000 times: 411 ms
+;; FREE ARR: 0x7f7f9d004080
+;;   nth (bounds-checked) 1000000000 times: 504 ms
 
-;; (nth) bench result:
-;; Cicili 422 419 417 410 411
-;; Rust   439 435 437 439 436
 
-;; after nth moved from an inline struct '{ p v } to (<> maybe a),
-;; built with clang -O3 -ffast-math:
-;; Cicili 430 431 428 428 432
-;; Building the maybe through (<> just maybe int) instead of by cast costs 1692 ms
-;; -- (inline) emits __attribute__((weak)), which the compiler is not allowed
-;; to inline.
+;;;; ---------------------------------------------------------------------
+;;;; (nth) bench, full optimization
+;;;;
+;;;; Apple clang 21.0.0, x86_64, Intel i9-9880H (Coffee Lake). Five runs per
+;;;; flag set, INTERLEAVED round-robin rather than five-of-each: this laptop
+;;;; drifts ~10% as it warms, and back-to-back blocks would charge that drift
+;;;; to whichever flag set ran last.
+;;;;
+;;;;   flags on :compile and :link                       ms
+;;;;   -O3 -ffast-math                        568 562 561 563 561
+;;;;   -O3 -flto -ffast-math                  561 563 564 563 574
+;;;;   -O3 -flto -ffast-math -funroll-loops   561 561 561 562 560
+;;;;   -O3 -ffast-math -falign-loops=32       506 505 508 505 506   <- in use
+;;;;   -O3 -march=native -flto -ffast-math   2008 2008 2022 2009 2020
+;;;;
+;;;; What the numbers say:
+;;;;
+;;;; * -falign-loops=32 is worth 10%, and finding out why is the reason it is
+;;;;   here. Without it, the --syslog build measured ~508 ms and the plain build
+;;;;   ~562 -- the build with EXTRA printf calls was the faster one. No printf
+;;;;   is inside the timed region (NEW ARR runs before t0, FREE ARR after
+;;;;   elapsed), so it is not I/O, not a flush, not an interrupt. Both builds
+;;;;   emit a byte-for-byte identical 52-byte inner loop; only its address
+;;;;   differs, because the extra printf setup shifts everything after it:
+;;;;
+;;;;     plain   loop head 0x...730 = 16 mod 32 -> spans 3 32-byte windows
+;;;;     syslog  loop head 0x...780 =  0 mod 32 -> spans 2
+;;;;
+;;;;   The Skylake/Coffee Lake DSB (decoded uop cache) delivers from one
+;;;;   32-byte window per cycle, so the 3-window layout needs an extra
+;;;;   front-end cycle per iteration. Adding -falign-loops=32 to the plain
+;;;;   build reproduces the syslog time exactly (503 505 505), which is the
+;;;;   proof: same code, same data, alignment alone.
+;;;;
+;;;;   Keep the flag. Without it this benchmark reports whatever the linker
+;;;;   happened to do with byte offsets, and an unrelated edit anywhere earlier
+;;;;   in the file can move the result 10% with no change to `nth' at all.
+;;;; * -flto measures as noise: the benchmark is one translation unit, so there
+;;;;   is nothing cross-module left to inline. Not in the flags for that reason,
+;;;;   but it is free, and worth adding back the moment this target grows a
+;;;;   second object.
+;;;; * -funroll-loops is noise too: -O3 already unrolls this loop.
+;;;; * -march=native is 3.6x SLOWER, and that is not a typo. It lets clang
+;;;;   vectorize the loop, and the vectorized form loads through AVX2 gathers:
+;;;;
+;;;;     clang -O3 -ffast-math          -S array.c   ->  0 ymm/zmm operands
+;;;;     clang -O3 -march=native ...    -S array.c   -> 87, incl. 25 vpgatherdd
+;;;;
+;;;;   vpgatherdd on Coffee Lake is ~12-20 cycles of throughput for what eight
+;;;;   scalar loads do in a fraction of that, and the vectorized `% 50' costs a
+;;;;   vpmuludq/vpsrld pair on top. "Newer instructions" is not "faster code";
+;;;;   measure the flag, do not assume it.
+;;;; * -Ofast is not on the list because clang 21 deprecated it and this target
+;;;;   builds with -Werror. -O3 -ffast-math is its documented replacement.
+;;;;
+;;;; Against Rust, same machine, same session, interleaved round-robin:
+;;;;
+;;;;   Cicili  (<> nth array int)   506 508 507
+;;;;   Rust    Vec::<i32>::get      532 532 532   (cargo build --release)
+;;;;
+;;;; ~5% to Cicili, and the whole margin is inside the alignment effect above:
+;;;; drop -falign-loops=32 and Cicili is 562, i.e. SLOWER than Rust, with
+;;;; byte-identical loop code. Rust's loop already lands 32-byte aligned and
+;;;; does not move when the same flag is forced on it, so the comparison in the
+;;;; table is aligned-vs-aligned and fair. Rust source and how to run it:
+;;;; benchmark/rust-vector-bench, and the summary is in the README.
+;;;;
+;;;; Older numbers on this machine, kept for the record. They are NOT comparable
+;;;; to anything above -- the machine was in a cooler state then, so compare
+;;;; within a table, never across them:
+;;;;
+;;;;   Cicili 422 419 417 410 411   |  Rust 439 435 437 439 436  (opt-level 3)
+;;;;
+;;;; after nth moved from an inline struct '{ p v } to (<> maybe a),
+;;;; built with clang -O3 -ffast-math:
+;;;;   Cicili 430 431 428 428 432
+;;;;
+;;;; Building the maybe through the (<> just maybe int) FUNCTION instead of the
+;;;; struct literal costs 1692 ms -- (inline) emits __attribute__((weak)), which
+;;;; the compiler is not allowed to inline. This is why `just' and `nothing' are
+;;;; front-end macros that expand to the literal rather than wrappers over the
+;;;; back-end constructors.
+;;;; ---------------------------------------------------------------------

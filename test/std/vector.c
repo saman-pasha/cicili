@@ -97,11 +97,11 @@ maybe_int nth_array_int (size_t index , array_int * restrict array ) {
   if (index  <  (array -> len) )
     return ((maybe_int){ true , (array -> arr)[index ]});
   else
-    return ((maybe_int){ false , ((int){ 0})});
+    return ((maybe_int){ false , ((maybe_int_interior_t){ 0})});
 }
 __attribute__((weak)) void free_cell_rc_array_int_context (cell_rc_array_int_context * cell ) {
   if ((cell -> ptr))
-    { /* block255 */
+    { /* block256 */
       free_rc_array_int_context ((cell -> ptr));
       free ((cell -> ptr));
     }
@@ -111,9 +111,9 @@ __attribute__((weak)) void free_cell_rc_array_int_context_pointer (cell_rc_array
 }
 __attribute__((weak)) void free_rc_array_int_context (rc_array_int_context * ctx ) {
   if ((ctx -> ptr) &&  (ctx -> count) )
-    { /* block270 */
+    { /* block271 */
       if ((*(ctx -> count)) ==  1 )
-        { /* block276 */
+        { /* block277 */
           free_array_int ((ctx -> ptr));
           free ((ctx -> count));
           free ((ctx -> ptr));
@@ -127,7 +127,7 @@ __attribute__((weak)) void free_rc_array_int_context_pointer (rc_array_int_conte
 }
 cell_rc_array_int_context clone_rc_array_int_context (cell_rc_array_int_context * restrict ctx_cell ) {
   if ((ctx_cell -> ptr) &&  ((ctx_cell -> ptr)-> ptr) &&  ((ctx_cell -> ptr)-> count) &&  ((*((ctx_cell -> ptr)-> count)) >=  1 ) )
-    return ({ /* letn290 */
+    return ({ /* letn291 */
         rc_array_int_context * new_ctx  = malloc (sizeof((*(ctx_cell -> ptr))));
         // ----------
         (++(*((ctx_cell -> ptr)-> count)));
@@ -141,7 +141,7 @@ __attribute__((weak)) void free_vector_int (vector_int * vector ) {
   free_cell_rc_array_int_context ((&(vector -> vec)));
 }
 size_t arraySize_vector_int (size_t size ) {
-  { /* let306 */
+  { /* let307 */
     size_t two_pow  = 0x10;
     // ----------
     while ((two_pow  <  size  )) {
@@ -152,7 +152,7 @@ size_t arraySize_vector_int (size_t size ) {
 }
 array_int * buffer_vector_int (vector_int * restrict vector ) {
   if ((vector -> vec). ptr)
-    { /* block317 */
+    { /* block318 */
       return (((vector -> vec). ptr)-> ptr);
     }
   return NULL ;
@@ -161,50 +161,50 @@ size_t len_vector_int (vector_int * restrict vector ) {
   return ((vector -> high) -  (vector -> low) );
 }
 maybe_int nth_vector_int (size_t index , vector_int * restrict vector ) {
-  { /* let326 */
+  { /* let327 */
     array_int * arr  = buffer_vector_int (vector );
     size_t at  = ((vector -> low) +  index  );
     // ----------
     if (arr  &&  (at  <  (vector -> high) ) &&  (at  <  (arr -> len) ) )
       return ((maybe_int){ true , (arr -> arr)[at ]});
     else
-      return ((maybe_int){ false , ((int){ 0})});
+      return ((maybe_int){ false , ((maybe_int_interior_t){ 0})});
   }
 }
 size_t push_vector_int (vector_int * restrict vector , int item ) {
   return append_vector_int (vector , (&item ), 1);
 }
 size_t append_vector_int (vector_int * restrict vector , const int * items , size_t count ) {
-  { /* let342 */
+  { /* let344 */
     const size_t low  = (vector -> low);
     const size_t high  = (vector -> high);
     const size_t total  = (((vector -> high) -  (vector -> low) ) +  count  );
     array_int * arr  = buffer_vector_int (vector );
     // ----------
     if (arr  &&  (((vector -> vec). ptr)-> count) &&  ((*(((vector -> vec). ptr)-> count)) ==  1 ) &&  ((high  +  count  ) <=  (arr -> len) ) )
-      { /* block349 */
+      { /* block351 */
         memcpy (((arr -> arr) +  high  ), items , (count  *  sizeof(int) ));
         (vector -> high) = (high  +  count  );
         return total ;
       }
-    { /* let353 */
+    { /* let355 */
       const size_t cap  = arraySize_vector_int (total );
       // ----------
-      { /* let358 */
-        cell_rc_array_int_context fresh  = ({ /* letn379 */
-          rc_array_int_context * rc_array_int_context_ptr377  = malloc (sizeof(rc_array_int_context));
-          rc_array_int_context rc_array_int_context_obj378  = ({ /* letn387 */
-            array_int * array_int_ptr384  = malloc (sizeof(array_int));
-            array_int array_int_obj385  = new_array_int (((arr ) ? ((arr -> arr) +  low  ) : NULL ), ((arr ) ? (high  -  low  ) : 0), cap );
-            size_t * array_int_count386  = malloc (sizeof(size_t));
+      { /* let360 */
+        cell_rc_array_int_context fresh  = ({ /* letn381 */
+          rc_array_int_context * rc_array_int_context_ptr379  = malloc (sizeof(rc_array_int_context));
+          rc_array_int_context rc_array_int_context_obj380  = ({ /* letn389 */
+            array_int * array_int_ptr386  = malloc (sizeof(array_int));
+            array_int array_int_obj387  = new_array_int (((arr ) ? ((arr -> arr) +  low  ) : NULL ), ((arr ) ? (high  -  low  ) : 0), cap );
+            size_t * array_int_count388  = malloc (sizeof(size_t));
             // ----------
-            memcpy (array_int_ptr384 , (&array_int_obj385 ), sizeof(array_int_obj385));
-            (*array_int_count386 ) = 1;
-            ((rc_array_int_context){ array_int_ptr384 , array_int_count386 });
+            memcpy (array_int_ptr386 , (&array_int_obj387 ), sizeof(array_int_obj387));
+            (*array_int_count388 ) = 1;
+            ((rc_array_int_context){ array_int_ptr386 , array_int_count388 });
           });
           // ----------
-          memcpy (rc_array_int_context_ptr377 , (&rc_array_int_context_obj378 ), sizeof(rc_array_int_context_obj378));
-          ((cell_rc_array_int_context){ rc_array_int_context_ptr377 });
+          memcpy (rc_array_int_context_ptr379 , (&rc_array_int_context_obj380 ), sizeof(rc_array_int_context_obj380));
+          ((cell_rc_array_int_context){ rc_array_int_context_ptr379 });
         });
         // ----------
         memcpy (((((fresh . ptr)-> ptr)-> arr) +  (high  -  low  ) ), items , (count  *  sizeof(int) ));
@@ -219,32 +219,32 @@ size_t append_vector_int (vector_int * restrict vector , const int * items , siz
 }
 int check (const char * what , long long got , long long want ) {
   if (got  ==  want  )
-    { /* block403 */
+    { /* block405 */
       printf ("ok   %-34s %lld\n", what , got );
       return 0;
     }
   else
-    { /* block406 */
+    { /* block408 */
       printf ("FAIL %-34s got %lld want %lld\n", what , got , want );
       return 1;
     }
   return 1;
 }
 int at (size_t index , vector_int * restrict v ) {
-  return ({ /* letn413 */
-      maybe_int matchn412  = nth_vector_int (index , v );
+  return ({ /* letn415 */
+      maybe_int matchn414  = nth_vector_int (index , v );
       // ----------
-      (((matchn412 . present)) ? ({ /* letn415 */
-          int x  = (matchn412 . value);
+      (((matchn414 . present)) ? ({ /* letn417 */
+          int x  = (matchn414 . value);
           // ----------
           x ;
-        }) : ({ /* progn417 */
+        }) : ({ /* progn419 */
           -1;
         }));
     });
 }
 long long total (vector_int * restrict v ) {
-  { /* let421 */
+  { /* let423 */
     long long sum  = 0;
     // ----------
     for (size_t i  = 0; (i  <  len_vector_int (v ) ); (++i )) {
@@ -254,29 +254,29 @@ long long total (vector_int * restrict v ) {
   }
 }
 int main () {
-  { /* let429 */
+  { /* let431 */
     int bad  = 0;
     // ----------
-    ({ /* letn518 */
-      vector_int v  __attribute__((__cleanup__(free_vector_int ))) = ({ /* letn523 */
-        const size_t tmp_len521  = 5;
-        const size_t arr_len522  = arraySize_vector_int (5);
+    ({ /* letn520 */
+      vector_int v  __attribute__((__cleanup__(free_vector_int ))) = ({ /* letn525 */
+        const size_t tmp_len523  = 5;
+        const size_t arr_len524  = arraySize_vector_int (5);
         // ----------
-        ((vector_int){ ({ /* letn547 */
-            rc_array_int_context * rc_array_int_context_ptr545  = malloc (sizeof(rc_array_int_context));
-            rc_array_int_context rc_array_int_context_obj546  = ({ /* letn555 */
-              array_int * array_int_ptr552  = malloc (sizeof(array_int));
-              array_int array_int_obj553  = new_array_int (((const int[]){ 1, 2, 3, 4, 5}), tmp_len521 , arr_len522 );
-              size_t * array_int_count554  = malloc (sizeof(size_t));
+        ((vector_int){ ({ /* letn549 */
+            rc_array_int_context * rc_array_int_context_ptr547  = malloc (sizeof(rc_array_int_context));
+            rc_array_int_context rc_array_int_context_obj548  = ({ /* letn557 */
+              array_int * array_int_ptr554  = malloc (sizeof(array_int));
+              array_int array_int_obj555  = new_array_int (((const int[]){ 1, 2, 3, 4, 5}), tmp_len523 , arr_len524 );
+              size_t * array_int_count556  = malloc (sizeof(size_t));
               // ----------
-              memcpy (array_int_ptr552 , (&array_int_obj553 ), sizeof(array_int_obj553));
-              (*array_int_count554 ) = 1;
-              ((rc_array_int_context){ array_int_ptr552 , array_int_count554 });
+              memcpy (array_int_ptr554 , (&array_int_obj555 ), sizeof(array_int_obj555));
+              (*array_int_count556 ) = 1;
+              ((rc_array_int_context){ array_int_ptr554 , array_int_count556 });
             });
             // ----------
-            memcpy (rc_array_int_context_ptr545 , (&rc_array_int_context_obj546 ), sizeof(rc_array_int_context_obj546));
-            ((cell_rc_array_int_context){ rc_array_int_context_ptr545 });
-          }), 0, tmp_len521 });
+            memcpy (rc_array_int_context_ptr547 , (&rc_array_int_context_obj548 ), sizeof(rc_array_int_context_obj548));
+            ((cell_rc_array_int_context){ rc_array_int_context_ptr547 });
+          }), 0, tmp_len523 });
       });
       // ----------
       bad  += check ("len after new", len_vector_int ((&v )), 5) ;
@@ -303,26 +303,26 @@ int main () {
       bad  += check ("checksum 1..40", total ((&v )), 820) ;
       bad  += check ("still bounds checked", at (40, (&v )), -1) ;
     });
-    ({ /* letn671 */
-      vector_int e  __attribute__((__cleanup__(free_vector_int ))) = ({ /* letn676 */
-        const size_t tmp_len674  = 0;
-        const size_t arr_len675  = arraySize_vector_int (0);
+    ({ /* letn673 */
+      vector_int e  __attribute__((__cleanup__(free_vector_int ))) = ({ /* letn678 */
+        const size_t tmp_len676  = 0;
+        const size_t arr_len677  = arraySize_vector_int (0);
         // ----------
-        ((vector_int){ ({ /* letn700 */
-            rc_array_int_context * rc_array_int_context_ptr698  = malloc (sizeof(rc_array_int_context));
-            rc_array_int_context rc_array_int_context_obj699  = ({ /* letn708 */
-              array_int * array_int_ptr705  = malloc (sizeof(array_int));
-              array_int array_int_obj706  = new_array_int (((const int[]){ 0}), tmp_len674 , arr_len675 );
-              size_t * array_int_count707  = malloc (sizeof(size_t));
+        ((vector_int){ ({ /* letn702 */
+            rc_array_int_context * rc_array_int_context_ptr700  = malloc (sizeof(rc_array_int_context));
+            rc_array_int_context rc_array_int_context_obj701  = ({ /* letn710 */
+              array_int * array_int_ptr707  = malloc (sizeof(array_int));
+              array_int array_int_obj708  = new_array_int (((const int[]){ 0}), tmp_len676 , arr_len677 );
+              size_t * array_int_count709  = malloc (sizeof(size_t));
               // ----------
-              memcpy (array_int_ptr705 , (&array_int_obj706 ), sizeof(array_int_obj706));
-              (*array_int_count707 ) = 1;
-              ((rc_array_int_context){ array_int_ptr705 , array_int_count707 });
+              memcpy (array_int_ptr707 , (&array_int_obj708 ), sizeof(array_int_obj708));
+              (*array_int_count709 ) = 1;
+              ((rc_array_int_context){ array_int_ptr707 , array_int_count709 });
             });
             // ----------
-            memcpy (rc_array_int_context_ptr698 , (&rc_array_int_context_obj699 ), sizeof(rc_array_int_context_obj699));
-            ((cell_rc_array_int_context){ rc_array_int_context_ptr698 });
-          }), 0, tmp_len674 });
+            memcpy (rc_array_int_context_ptr700 , (&rc_array_int_context_obj701 ), sizeof(rc_array_int_context_obj701));
+            ((cell_rc_array_int_context){ rc_array_int_context_ptr700 });
+          }), 0, tmp_len676 });
       });
       // ----------
       bad  += check ("len of an empty vector", len_vector_int ((&e )), 0) ;
@@ -331,26 +331,26 @@ int main () {
       bad  += check ("the pushed value", at (0, (&e )), 42) ;
       bad  += check ("append onto one", append_vector_int ((&e ), ((const vector_int_item_t[]){ 43, 44}), 2), 3) ;
       bad  += check ("checksum of the three", total ((&e )), 129) ;
-      ({ /* letn813 */
-        vector_int o  __attribute__((__cleanup__(free_vector_int ))) = ({ /* letn818 */
-          const size_t tmp_len816  = 2;
-          const size_t arr_len817  = arraySize_vector_int (2);
+      ({ /* letn815 */
+        vector_int o  __attribute__((__cleanup__(free_vector_int ))) = ({ /* letn820 */
+          const size_t tmp_len818  = 2;
+          const size_t arr_len819  = arraySize_vector_int (2);
           // ----------
-          ((vector_int){ ({ /* letn842 */
-              rc_array_int_context * rc_array_int_context_ptr840  = malloc (sizeof(rc_array_int_context));
-              rc_array_int_context rc_array_int_context_obj841  = ({ /* letn850 */
-                array_int * array_int_ptr847  = malloc (sizeof(array_int));
-                array_int array_int_obj848  = new_array_int (((const int[]){ 7, 7}), tmp_len816 , arr_len817 );
-                size_t * array_int_count849  = malloc (sizeof(size_t));
+          ((vector_int){ ({ /* letn844 */
+              rc_array_int_context * rc_array_int_context_ptr842  = malloc (sizeof(rc_array_int_context));
+              rc_array_int_context rc_array_int_context_obj843  = ({ /* letn852 */
+                array_int * array_int_ptr849  = malloc (sizeof(array_int));
+                array_int array_int_obj850  = new_array_int (((const int[]){ 7, 7}), tmp_len818 , arr_len819 );
+                size_t * array_int_count851  = malloc (sizeof(size_t));
                 // ----------
-                memcpy (array_int_ptr847 , (&array_int_obj848 ), sizeof(array_int_obj848));
-                (*array_int_count849 ) = 1;
-                ((rc_array_int_context){ array_int_ptr847 , array_int_count849 });
+                memcpy (array_int_ptr849 , (&array_int_obj850 ), sizeof(array_int_obj850));
+                (*array_int_count851 ) = 1;
+                ((rc_array_int_context){ array_int_ptr849 , array_int_count851 });
               });
               // ----------
-              memcpy (rc_array_int_context_ptr840 , (&rc_array_int_context_obj841 ), sizeof(rc_array_int_context_obj841));
-              ((cell_rc_array_int_context){ rc_array_int_context_ptr840 });
-            }), 0, tmp_len816 });
+              memcpy (rc_array_int_context_ptr842 , (&rc_array_int_context_obj843 ), sizeof(rc_array_int_context_obj843));
+              ((cell_rc_array_int_context){ rc_array_int_context_ptr842 });
+            }), 0, tmp_len818 });
         });
         // ----------
         push_vector_int ((&o ), 7);

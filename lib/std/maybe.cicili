@@ -13,8 +13,13 @@
 ;;;         (out (<> maybe size_t))
 ;;;         (for ((size_t i . 0)) (< i (-> array len)) ((1+ i))
 ;;;           (when (== (nth i (-> array arr)) needle)
-;;;             (return ((<> just maybe size_t) i))))
-;;;         (return ((<> nothing maybe size_t))))
+;;;             (return (just i))))
+;;;         (return (nothing)))
+;;;
+;;; `just' and `nothing' are the front ends: they name no instantiation, they
+;;; read it off the out type of the function they stand in. The back-end
+;;; constructors are still there for the rare form that is not in a return --
+;;; ((<> just maybe size_t) i) / ((<> nothing maybe size_t)).
 ;;;
 ;;; Unlike a sentinel return, `present' is independent of the payload, so zero
 ;;; and NULL are perfectly good values.
@@ -24,11 +29,12 @@
 ;;; pointer, not the resource itself, or the copy in `value' and the original
 ;;; will both be freed.
 ;;;
-;;; The constructors carry (inline), which emits __attribute__((weak)) so one
-;;; definition serves every translation unit -- but a weak symbol is replaceable
-;;; at link time, so gcc will not inline it. In a hot loop build the struct
-;;; directly instead, (cast (<> maybe a) '{ #t v }) / '{ #f (cast a '{ 0 }) },
-;;; the way (<> nth array a) does; the member order is present then value.
+;;; The back-end constructors carry (inline), which emits __attribute__((weak))
+;;; so one definition serves every translation unit -- but a weak symbol is
+;;; replaceable at link time, so gcc will not inline it. That is why the front
+;;; ends do not call them: they expand to the struct literal itself,
+;;; (cast (<> maybe a) '{ #t v }) / '{ #f (cast a '{ 0 }) }, the way
+;;; (<> nth array a) does; the member order is present then value.
 ;;;
 ;;; `present' and `value' are the representation, not the interface. Open a
 ;;; maybe with `match', which infers the type and expands to a bare `if':
@@ -85,3 +91,53 @@
         (return (cast (<> maybe a) '{ #f (cast a '{ 0 }) })))
 
   ) ; impl-maybe
+
+
+;;;; ------------------------------------------------------------------
+;;;; front ends: build a maybe without naming its instantiation.
+;;;;
+;;;; Both answer the same question -- which (<> maybe a) is this? -- by looking
+;;;; at the out type of the function the form stands in. `nothing' has nothing
+;;;; else to go on; `just' falls back to the type of its own value when the
+;;;; enclosing function does not return a maybe, so it still works in a `let'.
+;;;;
+;;;; Neither calls the back-end constructor. Those are (inline), which is
+;;;; __attribute__((weak)) and therefore never inlined -- a real call for what
+;;;; is two stores. The expansion is the struct literal, so a maybe built in a
+;;;; loop costs what writing the braces by hand would.
+;;;; ------------------------------------------------------------------
+
+;;; the maybe this form belongs to, as its type name, or NIL when the enclosing
+;;; function does not return one
+(DEFUN maybe-out< ()
+  (out-typeof< 'std^maybe))
+
+;;; (just v) -- the instantiation comes from the out type, so `(return (just i))'
+;;; inside (out (<> maybe size_t)) builds a maybe_size_t whatever `i' is
+;;; declared as; a literal 0 needs no cast. Outside a maybe-returning function
+;;; the value decides, which is what makes
+;;; (let (((<> maybe int) m . #'(just 3)))) work. Where neither is the
+;;; instantiation you want, name it: ((<> just maybe long) 3).
+(DEFMACRO just (value)
+  (LET* ((value value)
+         (type-name
+             (OR (maybe-out<)
+                 (MULTIPLE-VALUE-BIND (_ full-type) (CICILI:INFER-TYPE value)
+                   (DECLARE (IGNORE _))
+                   (LET ((item (NTH 1 full-type)))
+                     (UNLESS (SYMBOLP item)
+                       (SETQ item (NTH 1 (NTH-VALUE 1 (CICILI:INFER-TYPE-SPEC "" item)))))
+                     (UNLESS (SYMBOLP item)
+                       (ERROR (FORMAT NIL "just: can't infer which maybe ~A belongs to~%  name it: ((<> just maybe T) ~A)"
+                                      value value)))
+                     `(<> maybe ,item))))))
+    `(cast ,type-name '{ #t ,value })))
+
+;;; (nothing) -- carries no value, so only the out type can say which maybe it
+;;; is. In any other position name the instantiation: ((<> nothing maybe int)).
+;;; The payload is the zero of the interior type, never uninitialised.
+(DEFMACRO nothing ()
+  (LET ((type-name (maybe-out<)))
+    (UNLESS type-name
+      (ERROR (FORMAT NIL "nothing: the enclosing function does not return a maybe~%  name the instantiation instead: ((<> nothing maybe T))")))
+    `(cast ,type-name '{ #f (cast (<> ,type-name interior_t) '{ 0 }) })))

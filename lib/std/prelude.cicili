@@ -9,6 +9,7 @@
 (import "./c/posix.cicili")
 
 (import "./maybe.cicili")
+(import "./either.cicili")
 (import "./array.cicili")
 (import "./cell.cicili")
 (import "./rc.cicili")

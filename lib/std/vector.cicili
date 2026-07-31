@@ -75,9 +75,11 @@
         (out (<> maybe a))
         (let (((<> array a) * arr . #'((<> buffer vector a) vector))
               (size_t at . #'(+ (-> vector low) index)))
+          ;; the front ends read (<> maybe a) off the out type and expand to the
+          ;; struct literal -- no call, the way (<> nth array a) builds its own
           (if (and arr (< at (-> vector high)) (< at (-> arr len)))
-              (return (cast (<> maybe a) '{ #t (nth at (-> arr arr)) }))
-            (return (cast (<> maybe a) '{ #f (cast a '{ 0 }) })))))
+              (return (just (nth at (-> arr arr))))
+            (return (nothing)))))
 
   (func (<> push vector a) (((<> vector a) ref vector) (a item))
         (out size_t)

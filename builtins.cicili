@@ -398,6 +398,35 @@
   `((<> new ,type) ,@args))
 
 ;;;; ------------------------------------------------------------------
+;;;; front-end support -- the type a form is expected to produce
+;;;;
+;;;; A front end usually infers its instantiation from an argument. A
+;;;; constructor for an empty case has none to look at: `(nothing)' carries no
+;;;; value, and `(right v)' names only half of an (<> either e a). What decides
+;;;; there is the slot the form stands in, and that slot is the return.
+;;;; 'out-typeof< asks CICILI:OUT-TYPE for the enclosing function's out type and
+;;;; answers with its type name -- but only when it belongs to the family asked
+;;;; about, so `(nothing)' in a function returning an int is a miss, not a
+;;;; nonsense expansion.
+;;;; ------------------------------------------------------------------
+
+;;; type origins are interned with `_' where the source writes `^', and KEY-EQ
+;;; compares symbol names verbatim, so a family name has to be normalised the
+;;; way CICILI:TYPE-CHECK normalises its :TYPEOF before either can be compared
+(DEFUN same-origin< (origin family)
+  (AND origin family (SYMBOLP origin) (SYMBOLP family)
+       (STRING= (SUBSTITUTE #\_ #\^ (SYMBOL-NAME origin))
+                (SUBSTITUTE #\_ #\^ (SYMBOL-NAME family)))))
+
+;;; the out type's own name -- (<> maybe int) as `maybe^int' -- when its origin
+;;; is `family', NIL otherwise. `family' is the opaque super type the type's
+;;; `<name>^type_t' typedef points at, the same symbol def-matchable is keyed on.
+(DEFUN out-typeof< (family)
+  (MULTIPLE-VALUE-BIND (desc full-type root origin) (CICILI:OUT-TYPE)
+    (DECLARE (IGNORE desc root))
+    (WHEN (same-origin< origin family) (NTH 1 full-type))))
+
+;;;; ------------------------------------------------------------------
 ;;;; match -- pattern matching driven by type inference
 ;;;;
 ;;;; A matchable type registers its cases once with 'def-matchable, keyed by the

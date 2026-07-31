@@ -540,6 +540,31 @@
                       spec))))
         spec)))
 
+;; the declared out type of the function whose body is being specified, in the
+;; same shape 'type-check answers with: (values desc-type full-type root origin).
+;; NIL everywhere outside a function body, and for an `out auto' that has not
+;; been resolved by a `return' yet.
+;;
+;; A front-end macro infers from its arguments -- but a constructor for an empty
+;; case has none: `(nothing)' carries nothing to look at, and `(right v)' names
+;; only half of an (<> either e a). What decides the instantiation there is the
+;; slot the form stands in, and in practice that slot is the return. Reading the
+;; out type is how those front ends stay type-name free.
+;;
+;; It follows the innermost function: inside a 'closure or a 'lambda the answer
+;; is that closure's out type, which is what the form actually returns to. 'let
+;; and 'letn are blocks of the enclosing function and do not shadow it.
+(defun out-type ()
+  (when (and *function-spec* (not *function-outp*))
+    (let ((ty (typeof *function-spec*)))
+      (when (and ty (not (key-eq ty '|auto|)) (not (typep ty 'sp)))
+        (let ((full-type (list (const      *function-spec*)
+                               ty
+                               (modifier   *function-spec*)
+                               (const-ptr  *function-spec*)
+                               nil)))
+          (values (remove nil full-type) full-type (type-root ty) (type-origin ty)))))))
+
 ;; a way to make DEFMACRO statically typed
 (defun type-check (value &key const typeof modifier const-ptr has-name with-name copy-name)
   (let ((value (expand-macros value)))
