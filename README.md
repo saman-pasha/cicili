@@ -47,6 +47,7 @@ That is a growable, reference-counted vector with bounds-checked access answerin
 
 ```
 your.cicili ──read──► forms ──specify──► typed IR (sp tree, symbol table)
+                                 │
                                  │  macros expand here, with type inference
                                  ▼
                       collecting pass ──► your.c ──► C compiler (diagnostics collected)
