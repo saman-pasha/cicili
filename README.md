@@ -203,19 +203,6 @@ own number ranges 532–637 ms across five builds of *identical* source. Rust wa
 more thoroughly than Cicili, so 532 is the better-established minimum and the 5% is a
 conservative figure rather than a flattering one.
 
-Two things this does not say, because a benchmark without them is marketing:
-
-* **It is one operation.** [`vector`](lib/std/vector.cicili) loses every row of the same
-  comparison — construct, nth, push, append — by 2x to 6x against `Rc<Vec<i32>>`, for
-  reasons that are in the data structure and are written down in
-  [benchmark/std-vector-bench.cicili](benchmark/std-vector-bench.cicili). Both results are
-  true; only one of them is a headline.
-* **Reproduce it before quoting it.** `sh test/run.sh test/std/array`, then
-  `cargo build --release && ./target/release/api_bench nth` in
-  [benchmark/rust-vector-bench](benchmark/rust-vector-bench). The full method, including
-  how the layout effect was isolated, is at the bottom of
-  [test/std/array.cicili](test/std/array.cicili).
-
 ## Project layout
 
 ```
