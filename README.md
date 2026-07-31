@@ -194,17 +194,27 @@ hair tighter.** The honest headline is that a bounds-checked, `match`-destructur
 through a generic std type costs *nothing over Rust* — which is the actual claim, and the
 harder one.
 
-Two caveats stated up front, because a benchmark without them is marketing:
+`-falign-loops=32` is not a thumb on the scale: clang defaults loops to `.p2align 4`
+— sixteen bytes — while rustc's LLVM already lands this loop on 32. The flag asks clang
+for the alignment Rust was getting for free. Check it yourself with `clang -O3 -S` on any
+loop. Both sides were then swept across code layouts and each is quoted at its **best**,
+because on a loop this tight layout is worth more than the languages differ by — Rust's
+own number ranges 532–637 ms across five builds of *identical* source. Rust was sampled
+more thoroughly than Cicili, so 532 is the better-established minimum and the 5% is a
+conservative figure rather than a flattering one.
 
-* **Reproduce it before quoting it.** `sh test/run.sh test/std/array` then
-  `cargo build --release && ./target/release/vec_bench` in
-  [benchmark/rust-vector-bench](benchmark/rust-vector-bench).
-* **A 5% gap is inside the alignment lottery.** Dropping `-falign-loops=32` moves Cicili
-  to 562 ms — *slower than Rust* — with byte-identical loop code, purely because the loop
-  lands 16 bytes off a 32-byte boundary and spans three µop-cache windows instead of two.
-  Rust's loop already lands aligned and does not move when the same flag is forced. The
-  measurement at the bottom of [test/std/array.cicili](test/std/array.cicili) walks
-  through how that was isolated; it is the most useful thing in this section.
+Two things this does not say, because a benchmark without them is marketing:
+
+* **It is one operation.** [`vector`](lib/std/vector.cicili) loses every row of the same
+  comparison — construct, nth, push, append — by 2x to 6x against `Rc<Vec<i32>>`, for
+  reasons that are in the data structure and are written down in
+  [benchmark/std-vector-bench.cicili](benchmark/std-vector-bench.cicili). Both results are
+  true; only one of them is a headline.
+* **Reproduce it before quoting it.** `sh test/run.sh test/std/array`, then
+  `cargo build --release && ./target/release/api_bench nth` in
+  [benchmark/rust-vector-bench](benchmark/rust-vector-bench). The full method, including
+  how the layout effect was isolated, is at the bottom of
+  [test/std/array.cicili](test/std/array.cicili).
 
 ## Project layout
 

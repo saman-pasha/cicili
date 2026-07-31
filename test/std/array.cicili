@@ -255,21 +255,63 @@
 ;;;; * -Ofast is not on the list because clang 21 deprecated it and this target
 ;;;;   builds with -Werror. -O3 -ffast-math is its documented replacement.
 ;;;;
-;;;; Against Rust, same machine, same session, interleaved round-robin:
+;;;; ---- Against Rust -------------------------------------------------
 ;;;;
-;;;;   Cicili  (<> nth array int)   506 508 507
-;;;;   Rust    Vec::<i32>::get      532 532 532   (cargo build --release)
+;;;; Cicili  (<> nth array int)   505 504 504 504 504
+;;;; Rust    Vec::<i32>::get      532 532 532 532 532   (cargo build --release)
 ;;;;
-;;;; ~5% to Cicili, and the whole margin is inside the alignment effect above:
-;;;; drop -falign-loops=32 and Cicili is 562, i.e. SLOWER than Rust, with
-;;;; byte-identical loop code. Rust's loop already lands 32-byte aligned and
-;;;; does not move when the same flag is forced on it, so the comparison in the
-;;;; table is aligned-vs-aligned and fair. Rust source and how to run it:
-;;;; benchmark/rust-vector-bench, and the summary is in the README.
+;;;; ~5% to Cicili, on the operation a safe language is supposed to pay for:
+;;;; an index that cannot go out of bounds. Neither side elides the check --
+;;;; Cicili answers a maybe, Rust an Option, and both are destructured.
 ;;;;
-;;;; Older numbers on this machine, kept for the record. They are NOT comparable
-;;;; to anything above -- the machine was in a cooler state then, so compare
-;;;; within a table, never across them:
+;;;; METHOD, and it is not optional here. Each language is quoted at its BEST
+;;;; over a sweep of code layouts, because on this benchmark layout is worth
+;;;; more than the languages differ by:
+;;;;
+;;;;   Cicili  -falign-loops= 16   560     <- clang's default
+;;;;                          32   505     <- in use, smallest that gets there
+;;;;                          64   505
+;;;;                         128   506
+;;;;   Rust    (five builds of identical source, see below)  532 .. 637
+;;;;
+;;;; Quoting either side from a single build would be quoting a coin flip.
+;;;; Rust was sampled MORE than Cicili (five layouts against four), so its 532
+;;;; is if anything the better-established minimum -- the 5% is a conservative
+;;;; number, not a flattering one.
+;;;;
+;;;; -falign-loops=32 is not a thumb on the scale. clang defaults loops to
+;;;; .p2align 4, sixteen bytes; rustc's LLVM already lands this loop on 32.
+;;;; The flag asks clang for the alignment Rust was getting for free. Verify
+;;;; it: `clang -O3 -S` any loop and read the .p2align.
+;;;;
+;;;; How the Rust spread was produced -- all of it from IDENTICAL benchmark
+;;;; source, none of it touching the loop:
+;;;;
+;;;;   532  vec_bench, default flags
+;;;;   559  api_bench, -align-all-nofallthru-blocks=5
+;;;;   582  api_bench, -align-loops=32
+;;;;   625  vec_bench, -align-all-nofallthru-blocks=5
+;;;;   637  api_bench, default flags
+;;;;
+;;;; Note the third and fourth lines: forcing alignment made Rust SLOWER in
+;;;; both cases. -align-all-nofallthru-blocks pads every block, not just
+;;;; loops, and the code growth costs more than the alignment wins. That is
+;;;; why no alignment flag is pinned on the Rust side: the fair thing is each
+;;;; toolchain at its own best, and Rust's best is its default.
+;;;;
+;;;; What this does NOT support: a precise figure. The honest claim is that a
+;;;; bounds-checked, match-destructured index through a generic std type costs
+;;;; nothing over Rust, and is a few percent under it. Anyone quoting "Cicili
+;;;; is 5% faster than Rust" as a headline is quoting inside the noise floor of
+;;;; their own measurement.
+;;;;
+;;;; And it is one operation. lib/std vector loses every row of the same
+;;;; comparison by 2x to 6x -- benchmark/std-vector-bench.cicili. Both are
+;;;; true; only one of them is a headline.
+;;;;
+;;;; Older numbers on this machine, kept for the record. They are NOT
+;;;; comparable to anything above -- the machine was in a cooler state then, so
+;;;; compare within a table, never across them:
 ;;;;
 ;;;;   Cicili 422 419 417 410 411   |  Rust 439 435 437 439 436  (opt-level 3)
 ;;;;
