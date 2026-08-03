@@ -86,9 +86,9 @@ vector_int new_vector_int (const int * items , size_t len ) {
       int * restrict arr  = malloc ((cap  *  sizeof(int) ));
       // ----------
       if (items  &&  len  )
-        { /* block198 */
-          memcpy (arr , items , (len  *  sizeof(int) ));
-        }
+        memcpy (arr , items , (len  *  sizeof(int) ));
+      else
+        memset (arr , 0, (len  *  sizeof(int) ));
       ((vector_int){ arr , cap , len });
     });
 }
@@ -103,8 +103,8 @@ Maybe_ref_int nth_vector_int (size_t index , vector_int * restrict vector ) {
 }
 void grow_vector_int (vector_int * restrict vector , size_t needed ) {
   if (needed  >  (vector -> cap) )
-    { /* block219 */
-      { /* let221 */
+    { /* block217 */
+      { /* let219 */
         const size_t cap  = arraySize_vector_int (needed );
         // ----------
         (vector -> arr) = realloc ((vector -> arr), (cap  *  sizeof(int) ));
@@ -126,32 +126,32 @@ size_t append_vector_int (vector_int * restrict vector , const int * items , siz
 }
 int check (const char * what , long long got , long long want ) {
   if (got  ==  want  )
-    { /* block237 */
+    { /* block235 */
       printf ("ok   %-34s %lld\n", what , got );
       return 0;
     }
   else
-    { /* block240 */
+    { /* block238 */
       printf ("FAIL %-34s got %lld want %lld\n", what , got , want );
       return 1;
     }
   return 1;
 }
 int at (size_t index , vector_int * restrict v ) {
-  return ({ /* letn247 */
-      Maybe_ref_int matchn246  = nth_vector_int (index , v );
+  return ({ /* letn245 */
+      Maybe_ref_int matchn244  = nth_vector_int (index , v );
       // ----------
-      ((((matchn246 . ctor) ==  JUST_CTOR  )) ? ({ /* letn249 */
-          int * restrict x  = (((matchn246 . data). just). value);
+      ((((matchn244 . ctor) ==  JUST_CTOR  )) ? ({ /* letn247 */
+          int * restrict x  = (((matchn244 . data). just). value);
           // ----------
           (*x );
-        }) : ({ /* progn251 */
+        }) : ({ /* progn249 */
           -1;
         }));
     });
 }
 long long total (vector_int * restrict v ) {
-  { /* let255 */
+  { /* let253 */
     long long sum  = 0;
     // ----------
     for (size_t i  = 0; (i  <  len_vector_int (v ) ); (++i )) {
@@ -161,10 +161,10 @@ long long total (vector_int * restrict v ) {
   }
 }
 int main () {
-  { /* let263 */
+  { /* let261 */
     int bad  = 0;
     // ----------
-    ({ /* letn270 */
+    ({ /* letn268 */
       vector_int v  __attribute__((__cleanup__(free_vector_int ))) = new_vector_int (((const int[]){ 1, 2, 3, 4, 5}), 5);
       // ----------
       bad  += check ("len after new", len_vector_int ((&v )), 5) ;
@@ -191,7 +191,7 @@ int main () {
       bad  += check ("checksum 1..40", total ((&v )), 820) ;
       bad  += check ("still bounds checked", at (40, (&v )), -1) ;
     });
-    ({ /* letn298 */
+    ({ /* letn296 */
       vector_int e  __attribute__((__cleanup__(free_vector_int ))) = new_vector_int (((const int[]){ 0}), 0);
       // ----------
       bad  += check ("len of an empty vector", len_vector_int ((&e )), 0) ;
@@ -200,7 +200,7 @@ int main () {
       bad  += check ("the pushed value", at (0, (&e )), 42) ;
       bad  += check ("append onto one", append_vector_int ((&e ), ((const vector_int_item_t[]){ 43, 44}), 2), 3) ;
       bad  += check ("checksum of the three", total ((&e )), 129) ;
-      ({ /* letn315 */
+      ({ /* letn313 */
         vector_int o  __attribute__((__cleanup__(free_vector_int ))) = new_vector_int (((const int[]){ 7, 7}), 2);
         // ----------
         push_vector_int ((&o ), 7);

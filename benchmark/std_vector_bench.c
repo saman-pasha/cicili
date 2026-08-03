@@ -89,9 +89,9 @@ vector_int new_vector_int (const int * items , size_t len ) {
       int * restrict arr  = malloc ((cap  *  sizeof(int) ));
       // ----------
       if (items  &&  len  )
-        { /* block199 */
-          memcpy (arr , items , (len  *  sizeof(int) ));
-        }
+        memcpy (arr , items , (len  *  sizeof(int) ));
+      else
+        memset (arr , 0, (len  *  sizeof(int) ));
       ((vector_int){ arr , cap , len });
     });
 }
@@ -106,8 +106,8 @@ Maybe_ref_int nth_vector_int (size_t index , vector_int * restrict vector ) {
 }
 void grow_vector_int (vector_int * restrict vector , size_t needed ) {
   if (needed  >  (vector -> cap) )
-    { /* block220 */
-      { /* let222 */
+    { /* block218 */
+      { /* let220 */
         const size_t cap  = arraySize_vector_int (needed );
         // ----------
         (vector -> arr) = realloc ((vector -> arr), (cap  *  sizeof(int) ));
@@ -142,9 +142,9 @@ void free_rc_vector_int_pointer (rc_vector_int ** rc );
 rc_vector_int clone_rc_vector_int (rc_vector_int * restrict rc );
 __attribute__((weak)) void free_rc_vector_int (rc_vector_int * rc ) {
   if ((rc -> ptr) &&  (rc -> count) )
-    { /* block262 */
+    { /* block260 */
       if ((*(rc -> count)) ==  1 )
-        { /* block268 */
+        { /* block266 */
           free_vector_int ((rc -> ptr));
           free ((rc -> count));
           free ((rc -> ptr));
@@ -158,14 +158,14 @@ __attribute__((weak)) void free_rc_vector_int_pointer (rc_vector_int ** rc ) {
 }
 rc_vector_int clone_rc_vector_int (rc_vector_int * restrict rc ) {
   if ((rc -> ptr) &&  (rc -> count) &&  ((*(rc -> count)) >=  1 ) )
-    { /* block283 */
+    { /* block281 */
       (++(*(rc -> count)));
       return ((rc_vector_int){ (rc -> ptr), (rc -> count)});
     }
   return ((rc_vector_int){ NULL , NULL });
 }
 long long ms_now () {
-  { /* let290 */
+  { /* let288 */
     struct timespec ts ;
     // ----------
     timespec_get ((&ts ), TIME_UTC );
@@ -174,27 +174,27 @@ long long ms_now () {
   return 0;
 }
 long bench_nth () {
-  ({ /* letn298 */
+  ({ /* letn296 */
     vector_int v  __attribute__((__cleanup__(free_vector_int ))) = new_vector_int (((const int[]){ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49}), 50);
     // ----------
-    { /* let303 */
+    { /* let301 */
       int64_t sum  = 0;
       long long t0  = ms_now ();
       // ----------
       for (int i  = 0; (i  <  N  ); (++i )) {
-          { /* let312 */
-            Maybe_ref_int match311  = nth_vector_int ((i  %  50 ), (&v ));
+          { /* let310 */
+            Maybe_ref_int match309  = nth_vector_int ((i  %  50 ), (&v ));
             // ----------
-            if ((match311 . ctor) ==  JUST_CTOR  ) {
-                { /* let316 */
-                  int * restrict val  = (((match311 . data). just). value);
+            if ((match309 . ctor) ==  JUST_CTOR  ) {
+                { /* let314 */
+                  int * restrict val  = (((match309 . data). just). value);
                   // ----------
                   sum  += (*val ) ;
                 }
             }
           }
       }
-      { /* let318 */
+      { /* let316 */
         long long elapsed  = (ms_now () -  t0  );
         // ----------
         printf ("  (nth checksum: %lld)\n", sum );
@@ -204,18 +204,18 @@ long bench_nth () {
   });
 }
 long bench_construct (const int * items ) {
-  { /* let321 */
+  { /* let319 */
     int64_t sum  = 0;
     long long t0  = ms_now ();
     // ----------
     for (int e  = 0; (e  <  (N  /  STEP  ) ); (++e )) {
-        ({ /* letn329 */
+        ({ /* letn327 */
           vector_int v  __attribute__((__cleanup__(free_vector_int ))) = new_vector_int (items , STEP );
           // ----------
           sum  += ((int64_t)((size_t)(v . arr))) ;
         });
     }
-    { /* let332 */
+    { /* let330 */
       long long elapsed  = (ms_now () -  t0  );
       // ----------
       printf ("  (construct checksum: %lld)\n", sum );
@@ -224,12 +224,12 @@ long bench_construct (const int * items ) {
   }
 }
 long bench_push () {
-  { /* let335 */
+  { /* let333 */
     int64_t sum  = 0;
     long long t0  = ms_now ();
     // ----------
     for (int e  = 0; (e  <  (N  /  STEP  ) ); (++e )) {
-        ({ /* letn345 */
+        ({ /* letn343 */
           vector_int v  __attribute__((__cleanup__(free_vector_int ))) = new_vector_int (((const int[]){ 0}), 0);
           // ----------
           for (int i  = 0; (i  <  STEP  ); (++i )) {
@@ -238,7 +238,7 @@ long bench_push () {
           sum  += ((int64_t)((size_t)(v . arr))) ;
         });
     }
-    { /* let355 */
+    { /* let353 */
       long long elapsed  = (ms_now () -  t0  );
       // ----------
       printf ("  (push checksum: %lld)\n", sum );
@@ -247,19 +247,19 @@ long bench_push () {
   }
 }
 long bench_append (const int * items ) {
-  { /* let358 */
+  { /* let356 */
     int64_t sum  = 0;
     long long t0  = ms_now ();
     // ----------
     for (int e  = 0; (e  <  (N  /  STEP  ) ); (++e )) {
-        ({ /* letn368 */
+        ({ /* letn366 */
           vector_int v  __attribute__((__cleanup__(free_vector_int ))) = new_vector_int (((const int[]){ 0}), 0);
           // ----------
           append_vector_int ((&v ), items , STEP );
           sum  += ((int64_t)((size_t)(v . arr))) ;
         });
     }
-    { /* let375 */
+    { /* let373 */
       long long elapsed  = (ms_now () -  t0  );
       // ----------
       printf ("  (append checksum: %lld)\n", sum );
@@ -267,34 +267,34 @@ long bench_append (const int * items ) {
     }
   }
 }
-int64_t letn_rc_vector_int_G418 (rc_vector_int * restrict rc , int64_t default_value ) {
-  return (((rc -> ptr)) ? ({ /* letn421 */
+int64_t letn_rc_vector_int_G416 (rc_vector_int * restrict rc , int64_t default_value ) {
+  return (((rc -> ptr)) ? ({ /* letn419 */
         rc_vector_int_interior_t * restrict v  = (rc -> ptr);
         // ----------
         ((int64_t)((size_t)(v -> arr)));
       }) : default_value );
 }
 long bench_construct_rc (const int * items ) {
-  { /* let378 */
+  { /* let376 */
     int64_t sum  = 0;
     long long t0  = ms_now ();
     // ----------
     for (int e  = 0; (e  <  (N  /  STEP  ) ); (++e )) {
-        ({ /* letn400 */
-          rc_vector_int r  __attribute__((__cleanup__(free_rc_vector_int ))) = ({ /* letn409 */
-            vector_int * restrict vector_int_ptr406  = malloc (sizeof(vector_int));
-            vector_int vector_int_obj407  = new_vector_int (items , STEP );
-            size_t * vector_int_count408  = malloc (sizeof(size_t));
+        ({ /* letn398 */
+          rc_vector_int r  __attribute__((__cleanup__(free_rc_vector_int ))) = ({ /* letn407 */
+            vector_int * restrict vector_int_ptr404  = malloc (sizeof(vector_int));
+            vector_int vector_int_obj405  = new_vector_int (items , STEP );
+            size_t * vector_int_count406  = malloc (sizeof(size_t));
             // ----------
-            memcpy (vector_int_ptr406 , (&vector_int_obj407 ), sizeof(vector_int_obj407));
-            (*vector_int_count408 ) = 1;
-            ((rc_vector_int){ vector_int_ptr406 , vector_int_count408 });
+            memcpy (vector_int_ptr404 , (&vector_int_obj405 ), sizeof(vector_int_obj405));
+            (*vector_int_count406 ) = 1;
+            ((rc_vector_int){ vector_int_ptr404 , vector_int_count406 });
           });
           // ----------
-          sum  += letn_rc_vector_int_G418 ((&r ), ((int64_t)0)) ;
+          sum  += letn_rc_vector_int_G416 ((&r ), ((int64_t)0)) ;
         });
     }
-    { /* let424 */
+    { /* let422 */
       long long elapsed  = (ms_now () -  t0  );
       // ----------
       printf ("  (construct rc checksum: %lld)\n", sum );
@@ -302,20 +302,20 @@ long bench_construct_rc (const int * items ) {
     }
   }
 }
-int64_t letn_rc_vector_int_G464 (rc_vector_int * restrict rc , int64_t default_value ) {
-  return (((rc -> ptr)) ? ({ /* letn467 */
+int64_t letn_rc_vector_int_G462 (rc_vector_int * restrict rc , int64_t default_value ) {
+  return (((rc -> ptr)) ? ({ /* letn465 */
         rc_vector_int_interior_t * restrict v  = (rc -> ptr);
         // ----------
-        ({ /* letn470 */
+        ({ /* letn468 */
           int64_t s  = 0;
           // ----------
           for (int i  = 0; (i  <  N  ); (++i )) {
-              { /* let479 */
-                Maybe_ref_int match478  = nth_vector_int ((i  %  50 ), v );
+              { /* let477 */
+                Maybe_ref_int match476  = nth_vector_int ((i  %  50 ), v );
                 // ----------
-                if ((match478 . ctor) ==  JUST_CTOR  ) {
-                    { /* let483 */
-                      int * restrict val  = (((match478 . data). just). value);
+                if ((match476 . ctor) ==  JUST_CTOR  ) {
+                    { /* let481 */
+                      int * restrict val  = (((match476 . data). just). value);
                       // ----------
                       s  += (*val ) ;
                     }
@@ -327,23 +327,23 @@ int64_t letn_rc_vector_int_G464 (rc_vector_int * restrict rc , int64_t default_v
       }) : default_value );
 }
 long bench_nth_rc () {
-  ({ /* letn444 */
-    rc_vector_int r  __attribute__((__cleanup__(free_rc_vector_int ))) = ({ /* letn453 */
-      vector_int * restrict vector_int_ptr450  = malloc (sizeof(vector_int));
-      vector_int vector_int_obj451  = new_vector_int (((const int[]){ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49}), 50);
-      size_t * vector_int_count452  = malloc (sizeof(size_t));
+  ({ /* letn442 */
+    rc_vector_int r  __attribute__((__cleanup__(free_rc_vector_int ))) = ({ /* letn451 */
+      vector_int * restrict vector_int_ptr448  = malloc (sizeof(vector_int));
+      vector_int vector_int_obj449  = new_vector_int (((const int[]){ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49}), 50);
+      size_t * vector_int_count450  = malloc (sizeof(size_t));
       // ----------
-      memcpy (vector_int_ptr450 , (&vector_int_obj451 ), sizeof(vector_int_obj451));
-      (*vector_int_count452 ) = 1;
-      ((rc_vector_int){ vector_int_ptr450 , vector_int_count452 });
+      memcpy (vector_int_ptr448 , (&vector_int_obj449 ), sizeof(vector_int_obj449));
+      (*vector_int_count450 ) = 1;
+      ((rc_vector_int){ vector_int_ptr448 , vector_int_count450 });
     });
     // ----------
-    { /* let461 */
+    { /* let459 */
       int64_t sum  = 0;
       long long t0  = ms_now ();
       // ----------
-      sum  = letn_rc_vector_int_G464 ((&r ), ((int64_t)0));
-      { /* let485 */
+      sum  = letn_rc_vector_int_G462 ((&r ), ((int64_t)0));
+      { /* let483 */
         long long elapsed  = (ms_now () -  t0  );
         // ----------
         printf ("  (nth rc checksum: %lld)\n", sum );
@@ -352,10 +352,10 @@ long bench_nth_rc () {
     }
   });
 }
-void let_rc_vector_int_G528 (rc_vector_int * restrict rc , int e ) {
+void let_rc_vector_int_G526 (rc_vector_int * restrict rc , int e ) {
   if ((rc -> ptr))
-    { /* block534 */
-      { /* let536 */
+    { /* block532 */
+      { /* let534 */
         rc_vector_int_interior_t * restrict v  = (rc -> ptr);
         // ----------
         for (int i  = 0; (i  <  STEP  ); (++i )) {
@@ -364,35 +364,35 @@ void let_rc_vector_int_G528 (rc_vector_int * restrict rc , int e ) {
       }
     }
 }
-int64_t letn_rc_vector_int_G545 (rc_vector_int * restrict rc , int64_t default_value ) {
-  return (((rc -> ptr)) ? ({ /* letn548 */
+int64_t letn_rc_vector_int_G543 (rc_vector_int * restrict rc , int64_t default_value ) {
+  return (((rc -> ptr)) ? ({ /* letn546 */
         rc_vector_int_interior_t * restrict v  = (rc -> ptr);
         // ----------
         ((int64_t)((size_t)(v -> arr)));
       }) : default_value );
 }
 long bench_push_rc () {
-  { /* let488 */
+  { /* let486 */
     int64_t sum  = 0;
     long long t0  = ms_now ();
     // ----------
     for (int e  = 0; (e  <  (N  /  STEP  ) ); (++e )) {
-        ({ /* letn510 */
-          rc_vector_int r  __attribute__((__cleanup__(free_rc_vector_int ))) = ({ /* letn519 */
-            vector_int * restrict vector_int_ptr516  = malloc (sizeof(vector_int));
-            vector_int vector_int_obj517  = new_vector_int (((const int[]){ 0}), 0);
-            size_t * vector_int_count518  = malloc (sizeof(size_t));
+        ({ /* letn508 */
+          rc_vector_int r  __attribute__((__cleanup__(free_rc_vector_int ))) = ({ /* letn517 */
+            vector_int * restrict vector_int_ptr514  = malloc (sizeof(vector_int));
+            vector_int vector_int_obj515  = new_vector_int (((const int[]){ 0}), 0);
+            size_t * vector_int_count516  = malloc (sizeof(size_t));
             // ----------
-            memcpy (vector_int_ptr516 , (&vector_int_obj517 ), sizeof(vector_int_obj517));
-            (*vector_int_count518 ) = 1;
-            ((rc_vector_int){ vector_int_ptr516 , vector_int_count518 });
+            memcpy (vector_int_ptr514 , (&vector_int_obj515 ), sizeof(vector_int_obj515));
+            (*vector_int_count516 ) = 1;
+            ((rc_vector_int){ vector_int_ptr514 , vector_int_count516 });
           });
           // ----------
-          let_rc_vector_int_G528 ((&r ), e );
-          sum  += letn_rc_vector_int_G545 ((&r ), ((int64_t)0)) ;
+          let_rc_vector_int_G526 ((&r ), e );
+          sum  += letn_rc_vector_int_G543 ((&r ), ((int64_t)0)) ;
         });
     }
-    { /* let551 */
+    { /* let549 */
       long long elapsed  = (ms_now () -  t0  );
       // ----------
       printf ("  (push rc checksum: %lld)\n", sum );
@@ -400,48 +400,48 @@ long bench_push_rc () {
     }
   }
 }
-void let_rc_vector_int_G600 (rc_vector_int * restrict rc , const int * items ) {
+void let_rc_vector_int_G598 (rc_vector_int * restrict rc , const int * items ) {
   if ((rc -> ptr))
-    { /* block606 */
-      { /* let608 */
+    { /* block604 */
+      { /* let606 */
         rc_vector_int_interior_t * restrict v  = (rc -> ptr);
         // ----------
         append_vector_int (v , items , STEP );
       }
     }
 }
-int64_t letn_rc_vector_int_G614 (rc_vector_int * restrict rc , int64_t default_value ) {
-  return (((rc -> ptr)) ? ({ /* letn617 */
+int64_t letn_rc_vector_int_G612 (rc_vector_int * restrict rc , int64_t default_value ) {
+  return (((rc -> ptr)) ? ({ /* letn615 */
         rc_vector_int_interior_t * restrict v  = (rc -> ptr);
         // ----------
         ((int64_t)((size_t)(v -> arr)));
       }) : default_value );
 }
 long bench_append_rc (const int * items ) {
-  { /* let554 */
+  { /* let552 */
     int64_t sum  = 0;
     long long t0  = ms_now ();
     // ----------
     for (int e  = 0; (e  <  (N  /  STEP  ) ); (++e )) {
-        ({ /* letn576 */
-          rc_vector_int r  __attribute__((__cleanup__(free_rc_vector_int ))) = ({ /* letn585 */
-            vector_int * restrict vector_int_ptr582  = malloc (sizeof(vector_int));
-            vector_int vector_int_obj583  = new_vector_int (((const int[]){ 0}), 0);
-            size_t * vector_int_count584  = malloc (sizeof(size_t));
+        ({ /* letn574 */
+          rc_vector_int r  __attribute__((__cleanup__(free_rc_vector_int ))) = ({ /* letn583 */
+            vector_int * restrict vector_int_ptr580  = malloc (sizeof(vector_int));
+            vector_int vector_int_obj581  = new_vector_int (((const int[]){ 0}), 0);
+            size_t * vector_int_count582  = malloc (sizeof(size_t));
             // ----------
-            memcpy (vector_int_ptr582 , (&vector_int_obj583 ), sizeof(vector_int_obj583));
-            (*vector_int_count584 ) = 1;
-            ((rc_vector_int){ vector_int_ptr582 , vector_int_count584 });
+            memcpy (vector_int_ptr580 , (&vector_int_obj581 ), sizeof(vector_int_obj581));
+            (*vector_int_count582 ) = 1;
+            ((rc_vector_int){ vector_int_ptr580 , vector_int_count582 });
           });
           // ----------
           if ((r . ptr) &&  (r . count) &&  ((*(r . count)) ==  1 ) )
-            { /* block597 */
-              let_rc_vector_int_G600 ((&r ), items );
+            { /* block595 */
+              let_rc_vector_int_G598 ((&r ), items );
             }
-          sum  += letn_rc_vector_int_G614 ((&r ), ((int64_t)0)) ;
+          sum  += letn_rc_vector_int_G612 ((&r ), ((int64_t)0)) ;
         });
     }
-    { /* let620 */
+    { /* let618 */
       long long elapsed  = (ms_now () -  t0  );
       // ----------
       printf ("  (append rc checksum: %lld)\n", sum );
@@ -449,13 +449,13 @@ long bench_append_rc (const int * items ) {
     }
   }
 }
-void __ciciliL_625 (int ** items ) {
+void __ciciliL_623 (int ** items ) {
   free (((void *)(*items )));
 }
 int main () {
   printf ("Cicili lib/std vector -- %d operations each\n\n", N );
-  { /* let624 */
-    int * items  __attribute__((__cleanup__(__ciciliL_625 ))) = ((int *)calloc (STEP , sizeof(int)));
+  { /* let622 */
+    int * items  __attribute__((__cleanup__(__ciciliL_623 ))) = ((int *)calloc (STEP , sizeof(int)));
     // ----------
     for (int i  = 0; (i  <  STEP  ); (++i )) {
         items [i ] = i ;

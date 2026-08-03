@@ -98,8 +98,17 @@
             (set two_pow (<< two_pow 1)))
           (return two_pow)))
 
-  ;; malloc, not calloc: only the first `len' cells are ever read, so zeroing
-  ;; the headroom is work nobody asks for
+  ;; malloc, not calloc: `nth' bounds-checks against `len', so the cells between
+  ;; `len' and `cap' are unreachable and zeroing them is work nobody asks for.
+  ;; That is the difference from (<> new array a), which HAS to zero its
+  ;; headroom because an array's `len' IS its capacity -- every cell it owns is
+  ;; readable.
+  ;;
+  ;; The first `len' cells are a different matter. They are live the moment this
+  ;; returns, so a caller passing items == nil with len > 0 would be handed
+  ;; cells that were never written -- undefined to read, whatever the allocator
+  ;; happens to hold. memset covers exactly those, and only when there is
+  ;; nothing to copy, so the ordinary path is untouched.
   (func (<> new vector a) ((const a * items) (size_t len))
         (out (<> vector a))
         ;; an empty vector allocates NOTHING. arraySize never answers below 16,
@@ -112,7 +121,9 @@
                        (a ref arr . #'(malloc (* cap (sizeof a)))))
                   (syslog! (printf "NEW VEC: %s %p %zu of %zu\n"
                                    (symbol-name (<> vector a)) arr len cap))
-                  (when (and items len) (memcpy arr items (* len (sizeof a))))
+                  (if (and items len)
+                      (memcpy arr items (* len (sizeof a)))
+                    (memset arr 0 (* len (sizeof a))))
                   (cast (<> vector a) '{ arr cap len }))))
 
   (func (<> len vector a) (((<> vector a) ref vector))
