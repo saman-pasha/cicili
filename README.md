@@ -212,21 +212,35 @@ simply not be there. 10⁶ operations per row, node size matched (Rust's `BTreeM
 is B=6, 11 pairs a node; the Cicili side is Cormen's t=6, the same 11), same
 xorshift so both see the same keys in the same order.
 
-| | Cicili | Rust | | Cicili `-flto` | Rust `lto=true` |
-|---|---|---|---|---|---|
-| insert | 249 ms | **211 ms** | | 237 ms | 222 ms |
-| search | 239 ms | 240 ms | | 239 ms | 240 ms |
-| traverse in order | 7 ms | 6 ms | | 6 ms | 6 ms |
-| delete | 302 ms | **260 ms** | | 309 ms | 259 ms |
+| | Cicili | Rust | |
+|---|---|---|---|
+| insert | 184 ms | **149 ms** | Rust ~19% faster |
+| search | 195 ms | **162 ms** | Rust ~17% faster |
+| traverse in order | 6 ms | **3 ms** | Rust 2x faster |
+| delete | 249 ms | **179 ms** | Rust ~28% faster |
 
-**Rust is ahead on insert and delete and level on the other two** — this is not
-a table Cicili wins. The gap is where `BTreeMap` moves elements with specialised
-code and this one calls `memmove`.
+**Rust is ahead on all four.** This is not a table Cicili wins, and the honest
+figure is the one above rather than an earlier run of the same benchmark that
+showed search at parity — that was measured with the machine in a slower state,
+which compresses relative differences. Both sides got faster on a cooler
+machine; Rust got faster by more.
 
-**LTO is close to noise here for both**, which is worth saying because it is not
-what it did to the vector: +5% on Cicili's insert, −2% on its delete, −5% on
-Rust's insert, nothing anywhere else. Neither language's best column changes the
-verdict.
+The most likely cause has not been proven and is worth stating as a hypothesis
+rather than a finding: this stores `{key,val}` pairs together, so scanning a
+node's keys strides over the values and touches two cache lines where
+`BTreeMap`, which keeps keys and values in separate arrays, touches one. Every
+one of the four operations scans a node on the way down, which would fit the
+gap being across the board. Testing it means splitting the arrays, and that
+costs the API — `search`/`min`/`max` answer a pointer to a `pair`, which stops
+existing the moment the two are apart.
+
+**LTO is close to noise here for both** — measured at +5% on Cicili's insert,
+−2% on its delete, −5% on Rust's insert, nothing anywhere else. Worth saying
+because it is not what LTO did to the vector, where it erased the rc penalty
+outright. **`restrict` on the child pointers is noise too**: it is soundly
+available, since a `non-copy` tree solely owns its nodes and a node is never its
+own descendant, but eight interleaved rounds put it inside the error bars on
+every row. The loops that dominate read `items`, not `kids`.
 
 What is worth more than the timings: **every checksum matches exactly**, and
 across all four builds above —

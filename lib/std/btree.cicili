@@ -81,6 +81,15 @@
             (member size_t n)                                ; pairs in use
             (member bool leaf)
             (member (<> pair k v) items [ (- (* 2 t) 1) ])
+            ;; `*' and not `ref'. restrict WOULD be sound -- the tree is
+            ;; (non-copy) so it solely owns its nodes, and a node is never its
+            ;; own descendant, so no two kids[] entries can alias. It was tried
+            ;; and reverted: eight interleaved rounds put insert at 172 against
+            ;; 171 ms, search 197 against 199, delete 245 against 242 -- noise.
+            ;; The loops that dominate all three read `items', not `kids', so
+            ;; there is nothing for the qualifier to unlock, and it costs eleven
+            ;; casts because a restrict array cannot reach memmove or a plain
+            ;; T ** without discarding the qualifier.
             (member (<> btnode k v t) * kids [ (* 2 t) ]))
 
     (non-copy)
