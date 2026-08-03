@@ -19,6 +19,10 @@
 
   (decl-either int      long)   (impl-either int      long)
   (decl-either ParseErr double) (impl-either ParseErr double)
+  ;; each half takes its own optional modifier, and it is part of the name, so
+  ;; this is a THIRD type rather than a redefinition of the first: the answer
+  ;; comes back as a pointer, the error still by value
+  (decl-either int ref long)    (impl-either int ref long)
 
   (func check ((const char * what) (llong got) (llong want))
         (out int)
@@ -57,8 +61,34 @@
           (when (== n -7) (return (right (cast long 1))))
           (return (left EINVAL))))
 
+  ;; (decl-either int ref long): `right' carries an (long ref), `left' an int.
+  ;; Nothing else in the suite instantiates a modified half, so without this the
+  ;; mod-e/mod-a plumbing could break and every other case stay green.
+  (func (<> pick either int ref long) ((long ref cell) (int ok))
+        (out (<> Either int ref long))
+        (when ok (return (right cell)))
+        (return (left ERANGE)))
+
   (main
     (let ((int bad . 0))
+
+      ;; ---- a half carried by ref ---------------------------------------
+      (let ((long n . 41))
+        (+= bad (check "right by ref reads through"
+                  (matchn ((<> pick either int ref long) (aof n) 1)
+                    (right p   (cof p))
+                    (left  err (cast long (- err))))
+                  41))
+        ;; the payload is a pointer INTO n, so writing through it is visible
+        (match ((<> pick either int ref long) (aof n) 1)
+          (right p   (set (cof p) 99))
+          (left  err (cast void err)))
+        (+= bad (check "right by ref writes through" n 99))
+        (+= bad (check "left still by value"
+                  (matchn ((<> pick either int ref long) (aof n) 0)
+                    (right p   (cof p))
+                    (left  err (cast long err)))
+                  ERANGE)))
 
       ;; ---- right / left ------------------------------------------------
       (+= bad (check "right, through match"

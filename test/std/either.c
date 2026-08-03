@@ -77,7 +77,7 @@ typedef struct RightT_double {
 #define __EITHER__ParseErr_double__H_
 typedef struct Either_ParseErr_double {
   EITHER_CTOR ctor ;
-  union { /* ciciliUnion145 */
+  union { /* ciciliUnion146 */
     RightT_double right ;
     LeftT_ParseErr left ;
   } data ;
@@ -97,32 +97,76 @@ __attribute__((weak)) Either_ParseErr_double left_ParseErr_double (ParseErr erro
   return ((Either_ParseErr_double){ .ctor = LEFT_CTOR , .data.left.error = error });
 }
 #endif /* __EITHER_IMPL__ParseErr_double__H_ */ 
+#ifndef __EITHER_H_
+#define __EITHER_H_
+typedef enum EITHER_CTOR {
+  LEFT_CTOR = 0,
+  RIGHT_CTOR
+} EITHER_CTOR;
+typedef struct std_either std_either ;
+#endif /* __EITHER_H_ */ 
+#ifndef __EITHER_LEFT__int__H_
+#define __EITHER_LEFT__int__H_
+typedef struct LeftT_int {
+  int error ;
+} LeftT_int;
+#endif /* __EITHER_LEFT__int__H_ */ 
+#ifndef __EITHER_RIGHT__ref_long__H_
+#define __EITHER_RIGHT__ref_long__H_
+typedef struct RightT_ref_long {
+  long * restrict value ;
+} RightT_ref_long;
+#endif /* __EITHER_RIGHT__ref_long__H_ */ 
+#ifndef __EITHER__int_ref_long__H_
+#define __EITHER__int_ref_long__H_
+typedef struct Either_int_ref_long {
+  EITHER_CTOR ctor ;
+  union { /* ciciliUnion181 */
+    RightT_ref_long right ;
+    LeftT_int left ;
+  } data ;
+} Either_int_ref_long;
+typedef long * restrict Either_int_ref_long_right_t ;
+typedef int Either_int_ref_long_left_t ;
+typedef std_either Either_int_ref_long_type_t ;
+Either_int_ref_long right_int_ref_long (long * restrict value );
+Either_int_ref_long left_int_ref_long (int error );
+#endif /* __EITHER__int_ref_long__H_ */ 
+#ifndef __EITHER_IMPL__int_ref_long__H_
+#define __EITHER_IMPL__int_ref_long__H_
+__attribute__((weak)) Either_int_ref_long right_int_ref_long (long * restrict value ) {
+  return ((Either_int_ref_long){ .ctor = RIGHT_CTOR , .data.right.value = value });
+}
+__attribute__((weak)) Either_int_ref_long left_int_ref_long (int error ) {
+  return ((Either_int_ref_long){ .ctor = LEFT_CTOR , .data.left.error = error });
+}
+#endif /* __EITHER_IMPL__int_ref_long__H_ */ 
 int check (const char * what , long long got , long long want ) {
   if (got  ==  want  )
-    { /* block172 */
+    { /* block210 */
       printf ("ok   %-34s %lld\n", what , got );
       return 0;
     }
   else
-    { /* block175 */
+    { /* block213 */
       printf ("FAIL %-34s got %lld want %lld\n", what , got , want );
       return 1;
     }
   return 1;
 }
 Either_int_long parse_either_int_long (const char * text ) {
-  { /* let180 */
+  { /* let218 */
     char * end ;
     long n ;
     // ----------
     errno  = 0;
     n  = strtol (text , (&end ), 10);
     if (end  ==  text  )
-      { /* block185 */
+      { /* block223 */
         return ((Either_int_long){ .ctor = LEFT_CTOR , .data.left.error = EINVAL });
       }
     if (errno )
-      { /* block191 */
+      { /* block229 */
         return ((Either_int_long){ .ctor = LEFT_CTOR , .data.left.error = errno });
       }
     return ((Either_int_long){ .ctor = RIGHT_CTOR , .data.right.value = n });
@@ -130,7 +174,7 @@ Either_int_long parse_either_int_long (const char * text ) {
 }
 Either_ParseErr_double half_either_ParseErr_double (int x ) {
   if (x  %  2 )
-    { /* block201 */
+    { /* block239 */
       return ((Either_ParseErr_double){ .ctor = LEFT_CTOR , .data.left.error = PE_ODD });
     }
   return ((Either_ParseErr_double){ .ctor = RIGHT_CTOR , .data.right.value = (x  /  2.0 )});
@@ -139,16 +183,16 @@ Either_ParseErr_double cl_inner () {
   return ((Either_ParseErr_double){ .ctor = LEFT_CTOR , .data.left.error = PE_EMPTY });
 }
 Either_int_long nested () {
-  { /* let207 */
-    int n  = ({ /* letn212 */
-      Either_ParseErr_double matchn211  = cl_inner ();
+  { /* let245 */
+    int n  = ({ /* letn250 */
+      Either_ParseErr_double matchn249  = cl_inner ();
       // ----------
-      ((((matchn211 . ctor) ==  RIGHT_CTOR  )) ? ({ /* letn217 */
-          double v  = (((matchn211 . data). right). value);
+      ((((matchn249 . ctor) ==  RIGHT_CTOR  )) ? ({ /* letn255 */
+          double v  = (((matchn249 . data). right). value);
           // ----------
           ((int)v );
-        }) : ({ /* letn219 */
-          ParseErr e  = (((matchn211 . data). left). error);
+        }) : ({ /* letn257 */
+          ParseErr e  = (((matchn249 . data). left). error);
           // ----------
           ((void)e );
           -7;
@@ -156,100 +200,156 @@ Either_int_long nested () {
     });
     // ----------
     if (n  ==  -7 )
-      { /* block225 */
+      { /* block263 */
         return ((Either_int_long){ .ctor = RIGHT_CTOR , .data.right.value = ((long)1)});
       }
     return ((Either_int_long){ .ctor = LEFT_CTOR , .data.left.error = EINVAL });
   }
 }
+Either_int_ref_long pick_either_int_ref_long (long * restrict cell , int ok ) {
+  if (ok )
+    { /* block273 */
+      return ((Either_int_ref_long){ .ctor = RIGHT_CTOR , .data.right.value = cell });
+    }
+  return ((Either_int_ref_long){ .ctor = LEFT_CTOR , .data.left.error = ERANGE });
+}
 int main () {
-  { /* let231 */
+  { /* let279 */
     int bad  = 0;
     // ----------
-    bad  += check ("right, through match", ({ /* letn236 */
-          Either_int_long matchn235  = parse_either_int_long ("42");
+    { /* let281 */
+      long n  = 41;
+      // ----------
+      bad  += check ("right by ref reads through", ({ /* letn286 */
+            Either_int_ref_long matchn285  = pick_either_int_ref_long ((&n ), 1);
+            // ----------
+            ((((matchn285 . ctor) ==  RIGHT_CTOR  )) ? ({ /* letn288 */
+                long * restrict p  = (((matchn285 . data). right). value);
+                // ----------
+                (*p );
+              }) : ({ /* letn290 */
+                int err  = (((matchn285 . data). left). error);
+                // ----------
+                ((long)(-err ));
+              }));
+          }), 41) ;
+      { /* let295 */
+        Either_int_ref_long match294  = pick_either_int_ref_long ((&n ), 1);
+        // ----------
+        if ((match294 . ctor) ==  RIGHT_CTOR  ) {
+            { /* let299 */
+              long * restrict p  = (((match294 . data). right). value);
+              // ----------
+              (*p ) = 99;
+            }
+        }
+        else if ((match294 . ctor) ==  LEFT_CTOR  ) {
+            { /* let302 */
+              int err  = (((match294 . data). left). error);
+              // ----------
+              ((void)err );
+            }
+        }
+      }
+      bad  += check ("right by ref writes through", n , 99) ;
+      bad  += check ("left still by value", ({ /* letn307 */
+            Either_int_ref_long matchn306  = pick_either_int_ref_long ((&n ), 0);
+            // ----------
+            ((((matchn306 . ctor) ==  RIGHT_CTOR  )) ? ({ /* letn309 */
+                long * restrict p  = (((matchn306 . data). right). value);
+                // ----------
+                (*p );
+              }) : ({ /* letn311 */
+                int err  = (((matchn306 . data). left). error);
+                // ----------
+                ((long)err );
+              }));
+          }), ERANGE ) ;
+    }
+    bad  += check ("right, through match", ({ /* letn316 */
+          Either_int_long matchn315  = parse_either_int_long ("42");
           // ----------
-          ((((matchn235 . ctor) ==  RIGHT_CTOR  )) ? ({ /* letn238 */
-              long n  = (((matchn235 . data). right). value);
+          ((((matchn315 . ctor) ==  RIGHT_CTOR  )) ? ({ /* letn318 */
+              long n  = (((matchn315 . data). right). value);
               // ----------
               n ;
-            }) : ({ /* letn240 */
-              int err  = (((matchn235 . data). left). error);
+            }) : ({ /* letn320 */
+              int err  = (((matchn315 . data). left). error);
               // ----------
               ((long)(-err ));
             }));
         }), 42) ;
-    bad  += check ("left, through match", ({ /* letn245 */
-          Either_int_long matchn244  = parse_either_int_long ("nope");
+    bad  += check ("left, through match", ({ /* letn325 */
+          Either_int_long matchn324  = parse_either_int_long ("nope");
           // ----------
-          ((((matchn244 . ctor) ==  RIGHT_CTOR  )) ? ({ /* letn247 */
-              long n  = (((matchn244 . data). right). value);
+          ((((matchn324 . ctor) ==  RIGHT_CTOR  )) ? ({ /* letn327 */
+              long n  = (((matchn324 . data). right). value);
               // ----------
               n ;
-            }) : ({ /* letn249 */
-              int err  = (((matchn244 . data). left). error);
+            }) : ({ /* letn329 */
+              int err  = (((matchn324 . data). left). error);
               // ----------
               ((long)err );
             }));
         }), EINVAL ) ;
-    bad  += check ("right 0 is not an error", ({ /* letn254 */
-          Either_int_long matchn253  = parse_either_int_long ("0");
+    bad  += check ("right 0 is not an error", ({ /* letn334 */
+          Either_int_long matchn333  = parse_either_int_long ("0");
           // ----------
-          ((((matchn253 . ctor) ==  RIGHT_CTOR  )) ? ({ /* letn256 */
-              long n  = (((matchn253 . data). right). value);
+          ((((matchn333 . ctor) ==  RIGHT_CTOR  )) ? ({ /* letn336 */
+              long n  = (((matchn333 . data). right). value);
               // ----------
               (n  +  1 );
-            }) : ({ /* letn258 */
-              int err  = (((matchn253 . data). left). error);
+            }) : ({ /* letn338 */
+              int err  = (((matchn333 . data). left). error);
               // ----------
               ((long)(-err ));
             }));
         }), 1) ;
-    { /* let260 */
+    { /* let340 */
       int hits  = 0;
       // ----------
-      { /* let265 */
-        Either_int_long match264  = parse_either_int_long ("5");
+      { /* let345 */
+        Either_int_long match344  = parse_either_int_long ("5");
         // ----------
-        if ((match264 . ctor) ==  RIGHT_CTOR  ) {
-            { /* let269 */
-              long n  = (((match264 . data). right). value);
+        if ((match344 . ctor) ==  RIGHT_CTOR  ) {
+            { /* let349 */
+              long n  = (((match344 . data). right). value);
               // ----------
-              { /* block271 */
+              { /* block351 */
                 ((void)n );
                 (++hits );
               }
             }
         }
-        else if ((match264 . ctor) ==  LEFT_CTOR  ) {
-            { /* let274 */
-              int err  = (((match264 . data). left). error);
+        else if ((match344 . ctor) ==  LEFT_CTOR  ) {
+            { /* let354 */
+              int err  = (((match344 . data). left). error);
               // ----------
-              { /* block276 */
+              { /* block356 */
                 ((void)err );
                 (--hits );
               }
             }
         }
       }
-      { /* let281 */
-        Either_int_long match280  = parse_either_int_long ("x");
+      { /* let361 */
+        Either_int_long match360  = parse_either_int_long ("x");
         // ----------
-        if ((match280 . ctor) ==  RIGHT_CTOR  ) {
-            { /* let285 */
-              long n  = (((match280 . data). right). value);
+        if ((match360 . ctor) ==  RIGHT_CTOR  ) {
+            { /* let365 */
+              long n  = (((match360 . data). right). value);
               // ----------
-              { /* block287 */
+              { /* block367 */
                 ((void)n );
                 (++hits );
               }
             }
         }
-        else if ((match280 . ctor) ==  LEFT_CTOR  ) {
-            { /* let290 */
-              int err  = (((match280 . data). left). error);
+        else if ((match360 . ctor) ==  LEFT_CTOR  ) {
+            { /* let370 */
+              int err  = (((match360 . data). left). error);
               // ----------
-              { /* block292 */
+              { /* block372 */
                 ((void)err );
                 (--hits );
               }
@@ -258,67 +358,67 @@ int main () {
       }
       bad  += check ("match statement, both arms", hits , 0) ;
     }
-    bad  += check ("right, either ParseErr double", ({ /* letn297 */
-          Either_ParseErr_double matchn296  = half_either_ParseErr_double (10);
+    bad  += check ("right, either ParseErr double", ({ /* letn377 */
+          Either_ParseErr_double matchn376  = half_either_ParseErr_double (10);
           // ----------
-          ((((matchn296 . ctor) ==  RIGHT_CTOR  )) ? ({ /* letn299 */
-              double v  = (((matchn296 . data). right). value);
+          ((((matchn376 . ctor) ==  RIGHT_CTOR  )) ? ({ /* letn379 */
+              double v  = (((matchn376 . data). right). value);
               // ----------
               ((long long)(v  *  10 ));
-            }) : ({ /* letn301 */
-              ParseErr e  = (((matchn296 . data). left). error);
+            }) : ({ /* letn381 */
+              ParseErr e  = (((matchn376 . data). left). error);
               // ----------
               ((long long)(-e ));
             }));
         }), 50) ;
-    bad  += check ("left, either ParseErr double", ({ /* letn306 */
-          Either_ParseErr_double matchn305  = half_either_ParseErr_double (7);
+    bad  += check ("left, either ParseErr double", ({ /* letn386 */
+          Either_ParseErr_double matchn385  = half_either_ParseErr_double (7);
           // ----------
-          ((((matchn305 . ctor) ==  RIGHT_CTOR  )) ? ({ /* letn308 */
-              double v  = (((matchn305 . data). right). value);
+          ((((matchn385 . ctor) ==  RIGHT_CTOR  )) ? ({ /* letn388 */
+              double v  = (((matchn385 . data). right). value);
               // ----------
               ((long long)(v  *  10 ));
-            }) : ({ /* letn310 */
-              ParseErr e  = (((matchn305 . data). left). error);
+            }) : ({ /* letn390 */
+              ParseErr e  = (((matchn385 . data). left). error);
               // ----------
               ((long long)e );
             }));
         }), PE_ODD ) ;
-    bad  += check ("left inside a closure", ({ /* letn314 */
-          Either_int_long matchn313  = nested ();
+    bad  += check ("left inside a closure", ({ /* letn394 */
+          Either_int_long matchn393  = nested ();
           // ----------
-          ((((matchn313 . ctor) ==  RIGHT_CTOR  )) ? ({ /* letn316 */
-              long n  = (((matchn313 . data). right). value);
+          ((((matchn393 . ctor) ==  RIGHT_CTOR  )) ? ({ /* letn396 */
+              long n  = (((matchn393 . data). right). value);
               // ----------
               n ;
-            }) : ({ /* letn318 */
-              int err  = (((matchn313 . data). left). error);
+            }) : ({ /* letn398 */
+              int err  = (((matchn393 . data). left). error);
               // ----------
               ((long)(-err ));
             }));
         }), 1) ;
-    bad  += check ("back-end right still works", ({ /* letn323 */
-          Either_int_long matchn322  = right_int_long (9);
+    bad  += check ("back-end right still works", ({ /* letn403 */
+          Either_int_long matchn402  = right_int_long (9);
           // ----------
-          ((((matchn322 . ctor) ==  RIGHT_CTOR  )) ? ({ /* letn325 */
-              long n  = (((matchn322 . data). right). value);
+          ((((matchn402 . ctor) ==  RIGHT_CTOR  )) ? ({ /* letn405 */
+              long n  = (((matchn402 . data). right). value);
               // ----------
               n ;
-            }) : ({ /* letn327 */
-              int err  = (((matchn322 . data). left). error);
+            }) : ({ /* letn407 */
+              int err  = (((matchn402 . data). left). error);
               // ----------
               ((long)(-err ));
             }));
         }), 9) ;
-    bad  += check ("back-end left still works", ({ /* letn332 */
-          Either_int_long matchn331  = left_int_long (3);
+    bad  += check ("back-end left still works", ({ /* letn412 */
+          Either_int_long matchn411  = left_int_long (3);
           // ----------
-          ((((matchn331 . ctor) ==  RIGHT_CTOR  )) ? ({ /* letn334 */
-              long n  = (((matchn331 . data). right). value);
+          ((((matchn411 . ctor) ==  RIGHT_CTOR  )) ? ({ /* letn414 */
+              long n  = (((matchn411 . data). right). value);
               // ----------
               n ;
-            }) : ({ /* letn336 */
-              int err  = (((matchn331 . data). left). error);
+            }) : ({ /* letn416 */
+              int err  = (((matchn411 . data). left). error);
               // ----------
               ((long)err );
             }));
