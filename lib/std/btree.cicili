@@ -81,16 +81,20 @@
             (member size_t n)                                ; pairs in use
             (member bool leaf)
             (member (<> pair k v) items [ (- (* 2 t) 1) ])
-            ;; `*' and not `ref'. restrict WOULD be sound -- the tree is
-            ;; (non-copy) so it solely owns its nodes, and a node is never its
-            ;; own descendant, so no two kids[] entries can alias. It was tried
-            ;; and reverted: eight interleaved rounds put insert at 172 against
-            ;; 171 ms, search 197 against 199, delete 245 against 242 -- noise.
-            ;; The loops that dominate all three read `items', not `kids', so
-            ;; there is nothing for the qualifier to unlock, and it costs eleven
-            ;; casts because a restrict array cannot reach memmove or a plain
-            ;; T ** without discarding the qualifier.
-            (member (<> btnode k v t) * kids [ (* 2 t) ]))
+            ;; `ref', i.e. restrict, and it says something true about the type
+            ;; rather than chasing a number. The tree is (non-copy), so it
+            ;; solely owns every node it holds, and a node is never its own
+            ;; descendant -- no two kids[] entries can name the same object.
+            ;; That is exactly what restrict asserts, and it matches `root' in
+            ;; the tree struct below, which has always been a `ref'.
+            ;;
+            ;; It does not buy speed: eight interleaved rounds put insert at 171
+            ;; against 172 ms, search 199 against 197, delete 242 against 245 --
+            ;; inside the error bars, because the loops that dominate all three
+            ;; read `items' and not `kids'. What it costs is visible below: a
+            ;; restrict-qualified array reaches neither memmove nor a plain
+            ;; T ** without an explicit cast, so those call sites carry one.
+            (member (<> btnode k v t) ref kids [ (* 2 t) ]))
 
     (non-copy)
     (struct (<> btree k v t)
@@ -144,7 +148,7 @@
             ;; only the children of an internal node are ever read, and only the
             ;; first n+1 of them, so the items array is deliberately left alone
             (when (not leaf)
-              (memset (-> node kids) 0 (* (* 2 t) (sizeof ((<> btnode k v t) *)))))
+              (memset (cast (void *) (-> node kids)) 0 (* (* 2 t) (sizeof ((<> btnode k v t) *)))))
             (return node)))
 
     (func (<> freenode btree k v t) (((<> btnode k v t) ref node))
@@ -250,13 +254,13 @@
             (memcpy (-> half items) (+ (-> full items) t)
                     (* (- t 1) (sizeof (<> pair k v))))
             (when (not (-> full leaf))
-              (memcpy (-> half kids) (+ (-> full kids) t)
+              (memcpy (cast (void *) (-> half kids)) (cast (void *) (+ (-> full kids) t))
                       (* t (sizeof ((<> btnode k v t) *)))))
             (set (-> full n) (- t 1))
             ;; open a slot in the parent for the promoted pair and its new child
-            (memmove (+ (-> parent kids) (+ at 2)) (+ (-> parent kids) (+ at 1))
+            (memmove (cast (void *) (+ (-> parent kids) (+ at 2))) (cast (void *) (+ (-> parent kids) (+ at 1)))
                      (* (- (-> parent n) at) (sizeof ((<> btnode k v t) *))))
-            (let (((<> btnode k v t) ** kslot . #'(+ (-> parent kids) (+ at 1))))
+            (let (((<> btnode k v t) ** kslot . #'(cast ((<> btnode k v t) **) (+ (-> parent kids) (+ at 1)))))
               (set (cof kslot) half))
             (memmove (+ (-> parent items) (+ at 1)) (+ (-> parent items) at)
                      (* (- (-> parent n) at) (sizeof (<> pair k v))))
@@ -303,7 +307,7 @@
           ;; taller -- every other split pushes a pair sideways into a parent
           (when (== (-> (-> tree root) n) (- (* 2 t) 1))
             (let (((<> btnode k v t) ref fresh . #'((<> newnode btree k v t) #f)))
-              (let (((<> btnode k v t) ** kslot . #'(+ (-> fresh kids) 0)))
+              (let (((<> btnode k v t) ** kslot . #'(cast ((<> btnode k v t) **) (+ (-> fresh kids) 0))))
                 (set (cof kslot) (-> tree root)))
               (set (-> tree root) fresh)
               ((<> split btree k v t) fresh 0)))
@@ -328,13 +332,13 @@
             (memcpy (+ (-> left items) t) (-> right items)
                     (* (-> right n) (sizeof (<> pair k v))))
             (when (not (-> left leaf))
-              (memcpy (+ (-> left kids) t) (-> right kids)
+              (memcpy (cast (void *) (+ (-> left kids) t)) (cast (void *) (-> right kids))
                       (* (+ (-> right n) 1) (sizeof ((<> btnode k v t) *)))))
             (set (-> left n) (+ t (-> right n)))
             ;; close the gap the separator and the right child left behind
             (memmove (+ (-> parent items) at) (+ (-> parent items) (+ at 1))
                      (* (- (- (-> parent n) at) 1) (sizeof (<> pair k v))))
-            (memmove (+ (-> parent kids) (+ at 1)) (+ (-> parent kids) (+ at 2))
+            (memmove (cast (void *) (+ (-> parent kids) (+ at 1))) (cast (void *) (+ (-> parent kids) (+ at 2)))
                      (* (- (- (-> parent n) at) 1) (sizeof ((<> btnode k v t) *))))
             (set (-> parent n) (- (-> parent n) 1))
             ;; right's children moved into left, so this frees the node only
@@ -347,7 +351,7 @@
             (memmove (+ (-> child items) 1) (-> child items)
                      (* (-> child n) (sizeof (<> pair k v))))
             (when (not (-> child leaf))
-              (memmove (+ (-> child kids) 1) (-> child kids)
+              (memmove (cast (void *) (+ (-> child kids) 1)) (cast (void *) (-> child kids))
                        (* (+ (-> child n) 1) (sizeof ((<> btnode k v t) *)))))
             ;; the separator comes down into the child, the sibling's last pair
             ;; goes up to replace it
@@ -355,7 +359,7 @@
                   ((<> pair k v) ref sep  . #'(+ (-> parent items) (- at 1))))
               (set (cof head) (cof sep)))
             (when (not (-> child leaf))
-              (let (((<> btnode k v t) ** kslot . #'(+ (-> child kids) 0)))
+              (let (((<> btnode k v t) ** kslot . #'(cast ((<> btnode k v t) **) (+ (-> child kids) 0))))
                 (set (cof kslot) (nth (-> sib n) (-> sib kids)))))
             (let (((<> pair k v) ref sep  . #'(+ (-> parent items) (- at 1)))
                   ((<> pair k v) ref tail . #'(+ (-> sib items) (- (-> sib n) 1))))
@@ -370,7 +374,7 @@
                   ((<> pair k v) ref sep  . #'(+ (-> parent items) at)))
               (set (cof tail) (cof sep)))
             (when (not (-> child leaf))
-              (let (((<> btnode k v t) ** kslot . #'(+ (-> child kids) (+ (-> child n) 1))))
+              (let (((<> btnode k v t) ** kslot . #'(cast ((<> btnode k v t) **) (+ (-> child kids) (+ (-> child n) 1)))))
                 (set (cof kslot) (nth 0 (-> sib kids)))))
             (let (((<> pair k v) ref sep  . #'(+ (-> parent items) at))
                   ((<> pair k v) ref head . #'(+ (-> sib items) 0)))
@@ -378,7 +382,7 @@
             (memmove (-> sib items) (+ (-> sib items) 1)
                      (* (- (-> sib n) 1) (sizeof (<> pair k v))))
             (when (not (-> sib leaf))
-              (memmove (-> sib kids) (+ (-> sib kids) 1)
+              (memmove (cast (void *) (-> sib kids)) (cast (void *) (+ (-> sib kids) 1))
                        (* (-> sib n) (sizeof ((<> btnode k v t) *)))))
             (set (-> child n) (+ (-> child n) 1)
                  (-> sib n)   (- (-> sib n) 1))))
