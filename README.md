@@ -147,6 +147,7 @@ front-end macros. `(decl-vector int) (impl-vector int)` pulls in `maybe` and not
 | [`cell`](lib/std/cell.cicili) | owned heap value, freed exactly once | `new^cell`, `let^cell` / `letn^cell` (borrow), `take^cell` / `taken^cell` (consume) | [cell](test/std/cell.cicili) |
 | [`rc`](lib/std/rc.cicili) | a `cell` that counts its owners | `new^rc`, `clone^rc`, `let^rc` / `letn^rc` (borrow), `take^rc` / `taken^rc` (consume, last owner only) | [rc](test/std/rc.cicili) |
 | [`vector`](lib/std/vector.cicili) | an array that owns its headroom — unshared, wrap it in `rc` yourself | `push^vector`, `append^vector` (amortised power-of-two growth), `nth^vector`, `len^vector` | [vector](test/std/vector.cicili) |
+| [`btree`](lib/std/btree.cicili) | ordered map, logarithmic | `insert` / `delete` answer an `either`, `search` / `min` / `max` a `maybe`, `traverse` in key order | [btree](test/std/btree.cicili) |
 | [`pthread`](lib/std/pthread) | threads with captured context | `go`, `join`, `detach`, `cancel`, `exit-self` | [thread](test/std/thread.cicili) |
 
 Conventions worth knowing:
@@ -201,6 +202,32 @@ given it, the rc'd `nth` goes 1259 → 482 and lands level with the owned one.
 wins nearly everything here, and costs ~14% on a tight loop whose bounds check had already
 folded (452 → 514 ms on [test/std/array.cicili](test/std/array.cicili)). Add it per target
 until that is understood.
+
+### Ordered map — `btree` vs `BTreeMap`
+
+[`btree`](lib/std/btree.cicili) is the API of
+[draft/collection/persistent-btree.cicili](draft/collection/persistent-btree.cicili)
+brought over to the std idiom: `either` for what can fail, `maybe` for what may
+simply not be there. 10⁶ operations per row, node size matched (Rust's `BTreeMap`
+is B=6, 11 pairs a node; the Cicili side is Cormen's t=6, the same 11), same
+xorshift so both see the same keys in the same order.
+
+| | Cicili | Rust | |
+|---|---|---|---|
+| insert | 240 ms | 206 ms | Rust ~16% faster |
+| search | 233 ms | 230 ms | parity |
+| traverse in order | 7 ms | 5 ms | Rust faster |
+| delete | 292 ms | 246 ms | Rust ~19% faster |
+
+**Rust is ahead on three of four** — this is not a row Cicili wins, and the
+gap is in insert and delete, where `BTreeMap` moves elements with specialised
+code and this one uses `memmove`.
+
+What is worth more than the timings: **every checksum matches exactly** —
+207679490886 pairs inserted, 644483 distinct keys, 524727962248 summed on
+lookup, 338135951754 in traversal order, 644483 deleted. Two independent
+implementations agreeing bit-for-bit over a million mixed operations is a
+stronger correctness signal than the test suite gives on its own.
 
 ### What the `nth` rows do and do not say
 

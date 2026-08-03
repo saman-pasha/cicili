@@ -15,11 +15,11 @@ void __ciciliL_107 (Employee ** empOther ) {
 void __ciciliL_109 (Employee ** empOzzi ) {
   free (((void *)(*empOzzi )));
 }
-typedef struct cicili02f0DEu1_tFdK2IUNSNnhiEn4L8_ {
+typedef struct cicilixjw9txVer_suF5bnVCCG1uVbk4M_ {
   FILE * file ;
   char * msg ;
-} cicili02f0DEu1_tFdK2IUNSNnhiEn4L8_;
-void __ciciliL_117 (struct cicili02f0DEu1_tFdK2IUNSNnhiEn4L8_ * ciciliDefer114 ) {
+} cicilixjw9txVer_suF5bnVCCG1uVbk4M_;
+void __ciciliL_117 (struct cicilixjw9txVer_suF5bnVCCG1uVbk4M_ * ciciliDefer114 ) {
   FILE * file  = (ciciliDefer114 -> file);
   char * msg  = (ciciliDefer114 -> msg);
   fprintf (file , "%s\n", msg );
@@ -35,7 +35,7 @@ int main () {
     FILE * file  = fopen ("./deferral.txt", "w");
     // ----------
     fprintf (file , "first line from main execution\n");
-    struct cicili02f0DEu1_tFdK2IUNSNnhiEn4L8_ ciciliDefer114  __attribute__((__cleanup__(__ciciliL_117 ))) = { file , msg };
+    struct cicilixjw9txVer_suF5bnVCCG1uVbk4M_ ciciliDefer114  __attribute__((__cleanup__(__ciciliL_117 ))) = { file , msg };
     (emp -> Id) = 100;
     (emp -> Name) = calloc (8, sizeof(char));
     memcpy ((emp -> Name), "Jon Doe\0", 8);

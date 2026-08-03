@@ -1,0 +1,519 @@
+;;;; Cicili std btree
+;;; an ordered map -- keys sorted, every operation logarithmic
+;;;
+;;; The API is draft/collection/persistent-btree.cicili's, brought over to the
+;;; std idiom. Two things changed on the way:
+;;;
+;;;   * that one is PERSISTENT -- insert returns a new tree sharing structure
+;;;     with the old, so every node is an Rc and every write allocates. This one
+;;;     is mutable and owns its nodes outright, the same decision `vector' made
+;;;     when it stopped being a window over an rc'd array. Wrap it in an `rc' if
+;;;     you want sharing, and pay for it then.
+;;;   * it is built on the Haskell layer (decl-data, decl-class, List, Functor).
+;;;     This one is plain std: `either' for what can fail, `maybe' for what may
+;;;     not be there.
+;;;
+;;; WHICH ANSWER COMES BACK IN WHICH CARRIER is the whole point of the split:
+;;;
+;;;   insert / delete   (<> Either BTREE_ERR size_t)   can FAIL -- a duplicate
+;;;                     key, a key that is not there -- and the answer when it
+;;;                     does not is the new length
+;;;   search/min/max    (<> Maybe ref (<> pair k v))   cannot fail, may simply
+;;;                     have no answer, and the answer is a POINTER INTO the
+;;;                     node so the caller can read the key and write the value
+;;;
+;;; A missing key is not an error for `search' and is one for `delete', and the
+;;; two carriers say so without a comment.
+;;;
+;;;   (letin ((t (new btree)))
+;;;     (match ((<> insert btree int int) (aof t) 42 7)
+;;;       (right n   (printf "%zu keys\n" n))
+;;;       (left  err (printf "insert failed: %d\n" err)))
+;;;     (match ((<> search btree int int) (aof t) 42)
+;;;       (just p  (printf "42 -> %d\n" ($ (cof p) val)))
+;;;       (nothing (printf "not there\n"))))
+;;;
+;;; ORDER. `t' is the minimum degree, Cormen's: a node holds at most 2t-1 pairs
+;;; and 2t children, and at least t-1 pairs unless it is the root. It is a
+;;; generic parameter and part of every name, so two trees of different degree
+;;; over the same key and value types are two types and cannot be confused.
+;;;
+;;; KEYS ARE COMPARED WITH < AND ==, so the key type has to be one those mean
+;;; something for -- a scalar, or a typedef to one. A string key needs a wrapper
+;;; type with those operators, which C does not have; that is a real limit and
+;;; not an oversight.
+
+(generic decl-btree
+  (k v t)
+
+  ;; ---- shared by every instantiation, emitted once -------------------
+  (guard __BTREE_H_
+    ;; BT_OK is 0 and never returned -- it is here so a zeroed error reads as
+    ;; "nothing went wrong" rather than as a real failure
+    (enum BTREE_ERR
+      (BT_OK . 0)
+      (BT_DUPLICATE_KEY)
+      (BT_NOT_FOUND))
+
+    ;; super type declaration to use in 'type-check
+    (decl) (struct (<> std btree)))
+
+  ;; ---- per key/value pair --------------------------------------------
+  ;; keyed on k and v only: two trees of different degree share one pair type
+  (guard (<> __BTREE_PAIR_ k v _H_)
+    (struct (<> pair k v)
+            (member k key)
+            (member v val)))
+
+  ;; ---- per instantiation ---------------------------------------------
+  (guard (<> __BTREE_ k v t _H_)
+
+    ;; the answers. search/min/max hand back a pointer INTO the node, so the
+    ;; caller reads the key and writes the value without a copy
+    (decl-maybe ref (<> pair k v))
+    ;; insert and delete answer the new length, or why they could not
+    (decl-either BTREE_ERR size_t)
+
+    ;; a node points at nodes, so it has to be declared before it is defined
+    (decl) (struct (<> btnode k v t))
+
+    (struct (<> btnode k v t)
+            (member size_t n)                                ; pairs in use
+            (member bool leaf)
+            (member (<> pair k v) items [ (- (* 2 t) 1) ])
+            (member (<> btnode k v t) * kids [ (* 2 t) ]))
+
+    (non-copy)
+    (struct (<> btree k v t)
+            (member (<> btnode k v t) ref root)
+            (member size_t len))
+
+    (typedef k (<> btree k v t key_t))
+    (typedef v (<> btree k v t val_t))
+    (typedef (<> pair k v) (<> btree k v t pair_t))
+    (typedef (<> std btree) (<> btree k v t type_t))
+
+    (decl) (func (<> free btree k v t) (((<> btree k v t) ref tree)))
+    (decl) (func (<> free btree k v t pointer) (((<> btree k v t) ** tree)))
+    (decl) (func (<> new btree k v t) () (out (<> btree k v t)))
+    ;; 2t -- the most children a node can have, which is what `order' means
+    (decl) (func (<> order btree k v t) () (out size_t))
+    (decl) (func (<> len btree k v t) (((<> btree k v t) ref tree)) (out size_t))
+    (decl) (func (<> search btree k v t) (((<> btree k v t) ref tree) (k key))
+                 (out (<> Maybe ref (<> pair k v))))
+    (decl) (func (<> min btree k v t) (((<> btree k v t) ref tree))
+                 (out (<> Maybe ref (<> pair k v))))
+    (decl) (func (<> max btree k v t) (((<> btree k v t) ref tree))
+                 (out (<> Maybe ref (<> pair k v))))
+    (decl) (func (<> insert btree k v t) (((<> btree k v t) ref tree) (k key) (v val))
+                 (out (<> Either BTREE_ERR size_t)))
+    (decl) (func (<> delete btree k v t) (((<> btree k v t) ref tree) (k key))
+                 (out (<> Either BTREE_ERR size_t)))
+    (decl) (func (<> traverse btree k v t) (((<> btree k v t) ref tree)
+                                            (func callback (((<> pair k v) ref item))))))
+
+  ) ; decl-btree
+
+
+(generic impl-btree
+  (k v t)
+
+  (guard (<> __BTREE_IMPL_ k v t _H_)
+
+    (impl-maybe ref (<> pair k v))
+    (impl-either BTREE_ERR size_t)
+
+    ;; ---- nodes ------------------------------------------------------
+
+    (func (<> newnode btree k v t) ((bool leaf))
+          (out (<> btnode k v t) ref)
+          (let (((<> btnode k v t) ref node . #'(malloc (sizeof (<> btnode k v t)))))
+            (syslog! (printf "NEW BTNODE: %s %p %s\n"
+                             (symbol-name (<> btree k v t)) node (? leaf "leaf" "internal")))
+            (set (-> node n) 0
+                 (-> node leaf) leaf)
+            ;; only the children of an internal node are ever read, and only the
+            ;; first n+1 of them, so the items array is deliberately left alone
+            (when (not leaf)
+              (memset (-> node kids) 0 (* (* 2 t) (sizeof ((<> btnode k v t) *)))))
+            (return node)))
+
+    (func (<> freenode btree k v t) (((<> btnode k v t) ref node))
+          (when node
+            (when (not (-> node leaf))
+              (for ((size_t i . 0)) (<= i (-> node n)) ((++ i))
+                   ;; bound first: (nth i (-> node kids)) as a CONDITION emits
+                   ;; the subscript outside the if
+                   (let (((<> btnode k v t) ref kid . #'(nth i (-> node kids))))
+                     (when kid ((<> freenode btree k v t) kid)))))
+            (syslog! (printf "FREE BTNODE: %p\n" node))
+            (free node)))
+
+    ;; ---- the tree ---------------------------------------------------
+
+    (inline)
+    (func (<> free btree k v t) (((<> btree k v t) ref tree))
+          (syslog! (printf "FREE BTREE: %p\n" tree))
+          (when (-> tree root)
+            ((<> freenode btree k v t) (-> tree root))
+            (set (-> tree root) nil
+                 (-> tree len) 0)))
+
+    (inline)
+    (func (<> free btree k v t pointer) (((<> btree k v t) ** tree))
+          ((<> free btree k v t) (cof tree)))
+
+    (func (<> new btree k v t) ()
+          (out (<> btree k v t))
+          (return (cast (<> btree k v t) '{ nil 0 })))
+
+    (func (<> order btree k v t) ()
+          (out size_t)
+          (return (* 2 t)))
+
+    (func (<> len btree k v t) (((<> btree k v t) ref tree))
+          (out size_t)
+          (return (-> tree len)))
+
+    ;; ---- search -----------------------------------------------------
+    ;; iterative: a B-tree is shallow, but the recursion buys nothing here and
+    ;; the loop keeps the hot path free of call overhead
+    (func (<> search btree k v t) (((<> btree k v t) ref tree) (k key))
+          (out (<> Maybe ref (<> pair k v)))
+          (let (((<> btnode k v t) ref node . #'(-> tree root)))
+            (while node
+              (let ((size_t i . 0))
+                (while (and (< i (-> node n)) (< ($ (nth i (-> node items)) key) key))
+                  (++ i))
+                (when (and (< i (-> node n)) (== ($ (nth i (-> node items)) key) key))
+                  (return (just (+ (-> node items) i))))
+                (when (-> node leaf)
+                  (return (nothing)))
+                (set node (nth i (-> node kids)))))
+            (return (nothing))))
+
+    (func (<> min btree k v t) (((<> btree k v t) ref tree))
+          (out (<> Maybe ref (<> pair k v)))
+          (let (((<> btnode k v t) ref node . #'(-> tree root)))
+            (when (not node) (return (nothing)))
+            (while (not (-> node leaf))
+              (set node (nth 0 (-> node kids))))
+            (when (== (-> node n) 0) (return (nothing)))
+            (return (just (+ (-> node items) 0)))))
+
+    (func (<> max btree k v t) (((<> btree k v t) ref tree))
+          (out (<> Maybe ref (<> pair k v)))
+          (let (((<> btnode k v t) ref node . #'(-> tree root)))
+            (when (not node) (return (nothing)))
+            (while (not (-> node leaf))
+              (set node (nth (-> node n) (-> node kids))))
+            (when (== (-> node n) 0) (return (nothing)))
+            (return (just (+ (-> node items) (- (-> node n) 1))))))
+
+    ;; ---- traverse ---------------------------------------------------
+    (func (<> walk btree k v t) (((<> btnode k v t) ref node)
+                                 (func callback (((<> pair k v) ref item))))
+          (when node
+            (for ((size_t i . 0)) (< i (-> node n)) ((++ i))
+                 (block
+                   (when (not (-> node leaf))
+                     ((<> walk btree k v t) (nth i (-> node kids)) callback))
+                   (callback (+ (-> node items) i))))
+            (when (not (-> node leaf))
+              ((<> walk btree k v t) (nth (-> node n) (-> node kids)) callback))))
+
+    (func (<> traverse btree k v t) (((<> btree k v t) ref tree)
+                                     (func callback (((<> pair k v) ref item))))
+          ((<> walk btree k v t) (-> tree root) callback))
+
+    ;; ---- insert -----------------------------------------------------
+    ;; Cormen: split a full child BEFORE descending into it, so the descent
+    ;; never has to back up. `parent' has room by construction.
+    ;;
+    ;; Every element move below goes through memmove or a pointer to the slot.
+    ;; (set (nth i (-> node items)) x) is not a form the ownership pass can name
+    ;; a storage for and it says so rather than guessing -- and memmove is the
+    ;; better answer anyway, one call instead of a loop.
+    (func (<> split btree k v t) (((<> btnode k v t) ref parent) (size_t at))
+          (let (((<> btnode k v t) ref full . #'(nth at (-> parent kids)))
+                ((<> btnode k v t) ref half . #'((<> newnode btree k v t) #f)))
+            (set (-> half leaf) (-> full leaf)
+                 (-> half n) (- t 1))
+            ;; the upper t-1 pairs move across, the middle one goes up
+            (memcpy (-> half items) (+ (-> full items) t)
+                    (* (- t 1) (sizeof (<> pair k v))))
+            (when (not (-> full leaf))
+              (memcpy (-> half kids) (+ (-> full kids) t)
+                      (* t (sizeof ((<> btnode k v t) *)))))
+            (set (-> full n) (- t 1))
+            ;; open a slot in the parent for the promoted pair and its new child
+            (memmove (+ (-> parent kids) (+ at 2)) (+ (-> parent kids) (+ at 1))
+                     (* (- (-> parent n) at) (sizeof ((<> btnode k v t) *))))
+            (let (((<> btnode k v t) ** kslot . #'(+ (-> parent kids) (+ at 1))))
+              (set (cof kslot) half))
+            (memmove (+ (-> parent items) (+ at 1)) (+ (-> parent items) at)
+                     (* (- (-> parent n) at) (sizeof (<> pair k v))))
+            (let (((<> pair k v) ref up  . #'(+ (-> parent items) at))
+                  ((<> pair k v) ref mid . #'(+ (-> full items) (- t 1))))
+              (set (cof up) (cof mid)))
+            (set (-> parent n) (+ (-> parent n) 1))))
+
+    (func (<> insertNonfull btree k v t) (((<> btnode k v t) ref node) (k key) (v val))
+          (out bool)                          ; false when the key is already there
+          (let ((size_t i . 0))
+            (while (and (< i (-> node n)) (< ($ (nth i (-> node items)) key) key))
+              (++ i))
+            (when (and (< i (-> node n)) (== ($ (nth i (-> node items)) key) key))
+              (return #f))
+            (when (-> node leaf)
+              (block
+                (when (< i (-> node n))
+                  (memmove (+ (-> node items) (+ i 1)) (+ (-> node items) i)
+                           (* (- (-> node n) i) (sizeof (<> pair k v)))))
+                (let (((<> pair k v) ref slot . #'(+ (-> node items) i)))
+                  (set (-> slot key) key
+                       (-> slot val) val))
+                (set (-> node n) (+ (-> node n) 1))
+                (return #t)))
+            ;; (-> (nth i …) n) is not a storage the ownership pass can name,
+            ;; so the child is bound first. That is the rule everywhere below.
+            (let (((<> btnode k v t) ref child . #'(nth i (-> node kids))))
+              (when (== (-> child n) (- (* 2 t) 1))
+                (block
+                  ((<> split btree k v t) node i)
+                ;; the promoted pair now sits at i -- it may BE the key
+                  (when (== ($ (nth i (-> node items)) key) key)
+                    (return #f))
+                  (when (< ($ (nth i (-> node items)) key) key)
+                    (++ i)))))
+            (return ((<> insertNonfull btree k v t) (nth i (-> node kids)) key val))))
+
+    (func (<> insert btree k v t) (((<> btree k v t) ref tree) (k key) (v val))
+          (out (<> Either BTREE_ERR size_t))
+          (when (not (-> tree root))
+            (set (-> tree root) ((<> newnode btree k v t) #t)))
+          ;; a full root is split first, and that is the ONLY way the tree grows
+          ;; taller -- every other split pushes a pair sideways into a parent
+          (when (== (-> (-> tree root) n) (- (* 2 t) 1))
+            (let (((<> btnode k v t) ref fresh . #'((<> newnode btree k v t) #f)))
+              (let (((<> btnode k v t) ** kslot . #'(+ (-> fresh kids) 0)))
+                (set (cof kslot) (-> tree root)))
+              (set (-> tree root) fresh)
+              ((<> split btree k v t) fresh 0)))
+          (when (not ((<> insertNonfull btree k v t) (-> tree root) key val))
+            (return (left BT_DUPLICATE_KEY)))
+          (set (-> tree len) (+ (-> tree len) 1))
+          (return (right (-> tree len))))
+
+    ;; ---- delete -----------------------------------------------------
+    ;; The same trick as insert read backwards: insert splits a full child
+    ;; BEFORE descending, delete tops up a minimal child BEFORE descending.
+    ;; Either way the recursion never has to back out of a node it has already
+    ;; committed to.
+
+    ;; kids[at] swallows items[at] and all of kids[at+1]
+    (func (<> merge btree k v t) (((<> btnode k v t) ref parent) (size_t at))
+          (let (((<> btnode k v t) ref left  . #'(nth at (-> parent kids)))
+                ((<> btnode k v t) ref right . #'(nth (+ at 1) (-> parent kids))))
+            (let (((<> pair k v) ref down . #'(+ (-> left items) (- t 1)))
+                  ((<> pair k v) ref sep  . #'(+ (-> parent items) at)))
+              (set (cof down) (cof sep)))
+            (memcpy (+ (-> left items) t) (-> right items)
+                    (* (-> right n) (sizeof (<> pair k v))))
+            (when (not (-> left leaf))
+              (memcpy (+ (-> left kids) t) (-> right kids)
+                      (* (+ (-> right n) 1) (sizeof ((<> btnode k v t) *)))))
+            (set (-> left n) (+ t (-> right n)))
+            ;; close the gap the separator and the right child left behind
+            (memmove (+ (-> parent items) at) (+ (-> parent items) (+ at 1))
+                     (* (- (- (-> parent n) at) 1) (sizeof (<> pair k v))))
+            (memmove (+ (-> parent kids) (+ at 1)) (+ (-> parent kids) (+ at 2))
+                     (* (- (- (-> parent n) at) 1) (sizeof ((<> btnode k v t) *))))
+            (set (-> parent n) (- (-> parent n) 1))
+            ;; right's children moved into left, so this frees the node only
+            (syslog! (printf "FREE BTNODE: %p\n" right))
+            (free right)))
+
+    (func (<> borrowLeft btree k v t) (((<> btnode k v t) ref parent) (size_t at))
+          (let (((<> btnode k v t) ref child . #'(nth at (-> parent kids)))
+                ((<> btnode k v t) ref sib   . #'(nth (- at 1) (-> parent kids))))
+            (memmove (+ (-> child items) 1) (-> child items)
+                     (* (-> child n) (sizeof (<> pair k v))))
+            (when (not (-> child leaf))
+              (memmove (+ (-> child kids) 1) (-> child kids)
+                       (* (+ (-> child n) 1) (sizeof ((<> btnode k v t) *)))))
+            ;; the separator comes down into the child, the sibling's last pair
+            ;; goes up to replace it
+            (let (((<> pair k v) ref head . #'(+ (-> child items) 0))
+                  ((<> pair k v) ref sep  . #'(+ (-> parent items) (- at 1))))
+              (set (cof head) (cof sep)))
+            (when (not (-> child leaf))
+              (let (((<> btnode k v t) ** kslot . #'(+ (-> child kids) 0)))
+                (set (cof kslot) (nth (-> sib n) (-> sib kids)))))
+            (let (((<> pair k v) ref sep  . #'(+ (-> parent items) (- at 1)))
+                  ((<> pair k v) ref tail . #'(+ (-> sib items) (- (-> sib n) 1))))
+              (set (cof sep) (cof tail)))
+            (set (-> child n) (+ (-> child n) 1)
+                 (-> sib n)   (- (-> sib n) 1))))
+
+    (func (<> borrowRight btree k v t) (((<> btnode k v t) ref parent) (size_t at))
+          (let (((<> btnode k v t) ref child . #'(nth at (-> parent kids)))
+                ((<> btnode k v t) ref sib   . #'(nth (+ at 1) (-> parent kids))))
+            (let (((<> pair k v) ref tail . #'(+ (-> child items) (-> child n)))
+                  ((<> pair k v) ref sep  . #'(+ (-> parent items) at)))
+              (set (cof tail) (cof sep)))
+            (when (not (-> child leaf))
+              (let (((<> btnode k v t) ** kslot . #'(+ (-> child kids) (+ (-> child n) 1))))
+                (set (cof kslot) (nth 0 (-> sib kids)))))
+            (let (((<> pair k v) ref sep  . #'(+ (-> parent items) at))
+                  ((<> pair k v) ref head . #'(+ (-> sib items) 0)))
+              (set (cof sep) (cof head)))
+            (memmove (-> sib items) (+ (-> sib items) 1)
+                     (* (- (-> sib n) 1) (sizeof (<> pair k v))))
+            (when (not (-> sib leaf))
+              (memmove (-> sib kids) (+ (-> sib kids) 1)
+                       (* (-> sib n) (sizeof ((<> btnode k v t) *)))))
+            (set (-> child n) (+ (-> child n) 1)
+                 (-> sib n)   (- (-> sib n) 1))))
+
+    ;; top kids[at] up to at least t pairs, and answer where it ended up -- a
+    ;; merge with the LEFT sibling moves it back one slot
+    (func (<> fill btree k v t) (((<> btnode k v t) ref parent) (size_t at))
+          (out size_t)
+          (when (> at 0)
+            (let (((<> btnode k v t) ref lsib . #'(nth (- at 1) (-> parent kids))))
+              (when (>= (-> lsib n) t)
+                (block ((<> borrowLeft btree k v t) parent at)
+                       (return at)))))
+          (when (< at (-> parent n))
+            (let (((<> btnode k v t) ref rsib . #'(nth (+ at 1) (-> parent kids))))
+              (when (>= (-> rsib n) t)
+                (block ((<> borrowRight btree k v t) parent at)
+                       (return at)))))
+          (if (< at (-> parent n))
+              (block ((<> merge btree k v t) parent at)
+                     (return at))
+            (block ((<> merge btree k v t) parent (- at 1))
+                   (return (- at 1)))))
+
+    (func (<> del btree k v t) (((<> btnode k v t) ref node) (k key))
+          (out bool)                          ; false when the key was not there
+          (let ((size_t i . 0))
+            (while (and (< i (-> node n)) (< ($ (nth i (-> node items)) key) key))
+              (++ i))
+
+            ;; ---- the key is in THIS node
+            (when (and (< i (-> node n)) (== ($ (nth i (-> node items)) key) key))
+              (block
+                (when (-> node leaf)
+                  (block
+                    (memmove (+ (-> node items) i) (+ (-> node items) (+ i 1))
+                             (* (- (- (-> node n) i) 1) (sizeof (<> pair k v))))
+                    (set (-> node n) (- (-> node n) 1))
+                    (return #t)))
+                ;; internal: swap in a neighbour that CAN spare a pair, then
+                ;; delete that neighbour instead. It is one level closer to a
+                ;; leaf each time, so this terminates.
+                (let (((<> btnode k v t) ref lkid . #'(nth i (-> node kids))))
+                  (when (>= (-> lkid n) t)
+                  (let (((<> btnode k v t) ref cur . #'(nth i (-> node kids))))
+                    (while (not (-> cur leaf))
+                      (set cur (nth (-> cur n) (-> cur kids))))
+                    (let (((<> pair k v) pred . #'(nth (- (-> cur n) 1) (-> cur items))))
+                      (let (((<> pair k v) ref slot . #'(+ (-> node items) i)))
+                        (set (cof slot) pred))
+                      (return ((<> del btree k v t) (nth i (-> node kids)) ($ pred key)))))))
+                (let (((<> btnode k v t) ref rkid . #'(nth (+ i 1) (-> node kids))))
+                  (when (>= (-> rkid n) t)
+                  (let (((<> btnode k v t) ref cur . #'(nth (+ i 1) (-> node kids))))
+                    (while (not (-> cur leaf))
+                      (set cur (nth 0 (-> cur kids))))
+                    (let (((<> pair k v) succ . #'(nth 0 (-> cur items))))
+                      (let (((<> pair k v) ref slot . #'(+ (-> node items) i)))
+                        (set (cof slot) succ))
+                      (return ((<> del btree k v t) (nth (+ i 1) (-> node kids)) ($ succ key)))))))
+                ;; neither neighbour can spare one: merge and look again below
+                ((<> merge btree k v t) node i)
+                (return ((<> del btree k v t) (nth i (-> node kids)) key))))
+
+            ;; ---- not here
+            (when (-> node leaf) (return #f))
+            (let (((<> btnode k v t) ref kid . #'(nth i (-> node kids))))
+              (when (< (-> kid n) t)
+                (set i ((<> fill btree k v t) node i))))
+            (return ((<> del btree k v t) (nth i (-> node kids)) key))))
+
+    (func (<> delete btree k v t) (((<> btree k v t) ref tree) (k key))
+          (out (<> Either BTREE_ERR size_t))
+          (when (not (-> tree root))
+            (return (left BT_NOT_FOUND)))
+          (when (not ((<> del btree k v t) (-> tree root) key))
+            (return (left BT_NOT_FOUND)))
+          ;; a merge can empty the root, and dropping it is the only way the
+          ;; tree ever gets shorter
+          (when (== (-> (-> tree root) n) 0)
+            (let (((<> btnode k v t) ref old . #'(-> tree root)))
+              (if (-> old leaf)
+                  (set (-> tree root) nil)
+                (set (-> tree root) (nth 0 (-> old kids))))
+              (syslog! (printf "FREE BTNODE: %p\n" old))
+              (free old)))
+          (set (-> tree len) (- (-> tree len) 1))
+          (return (right (-> tree len))))
+
+    ) ; guard
+
+  ) ; impl-btree
+
+
+;;;; ------------------------------------------------------------------
+;;;; front ends: infer which instantiation the tree belongs to and dispatch.
+;;;; An owned tree is passed by address, one already held by reference as is.
+;;;; ------------------------------------------------------------------
+
+(DEFUN btree-call< (tree)
+  (MULTIPLE-VALUE-BIND (desc full-type root-type) (CICILI:TYPE-CHECK tree :TYPEOF :std^btree
+                                                                          :MODIFIER '(move ref nil))
+    (DECLARE (IGNORE desc))
+    (VALUES (CAR root-type)
+            (IF (CICILI:KEY-EQ (NTH 2 full-type) 'ref) tree `(aof ,tree)))))
+
+(DEFMACRO free^btree (tree)
+  (LET ((tree tree))
+    (MULTIPLE-VALUE-BIND (type-name self) (btree-call< tree)
+      `((<> free ,type-name) ,self))))
+
+(DEFMACRO len^btree (tree)
+  (LET ((tree tree))
+    (MULTIPLE-VALUE-BIND (type-name self) (btree-call< tree)
+      `((<> len ,type-name) ,self))))
+
+(DEFMACRO search^btree (tree key)
+  (LET ((tree tree) (key key))
+    (MULTIPLE-VALUE-BIND (type-name self) (btree-call< tree)
+      `((<> search ,type-name) ,self ,key))))
+
+(DEFMACRO insert^btree (tree key val)
+  (LET ((tree tree) (key key) (val val))
+    (MULTIPLE-VALUE-BIND (type-name self) (btree-call< tree)
+      `((<> insert ,type-name) ,self ,key ,val))))
+
+(DEFMACRO delete^btree (tree key)
+  (LET ((tree tree) (key key))
+    (MULTIPLE-VALUE-BIND (type-name self) (btree-call< tree)
+      `((<> delete ,type-name) ,self ,key))))
+
+(DEFMACRO min^btree (tree)
+  (LET ((tree tree))
+    (MULTIPLE-VALUE-BIND (type-name self) (btree-call< tree)
+      `((<> min ,type-name) ,self))))
+
+(DEFMACRO max^btree (tree)
+  (LET ((tree tree))
+    (MULTIPLE-VALUE-BIND (type-name self) (btree-call< tree)
+      `((<> max ,type-name) ,self))))
+
+(DEFMACRO traverse^btree (tree callback)
+  (LET ((tree tree) (callback callback))
+    (MULTIPLE-VALUE-BIND (type-name self) (btree-call< tree)
+      `((<> traverse ,type-name) ,self ,callback))))

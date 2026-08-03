@@ -1,0 +1,174 @@
+;;;; test Cicili std btree
+;;; The shape checks below are the readable part. The one that actually earns
+;;; its keep is the last: 20000 pseudo-random inserts and deletes cross-checked
+;;; against a flat present/absent table, with the tree's own length and sorted
+;;; order verified after every batch. A B-tree's delete has borrow-left,
+;;; borrow-right, merge-with-left, merge-with-right and two internal-key cases,
+;;; and a hand-written example set reaches perhaps half of them.
+
+(source "btree.c"
+  (make :std #t :compile #t :link ("-lbtree.o" "-o" "btree_test"))
+
+  ;; minimum degree 3: at most 5 pairs and 6 children per node, at least 2
+  ;; pairs outside the root. Small enough that a few hundred keys build a tree
+  ;; several levels deep and exercise every split and merge path.
+  (decl-btree int int 3)
+  (impl-btree int int 3)
+
+  (var int N . 20000)
+
+  (func check ((const char * what) (llong got) (llong want))
+        (out int)
+        (if (== got want)
+            (block (printf "ok   %-34s %lld\n" what got) (return 0))
+          (block (printf "FAIL %-34s got %lld want %lld\n" what got want) (return 1)))
+        (return 1))
+
+  ;; ---- traversal state, for the ordering check ------------------------
+  (var int  seen . 0)
+  (var int  last . -1)
+  (var int  disorder . 0)
+  (var i64  keysum . 0)
+
+  ;; `ref' is a pointer, so the members come through -> and not $
+  (func visit (((<> pair int int) ref item))
+        (++ seen)
+        (when (<= (-> item key) last) (++ disorder))
+        (set last (-> item key))
+        (+= keysum (-> item key)))
+
+  ;; walks the tree and reports how many pairs came out; disorder counts any
+  ;; step that was not strictly increasing
+  (func audit (((<> btree int int 3) ref tree))
+        (out int)
+        (set seen 0 last -1 disorder 0 keysum 0)
+        ((<> traverse btree int int 3) tree visit)
+        (return seen))
+
+  ;; a deterministic pseudo-random sequence -- no seed, no libc rand, so the
+  ;; run is identical everywhere and a failure is reproducible
+  (var u32 state . 2463534242)
+  (func nextrand ()
+        (out u32)
+        (set state (^ state (<< state 13)))
+        (set state (^ state (>> state 17)))
+        (set state (^ state (<< state 5)))
+        (return state))
+
+  (main
+    (let ((int bad . 0))
+
+      ;; ---- shape ------------------------------------------------------
+      (letin ((tr ((<> new btree int int 3))))
+        (+= bad (check "order is 2t"        ((<> order btree int int 3)) 6))
+        (+= bad (check "empty len"          (len^btree tr) 0))
+        (+= bad (check "search of empty"
+                  (matchn (search^btree tr 1) (just p (cast llong ($ (cof p) val))) (nothing -1)) -1))
+        (+= bad (check "min of empty"
+                  (matchn (min^btree tr) (just p (cast llong ($ (cof p) key))) (nothing -1)) -1))
+        (+= bad (check "delete from empty"
+                  (matchn (delete^btree tr 1) (right n (cast llong n)) (left e (- (cast llong e)))) -2))
+
+        ;; ---- insert, in an order that forces splits ---------------------
+        (for ((int i . 1)) (<= i 100) ((++ i))
+             (match (insert^btree tr i (* i 10))
+               (right n (cast void n))
+               (left  e (+= bad (check "insert failed" (cast llong e) 0)))))
+        (+= bad (check "len after 100"      (len^btree tr) 100))
+        (+= bad (check "traverse count"     (audit (aof tr)) 100))
+        (+= bad (check "traverse in order"  disorder 0))
+        (+= bad (check "traverse key sum"   keysum 5050))
+
+        (+= bad (check "search hit"
+                  (matchn (search^btree tr 42) (just p (cast llong ($ (cof p) val))) (nothing -1)) 420))
+        (+= bad (check "search miss"
+                  (matchn (search^btree tr 101) (just p (cast llong ($ (cof p) val))) (nothing -1)) -1))
+        (+= bad (check "min"
+                  (matchn (min^btree tr) (just p (cast llong ($ (cof p) key))) (nothing -1)) 1))
+        (+= bad (check "max"
+                  (matchn (max^btree tr) (just p (cast llong ($ (cof p) key))) (nothing -1)) 100))
+
+        ;; the maybe carries a POINTER into the node, so this writes in place
+        (match (search^btree tr 42)
+          (just p  (set ($ (cof p) val) 4242))
+          (nothing (++ bad)))
+        (+= bad (check "wrote through the maybe"
+                  (matchn (search^btree tr 42) (just p (cast llong ($ (cof p) val))) (nothing -1)) 4242))
+
+        ;; ---- duplicate is an error, not a silent overwrite --------------
+        (+= bad (check "duplicate key"
+                  (matchn (insert^btree tr 42 1) (right n (cast llong n)) (left e (cast llong e))) 1))
+        (+= bad (check "len unchanged by dup" (len^btree tr) 100))
+
+        ;; ---- delete: leaf, internal, and enough of them to force merges --
+        (+= bad (check "delete returns new len"
+                  (matchn (delete^btree tr 50) (right n (cast llong n)) (left e (- (cast llong e)))) 99))
+        (+= bad (check "deleted key is gone"
+                  (matchn (search^btree tr 50) (just p (cast llong ($ (cof p) val))) (nothing -1)) -1))
+        (+= bad (check "delete missing key"
+                  (matchn (delete^btree tr 50) (right n (cast llong n)) (left e (- (cast llong e)))) -2))
+        (+= bad (check "still in order"     (progn (audit (aof tr)) disorder) 0))
+        (+= bad (check "count after delete" (audit (aof tr)) 99))
+
+        ;; strip it right down: every borrow and merge path runs here
+        (for ((int i . 1)) (<= i 100) ((++ i))
+             (match (delete^btree tr i)
+               (right n (cast void n))
+               (left  e (cast void e))))
+        (+= bad (check "len after draining"  (len^btree tr) 0))
+        (+= bad (check "audit after draining" (audit (aof tr)) 0))
+        (+= bad (check "min of drained"
+                  (matchn (min^btree tr) (just p (cast llong ($ (cof p) key))) (nothing -1)) -1))
+
+        ;; usable again after being emptied
+        (+= bad (check "reinsert after drain"
+                  (matchn (insert^btree tr 7 77) (right n (cast llong n)) (left e (- (cast llong e)))) 1))
+        (+= bad (check "reinserted value"
+                  (matchn (search^btree tr 7) (just p (cast llong ($ (cof p) val))) (nothing -1)) 77)))
+
+      ;; ---- randomised cross-check -------------------------------------
+      ;; `present' is the reference: a flat table of what SHOULD be in the tree.
+      ;; Every operation is applied to both and the two are compared.
+      (letin ((tr ((<> new btree int int 3))))
+        (let ((int * present . #'(alloc 4096 (sizeof int)))
+              (int live . 0)
+              (int mismatch . 0))
+
+          (for ((int step . 0)) (< step N) ((++ step))
+               (let ((int key . #'(cast int (% (nextrand) 4096))))
+                 (if (% (nextrand) 2)
+                     ;; insert: must succeed exactly when the key is absent
+                     (let ((int ok . #'(matchn (insert^btree tr key (* key 3))
+                                         (right n (progn (cast void n) 1)) (left e (progn (cast void e) 0)))))
+                       (block
+                         (when (!= ok (? (nth key present) 0 1)) (++ mismatch))
+                         (when ok (block (set (nth key present) 1) (++ live)))))
+                   ;; delete: must succeed exactly when the key is present
+                   (let ((int ok . #'(matchn (delete^btree tr key)
+                                       (right n (progn (cast void n) 1)) (left e (progn (cast void e) 0)))))
+                     (block
+                       (when (!= ok (nth key present)) (++ mismatch))
+                       (when ok (block (set (nth key present) 0) (-- live))))))))
+
+          (+= bad (check "random: no wrong verdicts" mismatch 0))
+          (+= bad (check "random: len agrees"        (len^btree tr) live))
+          (+= bad (check "random: traverse agrees"   (audit (aof tr)) live))
+          (+= bad (check "random: still sorted"      disorder 0))
+
+          ;; and every key the reference says is there really is
+          (let ((int missing . 0) (int extra . 0))
+            (for ((int i . 0)) (< i 4096) ((++ i))
+                 (let ((int found . #'(matchn (search^btree tr i) (just p (progn (cast void p) 1)) (nothing 0))))
+                   (block
+                     (when (and (nth i present) (not found)) (++ missing))
+                     (when (and (not (nth i present)) found) (++ extra)))))
+            (+= bad (check "random: none missing" missing 0))
+            (+= bad (check "random: none extra"   extra   0)))))
+
+      (if (== bad 0)
+          (printf "btree: all ok\n")
+        (printf "btree: %d FAILED\n" bad))
+      (return bad))))
+
+;; sbcl --script cicili.lisp --release ./test/std/btree.cicili
+;; ./test/std/btree_test

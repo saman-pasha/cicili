@@ -1,0 +1,115 @@
+;;;; Cicili lib/std btree vs Rust BTreeMap<i32,i32>
+;;;;
+;;;; The Rust side is benchmark/rust-vector-bench/src/bin/btree_bench.rs
+;;;; (cargo build --release); the two are meant to be read together.
+;;;;
+;;;; No optimisation flags in this file -- they live in config.lisp, so build it
+;;;; with --release.
+;;;;
+;;;; FAIRNESS:
+;;;;
+;;;;   * NODE SIZE IS MATCHED. Rust's BTreeMap is B=6: up to 2B-1 = 11 pairs per
+;;;;     node. (decl-btree int int 6) is Cormen's t=6, which is the same 11. A
+;;;;     smaller t would give Cicili deeper trees and more cache misses per
+;;;;     lookup, and it would not be the data structure being compared.
+;;;;   * THE SAME KEYS IN THE SAME ORDER. Both sides run the identical xorshift
+;;;;     and take (% 2^20), so both see the same sequence with the same
+;;;;     duplicates -- and duplicates matter, because they are the branch that
+;;;;     makes insert fail.
+;;;;   * Cicili's insert REFUSES a duplicate and says so; Rust's overwrites and
+;;;;     answers the old value. Neither does the other's work: one Either is
+;;;;     built either way, one Option is returned either way. The row is
+;;;;     comparable, the semantics are not identical, and that is stated here
+;;;;     rather than buried.
+;;;;
+;;;; The checksum is summed from what came BACK out of the structure, so the
+;;;; loops cannot be folded away -- see the construct rows in
+;;;; std-vector-bench.cicili for what happens when they can.
+
+(source "std_btree_bench.c"
+  (make :std #t
+        :compile #t :link ("-lstd_btree_bench.o" "-o" "std_btree_bench"))
+
+  (include <time.h>)
+
+  (var int N    . 1000000)   ; operations per row
+  (var int MASK . 1048575)   ; keys are (% 2^20), so ~1M distinct
+
+  (decl-btree int int 6)
+  (impl-btree int int 6)
+
+  (func ms_now ()
+        (out llong)
+        (let (((struct timespec) ts))
+          (timespec_get (aof ts) TIME_UTC)
+          (return (+ (* (cast llong ($ ts tv_sec)) 1000) (/ ($ ts tv_nsec) 1000000))))
+        (return 0))
+
+  ;; the same generator as the Rust side, so both see the same key sequence
+  (var u32 state . 2463534242)
+  (func reseed () (set state 2463534242))
+  (func nextrand ()
+        (out u32)
+        (set state (^ state (<< state 13)))
+        (set state (^ state (>> state 17)))
+        (set state (^ state (<< state 5)))
+        (return state))
+
+  (var i64 sink . 0)
+  (func tally (((<> pair int int) ref item))
+        (+= sink (-> item val)))
+
+  (main
+    (printf "Cicili lib/std btree -- %d operations per row, t=6 (11 pairs a node)\n\n" N)
+
+    (letin ((tr ((<> new btree int int 6))))
+
+      ;; ---- insert -------------------------------------------------
+      (reseed)
+      (let ((i64 ok . 0)
+            (llong t0 . #'(ms_now)))
+        (for ((int i . 0)) (< i N) ((++ i))
+             (let ((int key . #'(cast int (bitand (nextrand) MASK))))
+               (match ((<> insert btree int int 6) (aof tr) key (+ key 1))
+                 (right n (+= ok (cast i64 n)))
+                 (left  e (cast void e)))))
+        (printf "  (insert checksum: %lld)\n" ok)
+        (printf "  insert %d keys: %lld ms\n" N (- (ms_now) t0)))
+      (printf "  distinct keys stored: %zu\n" ((<> len btree int int 6) (aof tr)))
+
+      ;; ---- search -------------------------------------------------
+      (reseed)
+      (let ((i64 hit . 0)
+            (llong t0 . #'(ms_now)))
+        (for ((int i . 0)) (< i N) ((++ i))
+             (let ((int key . #'(cast int (bitand (nextrand) MASK))))
+               (match ((<> search btree int int 6) (aof tr) key)
+                 (just p  (+= hit (-> p val)))
+                 (nothing (cast void 0)))))
+        (printf "  (search checksum: %lld)\n" hit)
+        (printf "  search %d keys: %lld ms\n" N (- (ms_now) t0)))
+
+      ;; ---- traverse -----------------------------------------------
+      (let ((llong t0 . #'(ms_now)))
+        (set sink 0)
+        ((<> traverse btree int int 6) (aof tr) tally)
+        (printf "  (traverse checksum: %lld)\n" sink)
+        (printf "  traverse in order: %lld ms\n" (- (ms_now) t0)))
+
+      ;; ---- delete -------------------------------------------------
+      (reseed)
+      (let ((i64 gone . 0)
+            (llong t0 . #'(ms_now)))
+        (for ((int i . 0)) (< i N) ((++ i))
+             (let ((int key . #'(cast int (bitand (nextrand) MASK))))
+               (match ((<> delete btree int int 6) (aof tr) key)
+                 (right n (block (cast void n) (+= gone 1)))
+                 (left  e (cast void e)))))
+        (printf "  (delete checksum: %lld)\n" gone)
+        (printf "  delete %d keys: %lld ms\n" N (- (ms_now) t0)))
+      (printf "  left after delete: %zu\n" ((<> len btree int int 6) (aof tr))))
+
+    (return 0)))
+
+;; sbcl --script cicili.lisp --release ./benchmark/std-btree-bench.cicili
+;; ./benchmark/std_btree_bench

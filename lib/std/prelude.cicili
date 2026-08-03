@@ -14,6 +14,7 @@
 (import "./cell.cicili")
 (import "./rc.cicili")
 (import "./vector.cicili")
+(import "./btree.cicili")
 
 
 (DEFMACRO init-macro ()
