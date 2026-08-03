@@ -212,18 +212,24 @@ simply not be there. 10⁶ operations per row, node size matched (Rust's `BTreeM
 is B=6, 11 pairs a node; the Cicili side is Cormen's t=6, the same 11), same
 xorshift so both see the same keys in the same order.
 
-| | Cicili | Rust | |
-|---|---|---|---|
-| insert | 240 ms | 206 ms | Rust ~16% faster |
-| search | 233 ms | 230 ms | parity |
-| traverse in order | 7 ms | 5 ms | Rust faster |
-| delete | 292 ms | 246 ms | Rust ~19% faster |
+| | Cicili | Rust | | Cicili `-flto` | Rust `lto=true` |
+|---|---|---|---|---|---|
+| insert | 249 ms | **211 ms** | | 237 ms | 222 ms |
+| search | 239 ms | 240 ms | | 239 ms | 240 ms |
+| traverse in order | 7 ms | 6 ms | | 6 ms | 6 ms |
+| delete | 302 ms | **260 ms** | | 309 ms | 259 ms |
 
-**Rust is ahead on three of four** — this is not a row Cicili wins, and the
-gap is in insert and delete, where `BTreeMap` moves elements with specialised
-code and this one uses `memmove`.
+**Rust is ahead on insert and delete and level on the other two** — this is not
+a table Cicili wins. The gap is where `BTreeMap` moves elements with specialised
+code and this one calls `memmove`.
 
-What is worth more than the timings: **every checksum matches exactly** —
+**LTO is close to noise here for both**, which is worth saying because it is not
+what it did to the vector: +5% on Cicili's insert, −2% on its delete, −5% on
+Rust's insert, nothing anywhere else. Neither language's best column changes the
+verdict.
+
+What is worth more than the timings: **every checksum matches exactly**, and
+across all four builds above —
 207679490886 pairs inserted, 644483 distinct keys, 524727962248 summed on
 lookup, 338135951754 in traversal order, 644483 deleted. Two independent
 implementations agreeing bit-for-bit over a million mixed operations is a
