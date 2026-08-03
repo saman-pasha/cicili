@@ -150,14 +150,10 @@ void freenode_btree_int_int_3 (btnode_int_int_3 * restrict node ) {
       if (!(node -> leaf))
         { /* block251 */
           for (size_t i  = 0; (i  <=  (node -> n) ); (++i )) {
-              { /* let256 */
-                btnode_int_int_3 * restrict kid  = (node -> kids)[i ];
-                // ----------
-                if (kid )
-                  { /* block262 */
-                    freenode_btree_int_int_3 (kid );
-                  }
-              }
+              if ((node -> kids)[i ])
+                { /* block259 */
+                  freenode_btree_int_int_3 ((node -> kids)[i ]);
+                }
           }
         }
       free (node );
@@ -165,7 +161,7 @@ void freenode_btree_int_int_3 (btnode_int_int_3 * restrict node ) {
 }
 __attribute__((weak)) void free_btree_int_int_3 (btree_int_int_3 * restrict tree ) {
   if ((tree -> root))
-    { /* block275 */
+    { /* block272 */
       freenode_btree_int_int_3 ((tree -> root));
       (tree -> root) = NULL ;
       (tree -> len) = 0;
@@ -184,22 +180,22 @@ size_t len_btree_int_int_3 (btree_int_int_3 * restrict tree ) {
   return (tree -> len);
 }
 Maybe_ref_pair_int_int search_btree_int_int_3 (btree_int_int_3 * restrict tree , int key ) {
-  { /* let295 */
+  { /* let292 */
     btnode_int_int_3 * restrict node  = (tree -> root);
     // ----------
     while (node ) {
-        { /* let300 */
+        { /* let297 */
           size_t i  = 0;
           // ----------
           while (((i  <  (node -> n) ) &&  (((node -> items)[i ]. key) <  key  ) )) {
               (++i );
           }
           if ((i  <  (node -> n) ) &&  (((node -> items)[i ]. key) ==  key  ) )
-            { /* block307 */
+            { /* block304 */
               return ((Maybe_ref_pair_int_int){ .ctor = JUST_CTOR , .data.just.value = ((node -> items) +  i  )});
             }
           if ((node -> leaf))
-            { /* block313 */
+            { /* block310 */
               return ((Maybe_ref_pair_int_int){ .ctor = NOTHING_CTOR });
             }
           node  = (node -> kids)[i ];
@@ -209,36 +205,36 @@ Maybe_ref_pair_int_int search_btree_int_int_3 (btree_int_int_3 * restrict tree ,
   }
 }
 Maybe_ref_pair_int_int min_btree_int_int_3 (btree_int_int_3 * restrict tree ) {
-  { /* let321 */
+  { /* let318 */
     btnode_int_int_3 * restrict node  = (tree -> root);
     // ----------
     if (!node )
-      { /* block327 */
+      { /* block324 */
         return ((Maybe_ref_pair_int_int){ .ctor = NOTHING_CTOR });
       }
     while ((!(node -> leaf))) {
         node  = (node -> kids)[0];
     }
     if ((node -> n) ==  0 )
-      { /* block335 */
+      { /* block332 */
         return ((Maybe_ref_pair_int_int){ .ctor = NOTHING_CTOR });
       }
     return ((Maybe_ref_pair_int_int){ .ctor = JUST_CTOR , .data.just.value = ((node -> items) +  0 )});
   }
 }
 Maybe_ref_pair_int_int max_btree_int_int_3 (btree_int_int_3 * restrict tree ) {
-  { /* let343 */
+  { /* let340 */
     btnode_int_int_3 * restrict node  = (tree -> root);
     // ----------
     if (!node )
-      { /* block349 */
+      { /* block346 */
         return ((Maybe_ref_pair_int_int){ .ctor = NOTHING_CTOR });
       }
     while ((!(node -> leaf))) {
         node  = (node -> kids)[(node -> n)];
     }
     if ((node -> n) ==  0 )
-      { /* block357 */
+      { /* block354 */
         return ((Maybe_ref_pair_int_int){ .ctor = NOTHING_CTOR });
       }
     return ((Maybe_ref_pair_int_int){ .ctor = JUST_CTOR , .data.just.value = ((node -> items) +  ((node -> n) -  1 ) )});
@@ -246,18 +242,18 @@ Maybe_ref_pair_int_int max_btree_int_int_3 (btree_int_int_3 * restrict tree ) {
 }
 void walk_btree_int_int_3 (btnode_int_int_3 * restrict node , void (*callback) (pair_int_int * restrict item )) {
   if (node )
-    { /* block369 */
+    { /* block366 */
       for (size_t i  = 0; (i  <  (node -> n) ); (++i )) {
-          { /* block374 */
+          { /* block371 */
             if (!(node -> leaf))
-              { /* block379 */
+              { /* block376 */
                 walk_btree_int_int_3 ((node -> kids)[i ], callback );
               }
             callback (((node -> items) +  i  ));
           }
       }
       if (!(node -> leaf))
-        { /* block385 */
+        { /* block382 */
           walk_btree_int_int_3 ((node -> kids)[(node -> n)], callback );
         }
     }
@@ -266,7 +262,7 @@ void traverse_btree_int_int_3 (btree_int_int_3 * restrict tree , void (*callback
   walk_btree_int_int_3 ((tree -> root), callback );
 }
 void split_btree_int_int_3 (btnode_int_int_3 * restrict parent , size_t at ) {
-  { /* let397 */
+  { /* let394 */
     btnode_int_int_3 * restrict full  = (parent -> kids)[at ];
     btnode_int_int_3 * restrict half  = newnode_btree_int_int_3 (false );
     // ----------
@@ -274,18 +270,18 @@ void split_btree_int_int_3 (btnode_int_int_3 * restrict parent , size_t at ) {
     (half -> n) = (3 -  1 );
     memcpy ((half -> items), ((full -> items) +  3 ), ((3 -  1 ) *  sizeof(pair_int_int ) ));
     if (!(full -> leaf))
-      { /* block406 */
+      { /* block403 */
         memcpy ((half -> kids), ((full -> kids) +  3 ), (3 *  sizeof(btnode_int_int_3 (*)) ));
       }
     (full -> n) = (3 -  1 );
     memmove (((parent -> kids) +  (at  +  2 ) ), ((parent -> kids) +  (at  +  1 ) ), (((parent -> n) -  at  ) *  sizeof(btnode_int_int_3 (*)) ));
-    { /* let410 */
+    { /* let407 */
       btnode_int_int_3 ** kslot  = ((parent -> kids) +  (at  +  1 ) );
       // ----------
       (*kslot ) = half ;
     }
     memmove (((parent -> items) +  (at  +  1 ) ), ((parent -> items) +  at  ), (((parent -> n) -  at  ) *  sizeof(pair_int_int ) ));
-    { /* let414 */
+    { /* let411 */
       pair_int_int * restrict up  = ((parent -> items) +  at  );
       pair_int_int * restrict mid  = ((full -> items) +  (3 -  1 ) );
       // ----------
@@ -295,24 +291,24 @@ void split_btree_int_int_3 (btnode_int_int_3 * restrict parent , size_t at ) {
   }
 }
 bool insertNonfull_btree_int_int_3 (btnode_int_int_3 * restrict node , int key , int val ) {
-  { /* let421 */
+  { /* let418 */
     size_t i  = 0;
     // ----------
     while (((i  <  (node -> n) ) &&  (((node -> items)[i ]. key) <  key  ) )) {
         (++i );
     }
     if ((i  <  (node -> n) ) &&  (((node -> items)[i ]. key) ==  key  ) )
-      { /* block428 */
+      { /* block425 */
         return false ;
       }
     if ((node -> leaf))
-      { /* block433 */
-        { /* block435 */
+      { /* block430 */
+        { /* block432 */
           if (i  <  (node -> n) )
-            { /* block440 */
+            { /* block437 */
               memmove (((node -> items) +  (i  +  1 ) ), ((node -> items) +  i  ), (((node -> n) -  i  ) *  sizeof(pair_int_int ) ));
             }
-          { /* let443 */
+          { /* let440 */
             pair_int_int * restrict slot  = ((node -> items) +  i  );
             // ----------
             (slot -> key) = key ;
@@ -322,19 +318,19 @@ bool insertNonfull_btree_int_int_3 (btnode_int_int_3 * restrict node , int key ,
           return true ;
         }
       }
-    { /* let446 */
+    { /* let443 */
       btnode_int_int_3 * restrict child  = (node -> kids)[i ];
       // ----------
       if ((child -> n) ==  ((2 *  3 ) -  1 ) )
-        { /* block452 */
-          { /* block454 */
+        { /* block449 */
+          { /* block451 */
             split_btree_int_int_3 (node , i );
             if (((node -> items)[i ]. key) ==  key  )
-              { /* block460 */
+              { /* block457 */
                 return false ;
               }
             if (((node -> items)[i ]. key) <  key  )
-              { /* block465 */
+              { /* block462 */
                 (++i );
               }
           }
@@ -345,15 +341,15 @@ bool insertNonfull_btree_int_int_3 (btnode_int_int_3 * restrict node , int key ,
 }
 Either_BTREE_ERR_size_t insert_btree_int_int_3 (btree_int_int_3 * restrict tree , int key , int val ) {
   if (!(tree -> root))
-    { /* block475 */
+    { /* block472 */
       (tree -> root) = newnode_btree_int_int_3 (true );
     }
   if (((tree -> root)-> n) ==  ((2 *  3 ) -  1 ) )
-    { /* block481 */
-      { /* let483 */
+    { /* block478 */
+      { /* let480 */
         btnode_int_int_3 * restrict fresh  = newnode_btree_int_int_3 (false );
         // ----------
-        { /* let487 */
+        { /* let484 */
           btnode_int_int_3 ** kslot  = ((fresh -> kids) +  0 );
           // ----------
           (*kslot ) = (tree -> root);
@@ -363,18 +359,18 @@ Either_BTREE_ERR_size_t insert_btree_int_int_3 (btree_int_int_3 * restrict tree 
       }
     }
   if (!insertNonfull_btree_int_int_3 ((tree -> root), key , val ))
-    { /* block495 */
+    { /* block492 */
       return ((Either_BTREE_ERR_size_t){ .ctor = LEFT_CTOR , .data.left.error = BT_DUPLICATE_KEY });
     }
   (tree -> len) = ((tree -> len) +  1 );
   return ((Either_BTREE_ERR_size_t){ .ctor = RIGHT_CTOR , .data.right.value = (tree -> len)});
 }
 void merge_btree_int_int_3 (btnode_int_int_3 * restrict parent , size_t at ) {
-  { /* let502 */
+  { /* let499 */
     btnode_int_int_3 * restrict left  = (parent -> kids)[at ];
     btnode_int_int_3 * restrict right  = (parent -> kids)[(at  +  1 )];
     // ----------
-    { /* let506 */
+    { /* let503 */
       pair_int_int * restrict down  = ((left -> items) +  (3 -  1 ) );
       pair_int_int * restrict sep  = ((parent -> items) +  at  );
       // ----------
@@ -382,7 +378,7 @@ void merge_btree_int_int_3 (btnode_int_int_3 * restrict parent , size_t at ) {
     }
     memcpy (((left -> items) +  3 ), (right -> items), ((right -> n) *  sizeof(pair_int_int ) ));
     if (!(left -> leaf))
-      { /* block514 */
+      { /* block511 */
         memcpy (((left -> kids) +  3 ), (right -> kids), (((right -> n) +  1 ) *  sizeof(btnode_int_int_3 (*)) ));
       }
     (left -> n) = (3 +  (right -> n) );
@@ -393,30 +389,30 @@ void merge_btree_int_int_3 (btnode_int_int_3 * restrict parent , size_t at ) {
   }
 }
 void borrowLeft_btree_int_int_3 (btnode_int_int_3 * restrict parent , size_t at ) {
-  { /* let524 */
+  { /* let521 */
     btnode_int_int_3 * restrict child  = (parent -> kids)[at ];
     btnode_int_int_3 * restrict sib  = (parent -> kids)[(at  -  1 )];
     // ----------
     memmove (((child -> items) +  1 ), (child -> items), ((child -> n) *  sizeof(pair_int_int ) ));
     if (!(child -> leaf))
-      { /* block532 */
+      { /* block529 */
         memmove (((child -> kids) +  1 ), (child -> kids), (((child -> n) +  1 ) *  sizeof(btnode_int_int_3 (*)) ));
       }
-    { /* let535 */
+    { /* let532 */
       pair_int_int * restrict head  = ((child -> items) +  0 );
       pair_int_int * restrict sep  = ((parent -> items) +  (at  -  1 ) );
       // ----------
       (*head ) = (*sep );
     }
     if (!(child -> leaf))
-      { /* block542 */
-        { /* let544 */
+      { /* block539 */
+        { /* let541 */
           btnode_int_int_3 ** kslot  = ((child -> kids) +  0 );
           // ----------
           (*kslot ) = (sib -> kids)[(sib -> n)];
         }
       }
-    { /* let547 */
+    { /* let544 */
       pair_int_int * restrict sep  = ((parent -> items) +  (at  -  1 ) );
       pair_int_int * restrict tail  = ((sib -> items) +  ((sib -> n) -  1 ) );
       // ----------
@@ -427,25 +423,25 @@ void borrowLeft_btree_int_int_3 (btnode_int_int_3 * restrict parent , size_t at 
   }
 }
 void borrowRight_btree_int_int_3 (btnode_int_int_3 * restrict parent , size_t at ) {
-  { /* let554 */
+  { /* let551 */
     btnode_int_int_3 * restrict child  = (parent -> kids)[at ];
     btnode_int_int_3 * restrict sib  = (parent -> kids)[(at  +  1 )];
     // ----------
-    { /* let558 */
+    { /* let555 */
       pair_int_int * restrict tail  = ((child -> items) +  (child -> n) );
       pair_int_int * restrict sep  = ((parent -> items) +  at  );
       // ----------
       (*tail ) = (*sep );
     }
     if (!(child -> leaf))
-      { /* block565 */
-        { /* let567 */
+      { /* block562 */
+        { /* let564 */
           btnode_int_int_3 ** kslot  = ((child -> kids) +  ((child -> n) +  1 ) );
           // ----------
           (*kslot ) = (sib -> kids)[0];
         }
       }
-    { /* let570 */
+    { /* let567 */
       pair_int_int * restrict sep  = ((parent -> items) +  at  );
       pair_int_int * restrict head  = ((sib -> items) +  0 );
       // ----------
@@ -453,7 +449,7 @@ void borrowRight_btree_int_int_3 (btnode_int_int_3 * restrict parent , size_t at
     }
     memmove ((sib -> items), ((sib -> items) +  1 ), (((sib -> n) -  1 ) *  sizeof(pair_int_int ) ));
     if (!(sib -> leaf))
-      { /* block578 */
+      { /* block575 */
         memmove ((sib -> kids), ((sib -> kids) +  1 ), ((sib -> n) *  sizeof(btnode_int_int_3 (*)) ));
       }
     (child -> n) = ((child -> n) +  1 );
@@ -462,13 +458,13 @@ void borrowRight_btree_int_int_3 (btnode_int_int_3 * restrict parent , size_t at
 }
 size_t fill_btree_int_int_3 (btnode_int_int_3 * restrict parent , size_t at ) {
   if (at  >  0 )
-    { /* block587 */
-      { /* let589 */
+    { /* block584 */
+      { /* let586 */
         btnode_int_int_3 * restrict lsib  = (parent -> kids)[(at  -  1 )];
         // ----------
         if ((lsib -> n) >=  3 )
-          { /* block595 */
-            { /* block597 */
+          { /* block592 */
+            { /* block594 */
               borrowLeft_btree_int_int_3 (parent , at );
               return at ;
             }
@@ -476,13 +472,13 @@ size_t fill_btree_int_int_3 (btnode_int_int_3 * restrict parent , size_t at ) {
       }
     }
   if (at  <  (parent -> n) )
-    { /* block603 */
-      { /* let605 */
+    { /* block600 */
+      { /* let602 */
         btnode_int_int_3 * restrict rsib  = (parent -> kids)[(at  +  1 )];
         // ----------
         if ((rsib -> n) >=  3 )
-          { /* block611 */
-            { /* block613 */
+          { /* block608 */
+            { /* block610 */
               borrowRight_btree_int_int_3 (parent , at );
               return at ;
             }
@@ -490,49 +486,49 @@ size_t fill_btree_int_int_3 (btnode_int_int_3 * restrict parent , size_t at ) {
       }
     }
   if (at  <  (parent -> n) )
-    { /* block618 */
+    { /* block615 */
       merge_btree_int_int_3 (parent , at );
       return at ;
     }
   else
-    { /* block622 */
+    { /* block619 */
       merge_btree_int_int_3 (parent , (at  -  1 ));
       return (at  -  1 );
     }
 }
 bool del_btree_int_int_3 (btnode_int_int_3 * restrict node , int key ) {
-  { /* let628 */
+  { /* let625 */
     size_t i  = 0;
     // ----------
     while (((i  <  (node -> n) ) &&  (((node -> items)[i ]. key) <  key  ) )) {
         (++i );
     }
     if ((i  <  (node -> n) ) &&  (((node -> items)[i ]. key) ==  key  ) )
-      { /* block635 */
-        { /* block637 */
+      { /* block632 */
+        { /* block634 */
           if ((node -> leaf))
-            { /* block642 */
-              { /* block644 */
+            { /* block639 */
+              { /* block641 */
                 memmove (((node -> items) +  i  ), ((node -> items) +  (i  +  1 ) ), ((((node -> n) -  i  ) -  1 ) *  sizeof(pair_int_int ) ));
                 (node -> n) = ((node -> n) -  1 );
                 return true ;
               }
             }
-          { /* let647 */
+          { /* let644 */
             btnode_int_int_3 * restrict lkid  = (node -> kids)[i ];
             // ----------
             if ((lkid -> n) >=  3 )
-              { /* block653 */
-                { /* let655 */
+              { /* block650 */
+                { /* let652 */
                   btnode_int_int_3 * restrict cur  = (node -> kids)[i ];
                   // ----------
                   while ((!(cur -> leaf))) {
                       cur  = (cur -> kids)[(cur -> n)];
                   }
-                  { /* let660 */
+                  { /* let657 */
                     pair_int_int pred  = (cur -> items)[((cur -> n) -  1 )];
                     // ----------
-                    { /* let663 */
+                    { /* let660 */
                       pair_int_int * restrict slot  = ((node -> items) +  i  );
                       // ----------
                       (*slot ) = pred ;
@@ -542,21 +538,21 @@ bool del_btree_int_int_3 (btnode_int_int_3 * restrict node , int key ) {
                 }
               }
           }
-          { /* let667 */
+          { /* let664 */
             btnode_int_int_3 * restrict rkid  = (node -> kids)[(i  +  1 )];
             // ----------
             if ((rkid -> n) >=  3 )
-              { /* block673 */
-                { /* let675 */
+              { /* block670 */
+                { /* let672 */
                   btnode_int_int_3 * restrict cur  = (node -> kids)[(i  +  1 )];
                   // ----------
                   while ((!(cur -> leaf))) {
                       cur  = (cur -> kids)[0];
                   }
-                  { /* let680 */
+                  { /* let677 */
                     pair_int_int succ  = (cur -> items)[0];
                     // ----------
-                    { /* let683 */
+                    { /* let680 */
                       pair_int_int * restrict slot  = ((node -> items) +  i  );
                       // ----------
                       (*slot ) = succ ;
@@ -571,14 +567,14 @@ bool del_btree_int_int_3 (btnode_int_int_3 * restrict node , int key ) {
         }
       }
     if ((node -> leaf))
-      { /* block692 */
+      { /* block689 */
         return false ;
       }
-    { /* let694 */
+    { /* let691 */
       btnode_int_int_3 * restrict kid  = (node -> kids)[i ];
       // ----------
       if ((kid -> n) <  3 )
-        { /* block700 */
+        { /* block697 */
           i  = fill_btree_int_int_3 (node , i );
         }
     }
@@ -587,16 +583,16 @@ bool del_btree_int_int_3 (btnode_int_int_3 * restrict node , int key ) {
 }
 Either_BTREE_ERR_size_t delete_btree_int_int_3 (btree_int_int_3 * restrict tree , int key ) {
   if (!(tree -> root))
-    { /* block711 */
+    { /* block708 */
       return ((Either_BTREE_ERR_size_t){ .ctor = LEFT_CTOR , .data.left.error = BT_NOT_FOUND });
     }
   if (!del_btree_int_int_3 ((tree -> root), key ))
-    { /* block718 */
+    { /* block715 */
       return ((Either_BTREE_ERR_size_t){ .ctor = LEFT_CTOR , .data.left.error = BT_NOT_FOUND });
     }
   if (((tree -> root)-> n) ==  0 )
-    { /* block724 */
-      { /* let726 */
+    { /* block721 */
+      { /* let723 */
         btnode_int_int_3 * restrict old  = (tree -> root);
         // ----------
         if ((old -> leaf))
@@ -613,12 +609,12 @@ Either_BTREE_ERR_size_t delete_btree_int_int_3 (btree_int_int_3 * restrict tree 
 int N  = 20000;
 int check (const char * what , long long got , long long want ) {
   if (got  ==  want  )
-    { /* block738 */
+    { /* block735 */
       printf ("ok   %-34s %lld\n", what , got );
       return 0;
     }
   else
-    { /* block741 */
+    { /* block738 */
       printf ("FAIL %-34s got %lld want %lld\n", what , got , want );
       return 1;
     }
@@ -631,7 +627,7 @@ int64_t keysum  = 0;
 void visit (pair_int_int * restrict item ) {
   (++seen );
   if ((item -> key) <=  last  )
-    { /* block748 */
+    { /* block745 */
       (++disorder );
     }
   last  = (item -> key);
@@ -652,67 +648,67 @@ uint32_t nextrand () {
   state  = (state  ^  (state  <<  5 ) );
   return state ;
 }
-void __ciciliL_973 (int ** present ) {
+void __ciciliL_970 (int ** present ) {
   free (((void *)(*present )));
 }
 int main () {
-  { /* let756 */
+  { /* let753 */
     int bad  = 0;
     // ----------
-    ({ /* letn760 */
+    ({ /* letn757 */
       btree_int_int_3 tr  __attribute__((__cleanup__(free_btree_int_int_3 ))) = new_btree_int_int_3 ();
       // ----------
       bad  += check ("order is 2t", order_btree_int_int_3 (), 6) ;
       bad  += check ("empty len", len_btree_int_int_3 ((&tr )), 0) ;
-      bad  += check ("search of empty", ({ /* letn770 */
-            Maybe_ref_pair_int_int matchn769  = search_btree_int_int_3 ((&tr ), 1);
+      bad  += check ("search of empty", ({ /* letn767 */
+            Maybe_ref_pair_int_int matchn766  = search_btree_int_int_3 ((&tr ), 1);
             // ----------
-            ((((matchn769 . ctor) ==  JUST_CTOR  )) ? ({ /* letn772 */
-                pair_int_int * restrict p  = (((matchn769 . data). just). value);
+            ((((matchn766 . ctor) ==  JUST_CTOR  )) ? ({ /* letn769 */
+                pair_int_int * restrict p  = (((matchn766 . data). just). value);
                 // ----------
                 ((long long)((*p ). val));
-              }) : ({ /* progn774 */
+              }) : ({ /* progn771 */
                 -1;
               }));
           }), -1) ;
-      bad  += check ("min of empty", ({ /* letn780 */
-            Maybe_ref_pair_int_int matchn779  = min_btree_int_int_3 ((&tr ));
+      bad  += check ("min of empty", ({ /* letn777 */
+            Maybe_ref_pair_int_int matchn776  = min_btree_int_int_3 ((&tr ));
             // ----------
-            ((((matchn779 . ctor) ==  JUST_CTOR  )) ? ({ /* letn782 */
-                pair_int_int * restrict p  = (((matchn779 . data). just). value);
+            ((((matchn776 . ctor) ==  JUST_CTOR  )) ? ({ /* letn779 */
+                pair_int_int * restrict p  = (((matchn776 . data). just). value);
                 // ----------
                 ((long long)((*p ). key));
-              }) : ({ /* progn784 */
+              }) : ({ /* progn781 */
                 -1;
               }));
           }), -1) ;
-      bad  += check ("delete from empty", ({ /* letn790 */
-            Either_BTREE_ERR_size_t matchn789  = delete_btree_int_int_3 ((&tr ), 1);
+      bad  += check ("delete from empty", ({ /* letn787 */
+            Either_BTREE_ERR_size_t matchn786  = delete_btree_int_int_3 ((&tr ), 1);
             // ----------
-            ((((matchn789 . ctor) ==  RIGHT_CTOR  )) ? ({ /* letn792 */
-                size_t n  = (((matchn789 . data). right). value);
+            ((((matchn786 . ctor) ==  RIGHT_CTOR  )) ? ({ /* letn789 */
+                size_t n  = (((matchn786 . data). right). value);
                 // ----------
                 ((long long)n );
-              }) : ({ /* letn794 */
-                BTREE_ERR e  = (((matchn789 . data). left). error);
+              }) : ({ /* letn791 */
+                BTREE_ERR e  = (((matchn786 . data). left). error);
                 // ----------
                 (-((long long)e ));
               }));
           }), -2) ;
       for (int i  = 1; (i  <=  100 ); (++i )) {
-          { /* let803 */
-            Either_BTREE_ERR_size_t match802  = insert_btree_int_int_3 ((&tr ), i , (i  *  10 ));
+          { /* let800 */
+            Either_BTREE_ERR_size_t match799  = insert_btree_int_int_3 ((&tr ), i , (i  *  10 ));
             // ----------
-            if ((match802 . ctor) ==  RIGHT_CTOR  ) {
-                { /* let807 */
-                  size_t n  = (((match802 . data). right). value);
+            if ((match799 . ctor) ==  RIGHT_CTOR  ) {
+                { /* let804 */
+                  size_t n  = (((match799 . data). right). value);
                   // ----------
                   ((void)n );
                 }
             }
-            else if ((match802 . ctor) ==  LEFT_CTOR  ) {
-                { /* let810 */
-                  BTREE_ERR e  = (((match802 . data). left). error);
+            else if ((match799 . ctor) ==  LEFT_CTOR  ) {
+                { /* let807 */
+                  BTREE_ERR e  = (((match799 . data). left). error);
                   // ----------
                   bad  += check ("insert failed", ((long long)e ), 0) ;
                 }
@@ -723,145 +719,145 @@ int main () {
       bad  += check ("traverse count", audit ((&tr )), 100) ;
       bad  += check ("traverse in order", disorder , 0) ;
       bad  += check ("traverse key sum", keysum , 5050) ;
-      bad  += check ("search hit", ({ /* letn818 */
-            Maybe_ref_pair_int_int matchn817  = search_btree_int_int_3 ((&tr ), 42);
+      bad  += check ("search hit", ({ /* letn815 */
+            Maybe_ref_pair_int_int matchn814  = search_btree_int_int_3 ((&tr ), 42);
             // ----------
-            ((((matchn817 . ctor) ==  JUST_CTOR  )) ? ({ /* letn820 */
-                pair_int_int * restrict p  = (((matchn817 . data). just). value);
+            ((((matchn814 . ctor) ==  JUST_CTOR  )) ? ({ /* letn817 */
+                pair_int_int * restrict p  = (((matchn814 . data). just). value);
                 // ----------
                 ((long long)((*p ). val));
-              }) : ({ /* progn822 */
+              }) : ({ /* progn819 */
                 -1;
               }));
           }), 420) ;
-      bad  += check ("search miss", ({ /* letn828 */
-            Maybe_ref_pair_int_int matchn827  = search_btree_int_int_3 ((&tr ), 101);
+      bad  += check ("search miss", ({ /* letn825 */
+            Maybe_ref_pair_int_int matchn824  = search_btree_int_int_3 ((&tr ), 101);
             // ----------
-            ((((matchn827 . ctor) ==  JUST_CTOR  )) ? ({ /* letn830 */
-                pair_int_int * restrict p  = (((matchn827 . data). just). value);
+            ((((matchn824 . ctor) ==  JUST_CTOR  )) ? ({ /* letn827 */
+                pair_int_int * restrict p  = (((matchn824 . data). just). value);
                 // ----------
                 ((long long)((*p ). val));
-              }) : ({ /* progn832 */
+              }) : ({ /* progn829 */
                 -1;
               }));
           }), -1) ;
-      bad  += check ("min", ({ /* letn838 */
-            Maybe_ref_pair_int_int matchn837  = min_btree_int_int_3 ((&tr ));
+      bad  += check ("min", ({ /* letn835 */
+            Maybe_ref_pair_int_int matchn834  = min_btree_int_int_3 ((&tr ));
             // ----------
-            ((((matchn837 . ctor) ==  JUST_CTOR  )) ? ({ /* letn840 */
-                pair_int_int * restrict p  = (((matchn837 . data). just). value);
+            ((((matchn834 . ctor) ==  JUST_CTOR  )) ? ({ /* letn837 */
+                pair_int_int * restrict p  = (((matchn834 . data). just). value);
                 // ----------
                 ((long long)((*p ). key));
-              }) : ({ /* progn842 */
+              }) : ({ /* progn839 */
                 -1;
               }));
           }), 1) ;
-      bad  += check ("max", ({ /* letn848 */
-            Maybe_ref_pair_int_int matchn847  = max_btree_int_int_3 ((&tr ));
+      bad  += check ("max", ({ /* letn845 */
+            Maybe_ref_pair_int_int matchn844  = max_btree_int_int_3 ((&tr ));
             // ----------
-            ((((matchn847 . ctor) ==  JUST_CTOR  )) ? ({ /* letn850 */
-                pair_int_int * restrict p  = (((matchn847 . data). just). value);
+            ((((matchn844 . ctor) ==  JUST_CTOR  )) ? ({ /* letn847 */
+                pair_int_int * restrict p  = (((matchn844 . data). just). value);
                 // ----------
                 ((long long)((*p ). key));
-              }) : ({ /* progn852 */
+              }) : ({ /* progn849 */
                 -1;
               }));
           }), 100) ;
-      { /* let858 */
-        Maybe_ref_pair_int_int match857  = search_btree_int_int_3 ((&tr ), 42);
+      { /* let855 */
+        Maybe_ref_pair_int_int match854  = search_btree_int_int_3 ((&tr ), 42);
         // ----------
-        if ((match857 . ctor) ==  JUST_CTOR  ) {
-            { /* let862 */
-              pair_int_int * restrict p  = (((match857 . data). just). value);
+        if ((match854 . ctor) ==  JUST_CTOR  ) {
+            { /* let859 */
+              pair_int_int * restrict p  = (((match854 . data). just). value);
               // ----------
               ((*p ). val) = 4242;
             }
         }
-        else if ((match857 . ctor) ==  NOTHING_CTOR  ) {
+        else if ((match854 . ctor) ==  NOTHING_CTOR  ) {
             (++bad );
         }
       }
-      bad  += check ("wrote through the maybe", ({ /* letn869 */
-            Maybe_ref_pair_int_int matchn868  = search_btree_int_int_3 ((&tr ), 42);
+      bad  += check ("wrote through the maybe", ({ /* letn866 */
+            Maybe_ref_pair_int_int matchn865  = search_btree_int_int_3 ((&tr ), 42);
             // ----------
-            ((((matchn868 . ctor) ==  JUST_CTOR  )) ? ({ /* letn871 */
-                pair_int_int * restrict p  = (((matchn868 . data). just). value);
+            ((((matchn865 . ctor) ==  JUST_CTOR  )) ? ({ /* letn868 */
+                pair_int_int * restrict p  = (((matchn865 . data). just). value);
                 // ----------
                 ((long long)((*p ). val));
-              }) : ({ /* progn873 */
+              }) : ({ /* progn870 */
                 -1;
               }));
           }), 4242) ;
-      bad  += check ("duplicate key", ({ /* letn879 */
-            Either_BTREE_ERR_size_t matchn878  = insert_btree_int_int_3 ((&tr ), 42, 1);
+      bad  += check ("duplicate key", ({ /* letn876 */
+            Either_BTREE_ERR_size_t matchn875  = insert_btree_int_int_3 ((&tr ), 42, 1);
             // ----------
-            ((((matchn878 . ctor) ==  RIGHT_CTOR  )) ? ({ /* letn881 */
-                size_t n  = (((matchn878 . data). right). value);
+            ((((matchn875 . ctor) ==  RIGHT_CTOR  )) ? ({ /* letn878 */
+                size_t n  = (((matchn875 . data). right). value);
                 // ----------
                 ((long long)n );
-              }) : ({ /* letn883 */
-                BTREE_ERR e  = (((matchn878 . data). left). error);
+              }) : ({ /* letn880 */
+                BTREE_ERR e  = (((matchn875 . data). left). error);
                 // ----------
                 ((long long)e );
               }));
           }), 1) ;
       bad  += check ("len unchanged by dup", len_btree_int_int_3 ((&tr )), 100) ;
-      bad  += check ("delete returns new len", ({ /* letn891 */
-            Either_BTREE_ERR_size_t matchn890  = delete_btree_int_int_3 ((&tr ), 50);
+      bad  += check ("delete returns new len", ({ /* letn888 */
+            Either_BTREE_ERR_size_t matchn887  = delete_btree_int_int_3 ((&tr ), 50);
             // ----------
-            ((((matchn890 . ctor) ==  RIGHT_CTOR  )) ? ({ /* letn893 */
-                size_t n  = (((matchn890 . data). right). value);
+            ((((matchn887 . ctor) ==  RIGHT_CTOR  )) ? ({ /* letn890 */
+                size_t n  = (((matchn887 . data). right). value);
                 // ----------
                 ((long long)n );
-              }) : ({ /* letn895 */
-                BTREE_ERR e  = (((matchn890 . data). left). error);
+              }) : ({ /* letn892 */
+                BTREE_ERR e  = (((matchn887 . data). left). error);
                 // ----------
                 (-((long long)e ));
               }));
           }), 99) ;
-      bad  += check ("deleted key is gone", ({ /* letn901 */
-            Maybe_ref_pair_int_int matchn900  = search_btree_int_int_3 ((&tr ), 50);
+      bad  += check ("deleted key is gone", ({ /* letn898 */
+            Maybe_ref_pair_int_int matchn897  = search_btree_int_int_3 ((&tr ), 50);
             // ----------
-            ((((matchn900 . ctor) ==  JUST_CTOR  )) ? ({ /* letn903 */
-                pair_int_int * restrict p  = (((matchn900 . data). just). value);
+            ((((matchn897 . ctor) ==  JUST_CTOR  )) ? ({ /* letn900 */
+                pair_int_int * restrict p  = (((matchn897 . data). just). value);
                 // ----------
                 ((long long)((*p ). val));
-              }) : ({ /* progn905 */
+              }) : ({ /* progn902 */
                 -1;
               }));
           }), -1) ;
-      bad  += check ("delete missing key", ({ /* letn911 */
-            Either_BTREE_ERR_size_t matchn910  = delete_btree_int_int_3 ((&tr ), 50);
+      bad  += check ("delete missing key", ({ /* letn908 */
+            Either_BTREE_ERR_size_t matchn907  = delete_btree_int_int_3 ((&tr ), 50);
             // ----------
-            ((((matchn910 . ctor) ==  RIGHT_CTOR  )) ? ({ /* letn913 */
-                size_t n  = (((matchn910 . data). right). value);
+            ((((matchn907 . ctor) ==  RIGHT_CTOR  )) ? ({ /* letn910 */
+                size_t n  = (((matchn907 . data). right). value);
                 // ----------
                 ((long long)n );
-              }) : ({ /* letn915 */
-                BTREE_ERR e  = (((matchn910 . data). left). error);
+              }) : ({ /* letn912 */
+                BTREE_ERR e  = (((matchn907 . data). left). error);
                 // ----------
                 (-((long long)e ));
               }));
           }), -2) ;
-      bad  += check ("still in order", ({ /* progn917 */
+      bad  += check ("still in order", ({ /* progn914 */
             audit ((&tr ));
             disorder ;
           }), 0) ;
       bad  += check ("count after delete", audit ((&tr )), 99) ;
       for (int i  = 1; (i  <=  100 ); (++i )) {
-          { /* let926 */
-            Either_BTREE_ERR_size_t match925  = delete_btree_int_int_3 ((&tr ), i );
+          { /* let923 */
+            Either_BTREE_ERR_size_t match922  = delete_btree_int_int_3 ((&tr ), i );
             // ----------
-            if ((match925 . ctor) ==  RIGHT_CTOR  ) {
-                { /* let930 */
-                  size_t n  = (((match925 . data). right). value);
+            if ((match922 . ctor) ==  RIGHT_CTOR  ) {
+                { /* let927 */
+                  size_t n  = (((match922 . data). right). value);
                   // ----------
                   ((void)n );
                 }
             }
-            else if ((match925 . ctor) ==  LEFT_CTOR  ) {
-                { /* let933 */
-                  BTREE_ERR e  = (((match925 . data). left). error);
+            else if ((match922 . ctor) ==  LEFT_CTOR  ) {
+                { /* let930 */
+                  BTREE_ERR e  = (((match922 . data). left). error);
                   // ----------
                   ((void)e );
                 }
@@ -870,84 +866,84 @@ int main () {
       }
       bad  += check ("len after draining", len_btree_int_int_3 ((&tr )), 0) ;
       bad  += check ("audit after draining", audit ((&tr )), 0) ;
-      bad  += check ("min of drained", ({ /* letn941 */
-            Maybe_ref_pair_int_int matchn940  = min_btree_int_int_3 ((&tr ));
+      bad  += check ("min of drained", ({ /* letn938 */
+            Maybe_ref_pair_int_int matchn937  = min_btree_int_int_3 ((&tr ));
             // ----------
-            ((((matchn940 . ctor) ==  JUST_CTOR  )) ? ({ /* letn943 */
-                pair_int_int * restrict p  = (((matchn940 . data). just). value);
+            ((((matchn937 . ctor) ==  JUST_CTOR  )) ? ({ /* letn940 */
+                pair_int_int * restrict p  = (((matchn937 . data). just). value);
                 // ----------
                 ((long long)((*p ). key));
-              }) : ({ /* progn945 */
+              }) : ({ /* progn942 */
                 -1;
               }));
           }), -1) ;
-      bad  += check ("reinsert after drain", ({ /* letn951 */
-            Either_BTREE_ERR_size_t matchn950  = insert_btree_int_int_3 ((&tr ), 7, 77);
+      bad  += check ("reinsert after drain", ({ /* letn948 */
+            Either_BTREE_ERR_size_t matchn947  = insert_btree_int_int_3 ((&tr ), 7, 77);
             // ----------
-            ((((matchn950 . ctor) ==  RIGHT_CTOR  )) ? ({ /* letn953 */
-                size_t n  = (((matchn950 . data). right). value);
+            ((((matchn947 . ctor) ==  RIGHT_CTOR  )) ? ({ /* letn950 */
+                size_t n  = (((matchn947 . data). right). value);
                 // ----------
                 ((long long)n );
-              }) : ({ /* letn955 */
-                BTREE_ERR e  = (((matchn950 . data). left). error);
+              }) : ({ /* letn952 */
+                BTREE_ERR e  = (((matchn947 . data). left). error);
                 // ----------
                 (-((long long)e ));
               }));
           }), 1) ;
-      bad  += check ("reinserted value", ({ /* letn961 */
-            Maybe_ref_pair_int_int matchn960  = search_btree_int_int_3 ((&tr ), 7);
+      bad  += check ("reinserted value", ({ /* letn958 */
+            Maybe_ref_pair_int_int matchn957  = search_btree_int_int_3 ((&tr ), 7);
             // ----------
-            ((((matchn960 . ctor) ==  JUST_CTOR  )) ? ({ /* letn963 */
-                pair_int_int * restrict p  = (((matchn960 . data). just). value);
+            ((((matchn957 . ctor) ==  JUST_CTOR  )) ? ({ /* letn960 */
+                pair_int_int * restrict p  = (((matchn957 . data). just). value);
                 // ----------
                 ((long long)((*p ). val));
-              }) : ({ /* progn965 */
+              }) : ({ /* progn962 */
                 -1;
               }));
           }), 77) ;
     });
-    ({ /* letn969 */
+    ({ /* letn966 */
       btree_int_int_3 tr  __attribute__((__cleanup__(free_btree_int_int_3 ))) = new_btree_int_int_3 ();
       // ----------
-      { /* let972 */
-        int * present  __attribute__((__cleanup__(__ciciliL_973 ))) = ((int *)calloc (4096, sizeof(int)));
+      { /* let969 */
+        int * present  __attribute__((__cleanup__(__ciciliL_970 ))) = ((int *)calloc (4096, sizeof(int)));
         int live  = 0;
         int mismatch  = 0;
         // ----------
         for (int step  = 0; (step  <  N  ); (++step )) {
-            { /* let979 */
+            { /* let976 */
               int key  = ((int)(nextrand () %  4096 ));
               // ----------
               if (nextrand () %  2 )
-                { /* let983 */
-                  int ok  = ({ /* letn988 */
-                    Either_BTREE_ERR_size_t matchn987  = insert_btree_int_int_3 ((&tr ), key , (key  *  3 ));
+                { /* let980 */
+                  int ok  = ({ /* letn985 */
+                    Either_BTREE_ERR_size_t matchn984  = insert_btree_int_int_3 ((&tr ), key , (key  *  3 ));
                     // ----------
-                    ((((matchn987 . ctor) ==  RIGHT_CTOR  )) ? ({ /* letn990 */
-                        size_t n  = (((matchn987 . data). right). value);
+                    ((((matchn984 . ctor) ==  RIGHT_CTOR  )) ? ({ /* letn987 */
+                        size_t n  = (((matchn984 . data). right). value);
                         // ----------
-                        ({ /* progn992 */
+                        ({ /* progn989 */
                           ((void)n );
                           1;
                         });
-                      }) : ({ /* letn994 */
-                        BTREE_ERR e  = (((matchn987 . data). left). error);
+                      }) : ({ /* letn991 */
+                        BTREE_ERR e  = (((matchn984 . data). left). error);
                         // ----------
-                        ({ /* progn996 */
+                        ({ /* progn993 */
                           ((void)e );
                           0;
                         });
                       }));
                   });
                   // ----------
-                  { /* block999 */
+                  { /* block996 */
                     if (ok  !=  ((present [key ]) ? 0 : 1) )
-                      { /* block1004 */
+                      { /* block1001 */
                         (++mismatch );
                       }
                     if (ok )
-                      { /* block1009 */
-                        { /* block1011 */
+                      { /* block1006 */
+                        { /* block1008 */
                           present [key ] = 1;
                           (++live );
                         }
@@ -955,35 +951,35 @@ int main () {
                   }
                 }
               else
-                { /* let1014 */
-                  int ok  = ({ /* letn1019 */
-                    Either_BTREE_ERR_size_t matchn1018  = delete_btree_int_int_3 ((&tr ), key );
+                { /* let1011 */
+                  int ok  = ({ /* letn1016 */
+                    Either_BTREE_ERR_size_t matchn1015  = delete_btree_int_int_3 ((&tr ), key );
                     // ----------
-                    ((((matchn1018 . ctor) ==  RIGHT_CTOR  )) ? ({ /* letn1021 */
-                        size_t n  = (((matchn1018 . data). right). value);
+                    ((((matchn1015 . ctor) ==  RIGHT_CTOR  )) ? ({ /* letn1018 */
+                        size_t n  = (((matchn1015 . data). right). value);
                         // ----------
-                        ({ /* progn1023 */
+                        ({ /* progn1020 */
                           ((void)n );
                           1;
                         });
-                      }) : ({ /* letn1025 */
-                        BTREE_ERR e  = (((matchn1018 . data). left). error);
+                      }) : ({ /* letn1022 */
+                        BTREE_ERR e  = (((matchn1015 . data). left). error);
                         // ----------
-                        ({ /* progn1027 */
+                        ({ /* progn1024 */
                           ((void)e );
                           0;
                         });
                       }));
                   });
                   // ----------
-                  { /* block1030 */
+                  { /* block1027 */
                     if (ok  !=  present [key ] )
-                      { /* block1035 */
+                      { /* block1032 */
                         (++mismatch );
                       }
                     if (ok )
-                      { /* block1040 */
-                        { /* block1042 */
+                      { /* block1037 */
+                        { /* block1039 */
                           present [key ] = 0;
                           (--live );
                         }
@@ -996,34 +992,34 @@ int main () {
         bad  += check ("random: len agrees", len_btree_int_int_3 ((&tr )), live ) ;
         bad  += check ("random: traverse agrees", audit ((&tr )), live ) ;
         bad  += check ("random: still sorted", disorder , 0) ;
-        { /* let1046 */
+        { /* let1043 */
           int missing  = 0;
           int extra  = 0;
           // ----------
           for (int i  = 0; (i  <  4096 ); (++i )) {
-              { /* let1051 */
-                int found  = ({ /* letn1056 */
-                  Maybe_ref_pair_int_int matchn1055  = search_btree_int_int_3 ((&tr ), i );
+              { /* let1048 */
+                int found  = ({ /* letn1053 */
+                  Maybe_ref_pair_int_int matchn1052  = search_btree_int_int_3 ((&tr ), i );
                   // ----------
-                  ((((matchn1055 . ctor) ==  JUST_CTOR  )) ? ({ /* letn1058 */
-                      pair_int_int * restrict p  = (((matchn1055 . data). just). value);
+                  ((((matchn1052 . ctor) ==  JUST_CTOR  )) ? ({ /* letn1055 */
+                      pair_int_int * restrict p  = (((matchn1052 . data). just). value);
                       // ----------
-                      ({ /* progn1060 */
+                      ({ /* progn1057 */
                         ((void)p );
                         1;
                       });
-                    }) : ({ /* progn1062 */
+                    }) : ({ /* progn1059 */
                       0;
                     }));
                 });
                 // ----------
-                { /* block1065 */
+                { /* block1062 */
                   if (present [i ] &&  (!found ) )
-                    { /* block1070 */
+                    { /* block1067 */
                       (++missing );
                     }
                   if ((!present [i ]) &&  found  )
-                    { /* block1075 */
+                    { /* block1072 */
                       (++extra );
                     }
                 }

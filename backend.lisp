@@ -402,11 +402,24 @@
           (set-ast-line (output "if ")))
         (set-ast-line (output "if ")))
 
+    ;; The condition is wrapped only when its own emitter does NOT already
+    ;; bracket what it prints -- @BINARY, @UNARY, @CAST and @? all do, and a
+    ;; second pair around an equality trips -Wparentheses-equality, which is an
+    ;; error here.
+    ;;
+    ;; @NTH and @SIZEOF were missing from this list, and a construct missing
+    ;; from it emits a condition C cannot parse:
+    ;;   (when (nth i (-> node kids)) …)  ->  if (node -> kids)[i]
+    ;; with the subscript stranded outside the if. `while' and `for' never had
+    ;; the bug because they bracket unconditionally.
     (let* ((condition (const spec))
-           (is-atom (find (construct condition) (list '|@ATOM| '|@SYMBOL| '|@CALL| '|@-->| '|@->| '|@=>|) :test #'key-eq)))
-      (when is-atom (output "("))
+           (needs-parens (find (construct condition)
+                               (list '|@ATOM| '|@SYMBOL| '|@CALL| '|@-->| '|@->| '|@=>|
+                                     '|@NTH| '|@SIZEOF|)
+                               :test #'key-eq)))
+      (when needs-parens (output "("))
       (compile-form condition lvl globals spec) ; condition
-      (when is-atom (output ")")))
+      (when needs-parens (output ")")))
     (set-ast-line (output "~%"))
     (compile-body (default spec) (- lvl 1) locals spec)
     
@@ -512,9 +525,12 @@
                    (progn
                      (output "~&~A" (indent (- lvl 2)))
                      (set-ast-line (output "else if "))))
+               ;; same list as compile-if, and for the same reason
                (let ((is-atom (or (listp vars-cond)
-                                (find (construct condition) (list '|@ATOM| '|@SYMBOL| '|@CALL| '|@-->| '|@->| '|@=>|)
-                                    :test #'key-eq))))
+                                  (find (construct condition)
+                                        (list '|@ATOM| '|@SYMBOL| '|@CALL| '|@-->| '|@->| '|@=>|
+                                              '|@NTH| '|@SIZEOF|)
+                                        :test #'key-eq))))
                  (when is-atom (output "("))
 
                  (when (listp vars-cond) ; has variable definition

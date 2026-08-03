@@ -161,6 +161,30 @@
         (+= bad (check "? true arm" a 111))
         (+= bad (check "? false arm" b 222)))
 
+      ;; ---- conditions that are not self-bracketing ------------------
+      ;; `if' wraps the condition only when the condition's own emitter does
+      ;; not. A construct missing from that list emits C that will not parse:
+      ;; (when (nth i arr) …) came out as `if (arr)[i]', subscript outside the
+      ;; if. Nothing exercised a bare subscript or sizeof as a condition, so
+      ;; the hole survived until a B-tree walked its children.
+      (let ((int probe [4] . '{ 0 7 0 9 }))
+        (let ((int hits . 0))
+          (for ((int i . 0)) (< i 4) ((++ i))
+               (when (nth i probe) (++ hits)))
+          (+= bad (check "nth as a condition" hits 2)))
+        (let ((int n . 0))
+          (when (nth 1 probe) (set n (nth 1 probe)))
+          (+= bad (check "nth condition reads right" n 7))
+          (unless (nth 0 probe) (set n 5))
+          (+= bad (check "nth in unless" n 5))))
+      (+= bad (check "sizeof as a condition" (? (sizeof int) 1 0) 1))
+      (let ((int m . 0))
+        (when (sizeof int) (set m 3))
+        (+= bad (check "sizeof in when" m 3))
+        (cond ((nth 0 (cast (int []) '{ 0 })) (set m 1))
+              ((sizeof int)                   (set m 2)))
+        (+= bad (check "cond arms, same list" m 2)))
+
       (if (== bad 0)
           (printf "control: all ok\n")
         (printf "control: %d FAILED\n" bad))

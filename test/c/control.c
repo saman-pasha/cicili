@@ -210,6 +210,52 @@ int main () {
       bad  += check ("? true arm", a , 111) ;
       bad  += check ("? false arm", b , 222) ;
     }
+    { /* let213 */
+      int probe [4] = { 0, 7, 0, 9};
+      // ----------
+      { /* let215 */
+        int hits  = 0;
+        // ----------
+        for (int i  = 0; (i  <  4 ); (++i )) {
+            if (probe [i ])
+              { /* block223 */
+                (++hits );
+              }
+        }
+        bad  += check ("nth as a condition", hits , 2) ;
+      }
+      { /* let225 */
+        int n  = 0;
+        // ----------
+        if (probe [1])
+          { /* block230 */
+            n  = probe [1];
+          }
+        bad  += check ("nth condition reads right", n , 7) ;
+        if (!probe [0])
+          { /* block235 */
+            n  = 5;
+          }
+        bad  += check ("nth in unless", n , 5) ;
+      }
+    }
+    bad  += check ("sizeof as a condition", ((sizeof(int)) ? 1 : 0), 1) ;
+    { /* let237 */
+      int m  = 0;
+      // ----------
+      if (sizeof(int))
+        { /* block242 */
+          m  = 3;
+        }
+      bad  += check ("sizeof in when", m , 3) ;
+      if (((int[]){ 0})[0]) {
+          m  = 1;
+      }
+      else if (sizeof(int)) {
+          m  = 2;
+      }
+      bad  += check ("cond arms, same list", m , 2) ;
+    }
     if (bad  ==  0 )
       printf ("control: all ok\n");
     else

@@ -142,10 +142,8 @@
           (when node
             (when (not (-> node leaf))
               (for ((size_t i . 0)) (<= i (-> node n)) ((++ i))
-                   ;; bound first: (nth i (-> node kids)) as a CONDITION emits
-                   ;; the subscript outside the if
-                   (let (((<> btnode k v t) ref kid . #'(nth i (-> node kids))))
-                     (when kid ((<> freenode btree k v t) kid)))))
+                   (when (nth i (-> node kids))
+                     ((<> freenode btree k v t) (nth i (-> node kids))))))
             (syslog! (printf "FREE BTNODE: %p\n" node))
             (free node)))
 
