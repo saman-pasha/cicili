@@ -131,6 +131,19 @@
                (nothing  (printf "-"))))
         (putchar #\Newline)
 
+        ;; ---- headroom: cells past `len' read as zero -------------------
+        ;; (<> new array a) takes cap separately from len, and the cells
+        ;; between them are part of the contract. Nothing else in the suite
+        ;; passes cap > len, so without this the malloc/memset rewrite of `new'
+        ;; could have dropped the zeroing and stayed green.
+        (letin ((head (new^array (cast (const int []) '{ 7 8 }) 2 6)))
+          (printf "headroom: ")
+          (for ((size_t i . 0)) (< i 7) ((++ i))
+               (match (nth^array i head)
+                 (just c  (printf "%d" (cof c)))
+                 (nothing (printf "-"))))
+          (putchar #\Newline))
+
         ;; ---- the same, over a string ---------------------------------
         ;; (<> nth array char) answers a (<> Maybe char) built by the SAME
         ;; (just v) / (nothing) forms that built the int one -- nothing in

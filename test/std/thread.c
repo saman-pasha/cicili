@@ -12,16 +12,16 @@ typedef struct __ciciliC_Context_110 {
     int a_value ;
   } context ;
 } __ciciliC_Context_110;
-typedef struct ciciliedJtYpvziet5cjGkiHx_4ExGxBE_ {
+typedef struct cicilijiTorxU0vxLec5Rzutg6PLRM7ic_ {
   void * context ;
-} ciciliedJtYpvziet5cjGkiHx_4ExGxBE_;
-void __ciciliL_120 (struct ciciliedJtYpvziet5cjGkiHx_4ExGxBE_ * ciciliDefer117 ) {
+} cicilijiTorxU0vxLec5Rzutg6PLRM7ic_;
+void __ciciliL_120 (struct cicilijiTorxU0vxLec5Rzutg6PLRM7ic_ * ciciliDefer117 ) {
   void * context  = (ciciliDefer117 -> context);
   free (context );
 }
 void __ciciliC_Context_110___ciciliC_Routine_111 (struct __ciciliC_Context_110 * context ) {
   int a_value  = ((context -> context). a_value);
-  struct ciciliedJtYpvziet5cjGkiHx_4ExGxBE_ ciciliDefer117  __attribute__((__cleanup__(__ciciliL_120 ))) = { context };
+  struct cicilijiTorxU0vxLec5Rzutg6PLRM7ic_ ciciliDefer117  __attribute__((__cleanup__(__ciciliL_120 ))) = { context };
   fprintf (stdout , "a value from thread: %lu -> %d\n", ((unsigned long)pthread_self ()), a_value );
 }
 typedef struct __ciciliC_Context_131 {
@@ -30,16 +30,16 @@ typedef struct __ciciliC_Context_131 {
     int input ;
   } context ;
 } __ciciliC_Context_131;
-typedef struct cicili5dGnfc7wiJPV8zWY_erwt26uYKg_ {
+typedef struct cicili0X4xQeSRUSMDBlsqh7JBNDRAYAs_ {
   void * context ;
-} cicili5dGnfc7wiJPV8zWY_erwt26uYKg_;
-void __ciciliL_139 (struct cicili5dGnfc7wiJPV8zWY_erwt26uYKg_ * ciciliDefer117 ) {
+} cicili0X4xQeSRUSMDBlsqh7JBNDRAYAs_;
+void __ciciliL_139 (struct cicili0X4xQeSRUSMDBlsqh7JBNDRAYAs_ * ciciliDefer117 ) {
   void * context  = (ciciliDefer117 -> context);
   free (context );
 }
 void * __ciciliC_Context_131___ciciliC_Routine_132 (struct __ciciliC_Context_131 * context ) {
   int input  = ((context -> context). input);
-  struct cicili5dGnfc7wiJPV8zWY_erwt26uYKg_ ciciliDefer117  __attribute__((__cleanup__(__ciciliL_139 ))) = { context };
+  struct cicili0X4xQeSRUSMDBlsqh7JBNDRAYAs_ ciciliDefer117  __attribute__((__cleanup__(__ciciliL_139 ))) = { context };
   fprintf (stdout , "early exit thread: %lu -> %d\n", ((unsigned long)pthread_self ()), input );
   pthread_exit (NULL );
   fprintf (stdout , "not seen section: %lu -> %d\n", ((unsigned long)pthread_self ()), (input  +  8 ));
@@ -50,15 +50,15 @@ typedef struct __ciciliC_Context_155 {
   struct { /* ciciliStruct158 */
   } context ;
 } __ciciliC_Context_155;
-typedef struct cicili9B7AcU66dEBUoIOU0yji2_OA_tI_ {
+typedef struct ciciliBvgviaCCY1Wbr6OcycnXwx8zq_s_ {
   void * context ;
-} cicili9B7AcU66dEBUoIOU0yji2_OA_tI_;
-void __ciciliL_163 (struct cicili9B7AcU66dEBUoIOU0yji2_OA_tI_ * ciciliDefer117 ) {
+} ciciliBvgviaCCY1Wbr6OcycnXwx8zq_s_;
+void __ciciliL_163 (struct ciciliBvgviaCCY1Wbr6OcycnXwx8zq_s_ * ciciliDefer117 ) {
   void * context  = (ciciliDefer117 -> context);
   free (context );
 }
 void * __ciciliC_Context_155___ciciliC_Routine_156 (struct __ciciliC_Context_155 * context ) {
-  struct cicili9B7AcU66dEBUoIOU0yji2_OA_tI_ ciciliDefer117  __attribute__((__cleanup__(__ciciliL_163 ))) = { context };
+  struct ciciliBvgviaCCY1Wbr6OcycnXwx8zq_s_ ciciliDefer117  __attribute__((__cleanup__(__ciciliL_163 ))) = { context };
   { /* let165 */
     int counter  = 0;
     void * allocated  = malloc (sizeof(int));
@@ -89,22 +89,22 @@ typedef struct __ciciliC_Context_183 {
     int input ;
   } context ;
 } __ciciliC_Context_183;
-typedef struct ciciliTXVGxzDienkIXt50gP9I3546DTI_ {
+typedef struct cicilikn16K_X3XdrYyenAy1YRNyrKlFQ_ {
   void * context ;
-} ciciliTXVGxzDienkIXt50gP9I3546DTI_;
-void __ciciliL_191 (struct ciciliTXVGxzDienkIXt50gP9I3546DTI_ * ciciliDefer117 ) {
+} cicilikn16K_X3XdrYyenAy1YRNyrKlFQ_;
+void __ciciliL_191 (struct cicilikn16K_X3XdrYyenAy1YRNyrKlFQ_ * ciciliDefer117 ) {
   void * context  = (ciciliDefer117 -> context);
   free (context );
 }
 void __ciciliC_Context_183___ciciliC_Routine_184 (struct __ciciliC_Context_183 * context ) {
   int input  = ((context -> context). input);
-  struct ciciliTXVGxzDienkIXt50gP9I3546DTI_ ciciliDefer117  __attribute__((__cleanup__(__ciciliL_191 ))) = { context };
+  struct cicilikn16K_X3XdrYyenAy1YRNyrKlFQ_ ciciliDefer117  __attribute__((__cleanup__(__ciciliL_191 ))) = { context };
   fprintf (stdout , "detached int input from thread: %lu -> %d\n", ((unsigned long)pthread_self ()), input );
 }
-typedef struct ciciliqNuVkTum6rYrtBEX30kVMVTikCg_ {
+typedef struct cicili7gtgddX8mdoU3YiFszhWaP64raQ_ {
   int * output ;
-} ciciliqNuVkTum6rYrtBEX30kVMVTikCg_;
-void __ciciliL_203 (struct ciciliqNuVkTum6rYrtBEX30kVMVTikCg_ * ciciliDefer200 ) {
+} cicili7gtgddX8mdoU3YiFszhWaP64raQ_;
+void __ciciliL_203 (struct cicili7gtgddX8mdoU3YiFszhWaP64raQ_ * ciciliDefer200 ) {
   int * output  = (ciciliDefer200 -> output);
   free (output );
 }
@@ -150,7 +150,7 @@ int main () {
     }));
     int * output ;
     pthread_join (id3 , ((void **)(&output )));
-    struct ciciliqNuVkTum6rYrtBEX30kVMVTikCg_ ciciliDefer200  __attribute__((__cleanup__(__ciciliL_203 ))) = { output };
+    struct cicili7gtgddX8mdoU3YiFszhWaP64raQ_ ciciliDefer200  __attribute__((__cleanup__(__ciciliL_203 ))) = { output };
     fprintf (stdout , "output value: %d\n", ((int)(*output )));
     return 0;
   }

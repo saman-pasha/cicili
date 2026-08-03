@@ -30,11 +30,9 @@
   ;; kept because a caller CAN ask for headroom, but nothing does since the
   ;; vector stopped being a window over an array and grew its own buffer.
   ;;
-  ;; That makes the calloc below mostly waste: when cap == len and `arr' is
-  ;; given, every zeroed cell is immediately overwritten by the memcpy.
-  ;; (<> new vector a) mallocs for exactly this reason. Worth changing here to
-  ;; malloc + memcpy + memset of the tail only, which is a behaviour change for
-  ;; the cap > len and arr == nil cases and so has not been made blind.
+  ;; The cells between `len' and `cap' read as zero, and an array built from
+  ;; nothing is entirely zero -- see the impl for how, and for why that is one
+  ;; write per cell rather than the two calloc + memcpy used to cost.
   (decl) (func (<> new array a) ((const a * arr) (size_t len) (size_t cap)) (out (<> array a)))
   (decl) (func (<> len array a) (((<> array a) ref array)) (out size_t))
   ;; bounds-checked access cannot answer for an out of range index, so it hands
@@ -58,11 +56,28 @@
   (func (<> free array a pointer) (((<> array a) ** array))
         ((<> free array a) (cof array)))
 
+  ;; malloc, then zero only what the memcpy will not cover. calloc zeroed all
+  ;; `cap' cells and the memcpy then overwrote the first `len' of them -- and
+  ;; since every caller in the tree passes cap == len, that was the whole
+  ;; buffer written twice.
+  ;;
+  ;; The contract is unchanged: cells past `len' read as zero, and an array
+  ;; built from nothing is entirely zero. Only the work changed.
+  ;;
+  ;; The (> cap len) guard is load bearing, not defensive: cap and len are
+  ;; size_t, so a caller passing len > cap would make (- cap len) a huge
+  ;; positive number and memset would run off the end. calloc could not be
+  ;; misused that way, malloc can.
   (func (<> new array a) ((const a * arr) (size_t len) (size_t cap))
         (out (<> array a))
-        (return (letn ((a ref new_arr . #'(calloc cap (sizeof a))))
+        (return (letn ((a ref new_arr . #'(malloc (* cap (sizeof a)))))
                   (syslog! (printf "NEW ARR: %s %p %zu of %zu\n" (symbol-name (<> array a)) new_arr len cap))
-                  (when (and arr len) (memcpy new_arr arr (* len (sizeof a))))
+                  (if (and arr len)
+                      (block
+                        (memcpy new_arr arr (* len (sizeof a)))
+                        (when (> cap len)
+                          (memset (+ new_arr len) 0 (* (- cap len) (sizeof a)))))
+                    (memset new_arr 0 (* cap (sizeof a))))
                   (cast (<> array a) '{ new_arr cap }))))
 
   (func (<> len array a) (((<> array a) ref array))

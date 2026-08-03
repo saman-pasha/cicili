@@ -63,12 +63,18 @@ __attribute__((weak)) void free_array_int_pointer (array_int ** array ) {
 }
 array_int new_array_int (const int * arr , size_t len , size_t cap ) {
   return ({ /* letn167 */
-      int * restrict new_arr  = calloc (cap , sizeof(int));
+      int * restrict new_arr  = malloc ((cap  *  sizeof(int) ));
       // ----------
       if (arr  &&  len  )
-        { /* block174 */
+        { /* block173 */
           memcpy (new_arr , arr , (len  *  sizeof(int) ));
+          if (cap  >  len  )
+            { /* block178 */
+              memset ((new_arr  +  len  ), 0, ((cap  -  len  ) *  sizeof(int) ));
+            }
         }
+      else
+        memset (new_arr , 0, (cap  *  sizeof(int) ));
       ((array_int){ new_arr , cap });
     });
 }
@@ -94,7 +100,7 @@ void free_cell_array_int (cell_array_int * cell );
 void free_cell_array_int_pointer (cell_array_int ** cell );
 __attribute__((weak)) void free_cell_array_int (cell_array_int * cell ) {
   if ((cell -> ptr))
-    { /* block212 */
+    { /* block217 */
       free_array_int ((cell -> ptr));
       free ((cell -> ptr));
     }
@@ -102,85 +108,85 @@ __attribute__((weak)) void free_cell_array_int (cell_array_int * cell ) {
 __attribute__((weak)) void free_cell_array_int_pointer (cell_array_int ** cell ) {
   free_cell_array_int ((*cell ));
 }
-void let_cell_array_int_G285 (cell_array_int * restrict cell ) {
+void let_cell_array_int_G290 (cell_array_int * restrict cell ) {
   if ((cell -> ptr))
-    { /* block291 */
-      { /* let293 */
+    { /* block296 */
+      { /* let298 */
         cell_array_int_interior_t * restrict arr_ref  = (cell -> ptr);
         // ----------
         printf ("1. cell01 arr len: %zu\n", len_array_int (arr_ref ));
       }
     }
 }
-size_t letn_cell_array_int_G299 (cell_array_int * restrict cell , const int default_value , int over ) {
-  return (((cell -> ptr)) ? ({ /* letn302 */
+size_t letn_cell_array_int_G304 (cell_array_int * restrict cell , const int default_value , int over ) {
+  return (((cell -> ptr)) ? ({ /* letn307 */
         cell_array_int_interior_t * restrict arr_ref  = (cell -> ptr);
         // ----------
         (len_array_int (arr_ref ) +  over  );
       }) : default_value );
 }
-void take_cell_array_int_G308 (cell_array_int cell ) {
+void take_cell_array_int_G313 (cell_array_int cell ) {
   cell_array_int * __moved_cell __attribute__((__cleanup__( free_cell_array_int_pointer))) = (& cell) ;
   if (cell . ptr)
-    { /* block315 */
-      ({ /* letn318 */
-        array_int arr  __attribute__((__cleanup__(free_array_int ))) = ((array_int   )({ /* letnmove321 */
-          array_int moved_var320  = (*(cell . ptr));
+    { /* block320 */
+      ({ /* letn323 */
+        array_int arr  __attribute__((__cleanup__(free_array_int ))) = ((array_int   )({ /* letnmove326 */
+          array_int moved_var325  = (*(cell . ptr));
           // ----------
           memset ((&(*(cell . ptr))), 0, sizeof((*(cell . ptr))));
-          moved_var320 ;
+          moved_var325 ;
         }));
         // ----------
         printf ("3. cell01 arr len: %zu\n", (arr . len));
       });
     }
 }
-size_t taken_cell_array_int_G329 (cell_array_int cell , size_t default_value ) {
+size_t taken_cell_array_int_G334 (cell_array_int cell , size_t default_value ) {
   cell_array_int * __moved_cell __attribute__((__cleanup__( free_cell_array_int_pointer))) = (& cell) ;
-  return (((cell . ptr)) ? ({ /* letn334 */
-        array_int arr  __attribute__((__cleanup__(free_array_int ))) = ((array_int   )({ /* letnmove337 */
-          array_int moved_var336  = (*(cell . ptr));
+  return (((cell . ptr)) ? ({ /* letn339 */
+        array_int arr  __attribute__((__cleanup__(free_array_int ))) = ((array_int   )({ /* letnmove342 */
+          array_int moved_var341  = (*(cell . ptr));
           // ----------
           memset ((&(*(cell . ptr))), 0, sizeof((*(cell . ptr))));
-          moved_var336 ;
+          moved_var341 ;
         }));
         // ----------
         printf ("4. cell02 arr len: %zu\n", (arr . len));
       }) : default_value );
 }
 int main () {
-  ({ /* letn252 */
-    cell_array_int cell01  __attribute__((__cleanup__(free_cell_array_int ))) = ({ /* letn260 */
-      array_int * array_int_ptr258  = malloc (sizeof(array_int));
-      array_int array_int_obj259  = new_array_int (((int[]){ 1, 2, 3, 4}), 4, 4);
+  ({ /* letn257 */
+    cell_array_int cell01  __attribute__((__cleanup__(free_cell_array_int ))) = ({ /* letn265 */
+      array_int * array_int_ptr263  = malloc (sizeof(array_int));
+      array_int array_int_obj264  = new_array_int (((int[]){ 1, 2, 3, 4}), 4, 4);
       // ----------
-      memcpy (array_int_ptr258 , (&array_int_obj259 ), sizeof(array_int_obj259));
-      ((cell_array_int){ array_int_ptr258 });
+      memcpy (array_int_ptr263 , (&array_int_obj264 ), sizeof(array_int_obj264));
+      ((cell_array_int){ array_int_ptr263 });
     });
-    cell_array_int cell02  __attribute__((__cleanup__(free_cell_array_int ))) = ({ /* letn274 */
-      array_int * array_int_ptr272  = malloc (sizeof(array_int));
-      array_int array_int_obj273  = new_array_int (((int[]){ 1, 2, 3, 4, 5}), 5, 5);
+    cell_array_int cell02  __attribute__((__cleanup__(free_cell_array_int ))) = ({ /* letn279 */
+      array_int * array_int_ptr277  = malloc (sizeof(array_int));
+      array_int array_int_obj278  = new_array_int (((int[]){ 1, 2, 3, 4, 5}), 5, 5);
       // ----------
-      memcpy (array_int_ptr272 , (&array_int_obj273 ), sizeof(array_int_obj273));
-      ((cell_array_int){ array_int_ptr272 });
+      memcpy (array_int_ptr277 , (&array_int_obj278 ), sizeof(array_int_obj278));
+      ((cell_array_int){ array_int_ptr277 });
     });
     // ----------
-    { /* let282 */
+    { /* let287 */
       int aInt  = 10;
       // ----------
-      let_cell_array_int_G285 ((&cell01 ));
-      printf ("2. cell02 arr len + over: %zu\n", letn_cell_array_int_G299 ((&cell02 ), -1, aInt ));
-      take_cell_array_int_G308 (((cell_array_int   )({ /* letnmove326 */
-          cell_array_int moved_var325  = cell01 ;
+      let_cell_array_int_G290 ((&cell01 ));
+      printf ("2. cell02 arr len + over: %zu\n", letn_cell_array_int_G304 ((&cell02 ), -1, aInt ));
+      take_cell_array_int_G313 (((cell_array_int   )({ /* letnmove331 */
+          cell_array_int moved_var330  = cell01 ;
           // ----------
           memset ((&cell01 ), 0, sizeof(cell01 ));
-          moved_var325 ;
+          moved_var330 ;
         })));
-      taken_cell_array_int_G329 (((cell_array_int   )({ /* letnmove342 */
-          cell_array_int moved_var341  = cell02 ;
+      taken_cell_array_int_G334 (((cell_array_int   )({ /* letnmove347 */
+          cell_array_int moved_var346  = cell02 ;
           // ----------
           memset ((&cell02 ), 0, sizeof(cell02 ));
-          moved_var341 ;
+          moved_var346 ;
         })), printf ("4. default value is strict\n"));
     }
   });

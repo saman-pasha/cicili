@@ -63,12 +63,18 @@ __attribute__((weak)) void free_array_int_pointer (array_int ** array ) {
 }
 array_int new_array_int (const int * arr , size_t len , size_t cap ) {
   return ({ /* letn167 */
-      int * restrict new_arr  = calloc (cap , sizeof(int));
+      int * restrict new_arr  = malloc ((cap  *  sizeof(int) ));
       // ----------
       if (arr  &&  len  )
-        { /* block174 */
+        { /* block173 */
           memcpy (new_arr , arr , (len  *  sizeof(int) ));
+          if (cap  >  len  )
+            { /* block178 */
+              memset ((new_arr  +  len  ), 0, ((cap  -  len  ) *  sizeof(int) ));
+            }
         }
+      else
+        memset (new_arr , 0, (cap  *  sizeof(int) ));
       ((array_int){ new_arr , cap });
     });
 }
@@ -99,7 +105,7 @@ typedef struct JustT_int {
 } JustT_int;
 typedef struct Maybe_int {
   MAYBE_CTOR ctor ;
-  union { /* ciciliUnion195 */
+  union { /* ciciliUnion200 */
     JustT_int just ;
     NothingT nothing ;
   } data ;
@@ -135,7 +141,7 @@ typedef struct JustT_size_t {
 } JustT_size_t;
 typedef struct Maybe_size_t {
   MAYBE_CTOR ctor ;
-  union { /* ciciliUnion224 */
+  union { /* ciciliUnion229 */
     JustT_size_t just ;
     NothingT nothing ;
   } data ;
@@ -171,7 +177,7 @@ typedef struct JustT_double {
 } JustT_double;
 typedef struct Maybe_double {
   MAYBE_CTOR ctor ;
-  union { /* ciciliUnion253 */
+  union { /* ciciliUnion258 */
     JustT_double just ;
     NothingT nothing ;
   } data ;
@@ -191,12 +197,12 @@ Maybe_double nothing_double () {
 #endif /* __MAYBE_IMPL__double__H_ */ 
 int check (const char * what , long long got , long long want ) {
   if (got  ==  want  )
-    { /* block279 */
+    { /* block284 */
       printf ("ok   %-34s %lld\n", what , got );
       return 0;
     }
   else
-    { /* block282 */
+    { /* block287 */
       printf ("FAIL %-34s got %lld want %lld\n", what , got , want );
       return 1;
     }
@@ -205,7 +211,7 @@ int check (const char * what , long long got , long long want ) {
 Maybe_size_t find_array_int (int needle , array_int * restrict array ) {
   for (size_t i  = 0; (i  <  (array -> len) ); (i ++)) {
       if ((array -> arr)[i ] ==  needle  )
-        { /* block294 */
+        { /* block299 */
           return ((Maybe_size_t){ .ctor = JUST_CTOR , .data.just.value = i });
         }
   }
@@ -216,7 +222,7 @@ Maybe_size_t zero () {
 }
 Maybe_double half (double x ) {
   if (x  <  0 )
-    { /* block306 */
+    { /* block311 */
       return ((Maybe_double){ .ctor = NOTHING_CTOR });
     }
   return ((Maybe_double){ .ctor = JUST_CTOR , .data.just.value = (x  /  2 )});
@@ -225,172 +231,172 @@ Maybe_int cl_inner () {
   return ((Maybe_int){ .ctor = NOTHING_CTOR });
 }
 Maybe_size_t nested () {
-  { /* let312 */
-    int n  = ({ /* letn317 */
-      Maybe_int matchn316  = cl_inner ();
+  { /* let317 */
+    int n  = ({ /* letn322 */
+      Maybe_int matchn321  = cl_inner ();
       // ----------
-      ((((matchn316 . ctor) ==  JUST_CTOR  )) ? ({ /* letn322 */
-          int v  = (((matchn316 . data). just). value);
+      ((((matchn321 . ctor) ==  JUST_CTOR  )) ? ({ /* letn327 */
+          int v  = (((matchn321 . data). just). value);
           // ----------
           v ;
-        }) : ({ /* progn324 */
+        }) : ({ /* progn329 */
           -7;
         }));
     });
     // ----------
     if (n  ==  -7 )
-      { /* block330 */
+      { /* block335 */
         return ((Maybe_size_t){ .ctor = JUST_CTOR , .data.just.value = ((size_t)1)});
       }
     return ((Maybe_size_t){ .ctor = NOTHING_CTOR });
   }
 }
 int main () {
-  { /* let336 */
+  { /* let341 */
     int bad  = 0;
     // ----------
-    ({ /* letn341 */
+    ({ /* letn346 */
       array_int arr  __attribute__((__cleanup__(free_array_int ))) = new_array_int (((const int[]){ 3, 5, 7, 9}), 4, 4);
       // ----------
-      bad  += check ("just, through match", ({ /* letn347 */
-            Maybe_size_t matchn346  = find_array_int (7, (&arr ));
+      bad  += check ("just, through match", ({ /* letn352 */
+            Maybe_size_t matchn351  = find_array_int (7, (&arr ));
             // ----------
-            ((((matchn346 . ctor) ==  JUST_CTOR  )) ? ({ /* letn349 */
-                size_t at  = (((matchn346 . data). just). value);
+            ((((matchn351 . ctor) ==  JUST_CTOR  )) ? ({ /* letn354 */
+                size_t at  = (((matchn351 . data). just). value);
                 // ----------
                 ((long long)at );
-              }) : ({ /* progn351 */
+              }) : ({ /* progn356 */
                 -1;
               }));
           }), 2) ;
-      bad  += check ("nothing, through match", ({ /* letn356 */
-            Maybe_size_t matchn355  = find_array_int (8, (&arr ));
+      bad  += check ("nothing, through match", ({ /* letn361 */
+            Maybe_size_t matchn360  = find_array_int (8, (&arr ));
             // ----------
-            ((((matchn355 . ctor) ==  JUST_CTOR  )) ? ({ /* letn358 */
-                size_t at  = (((matchn355 . data). just). value);
+            ((((matchn360 . ctor) ==  JUST_CTOR  )) ? ({ /* letn363 */
+                size_t at  = (((matchn360 . data). just). value);
                 // ----------
                 ((long long)at );
-              }) : ({ /* progn360 */
+              }) : ({ /* progn365 */
                 -1;
               }));
           }), -1) ;
-      { /* let362 */
+      { /* let367 */
         int hits  = 0;
         // ----------
-        { /* let367 */
-          Maybe_size_t match366  = find_array_int (3, (&arr ));
+        { /* let372 */
+          Maybe_size_t match371  = find_array_int (3, (&arr ));
           // ----------
-          if ((match366 . ctor) ==  JUST_CTOR  ) {
-              { /* let371 */
-                size_t at  = (((match366 . data). just). value);
+          if ((match371 . ctor) ==  JUST_CTOR  ) {
+              { /* let376 */
+                size_t at  = (((match371 . data). just). value);
                 // ----------
-                { /* block373 */
+                { /* block378 */
                   ((void)at );
                   (++hits );
                 }
               }
           }
-          else if ((match366 . ctor) ==  NOTHING_CTOR  ) {
+          else if ((match371 . ctor) ==  NOTHING_CTOR  ) {
               (--hits );
           }
         }
-        { /* let379 */
-          Maybe_size_t match378  = find_array_int (4, (&arr ));
+        { /* let384 */
+          Maybe_size_t match383  = find_array_int (4, (&arr ));
           // ----------
-          if ((match378 . ctor) ==  JUST_CTOR  ) {
-              { /* let383 */
-                size_t at  = (((match378 . data). just). value);
+          if ((match383 . ctor) ==  JUST_CTOR  ) {
+              { /* let388 */
+                size_t at  = (((match383 . data). just). value);
                 // ----------
-                { /* block385 */
+                { /* block390 */
                   ((void)at );
                   (++hits );
                 }
               }
           }
-          else if ((match378 . ctor) ==  NOTHING_CTOR  ) {
+          else if ((match383 . ctor) ==  NOTHING_CTOR  ) {
               (--hits );
           }
         }
         bad  += check ("match statement, both arms", hits , 0) ;
       }
-      bad  += check ("just 0 is present", ({ /* letn390 */
-            Maybe_size_t matchn389  = zero ();
+      bad  += check ("just 0 is present", ({ /* letn395 */
+            Maybe_size_t matchn394  = zero ();
             // ----------
-            ((((matchn389 . ctor) ==  JUST_CTOR  )) ? ({ /* letn392 */
-                size_t v  = (((matchn389 . data). just). value);
+            ((((matchn394 . ctor) ==  JUST_CTOR  )) ? ({ /* letn397 */
+                size_t v  = (((matchn394 . data). just). value);
                 // ----------
                 ((long long)v );
-              }) : ({ /* progn394 */
+              }) : ({ /* progn399 */
                 -1;
               }));
           }), 0) ;
-      bad  += check ("just, maybe double", ({ /* letn398 */
-            Maybe_double matchn397  = half (9.0);
+      bad  += check ("just, maybe double", ({ /* letn403 */
+            Maybe_double matchn402  = half (9.0);
             // ----------
-            ((((matchn397 . ctor) ==  JUST_CTOR  )) ? ({ /* letn400 */
-                double v  = (((matchn397 . data). just). value);
+            ((((matchn402 . ctor) ==  JUST_CTOR  )) ? ({ /* letn405 */
+                double v  = (((matchn402 . data). just). value);
                 // ----------
                 ((long long)(v  *  100 ));
-              }) : ({ /* progn402 */
+              }) : ({ /* progn407 */
                 -1;
               }));
           }), 450) ;
-      bad  += check ("nothing, maybe double", ({ /* letn406 */
-            Maybe_double matchn405  = half (-1.0);
+      bad  += check ("nothing, maybe double", ({ /* letn411 */
+            Maybe_double matchn410  = half (-1.0);
             // ----------
-            ((((matchn405 . ctor) ==  JUST_CTOR  )) ? ({ /* letn408 */
-                double v  = (((matchn405 . data). just). value);
+            ((((matchn410 . ctor) ==  JUST_CTOR  )) ? ({ /* letn413 */
+                double v  = (((matchn410 . data). just). value);
                 // ----------
                 ((long long)(v  *  100 ));
-              }) : ({ /* progn410 */
+              }) : ({ /* progn415 */
                 -1;
               }));
           }), -1) ;
-      bad  += check ("nothing inside a closure", ({ /* letn414 */
-            Maybe_size_t matchn413  = nested ();
+      bad  += check ("nothing inside a closure", ({ /* letn419 */
+            Maybe_size_t matchn418  = nested ();
             // ----------
-            ((((matchn413 . ctor) ==  JUST_CTOR  )) ? ({ /* letn416 */
-                size_t v  = (((matchn413 . data). just). value);
+            ((((matchn418 . ctor) ==  JUST_CTOR  )) ? ({ /* letn421 */
+                size_t v  = (((matchn418 . data). just). value);
                 // ----------
                 ((long long)v );
-              }) : ({ /* progn418 */
+              }) : ({ /* progn423 */
                 -1;
               }));
           }), 1) ;
-      { /* let420 */
+      { /* let425 */
         Maybe_int m  = { .ctor = JUST_CTOR , .data.just.value = 42};
         // ----------
-        bad  += check ("just in a let, from the slot", ({ /* letn426 */
-              Maybe_int matchn425  = m ;
+        bad  += check ("just in a let, from the slot", ({ /* letn431 */
+              Maybe_int matchn430  = m ;
               // ----------
-              ((((matchn425 . ctor) ==  JUST_CTOR  )) ? ({ /* letn428 */
-                  int v  = (((matchn425 . data). just). value);
+              ((((matchn430 . ctor) ==  JUST_CTOR  )) ? ({ /* letn433 */
+                  int v  = (((matchn430 . data). just). value);
                   // ----------
                   ((long long)v );
-                }) : ({ /* progn430 */
+                }) : ({ /* progn435 */
                   -1;
                 }));
             }), 42) ;
       }
-      bad  += check ("back-end just still works", ({ /* letn435 */
-            Maybe_int matchn434  = just_int (5);
+      bad  += check ("back-end just still works", ({ /* letn440 */
+            Maybe_int matchn439  = just_int (5);
             // ----------
-            ((((matchn434 . ctor) ==  JUST_CTOR  )) ? ({ /* letn437 */
-                int v  = (((matchn434 . data). just). value);
+            ((((matchn439 . ctor) ==  JUST_CTOR  )) ? ({ /* letn442 */
+                int v  = (((matchn439 . data). just). value);
                 // ----------
                 ((long long)v );
-              }) : ({ /* progn439 */
+              }) : ({ /* progn444 */
                 -1;
               }));
           }), 5) ;
-      bad  += check ("back-end nothing still works", ({ /* letn444 */
-            Maybe_int matchn443  = nothing_int ();
+      bad  += check ("back-end nothing still works", ({ /* letn449 */
+            Maybe_int matchn448  = nothing_int ();
             // ----------
-            ((((matchn443 . ctor) ==  JUST_CTOR  )) ? ({ /* letn446 */
-                int v  = (((matchn443 . data). just). value);
+            ((((matchn448 . ctor) ==  JUST_CTOR  )) ? ({ /* letn451 */
+                int v  = (((matchn448 . data). just). value);
                 // ----------
                 ((long long)v );
-              }) : ({ /* progn448 */
+              }) : ({ /* progn453 */
                 -1;
               }));
           }), -1) ;
