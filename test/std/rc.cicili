@@ -2,8 +2,7 @@
 ;;; test Cicili std rc
 (source "rc.c"
   (make :std #t
-        :compile ("-O3" "-ffast-math" "-c" "rc.c")
-        :link ("-lrc.o" "-o" "rc_test"))
+        :compile #t :link ("-lrc.o" "-o" "rc_test"))
 
   (decl-array int)
   (impl-array int)
@@ -38,23 +37,27 @@
 ;; sbcl --script cicili.lisp --syslog ./test/std/rc.cicili
 ;; ./test/std/rc_test
 
-;; NEW ARR: const int * 0x6000004111e0 5
-;; NEW RC CTX: 0x600000614050
-;; NEW CELL: 0x600000614040
+;; NEW ARR: array_int 0x7ff585f06080 5 of 5
+;; NEW RC: 0x7ff585f05f60
 ;; 1. rc01 arr len: 5
 ;; 2. rc01 arr len: 5
-;; FREE RC CTX: 0x600000614050
+;; CLONE RC: 0x7ff585f05f60, count 2
+;; FREE RC: 0x7ff585f05f60
 ;; FREE RC COUNT: 2
-;; FREE CELL: 0x600000614070
-;; FREE RC CTX: 0x0
-;; FREE CELL: 0x0
+;; FREE RC: 0x0
 ;; 4. default value is strict
 ;; 4. rc01 arr len: 5
-;; FREE ARR: 0x6000004111e0
-;; FREE RC CTX: 0x600000614050
-;; FREE RC COUNT: 1
-;; FREE ARR: 0x0
-;; FREE CELL: 0x600000614040
-;; FREE RC CTX: 0x0
+;; FREE ARR: 0x7ff585f06080
+;; FREE RC: 0x0
 ;; Done
-;; FREE CELL: 0x0
+;; FREE RC: 0x0
+
+;; There is no "3." line and that is the test: cl01 is a live clone, so the
+;; count is 2 and take^rc declines -- a shared payload belongs to the other
+;; owner too. The FREE RC COUNT: 2 above it is that clone going away.
+;;
+;; No FREE CELL / NEW RC CTX lines any more either. An rc is no longer a cell
+;; over a context struct, it is a cell's ptr with a count beside it, so there is
+;; one allocation to trace instead of three.
+;;
+;; leaks --atExit -- ./rc_test   =>   0 leaks for 0 total leaked bytes

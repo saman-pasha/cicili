@@ -1,15 +1,15 @@
 ;;;; test Cicili std maybe -- the `just' / `nothing' front ends
-;;; The back-end constructors ((<> just maybe T) v) always worked; what is
-;;; under test here is that the front ends name no instantiation and still
-;;; land on the right one, and that they expand to the struct literal rather
-;;; than to a call.
+;;; The back-end constructors ((<> just T) v) always worked; what is under test
+;;; here is that the front ends name no instantiation, take their type from the
+;;; slot they land in, and expand to a struct literal rather than a call.
 
 (source "maybe.c"
   (make :std #t :compile #t :link ("-lmaybe.o" "-o" "maybe_test"))
 
-  ;; (decl-array int) already pulls in (decl-maybe int) -- a generic has no
-  ;; re-instantiation guard, so asking for it twice is a redefinition in C
+  ;; (decl-array int) pulls in (decl-maybe int); asking for it again is
+  ;; harmless now that each instantiation sits behind its own guard
   (decl-array int)     (impl-array int)
+  (decl-maybe int)     (impl-maybe int)
   (decl-maybe size_t)  (impl-maybe size_t)
   (decl-maybe double)  (impl-maybe double)
 
@@ -21,33 +21,34 @@
         (return 1))
 
   ;; ---- the shape the front ends exist for -----------------------------
-  ;; both constructors read (out (<> maybe size_t)); neither spells it out
+  ;; both constructors are brace lists typed by the return slot; neither
+  ;; spells out (<> Maybe size_t) and neither looks it up
   (func (<> find array int) ((int needle) ((<> array int) ref array))
-        (out (<> maybe size_t))
+        (out (<> Maybe size_t))
         (for ((size_t i . 0)) (< i (-> array len)) ((1+ i))
           (when (== (nth i (-> array arr)) needle)
             (return (just i))))
         (return (nothing)))
 
-  ;; a bare 0 infers as int, but the out type is what decides: this is a
-  ;; maybe_size_t, no cast at the call site
+  ;; a bare 0 would infer as int, but nothing is inferred: the slot is a
+  ;; Maybe_size_t and the literal is initialised into it, no cast needed
   (func zero ()
-        (out (<> maybe size_t))
+        (out (<> Maybe size_t))
         (return (just 0)))
 
-  ;; a second instantiation in the same file, to prove the front ends dispatch
-  ;; per function and not per program
+  ;; a second instantiation in the same file, to prove one pair of front ends
+  ;; serves every payload type
   (func half ((double x))
-        (out (<> maybe double))
+        (out (<> Maybe double))
         (when (< x 0) (return (nothing)))
         (return (just (/ x 2))))
 
-  ;; 'nothing follows the innermost out type: inside a closure it is the
-  ;; closure's, which is a maybe_int here, not the enclosing maybe_size_t
+  ;; a closure has its own return slot, so the brace list inside one is typed
+  ;; by the closure -- a Maybe_int here, not the enclosing Maybe_size_t
   (func nested ()
-        (out (<> maybe size_t))
+        (out (<> Maybe size_t))
         (let ((int n . #'(matchn (closure ((<> cl inner))
-                                   (out (<> maybe int))
+                                   (out (<> Maybe int))
                                    (return (nothing)))
                            (just v v)
                            (nothing -7))))
@@ -76,9 +77,9 @@
             (nothing    (-- hits)))
           (+= bad (check "match statement, both arms" hits 0)))
 
-        ;; ---- the out type decides, not the value ------------------------
-        ;; (just 0) in a maybe_size_t function is present with payload 0 --
-        ;; the very case a sentinel return cannot express
+        ;; ---- the slot decides, not the value ----------------------------
+        ;; (just 0) in a Maybe_size_t function is a just carrying 0 -- the very
+        ;; case a sentinel return cannot express
         (+= bad (check "just 0 is present"
                   (matchn (zero) (just v (cast llong v)) (nothing -1)) 0))
 
@@ -88,21 +89,24 @@
         (+= bad (check "nothing, maybe double"
                   (matchn (half -1.0) (just v (cast llong (* v 100))) (nothing -1)) -1))
 
-        ;; ---- the innermost out type wins ----------------------------------
+        ;; ---- the innermost slot wins --------------------------------------
         (+= bad (check "nothing inside a closure"
                   (matchn (nested) (just v (cast llong v)) (nothing -1)) 1))
 
-        ;; ---- away from a return, the value decides -------------------------
-        ;; no function out type to read here, so (just 42) is a maybe_int
-        (let (((<> maybe int) m . #'(just 42)))
-          (+= bad (check "just in a let, from the value"
+        ;; ---- a declaration is a slot too -----------------------------------
+        ;; no return in sight; the declared type of `m' is what types the list.
+        ;; It needs #' like any other call in a var value: the dotted cdr of a
+        ;; variable form splices, so a bare (just 42) would arrive as two
+        ;; elements rather than one macro call.
+        (let (((<> Maybe int) m . #'(just 42)))
+          (+= bad (check "just in a let, from the slot"
                     (matchn m (just v (cast llong v)) (nothing -1)) 42)))
 
         ;; the back ends are still the way to name an instantiation directly
         (+= bad (check "back-end just still works"
-                  (matchn ((<> just maybe int) 5) (just v (cast llong v)) (nothing -1)) 5))
+                  (matchn ((<> just int) 5) (just v (cast llong v)) (nothing -1)) 5))
         (+= bad (check "back-end nothing still works"
-                  (matchn ((<> nothing maybe int)) (just v (cast llong v)) (nothing -1)) -1))
+                  (matchn ((<> nothing int)) (just v (cast llong v)) (nothing -1)) -1))
 
         ) ; letin
 

@@ -111,8 +111,8 @@
                        (unless (key-eq (nth (+ i 1) args) '|false|)
                          (display (if *cpp* "compiler set for C++" "compiler set for C") #\Newline)
                          
-		                 (let* ((dumper    (if *cpp* (getf *configs* 'cpp-dumper) (getf *configs* 'dumper)))
-                                (command   (if *cpp* (getf *configs* 'cpp-compiler) (getf *configs* 'compiler)))
+		                 (let* ((dumper    (if *cpp* (getf (configs<) 'cpp-dumper) (getf (configs<) 'dumper)))
+                                (command   (if *cpp* (getf (configs<) 'cpp-compiler) (getf (configs<) 'compiler)))
 		                        (program   (car command))
 		                        (arguments (cdr command))
 		                        (custom    (nth (+ i 1) args)))
@@ -164,7 +164,7 @@
                          (setq is-compiled t)))
 	                 (when (and (equal (nth 2 exit-status) 0) (not dump) (not header) (key-eq (nth i args) ':|link|))
                        (if is-compiled
-		                   (let* ((command   (if *cpp* (getf *configs* 'cpp-linker) (getf *configs* 'linker)))
+		                   (let* ((command   (if *cpp* (getf (configs<) 'cpp-linker) (getf (configs<) 'linker)))
 		                          (program   (car command))
 		                          (arguments (cdr command))
 		                          (custom    (nth (+ i 1) args)))

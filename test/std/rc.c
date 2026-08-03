@@ -4,18 +4,33 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
-typedef struct maybe_int {
-  bool present ;
-  int value ;
-} maybe_int;
-typedef int maybe_int_interior_t ;
-#ifndef __MAYBE_TYPE_H_
-#define __MAYBE_TYPE_H_
+#ifndef __MAYBE_H_
+#define __MAYBE_H_
+typedef enum MAYBE_CTOR {
+  NOTHING_CTOR = 0,
+  JUST_CTOR
+} MAYBE_CTOR;
+typedef struct NothingT {
+  char _unused ;
+} NothingT;
 typedef struct std_maybe std_maybe ;
-#endif /* __MAYBE_TYPE_H_ */ 
-typedef std_maybe maybe_int_type_t ;
-maybe_int just_maybe_int (int value );
-maybe_int nothing_maybe_int ();
+#endif /* __MAYBE_H_ */ 
+#ifndef __MAYBE__ref_int__H_
+#define __MAYBE__ref_int__H_
+typedef struct JustT_ref_int {
+  int * restrict value ;
+} JustT_ref_int;
+typedef struct Maybe_ref_int {
+  MAYBE_CTOR ctor ;
+  union { /* ciciliUnion109 */
+    JustT_ref_int just ;
+    NothingT nothing ;
+  } data ;
+} Maybe_ref_int;
+typedef std_maybe Maybe_ref_int_type_t ;
+Maybe_ref_int just_ref_int (int * restrict value );
+Maybe_ref_int nothing_ref_int ();
+#endif /* __MAYBE__ref_int__H_ */ 
 typedef struct array_int {
   int * const arr ;
   size_t len ;
@@ -30,13 +45,16 @@ void free_array_int (array_int * restrict array );
 void free_array_int_pointer (array_int ** array );
 array_int new_array_int (const int * arr , size_t len , size_t cap );
 size_t len_array_int (array_int * restrict array );
-maybe_int nth_array_int (size_t index , array_int * restrict array );
-__attribute__((weak)) maybe_int just_maybe_int (int value ) {
-  return ((maybe_int){ true , value });
+Maybe_ref_int nth_array_int (size_t index , array_int * restrict array );
+#ifndef __MAYBE_IMPL__ref_int__H_
+#define __MAYBE_IMPL__ref_int__H_
+Maybe_ref_int just_ref_int (int * restrict value ) {
+  return ((Maybe_ref_int){ .ctor = JUST_CTOR , .data.just.value = value });
 }
-__attribute__((weak)) maybe_int nothing_maybe_int () {
-  return ((maybe_int){ false , ((int){ 0})});
+Maybe_ref_int nothing_ref_int () {
+  return ((Maybe_ref_int){ .ctor = NOTHING_CTOR });
 }
+#endif /* __MAYBE_IMPL__ref_int__H_ */ 
 __attribute__((weak)) void free_array_int (array_int * restrict array ) {
   free ((array -> arr));
 }
@@ -44,11 +62,11 @@ __attribute__((weak)) void free_array_int_pointer (array_int ** array ) {
   free_array_int ((*array ));
 }
 array_int new_array_int (const int * arr , size_t len , size_t cap ) {
-  return ({ /* letn163 */
-      int * new_arr  = calloc (cap , sizeof(int));
+  return ({ /* letn167 */
+      int * restrict new_arr  = calloc (cap , sizeof(int));
       // ----------
       if (arr  &&  len  )
-        { /* block170 */
+        { /* block174 */
           memcpy (new_arr , arr , (len  *  sizeof(int) ));
         }
       ((array_int){ new_arr , cap });
@@ -57,178 +75,132 @@ array_int new_array_int (const int * arr , size_t len , size_t cap ) {
 size_t len_array_int (array_int * restrict array ) {
   return (array -> len);
 }
-maybe_int nth_array_int (size_t index , array_int * restrict array ) {
+Maybe_ref_int nth_array_int (size_t index , array_int * restrict array ) {
   if (index  <  (array -> len) )
-    return ((maybe_int){ true , (array -> arr)[index ]});
+    return ((Maybe_ref_int){ .ctor = JUST_CTOR , .data.just.value = ((array -> arr) +  index  )});
   else
-    return ((maybe_int){ false , ((maybe_int_interior_t){ 0})});
+    return ((Maybe_ref_int){ .ctor = NOTHING_CTOR });
 }
-typedef struct rc_array_int_context {
-  array_int * const ptr ;
+typedef struct rc_array_int {
+  array_int * restrict ptr ;
   size_t * count ;
-} rc_array_int_context;
-void free_rc_array_int_context (rc_array_int_context * ctx );
-void free_rc_array_int_context_pointer (rc_array_int_context ** ctx );
-typedef struct cell_rc_array_int_context {
-  rc_array_int_context * restrict ptr ;
-} cell_rc_array_int_context;
-typedef rc_array_int_context cell_rc_array_int_context_interior_t ;
-#ifndef __CELL_TYPE_H_
-#define __CELL_TYPE_H_
-typedef struct std_cell std_cell ;
-#endif /* __CELL_TYPE_H_ */ 
-typedef std_cell cell_rc_array_int_context_type_t ;
-void free_cell_rc_array_int_context (cell_rc_array_int_context * cell );
-void free_cell_rc_array_int_context_pointer (cell_rc_array_int_context ** cell );
-cell_rc_array_int_context clone_rc_array_int_context (cell_rc_array_int_context * restrict ctx_cell );
-__attribute__((weak)) void free_cell_rc_array_int_context (cell_rc_array_int_context * cell ) {
-  if ((cell -> ptr))
-    { /* block224 */
-      free_rc_array_int_context ((cell -> ptr));
-      free ((cell -> ptr));
-    }
-}
-__attribute__((weak)) void free_cell_rc_array_int_context_pointer (cell_rc_array_int_context ** cell ) {
-  free_cell_rc_array_int_context ((*cell ));
-}
-__attribute__((weak)) void free_rc_array_int_context (rc_array_int_context * ctx ) {
-  if ((ctx -> ptr) &&  (ctx -> count) )
-    { /* block239 */
-      if ((*(ctx -> count)) ==  1 )
-        { /* block245 */
-          free_array_int ((ctx -> ptr));
-          free ((ctx -> count));
-          free ((ctx -> ptr));
+} rc_array_int;
+typedef array_int rc_array_int_interior_t ;
+#ifndef __RC_TYPE_H_
+#define __RC_TYPE_H_
+typedef struct std_rc std_rc ;
+#endif /* __RC_TYPE_H_ */ 
+typedef std_rc rc_array_int_type_t ;
+void free_rc_array_int (rc_array_int * rc );
+void free_rc_array_int_pointer (rc_array_int ** rc );
+rc_array_int clone_rc_array_int (rc_array_int * restrict rc );
+__attribute__((weak)) void free_rc_array_int (rc_array_int * rc ) {
+  if ((rc -> ptr) &&  (rc -> count) )
+    { /* block216 */
+      if ((*(rc -> count)) ==  1 )
+        { /* block222 */
+          free_array_int ((rc -> ptr));
+          free ((rc -> count));
+          free ((rc -> ptr));
         }
       else
-        (--(*(ctx -> count)));
+        (--(*(rc -> count)));
     }
 }
-__attribute__((weak)) void free_rc_array_int_context_pointer (rc_array_int_context ** ctx ) {
-  free_rc_array_int_context ((*ctx ));
+__attribute__((weak)) void free_rc_array_int_pointer (rc_array_int ** rc ) {
+  free_rc_array_int ((*rc ));
 }
-cell_rc_array_int_context clone_rc_array_int_context (cell_rc_array_int_context * restrict ctx_cell ) {
-  if ((ctx_cell -> ptr) &&  ((ctx_cell -> ptr)-> ptr) &&  ((ctx_cell -> ptr)-> count) &&  ((*((ctx_cell -> ptr)-> count)) >=  1 ) )
-    return ({ /* letn259 */
-        rc_array_int_context * new_ctx  = malloc (sizeof((*(ctx_cell -> ptr))));
-        // ----------
-        (++(*((ctx_cell -> ptr)-> count)));
-        memcpy (new_ctx , (ctx_cell -> ptr), sizeof((*(ctx_cell -> ptr))));
-        ((cell_rc_array_int_context){ new_ctx });
-      });
-  else
-    return ((cell_rc_array_int_context){ NULL });
+rc_array_int clone_rc_array_int (rc_array_int * restrict rc ) {
+  if ((rc -> ptr) &&  (rc -> count) &&  ((*(rc -> count)) >=  1 ) )
+    { /* block237 */
+      (++(*(rc -> count)));
+      return ((rc_array_int){ (rc -> ptr), (rc -> count)});
+    }
+  return ((rc_array_int){ NULL , NULL });
 }
-void let_cell_rc_array_int_context_G350 (cell_rc_array_int_context * restrict cell ) {
-  if ((cell -> ptr))
-    { /* block356 */
-      { /* let358 */
-        cell_rc_array_int_context_interior_t * restrict arr_ptr_cell_rc_array_int_context_interior_t  = (cell -> ptr);
+void let_rc_array_int_G280 (rc_array_int * restrict rc ) {
+  if ((rc -> ptr))
+    { /* block286 */
+      { /* let288 */
+        rc_array_int_interior_t * restrict arr_ptr  = (rc -> ptr);
         // ----------
-        { /* let362 */
-          array_int * const arr_ptr  = (arr_ptr_cell_rc_array_int_context_interior_t -> ptr);
-          // ----------
-          printf ("1. rc01 arr len: %zu\n", ((*arr_ptr ). len));
-        }
+        printf ("1. rc01 arr len: %zu\n", ((*arr_ptr ). len));
       }
     }
 }
-size_t letn_cell_rc_array_int_context_G367 (cell_rc_array_int_context * restrict cell , const int default_value ) {
-  return (((cell -> ptr)) ? ({ /* letn370 */
-        cell_rc_array_int_context_interior_t * restrict arr_ptr_cell_rc_array_int_context_interior_t  = (cell -> ptr);
+size_t letn_rc_array_int_G293 (rc_array_int * restrict rc , const int default_value ) {
+  return (((rc -> ptr)) ? ({ /* letn296 */
+        rc_array_int_interior_t * restrict arr_ptr  = (rc -> ptr);
         // ----------
-        ({ /* letn374 */
-          array_int * const arr_ptr  = (arr_ptr_cell_rc_array_int_context_interior_t -> ptr);
-          // ----------
-          ((*arr_ptr ). len);
-        });
+        ((*arr_ptr ). len);
       }) : default_value );
 }
-void take_cell_rc_array_int_context_G386 (cell_rc_array_int_context cell ) {
-  cell_rc_array_int_context * __moved_cell __attribute__((__cleanup__( free_cell_rc_array_int_context_pointer))) = (& cell) ;
-  if (cell . ptr)
-    { /* block393 */
-      ({ /* letn396 */
-        rc_array_int_context arr_cell_rc_array_int_context_interior_t  __attribute__((__cleanup__(free_rc_array_int_context ))) = ((rc_array_int_context   )({ /* letnmove400 */
-          rc_array_int_context moved_var399  = (*(cell . ptr));
+void take_rc_array_int_G307 (rc_array_int rc ) {
+  rc_array_int * __moved_rc __attribute__((__cleanup__( free_rc_array_int_pointer))) = (& rc) ;
+  if ((rc . ptr) &&  (rc . count) &&  ((*(rc . count)) ==  1 ) )
+    { /* block314 */
+      ({ /* letn317 */
+        array_int arr  __attribute__((__cleanup__(free_array_int ))) = ((array_int   )({ /* letnmove320 */
+          array_int moved_var319  = (*(rc . ptr));
           // ----------
-          memset ((&(*(cell . ptr))), 0, sizeof((*(cell . ptr))));
-          moved_var399 ;
+          memset ((&(*(rc . ptr))), 0, sizeof((*(rc . ptr))));
+          moved_var319 ;
         }));
         // ----------
-        if ((arr_cell_rc_array_int_context_interior_t . ptr) &&  (arr_cell_rc_array_int_context_interior_t . count) &&  ((*(arr_cell_rc_array_int_context_interior_t . count)) ==  1 ) )
-          { /* block409 */
-            ({ /* letn413 */
-              array_int arr  __attribute__((__cleanup__(free_array_int ))) = ((array_int   )({ /* letnmove416 */
-                array_int moved_var415  = (*(arr_cell_rc_array_int_context_interior_t . ptr));
-                // ----------
-                memset ((&(*(arr_cell_rc_array_int_context_interior_t . ptr))), 0, sizeof((*(arr_cell_rc_array_int_context_interior_t . ptr))));
-                moved_var415 ;
-              }));
-              // ----------
-              printf ("3. rc01 arr len: %zu\n", (arr . len));
-            });
-          }
+        free ((rc . count));
+        free ((rc . ptr));
+        (rc . ptr) = NULL ;
+        (rc . count) = NULL ;
+        printf ("3. rc01 arr len: %zu\n", (arr . len));
       });
     }
 }
-size_t taken_cell_rc_array_int_context_G424 (cell_rc_array_int_context cell , size_t default_value ) {
-  cell_rc_array_int_context * __moved_cell __attribute__((__cleanup__( free_cell_rc_array_int_context_pointer))) = (& cell) ;
-  return (((cell . ptr)) ? ({ /* letn429 */
-        rc_array_int_context arr_cell_rc_array_int_context_interior_t  __attribute__((__cleanup__(free_rc_array_int_context ))) = ((rc_array_int_context   )({ /* letnmove433 */
-          rc_array_int_context moved_var432  = (*(cell . ptr));
+size_t taken_rc_array_int_G328 (rc_array_int rc , size_t default_value ) {
+  rc_array_int * __moved_rc __attribute__((__cleanup__( free_rc_array_int_pointer))) = (& rc) ;
+  return ((((rc . ptr) &&  (rc . count) &&  ((*(rc . count)) ==  1 ) )) ? ({ /* letn333 */
+        array_int arr  __attribute__((__cleanup__(free_array_int ))) = ((array_int   )({ /* letnmove336 */
+          array_int moved_var335  = (*(rc . ptr));
           // ----------
-          memset ((&(*(cell . ptr))), 0, sizeof((*(cell . ptr))));
-          moved_var432 ;
+          memset ((&(*(rc . ptr))), 0, sizeof((*(rc . ptr))));
+          moved_var335 ;
         }));
         // ----------
-        ((((arr_cell_rc_array_int_context_interior_t . ptr) &&  (arr_cell_rc_array_int_context_interior_t . count) &&  ((*(arr_cell_rc_array_int_context_interior_t . count)) ==  1 ) )) ? ({ /* letn441 */
-            array_int arr  __attribute__((__cleanup__(free_array_int ))) = ((array_int   )({ /* letnmove444 */
-              array_int moved_var443  = (*(arr_cell_rc_array_int_context_interior_t . ptr));
-              // ----------
-              memset ((&(*(arr_cell_rc_array_int_context_interior_t . ptr))), 0, sizeof((*(arr_cell_rc_array_int_context_interior_t . ptr))));
-              moved_var443 ;
-            }));
-            // ----------
-            printf ("4. rc01 arr len: %zu\n", (arr . len));
-          }) : default_value );
+        free ((rc . count));
+        free ((rc . ptr));
+        (rc . ptr) = NULL ;
+        (rc . count) = NULL ;
+        printf ("4. rc01 arr len: %zu\n", (arr . len));
       }) : default_value );
 }
 int main () {
-  ({ /* letn309 */
-    cell_rc_array_int_context rc01  __attribute__((__cleanup__(free_cell_rc_array_int_context ))) = ({ /* letn329 */
-      rc_array_int_context * rc_array_int_context_ptr327  = malloc (sizeof(rc_array_int_context));
-      rc_array_int_context rc_array_int_context_obj328  = ({ /* letn337 */
-        array_int * array_int_ptr334  = malloc (sizeof(array_int));
-        array_int array_int_obj335  = new_array_int (((const int[]){ 1, 2, 3, 4, 5}), 5, 5);
-        size_t * array_int_count336  = malloc (sizeof(size_t));
-        // ----------
-        memcpy (array_int_ptr334 , (&array_int_obj335 ), sizeof(array_int_obj335));
-        (*array_int_count336 ) = 1;
-        ((rc_array_int_context){ array_int_ptr334 , array_int_count336 });
-      });
+  ({ /* letn262 */
+    rc_array_int rc01  __attribute__((__cleanup__(free_rc_array_int ))) = ({ /* letn271 */
+      array_int * restrict array_int_ptr268  = malloc (sizeof(array_int));
+      array_int array_int_obj269  = new_array_int (((const int[]){ 1, 2, 3, 4, 5}), 5, 5);
+      size_t * array_int_count270  = malloc (sizeof(size_t));
       // ----------
-      memcpy (rc_array_int_context_ptr327 , (&rc_array_int_context_obj328 ), sizeof(rc_array_int_context_obj328));
-      ((cell_rc_array_int_context){ rc_array_int_context_ptr327 });
+      memcpy (array_int_ptr268 , (&array_int_obj269 ), sizeof(array_int_obj269));
+      (*array_int_count270 ) = 1;
+      ((rc_array_int){ array_int_ptr268 , array_int_count270 });
     });
     // ----------
-    let_cell_rc_array_int_context_G350 ((&rc01 ));
-    printf ("2. rc01 arr len: %zu\n", letn_cell_rc_array_int_context_G367 ((&rc01 ), -1));
-    ({ /* letn382 */
-      cell_rc_array_int_context cl01  __attribute__((__cleanup__(free_cell_rc_array_int_context ))) = clone_rc_array_int_context ((&rc01 ));
+    let_rc_array_int_G280 ((&rc01 ));
+    printf ("2. rc01 arr len: %zu\n", letn_rc_array_int_G293 ((&rc01 ), -1));
+    ({ /* letn303 */
+      rc_array_int cl01  __attribute__((__cleanup__(free_rc_array_int ))) = clone_rc_array_int ((&rc01 ));
       // ----------
-      take_cell_rc_array_int_context_G386 (((cell_rc_array_int_context   )({ /* letnmove421 */
-          cell_rc_array_int_context moved_var420  = cl01 ;
+      take_rc_array_int_G307 (((rc_array_int   )({ /* letnmove325 */
+          rc_array_int moved_var324  = cl01 ;
           // ----------
           memset ((&cl01 ), 0, sizeof(cl01 ));
-          moved_var420 ;
+          moved_var324 ;
         })));
     });
-    taken_cell_rc_array_int_context_G424 (((cell_rc_array_int_context   )({ /* letnmove449 */
-        cell_rc_array_int_context moved_var448  = rc01 ;
+    taken_rc_array_int_G328 (((rc_array_int   )({ /* letnmove341 */
+        rc_array_int moved_var340  = rc01 ;
         // ----------
         memset ((&rc01 ), 0, sizeof(rc01 ));
-        moved_var448 ;
+        moved_var340 ;
       })), printf ("4. default value is strict\n"));
     fprintf (stdout , "Done\n");
   });

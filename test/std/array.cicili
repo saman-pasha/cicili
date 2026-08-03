@@ -1,23 +1,18 @@
 
 ;;; test Cicili std array
 ;;;
-;;; Built at full optimization, and the flags go on BOTH steps -- `:link' used
-;;; to carry none at all, which is a real gap the moment a target has more than
-;;; one object, and the whole point of -flto if it is ever added back.
-;;; -Ofast is not an option: clang 21 deprecated it and this target compiles
-;;; with -Werror. -O3 -ffast-math is its documented replacement.
+;;; NO OPTIMISATION FLAGS HERE, deliberately. They live in config.lisp now, so
+;;; that one place decides what every target is built with and a test cannot
+;;; drift from the rest of the suite:
 ;;;
-;;; -falign-loops=32 is not decoration. Without it this benchmark measures the
-;;; linker's byte offsets as much as it measures the library: --syslog came out
-;;; ~10% FASTER than the plain build, purely because the extra printf shifted
-;;; the hot loop onto a 32-byte boundary. See the bottom for the evidence.
+;;;   sbcl --script cicili.lisp           ./test/std/array.cicili   -g -O0
+;;;   sbcl --script cicili.lisp --release ./test/std/array.cicili   -O3 -falign-loops=32
 ;;;
-;;; -march=native is deliberately NOT here. It is the one flag that looks like
-;;; more optimization and is not: also at the bottom.
+;;; The nth benchmark at the bottom of this file is only meaningful under
+;;; --release; a -O0 build of it measures nothing but the debug codegen.
 (source "array.c"
   (make :std #t
-        :compile ("-O3" "-ffast-math" "-falign-loops=32" "-c" "array.c")
-        :link ("-O3" "-ffast-math" "-falign-loops=32" "-larray.o" "-o" "arr_test"))
+        :compile #t :link ("-larray.o" "-o" "arr_test"))
 
   (include <time.h>)
   (include <limits.h>)
@@ -27,6 +22,11 @@
 
   (decl-array int)
   (impl-array int)
+  ;; a second payload type, and a string one at that: the maybe machinery is
+  ;; shared (MAYBE_CTOR, NothingT) while JustT_char / Maybe_char are its own,
+  ;; so this proves `just' / `nothing' name no instantiation anywhere
+  (decl-array char)
+  (impl-array char)
 
   (func ms_now ()
         (out llong)
@@ -55,7 +55,7 @@
             (for ((int i . 0)) (< i N) ((++ i))
                  ;; (+= sum ((<> nth array) (% i 50) v :unchecked T)))
                  (match ((<> nth array) (% i 50) v)
-                   (just val (+= sum val))))
+                   (just val (+= sum (cof val)))))
             
             (let ((llong elapsed . #'(- (ms_now) t0)))
               (printf "  (nth checksum: %lld)\n" sum)  ; after timer — forces liveness
@@ -127,16 +127,35 @@
         (printf "print int array using Safe nth: ")
         (for ((size_t i . 0)) (< i 7) ((++ i))
              (match (nth^array i arr01)
-               (just val (printf "%d" val))
+               (just val (printf "%d" (cof val)))
                (nothing  (printf "-"))))
         (putchar #\Newline)
+
+        ;; ---- the same, over a string ---------------------------------
+        ;; (<> nth array char) answers a (<> Maybe char) built by the SAME
+        ;; (just v) / (nothing) forms that built the int one -- nothing in
+        ;; either front end mentions int or char
+        (letin ((str (new^array (cast (const char *) "cicili"))))
+          (printf "print char array using Safe nth: ")
+          (for ((size_t i . 0)) (< i 8) ((++ i))
+               (match (nth^array i str)
+                 (just c  (putchar (cof c)))
+                 (nothing (putchar #\-))))
+          (putchar #\Newline)
+
+          (printf "the same string through matchn: ")
+          (for ((size_t i . 0)) (< i 8) ((++ i))
+               (putchar (matchn (nth^array i str)
+                          (just c  (cof c))
+                          (nothing #\.))))
+          (putchar #\Newline))
 
         ;; 'matchn is the expression form, so it has to cover every case or
         ;; carry a default -- 'match/'matchn read the type, nothing is declared
         (printf "the same run through matchn:    ")
         (for ((size_t i . 0)) (< i 7) ((++ i))
              (printf "%d" (matchn (nth^array i arr01)
-                            (just val val)
+                            (just val (cof val))
                             (nothing  0))))
         (putchar #\Newline)
         
@@ -257,12 +276,26 @@
 ;;;;
 ;;;; ---- Against Rust -------------------------------------------------
 ;;;;
-;;;; Cicili  (<> nth array int)   505 504 504 504 504
-;;;; Rust    Vec::<i32>::get      532 532 532 532 532   (cargo build --release)
+;;;; TWO columns, because one of them is easy to quote and says nothing. When
+;;;; the element count is a compile-time constant BOTH compilers prove
+;;;; `index < len' and DELETE the check -- that column is a bounds-checked API
+;;;; compiling to an unchecked loop on both sides. Hide the length (a global
+;;;; here, black_box in api_bench) and the check actually runs:
 ;;;;
-;;;; ~5% to Cicili, on the operation a safe language is supposed to pay for:
-;;;; an index that cannot go out of bounds. Neither side elides the check --
-;;;; Cicili answers a maybe, Rust an Option, and both are destructured.
+;;;;                            check ELIDED     check EXECUTED
+;;;;   Cicili (<> nth array int)    428 ms           957 ms
+;;;;   Rust   Vec::<i32>::get       469 ms          1126 ms
+;;;;
+;;;; Parity on the first, ~15% to Cicili on the second -- and the second is the
+;;;; one that means anything.
+;;;;
+;;;; It did not start there. With the maybe carrying a COPY of the element the
+;;;; checked column read 1544 against Rust's 1084, a 42% deficit. The fix was
+;;;; (decl-maybe ref a): the payload is now a POINTER INTO the array, so `nth'
+;;;; returns a tag and an address it already had, and `match' hands out an
+;;;; `a ref' to deref. The ctor tag -- the obvious suspect next to Rust's
+;;;; niche-encoded Option<&i32> -- turned out to cost nothing measurable. The
+;;;; whole 42% was copying the element out of the buffer on every hit.
 ;;;;
 ;;;; METHOD, and it is not optional here. Each language is quoted at its BEST
 ;;;; over a sweep of code layouts, because on this benchmark layout is worth

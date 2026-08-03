@@ -43,9 +43,26 @@
                                      (storage (*gets* storage-id)))
                                 (if storage
                                     storage
-                                    (let* ((modifier (modifier ty))
+                                    ;; The pointer can live on the TYPE rather than the variable:
+                                    ;; (typedef a ref RefMaybe_int) leaves a RefMaybe_int variable
+                                    ;; with no modifier of its own, and (cof it) is still a
+                                    ;; dereference. combine-types folds the typedef's modifier into
+                                    ;; the variable's -- deep-typeof alone would drop it.
+                                    (let* ((ty-def (let ((n (peel-type-tag< (typeof ty))))
+                                                     (when (symbolp n) (*gets* n))))
+                                           (modifier
+                                            ;; combine only against a TYPEDEF that carries a modifier
+                                            ;; of its own -- combining against the @STRUCT every other
+                                            ;; type resolves to is an invalid combination
+                                            (if (and ty-def (eql (construct ty-def) '|@TYPEDEF|) (modifier ty-def))
+                                                (modifier (combine-types ty-def ty))
+                                                (modifier ty)))
                                            (mod-val (cond
-                                                      ((key-eq '|ref| modifier)  '|move|)
+                                                      ;; a `ref' is a borrow. Dereferencing one YIELDS a
+                                                      ;; move only when the pointee cannot be copied --
+                                                      ;; the `*' case one line down already said so, and
+                                                      ;; (cof p) on a ref-to-int is a read, not a move.
+                                                      ((key-eq '|ref| modifier)  (when (is-non-copy (typeof ty)) '|move|))
                                                       ((key-eq '|***| modifier)  '|**|)
                                                       ((key-eq '|**|  modifier)  '|*|)
                                                       ((key-eq '|*|   modifier)  (when (is-non-copy (typeof ty)) '|move|))
@@ -137,6 +154,13 @@
                                  (unless end-type (error "unknown struct type: ~A~%  accessed in: ~A~%" (typeof struct) spec))
                                  (*gets* (intern (format nil "~A/~A"  (default spec) (typeof end-type))))))))
                           ((eql const-val '|@TYPEDEF|)
+                           ;; Deliberately DISCARDS the typedef's own modifier.
+                           ;; Combining it here instead -- the commented line --
+                           ;; is what you want for (typedef a ref RefMaybe_int),
+                           ;; but it changes every typedef in the library at
+                           ;; once and reds cell, rc and array. Callers that
+                           ;; need the modifier combine it themselves; see the
+                           ;; `cof' case in deep-storageof.
                            (deep-typeof (typeof spec))
                            ;; (combine-types (deep-typeof (typeof spec)) spec)
                            )
@@ -404,6 +428,18 @@
                                                                   (t const-ptr)))
                                                        (ty-def (list const typeof mod-val ptr-mod variable)))
                                                   (values (remove nil ty-def) ty-def))))))
+
+                                         ((key-eq func '|nth|)
+                                          (format t "NTH1 ~A~%" clause)
+                                          (return-from infer-type
+                                            (let ((ty (infer-type (expand-macros (nth 2 clause))
+                                                                  :with-name with-name :copy-name copy-name)))
+                                              (format t "NTH2 ~A~%" ty)
+                                              (multiple-value-bind (const typeof modifier const-ptr variable array)
+		                                          (specify-type< ty)
+                                                (let ((ty-def (list const typeof nil const-ptr variable array)))
+                                                  (values (remove nil ty-def) ty-def))))))
+                                         
                                          ((and (= (length clause) 2) (find func *unaries* :test #'key-eq))
                                           (return-from infer-type (infer-type (cadr clause)
                                                                     :with-name with-name :copy-name copy-name)))
@@ -411,6 +447,7 @@
                                           (return-from infer-type (infer-type (cadr clause)
                                                                     :with-name with-name :copy-name copy-name)))
                                          ((key-eq func '->)
+                                          (format t "->1 ~A~%" clause)
                                           (let ((struct (nth-value 1 (infer-type (cadr clause)
                                                                        :with-name with-name :copy-name copy-name))))
                                             (when struct
@@ -418,10 +455,14 @@
                                                                   (deep-typeof id (nth 1 struct))
                                                                   (deep-typeof (nth 1 struct)))))
                                                 (unless end-type (error "unknown struct type: ~A~%  accessed in: ~A~%" struct clause))
+                                                (format t "->2 ~A~%" end-type)
                                                 (return-from infer-type
                                                   (infer-type-spec
                                                       ""
-                                                    (*gets* (intern (format nil "~A/~A"  (caddr clause) (typeof end-type))))))))))
+                                                      (let ((field (*gets* (intern (format nil "~A/~A" (caddr clause) (typeof end-type))))))
+                                                        (if field field (error (format nil "struct: ~A does not have field: ~A~%  in: ~A"
+                                                                                       (typeof end-type) (caddr clause) clause))))
+                                                      :with-name with-name :copy-name copy-name))))))
                                          ((key-eq func '$)
                                           (let ((struct (nth-value 1 (infer-type (cadr clause)
                                                                        :with-name with-name :copy-name copy-name))))
@@ -432,8 +473,11 @@
                                                 (unless end-type (error "unknown struct type: ~A~%  accessed in: ~A~%" struct clause))
                                                 (return-from infer-type
                                                   (infer-type-spec
-                                                      ""
-                                                    (*gets* (intern (format nil "~A/~A"  (caddr clause) (typeof end-type))))))))))
+                                                   ""
+                                                   (let ((field (*gets* (intern (format nil "~A/~A" (caddr clause) (typeof end-type))))))
+                                                     (if field field (error (format nil "struct: ~A does not have field: ~A~%  in: ~A"
+                                                                                    (typeof end-type) (caddr clause) clause))))
+                                                   :with-name with-name :copy-name copy-name))))))
                                          ((key-eq func '|return|) (return-from infer-type
                                                                     (infer-type (cadr clause)
                                                                       :with-name with-name :copy-name copy-name)))
@@ -539,31 +583,6 @@
                         ) ; copy, set zero moved arg, pass 
                       spec))))
         spec)))
-
-;; the declared out type of the function whose body is being specified, in the
-;; same shape 'type-check answers with: (values desc-type full-type root origin).
-;; NIL everywhere outside a function body, and for an `out auto' that has not
-;; been resolved by a `return' yet.
-;;
-;; A front-end macro infers from its arguments -- but a constructor for an empty
-;; case has none: `(nothing)' carries nothing to look at, and `(right v)' names
-;; only half of an (<> either e a). What decides the instantiation there is the
-;; slot the form stands in, and in practice that slot is the return. Reading the
-;; out type is how those front ends stay type-name free.
-;;
-;; It follows the innermost function: inside a 'closure or a 'lambda the answer
-;; is that closure's out type, which is what the form actually returns to. 'let
-;; and 'letn are blocks of the enclosing function and do not shadow it.
-(defun out-type ()
-  (when (and *function-spec* (not *function-outp*))
-    (let ((ty (typeof *function-spec*)))
-      (when (and ty (not (key-eq ty '|auto|)) (not (typep ty 'sp)))
-        (let ((full-type (list (const      *function-spec*)
-                               ty
-                               (modifier   *function-spec*)
-                               (const-ptr  *function-spec*)
-                               nil)))
-          (values (remove nil full-type) full-type (type-root ty) (type-origin ty)))))))
 
 ;; a way to make DEFMACRO statically typed
 (defun type-check (value &key const typeof modifier const-ptr has-name with-name copy-name)

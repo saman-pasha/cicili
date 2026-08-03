@@ -121,16 +121,47 @@
                       var-list))
      ,@body))
 
+;;; SUBST replaces a node with another node; it cannot replace one with NOTHING,
+;;; because there is no value that means "and now I am absent" -- NIL is a
+;;; perfectly good replacement, not an omission. This deletes instead, and
+;;; handles dotted lists, which matter here: (int x . 0) is an ordinary form.
+(DEFUN subst-out< (old tree)
+  (LABELS ((walk (node)
+             (IF (ATOM node)
+                 (IF (EQL old node) NIL node)
+                 (LET ((tail (walk (CDR node))))
+                   (IF (EQL old (CAR node))
+                       tail
+                       (CONS (walk (CAR node)) tail))))))
+    (walk tree)))
+
+;;; A generic's LEADING parameters may be omitted, and an omitted one expands to
+;;; nothing at all rather than to NIL. That is what lets one generic serve
+;;;
+;;;   (decl-maybe int)        a is int,  mod absent -> (member a value)
+;;;   (decl-maybe ref int)    a is int,  mod is ref -> (member a ref value)
+;;;
+;;; from a single (mod a) parameter list, and it is why the names stay distinct:
+;;; (<> Maybe mod a) interns as Maybe_int in the first and Maybe_ref_int in the
+;;; second, so the two instantiations cannot collide.
+;;;
+;;; Arguments bind to the LAST parameters, so optional ones go first. Passing
+;;; an explicit () for a parameter omits it in the middle of a list.
 (DEFMACRO generic (macro types &REST body)
   `(DEFMACRO ,macro (&REST args)
-     (LET ((types ',types)
-           (body ',body))
-       (UNLESS (= (LENGTH args) (LENGTH types))
-         (ERROR (FORMAT NIL "unmatch generic parameters and arguments: ~A ~A" (QUOTE ,macro) args)))
+     (LET* ((types ',types)
+            (body ',body)
+            (missing (- (LENGTH types) (LENGTH args))))
+       (WHEN (< missing 0)
+         (ERROR (FORMAT NIL "too many generic arguments: ~A ~A" (QUOTE ,macro) args)))
+       (SETQ args (APPEND (MAKE-LIST missing) args))
        (DOTIMES (i (LENGTH types))
          (LET ((arg (NTH i args)))
-           (SETQ body (SUBST (IF (AND (LISTP arg) (EQUAL (CAR arg) '<>)) (MACROEXPAND arg) arg)
-                        (NTH i types) body))))
+           (SETQ body
+                 (IF (NULL arg)
+                     (subst-out< (NTH i types) body)
+                     (SUBST (IF (AND (LISTP arg) (EQUAL (CAR arg) '<>)) (MACROEXPAND arg) arg)
+                            (NTH i types) body)))))
        `($$$ ,@body)))) ; $$$ for replace extracted
 
 (DEFMACRO inline-generic (args body)
@@ -396,35 +427,6 @@
 
 (DEFMACRO new (type &REST args)
   `((<> new ,type) ,@args))
-
-;;;; ------------------------------------------------------------------
-;;;; front-end support -- the type a form is expected to produce
-;;;;
-;;;; A front end usually infers its instantiation from an argument. A
-;;;; constructor for an empty case has none to look at: `(nothing)' carries no
-;;;; value, and `(right v)' names only half of an (<> either e a). What decides
-;;;; there is the slot the form stands in, and that slot is the return.
-;;;; 'out-typeof< asks CICILI:OUT-TYPE for the enclosing function's out type and
-;;;; answers with its type name -- but only when it belongs to the family asked
-;;;; about, so `(nothing)' in a function returning an int is a miss, not a
-;;;; nonsense expansion.
-;;;; ------------------------------------------------------------------
-
-;;; type origins are interned with `_' where the source writes `^', and KEY-EQ
-;;; compares symbol names verbatim, so a family name has to be normalised the
-;;; way CICILI:TYPE-CHECK normalises its :TYPEOF before either can be compared
-(DEFUN same-origin< (origin family)
-  (AND origin family (SYMBOLP origin) (SYMBOLP family)
-       (STRING= (SUBSTITUTE #\_ #\^ (SYMBOL-NAME origin))
-                (SUBSTITUTE #\_ #\^ (SYMBOL-NAME family)))))
-
-;;; the out type's own name -- (<> maybe int) as `maybe^int' -- when its origin
-;;; is `family', NIL otherwise. `family' is the opaque super type the type's
-;;; `<name>^type_t' typedef points at, the same symbol def-matchable is keyed on.
-(DEFUN out-typeof< (family)
-  (MULTIPLE-VALUE-BIND (desc full-type root origin) (CICILI:OUT-TYPE)
-    (DECLARE (IGNORE desc root))
-    (WHEN (same-origin< origin family) (NTH 1 full-type))))
 
 ;;;; ------------------------------------------------------------------
 ;;;; match -- pattern matching driven by type inference

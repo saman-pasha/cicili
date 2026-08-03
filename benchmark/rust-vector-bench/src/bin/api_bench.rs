@@ -95,6 +95,26 @@ fn append(n: usize, items: &[i32]) -> u128 {
     elapsed
 }
 
+// The control for Cicili's "len opaque" row: same loop, but the length is
+// hidden from LLVM with black_box so the bounds check cannot be folded away.
+// Without this row the nth comparison is check-elided on BOTH sides and says
+// nothing about what a bounds check actually costs.
+fn nth_opaque(n: usize) -> u128 {
+    let len = black_box(50usize);
+    let v: Vec<i32> = (0..len as i32).collect();
+    let v = black_box(v);
+    let mut sum: i64 = 0;
+    let start = Instant::now();
+    for i in 0..n {
+        if let Some(&val) = v.get(i % 50) {
+            sum = sum.wrapping_add(val as i64);
+        }
+    }
+    let elapsed = start.elapsed().as_millis();
+    println!("  (nth opaque checksum: {})", sum);
+    elapsed
+}
+
 // ---------------------------------------------------------------------------
 // Rc<Vec<i32>> — shared ownership. This is the row that matches Cicili's
 // (<> vector a): a refcount is loaded and compared before every write.
@@ -175,6 +195,7 @@ fn append_rc(n: usize, items: &[i32]) -> u128 {
 fn main() {
     let items: Vec<i32> = (0..STEP as i32).collect();
     let only = std::env::args().nth(1);
+    
     let run = |name: &str| only.as_deref().map_or(true, |o| o == name);
 
     println!("Rust Vec<i32> / Rc<Vec<i32>> — {} operations each\n", N);
@@ -184,6 +205,9 @@ fn main() {
     }
     if run("nth") {
         println!("  nth (bounds-checked get) {} times: {} ms", N, nth(N));
+    }
+    if run("nth_opaque") {
+        println!("  nth opaque (len hidden) {} times: {} ms", N, nth_opaque(N));
     }
     if run("push") {
         println!("  push {} elements ({} x {} epoch): {} ms", N, N / STEP, STEP, push(N));

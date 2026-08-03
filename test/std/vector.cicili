@@ -3,8 +3,7 @@
 ;;; construction, len, bounds-checked nth through maybe, push, append, growth
 (source "vector.c"
   (make :std #t
-        :compile ("-O3" "-ffast-math" "-c" "vector.c")
-        :link ("-lvector.o" "-o" "vec_test"))
+        :compile #t :link ("-lvector.o" "-o" "vec_test"))
 
   (decl-vector int)
   (impl-vector int)
@@ -21,7 +20,7 @@
   (func at ((size_t index) ((<> vector int) ref v))
         (out int)
         (return (matchn ((<> nth vector int) index v)
-                  (just    x x)
+                  (just    x (cof x))
                   (nothing  -1))))
 
   ;; the whole vector as one number, so growth can be checked in a single value

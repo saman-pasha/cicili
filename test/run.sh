@@ -9,6 +9,11 @@
 #   sh test/run.sh                  # every test under test/c and test/std
 #   sh test/run.sh test/c/control   # just one, by path without extension
 #
+# CICILI_FLAGS is passed through to the transpiler, so the whole suite can be
+# built either way -- no target carries its own optimisation flags any more:
+#
+#   CICILI_FLAGS=--release sh test/run.sh
+#
 # test/haskell is skipped: the haskell prelude load is commented out in
 # cicili.lisp while std is the focus, so those cannot pass right now.
 
@@ -47,7 +52,7 @@ run_one() {
     return
   fi
 
-  if ! sbcl --script cicili.lisp "./$src" > "$LOG" 2>&1; then
+  if ! sbcl --script cicili.lisp $CICILI_FLAGS "./$src" > "$LOG" 2>&1; then
     printf 'RED  transpile   '; why
     fail=$((fail+1)); failed="$failed $src"; return
   fi

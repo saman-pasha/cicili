@@ -2,8 +2,7 @@
 ;;; test Cicili std cell
 (source "cell.c"
   (make :std #t
-        :compile ("-O3" "-ffast-math" "-c" "cell.c")
-        :link ("-lcell.o" "-o" "cell_test"))
+        :compile #t :link ("-lcell.o" "-o" "cell_test"))
 
   (decl-array int)
   (impl-array int)

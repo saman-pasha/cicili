@@ -5,7 +5,7 @@
   (a)
 
   ;; the payload carrier for (<> nth array a)
-  (decl-maybe a)
+  (decl-maybe ref a)
 
   (non-copy)
   (struct (<> array a)
@@ -28,7 +28,7 @@
   (decl) (func (<> len array a) (((<> array a) ref array)) (out size_t))
   ;; bounds-checked access cannot answer for an out of range index, so it hands
   ;; back a maybe rather than a sentinel -- open it with 'match
-  (decl) (func (<> nth array a) ((size_t index) ((<> array a) ref array)) (out (<> maybe a)))
+  (decl) (func (<> nth array a) ((size_t index) ((<> array a) ref array)) (out (<> Maybe ref a)))
 
   ) ; decl-array
 
@@ -36,7 +36,7 @@
   (a)
 
   ;; the payload carrier for (<> nth array a)
-  (impl-maybe a)
+  (impl-maybe ref a)
   
   (inline)
   (func (<> free array a) (((<> array a) ref array))
@@ -49,7 +49,7 @@
 
   (func (<> new array a) ((const a * arr) (size_t len) (size_t cap))
         (out (<> array a))
-        (return (letn ((a * new_arr . #'(calloc cap (sizeof a))))
+        (return (letn ((a ref new_arr . #'(calloc cap (sizeof a))))
                   (syslog! (printf "NEW ARR: %s %p %zu of %zu\n" (symbol-name (<> array a)) new_arr len cap))
                   (when (and arr len) (memcpy new_arr arr (* len (sizeof a))))
                   (cast (<> array a) '{ new_arr cap }))))
@@ -58,14 +58,19 @@
         (out size_t)
         (return (-> array len)))
   
-  ;; `just' / `nothing' are the front ends: they read (<> maybe a) off the out
-  ;; type and expand to the struct literal. Calling (<> just maybe a) instead
-  ;; would be a real call per element -- those are (inline), which is
-  ;; __attribute__((weak)) and therefore never inlined, 4x on the nth benchmark.
+  ;; The maybe is instantiated (decl-refmaybe a), so its payload is a POINTER
+  ;; INTO the array, not a copy of the element. `match' hands the caller an
+  ;; `a ref' to deref -- which is what makes nth usable for writing, and what
+  ;; keeps a large element out of the return value.
+  ;;
+  ;; `just' / `nothing' are brace lists typed by the return slot. Calling
+  ;; (<> just ref a) instead would be a real call per element: those are
+  ;; (inline), i.e. __attribute__((weak)), which is never inlined -- 4x on the
+  ;; nth benchmark.
   (func (<> nth array a) ((size_t index) ((<> array a) ref array))
-        (out (<> maybe a))
+        (out (<> Maybe ref a))
         (if (< index (-> array len))
-            (return (just (nth index (-> array arr))))
+            (return (just (+ (-> array arr) index)))
           (return (nothing))))
   
   ) ; impl-array

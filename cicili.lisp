@@ -38,6 +38,7 @@
                      ((string= arg "--macros")      (setf cicili:*debug-macros*       t))
                      ((string= arg "--macroexpand") (setf cicili:*debug-macroexpand*  t))
                      ((string= arg "--only-link")   (setf cicili:*only-link*          t))
+                     ((string= arg "--release")     (setf cicili:*release*            t))
                      ((string= arg "--separate")    (setf cicili:*debug-runs*         t))
                      ((string= arg "--dump")        (setf cicili:*debug-dump*         t))
                      ((string= arg "--syslog")      (setf cicili:*debug-warnings*     4))

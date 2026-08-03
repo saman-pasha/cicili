@@ -16,22 +16,24 @@ Monads — **all with zero runtime overhead and no garbage collector**.
       (push^vector v 6)
       (printf "len %zu, last %d\n"
               (len^vector v)
-              (matchn (nth^vector 5 v) (just x x) (nothing -1))))))
+              (matchn (nth^vector 5 v) (just x (cof x)) (nothing -1))))))
 ```
 
-That is a growable, reference-counted vector with bounds-checked access answering a
-`maybe` — and it compiles to plain C structs and functions, freed deterministically when
-`letin`'s scope ends.
+That is a growable vector with bounds-checked access answering a `maybe` — carrying a
+pointer *into* the buffer, hence the `cof` — and it
+compiles to plain C structs and functions, freed deterministically when `letin`'s scope
+ends. It owns its buffer outright; wrap it in an `rc` when you want it shared, and pay
+for that only then.
 
 ## Philosophy
 
 * **You see the C.** The generated `.c` file is the ground truth, formatted for reading.
   Nothing is hidden in a runtime; a Cicili binary is a C binary.
 * **The macro layer does the thinking.** Cicili's compiler exposes its type inference to
-  macros (`CICILI:TYPE-CHECK`, `CICILI:INFER-TYPE`, `CICILI:OUT-TYPE`). A macro can ask
-  "what type is this expression?" — or "what type does the function I am inside return?" —
-  and expand accordingly. That is how `match` dispatches, how `free^cell` finds the right
-  destructor, how `(nothing)` knows which `maybe` it is, and how `auto` works.
+  macros (`CICILI:TYPE-CHECK`, `CICILI:INFER-TYPE`). A macro can ask "what type is this
+  expression?" and expand accordingly — that is how `match` dispatches, how `free^cell`
+  finds the right destructor, and how `auto` works. `maybe` and `either` need no inference
+  at all: their constructors are brace lists, typed by the slot they are written into.
 * **Front-end / back-end.** Every std-library feature is two parts: a *back-end* function
   (declared in `decl-X`, implemented in `impl-X` generics) for anything that touches its
   receiver more than once, and a *front-end* macro that only type-checks, infers, and
@@ -75,7 +77,8 @@ your.cicili ──read──► forms ──specify──► typed IR (sp tree, 
   | functional | `lib/haskell/` | ADTs, type classes, Functors, Monads — see [doc/FUNCTIONAL.md](doc/FUNCTIONAL.md) |
 
 * **Toolchain.** `config.lisp` drives clang (macOS) or gcc (Linux) through GNU libtool,
-  with `-Werror -Wall`. `:cpp #t` switches a target to the C++ compiler.
+  with `-Werror -Wall`, in a debug (`-g -O0`) or a `--release` (`-O3 -falign-loops=32`)
+  set. `:cpp #t` switches a target to the C++ compiler.
 
 ## Installation
 
@@ -120,16 +123,21 @@ Read `hello.c` — that habit is the fastest way to learn the language. Then:
   control, functions, aggregates, memory, macros, preprocessor, targets.
 * **[test/run.sh](test/run.sh)** transpiles, compiles **and runs** everything under
   `test/c` and `test/std`: `sh test/run.sh` must end `red: 0`.
+* Build type: **`--release`** builds with `-O3 -falign-loops=32`; without it you get
+  `-g -O0`. Both sets live per-OS in `config.lisp`, so no target carries its own
+  optimisation flags and none can drift from the rest of the suite.
 * Debugging: `--separate` keeps each pass's C; `--syslog` compiles in the std library's
-  allocation/free trace; `--macroexpand` prints every macro expansion.
+  allocation/free trace; `--macroexpand` prints every macro expansion. `--syslog` is sized
+  for the tests — on a benchmark that allocates a million times it emits tens of millions
+  of lines, so redirect it to a file.
 * Emacs users: `(add-to-list 'load-path "/path/to/cicili/emacs") (require 'cicili-mode)`
   — see [doc/emacs.md](doc/emacs.md).
 
 ## The standard library
 
 Everything in `lib/std` follows the decl/impl rule: instantiate both, then use the
-front-end macros. `(decl-vector int) (impl-vector int)` pulls in everything below it
-(array, rc, cell, maybe); `either` stands alone, instantiate it where you need it.
+front-end macros. `(decl-vector int) (impl-vector int)` pulls in `maybe` and nothing else —
+`array`, `cell`, `rc` and `either` stand alone, instantiate them where you need them.
 
 | type | what it is | front ends | test |
 |---|---|---|---|
@@ -137,8 +145,8 @@ front-end macros. `(decl-vector int) (impl-vector int)` pulls in everything belo
 | [`either`](lib/std/either.cicili) | the answer, or why there isn't one | `right` / `left` build one without naming it; `match` / `matchn` open it | [either](test/std/either.cicili) |
 | [`array`](lib/std/array.cicili) | fixed contiguous buffer + length | `new`, `len^array`, `nth^array` (answers a `maybe`), `let^array` / `take^array` | [array](test/std/array.cicili) |
 | [`cell`](lib/std/cell.cicili) | owned heap value, freed exactly once | `new^cell`, `let^cell` / `letn^cell` (borrow), `take^cell` / `taken^cell` (consume) | [cell](test/std/cell.cicili) |
-| [`rc`](lib/std/rc.cicili) | shared heap value, reference counted | `new^rc`, `clone^rc`, `let^rc` / `take^rc` | [rc](test/std/rc.cicili) |
-| [`vector`](lib/std/vector.cicili) | growable window over an rc'd array | `push^vector`, `append^vector` (amortised power-of-two growth), `nth^vector`, `len^vector` | [vector](test/std/vector.cicili) |
+| [`rc`](lib/std/rc.cicili) | a `cell` that counts its owners | `new^rc`, `clone^rc`, `let^rc` / `letn^rc` (borrow), `take^rc` / `taken^rc` (consume, last owner only) | [rc](test/std/rc.cicili) |
+| [`vector`](lib/std/vector.cicili) | an array that owns its headroom — unshared, wrap it in `rc` yourself | `push^vector`, `append^vector` (amortised power-of-two growth), `nth^vector`, `len^vector` | [vector](test/std/vector.cicili) |
 | [`pthread`](lib/std/pthread) | threads with captured context | `go`, `join`, `detach`, `cancel`, `exit-self` | [thread](test/std/thread.cicili) |
 
 Conventions worth knowing:
@@ -153,55 +161,78 @@ Conventions worth knowing:
 The functional layer on top — ADTs, pattern matching, Functors, Applicatives, Monads —
 is documented in **[doc/FUNCTIONAL.md](doc/FUNCTIONAL.md)**.
 
-## Bounds-checked indexing, against Rust
+## Benchmarked against Rust
 
-The claim "zero runtime overhead" is worth only as much as the measurement behind it. So
-here is the one operation where a safe language is supposed to pay: **indexing that cannot
-go out of bounds**. Cicili's `(<> nth array a)` answers a `maybe`; Rust's `Vec::get`
-answers an `Option`. Neither can be read without handling the missing case, and neither
-elides the check.
+The claim "zero runtime overhead" is worth only as much as the measurement behind it.
+`lib/std`'s `vector` is compared against Rust's `Vec<i32>`, and `rc`-wrapped against
+`Rc<Vec<i32>>`, operation for operation. Sources:
+[benchmark/std-vector-bench.cicili](benchmark/std-vector-bench.cicili) and
+[benchmark/rust-vector-bench](benchmark/rust-vector-bench).
 
-```cicili
-;; test/std/array.cicili — 1e9 iterations
-(for ((int i . 0)) (< i N) ((++ i))
-  (match ((<> nth array) (% i 50) v)
-    (just val (+= sum val))))
-```
-```rust
-// benchmark/rust-vector-bench/src/main.rs — the same 1e9
-for i in 0..n {
-    if let Some(&val) = v.get(i % 50) {
-        sum = sum.wrapping_add(val as i64);
-    }
-}
-```
+10⁹ elements per row, Intel i9-9880H, Apple clang 21.0.0 vs rustc 1.96.0. Cicili built
+with `--release`; Rust with `cargo build --release`. **Lower is better; bold is the
+winner of that pair.**
 
-| | ms (three interleaved runs) | median |
+### Owned — `(<> vector a)` vs `Vec<i32>`
+
+| | Cicili | Rust | | Cicili `-flto` | Rust `lto=true` |
+|---|---|---|---|---|---|
+| construct | 105 ms | **100 ms** | | **62 ms** | 90 ms |
+| nth | **504 ms** | 516 ms | | 487 ms | **481 ms** |
+| push | 1942 ms | **1565 ms** | | **1074 ms** | 1375 ms |
+| append | **94 ms** | 99 ms | | **51 ms** | 89 ms |
+
+### Shared — `(<> rc (<> vector a))` vs `Rc<Vec<i32>>`
+
+| | Cicili | Rust | | Cicili `-flto` | Rust `lto=true` |
+|---|---|---|---|---|---|
+| construct | 270 ms | **158 ms** | | **82 ms** | 135 ms |
+| nth | 1259 ms | **518 ms** | | 482 ms | **473 ms** |
+| push | **1899 ms** | 2836 ms | | **1220 ms** | 2595 ms |
+| append | 284 ms | **165 ms** | | **83 ms** | 143 ms |
+
+**Without LTO it is mixed; with LTO Cicili wins or ties every row but one.** The two
+places Cicili loses badly without LTO — shared `nth` and shared `construct` — are the two
+LTO fixes outright, which says the gap was never the reference counting. clang cannot
+propagate a length through `malloc` + `memcpy` into the box without whole-program view;
+given it, the rc'd `nth` goes 1259 → 482 and lands level with the owned one.
+
+`-flto` is **not** in the default release set, because the evidence points both ways: it
+wins nearly everything here, and costs ~14% on a tight loop whose bounds check had already
+folded (452 → 514 ms on [test/std/array.cicili](test/std/array.cicili)). Add it per target
+until that is understood.
+
+### What the `nth` rows do and do not say
+
+Both languages' `nth` row has its **bounds check deleted** — the element count is a
+compile-time constant, so `index < len` folds to true and neither loop branches. That is a
+bounds-checked API compiling to an unchecked loop, on both sides, and it is the number
+most benchmarks quote. Hide the length so the check actually runs, and:
+
+| | Cicili | Rust |
 |---|---|---|
-| **Cicili** `(<> nth array int)` | 506 · 508 · 507 | **507** |
-| Rust `Vec::<i32>::get` | 532 · 532 · 532 | 532 |
+| check elided | 452 ms | 471 ms |
+| **check executed** | **930 ms** | 1223 ms |
 
-**Cicili is ~5% faster** — on an Intel i9-9880H, Apple clang 21.0.0 vs rustc 1.96.0,
-Cicili at `-O3 -ffast-math -falign-loops=32`, Rust at `opt-level = 3` (`cargo build
---release`). Runs are interleaved round-robin, never five-of-each, because this laptop
-drifts ~10% as it warms.
+Cicili is ~24% faster when the check is real. `(<> nth array a)` answers a
+[`refmaybe`](lib/std/maybe.cicili) — a typedef to `a ref`, where a non-null pointer is
+`just` and NULL is `nothing`, the same niche encoding as Rust's `Option<&T>` — so the
+bounds test and the is-there-a-value test are one branch and the answer is 8 bytes.
 
-Both compile to a 2-way unrolled scalar loop with the `% 50` strength-reduced to a
-multiply-shift. Cicili's is 52 bytes and 14 instructions, Rust's 55 and 15 — the `maybe`
-is two registers, `Option<&i32>` is a niche-encoded pointer, and neither costs a branch
-the other avoids. **This is not a structural win; it is the same loop, and Cicili is a
-hair tighter.** The honest headline is that a bounds-checked, `match`-destructured index
-through a generic std type costs *nothing over Rust* — which is the actual claim, and the
-harder one.
+### Reproducing it
 
-`-falign-loops=32` is not a thumb on the scale: clang defaults loops to `.p2align 4`
-— sixteen bytes — while rustc's LLVM already lands this loop on 32. The flag asks clang
-for the alignment Rust was getting for free. Check it yourself with `clang -O3 -S` on any
-loop. Both sides were then swept across code layouts and each is quoted at its **best**,
-because on a loop this tight layout is worth more than the languages differ by — Rust's
-own number ranges 532–637 ms across five builds of *identical* source. Rust was sampled
-more thoroughly than Cicili, so 532 is the better-established minimum and the 5% is a
-conservative figure rather than a flattering one.
+```sh
+sbcl --script cicili.lisp --release ./benchmark/std-vector-bench.cicili && ./benchmark/std_vec_bench
+cd benchmark/rust-vector-bench && cargo build --release && ./target/release/api_bench
+```
+
+Two things to know before quoting any of it. **Code layout is worth more than most of
+these differences** — the same Rust `nth` source measured 471–641 ms across builds that
+differ in no relevant way, which is why `-falign-loops=32` is in the release set: it took
+the array benchmark's run-to-run spread from 5.8% to 2.3% and its median from 500 to
+445 ms. And **a checksum the compiler can precompute deletes the loop under it** — the
+`construct` and `append` rows read 0 ms until their checksums were changed to accumulate
+the buffer address, which cannot be folded.
 
 ## Project layout
 

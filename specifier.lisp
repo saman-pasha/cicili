@@ -1423,7 +1423,8 @@
 	       (body (if has-out (nthcdr 4 def) (nthcdr 3 def)))
            (function-specifier nil))
 
-      (when (key-eq (car def) '|lambda*|) )
+      (when (or (key-eq (car def) '|lambda|) (key-eq (car def) '|lambda*|))
+        (setq is-inline t))
       
       (dolist (attr attrs)
         (let ((name (car attr)))

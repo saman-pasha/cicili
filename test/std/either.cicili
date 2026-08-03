@@ -1,8 +1,9 @@
 ;;;; test Cicili std either -- the `left' / `right' front ends
 ;;; Neither constructor can be inferred from its argument: one value names one
-;;; half of an (<> either e a). What is under test is that both read the out
-;;; type of the function they stand in, that `match' opens both cases, and that
-;;; two instantiations in one file stay apart.
+;;; half of an (<> Either e a). Both expand to a brace list and take their type
+;;; from the slot they land in. What is under test is that no instantiation is
+;;; named at a construction site, that `match' opens both cases, and that two
+;;; instantiations in one file stay apart.
 
 (source "either.c"
   (make :std #t :compile #t :link ("-leither.o" "-o" "either_test"))
@@ -29,7 +30,7 @@
   ;; ---- the shape the front ends exist for -----------------------------
   ;; three returns, three instantiation names not written down
   (func (<> parse either int long) ((const char * text))
-        (out (<> either int long))
+        (out (<> Either int long))
         (let ((char * end) (long n))
           (set errno 0)
           (set n (strtol text (aof end) 10))
@@ -40,16 +41,16 @@
   ;; a second instantiation, sharing neither half with the first, to prove the
   ;; front ends dispatch per function and not per program
   (func (<> half either ParseErr double) ((int x))
-        (out (<> either ParseErr double))
+        (out (<> Either ParseErr double))
         (when (% x 2) (return (left PE_ODD)))
         (return (right (/ x 2.0))))
 
-  ;; `left'/`right' follow the innermost out type: inside a closure it is the
-  ;; closure's either, not the enclosing one
+  ;; a closure has its own out type, so the brace list inside one is typed by
+  ;; the closure and not by the function around it
   (func nested ()
-        (out (<> either int long))
+        (out (<> Either int long))
         (let ((int n . #'(matchn (closure ((<> cl inner))
-                                   (out (<> either ParseErr double))
+                                   (out (<> Either ParseErr double))
                                    (return (left PE_EMPTY)))
                            (right v (cast int v))
                            (left  e (cast void e) -7))))
@@ -109,12 +110,12 @@
 
       ;; ---- the back ends are still the way to name one directly -----------
       (+= bad (check "back-end right still works"
-                (matchn ((<> right either int long) 9)
+                (matchn ((<> right int long) 9)
                   (right n   n)
                   (left  err (cast long (- err))))
                 9))
       (+= bad (check "back-end left still works"
-                (matchn ((<> left either int long) 3)
+                (matchn ((<> left int long) 3)
                   (right n   n)
                   (left  err (cast long err)))
                 3))

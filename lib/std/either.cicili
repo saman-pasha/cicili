@@ -2,7 +2,7 @@
 ;;; one of two answers at the return of a function -- normally why it failed,
 ;;; or what it produced
 ;;;
-;;; The lower case `either' / `left' / `right' are the std, struct-based
+;;; The lower case `either' / `left' / `right' are the std, tagged-union
 ;;; version. They coexist with the Haskell layer's ADT `Either' / `Left' /
 ;;; `Right' -- case is what tells them apart, so both can be in scope and
 ;;; `match' can dispatch on either.
@@ -13,7 +13,7 @@
 ;;; `left' the error -- the right one is the right one.
 ;;;
 ;;;   (func (<> parse either int long) ((const char * text))
-;;;         (out (<> either int long))
+;;;         (out (<> Either int long))
 ;;;         (let ((char * end) (long n))
 ;;;           (set errno 0)
 ;;;           (set n (strtol text (aof end) 10))
@@ -21,35 +21,40 @@
 ;;;           (when errno         (return (left errno)))
 ;;;           (return (right n))))
 ;;;
-;;;   (match ((<> parse either int long) "42")
-;;;     (right n   (printf "n = %ld\n" n))
-;;;     (left  err (printf "no: %s\n" (strerror err))))
+;;; Same shape as maybe, and same reason for it:
 ;;;
-;;; `left' and `right' are the front ends: they name no instantiation, they
-;;; read it off the out type of the function they stand in. Neither can be
-;;; inferred from its argument -- one value names one half of an
-;;; (<> either e a) -- so away from a return, name the instantiation:
-;;; ((<> right either int long) n) / ((<> left either int long) EINVAL).
+;;;   struct Either_int_long { EITHER_CTOR ctor; union { RightT_long right;
+;;;                                                      LeftT_int left; } data; };
 ;;;
-;;; Both payloads are members of one struct, not a union. That costs the size
-;;; of the unused half, and buys what `maybe' buys: reading the wrong one is
-;;; wrong but never undefined, and the constructors stay positional literals.
-;;; Where the two halves are large and the waste matters, carry a (<> cell T)
-;;; or a pointer in one of them.
+;;;   (right v) -> '{ $ctor RIGHT_CTOR $data.right.value v }
+;;;   (left  e) -> '{ $ctor LEFT_CTOR  $data.left.error  e }
+;;;
+;;; A brace list is typed by the slot it lands in, so neither front end names
+;;; an instantiation and neither asks what the enclosing function returns. That
+;;; matters more here than it does for maybe: one argument names only HALF of
+;;; an (<> Either e a), so there is nothing to infer it from even in principle.
+;;; The slot knows both halves; the value knows one.
+;;;
+;;; EITHER_CTOR is declared once for the whole program. LeftT and RightT are
+;;; keyed on ONE parameter each, not on the pair -- Either_int_long and
+;;; Either_int_double must share the same LeftT_int rather than emit it twice.
+;;;
+;;; The one place a brace list does not reach is an argument slot, because C has
+;;; no type there to take it from; name the instantiation for that,
+;;; ((<> right int long) 42) / ((<> left int long) EINVAL).
 ;;;
 ;;; `left' and `right' are ordinary global macros, so they take those two names
 ;;; for the whole program the way `just' / `nothing' / `new' do. A binding of
-;;; your own called `left' or `right' -- a tree node's children, say -- is fine
-;;; as a member (`($ node left)' never expands) but not as something you call.
+;;; your own called `left' or `right' is fine as a member (`($ node left)' never
+;;; expands) but not as something you call.
 ;;;
 ;;; either is a plain value carrier: it owns nothing and has no destructor.
 ;;; Keep both payloads copyable -- for an owned resource carry a (<> cell T)
 ;;; or a pointer, not the resource itself, or the copy and the original will
 ;;; both be freed.
 ;;;
-;;; `right', `value' and `error' are the representation, not the interface.
-;;; Open an either with `match', which infers the type and expands to a bare
-;;; `if':
+;;; `ctor' and `data' are the representation, not the interface. Open an either
+;;; with `match', which infers the type and expands to a bare `if':
 ;;;
 ;;;   (printf "n = %ld\n"
 ;;;     (matchn ((<> parse either int long) "42")
@@ -59,30 +64,51 @@
 (generic decl-either
   (e a)
 
-  ;; `right' is the discriminator as well as the name of the case it selects:
-  ;; the member order is right, value, error
-  (struct (<> either e a)
-          (member bool right)
-          (member a value)
-          (member e error))
+  ;; ---- shared by every instantiation, emitted once -------------------
+  (guard __EITHER_H_
+    ;; LEFT_CTOR is 0, so a zeroed either is a left -- the failure case is the
+    ;; one you want a forgotten initialisation to land on
+    (enum EITHER_CTOR
+      (LEFT_CTOR . 0)
+      (RIGHT_CTOR))
 
-  (typedef a (<> either e a right_t))
-  (typedef e (<> either e a left_t))
-
-  ;; super type declaration to use in 'type-check and 'match dispatch
-  (guard __EITHER_TYPE_H_
+    ;; super type declaration to use in 'type-check and 'match dispatch
     (decl) (struct (<> std either)))
-  (typedef (<> std either) (<> either e a type_t))
+
+  ;; ---- per HALF, each keyed on its own parameter ---------------------
+  ;; (decl-either int long) and (decl-either int double) share LeftT_int; a
+  ;; guard keyed on the pair would emit it once per pair and collide
+  (guard (<> __EITHER_LEFT_ e _H_)
+    (struct (<> LeftT e)
+            (member e error)))
+
+  (guard (<> __EITHER_RIGHT_ a _H_)
+    (struct (<> RightT a)
+            (member a value)))
+
+  ;; ---- per pair -----------------------------------------------------
+  (guard (<> __EITHER_ e a _H_)
+
+    (struct (<> Either e a)
+            (member EITHER_CTOR ctor)
+            (union (member (<> RightT a) right)
+                   (member (<> LeftT e) left)
+                   (declare data)))
+
+    (typedef a (<> Either e a right_t))
+    (typedef e (<> Either e a left_t))
+    (typedef (<> std either) (<> Either e a type_t))
+
+    ;; back ends, for the argument slot a brace list cannot reach
+    (decl) (func (<> right e a) ((a value)) (out (<> Either e a)))
+    (decl) (func (<> left  e a) ((e error)) (out (<> Either e a))))
 
   ;; teaches 'match how to take an either apart; keyed on the opaque super
   ;; type, so it is the same registration whatever `e' and `a' are. emits
-  ;; nothing.
+  ;; nothing. The tag is read, never the union's other arm.
   (def-matchable std^either
-    (right ($ % right)       ($ % value))
-    (left  (not ($ % right)) ($ % error)))
-
-  (decl) (func (<> right either e a) ((a value)) (out (<> either e a)))
-  (decl) (func (<> left  either e a) ((e error)) (out (<> either e a)))
+    (right (== ($ % ctor) RIGHT_CTOR) ($ % data right value))
+    (left  (== ($ % ctor) LEFT_CTOR)  ($ % data left error)))
 
   ) ; decl-either
 
@@ -90,57 +116,41 @@
 (generic impl-either
   (e a)
 
-  ;; positional init: the discriminator first, then the payloads in struct
-  ;; order. The half that is not selected is the zero of its type, so reading
-  ;; it without checking is wrong but never undefined
-  (inline)
-  (func (<> right either e a) ((a value))
-        (out (<> either e a))
-        (return (cast (<> either e a) '{ #t value (cast e '{ 0 }) })))
+  (guard (<> __EITHER_IMPL_ e a _H_)
 
-  (inline)
-  (func (<> left either e a) ((e error))
-        (out (<> either e a))
-        (return (cast (<> either e a) '{ #f (cast a '{ 0 }) error })))
+    ;; one nested designator to the payload: reaching it positionally would be
+    ;; initialising a subobject through elided braces, which -Wall rejects
+    ;; (-Wmissing-braces) and this project builds -Werror
+    (inline)
+    (func (<> right e a) ((a value))
+          (out (<> Either e a))
+          (return (cast (<> Either e a) '{ $ctor RIGHT_CTOR $data.right.value value })))
+
+    (inline)
+    (func (<> left e a) ((e error))
+          (out (<> Either e a))
+          (return (cast (<> Either e a) '{ $ctor LEFT_CTOR $data.left.error error }))))
 
   ) ; impl-either
 
 
 ;;;; ------------------------------------------------------------------
-;;;; front ends: build an either without naming its instantiation.
-;;;;
-;;;; One argument names one half of an (<> either e a), so unlike `just' there
-;;;; is nothing to fall back on: both read the out type of the function the
-;;;; form stands in, and both say so when it is not an either.
+;;;; front ends: build an either without naming its instantiation, and without
+;;;; asking what the enclosing function returns. Both expand to a brace list
+;;;; and the slot types it -- `return' casts to the out type, a declaration
+;;;; casts to the declared type.
 ;;;;
 ;;;; Neither calls the back-end constructor. Those are (inline), which is
 ;;;; __attribute__((weak)) and therefore never inlined -- a real call for what
-;;;; is three stores. The expansion is the struct literal, so an either built
-;;;; in a loop costs what writing the braces by hand would.
+;;;; is two stores.
 ;;;; ------------------------------------------------------------------
 
-;;; the either this form belongs to, as its type name, or NIL when the
-;;; enclosing function does not return one
-(DEFUN either-out< ()
-  (out-typeof< 'std^either))
-
-(DEFUN either-out-or-die< (who)
-  (LET ((type-name (either-out<)))
-    (UNLESS type-name
-      (ERROR (FORMAT NIL "~A: the enclosing function does not return an either~%  name the instantiation instead: ((<> ~A either E A) …)"
-                     who who)))
-    type-name))
-
-;;; (right v) -- the answer. The instantiation comes from the out type, so
-;;; `(return (right n))' inside (out (<> either int long)) builds an
-;;; either_int_long whatever `n' is declared as.
+;;; (right v) -- the answer
 (DEFMACRO right (value)
-  (LET ((value value)
-        (type-name (either-out-or-die< 'right)))
-    `(cast ,type-name '{ #t ,value (cast (<> ,type-name left_t) '{ 0 }) })))
+  (LET ((value value))
+    `'{ $ctor RIGHT_CTOR $data.right.value ,value }))
 
-;;; (left err) -- the error, the other half of the same out type
+;;; (left err) -- the error, the other arm of the same union
 (DEFMACRO left (error)
-  (LET ((error error)
-        (type-name (either-out-or-die< 'left)))
-    `(cast ,type-name '{ #f (cast (<> ,type-name right_t) '{ 0 }) ,error })))
+  (LET ((error error))
+    `'{ $ctor LEFT_CTOR $data.left.error ,error }))

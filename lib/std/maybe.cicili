@@ -1,43 +1,61 @@
 ;;;; Cicili std maybe
 ;;; presence of a value at the return of a function
 ;;;
-;;; The lower case `maybe' / `just' / `nothing' are the std, struct-based
+;;; The lower case `maybe' / `just' / `nothing' are the std, tagged-union
 ;;; version. They coexist with the Haskell layer's ADT `Maybe' / `Just' /
 ;;; `Nothing' -- case is what tells them apart, so both can be in scope and
 ;;; `match' can dispatch on either.
 ;;;
-;;; A function that may or may not have an answer returns (<> maybe a) instead
+;;; A function that may or may not have an answer returns (<> Maybe a) instead
 ;;; of a bare `a' plus a sentinel, so "is there a value" cannot be forgotten:
 ;;;
 ;;;   (func (<> find array a) ((a needle) ((<> array a) ref array))
-;;;         (out (<> maybe size_t))
+;;;         (out (<> Maybe size_t))
 ;;;         (for ((size_t i . 0)) (< i (-> array len)) ((1+ i))
 ;;;           (when (== (nth i (-> array arr)) needle)
 ;;;             (return (just i))))
 ;;;         (return (nothing)))
 ;;;
-;;; `just' and `nothing' are the front ends: they name no instantiation, they
-;;; read it off the out type of the function they stand in. The back-end
-;;; constructors are still there for the rare form that is not in a return --
-;;; ((<> just maybe size_t) i) / ((<> nothing maybe size_t)).
+;;; THE LAYOUT IS WHAT MAKES THAT WORK. A maybe is a ctor tag and a union:
 ;;;
-;;; Unlike a sentinel return, `present' is independent of the payload, so zero
-;;; and NULL are perfectly good values.
+;;;   struct Maybe_int { MAYBE_CTOR ctor; union { JustT_int just;
+;;;                                               NothingT nothing; } data; };
+;;;
+;;; MAYBE_CTOR and NothingT are declared ONCE for the whole program, not per
+;;; instantiation, and that is the point. A `nothing' carries no payload, so
+;;; `{ NOTHING_CTOR }' describes one for EVERY (<> Maybe a) there will ever be
+;;; -- the brace list is the value, and the slot it is written into supplies
+;;; the type. A `just' carries exactly its payload, so the type of the payload
+;;; is the whole answer.
+;;;
+;;; So neither front end has to be told an instantiation and neither has to ask
+;;; what the enclosing function returns:
+;;;
+;;;   (nothing)   -> '{ $ctor NOTHING_CTOR }              typed by its slot
+;;;   (just v)    -> '{ $ctor JUST_CTOR $data.just.value v }   same, carries v
+;;;
+;;; Designated, not positional: reaching the payload positionally means
+;;; initialising a subobject through elided braces, which -Wall rejects
+;;; (-Wmissing-braces) and this project builds -Werror. `$data.just.value' is
+;;; one designator all the way down and needs no braces at all.
+;;;
+;;; A brace list is typed by its context in C and in Cicili both: `return' casts
+;;; it to the function's out type, a declaration casts it to the declared type.
+;;; That is ordinary initialisation, not inference -- there is nothing to infer.
+;;; The one place it does not reach is an argument slot, because C has no type
+;;; there to take it from; name the instantiation for that,
+;;; ((<> just int) 3) / ((<> nothing int)).
+;;;
+;;; Unlike a sentinel return, the tag is independent of the payload, so zero and
+;;; NULL are perfectly good values.
 ;;;
 ;;; maybe is a plain value carrier: it owns nothing and has no destructor. Keep
 ;;; the payload copyable -- for an owned resource carry a (<> cell T) or a
 ;;; pointer, not the resource itself, or the copy in `value' and the original
 ;;; will both be freed.
 ;;;
-;;; The back-end constructors carry (inline), which emits __attribute__((weak))
-;;; so one definition serves every translation unit -- but a weak symbol is
-;;; replaceable at link time, so gcc will not inline it. That is why the front
-;;; ends do not call them: they expand to the struct literal itself,
-;;; (cast (<> maybe a) '{ #t v }) / '{ #f (cast a '{ 0 }) }, the way
-;;; (<> nth array a) does; the member order is present then value.
-;;;
-;;; `present' and `value' are the representation, not the interface. Open a
-;;; maybe with `match', which infers the type and expands to a bare `if':
+;;; `ctor' and `data' are the representation, not the interface. Open a maybe
+;;; with `match', which infers the type and expands to a bare `if':
 ;;;
 ;;;   (match ((<> find array int) 7 (aof arr))
 ;;;     (just    at (printf "7 is at %zu\n" at))
@@ -49,95 +67,162 @@
 ;;;       (nothing    0)))
 
 (generic decl-maybe
-  (a)
+  (mod a)
 
-  (struct (<> maybe a)
-          (member bool present)
-          (member a value))
+  ;; ---- shared by every instantiation, emitted once -------------------
+  (guard __MAYBE_H_
+    ;; NOTHING_CTOR is 0 so that a zeroed maybe is a nothing, which is what
+    ;; makes '{ NOTHING_CTOR } and a plain '{ } agree
+    (enum MAYBE_CTOR
+      (NOTHING_CTOR . 0)
+      (JUST_CTOR))
 
-  (typedef a (<> maybe a interior_t))
+    ;; C has no empty struct. One byte keeps it standard and costs nothing --
+    ;; the union is at least as wide as the payload either way.
+    (struct NothingT
+            (member char _unused))
 
-  ;; super type declaration to use in 'type-check and 'match dispatch
-  (guard __MAYBE_TYPE_H_
+    ;; super type declaration to use in 'type-check and 'match dispatch
     (decl) (struct (<> std maybe)))
-  (typedef (<> std maybe) (<> maybe a type_t))
+
+  ;; ---- per payload type ---------------------------------------------
+  ;; guarded, so (decl-maybe int) twice -- which is what (decl-array int) plus a
+  ;; hand written (decl-maybe int) amounts to -- is not a redefinition
+  ;; `mod' is the modifier over the payload and it is part of the NAME, so
+  ;; (decl-maybe int) and (decl-maybe ref int) are two different types --
+  ;; Maybe_int and Maybe_ref_int -- and can coexist. Omit it and it vanishes
+  ;; from every form below; nothing here says which case it is.
+  (guard (<> __MAYBE_ mod a _H_)
+
+    (struct (<> JustT mod a)
+            (member a mod value))
+
+    (struct (<> Maybe mod a)
+            (member MAYBE_CTOR ctor)
+            (union (member (<> JustT mod a) just)
+                   (member NothingT nothing)
+                   (declare data)))
+
+    (typedef (<> std maybe) (<> Maybe mod a type_t))
+
+    ;; back ends, for the argument slot a brace list cannot reach
+    (decl) (func (<> just    mod a) ((a mod value)) (out (<> Maybe mod a)))
+    (decl) (func (<> nothing mod a) ()              (out (<> Maybe mod a))))
 
   ;; teaches 'match how to take a maybe apart; keyed on the opaque super type,
   ;; so it is the same registration whatever `a' is. emits nothing.
+  ;; The tag is read, never the union's other arm, so a `just' payload is only
+  ;; ever touched after JUST_CTOR has been seen.
   (def-matchable std^maybe
-    (just    ($ % present)       ($ % value))
-    (nothing (not ($ % present)) NIL))
-
-  (decl) (func (<> just    maybe a) ((a value)) (out (<> maybe a)))
-  (decl) (func (<> nothing maybe a) ()          (out (<> maybe a)))
+    (just    (== ($ % ctor) JUST_CTOR)    ($ % data just value))
+    (nothing (== ($ % ctor) NOTHING_CTOR) NIL))
 
   ) ; decl-maybe
 
 
 (generic impl-maybe
-  (a)
+  (mod a)
 
-  ;; positional init: present first, then the payload, in struct order
-  (inline)
-  (func (<> just maybe a) ((a value))
-        (out (<> maybe a))
-        (return (cast (<> maybe a) '{ #t value })))
+  (guard (<> __MAYBE_IMPL_ mod a _H_)
 
-  ;; nothing still carries a well defined payload -- the zero of its type -- so
-  ;; reading `value' without checking is wrong but never undefined
-  (inline)
-  (func (<> nothing maybe a) ()
-        (out (<> maybe a))
-        (return (cast (<> maybe a) '{ #f (cast a '{ 0 }) })))
+    ;; one nested designator to the payload -- see the note at the top
+    (func (<> just mod a) ((a mod value))
+          (out (<> Maybe mod a))
+          (return (cast (<> Maybe mod a) '{ $ctor JUST_CTOR $data.just.value value })))
+
+    ;; everything after the tag zero-fills, which is the whole content of a
+    ;; nothing -- reading the payload without checking the tag is wrong, but it
+    ;; is never undefined
+    (func (<> nothing mod a) ()
+          (out (<> Maybe mod a))
+          (return (cast (<> Maybe mod a) '{ $ctor NOTHING_CTOR }))))
 
   ) ; impl-maybe
 
 
 ;;;; ------------------------------------------------------------------
-;;;; front ends: build a maybe without naming its instantiation.
+;;;; front ends: build a maybe without naming its instantiation, and without
+;;;; asking what the enclosing function returns.
 ;;;;
-;;;; Both answer the same question -- which (<> maybe a) is this? -- by looking
-;;;; at the out type of the function the form stands in. `nothing' has nothing
-;;;; else to go on; `just' falls back to the type of its own value when the
-;;;; enclosing function does not return a maybe, so it still works in a `let'.
+;;;; Both expand to a brace list. The slot types it -- `return' casts to the out
+;;;; type, a declaration casts to the declared type -- so there is no inference
+;;;; step to get wrong and no dependence on where the form stands beyond the
+;;;; ordinary rules of C initialisation.
 ;;;;
 ;;;; Neither calls the back-end constructor. Those are (inline), which is
 ;;;; __attribute__((weak)) and therefore never inlined -- a real call for what
-;;;; is two stores. The expansion is the struct literal, so a maybe built in a
-;;;; loop costs what writing the braces by hand would.
+;;;; is two stores. The expansion is the literal, so a maybe built in a loop
+;;;; costs what writing the braces by hand would.
 ;;;; ------------------------------------------------------------------
 
-;;; the maybe this form belongs to, as its type name, or NIL when the enclosing
-;;; function does not return one
-(DEFUN maybe-out< ()
-  (out-typeof< 'std^maybe))
-
-;;; (just v) -- the instantiation comes from the out type, so `(return (just i))'
-;;; inside (out (<> maybe size_t)) builds a maybe_size_t whatever `i' is
-;;; declared as; a literal 0 needs no cast. Outside a maybe-returning function
-;;; the value decides, which is what makes
-;;; (let (((<> maybe int) m . #'(just 3)))) work. Where neither is the
-;;; instantiation you want, name it: ((<> just maybe long) 3).
-(DEFMACRO just (value)
-  (LET* ((value value)
-         (type-name
-             (OR (maybe-out<)
-                 (MULTIPLE-VALUE-BIND (_ full-type) (CICILI:INFER-TYPE value)
-                   (DECLARE (IGNORE _))
-                   (LET ((item (NTH 1 full-type)))
-                     (UNLESS (SYMBOLP item)
-                       (SETQ item (NTH 1 (NTH-VALUE 1 (CICILI:INFER-TYPE-SPEC "" item)))))
-                     (UNLESS (SYMBOLP item)
-                       (ERROR (FORMAT NIL "just: can't infer which maybe ~A belongs to~%  name it: ((<> just maybe T) ~A)"
-                                      value value)))
-                     `(<> maybe ,item))))))
-    `(cast ,type-name '{ #t ,value })))
-
-;;; (nothing) -- carries no value, so only the out type can say which maybe it
-;;; is. In any other position name the instantiation: ((<> nothing maybe int)).
-;;; The payload is the zero of the interior type, never uninitialised.
+;;; (nothing) -- the same value for every instantiation. Nothing is inferred
+;;; because nothing needs to be: a tag and a zeroed union is all a nothing is.
 (DEFMACRO nothing ()
-  (LET ((type-name (maybe-out<)))
-    (UNLESS type-name
-      (ERROR (FORMAT NIL "nothing: the enclosing function does not return a maybe~%  name the instantiation instead: ((<> nothing maybe T))")))
-    `(cast ,type-name '{ #f (cast (<> ,type-name interior_t) '{ 0 }) })))
+  `'{ $ctor NOTHING_CTOR })
+
+;;; (just v) -- carries v, and nothing else has to be said.
+(DEFMACRO just (value)
+  (LET ((value value))
+    `'{ $ctor JUST_CTOR $data.just.value ,value }))
+
+
+;;;; ==================================================================
+;;;; refmaybe -- the niche-encoded maybe, for pointer payloads only
+;;;;
+;;;; (<> RefMaybe a) is a TYPEDEF to `a ref', not a struct. There is no ctor
+;;;; tag and no union, because a pointer already has a value that cannot be a
+;;;; valid payload: a `just' is a non-null pointer and `nothing' is NULL. That
+;;;; is Rust's niche encoding for Option<&T>, and it means
+;;;;
+;;;;   sizeof(RefMaybe_int) == sizeof(int *)      -- 8, against Maybe_ref_int's 16
+;;;;   the bounds test and the is-there-a-value test are ONE branch
+;;;;
+;;;; So there is nothing to construct and no front end to call. `nth' returns
+;;;; the address or it returns nil:
+;;;;
+;;;;   (func (<> nth array a) ((size_t index) ((<> array a) ref array))
+;;;;         (out (<> RefMaybe a))
+;;;;         (if (< index (-> array len))
+;;;;             (return (+ (-> array arr) index))
+;;;;           (return nil)))
+;;;;
+;;;; `match' opens it exactly as it opens a maybe -- the registration below is
+;;;; keyed on its own super type, so `just' and `nothing' mean the same thing to
+;;;; a reader while testing something completely different underneath. The bound
+;;;; value is the pointer, so the body derefs it with `cof', the same as the
+;;;; (decl-maybe ref a) form.
+;;;;
+;;;; What it cannot do: carry a payload that has no spare representation. Use it
+;;;; where the answer is a location -- an element of an array, a node of a tree --
+;;;; and (decl-maybe a) or (decl-maybe ref a) everywhere else.
+;;;; ==================================================================
+
+(generic decl-refmaybe
+  (a)
+
+  ;; super type declaration to use in 'type-check and 'match dispatch
+  (guard __REFMAYBE_H_
+    (decl) (struct (<> std refmaybe)))
+
+  (guard (<> __REFMAYBE_ a _H_)
+    (typedef a ref (<> RefMaybe a))
+    (typedef (<> std refmaybe) (<> RefMaybe a type_t)))
+
+  ;; `%' IS the pointer, so the test is the pointer and so is the accessor.
+  ;; One branch, and nothing is loaded to take it.
+  (def-matchable std^refmaybe
+    (just    %       %)
+    (nothing (not %) NIL))
+
+  ) ; decl-refmaybe
+
+
+(generic impl-refmaybe
+  (a)
+
+  ;; nothing to emit: a refmaybe has no constructors and no destructor, it is
+  ;; the pointer. Declared for symmetry so decl-/impl- pair up like every other
+  ;; std type.
+  ($$$ )
+
+  ) ; impl-refmaybe

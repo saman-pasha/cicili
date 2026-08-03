@@ -15,36 +15,6 @@
 (defparameter *symbols* (make-hash-table :test 'equal))
 ;; Lex Id, push and pop to create id segments
 (defvar *lexemes-id* '())
-;; pushes a segment to lexemes id path
-(defun *push* (id)
-  (let ((segment (if (symbolp id) (symbol-name id) id)))
-    (push segment *lexemes-id*)
-    id))
-;; pops a segment from lexemes id path
-(defun *pop* (spec)
-  (pop *lexemes-id*)
-  spec)
-;; puts id and its def to *symbols* by creating id from *lexemes-id*
-(defun *puts* (id def)
-  (let ((lex-id (if *struct-spec*
-                    (if (eq def *struct-spec*)
-                        (symbol-name id)
-                        (str:join "/" (append (list (substitute #\_ #\^ (symbol-name id)))
-                                              (list (symbol-name (name *struct-spec*))))))
-                    (str:join "/" (append (list (substitute #\_ #\^ (symbol-name id))) *lexemes-id*)))))
-    ;; (format t "LEEEEXPUTS ~A~%" lex-id)
-    (setf (gethash lex-id *symbols*) def)))
-;; 'gets and 'gets-of helper get def by id from *symbols* by creating id from *lexemes-id*
-(defun *gets-from* (id lexemes-id &optional default)
-  (let ((lex-id (str:join "/" (append (list (substitute #\_ #\^ (symbol-name id))) lexemes-id))))
-    (let ((def (gethash lex-id *symbols*)))
-      (if def def (if lexemes-id (*gets-from* id (cdr lexemes-id) default) nil)))))
-;; *gets* front-end
-(defun *gets* (id &optional default)
-  (let* ((id (expand-macros id))
-         (lex-id (str:join "/" (append (list (substitute #\_ #\^ (symbol-name id))) *lexemes-id*))))
-    (let ((def (gethash lex-id *symbols*)))
-      (if def def (if *lexemes-id* (*gets-from* id (cdr *lexemes-id*) default) nil)))))
 ;; distinct type inference time macro expantion from real specifying time
 (defparameter *type-infer-time-var* nil)
 (defparameter *type-infer-time-lambda* nil)
@@ -108,6 +78,36 @@
 (defparameter *macroexpand* nil)
 ;; whether target uses :cpp key #t
 (defparameter *cpp* nil)
+
+;; pushes a segment to lexemes id path
+(defun *push* (id)
+  (let ((segment (if (symbolp id) (symbol-name id) id)))
+    (push segment *lexemes-id*)
+    id))
+;; pops a segment from lexemes id path
+(defun *pop* (spec)
+  (pop *lexemes-id*)
+  spec)
+;; puts id and its def to *symbols* by creating id from *lexemes-id*
+(defun *puts* (id def)
+  (let ((lex-id (if *struct-spec*
+                    (if (eq def *struct-spec*)
+                        (symbol-name id)
+                        (str:join "/" (append (list (substitute #\_ #\^ (symbol-name id)))
+                                              (list (symbol-name (name *struct-spec*))))))
+                    (str:join "/" (append (list (substitute #\_ #\^ (symbol-name id))) *lexemes-id*)))))
+    (setf (gethash lex-id *symbols*) def)))
+;; 'gets and 'gets-of helper get def by id from *symbols* by creating id from *lexemes-id*
+(defun *gets-from* (id lexemes-id &optional default)
+  (let ((lex-id (str:join "/" (append (list (substitute #\_ #\^ (symbol-name id))) lexemes-id))))
+    (let ((def (gethash lex-id *symbols*)))
+      (if def def (if lexemes-id (*gets-from* id (cdr lexemes-id) default) nil)))))
+;; *gets* front-end
+(defun *gets* (id &optional default)
+  (let* ((id (expand-macros id))
+         (lex-id (str:join "/" (append (list (substitute #\_ #\^ (symbol-name id))) *lexemes-id*))))
+    (let ((def (gethash lex-id *symbols*)))
+      (if def def (if *lexemes-id* (*gets-from* id (cdr *lexemes-id*) default) nil)))))
 
 ;; relative files from target directory or cicili directory
 ;; if begins with . (./ ../) from target path
