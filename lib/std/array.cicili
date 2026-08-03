@@ -7,6 +7,9 @@
   ;; the payload carrier for (<> nth array a)
   (decl-maybe ref a)
 
+  ;; `a * const', where the vector's buffer is a plain `a ref': an array's
+  ;; buffer never moves, so the pointer is const and only the cells are
+  ;; writable. A vector reallocs, so its own pointer has to be assignable.
   (non-copy)
   (struct (<> array a)
           (member a * const arr)
@@ -22,8 +25,16 @@
   (decl) (func (<> free array a) (((<> array a) ref array)))
   (decl) (func (<> free array a pointer) (((<> array a) ** array)))
   ;; `cap' cells are allocated and zeroed, the first `len' of them copied from
-  ;; `arr'. The array's own `len' IS the capacity; a vector carries the headroom
-  ;; (<> arraySize vector a) asks for by passing cap > len.
+  ;; `arr'. The array's own `len' IS the capacity -- an array does not grow, so
+  ;; the two are the same number for every caller in the tree today. `cap' is
+  ;; kept because a caller CAN ask for headroom, but nothing does since the
+  ;; vector stopped being a window over an array and grew its own buffer.
+  ;;
+  ;; That makes the calloc below mostly waste: when cap == len and `arr' is
+  ;; given, every zeroed cell is immediately overwritten by the memcpy.
+  ;; (<> new vector a) mallocs for exactly this reason. Worth changing here to
+  ;; malloc + memcpy + memset of the tail only, which is a behaviour change for
+  ;; the cap > len and arr == nil cases and so has not been made blind.
   (decl) (func (<> new array a) ((const a * arr) (size_t len) (size_t cap)) (out (<> array a)))
   (decl) (func (<> len array a) (((<> array a) ref array)) (out size_t))
   ;; bounds-checked access cannot answer for an out of range index, so it hands
@@ -58,7 +69,7 @@
         (out size_t)
         (return (-> array len)))
   
-  ;; The maybe is instantiated (decl-refmaybe a), so its payload is a POINTER
+  ;; The maybe is instantiated (decl-maybe ref a), so its payload is a POINTER
   ;; INTO the array, not a copy of the element. `match' hands the caller an
   ;; `a ref' to deref -- which is what makes nth usable for writing, and what
   ;; keeps a large element out of the return value.

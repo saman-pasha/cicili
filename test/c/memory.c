@@ -60,17 +60,17 @@ void scoped_forms () {
     ((void)n );
   }
 }
-typedef struct cicili0YZcwKiNbhvlo_0f3vEpRsZSe88_ {
+typedef struct ciciliwFLWzfVsL1GPRH_kdkjg9rkULp0_ {
   int * out_id ;
   int id ;
-} cicili0YZcwKiNbhvlo_0f3vEpRsZSe88_;
-void __ciciliL_133 (struct cicili0YZcwKiNbhvlo_0f3vEpRsZSe88_ * ciciliDefer130 ) {
+} ciciliwFLWzfVsL1GPRH_kdkjg9rkULp0_;
+void __ciciliL_133 (struct ciciliwFLWzfVsL1GPRH_kdkjg9rkULp0_ * ciciliDefer130 ) {
   int * out_id  = (ciciliDefer130 -> out_id);
   int id  = (ciciliDefer130 -> id);
   (*out_id ) = id ;
 }
 static void scoped_defer_star (int * out_id , int id ) {
-  struct cicili0YZcwKiNbhvlo_0f3vEpRsZSe88_ ciciliDefer130  __attribute__((__cleanup__(__ciciliL_133 ))) = { out_id , id };
+  struct ciciliwFLWzfVsL1GPRH_kdkjg9rkULp0_ ciciliDefer130  __attribute__((__cleanup__(__ciciliL_133 ))) = { out_id , id };
   (*out_id ) = 0;
 }
 void __ciciliL_148 (int ** one ) {

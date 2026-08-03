@@ -143,7 +143,7 @@ front-end macros. `(decl-vector int) (impl-vector int)` pulls in `maybe` and not
 |---|---|---|---|
 | [`maybe`](lib/std/maybe.cicili) | presence of a value, no sentinels | `just` / `nothing` build one without naming it; `match` / `matchn` open it | [maybe](test/std/maybe.cicili) |
 | [`either`](lib/std/either.cicili) | the answer, or why there isn't one | `right` / `left` build one without naming it; `match` / `matchn` open it | [either](test/std/either.cicili) |
-| [`array`](lib/std/array.cicili) | fixed contiguous buffer + length | `new`, `len^array`, `nth^array` (answers a `maybe`), `let^array` / `take^array` | [array](test/std/array.cicili) |
+| [`array`](lib/std/array.cicili) | fixed contiguous buffer + length | `new`, `len^array`, `nth^array` (answers a `(<> Maybe ref a)` — a pointer *into* the buffer), `let^array` / `take^array` | [array](test/std/array.cicili) |
 | [`cell`](lib/std/cell.cicili) | owned heap value, freed exactly once | `new^cell`, `let^cell` / `letn^cell` (borrow), `take^cell` / `taken^cell` (consume) | [cell](test/std/cell.cicili) |
 | [`rc`](lib/std/rc.cicili) | a `cell` that counts its owners | `new^rc`, `clone^rc`, `let^rc` / `letn^rc` (borrow), `take^rc` / `taken^rc` (consume, last owner only) | [rc](test/std/rc.cicili) |
 | [`vector`](lib/std/vector.cicili) | an array that owns its headroom — unshared, wrap it in `rc` yourself | `push^vector`, `append^vector` (amortised power-of-two growth), `nth^vector`, `len^vector` | [vector](test/std/vector.cicili) |
@@ -209,15 +209,25 @@ compile-time constant, so `index < len` folds to true and neither loop branches.
 bounds-checked API compiling to an unchecked loop, on both sides, and it is the number
 most benchmarks quote. Hide the length so the check actually runs, and:
 
-| | Cicili | Rust |
-|---|---|---|
-| check elided | 452 ms | 471 ms |
-| **check executed** | **930 ms** | 1223 ms |
+| | Cicili `array` | Cicili `vector` | Rust |
+|---|---|---|---|
+| check elided | 474 ms | 457 ms | 467 ms |
+| **check executed** | **950 ms** | **995 ms** | 1085 ms |
 
-Cicili is ~24% faster when the check is real. `(<> nth array a)` answers a
-[`refmaybe`](lib/std/maybe.cicili) — a typedef to `a ref`, where a non-null pointer is
-`just` and NULL is `nothing`, the same niche encoding as Rust's `Option<&T>` — so the
-bounds test and the is-there-a-value test are one branch and the answer is 8 bytes.
+Cicili is ~10% faster when the check is real, and `array` and `vector` agree with each
+other — they run the same `nth` over the same layout, so they should.
+
+Rust is quoted at its **best** there: it measured a stable 1085 ms cold and 1237–1346 ms
+once the machine had warmed up, and taking its lowest is the conservative direction. On a
+warm-for-warm comparison the gap is wider; it is not quoted that way.
+
+**No claim is made about *why*.** Both `nth`s answer a `(<> Maybe ref a)` — a tagged
+struct carrying a pointer into the buffer, 16 bytes, tag tested separately from the
+bound — which is *more* work per element than Rust's niche-encoded `Option<&i32>`, where
+`None` is a null pointer and one branch serves for both. Cicili wins the row anyway, and
+that is not explained by the data structure. `lib/std/maybe.cicili` does carry a
+`decl-refmaybe` that niche-encodes exactly the way Rust does, but nothing in the tree uses
+it, so it is not what these numbers measure.
 
 ### Reproducing it
 

@@ -119,12 +119,16 @@
         (out size_t)
         (return (-> vector len)))
 
-  ;; the array's nth, with `len' meaning used rather than allocated. `just' and
-  ;; `nothing' are the front ends, so this is a struct literal and no call --
-  ;; the back-end constructors carry (inline), which emits
-  ;; __attribute__((weak)), and a weak symbol is one the compiler may not inline
-  ;; the maybe is (decl-maybe ref a), so the payload is a POINTER INTO the
-  ;; buffer, not a copy of the element -- `match' hands out an `a ref' to deref
+  ;; The array's nth exactly, with `len' meaning used rather than allocated.
+  ;;
+  ;; The maybe is (decl-maybe ref a), so the payload is a POINTER INTO the
+  ;; buffer rather than a copy of the element -- `match' hands out an `a ref'
+  ;; to deref, which is what makes nth usable for writing.
+  ;;
+  ;; `just' and `nothing' are the front ends, so this is a struct literal and
+  ;; no call. Calling the back-end constructors instead would be a real call
+  ;; per element: they carry (inline), which emits __attribute__((weak)), and a
+  ;; weak symbol is one the compiler is not allowed to inline.
   (func (<> nth vector a) ((size_t index) ((<> vector a) ref vector))
         (out (<> Maybe ref a))
         (if (< index (-> vector len))
