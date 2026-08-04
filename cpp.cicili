@@ -96,10 +96,14 @@
 ;;; on the C side ((new vector ...)), and the two mean different things: this
 ;;; one allocates and the other does not.
 (DEFMACRO new* (type &REST args)
-  `(code '{ new ,(cpp-type< type) "(" (code ',(LET ((l (1- (LENGTH args))))
+  (IF (NULL args)
+      ;; no arguments is `new T()', not `new T(NIL)' -- an empty loop over the
+      ;; argument list produced the latter, which does not name anything
+      `(code '{ new ,(cpp-type< type) "()" })
+      `(code '{ new ,(cpp-type< type) "(" (code ',(LET ((l (1- (LENGTH args))))
                                     (LOOP FOR a IN args FOR i FROM 0 TO l
                                           APPEND (IF (< i l) (LIST a ",") (LIST a)))))
-            ")" }))
+                ")" })))
 
 ;; spliced rather than wrapped, so the expression stays an ordinary statement
 ;; and gets its own `;' -- a code escape supplies its own punctuation and there

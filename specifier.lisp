@@ -550,6 +550,7 @@
       (unless (or (null const) (key-eq const '|const|)) (setq status -2))
       (unless (or (null modifier)
                   (key-eq modifier '&)
+                  (key-eq modifier '&&)   ; C++ rvalue reference
                   (key-eq modifier '*)
                   (key-eq modifier '**)
                   (key-eq modifier '***)

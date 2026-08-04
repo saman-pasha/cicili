@@ -119,6 +119,9 @@ Read `hello.c` — that habit is the fastest way to learn the language. Then:
 * **[doc/DOC-C.md](doc/DOC-C.md)** is the complete reference for the C core: every clause
   with the generated C underneath, a clause index at the top, and each section linked to
   the runnable test that covers it.
+* **[doc/DOC-CPP.md](doc/DOC-CPP.md)** is the C++ half: qualified `::` names, `struct`
+  inheritance, methods with implicit `this`, `ctor`/`dtor`, `module` as `namespace`,
+  references, templates and `letin*`. A supplement to DOC-C.md, not a replacement.
 * **[test/c/](test/c)** is one green, self-checking file per clause family — operators,
   control, functions, aggregates, memory, macros, preprocessor, targets.
 * **[test/run.sh](test/run.sh)** transpiles, compiles **and runs** everything under
@@ -303,10 +306,12 @@ the buffer address, which cannot be folded.
 
 ```
 cicili.lisp        entry point            doc/DOC-C.md      the C-core reference
-*.lisp             the compiler           doc/FUNCTIONAL.md the functional layer
-builtins.cicili    the builtin macros     doc/test.md       the test suite
+*.lisp             the compiler           doc/DOC-CPP.md    the C++ reference
+builtins.cicili    the builtin macros     doc/FUNCTIONAL.md the functional layer
+cpp.cicili         the C++ macro layer    doc/test.md       the test suite
 lib/std/           the standard library   test/c, test/std  the suite (sh test/run.sh)
-lib/haskell/       the functional layer   emacs/            cicili-mode
+lib/haskell/       the functional layer   test/cpp          the C++ suite
+emacs/             cicili-mode
 ```
 
 ## License
