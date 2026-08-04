@@ -12,7 +12,8 @@ void check (const char * what , long got , long want ) {
       (++bad );
     }
 }
-namespace geom { /* block114 */
+namespace geom 
+{ /* block114 */
 struct Point {
     int x ;
     int y ;
@@ -23,7 +24,9 @@ struct Point {
     }
 };
 }
-using namespace geom ; template < typename T > T biggest (const T &  a , const T &  b ) {
+using namespace geom ; 
+template < typename T > 
+T biggest (const T &  a , const T &  b ) {
   return (((a  <  b  )) ? b  : a );
 }
 void bump (int &  n ) {
@@ -35,7 +38,8 @@ int lengthOf (const std :: string &  s ) {
 int risky (int n ) {
   if (n  <  0 )
     { /* block141 */
-      throw       n ;
+      throw 
+      n ;
     }
   return (n  *  2 );
 }
@@ -62,7 +66,8 @@ int main () {
     Point * q  = new Point ( 10 , 20 ) ;
     // ----------
     check ("new* then method", ((long)(q -> sum)()), 30);
-    delete     q ;
+    delete 
+    q ;
   }
   check ("static_cast", ((long)static_cast < int > ( 3.9 ) ), 3);
   { /* let171 */
@@ -77,7 +82,8 @@ int main () {
         check ("const_cast", ((long)(mq -> sum)()), 3);
       }
     }
-    delete     q2 ;
+    delete 
+    q2 ;
   }
   ({ /* letn187 */
     auto v  = std :: vector < int > ();
@@ -88,17 +94,19 @@ int main () {
     check ("vector back", ((long)(v . back)()), 8);
   });
   check ("no throw", ((long)risky (21)), 42);
-  { /* let193 */
+  { /* let194 */
     int caught  = 0;
     // ----------
-    try     { /* block198 */
-      { /* let200 */
+    try 
+    { /* block199 */
+      { /* let201 */
         int r  = risky (-1);
         // ----------
         ((void)r );
       }
     }
-    catch ( int e )     { /* block203 */
+    catch ( int e ) 
+    { /* block204 */
       caught  = 1;
     }
     check ("caught", ((long)caught ), 1);

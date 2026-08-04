@@ -48,7 +48,7 @@
         (set n (+ n 1)))
 
   ;; (cref T) borrows without copying -- what libtorch's own signatures use
-  (func lengthOf (((cref ($$ std string)) s)) (out int)
+  (func lengthOf (((cref std::string) s)) (out int)
         (return (cast int (($ s size)))))
 
   ;; ---- exceptions ---------------------------------------------------
@@ -75,7 +75,7 @@
       (check "mref wrote through" (cast long n) 42))
 
     ;; a const reference over a std::string
-    (letin* ((s (($$ std string) "abcde")))
+    (letin* ((s (std::string "abcde")))
       (check "cref no copy" (cast long (lengthOf s)) 5))
 
     ;; new / delete
@@ -94,7 +94,7 @@
       (delete* q2))
 
     ;; std::vector through $$ and t<>, to prove the two compose
-    (letin* ((v (($$ std (t<> vector int)))))
+    (letin* ((v ((t<> std::vector int))))
       (($ v push_back) 7)
       (($ v push_back) 8)
       (check "vector size" (cast long (($ v size))) 2)

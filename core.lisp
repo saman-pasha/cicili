@@ -377,9 +377,105 @@
 ;;
 ;; *package* is rebound for the duration, so the switch dies with the file, the
 ;; same as CL:LOAD.
+;;;; ------------------------------------------------------------------
+;;;; Qualified C++ names, lexically
+;;;;
+;;;; torch::nn::Linear is one name and reads like one. It cannot BE one symbol:
+;;;; `:' is Common Lisp's package marker, and a .cicili file contains real
+;;;; Common Lisp -- :TYPEOF, :TEST, :REGEX -- so the character cannot be
+;;;; repurposed. Escaping with |…| is out too: this readtable makes `|' a
+;;;; constituent, because it is the bitwise-or operator.
+;;;;
+;;;; So the source is rewritten before READ sees it:
+;;;;
+;;;;   torch::nn::Linear   ->   ($$ torch nn Linear)
+;;;;
+;;;; which is lexical to write and a form to work with. A single `:' is left
+;;;; alone, so :cpp and :TEST still read as keywords -- only an identifier
+;;;; followed by `::' and another identifier is a qualified name.
+;;;; ------------------------------------------------------------------
+
+(defun ident-start< (c) (or (alpha-char-p c) (char= c #\_)))
+(defun ident-char<  (c) (or (alphanumericp c) (char= c #\_)))
+
+;; Is there an `::' at I that joins two identifiers?
+(defun qualifier-at< (text i n)
+  (and (< (+ i 2) n)
+       (char= (char text i) #\:)
+       (char= (char text (1+ i)) #\:)
+       (ident-start< (char text (+ i 2)))))
+
+(defun qualify-source< (text)
+  (let ((n (length text)))
+    (with-output-to-string (out)
+      (let ((i 0))
+        (loop while (< i n) do
+          (let ((c (char text i)))
+            (cond
+              ;; a string literal is text, not source
+              ((char= c #\")
+               (write-char c out) (incf i)
+               (loop while (and (< i n) (char/= (char text i) #\"))
+                     do (progn (when (char= (char text i) #\\)
+                                 (write-char (char text i) out) (incf i))
+                               (when (< i n) (write-char (char text i) out) (incf i))))
+               (when (< i n) (write-char (char text i) out) (incf i)))
+              ;; #\: is a character literal, and its colon is not a qualifier
+              ((and (char= c #\#) (< (1+ i) n) (char= (char text (1+ i)) #\\))
+               (dotimes (k (min 3 (- n i))) (write-char (char text (+ i k)) out))
+               (incf i 3))
+              ;; #| block comment |#
+              ((and (char= c #\#) (< (1+ i) n) (char= (char text (1+ i)) #\|))
+               (write-char c out) (incf i)
+               (loop while (and (< i n)
+                                (not (and (char= (char text i) #\|)
+                                          (< (1+ i) n)
+                                          (char= (char text (1+ i)) #\#))))
+                     do (progn (write-char (char text i) out) (incf i)))
+               (when (< (1+ i) n)
+                 (write-char (char text i) out) (write-char (char text (1+ i)) out))
+               (incf i 2))
+              ;; ; line comment
+              ((char= c #\;)
+               (loop while (and (< i n) (char/= (char text i) #\Newline))
+                     do (progn (write-char (char text i) out) (incf i))))
+              ;; an identifier, possibly qualified
+              ((ident-start< c)
+               (let ((start i))
+                 (loop while (and (< i n) (ident-char< (char text i))) do (incf i))
+                 (let ((head (subseq text start i)))
+                   (cond
+                     ;; NOT a C++ name: the prefix names a Lisp package, so this
+                     ;; is CICILI::EXPAND-MACROS and belongs to the reader. Copy
+                     ;; the whole token through untouched -- Lisp symbols carry
+                     ;; characters (`-', `*', `<') that a C++ name never does,
+                     ;; so the run is taken to the next delimiter rather than
+                     ;; scanned as identifiers.
+                     ((and (qualifier-at< text i n) (find-package head))
+                      (write-string head out)
+                      (loop while (and (< i n)
+                                       (not (find (char text i) " ()'`,;\"" :test #'char=))
+                                       (char/= (char text i) #\Newline)
+                                       (char/= (char text i) #\Tab))
+                            do (progn (write-char (char text i) out) (incf i))))
+                     ;; a qualified C++ name
+                     ((qualifier-at< text i n)
+                      (let ((parts (list head)))
+                        (loop while (qualifier-at< text i n)
+                              do (progn (incf i 2)
+                                        (let ((s i))
+                                          (loop while (and (< i n) (ident-char< (char text i))) do (incf i))
+                                          (push (subseq text s i) parts))))
+                        (format out "($$ ~{~A~^ ~})" (nreverse parts))))
+                     (t (write-string head out))))))
+              (t (write-char c out) (incf i)))))))))
+
 (defun read-file (path)
-  (let ((targets '()))
-    (with-open-file (file path)
+  (let ((targets '())
+        (text (with-open-file (file path)
+                (let ((s (make-string (file-length file))))
+                  (subseq s 0 (read-sequence s file))))))
+    (with-input-from-string (file (qualify-source< text))
 	  (let ((*readtable* (copy-readtable))
             (*package* *package*))
 		(setf (readtable-case *readtable*) :preserve)
