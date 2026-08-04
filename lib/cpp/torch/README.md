@@ -267,18 +267,36 @@ reporting, not training.
 **Every row links to both implementations.** They are meant to be read side by side and
 checked line for line — that is the only way a performance claim is worth anything.
 
-| example | model | Cicili | Python | |
-|---|---|---|---|---|
-| **MNIST, MLP** | 784-256-128-10, Adam 1e-3, batch 100, 15 epochs, shuffled, StepLR(5, 0.5) | [mnist-dsl.cicili](../../../example/mnist-dsl.cicili)<br>0.9838 · **13.3 s** | [mnist_mlp.py](../../../example/python/mnist_mlp.py)<br>0.9828 · 20.1 s | **1.51×** |
-| **California housing** | 8-64-32-1, Adam 5e-3, batch 128, 30 epochs, shuffled, StepLR(10, 0.5) | [tabular.cicili](../../../example/tabular.cicili)<br>0.5270 rmse · **1.8 s** | [tabular.py](../../../example/python/tabular.py)<br>0.5343 rmse · 3.5 s | **1.94×** |
-| **MNIST, conv** | 16c3-pool-32c3-pool-drop-10, Adam 1e-3, batch 100, 5 epochs, shuffled | [mnist-conv.cicili](../../../example/mnist-conv.cicili)<br>0.9869 · **45.0 s** | [mnist_conv.py](../../../example/python/mnist_conv.py)<br>0.9880 · 48.8 s | **1.08×** |
+Each example is measured in **two configurations**: plain, and with `(shuffle)` and
+`(schedule)` added on both sides. Best of three interleaved runs, alternating sides so
+neither gets a warm machine to itself; the spread within a side was under 6%.
+
+### Plain — no shuffling, no schedule
+
+| example | Cicili | Python | |
+|---|---|---|---|
+| [MNIST, MLP](../../../example/mnist-dsl.cicili) · [py](../../../example/python/mnist_mlp.py) | 0.9784 · **13.4 s** | 0.9785 · 19.5 s | **1.46×** |
+| [California housing](../../../example/tabular.cicili) · [py](../../../example/python/tabular.py) | 0.5233 rmse · **1.8 s** | 0.5381 rmse · 3.2 s | **1.78×** |
+| [MNIST, conv](../../../example/mnist-conv.cicili) · [py](../../../example/python/mnist_conv.py) | 0.9869 · **45.8 s** | 0.9866 · 48.5 s | **1.06×** |
+
+### With `(shuffle)` and `(schedule)`, both sides
+
+| example | Cicili | Python | |
+|---|---|---|---|
+| MNIST, MLP — shuffled, StepLR(5, 0.5) | **0.9838** · **13.3 s** | 0.9828 · 20.1 s | **1.51×** |
+| California housing — shuffled, StepLR(10, 0.5) | 0.5270 rmse · **1.8 s** | 0.5343 rmse · 3.5 s | **1.94×** |
+| MNIST, conv — shuffled | 0.9869 · **45.0 s** | 0.9880 · 48.8 s | **1.08×** |
+
+The two configurations tell the same story about the front ends and different stories about
+the models. **The speedups barely move** — 1.46 to 1.51, 1.78 to 1.94, 1.06 to 1.08 — which
+is what you would expect if the difference is per-batch overhead rather than anything to do
+with the model: shuffling adds a gather to every batch on both sides and neither side is
+much better at it. What the models do with shuffling is
+[a separate question with a separate answer](#train), and only one of the three benefits.
 
 Loading is shared by [common.py](../../../example/python/common.py) on the Python side and
 by the `read_idx` / `read_csv` functions in each Cicili file. Both read the same files,
 normalise the same way, and split at the same row.
-
-Best of three interleaved runs each, alternating sides so neither gets a warm machine to
-itself. The spread within a side was under 5%.
 
 **Read the third row as carefully as the first two.** A conv net spends nearly all its time
 inside libtorch's kernels, which are the same code in both, so there is very little for a
