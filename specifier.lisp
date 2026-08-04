@@ -260,13 +260,24 @@
               ((key-eq '|t<>| ty)    (specify-expr type))
               ((key-eq '$$ ty)       (specify-expr type))
               ((key-eq '|code| ty)   (specify-expr type))
+              ;; The three sites below name an anonymous struct, and the name
+              ;; has to be unique across everything that may be linked together
+              ;; -- these carry external linkage. It used to be seeded with
+              ;; (get-universal-time), which is not a uniquifier at all: it has
+              ;; one-second resolution, so two translation units compiled in
+              ;; the same second collided, and it changed on every rebuild, so
+              ;; every regenerated .c differed from the committed one in names
+              ;; only. *target-file* + the gensym counter is both stronger and
+              ;; stable: the counter is reset per target (compiler.lisp), so
+              ;; the pair is unique within a unit and the file name separates
+              ;; the units.
               ((and (null *function-spec*) *typedef-spec* (key-eq 'QUOTE ty)) ; inline struct global typedef
-               (let* ((sname (free-name (list (format nil "~A" (get-universal-time))) (gensym "__ciciliS_")))
+               (let* ((sname (free-name (list *target-file*) (gensym "__ciciliS_")))
                       (struct-spec (specify-struct (append (list '|struct| sname) (cadr type)) '() :inline t)))
                  (add-inner struct-spec *typedef-spec*)
                  (if *module-path* (free-name *module-path* sname) sname)))
               ((and (null *function-spec*) *variable-spec* (key-eq 'QUOTE ty)) ; inline struct global var
-               (let* ((sname (free-name (list (format nil "~A" (get-universal-time))) (gensym "__ciciliS_")))
+               (let* ((sname (free-name (list *target-file*) (gensym "__ciciliS_")))
                       (struct-spec (specify-struct (append (list '|struct| sname) (cadr type)) '() :inline t)))
                  (add-inner struct-spec *variable-spec*)
                  (list '|struct| (if *module-path* (free-name *module-path* sname) sname))))
@@ -281,7 +292,7 @@
                  (add-inner struct-spec *function-spec*)
                  (list '|struct| (if *module-path* (free-name *module-path* sname) sname))))
               ((and *function-spec* (key-eq 'QUOTE ty)) ; inline struct inside function body
-               (let* ((sname (free-name (list (format nil "~A" (get-universal-time))) (gensym "__ciciliS_")))
+               (let* ((sname (free-name (list *target-file*) (gensym "__ciciliS_")))
                       (struct-spec (specify-struct (append (list '|struct| sname) (cadr type)) '() :inline t)))
                  (add-inner struct-spec *function-spec*)
                  (list '|struct| (if *module-path* (free-name *module-path* sname) sname))))

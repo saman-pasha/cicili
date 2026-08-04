@@ -55,9 +55,15 @@
                     (setf *target-source* (key-eq tname '|source|))
 
                     (setf *module-path* nil)
+                    ;; BEFORE specifying, not after. Specification is what
+                    ;; names anonymous structs and lambdas, and it names them
+                    ;; after the translation unit they land in -- so the name
+                    ;; has to be set by then. It also tags every ast-key< with
+                    ;; the file, which was the PREVIOUS target's name when this
+                    ;; ran afterwards.
+                    (setf *target-file* (file-namestring (nth 1 target)))
                     (unless *only-link* (setq ir (specify-target target)))
                     (setf *target-spec* ir)
-                    (setf *target-file* (file-namestring (nth 1 target)))
                     (setf *cpp* (and (getf args ':|cpp|) (key-eq (getf args ':|cpp|) '|true|)))
 
                     (let ((file (nth 1 target))
