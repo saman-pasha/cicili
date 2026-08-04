@@ -277,6 +277,17 @@
           ((STRING= which "sgd")  `(torch::optim::SGD  ,params ,lr))
           (T (ERROR (FORMAT NIL "train: unknown optimiser '~A'.~%  known: adam sgd" which))))))
 
+;;; (schedule step SIZE GAMMA) -- multiply the learning rate by GAMMA every
+;;; SIZE epochs. Stepped once per epoch, which is where a schedule belongs:
+;;; stepping per batch decays it to nothing inside one pass.
+(DEFUN schedule< (spec opt)
+  (LET ((which (SYMBOL-NAME (CAR spec))))
+    (COND ((STRING= which "step")
+           (UNLESS (= (LENGTH spec) 3)
+             (ERROR (FORMAT NIL "train: (schedule step EVERY GAMMA), got ~A" (CONS 'schedule spec))))
+           `(torch::optim::StepLR ,opt ,(CADR spec) ,(CADDR spec)))
+          (T (ERROR (FORMAT NIL "train: unknown schedule '~A'.~%  known: step" which))))))
+
 ;;; the metric a (metric …) clause selects: its form, and the word to print
 (DEFUN metric< (spec net x y)
   (LET ((which (IF spec (SYMBOL-NAME (CAR spec)) "accuracy")))
@@ -300,11 +311,14 @@
          (opt    (train-clause< clauses "optimiser"))
          (lossf  (train-clause< clauses "loss"))
          (metric (train-clause< clauses "metric"))
+         (shuf   (train-clause< clauses "shuffle"))
+         (sched  (train-clause< clauses "schedule"))
          (quiet  (train-clause< clauses "quiet"))
          (net    (GENSYM "net")) (o (GENSYM "opt"))
          (e      (GENSYM "e"))   (i (GENSYM "i"))
          (total  (GENSYM "total")) (nb (GENSYM "nb"))
-         (t0     (GENSYM "t0"))    (el (GENSYM "elapsed")))
+         (t0     (GENSYM "t0"))    (el (GENSYM "elapsed"))
+         (perm   (GENSYM "perm"))  (sc (GENSYM "sched")))
 
     (UNLESS (= (LENGTH data) 2)
       (ERROR (FORMAT NIL "train ~A: (data INPUTS TARGETS) is required" name)))
@@ -315,34 +329,49 @@
      (MULTIPLE-VALUE-BIND (mform mname)
          (metric< metric net (CAR test) (CADR test))
       `(letin* ((,net (,name))
-                (,o ,(optimiser< opt `(($ ,net parameters)))))
+                (,o ,(optimiser< opt `(($ ,net parameters))))
+                ,@(WHEN sched (LIST (LIST sc (schedule< sched o)))))
          ,@(WHEN (AND test (NOT quiet))
              `((printf ,(FORMAT NIL "start ~A: %.4f\n" mname) ,mform)))
-         ;; the clock covers the BATCH LOOPS only. A metric pass over the held-out
-         ;; set is reporting, not training, and counting it would make the number
-         ;; depend on how often you asked to be told.
+         ;; the clock covers the BATCH LOOPS only. A metric pass over the
+         ;; held-out set is reporting, not training, and counting it would make
+         ;; the number depend on how often you asked to be told.
          (let ((double ,t0 . 0.0) (double ,el . 0.0))
-          (for ((int ,e . 0)) (< ,e ,epochs) ((++ ,e))
-              (let ((double ,total . 0.0) (int ,nb . 0))
-                (set ,t0 (now^seconds))
-                (for ((i64 ,i . 0)) (<= (+ ,i ,batch) (($ ,xs size) 0)) ((+= ,i ,batch))
-                     (letin* ((bx (($ ,xs narrow) 0 ,i ,batch))
-                              (by (($ ,ys narrow) 0 ,i ,batch)))
-                       (($ ,o zero_grad))
-                       (letin* ((out (($ ,net forward) bx)))
-                         (letin* ((l ,(loss< lossf 'out 'by)))
-                           (($ l backward))
-                           (($ ,o step))
-                           (+= ,total (cast double (($ l (t<> item float)))))
-                           (++ ,nb)))))
-                (+= ,el (- (now^seconds) ,t0))
-                ,@(UNLESS quiet
-                    (IF test
-                        `((printf ,(FORMAT NIL "epoch %2d  loss %.4f  ~A %.4f\n" mname)
-                                  (+ ,e 1) (/ ,total ,nb) ,mform))
-                        `((printf "epoch %2d  loss %.4f\n" (+ ,e 1) (/ ,total ,nb)))))))
-          ,@(UNLESS quiet
-              `((printf "trained in %.1fs\n" ,el))))
+           (for ((int ,e . 0)) (< ,e ,epochs) ((++ ,e))
+                (let ((double ,total . 0.0) (int ,nb . 0))
+                  (set ,t0 (now^seconds))
+                  ;; a fresh order each epoch, and the batch GATHERS through it,
+                  ;; so only the batch is copied rather than the whole set.
+                  ;; Without (shuffle) this is 0..n-1 and the gather is the
+                  ;; identity, which costs a copy and keeps one code path.
+                  (letin* ((,perm ,(IF shuf
+                                       `(torch::randperm (($ ,xs size) 0))
+                                       `(($ (torch::arange
+                                              (cast torch::Scalar (($ ,xs size) 0)))
+                                            to) torch::kInt64))))
+                    (for ((i64 ,i . 0)) (<= (+ ,i ,batch) (($ ,xs size) 0)) ((+= ,i ,batch))
+                         (letin* ((idx (($ ,perm narrow) 0 ,i ,batch)))
+                           (letin* ((bx (($ ,xs index_select) 0 idx))
+                                    (by (($ ,ys index_select) 0 idx)))
+                             (($ ,o zero_grad))
+                             (letin* ((out (($ ,net forward) bx)))
+                               (letin* ((l ,(loss< lossf 'out 'by)))
+                                 (($ l backward))
+                                 (($ ,o step))
+                                 (+= ,total (cast double (($ l (t<> item float)))))
+                                 (++ ,nb)))))))
+                  (+= ,el (- (now^seconds) ,t0))
+                  ;; the schedule steps once per EPOCH -- stepping it per batch
+                  ;; is the classic way to decay a learning rate to nothing in
+                  ;; a single pass
+                  ,@(WHEN sched `((($ ,sc step))))
+                  ,@(UNLESS quiet
+                      (IF test
+                          `((printf ,(FORMAT NIL "epoch %2d  loss %.4f  ~A %.4f\n" mname)
+                                    (+ ,e 1) (/ ,total ,nb) ,mform))
+                          `((printf "epoch %2d  loss %.4f\n" (+ ,e 1) (/ ,total ,nb)))))))
+           ,@(UNLESS quiet
+               `((printf "trained in %.1fs\n" ,el))))
          ,@(IF test (LIST mform) '(0.0)))))))
 
 ;;; Seconds on a monotonic clock. `train' reports how long the loop took,

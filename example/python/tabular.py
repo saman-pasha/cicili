@@ -16,6 +16,7 @@ xtr, ytr, xte, yte = X[:ntrain], Y[:ntrain], X[ntrain:], Y[ntrain:]
 
 net = nn.Sequential(nn.Linear(8, 64), nn.ReLU(), nn.Linear(64, 32), nn.ReLU(), nn.Linear(32, 1))
 opt = torch.optim.Adam(net.parameters(), lr=0.005)
+sched = torch.optim.lr_scheduler.StepLR(opt, step_size=10, gamma=0.5)
 
 def rmse():
     with torch.no_grad():
@@ -23,10 +24,13 @@ def rmse():
 
 t0 = time.perf_counter()
 for e in range(30):
+    perm = torch.randperm(len(xtr))
     for i in range(0, len(xtr) - 127, 128):
+        idx = perm[i:i+128]
         opt.zero_grad()
-        loss = F.mse_loss(net(xtr[i:i+128]), ytr[i:i+128])
+        loss = F.mse_loss(net(xtr[idx]), ytr[idx])
         loss.backward(); opt.step()
+    sched.step()
 train_s = time.perf_counter() - t0
 base = ((yte - ytr.mean()) ** 2).mean().sqrt().item()
 print(f"final rmse: {rmse():.4f}   (mean predictor {base:.4f})   train {train_s:.1f}s")

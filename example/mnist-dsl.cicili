@@ -124,6 +124,8 @@
                                   (epochs    15)
                                   (batch     100)
                                   (optimiser adam 0.001)
-                                  (loss      nll))))
+                                  (loss      nll)
+                                  (shuffle)                 ; a fresh order every epoch
+                                  (schedule  step 5 0.5))))  ; halve the lr every 5
             (printf "final accuracy: %.4f\n" acc)
             (return (? (> acc 0.97) 0 1))))))))

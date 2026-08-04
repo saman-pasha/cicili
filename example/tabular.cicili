@@ -207,7 +207,9 @@
                                   (batch     128)
                                   (optimiser adam 0.005)
                                   (loss      mse)
-                                  (metric    rmse))))
+                                  (metric    rmse)
+                                  (shuffle)
+                                  (schedule  step 10 0.5))))
             (printf "final held-out rmse: %.4f   (mean predictor: %.4f)\n"
                     err (baseline_rmse ys ntrain rows))
             (return 0)))))))

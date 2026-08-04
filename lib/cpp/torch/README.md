@@ -18,11 +18,12 @@ Two layers over PyTorch's C++ library:
   (data      xs ys)   (test   xt yt)
   (epochs    15)      (batch  100)
   (optimiser adam 0.001)
-  (loss      nll)     (metric accuracy))
+  (loss      nll)     (metric accuracy)
+  (shuffle)           (schedule step 5 0.5))
 ```
 
 That is a complete model and its training. It compiles to C++, links libtorch, and reaches
-**97.8%** on MNIST.
+**98.4%** on MNIST.
 
 ---
 
@@ -110,15 +111,27 @@ equal to the kernel.
   (optimiser adam 0.001)   ; adam | sgd, default adam 0.001
   (loss      nll)          ; nll | mse, default nll
   (metric    accuracy)     ; accuracy | rmse | mae, default accuracy
+  (shuffle)                ; optional; a fresh order every epoch
+  (schedule  step 5 0.5)   ; optional; multiply the lr by 0.5 every 5 epochs
   (quiet))                 ; optional; print nothing
 ```
 
 Emits the loop and answers the final metric as a `double`. Every clause but `data` is
 optional and order does not matter.
 
-Batches are consecutive slices — `narrow` — so **the data is not shuffled for you**. Shuffle
-before you split if the rows are ordered, as [tabular](../../../example/tabular.cicili)
-does; MNIST does not need it.
+`(shuffle)` draws a fresh permutation each epoch and the batch **gathers through it**, so
+only the batch is copied rather than the whole set. Without it the permutation is `0..n-1`
+and the gather is the identity — one code path, and the cost of the identity gather is
+inside the noise. On MNIST, shuffling is worth about half a point: 0.9784 to 0.9838.
+
+That is batch ORDER. If the rows themselves are ordered — California housing is sorted
+geographically — shuffle before you split, as
+[tabular](../../../example/tabular.cicili) does, or the held-out set is a different problem
+rather than a harder one.
+
+`(schedule step EVERY GAMMA)` multiplies the learning rate by `GAMMA` every `EVERY`
+epochs, using libtorch's `StepLR`. It steps once per **epoch**; stepping a schedule per
+batch is the classic way to decay a learning rate to nothing inside one pass.
 
 Each metric pass runs under a `NoGradGuard` **and in eval mode**, so dropout and batch-norm
 behave the way they should when measuring. That is not a detail: leaving the conv net in
@@ -199,28 +212,71 @@ same libtorch 2.13**, so this compares the two front ends and not two libraries.
 Timing covers **the training batches only** in both; a metric pass over the held-out set is
 reporting, not training.
 
-| example | Cicili | Python | |
-|---|---|---|---|
-| **MNIST, MLP** 784-256-128-10, Adam 1e-3, batch 100, 15 epochs | 0.9784 · **12.9 s** | 0.9785 · 18.5 s | **1.43× faster** |
-| **California housing** 8-64-32-1, Adam 5e-3, batch 128, 30 epochs | 0.5233 rmse · **1.8 s** | 0.5381 rmse · 3.3 s | **1.83× faster** |
-| **MNIST, conv** 16c3-pool-32c3-pool-drop-10, Adam 1e-3, batch 100, 5 epochs | 0.9869 · 45.9 s | 0.9866 · 45.4 s | **level** |
+**Every row links to both implementations.** They are meant to be read side by side and
+checked line for line — that is the only way a performance claim is worth anything.
+
+| example | model | Cicili | Python | |
+|---|---|---|---|---|
+| **MNIST, MLP** | 784-256-128-10, Adam 1e-3, batch 100, 15 epochs, shuffled, StepLR(5, 0.5) | [mnist-dsl.cicili](../../../example/mnist-dsl.cicili)<br>0.9838 · **13.3 s** | [mnist_mlp.py](../../../example/python/mnist_mlp.py)<br>0.9828 · 20.1 s | **1.51×** |
+| **California housing** | 8-64-32-1, Adam 5e-3, batch 128, 30 epochs, shuffled, StepLR(10, 0.5) | [tabular.cicili](../../../example/tabular.cicili)<br>0.5270 rmse · **1.8 s** | [tabular.py](../../../example/python/tabular.py)<br>0.5343 rmse · 3.5 s | **1.94×** |
+| **MNIST, conv** | 16c3-pool-32c3-pool-drop-10, Adam 1e-3, batch 100, 5 epochs, shuffled | [mnist-conv.cicili](../../../example/mnist-conv.cicili)<br>0.9869 · **45.0 s** | [mnist_conv.py](../../../example/python/mnist_conv.py)<br>0.9880 · 48.8 s | **1.08×** |
+
+Loading is shared by [common.py](../../../example/python/common.py) on the Python side and
+by the `read_idx` / `read_csv` functions in each Cicili file. Both read the same files,
+normalise the same way, and split at the same row.
+
+Best of three interleaved runs each, alternating sides so neither gets a warm machine to
+itself. The spread within a side was under 5%.
 
 **Read the third row as carefully as the first two.** A conv net spends nearly all its time
-inside libtorch's kernels, which are the same code in both — so there is nothing for a
-front end to win, and Cicili does not. The MLP and the tabular model run many small batches,
-where per-batch interpreter overhead is a real share of the work, and that is the whole of
-the difference. The gap is Python's loop, not PyTorch's maths.
+inside libtorch's kernels, which are the same code in both, so there is very little for a
+front end to win — and 1.08× is what "very little" looks like. The MLP and the tabular
+model run many small batches, where per-batch interpreter overhead is a real share of the
+work, and that is the whole of the difference. **The gap is Python's loop, not PyTorch's
+maths**, and it shrinks to nothing exactly where the maths dominates.
+
+Without `(shuffle)` the conv row was level — 45.9 s against 45.4 s. Shuffling adds a gather
+per batch, and gathering is another place a front end pays or does not.
 
 The accuracies agree to within run-to-run noise, which is the point: it is the same
-computation. The tabular RMSE differs by 0.015 because the two shuffle with different
-generators, so the split is not identical.
+computation. Python is 0.001 ahead on the conv net and 0.001 behind on the MLP. The tabular
+RMSE differs by 0.007 because the two shuffle with different generators, so the split is
+not identical.
 
-Reproduce with:
+### Reproducing it
+
+Both sides need the datasets, and both take them from the same place:
 
 ```bash
-cd example/python
-MNIST_DIR=~/mnist-data /usr/local/opt/pytorch/libexec/bin/python3 mnist_mlp.py
+# MNIST -- four idx files
+mkdir -p ~/mnist-data && cd ~/mnist-data
+for f in train-images-idx3-ubyte train-labels-idx1-ubyte \
+         t10k-images-idx3-ubyte  t10k-labels-idx1-ubyte; do
+  curl -sLO "https://ossci-datasets.s3.amazonaws.com/mnist/$f.gz" && gunzip -f "$f.gz"
+done
+
+# California housing -- sklearn's eight derived columns, headerless
+#   MedInc HouseAge AveRooms AveBedrms Population AveOccup Latitude Longitude
+#   -> MedHouseVal (in $100k)
+# from https://ndownloader.figshare.com/files/5976036
 ```
+
+Then, from the repository root:
+
+```bash
+export MNIST_DIR=~/mnist-data TABULAR_CSV=~/tabular-data/california.csv
+PY=/usr/local/opt/pytorch/libexec/bin/python3      # the Python of the SAME libtorch
+
+sbcl --script cicili.lisp ./example/mnist-dsl.cicili   && ./example/mnist_dsl
+sbcl --script cicili.lisp ./example/tabular.cicili     && ./example/tabular
+sbcl --script cicili.lisp ./example/mnist-conv.cicili  && ./example/mnist_conv
+
+(cd example/python && $PY mnist_mlp.py && $PY tabular.py && $PY mnist_conv.py)
+```
+
+Use the Python interpreter that ships with the same libtorch. Comparing against a different
+PyTorch build measures the two builds, not the two front ends, and that is the easiest way
+to get a number that means nothing.
 
 ---
 
@@ -228,8 +284,8 @@ MNIST_DIR=~/mnist-data /usr/local/opt/pytorch/libexec/bin/python3 mnist_mlp.py
 
 Honest gaps, in roughly the order they would be missed:
 
-* **No shuffling inside `train`.** Shuffle before you split.
-* **No learning-rate schedule, no early stopping, no checkpointing.**
+* **No early stopping and no checkpointing.**
+* **Only one schedule.** `step`; no cosine, no plateau, no warmup.
 * **No validation split** — `(test …)` is the held-out set and is reported every epoch,
   which is fine for watching and wrong for choosing.
 * **Layers stop at** `dense` `conv` `pool` `flatten` `dropout` `norm`. No recurrent layers,

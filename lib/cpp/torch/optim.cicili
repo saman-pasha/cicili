@@ -32,6 +32,14 @@
               (method step      ())
               (method zero_grad ()))
 
+     ;;; ---- learning-rate schedules ---------------------------------
+     ;;; A scheduler holds a REFERENCE to the optimiser and changes its learning
+     ;;; rate when stepped. It must therefore not outlive the optimiser, and it
+     ;;; is stepped once per EPOCH -- stepping it per batch is the classic way
+     ;;; to decay a learning rate to nothing in one pass.
+     (decl) (struct torch::optim::StepLR
+              (method step ()))
+
      ;;; the options each takes. Declared opaque: they are built with libtorch's
      ;;; own chained setters, which are member functions returning *this and are
      ;;; reached through the object rather than declared one by one here.

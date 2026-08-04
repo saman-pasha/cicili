@@ -125,6 +125,9 @@
 
               ;;; selection and comparison -- what a training loop needs
               (const) (method narrow  ((i64 dim) (i64 start) (i64 length)) (out torch::Tensor))
+              ;; gather rows by an index tensor -- what shuffling is built from
+              (const) (method index_select ((i64 dim) (const torch::Tensor & index))
+                             (out torch::Tensor))
               (const) (method argmax  ((i64 dim))                (out torch::Tensor))
               (const) (method eq      ((const torch::Tensor & other)) (out torch::Tensor))
               (const) (method to      ((torch::ScalarType ty))   (out torch::Tensor))
@@ -142,6 +145,8 @@
      (decl) (func torch::rand   ((c10::IntArrayRef size)) (out torch::Tensor))
      (decl) (func torch::arange ((torch::Scalar end))     (out torch::Tensor))
      (decl) (func torch::eye    ((i64 n))                 (out torch::Tensor))
+     ;; a random permutation of 0..n-1, as int64 -- an index tensor
+     (decl) (func torch::randperm ((i64 n))               (out torch::Tensor))
      (decl) (func torch::full   ((c10::IntArrayRef size) (torch::Scalar fill))
                   (out torch::Tensor))
      (decl) (func torch::from_blob ((void * data) (c10::IntArrayRef size))

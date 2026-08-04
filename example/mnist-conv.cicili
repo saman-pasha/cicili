@@ -134,6 +134,7 @@
                                   (epochs    5)
                                   (batch     100)
                                   (optimiser adam 0.001)
-                                  (loss      nll))))
+                                  (loss      nll)
+                                  (shuffle))))
             (printf "final accuracy: %.4f\n" acc)
             (return (? (> acc 0.97) 0 1))))))))

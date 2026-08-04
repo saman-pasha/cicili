@@ -28,9 +28,11 @@ def accuracy():
 
 t0 = time.perf_counter()
 for e in range(5):
+    perm = torch.randperm(len(xs))
     for i in range(0, len(xs) - 99, 100):
+        idx = perm[i:i+100]
         opt.zero_grad()
-        loss = F.nll_loss(net(xs[i:i+100]), ys[i:i+100])
+        loss = F.nll_loss(net(xs[idx]), ys[idx])
         loss.backward(); opt.step()
 train_s = time.perf_counter() - t0
 print(f"final accuracy: {accuracy():.4f}   train {train_s:.1f}s")
