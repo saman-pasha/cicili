@@ -20,6 +20,8 @@
    (lambdas       :initform nil :accessor lambdas)
    (inners        :initform nil :accessor inners)
    (is-moved      :initform nil :accessor is-moved) ; compile-time 'move modifier helper
+   (bases         :initform nil :accessor bases)    ; C++ base classes, from (inherits ...)
+   (ctor-init     :initform nil :accessor ctor-init); C++ member-initializer list, from (init ...)
    )) ; sp
 
 (defun make-specifier (name construct const typeof modifier const-ptr array-def default attrs &optional (anonymous nil))
@@ -558,6 +560,13 @@
               (when (= (length array) 3)
                 (setq array (list (specify-expr (nth 1 array)))))))
       (when (< status 0) (error (format nil "wrong type descriptor ~D ~A" status desc)))
+      ;; A type written as a (code ...) escape -- which is what `cref', `mref',
+      ;; `rref', `$$' and `t<>' all expand to -- reaches here as a raw list.
+      ;; specify-name< cannot name it and the back end prints nothing for it,
+      ;; so ((cref int) n) came out as `NIL n'. Turned into a @CODE specifier it
+      ;; is a type the back end already knows how to emit verbatim.
+      (when (and (listp type) (symbolp (car type)) (key-eq (car type) '|code|))
+        (setq type (specify-code-expr type)))
       (values const (if type (if (typep type 'sp) type (specify-name< type)) type)
               modifier const-ptr (when variable (specify-name< variable)) array))))
 
@@ -723,7 +732,16 @@
                                                (if (key-eq (car item) '<>)
                                                    (make-specifier code-name '|@CODE| nil nil nil nil nil
                                                                    (intern (format nil "~{~A~^_~}" (cdr item))) '())
-                                                   (specify-code-expr item))))
+                                                   ;; A nested (code ...) stays verbatim; anything else is
+                                                   ;; an ORDINARY EXPRESSION and is specified as one. Without
+                                                   ;; this a code escape could only splice atoms, so
+                                                   ;; (throw* (($$ std runtime_error) "x")) emitted the words
+                                                   ;; and dropped the call, and every macro that wraps an
+                                                   ;; expression in punctuation -- throw*, delete*, new* --
+                                                   ;; worked for literals only.
+                                                   (if (and (symbolp (car item)) (key-eq (car item) '|code|))
+                                                       (specify-code-expr item)
+                                                       (specify-expr (expand-macros item))))))
                              '()))
             ((key-eq (car pure) '|code|)
              (specify-code-expr pure))
@@ -1418,19 +1436,33 @@
 	       (is-extern   nil)
 	       (is-volatile nil)
 	       (is-auto     nil)
+	       (is-virtual  nil)
+	       (is-override nil)
+	       (is-const-m  nil)
+	       (is-explicit nil)
+	       (is-noexcept nil)
+	       (is-ctor     nil)
+	       (is-dtor     nil)
 	       (is-method (if (key-eq (car def) '|method|) t nil))
            (is-shared (and (listp name) (not is-method)))
+           ;; a constructor and a destructor have no return type at all -- not
+           ;; void, none -- so `returns' has to stay nil rather than default
+           (is-structor (and (find-if #'(lambda (a) (or (key-eq (car a) '|ctor|)
+                                                        (key-eq (car a) '|dtor|)))
+                                      attrs)
+                             t))
 	       (params (nth 2 def))
 	       (r-out (nth 3 def))
 	       (has-out (and (consp r-out) (key-eq (car r-out) '|out|)))
-	       (returns (if is-shared
+	       (returns (if is-structor nil
+                    (if is-shared
                         (if (str:starts-with-p "new" (string-downcase (symbol-name (cdr name))))
                             (if has-out
                                 (error (format nil "constructor has out: ~A" def))
                                 (list '|out| (car name) '|*|))
                             (if has-out r-out '(|out| |void|)))
                         (if has-out r-out
-		                    (if (key-eq name '|main|) '(|out| |int|) '(|out| |void|)))))
+		                    (if (key-eq name '|main|) '(|out| |int|) '(|out| |void|))))))
 	       (body (if has-out (nthcdr 4 def) (nthcdr 3 def)))
            (function-specifier nil))
 
@@ -1445,6 +1477,16 @@
 	            ((key-eq name '|extern|)   (setq is-extern   t))
 	            ((key-eq name '|volatile|) (setq is-volatile t))
 	            ((key-eq name '|auto|)     (setq is-auto     t))
+                ;; C++ member-function qualifiers. They are carried through to
+                ;; the back end untouched -- the specifier has no opinion about
+                ;; them, they only change how the signature is written.
+                ((key-eq name '|virtual|)  (setq is-virtual  t))
+                ((key-eq name '|override|) (setq is-override t))
+                ((key-eq name '|const|)    (setq is-const-m  t))
+                ((key-eq name '|explicit|) (setq is-explicit t))
+                ((key-eq name '|noexcept|) (setq is-noexcept t))
+                ((key-eq name '|ctor|)     (setq is-ctor     t))
+                ((key-eq name '|dtor|)     (setq is-dtor     t))
 	            (t (error (format nil "unknown function attribute ~A" attr))))))
       (when (and is-declare is-inline) (error (format nil "inline functions should be defined ~A" def)))
       (when (< (length def) 3) (error (format nil "wrong function definition ~A" def)))
@@ -1459,34 +1501,65 @@
 	    (when is-static   (push (cons '|static|   t) attributes))
 	    (when is-auto     (push (cons '|auto|     t) attributes))
 	    (when is-declare  (push (cons '|decl|     t) attributes))
+	    (when is-virtual  (push (cons '|virtual|  t) attributes))
+	    (when is-override (push (cons '|override| t) attributes))
+	    (when is-const-m  (push (cons '|const|    t) attributes))
+	    (when is-explicit (push (cons '|explicit| t) attributes))
+	    (when is-noexcept (push (cons '|noexcept| t) attributes))
+	    (when is-ctor     (push (cons '|ctor|     t) attributes))
+	    (when is-dtor     (push (cons '|dtor|     t) attributes))
         ;; guard *function-spec* for inline structs and lambdas
-        (setq function-specifier (*puts* name (make-specifier name (if is-method '|@METHOD| '|@FUNC|)
-                                                              nil nil nil nil nil nil attributes))) ;; for specify out
+        ;;
+        ;; A constructor is NOT registered under its name, and neither is a
+        ;; destructor. A constructor's name is the struct's name, so putting it
+        ;; in the table shadows the struct itself: every ($ this member) in a
+        ;; sibling method then resolved `Shape' to the constructor and died with
+        ;; "unknown struct type: Shape". Nothing looks a constructor up by name
+        ;; anyway -- it is reached through the type.
+        (setq function-specifier
+              (let ((fs (make-specifier name (if is-method '|@METHOD| '|@FUNC|)
+                                        nil nil nil nil nil nil attributes)))
+                (if (or is-ctor is-dtor) fs (*puts* name fs)))) ;; for specify out
         (*push* name)
         (setq tmp-specifier *function-spec*)
         (setq tmp-outp      *function-outp*)
         (setf *function-spec* function-specifier)
         (setf *function-outp* t)      
 
-        (multiple-value-bind (const type modifier const-ptr variable array)
-	        (specify-type< (cdr returns))
-          (setf *function-outp* tmp-outp)
-          (setf (const function-specifier) const)
-          (setf (typeof function-specifier) type)
-          (setf (modifier function-specifier) modifier)
-          (setf (const-ptr function-specifier) const-ptr)
-          (setf (array-def function-specifier) array))
+        ;; a ctor/dtor has no return type to specify -- `returns' is nil and
+        ;; specify-type< of nothing is not a question with an answer
+        (if returns
+            (multiple-value-bind (const type modifier const-ptr variable array)
+	            (specify-type< (cdr returns))
+              (setf *function-outp* tmp-outp)
+              (setf (const function-specifier) const)
+              (setf (typeof function-specifier) type)
+              (setf (modifier function-specifier) modifier)
+              (setf (const-ptr function-specifier) const-ptr)
+              (setf (array-def function-specifier) array))
+            (setf *function-outp* tmp-outp))
 
 	    (when is-method
-          (add-param
-              (let ((var-name (specify-decl-name< '|this|)))
-                (*puts* var-name
-                  (make-specifier var-name '|@PARAM| nil
-                                  (if *module-path*
-                                      (free-name *module-path* (car name))
-                                      (car name))
-                                  '|*| nil nil nil '())))
-            function-specifier))
+          (if (listp name)
+              ;; the C-style method: Struct_m_name with `this' passed in
+              (add-param
+                  (let ((var-name (specify-decl-name< '|this|)))
+                    (*puts* var-name
+                      (make-specifier var-name '|@PARAM| nil
+                                      (if *module-path*
+                                          (free-name *module-path* (car name))
+                                          (car name))
+                                      '|*| nil nil nil '())))
+                function-specifier)
+              ;; the C++ member function: `this' belongs to the language and is
+              ;; NOT a parameter. It still goes in the symbol table, because
+              ;; ($ this w) has to resolve to a member of the enclosing struct
+              ;; for inference to work -- it is a binding without a declaration.
+              (when *method-struct*
+                (let ((var-name (specify-decl-name< '|this|)))
+                  (*puts* var-name
+                    (make-specifier var-name '|@VAR| nil (name *method-struct*)
+                                    '|*| nil nil nil '()))))))
         (loop for param in params
               for i from 0 to (length params)
               do (let ((is-anonymous nil))
@@ -1523,9 +1596,28 @@
                        function-specifier)
                      )))
 
+        ;; A constructor may open with (init (member expr ...) (Base expr ...)),
+        ;; which is the member-initializer list -- the only place a base class
+        ;; or a member without a default constructor can be given its value,
+        ;; and libtorch is full of both. It is specified HERE rather than in
+        ;; specify-struct because its expressions see the constructor's
+        ;; parameters, which do not exist until this point.
+        (when (and is-ctor body (consp (car body)) (key-eq (caar body) '|init|))
+          (setf (ctor-init function-specifier)
+                (mapcar #'(lambda (entry)
+                            (unless (and (consp entry) (symbolp (car entry)))
+                              (error (format nil "wrong init entry ~A in ~A" entry name)))
+                            ;; the target is a NAME to print -- a member of this
+                            ;; struct or a base class -- not an expression to
+                            ;; resolve and not a type to specify
+                            (cons (car entry)
+                                  (mapcar #'specify-expr (cdr entry))))
+                        (cdar body)))
+          (setq body (cdr body)))
+
         (setf (body function-specifier) (specify-body body))
 
-        (when (key-eq (typeof *function-spec*) '|auto|)
+        (when (and (typeof *function-spec*) (key-eq (typeof *function-spec*) '|auto|))
           (error (format nil "function: '~A with 'auto return type but without return statement" name)))
         (setf *function-spec* tmp-specifier)) ; end of guard, revert *function-spec*
       (*pop* function-specifier))))
@@ -1615,6 +1707,26 @@
                                              (if (null value) nil (specify-expr value)) nil)))
                        enum-specifier)))))
       enum-specifier)))
+
+;;; Specify a C++ member function.
+;;;
+;;; *struct-spec* has to be nil for the duration. While it is set, every *puts*
+;;; keys its specifier as `name/Struct' rather than by the lexeme path -- which
+;;; is right for members and wrong for everything inside a method body, where
+;;; the locals are not members. It also stops the struct's own name resolving:
+;;; *gets* walks up by dropping from the front of *lexemes-id* and never tries
+;;; the bare key, so `Square' was invisible from inside Square's own method.
+;;;
+;;; What the body actually needs from the struct is the type of `this', and
+;;; that goes in *method-struct* instead.
+(defun specify-method< (clause attrs struct-specifier)
+  (let ((tmp-struct  *struct-spec*)
+        (tmp-method  *method-struct*))
+    (setq *struct-spec*  nil)
+    (setq *method-struct* struct-specifier)
+    (unwind-protect (specify-function clause attrs)
+      (setq *struct-spec*  tmp-struct)
+      (setq *method-struct* tmp-method))))
 
 (defun specify-struct (def attrs &key ((:nested is-nested) nil) ((:inline is-inline) nil))
   (when (and is-nested (> (length attrs) 0)) (error (format nil "wrong attributes ~A" attrs)))
@@ -1713,6 +1825,53 @@
 		               (when (= (length clause) 1)
 		                 (error (format nil "declare needs a name of variable for anonymous struct")))
 		               (push clause declares))
+
+                      ;; ---- C++ ----------------------------------------
+                      ;; (inherits Base ...) -- every base is public, because a
+                      ;; struct's are, and that is the whole reason this is a
+                      ;; struct and not a class: there is no access specifier to
+                      ;; write and none to forget.
+                      ((key-eq construct '|inherits|)
+                       (unless *cpp*
+                         (error (format nil "inherits needs a C++ target (:cpp #t) in struct ~A" name)))
+                       (setf (bases struct-specifier)
+                             (append (bases struct-specifier)
+                                     (mapcar #'(lambda (b) (specify-typeof< b)) (cdr clause))))
+                       (setf (gethash name *struct-bases*)
+                             (mapcar #'(lambda (b) (if (typep b 'sp) (name b) b))
+                                     (bases struct-specifier))))
+
+                      ;; (method name (params) [(out T)] body...) -- a real
+                      ;; member function, `this' implicit. specify-function
+                      ;; already knows `method'; what is new is that the name is
+                      ;; a bare symbol rather than a (Struct . name) cons, which
+                      ;; is what tells the back end to emit it inside the struct
+                      ;; instead of as Struct_m_name.
+		              ((key-eq construct '|method|)
+                       (unless *cpp*
+                         (error (format nil "method in a struct needs a C++ target (:cpp #t) in ~A" name)))
+		               (add-inner (specify-method< clause attributes struct-specifier) struct-specifier)
+                       (setq attributes '()))
+
+                      ;; (ctor (params) [(init (m expr) ...)] body...) and
+                      ;; (dtor () body...). Both are methods whose name C++
+                      ;; fixes for them, so it is filled in here rather than
+                      ;; written out -- renaming the struct cannot leave a
+                      ;; constructor behind under the old name.
+		              ((or (key-eq construct '|ctor|) (key-eq construct '|dtor|))
+                       (unless *cpp*
+                         (error (format nil "~A needs a C++ target (:cpp #t) in struct ~A" construct name)))
+                       (let* ((is-dtor (key-eq construct '|dtor|))
+                              (bare    (let ((n (symbol-name name)))
+                                         (subseq n (1+ (or (position #\^ n :from-end t) -1)))))
+                              (mname   (intern (if is-dtor (format nil "~~~A" bare) bare))))
+                         (add-inner (specify-method<
+                                        (append (list '|method| mname) (cdr clause))
+                                      (cons (cons (if is-dtor '|dtor| '|ctor|) t) attributes)
+                                      struct-specifier)
+                                    struct-specifier)
+                         (setq attributes '())))
+
 		              (t (error (format nil "unknown clause ~A in struct ~A" construct name)))))
 	          (error (format nil "syntax error ~A" clause))))
         (when (and (not is-anonymous) (> (length declares) 0))

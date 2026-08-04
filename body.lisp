@@ -271,7 +271,13 @@
                           (not (find (construct form) (list '|@INCLUDE| '|@PREPROC|) :test #'key-eq))
                           (or (find (construct form) (list '|@LETN| '|@PROGN|) :test #'key-eq) ; container with ;
                               (not (find (construct form) *parent-bodies* :test #'key-eq))))
-                     (output ";~%")
+                     ;; In a C++ target @CODE carries its own punctuation:
+                     ;; `namespace X' or `template <...>' followed by a `;' does
+                     ;; not compile, and `using' already writes its own. In a C
+                     ;; target nothing needed that, so nothing changes there.
+                     (if (and *cpp* (key-eq (construct form) '|@CODE|))
+                         (output "~%")
+                         (output ";~%"))
                      (unless (find (construct form) (list '|@IF| '|@GUARD| '|@MODULE| '|@CALL| '|@CAST|)
                                    :test #'key-eq) ; no ;~%
                        (output "~%"))))))))
@@ -300,7 +306,10 @@
                             (not (find (construct form) (list '|@INCLUDE| '|@PREPROC|) :test #'key-eq))
                             (or (find (construct form) (list '|@LETN| '|@PROGN|) :test #'key-eq) ; container with ;
                                 (not (find (construct form) *parent-bodies* :test #'key-eq))))
-                       (output ";~%")
+                       ;; see compile-body-list: C++ only
+                       (if (and *cpp* (key-eq (construct form) '|@CODE|))
+                           (output "~%")
+                           (output ";~%"))
                        (unless (find (construct form) (list '|@IF| '|@GUARD| '|@MODULE| '|@CALL| '|@CAST|)
                                      :test #'key-eq) ; no ;~%
                          (output "~%")))))

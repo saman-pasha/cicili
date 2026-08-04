@@ -55,16 +55,20 @@
                     (setf *target-source* (key-eq tname '|source|))
 
                     (setf *module-path* nil)
-                    ;; BEFORE specifying, not after. Specification is what
-                    ;; names anonymous structs and lambdas, and it names them
-                    ;; after the translation unit they land in -- so the name
-                    ;; has to be set by then. It also tags every ast-key< with
-                    ;; the file, which was the PREVIOUS target's name when this
-                    ;; ran afterwards.
+                    ;; BEFORE specifying, not after -- both of these. They used
+                    ;; to be assigned below the specify-target call, which meant
+                    ;; specification ran with the PREVIOUS target's values:
+                    ;;
+                    ;;   *target-file* names anonymous structs and lambdas after
+                    ;;   the translation unit they land in, and tags every
+                    ;;   ast-key< with the file a diagnostic belongs to;
+                    ;;   *cpp* decides whether `inherits' and in-struct `method'
+                    ;;   are even legal, and nothing in a first C++ target could
+                    ;;   see it.
                     (setf *target-file* (file-namestring (nth 1 target)))
+                    (setf *cpp* (and (getf args ':|cpp|) (key-eq (getf args ':|cpp|) '|true|)))
                     (unless *only-link* (setq ir (specify-target target)))
                     (setf *target-spec* ir)
-                    (setf *cpp* (and (getf args ':|cpp|) (key-eq (getf args ':|cpp|) '|true|)))
 
                     (let ((file (nth 1 target))
                           (globals nil)

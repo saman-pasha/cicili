@@ -8,7 +8,11 @@
 ;; table, so 'specify-symbol-expr must emit them rather than resolve them
 (defvar *keywords* '(|break| |continue|))
 (defvar *attributes* '(|static| |decl|         |inline|  |register| |extern| |volatile|
-                       |auto|   |thread-local| |atomic|   |defer|   |non-copy|))
+                       |auto|   |thread-local| |atomic|   |defer|   |non-copy|
+                       ;; C++ member functions. `const' is here and not in
+                       ;; *modifiers* because it qualifies the method, not a
+                       ;; type -- (const) before a method is `T f () const'.
+                       |virtual| |override| |const| |explicit| |noexcept|))
 (defvar *globals* (make-hash-table :test 'eql))
 
 ;; Symbol Table
@@ -40,6 +44,19 @@
 (defparameter *module-spec* nil)
 ;; current module spec during module compiling
 (defparameter *module-path* nil)
+
+;; The struct a C++ member function is being specified inside. It is NOT
+;; *struct-spec*: that one has to be nil while a method body is specified, or
+;; every local in the body gets keyed as `local/Struct' and the struct's own
+;; name stops resolving. This carries only what `this' needs -- its type.
+(defparameter *method-struct* nil)
+
+;; struct name -> its C++ base names, from (inherits ...). Flat and global on
+;; purpose: an inherited member is looked up while the derived struct is still
+;; being specified, from inside one of its own methods, and the scoped symbol
+;; table is the wrong instrument for that -- it answers by lexeme path, and the
+;; path in there is the method's.
+(defvar *struct-bases* (make-hash-table :test 'eql))
 ;; all object names inside modules
 (defvar *module-names* (make-hash-table :test 'equal))
 ;; current typedef spec during type inline struct compiling
@@ -389,8 +406,13 @@
 (defun is-name (name) (symbolp name))
 
 (defun is-decl-name (name)
-  (let ((name (symbol-name name)))
+  ;; A C++ destructor is named ~Type, and the tilde is part of the name rather
+  ;; than an operator -- there is nowhere else for it to live. It is accepted
+  ;; only in the leading position, and only in a C++ target.
+  (let ((name (let ((n (symbol-name name)))
+                (if (and *cpp* (> (length n) 1) (char= (char n 0) #\~)) (subseq n 1) n))))
     (cond ((string= name "const") nil)
+          ((zerop (length name)) nil)
 	      ((not (find (char name 0) "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_")) nil)
 	      (t (progn
 	           (dotimes (i (- (length name) 1))

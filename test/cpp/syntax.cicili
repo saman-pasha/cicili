@@ -1,0 +1,121 @@
+;;;; test Cicili C++ syntax macros
+;;; namespaces, references, new/delete, the named casts, templates and
+;;; exceptions -- the part of C++ that is only ever punctuation, and so lives
+;;; in cpp.cicili as macros rather than in the compiler.
+
+(source "syntax.cpp"
+  (make :cpp #t :compile #t :link ("-lsyntax.o" "-o" "syntax_test"))
+
+  (include <cstdio>)
+  (include <string>)
+  (include <vector>)
+  (include <stdexcept>)
+
+  (var int bad . 0)
+
+  (func check ((const char * what) (long got) (long want))
+        (if (== got want)
+            (printf "ok   %-30s %ld\n" what got)
+          (block (printf "FAIL %-30s got %ld want %ld\n" what got want)
+                 (++ bad))))
+
+  ;; ---- namespace ----------------------------------------------------
+  ;; A namespace is emitted C++; it is NOT a Cicili scope. Cicili knows this
+  ;; type as `Point' whichever namespace it was written in, so referring to it
+  ;; from outside needs the name to resolve on the C++ side too -- hence the
+  ;; `using' below. Fully-qualifying it instead ($$ geom Point) produces a code
+  ;; escape, which is fine as a type but has no type for inference to follow,
+  ;; so `->' and `$' cannot see through one.
+  (namespace geom
+    (struct Point
+            (member int x)
+            (member int y)
+            (ctor ((int a) (int b)) (init (x a) (y b)))
+            (const)
+            (method sum () (out int) (return (+ ($ this x) ($ this y))))))
+
+  (using namespace geom)
+
+  ;; ---- templates ----------------------------------------------------
+  ;; `generic' covers most of what templates are for; this is for the rest
+  (template ((typename T))
+    (func biggest (((cref T) a) ((cref T) b)) (out T)
+          (return (? (< a b) b a))))
+
+  ;; ---- references ---------------------------------------------------
+  ;; (mref T) borrows and writes, so the caller sees the change
+  (func bump (((mref int) n))
+        (set n (+ n 1)))
+
+  ;; (cref T) borrows without copying -- what libtorch's own signatures use
+  (func lengthOf (((cref ($$ std string)) s)) (out int)
+        (return (cast int (($ s size)))))
+
+  ;; ---- exceptions ---------------------------------------------------
+  ;; throwing an int rather than a std::runtime_error, because constructing a
+  ;; C++ library type by name needs that name declared on the Cicili side --
+  ;; which is what a declaration binding is for, and there is none here. What
+  ;; is being tested is that throw and catch work.
+  (func risky ((int n)) (out int)
+        (when (< n 0) (throw* n))
+        (return (* n 2)))
+
+  (main
+    ;; namespace + scope resolution
+    (letin* ((p (Point 3 4)))
+      (check "namespaced method" (cast long (($ p sum))) 7))
+
+    ;; template instantiation, explicit and inferred
+    (check "template int"    (cast long (biggest 3 9)) 9)
+    (check "template double" (cast long ((t<> biggest double) 2.5 1.5)) 2)
+
+    ;; a mutable reference really writes through
+    (let ((int n . 41))
+      (bump n)
+      (check "mref wrote through" (cast long n) 42))
+
+    ;; a const reference over a std::string
+    (letin* ((s (($$ std string) "abcde")))
+      (check "cref no copy" (cast long (lengthOf s)) 5))
+
+    ;; new / delete
+    (let ((Point * q . #'(new* Point 10 20)))
+      (check "new* then method" (cast long ((-> q sum))) 30)
+      (delete* q))
+
+    ;; the named casts. The operand is compiled as an expression, so it can be
+    ;; any expression -- but a UNARY one (& x, * p) does not survive being
+    ;; spliced into a code escape yet, so bind it first if you need one.
+    (check "static_cast"  (cast long (static-cast int 3.9)) 3)
+    (let ((Point * q2 . #'(new* Point 1 2)))
+      (let ((const Point * cq . q2))
+        (let ((Point * mq . #'(const-cast (Point *) cq)))
+          (check "const_cast" (cast long ((-> mq sum))) 3)))
+      (delete* q2))
+
+    ;; std::vector through $$ and t<>, to prove the two compose
+    (letin* ((v (($$ std (t<> vector int)))))
+      (($ v push_back) 7)
+      (($ v push_back) 8)
+      (check "vector size" (cast long (($ v size))) 2)
+      (check "vector back" (cast long (($ v back))) 8))
+
+    ;; exceptions: the throwing path and the ordinary one
+    (check "no throw" (cast long (risky 21)) 42)
+    (let ((int caught . 0))
+      ;; the caught value is declared by the emitted C++, not by Cicili, so it
+      ;; is not a name the body can refer to -- see the note on try* in
+      ;; cpp.cicili. Catching is what is being tested here.
+      (try* (block (let ((int r . #'(risky -1)))
+                     (cast void r)))
+            ((int e)
+             (set caught 1)))
+      (check "caught" (cast long caught) 1))
+
+    (if (== bad 0)
+        (printf "cpp syntax: all ok\n")
+      (printf "cpp syntax: %d FAILED\n" bad))
+    (return bad)))
+
+;; sbcl --script cicili.lisp ./test/cpp/syntax.cicili
+;; ./test/cpp/syntax_test

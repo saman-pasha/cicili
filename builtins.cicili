@@ -87,17 +87,45 @@
                                   (MACROEXPAND reso)))
                           body))))
 
-;; ;; accepts all variables if the 3rd argument specified, will use it as destructor
-;; (DEFMACRO letin* (var-list &REST body)
-;;   `(letn ,(APPLY 'APPEND
-;;                  (MAP 'LIST #'(LAMBDA (var)
-;;                                 (WHEN (OR (< (LENGTH var) 2) (> (LENGTH var) 3))
-;;                                   (ERROR (FORMAT NIL "wrong letin* variable definition: ~A" var)))
-;;                                 (IF (= (LENGTH var) 2)
-;;                                     `((auto ,(CAR var) . (FUNCTION ,(CADR var))))
-;;                                     `((defer () ,(CADDR var)) (auto ,(CAR var) . (FUNCTION ,(CADR var))))))
-;;                       var-list))
-;;      ,@body))
+;;; letin* -- for values whose destruction is NOT (<> free TYPE).
+;;;
+;;;   (letin* ((v expr))        no destructor at all
+;;;   (letin* ((v expr dtor))   `dtor' is called with the value at scope exit
+;;;
+;;; `letin' infers the destructor from the type and calls (<> free TYPE). That
+;;; is the right answer for a Cicili type and the wrong one for a C++ object,
+;;; which already has a destructor and runs it itself at scope exit -- calling
+;;; anything of our own on top would destroy it twice. So a C++ object is bound
+;;; with the two-element form and C++ owns its lifetime, which is the only
+;;; arrangement that works with a library like libtorch where every type is
+;;; RAII and every call hands back a temporary.
+;;;
+;;;   (letin* ((x (t<> torch::randn '{ 2 3 })))     ; ~Tensor runs at scope exit
+;;;     (t<> std::cout << x))
+;;;
+;;; The three-element form is for the other case: a C value whose cleanup is
+;;; not the type's `free' -- a FILE, a descriptor, a handle from a C library.
+;;; THE DESTRUCTOR TAKES THE ADDRESS OF THE VARIABLE, not the variable: this
+;;; compiles to __attribute__((__cleanup__(f))) and that is what the attribute
+;;; passes. So it is `void d (T ** x)' for a T *, and a C function that takes
+;;; the handle itself needs one line of adaptation:
+;;;
+;;;   (func closefile ((FILE ** f)) (when (cof f) (fclose (cof f))))
+;;;   (letin* ((f (fopen "x" "r") closefile))
+;;;     ...)
+;;;
+;;; The type is `auto', which is C++'s `auto' in a C++ target and
+;;; __auto_type in a C one, so neither has to name the type twice.
+(DEFMACRO letin* (var-list &REST body)
+  `(letn ,(APPLY 'APPEND
+                 (MAP 'LIST #'(LAMBDA (var)
+                                (WHEN (OR (NOT (LISTP var)) (< (LENGTH var) 2) (> (LENGTH var) 3))
+                                  (ERROR (FORMAT NIL "wrong letin* variable definition: ~A -- want (name init) or (name init destructor)" var)))
+                                (IF (= (LENGTH var) 2)
+                                    `((auto ,(CAR var) . (FUNCTION ,(CADR var))))
+                                    `((defer () ,(CADDR var)) (auto ,(CAR var) . (FUNCTION ,(CADR var))))))
+                       var-list))
+     ,@body))
 
 ;; accepts all variables, inferes type to find destructor
 (DEFMACRO letin (var-list &REST body)

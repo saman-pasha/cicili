@@ -16,6 +16,22 @@
   ty)
 
 ;; deeply traverse spec tree to find lexeme id for a storage
+;;; A member of a C++ base class, looked up by walking the bases.
+;;;
+;;; Members are keyed `member/Type', so an inherited one is simply under a
+;;; different type than the one the expression names: ($ this w) inside Square
+;;; asks for w/Square and the answer is w/Shape. This walks (bases) in
+;;; declaration order, depth first, which is the order C++ itself resolves in
+;;; -- the first base that has the member wins, and an ambiguous member in two
+;;; bases is a C++ error to report rather than one to guess at here.
+(defun member-in-bases< (member-name type-name)
+  (when (symbolp type-name)
+    (loop for base in (gethash type-name *struct-bases*)
+          do (let ((hit (*gets* (intern (format nil "~A/~A" member-name base)))))
+               (when hit (return hit))
+               (let ((deeper (member-in-bases< member-name base)))
+                 (when deeper (return deeper)))))))
+
 (defun deep-storageof (id &optional spec)
   (let ((spec (if spec spec (*gets* id))))
     (if spec
@@ -85,26 +101,30 @@
                      (let* ((ty (peel-type-tag< (typeof struct)))
                             (storage-id (intern (format nil "~A/~A" (default spec) ty)))
                             (storage (*gets* storage-id)))
-                       (if storage
-                           storage
-                           (let ((end-type (if (typep ty 'sp)
-                                               (deep-typeof "" ty)
-                                               (deep-typeof ty))))
-                             (unless end-type (error "unknown struct type: ~A~%  accessed in: ~A~%" ty spec))
-                             (setq storage-id (intern (format nil "~A/~A" (default spec)
-                                                             (peel-type-tag< (typeof end-type)))))
-                             (setq storage (*gets* storage-id))
-                             ;; If the member still is not in the table, say so.
-                             ;; Falling through to (construct nil) raised
-                             ;; "no applicable method for CONSTRUCT (NIL)", which
-                             ;; named neither the member nor the type.
-                             (unless storage
-                               (error "unknown member: ~A of type: ~A~%  accessed in: ~A~%"
-                                      (default spec) (typeof end-type) spec))
-                             (let ((new-storage (make-specifier storage-id (construct storage) (const storage) (typeof storage)
-                                                                (modifier storage) (const-ptr storage) (array-def storage)
-                                                                (default storage) (attrs storage))))
-                               (*puts* storage-id new-storage))))))))
+                       (cond
+                         (storage storage)
+                         ;; a member of a C++ base class is under the BASE's
+                         ;; name, not the one the expression used
+                         ((member-in-bases< (default spec) (if (typep ty 'sp) (name ty) ty)))
+                         (t
+                          (let ((end-type (if (typep ty 'sp)
+                                              (deep-typeof "" ty)
+                                              (deep-typeof ty))))
+                            (unless end-type (error "unknown struct type: ~A~%  accessed in: ~A~%" ty spec))
+                            (setq storage-id (intern (format nil "~A/~A" (default spec)
+                                                            (peel-type-tag< (typeof end-type)))))
+                            (setq storage (*gets* storage-id))
+                            ;; If the member still is not in the table, say so.
+                            ;; Falling through to (construct nil) raised
+                            ;; "no applicable method for CONSTRUCT (NIL)", which
+                            ;; named neither the member nor the type.
+                            (unless storage
+                              (error "unknown member: ~A of type: ~A~%  accessed in: ~A~%"
+                                     (default spec) (typeof end-type) spec))
+                            (let ((new-storage (make-specifier storage-id (construct storage) (const storage) (typeof storage)
+                                                               (modifier storage) (const-ptr storage) (array-def storage)
+                                                               (default storage) (attrs storage))))
+                              (*puts* storage-id new-storage)))))))))
                 ((eql const-val '|@CAST|)   (deep-storageof id (default spec)))
                 ((eql const-val '|@RETURN|) (deep-storageof id (default spec)))
                 ((eql const-val '|@TYPEOF|)

@@ -13,6 +13,11 @@
                      (compile-typeof name lvl globals parent-spec))
                     ((key-eq '|@BODY| (construct name))
                      (compile-form (car (body name)) lvl globals parent-spec))
+                    ;; a type written as a (code ...) escape -- what cref, mref,
+                    ;; rref, $$ and t<> all expand to. It has no `typeof' to
+                    ;; recurse into; it IS the text, so it is emitted as text.
+                    ((key-eq '|@CODE| (construct name))
+                     (compile-form name lvl globals parent-spec))
                     (t (compile-name (typeof name) lvl globals parent-spec))))
             (let ((type (expand-macros (car name))))
               (cond ((or (key-eq '|struct| type) (key-eq '|union| type))
@@ -44,7 +49,7 @@
 	    ((key-eq name '|i128|)   (set-ast-line (output "__int128")))
 	    ((key-eq name '|u128|)   (set-ast-line (output "unsigned __int128")))
 	    ((key-eq name '|real|)   (set-ast-line (output "long double")))
-	    ((key-eq name '|auto|)   (set-ast-line (output "__auto_type")))
+	    ((key-eq name '|auto|)   (set-ast-line (output (if *cpp* "auto" "__auto_type"))))
 	    ((key-eq name '|$$$|)    (set-ast-line (output "...")))
 	    (t (compile-name name lvl globals parent-spec))))
 
@@ -175,8 +180,16 @@
   (with-slots ((content default)) spec
     (cond ((and (typep content 'sp) (eql (construct content) '|@CODE|))
            (compile-code content lvl globals spec))
-          ((and (typep content 'sp) (eql (construct content) '|@ATOM|))
-           (set-ast-line (output "~A " (name content))))
+          ;; An atom's `name' is the marker @SYMBOL and its VALUE is in
+          ;; `default', so printing the name emitted "@SYMBOL". compile-form
+          ;; knows the difference.
+          ;; any other specifier here is an ORDINARY EXPRESSION spliced into
+          ;; the escape -- a call, a unary, an address-of. Printing its `name'
+          ;; the way an atom is printed emitted the marker @SYMBOL; it has to be
+          ;; compiled as the expression it is.
+          ((typep content 'sp)
+           (compile-form content lvl globals spec)
+           (output " "))
           ((atom content)
            (set-ast-line (output "~A " content)))
           ((listp content)
@@ -560,8 +573,15 @@
 	    (is-extern   nil)
 	    (is-volatile nil)
 	    (is-auto     nil)
+	    (is-virtual  nil)
+	    (is-override nil)
+	    (is-const-m  nil)
+	    (is-explicit nil)
+	    (is-noexcept nil)
+	    (is-ctor     nil)
+	    (is-dtor     nil)
         (is-unique  (unique spec)))
-    
+
     (dolist (attr (attrs spec))
       (case (car attr)
 	    ('|static|   (setq is-static   t))
@@ -570,6 +590,13 @@
 	    ('|extern|   (setq is-extern   t))
 	    ('|volatile| (setq is-volatile t))
 	    ('|auto|     (setq is-auto     t))
+	    ('|virtual|  (setq is-virtual  t))
+	    ('|override| (setq is-override t))
+	    ('|const|    (setq is-const-m  t))
+	    ('|explicit| (setq is-explicit t))
+	    ('|noexcept| (setq is-noexcept t))
+	    ('|ctor|     (setq is-ctor     t))
+	    ('|dtor|     (setq is-dtor     t))
         ))
 
     ;; compile lambdas and inline structs before function
@@ -612,22 +639,35 @@
         (when is-inline   (set-ast-line (output "__attribute__((weak)) ")))
         (when (and is-static (not (key-eq name '|main|))) (set-ast-line (output "static ")))
         (when is-auto     (set-ast-line (output "auto ")))
+        ;; these two precede the return type; `const', `override' and `noexcept'
+        ;; follow the parameter list and are emitted after it
+        (when is-virtual  (set-ast-line (output "virtual ")))
+        (when is-explicit (set-ast-line (output "explicit ")))
 
         ;; if a function returns another function
         ;; the parameters of the function and returning one should be swapped
         ;; remind to add and remove (struct * this) if the function is METHOD
-        (if (key-eq (typeof spec) '|func|)
-            (progn
-              (setf (construct (car (array-def spec))) (construct spec))
-              (setf (name (car (array-def spec))) name)
+        ;;
+        ;; A constructor and a destructor have no return type -- not void, none
+        ;; -- so there is nothing to format and the name follows straight on.
+        (unless (or is-ctor is-dtor)
+          (if (key-eq (typeof spec) '|func|)
+              (progn
+                (setf (construct (car (array-def spec))) (construct spec))
+                (setf (name (car (array-def spec))) name)
+                (format-type (const spec) (typeof spec) (modifier spec) (const-ptr spec) nil (array-def spec) nil
+                             lvl locals parent-spec :func-out t))
               (format-type (const spec) (typeof spec) (modifier spec) (const-ptr spec) nil (array-def spec) nil
-                           lvl locals parent-spec :func-out t))
-            (format-type (const spec) (typeof spec) (modifier spec) (const-ptr spec) nil (array-def spec) nil
-                         lvl locals parent-spec :func-out nil))
-        
-        (output " ")
+                           lvl locals parent-spec :func-out nil))
+          (output " "))
 
         (cond ((key-eq (typeof spec) '|func|) t)
+              ;; a C++ member function. Its name is a bare symbol rather than a
+              ;; (Struct . name) cons, because the struct it is written inside
+              ;; already says which type it belongs to -- there is nothing to
+              ;; mangle and no Struct_m_ prefix to add.
+              ((and is-method (symbolp name))
+               (set-ast-line (output "~A " name)))
               ((and as-type (key-eq name '_))
                (if is-volatile (set-ast-line (output "(* volatile)")) (set-ast-line (output "(*)"))))
               ;; an ARRAY of function pointers: int (*ops[])(int a, int b). The
@@ -676,7 +716,15 @@
                 (error (format nil "cicili: function: ~A" info))))))
         (set-ast-line (output ")"))
         (when func-out (output ")"))
-        
+        ;; these qualify the function and follow its parameter list, which is
+        ;; why they are not with `virtual' and `explicit' up at the return type
+        (when is-const-m  (set-ast-line (output " const")))
+        (when is-noexcept (set-ast-line (output " noexcept")))
+        (when is-override (set-ast-line (output " override")))
+        ;; a constructor's member-initializer list, if it declared one
+        (when (and is-ctor (ctor-init spec))
+          (compile-ctor-init (ctor-init spec) lvl locals spec))
+
         (if is-declare
             (unless as-type (output ";"))
             (progn
@@ -810,6 +858,29 @@
       (output " ")
       (set-ast-line (output "~A" (if is-unique (unique spec) name))))))
 
+;;; a constructor's member-initializer list: " : fc(a, b), Base(n)". Each entry
+;;; is (target . args); an entry with no args still gets parens, because
+;;; `Base()' and `Base' are not the same thing in C++ -- the second is a syntax
+;;; error here.
+(defun compile-ctor-init (entries lvl globals parent-spec)
+  (output " : ")
+  (loop for entry in entries
+        with l = (1- (length entries))
+        for i from 0 to l
+        do (progn
+             (if (symbolp (car entry))
+                 (compile-name (car entry) lvl globals parent-spec)
+                 (compile-form (car entry) lvl globals parent-spec))
+             (output "(")
+             (loop for arg in (cdr entry)
+                   with al = (1- (length (cdr entry)))
+                   for j from 0 to al
+                   do (progn
+                        (compile-form arg lvl globals parent-spec)
+                        (when (< j al) (output ", "))))
+             (output ")")
+             (when (< i l) (output ", ")))))
+
 (defun compile-struct (spec lvl globals parent-spec &key ((:nested is-nested) nil) no-typedef)
   (let ((name         (name spec))
 	    (is-anonymous (anonymous spec))
@@ -827,6 +898,11 @@
     
     (when is-nested (output "~&~A" (indent (- lvl 1))))
     (when is-static (set-ast-line (output "static ")))
+    ;; C++ needs no typedef -- `struct X' already introduces the type name X --
+    ;; and a base-clause cannot go through one anyway. So in a C++ target a
+    ;; named struct is emitted plain, which is also what a C++ reader expects.
+    ;; The tail below has to agree, or `} X;' declares a VARIABLE named X.
+    (when *cpp* (setq no-typedef t))
     (if (or is-anonymous is-nested no-typedef)
         (progn
           (set-ast-line (output "struct "))
@@ -838,6 +914,18 @@
           (set-ast-line (output "~A " (if is-unique (unique spec) name)))
           (when is-declare
             (set-ast-line (output "~A " (if is-unique (unique spec) name))))))
+    ;; (inherits A B) -> " : public A, public B". Every base is public: a
+    ;; struct's are by default, and that is exactly why this is a struct and
+    ;; not a class -- there is no access specifier to write or to forget.
+    (when (and (bases spec) (not is-declare))
+      (output ": ")
+      (loop for base in (bases spec)
+            with l = (1- (length (bases spec)))
+            for i from 0 to l
+            do (progn
+                 (output "public ")
+                 (compile-type-name base lvl globals spec)
+                 (output (if (< i l) ", " " ")))))
     (unless is-declare
       (if is-anonymous
           (output "{ /* ~A */~%" name)
@@ -948,6 +1036,15 @@
           (set-ast-line (output "~A " m-name))
           (set-ast-line (output "~A " symbol))))))
 
+;;; Is this receiver the `this' of a C++ member function? It arrives as an
+;;; @ATOM whose value is the symbol, not as the symbol itself.
+(defun this-receiver< (receiver)
+  (cond ((symbolp receiver) (key-eq receiver '|this|))
+        ((typep receiver 'sp)
+         (let ((d (default receiver)))
+           (and d (symbolp d) (key-eq d '|this|))))
+        (t nil)))
+
 (defun compile-$ (spec lvl globals parent-spec)
   ;; `$' is value member access and always emits `.', so there is nothing to
   ;; learn from the C compiler's diagnostics between resolver runs. This used to
@@ -960,7 +1057,14 @@
       (when info (ast-error< "member access" info spec)))
     (set-ast-line (output "("))
     (compile-form receiver (1+ lvl) globals spec)
-    (set-ast-line (output ". "))
+    ;; `this' is the one receiver that is always a pointer -- C++ says so, and
+    ;; there is no version of it that is not. Writing (-> this w) would be
+    ;; correct and would also be the only place in a method where a member of
+    ;; the object it is a method OF needs different syntax from every other
+    ;; member, so `$' accepts it and emits the arrow.
+    (if (and *cpp* (this-receiver< receiver))
+        (set-ast-line (output "-> "))
+        (set-ast-line (output ". ")))
     (compile-name member (1+ lvl) globals spec)
     (output ")")))
 

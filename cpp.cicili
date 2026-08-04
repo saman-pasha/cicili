@@ -1,33 +1,185 @@
 ;;;; C++ language macros
+;;;;
+;;;; What the compiler itself knows about C++ lives in the back end: `struct'
+;;;; takes (inherits ...), (method ...), (ctor ...) and (dtor ...), `this' is
+;;;; implicit, and a C++ target emits no typedefs. This file is the rest -- the
+;;;; syntax that is only ever punctuation, and has no business in the specifier.
+;;;;
+;;;; Nothing here needs a `class' and nothing here writes `public:'. A struct's
+;;;; members and bases are public already, which is exactly why the whole
+;;;; language surface is a struct: the two things a C++ definition normally has
+;;;; to say are the two things you never have to say.
 
+;;; (t<> vector int) -> vector<int>
+;;; Template arguments. Nests, and cooperates with $$ so that
+;;; ($$ std (t<> vector int)) is std::vector<int> and
+;;; (t<> std::function (t<> Tensor)) is what it looks like.
 (DEFMACRO t<> (name &REST templates)
   (LET* ((tmps templates)
          (parts (LOOP FOR r IN tmps
                       WITH l = (1- (LENGTH tmps))
                       FOR i FROM 0 TO l
-                      COLLECT (LET ((p (IF (AND (LISTP r) (EQL (CAR r) '$$))
+                      COLLECT (LET ((p (IF (AND (LISTP r) (SYMBOLP (CAR r)) (STRING= (SYMBOL-NAME (CAR r)) "$$"))
                                            (MACROEXPAND `($$ ,@(CDR r)))
                                            r)))
                                 (IF (< i l) (LIST p ",") (LIST p))))))
     `(code '{ ,name #\< (code ',(APPLY #'APPEND parts)) #\> })))
 
+;;; ($$ std vector) -> std::vector
+;;; Scope resolution, for namespaces and for static members alike.
 (DEFMACRO $$ (&REST resolution)
   (LET* ((res resolution)
          (parts (LOOP FOR r IN res
                       WITH l = (1- (LENGTH res))
                       FOR i FROM 0 TO l
-                      COLLECT (LET ((p (IF (AND (LISTP r) (EQL (CAR r) 't<>))
+                      COLLECT (LET ((p (IF (AND (LISTP r) (SYMBOLP (CAR r)) (STRING= (SYMBOL-NAME (CAR r)) "t<>"))
                                            (MACROEXPAND `(t<> ,@(CDR r)))
                                            r)))
                                 (IF (< i l) (LIST p "::") (LIST p))))))
     `(code ',(APPLY #'APPEND parts))))
 
+;;; (using namespace std) / (using std vector)
 (DEFMACRO using (namespace &REST resolution)
   (LET ((res (MACROEXPAND `($$ ,@resolution))))
     (IF (EQL namespace 'namespace)
         `(code '{ using ,namespace ,res ";" })
         `(code '{ using 'namespace ,res ";" }))))
 
+;;; (extern-c ...) -- C linkage for everything inside
 (DEFMACRO extern-c (&REST body)
-  `((code '{ extern ,(FORMAT NIL "~S" "C") })
+  `($$$
+    (code '{ extern ,(FORMAT NIL "~S" "C") })
     (block ,@body)))
+
+;;;; ------------------------------------------------------------------
+;;;; namespaces
+;;;; ------------------------------------------------------------------
+
+;;; (namespace app (func f () ...) ...) -> namespace app { ... }
+;;; Nests by nesting, and an anonymous namespace is (namespace () ...).
+(DEFMACRO namespace (name &REST body)
+  `($$$
+    (code '{ namespace ,@(IF (AND name (NOT (EQUAL name '()))) (LIST name) '()) })
+    (block ,@body)))
+
+;;;; ------------------------------------------------------------------
+;;;; references
+;;;;
+;;;; C++ has two pointer-shaped things C does not, and both are types rather
+;;;; than expressions, so they are written where a type goes:
+;;;;
+;;;;   (func f (((cref Tensor) x)))   const Tensor & x    -- borrow, no copy
+;;;;   (func g (((mref Tensor) x)))         Tensor & x    -- borrow and write
+;;;;   (func h (((rref Tensor) x)))         Tensor && x   -- take ownership
+;;;;
+;;;; `cref' is the one to reach for by default. Passing a libtorch type by
+;;;; value copies it -- cheaply, since a Tensor is a refcounted handle, but the
+;;;; refcount traffic is real and the whole library's own signatures are
+;;;; const-ref for a reason.
+;;;; ------------------------------------------------------------------
+
+;;; A type argument may itself be written with $$ or t<>, and `code' takes
+;;; punctuation rather than macro calls -- so anything spliced into a code form
+;;; as a type is expanded on the way in. Every macro below that takes a type
+;;; goes through here.
+(DEFUN cpp-type< (ty)
+  (COND ((AND (LISTP ty) (SYMBOLP (CAR ty))
+              (MEMBER (SYMBOL-NAME (CAR ty)) '("$$" "t<>" "cref" "mref" "rref" "code") :TEST #'STRING=))
+         (MACROEXPAND ty))
+        ;; a plain type descriptor -- (int *), (const char *) -- is words, not
+        ;; an expression, and a code form is how words are spelled here
+        ((LISTP ty) `(code ',ty))
+        (T ty)))
+
+(DEFMACRO cref (type) `(code '{ const ,(cpp-type< type) "&" }))
+(DEFMACRO mref (type) `(code '{ ,(cpp-type< type) "&" }))
+(DEFMACRO rref (type) `(code '{ ,(cpp-type< type) "&&" }))
+
+;;;; ------------------------------------------------------------------
+;;;; allocation and casts
+;;;; ------------------------------------------------------------------
+
+;;; (new* Widget 1 2) -> new Widget(1, 2)
+;;; Named with a star because `new' is already the std constructor convention
+;;; on the C side ((new vector ...)), and the two mean different things: this
+;;; one allocates and the other does not.
+(DEFMACRO new* (type &REST args)
+  `(code '{ new ,(cpp-type< type) "(" (code ',(LET ((l (1- (LENGTH args))))
+                                    (LOOP FOR a IN args FOR i FROM 0 TO l
+                                          APPEND (IF (< i l) (LIST a ",") (LIST a)))))
+            ")" }))
+
+;; spliced rather than wrapped, so the expression stays an ordinary statement
+;; and gets its own `;' -- a code escape supplies its own punctuation and there
+;; is none to supply here
+(DEFMACRO delete* (expr)     `($$$ (code '{ delete }) ,expr))
+(DEFMACRO delete[]* (expr)   `($$$ (code '{ delete "[]" }) ,expr))
+
+;;; the four named casts. `cast' stays what it is -- a C cast -- because that
+;;; is what it means everywhere else in the language.
+(DEFMACRO static-cast (type expr)      `(code '{ static_cast #\< ,(cpp-type< type) #\> "(" ,expr ")" }))
+(DEFMACRO dynamic-cast (type expr)     `(code '{ dynamic_cast #\< ,(cpp-type< type) #\> "(" ,expr ")" }))
+(DEFMACRO const-cast (type expr)       `(code '{ const_cast #\< ,(cpp-type< type) #\> "(" ,expr ")" }))
+(DEFMACRO reinterpret-cast (type expr) `(code '{ reinterpret_cast #\< ,(cpp-type< type) #\> "(" ,expr ")" }))
+
+;;;; ------------------------------------------------------------------
+;;;; templates
+;;;;
+;;;; `t<>' USES a template; this DECLARES one. Cicili's own `generic' covers
+;;;; most of what templates are for and does it by name interning, so this is
+;;;; for the cases generic cannot reach: writing something a C++ library will
+;;;; instantiate, or specialising on a C++ type.
+;;;;
+;;;;   (template ((typename T))
+;;;;     (func maxOf (((cref T) a) ((cref T) b)) (out T)
+;;;;           (return (? (< a b) b a))))
+;;;;
+;;;; The parameter list is a LIST OF PARAMETERS, each of which is itself a
+;;;; list -- ((typename T) (int N)) -- because `typename T' is two words and
+;;;; the comma goes between parameters, not between words.
+;;;; ------------------------------------------------------------------
+
+(DEFMACRO template (params &REST body)
+  `($$$
+    (code '{ template #\< (code ',(LET ((l (1- (LENGTH params))))
+                                    (LOOP FOR p IN params FOR i FROM 0 TO l
+                                          APPEND (IF (< i l)
+                                                     (APPEND (IF (LISTP p) p (LIST p)) (LIST ","))
+                                                     (IF (LISTP p) p (LIST p))))))
+             #\> })
+    ,@body))
+
+;;;; ------------------------------------------------------------------
+;;;; exceptions
+;;;;
+;;;; libtorch throws. A Cicili program that calls into it and does not catch
+;;;; will terminate, which is a legitimate choice and should be a deliberate
+;;;; one.
+;;;;
+;;;;   (try* (block ...)
+;;;;         (((cref ($$ std exception)) e) (printf "failed\n"))
+;;;;         (()                            (printf "something else\n")))
+;;;;
+;;;; A catch with () catches everything. LIMITATION: the caught value is
+;;;; declared by the emitted C++ and not by Cicili, so `e' is not a name the
+;;;; body can refer to -- name it for the reader and for C++'s benefit, and
+;;;; reach what it holds through a (code ...) escape if you must. Declaring it
+;;;; properly needs the specifier to model the catch clause as a scope, which
+;;;; it does not yet.
+;;;; ------------------------------------------------------------------
+
+(DEFMACRO try* (body &REST catches)
+  `($$$
+    (code '{ try })
+    ,body
+    ,@(APPLY #'APPEND
+             (MAPCAR #'(LAMBDA (c)
+                         `((code '{ catch "("
+                                    ,@(IF (EQUAL (CAR c) '())
+                                          (LIST "...")
+                                          (LIST (cpp-type< (CAR (CAR c))) (CADR (CAR c))))
+                                    ")" })
+                           (block ,@(CDR c))))
+                     catches))))
+
+(DEFMACRO throw* (expr) `($$$ (code '{ throw }) ,expr))
