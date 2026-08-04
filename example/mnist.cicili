@@ -38,7 +38,7 @@
 
 (source "mnist.cpp"
   (make :cpp #t
-        :compile ("-std=c++17" "-Wno-c++20-extensions"
+        :compile ("-std=c++17" "-O3" "-Wno-c++20-extensions"
                   "-I/usr/local/opt/pytorch/include"
                   "-I/usr/local/opt/pytorch/include/torch/csrc/api/include"
                   "-c" "mnist.cpp")

@@ -1,25 +1,25 @@
-;;;; MNIST again -- the same network, the same result, described instead of built
+;;;; MNIST with a convolutional network -- the picture layers of the DSL
 ;;;;
 ;;;; This is example/mnist.cicili with the network and the training loop written
 ;;;; in the DSL from lib/cpp/torch/dsl.cicili. Everything below the DSL is
 ;;;; unchanged: same libtorch, same declarations, same generated C++ shape.
 ;;;;
-;;;;     sbcl --script cicili.lisp ./example/mnist-dsl.cicili
-;;;;     MNIST_DIR=~/mnist-data ./example/mnist_dsl
+;;;;     sbcl --script cicili.lisp ./example/mnist-conv.cicili
+;;;;     MNIST_DIR=~/mnist-data ./example/mnist_conv
 ;;;;
 ;;;; The whole model and its training are the twelve lines at the bottom of this
 ;;;; file. Everything above them is reading idx files, which is not a machine
 ;;;; learning problem and is the part Keras hides in a dataset loader.
 
-(source "mnist_dsl.cpp"
+(source "mnist_conv.cpp"
   (make :cpp #t
         :compile ("-std=c++17" "-O3" "-Wno-c++20-extensions"
                   "-I/usr/local/opt/pytorch/include"
                   "-I/usr/local/opt/pytorch/include/torch/csrc/api/include"
-                  "-c" "mnist_dsl.cpp")
-        :link ("-lmnist_dsl.o"
+                  "-c" "mnist_conv.cpp")
+        :link ("-lmnist_conv.o"
                "-L/usr/local/opt/pytorch/lib" "-ltorch" "-ltorch_cpu" "-lc10"
-               "-o" "mnist_dsl"))
+               "-o" "mnist_conv"))
 
   (include <torch/torch.h>)
   (include <cstdio>)
@@ -39,11 +39,18 @@
   ;;; this expands. Writing a mismatch is not possible, and an unknown
   ;;; activation is a compile error that lists the ones there are.
 
+  ;;; A picture, not a vector. Each layer's shape follows from the one before
+  ;;; it, so the comments are what the DSL worked out -- they are not
+  ;;; instructions and cannot drift from the truth:
   (network Classifier
-    (input   784)
-    (dense   256 relu)
-    (dense   128 relu)
-    (dense    10 log-softmax))
+    (image   1 28 28)
+    (conv   16 3 relu)      ; 16 filters, 3x3   -> 16 of 26x26
+    (pool    2)             ;                   -> 16 of 13x13
+    (conv   32 3 relu)      ;                   -> 32 of 11x11
+    (pool    2)             ;                   -> 32 of  5x5
+    (flatten)               ;                   -> 800
+    (dropout 0.25)
+    (dense  10 log-softmax))
 
   ;;; ================= reading the data ==============================
   ;;; Not a machine-learning problem. Unchanged from example/mnist.cicili.
@@ -109,9 +116,12 @@
 
         (letin* ((mean (torch::full (dims 1) (cast torch::Scalar MEAN)))
                  (std  (torch::full (dims 1) (cast torch::Scalar STD)))
-                 (xs (($ (($ (torch::from_blob ximg (dims NTRAIN PIXELS)) sub) mean) div) std))
+                 ;; a conv net takes [N, channels, height, width]
+                 (xs (($ (($ (($ (torch::from_blob ximg (dims NTRAIN PIXELS)) sub) mean) div) std)
+                         view) (dims NTRAIN 1 28 28)))
                  (ys (($ (torch::from_blob ylab (dims NTRAIN)) to) torch::kInt64))
-                 (xt (($ (($ (torch::from_blob timg (dims NTEST PIXELS)) sub) mean) div) std))
+                 (xt (($ (($ (($ (torch::from_blob timg (dims NTEST PIXELS)) sub) mean) div) std)
+                         view) (dims NTEST 1 28 28)))
                  (yt (($ (torch::from_blob tlab (dims NTEST)) to) torch::kInt64)))
 
           ;;; ================= the training ============================
@@ -121,7 +131,7 @@
           (let ((double acc . #'(train Classifier
                                   (data      xs ys)
                                   (test      xt yt)
-                                  (epochs    15)
+                                  (epochs    5)
                                   (batch     100)
                                   (optimiser adam 0.001)
                                   (loss      nll))))

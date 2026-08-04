@@ -29,7 +29,7 @@
 
 (source "tabular.cpp"
   (make :cpp #t
-        :compile ("-std=c++17" "-Wno-c++20-extensions"
+        :compile ("-std=c++17" "-O3" "-Wno-c++20-extensions"
                   "-I/usr/local/opt/pytorch/include"
                   "-I/usr/local/opt/pytorch/include/torch/csrc/api/include"
                   "-c" "tabular.cpp")
@@ -45,8 +45,8 @@
   (import "lib/cpp/torch/torch.cicili")
 
   (var i64 FEATURES . 8)
-  (var i64 ROWS     . 20000)
-  (var i64 TRAIN    . 16000)     ; the rest is held out
+  (var i64 ROWS     . 21000)   ; California housing is 20640
+  (var i64 TRAIN    . 16512)   ; 80% of 20640     ; the rest is held out
 
   ;;; ================= the model =====================================
   ;;; Eight columns in, one number out. No activation on the last layer --
@@ -107,6 +107,46 @@
             (fclose f)
             (return r))))
 
+  ;;; ---- what real data needs and generated data does not ----------
+  ;;;
+  ;;; SHUFFLE. California housing is ordered geographically, so splitting it by
+  ;;; position puts one part of the state in training and another in the test
+  ;;; set. That is not a hard test, it is a different problem. Fisher-Yates over
+  ;;; the row indices, moving both the features and the target together.
+  (func shuffle ((float * xs) (float * ys) (i64 rows))
+        (for ((i64 i . #'(- rows 1))) (> i 0) ((-- i))
+             (let ((i64 j . #'(cast i64 (% (nextrand) (cast u32 (+ i 1))))))
+               (for ((int c . 0)) (< c 8) ((++ c))
+                    (let ((float t . #'(nth (+ (* i FEATURES) c) xs)))
+                      (set (nth (+ (* i FEATURES) c) xs) (nth (+ (* j FEATURES) c) xs)
+                           (nth (+ (* j FEATURES) c) xs) t)))
+               (let ((float t . #'(nth i ys)))
+                 (set (nth i ys) (nth j ys)
+                      (nth j ys) t)))))
+
+  ;;; STANDARDISE. The columns are on wildly different scales -- median income
+  ;;; is single digits and population is in the thousands -- and a network fed
+  ;;; that spends its first epochs learning the scaling instead of the problem.
+  ;;; Mean and standard deviation are taken over the TRAINING rows only: using
+  ;;; the held-out rows to compute them leaks the test set into the model, which
+  ;;; is the most common way a good-looking number is not one.
+  (func standardise ((float * xs) (i64 rows) (i64 ntrain))
+        (for ((int c . 0)) (< c 8) ((++ c))
+             (let ((double sum . 0.0))
+               (for ((i64 r . 0)) (< r ntrain) ((++ r))
+                    (+= sum (cast double (nth (+ (* r FEATURES) c) xs))))
+               (let ((double mean . #'(/ sum (cast double ntrain)))
+                     (double var . 0.0))
+                 (for ((i64 r . 0)) (< r ntrain) ((++ r))
+                      (let ((double d . #'(- (cast double (nth (+ (* r FEATURES) c) xs)) mean)))
+                        (+= var (* d d))))
+                 (let ((double sd . #'(sqrt (/ var (cast double ntrain)))))
+                   (when (< sd 0.000001) (set sd 1.0))
+                   (for ((i64 r . 0)) (< r rows) ((++ r))
+                        (set (nth (+ (* r FEATURES) c) xs)
+                             (cast float (/ (- (cast double (nth (+ (* r FEATURES) c) xs)) mean)
+                                            sd)))))))))
+
   ;;; What predicting the mean would score, as an RMSE. An error figure means
   ;;; nothing on its own -- it is in the units of the target -- so this is the
   ;;; number the network has to beat for its own to mean anything.
@@ -139,7 +179,10 @@
                          rows FEATURES))))
 
       (let ((i64 ntrain . #'(? (< TRAIN rows) TRAIN (/ (* rows 4) 5))))
-        (printf "        %lld train / %lld held out\n" ntrain (- rows ntrain))
+        (shuffle xs ys rows)
+        (standardise xs rows ntrain)
+        (printf "        %lld train / %lld held out, shuffled and standardised\n"
+                ntrain (- rows ntrain))
         (printf "        predicting the mean scores %.4f rmse\n"
                 (baseline_rmse ys ntrain rows))
 

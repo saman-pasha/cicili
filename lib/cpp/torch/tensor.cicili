@@ -85,7 +85,9 @@
               (const) (method unsqueeze   ((i64 d))   (out torch::Tensor))
               (const) (method t           ()          (out torch::Tensor))
               (const) (method contiguous  ()          (out torch::Tensor))
-              (const) (method flatten     ()          (out torch::Tensor))
+              ;; flatten FROM a dimension: flatten(1) keeps the batch dim,
+              ;; which is what a conv stack needs before its dense head
+              (const) (method flatten     ((i64 start)) (out torch::Tensor))
 
               ;;; arithmetic -- the non-mutating forms
               (const) (method add         ((const torch::Tensor & other)) (out torch::Tensor))
@@ -173,6 +175,8 @@
                                    (const torch::Tensor & target))
                   (out torch::Tensor))
      (decl) (func torch::log_softmax ((const torch::Tensor & x) (i64 dim))
+                  (out torch::Tensor))
+     (decl) (func torch::max_pool2d ((const torch::Tensor & x) (c10::IntArrayRef kernel))
                   (out torch::Tensor))
      (decl) (func torch::nll_loss ((const torch::Tensor & input)
                                    (const torch::Tensor & target))
