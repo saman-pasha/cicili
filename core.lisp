@@ -3,7 +3,11 @@
 (defvar *unaries* '(|+| |-| |++| |1+| |--| |1-| |~| |not| |cof| |aof|))
 (defvar *operators* '(|+| |-| |*| |/| |%| |==| |!=| |>| |<| |>=| |<=| |^| |<<| |>>| |xor| |and| |or| |bitand| |bitor|))
 (defvar *assignments* '(|=| |+=| |-=| |*=| |/=| |%=| |<<=| |>>=|))
-(defvar *modifiers* '(|&| |*| |**| |***| |move| |ref|))
+;; `&' was already here and already emits a C++ reference -- (const T & x) is
+;; `const T & x' and always was. `&&' is the rvalue reference, and it joins the
+;; list rather than getting a wrapper of its own: a reference qualifies a type,
+;; which is exactly what this slot is for. That is why there is no cref/mref.
+(defvar *modifiers* '(|&| |&&| |*| |**| |***| |move| |ref|))
 ;; C keywords that stand alone as a statement and name nothing in the symbol
 ;; table, so 'specify-symbol-expr must emit them rather than resolve them
 (defvar *keywords* '(|break| |continue|))

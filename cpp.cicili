@@ -59,36 +59,36 @@
 ;;;; ------------------------------------------------------------------
 ;;;; references
 ;;;;
-;;;; C++ has two pointer-shaped things C does not, and both are types rather
-;;;; than expressions, so they are written where a type goes:
+;;;; There is nothing here, and that is the point. A reference qualifies a
+;;;; type, and Cicili's type descriptor already has a slot for that -- the one
+;;;; holding *, **, move and ref. `&' was in it before any of this work
+;;;; started and already emitted a C++ reference; `&&' has been added beside
+;;;; it. So a reference is written where every other modifier is written:
 ;;;;
-;;;;   (func f (((cref Tensor) x)))   const Tensor & x    -- borrow, no copy
-;;;;   (func g (((mref Tensor) x)))         Tensor & x    -- borrow and write
-;;;;   (func h (((rref Tensor) x)))         Tensor && x   -- take ownership
+;;;;   (func f ((const torch::Tensor & x)))    const torch::Tensor & x
+;;;;   (func g ((torch::Tensor & x)))                torch::Tensor & x
+;;;;   (func h ((torch::Tensor && x)))               torch::Tensor && x
 ;;;;
-;;;; `cref' is the one to reach for by default. Passing a libtorch type by
-;;;; value copies it -- cheaply, since a Tensor is a refcounted handle, but the
-;;;; refcount traffic is real and the whole library's own signatures are
-;;;; const-ref for a reason.
+;;;; A (cref T) wrapper was written for this and then deleted: it said the
+;;;; same thing in a shape the rest of the language does not use, and it was a
+;;;; code escape, so the type it produced could not be resolved.
+;;;;
+;;;; `&' is the one to reach for by default when calling a C++ library.
+;;;; Passing a libtorch type by value copies it -- cheaply, since a Tensor is
+;;;; a refcounted handle, but the refcount traffic is real and the whole
+;;;; library's own signatures are const-ref for a reason.
 ;;;; ------------------------------------------------------------------
 
-;;; A type argument may itself be written with $$ or t<>, and `code' takes
-;;; punctuation rather than macro calls -- so anything spliced into a code form
-;;; as a type is expanded on the way in. Every macro below that takes a type
-;;; goes through here.
+;;; A type spliced into a code escape may be written as a form -- (t<> ...),
+;;; (int *) -- and an escape takes words, not forms. This is what the macros
+;;; below run their type argument through.
 (DEFUN cpp-type< (ty)
   (COND ((CICILI::QUALIFIED-FORM< ty) (CICILI::QUALIFIED-NAME< (CDR ty)))
         ((AND (LISTP ty) (SYMBOLP (CAR ty))
-              (MEMBER (SYMBOL-NAME (CAR ty)) '("t<>" "cref" "mref" "rref" "code") :TEST #'STRING=))
+              (MEMBER (SYMBOL-NAME (CAR ty)) '("t<>" "code") :TEST #'STRING=))
          (MACROEXPAND ty))
-        ;; a plain type descriptor -- (int *), (const char *) -- is words, not
-        ;; an expression, and a code form is how words are spelled here
         ((LISTP ty) `(code ',ty))
         (T ty)))
-
-(DEFMACRO cref (type) `(code '{ const ,(cpp-type< type) "&" }))
-(DEFMACRO mref (type) `(code '{ ,(cpp-type< type) "&" }))
-(DEFMACRO rref (type) `(code '{ ,(cpp-type< type) "&&" }))
 
 ;;;; ------------------------------------------------------------------
 ;;;; allocation and casts
@@ -126,7 +126,7 @@
 ;;;; instantiate, or specialising on a C++ type.
 ;;;;
 ;;;;   (template ((typename T))
-;;;;     (func maxOf (((cref T) a) ((cref T) b)) (out T)
+;;;;     (func maxOf ((const T & a) (const T & b)) (out T)
 ;;;;           (return (? (< a b) b a))))
 ;;;;
 ;;;; The parameter list is a LIST OF PARAMETERS, each of which is itself a
@@ -152,7 +152,7 @@
 ;;;; one.
 ;;;;
 ;;;;   (try* (block ...)
-;;;;         (((cref ($$ std exception)) e) (printf "failed\n"))
+;;;;         ((const std::exception & e) (printf "failed\n"))
 ;;;;         (()                            (printf "something else\n")))
 ;;;;
 ;;;; A catch with () catches everything. LIMITATION: the caught value is

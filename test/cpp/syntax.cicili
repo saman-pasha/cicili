@@ -39,16 +39,17 @@
   ;; ---- templates ----------------------------------------------------
   ;; `generic' covers most of what templates are for; this is for the rest
   (template ((typename T))
-    (func biggest (((cref T) a) ((cref T) b)) (out T)
+    (func biggest ((const T & a) (const T & b)) (out T)
           (return (? (< a b) b a))))
 
   ;; ---- references ---------------------------------------------------
-  ;; (mref T) borrows and writes, so the caller sees the change
-  (func bump (((mref int) n))
+  ;; `&` borrows and writes, so the caller sees the change -- the same
+  ;; modifier slot that holds * and ref, not a wrapper of its own
+  (func bump ((int & n))
         (set n (+ n 1)))
 
-  ;; (cref T) borrows without copying -- what libtorch's own signatures use
-  (func lengthOf (((cref std::string) s)) (out int)
+  ;; const & borrows without copying -- what libtorch's own signatures use
+  (func lengthOf ((const std::string & s)) (out int)
         (return (cast int (($ s size)))))
 
   ;; ---- exceptions ---------------------------------------------------
@@ -72,11 +73,11 @@
     ;; a mutable reference really writes through
     (let ((int n . 41))
       (bump n)
-      (check "mref wrote through" (cast long n) 42))
+      (check "& wrote through" (cast long n) 42))
 
     ;; a const reference over a std::string
     (letin* ((s (std::string "abcde")))
-      (check "cref no copy" (cast long (lengthOf s)) 5))
+      (check "const & no copy" (cast long (lengthOf s)) 5))
 
     ;; new / delete
     (let ((Point * q . #'(new* Point 10 20)))

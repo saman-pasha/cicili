@@ -26,43 +26,43 @@ struct Point {
 }
 using namespace geom ; 
 template < typename T > 
-T biggest (const T &  a , const T &  b ) {
+T biggest (const T & a , const T & b ) {
   return (((a  <  b  )) ? b  : a );
 }
-void bump (int &  n ) {
+void bump (int & n ) {
   n  = (n  +  1 );
 }
-int lengthOf (const std::string &  s ) {
+int lengthOf (const std::string & s ) {
   return ((int)(s . size)());
 }
 int risky (int n ) {
   if (n  <  0 )
-    { /* block139 */
+    { /* block131 */
       throw 
       n ;
     }
   return (n  *  2 );
 }
 int main () {
-  ({ /* letn147 */
+  ({ /* letn139 */
     Point p  = Point (3, 4);
     // ----------
     check ("namespaced method", ((long)(p . sum)()), 7);
   });
   check ("template int", ((long)biggest (3, 9)), 9);
   check ("template double", ((long)biggest < double > (2.5, 1.5)), 2);
-  { /* let152 */
+  { /* let144 */
     int n  = 41;
     // ----------
     bump (n );
-    check ("mref wrote through", ((long)n ), 42);
+    check ("& wrote through", ((long)n ), 42);
   }
-  ({ /* letn155 */
+  ({ /* letn147 */
     std::string s  = std::string ("abcde");
     // ----------
-    check ("cref no copy", ((long)lengthOf (s )), 5);
+    check ("const & no copy", ((long)lengthOf (s )), 5);
   });
-  { /* let157 */
+  { /* let149 */
     Point * q  = new Point ( 10 , 20 ) ;
     // ----------
     check ("new* then method", ((long)(q -> sum)()), 30);
@@ -70,13 +70,13 @@ int main () {
     q ;
   }
   check ("static_cast", ((long)static_cast < int > ( 3.9 ) ), 3);
-  { /* let167 */
+  { /* let159 */
     Point * q2  = new Point ( 1 , 2 ) ;
     // ----------
-    { /* let172 */
+    { /* let164 */
       const Point * cq  = q2 ;
       // ----------
-      { /* let174 */
+      { /* let166 */
         Point * mq  = const_cast < Point * > ( cq ) ;
         // ----------
         check ("const_cast", ((long)(mq -> sum)()), 3);
@@ -85,7 +85,7 @@ int main () {
     delete 
     q2 ;
   }
-  ({ /* letn183 */
+  ({ /* letn175 */
     auto v  = std::vector < int > ();
     // ----------
     (v . push_back)(7);
@@ -94,19 +94,19 @@ int main () {
     check ("vector back", ((long)(v . back)()), 8);
   });
   check ("no throw", ((long)risky (21)), 42);
-  { /* let188 */
+  { /* let180 */
     int caught  = 0;
     // ----------
     try 
-    { /* block193 */
-      { /* let195 */
+    { /* block185 */
+      { /* let187 */
         int r  = risky (-1);
         // ----------
         ((void)r );
       }
     }
     catch ( int e ) 
-    { /* block198 */
+    { /* block190 */
       caught  = 1;
     }
     check ("caught", ((long)caught ), 1);
