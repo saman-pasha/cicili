@@ -214,33 +214,41 @@ xorshift so both see the same keys in the same order.
 
 | | Cicili | Rust | |
 |---|---|---|---|
-| insert | 184 ms | **149 ms** | Rust ~19% faster |
-| search | 195 ms | **162 ms** | Rust ~17% faster |
-| traverse in order | 6 ms | **3 ms** | Rust 2x faster |
-| delete | 249 ms | **179 ms** | Rust ~28% faster |
+| insert | **216 ms** | 233 ms | Cicili ~7% faster |
+| search | **200 ms** | 257 ms | Cicili ~22% faster |
+| traverse in order | 5 ms | 5 ms | level |
+| delete | **261 ms** | 287 ms | Cicili ~9% faster |
 
-**Rust is ahead on all four.** This is not a table Cicili wins, and the honest
-figure is the one above rather than an earlier run of the same benchmark that
-showed search at parity — that was measured with the machine in a slower state,
-which compresses relative differences. Both sides got faster on a cooler
-machine; Rust got faster by more.
+Best of ten runs each, alternating run for run so neither side gets a quieter
+machine than the other. The machine was busy — absolute numbers on a quiet one
+are 20 to 40% lower for both — which is why the two are interleaved and why the
+best, not the mean, is quoted.
 
-The most likely cause has not been proven and is worth stating as a hypothesis
-rather than a finding: this stores `{key,val}` pairs together, so scanning a
-node's keys strides over the values and touches two cache lines where
-`BTreeMap`, which keeps keys and values in separate arrays, touches one. Every
-one of the four operations scans a node on the way down, which would fit the
-gap being across the board. Testing it means splitting the arrays, and that
-costs the API — `search`/`min`/`max` answer a pointer to a `pair`, which stops
-existing the moment the two are apart.
+**This table used to say the opposite**, and it is worth saying why rather than
+quietly replacing it. The earlier `btree` gave every node a `kids[2t]` array
+inline, and Rust was 17 to 28% ahead on all four rows. The suspected cause was
+`{key,val}` pairs stored together against `BTreeMap`'s separate key and value
+arrays. That was the wrong suspect. The real one was **the leaves**: in a tree
+of degree t almost every node is a leaf, a leaf never reads a child, and 96
+bytes of a 200-byte node were child pointers that nothing would ever load.
+
+Two fixes were built and measured. **Moving all the child pointers into one
+pool** shared by the tree saves the same memory and is *worse* — 10 to 20%
+slower on insert and search at every size, cache resident or not, because it
+puts an extra indirection on every descent. The dead weight was on the leaves
+and that fix charged the internal nodes for it. **Giving leaves their own type**
+is the one that worked: a leaf is 96 bytes with no `kids` at all, an internal
+node keeps its 2t pointers inline exactly where the descent already reads them,
+and the tree's `height` says which kind a pointer refers to — a B-tree is
+balanced, so no node needs a flag. That is what
+[lib/std/btree.cicili](lib/std/btree.cicili) is now, and against the inline-kids
+version it is 20% faster on insert, 14% on search, 31% on traverse and 17% on
+delete at 10⁶ keys.
 
 **LTO is close to noise here for both** — measured at +5% on Cicili's insert,
 −2% on its delete, −5% on Rust's insert, nothing anywhere else. Worth saying
 because it is not what LTO did to the vector, where it erased the rc penalty
-outright. **`restrict` on the child pointers is noise too**: it is soundly
-available, since a `non-copy` tree solely owns its nodes and a node is never its
-own descendant, but eight interleaved rounds put it inside the error bars on
-every row. The loops that dominate read `items`, not `kids`.
+outright.
 
 What is worth more than the timings: **every checksum matches exactly**, and
 across all four builds above —
