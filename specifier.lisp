@@ -39,14 +39,14 @@
     (setf (keys instance) (make-hash-table :test 'eql))
     
     (cond ((eql construct '|@ATOM|)
-           (when (and *module-path* (eql typeof '|@SYMBOL|))
+           (when (and (module-mangles<) (eql typeof '|@SYMBOL|))
              (setf (module instance) *module-path*)
              (setf (unique instance) (free-name *module-path* name)))
  	       (setf (inners  instance)     (make-hash-table :test 'eql))) ; contains type inline struct
           ((eql construct '|@TYPEDEF|)
            (setf (inners  instance)     (make-hash-table :test 'eql))) ; contains type inline struct
           ((eql construct '|@VAR|)
-           (when *module-path*
+           (when (module-mangles<)
              (setf (module instance) *module-path*)
              (setf (unique instance) (free-name *module-path* name)))
  	       (setf (inners  instance)     (make-hash-table :test 'eql))) ; contains type inline struct
@@ -57,7 +57,7 @@
 	      ((eql construct '|@FOR|)
 	       (setf (params  instance)     (make-hash-table :test 'eql)))
 	      ((eql construct '|@FUNC|)
-           (when *module-path*
+           (when (module-mangles<)
              (setf (module instance) *module-path*)
              (setf (unique instance)
                    (if (symbolp name)
@@ -66,25 +66,25 @@
 	       (setf (params  instance)     (make-hash-table :test 'eql))
  	       (setf (inners  instance)     (make-hash-table :test 'eql))) ; contains lambdas
 	      ((eql construct '|@METHOD|)
-           (when *module-path*
+           (when (module-mangles<)
              (setf (module instance) *module-path*)
              (setf (unique instance)
                    (intern (make-method-name (symbol-name (free-name *module-path* (car name))) (cdr name)))))
 	       (setf (params  instance)     (make-hash-table :test 'eql))
  	       (setf (inners  instance)     (make-hash-table :test 'eql))) ; contains lambdas
 	      ((eql construct '|@ENUM|)
-           (when *module-path*
+           (when (module-mangles<)
              (setf (module instance) *module-path*)
              (setf (unique instance) (free-name *module-path* name)))
  	       (setf (inners  instance)     (make-hash-table :test 'eql)))
 	      ((eql construct '|@STRUCT|)
-           (when *module-path*
+           (when (module-mangles<)
              (setf (module instance) *module-path*)
              (setf (unique instance) (free-name *module-path* name)))
 	       (setf (params  instance)     (make-hash-table :test 'eql))
 	       (setf (inners  instance)     (make-hash-table :test 'eql)))
 	      ((eql construct '|@UNION|)
-           (when *module-path*
+           (when (module-mangles<)
              (setf (module instance) *module-path*)
              (setf (unique instance) (free-name *module-path* name)))
 	       (setf (params  instance)     (make-hash-table :test 'eql))
@@ -92,7 +92,7 @@
 	      ((eql construct '|@GUARD|)
 	       (setf (inners  instance)     (make-hash-table :test 'eql)))
 	      ((eql construct '|@MODULE|)
-           (when *module-path*
+           (when (module-mangles<)
              (setf (module instance) *module-path*)
              (setf (unique instance) (free-name *module-path* name)))
            (setf (inners  instance)     (make-hash-table :test 'eql)))

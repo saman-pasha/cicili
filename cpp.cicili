@@ -47,14 +47,11 @@
 
 ;;;; ------------------------------------------------------------------
 ;;;; namespaces
+;;;;
+;;;; There is no `namespace' clause. `module' is Cicili's named scope and in a
+;;;; C++ target it emits one -- see module.lisp. The same clause mangles names
+;;;; in a C target, because C has no namespaces to emit.
 ;;;; ------------------------------------------------------------------
-
-;;; (namespace app (func f () ...) ...) -> namespace app { ... }
-;;; Nests by nesting, and an anonymous namespace is (namespace () ...).
-(DEFMACRO namespace (name &REST body)
-  `($$$
-    (code '{ namespace ,@(IF (AND name (NOT (EQUAL name '()))) (LIST name) '()) })
-    (block ,@body)))
 
 ;;;; ------------------------------------------------------------------
 ;;;; references

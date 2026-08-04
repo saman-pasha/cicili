@@ -512,6 +512,13 @@
   (intern (format nil "~{~A~^::~}"
                   (mapcar #'(lambda (p) (if (symbolp p) (symbol-name p) p)) parts))))
 
+;; Does a module mangle the names inside it? In C it must: a module is only a
+;; naming convention there, and free-name is what keeps two modules' `init'
+;; apart. In C++ it must NOT -- the module emits a real `namespace' and the
+;; language does the separating, so the names stay as written and
+;; module::name refers to them.
+(defun module-mangles< () (and *module-path* (not *cpp*)))
+
 (defun qualified-form< (x)
   (and (listp x) (cdr x) (symbolp (car x)) (string= (symbol-name (car x)) "$$")))
 

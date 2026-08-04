@@ -19,22 +19,20 @@
           (block (printf "FAIL %-30s got %ld want %ld\n" what got want)
                  (++ bad))))
 
-  ;; ---- namespace ----------------------------------------------------
-  ;; A namespace is emitted C++; it is NOT a Cicili scope. Cicili knows this
-  ;; type as `Point' whichever namespace it was written in, so referring to it
-  ;; from outside needs the name to resolve on the C++ side too -- hence the
-  ;; `using' below. Fully-qualifying it instead ($$ geom Point) produces a code
-  ;; escape, which is fine as a type but has no type for inference to follow,
-  ;; so `->' and `$' cannot see through one.
-  (namespace geom
+  ;; ---- module, which is a namespace here -----------------------------
+  ;; `module' is Cicili's named scope, and in a C++ target it IS a namespace:
+  ;; the names inside stay as written and C++ does the separating. In a C
+  ;; target the same clause mangles instead, because C has no such thing.
+  ;;
+  ;; So the type is geom::Point from outside, with no `using' -- and it is a
+  ;; TYPE, not text: the declaration below resolves and `$' sees through it.
+  (module geom
     (struct Point
             (member int x)
             (member int y)
             (ctor ((int a) (int b)) (init (x a) (y b)))
             (const)
             (method sum () (out int) (return (+ ($ this x) ($ this y))))))
-
-  (using namespace geom)
 
   ;; ---- templates ----------------------------------------------------
   ;; `generic' covers most of what templates are for; this is for the rest
@@ -63,7 +61,7 @@
 
   (main
     ;; namespace + scope resolution
-    (letin* ((p (Point 3 4)))
+    (letin* ((p (geom::Point 3 4)))
       (check "namespaced method" (cast long (($ p sum))) 7))
 
     ;; template instantiation, explicit and inferred
@@ -80,7 +78,7 @@
       (check "const & no copy" (cast long (lengthOf s)) 5))
 
     ;; new / delete
-    (let ((Point * q . #'(new* Point 10 20)))
+    (let ((geom::Point * q . #'(new* geom::Point 10 20)))
       (check "new* then method" (cast long ((-> q sum))) 30)
       (delete* q))
 
@@ -88,9 +86,9 @@
     ;; any expression -- but a UNARY one (& x, * p) does not survive being
     ;; spliced into a code escape yet, so bind it first if you need one.
     (check "static_cast"  (cast long (static-cast int 3.9)) 3)
-    (let ((Point * q2 . #'(new* Point 1 2)))
-      (let ((const Point * cq . q2))
-        (let ((Point * mq . #'(const-cast (Point *) cq)))
+    (let ((geom::Point * q2 . #'(new* geom::Point 1 2)))
+      (let ((const geom::Point * cq . q2))
+        (let ((geom::Point * mq . #'(const-cast (geom::Point *) cq)))
           (check "const_cast" (cast long ((-> mq sum))) 3)))
       (delete* q2))
 
