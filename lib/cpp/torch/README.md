@@ -140,23 +140,41 @@ only the batch is copied rather than the whole set. Without it the permutation i
 and the gather is the identity — one code path, and the identity gather costs nothing
 measurable.
 
-What it is worth, everything else held identical:
+What it is worth, everything else held identical — **and measured in both front ends, which
+is what makes the answer trustworthy**:
 
-| example | without `(shuffle)` | with `(shuffle)` + `(schedule)` | |
-|---|---|---|---|
-| [MNIST, MLP](../../../example/mnist-dsl.cicili) | 0.9784 · 13.4 s | **0.9838** · 13.3 s | **+0.54 pt** |
-| [California housing](../../../example/tabular.cicili) | 0.5233 rmse · 1.8 s | 0.5270 rmse · 1.8 s | −0.004 (worse) |
-| [MNIST, conv](../../../example/mnist-conv.cicili) | 0.9869 · 46.2 s | 0.9869 · 45.0 s | unchanged |
+| example | | without | with `(shuffle)` + `(schedule)` | change |
+|---|---|---|---|---|
+| [MNIST, MLP](../../../example/mnist-dsl.cicili) | Cicili | 0.9784 · 13.4 s | **0.9838** · 13.3 s | **+0.0054** |
+| [·](../../../example/python/mnist_mlp.py) | Python | 0.9785 · 19.8 s | **0.9828** · 20.1 s | **+0.0043** |
+| [California housing](../../../example/tabular.cicili) | Cicili | 0.5233 rmse · 1.8 s | 0.5270 rmse · 1.8 s | −0.0037 *(worse)* |
+| [·](../../../example/python/tabular.py) | Python | 0.5381 rmse · 3.2 s | 0.5343 rmse · 3.5 s | +0.0038 *(better)* |
+| [MNIST, conv](../../../example/mnist-conv.cicili) | Cicili | 0.9869 · 46.2 s | 0.9869 · 45.0 s | 0.0000 |
+| [·](../../../example/python/mnist_conv.py) | Python | 0.9866 · 50.4 s | 0.9880 · 48.8 s | +0.0014 |
 
-**Only the first row is a win, and that is the honest shape of it.** The MLP sees the same
-60000 rows in the same order fifteen times and settles into it; shuffling breaks that up.
-The conv net trains for five epochs and never had time to memorise an order. The tabular
-rows were already permuted once before the split, so shuffling the batch order on top adds
-noise rather than removing it — 0.004 rmse is within run-to-run variation, and calling it a
-loss would be as wrong as calling it a win.
+**Read the pairs, not the rows.** Two independent implementations of the same experiment
+agree or they do not, and that is the whole value of having both:
+
+* **MNIST MLP — real.** +0.0054 and +0.0043, same direction, same order of magnitude, in
+  two front ends that share nothing but the maths. The model sees the same 60000 rows in
+  the same order fifteen times and settles into it; shuffling breaks that up.
+* **California housing — noise.** Cicili got 0.0037 **worse** and Python got 0.0038
+  **better**. An effect that flips sign between implementations is not an effect. The rows
+  were already permuted once before the split, so shuffling the batch order on top has
+  nothing left to fix.
+* **MNIST conv — nothing.** 0.0000 and +0.0014. Five epochs is not long enough to memorise
+  an order, so there is none to break up.
+
+Had only the Cicili column been measured, the tabular row would read as "shuffling hurts
+regression" and the MLP row as a clean win. One of those is true. The second column is how
+you tell which.
 
 Reach for it when a model sees the data many times. It is not free accuracy and it is not a
 default this DSL applies for you.
+
+The no-shuffle figures come from deleting the `(shuffle)` and `(schedule …)` clauses on the
+Cicili side, and the `randperm` / index / `sched.step()` lines on the Python side. Nothing
+else changed.
 
 That is batch ORDER. If the rows themselves are ordered — California housing is sorted
 geographically — shuffle before you split, as
