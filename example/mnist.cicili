@@ -1,0 +1,194 @@
+;;;; MNIST in Cicili, against the real libtorch
+;;;;
+;;;; A two-layer network trained with SGD: the whole shape of a libtorch
+;;;; program -- a module of your own, registered layers, a forward, a loss,
+;;;; backward, an optimiser step, and an accuracy pass -- written in Cicili with
+;;;; the declarations in lib/cpp/torch/.
+;;;;
+;;;;     sbcl --script cicili.lisp ./example/mnist.cicili
+;;;;     ./example/mnist
+;;;;
+;;;; DATA. It trains on the real MNIST if the four idx files are in ./data,
+;;;; and on generated data with the same shapes if they are not, so it runs
+;;;; either way and the code path is identical past the loading. Get the real
+;;;; files with:
+;;;;
+;;;;     mkdir -p example/data && cd example/data
+;;;;     curl -LO https://ossci-datasets.s3.amazonaws.com/mnist/train-images-idx3-ubyte.gz
+;;;;     curl -LO https://ossci-datasets.s3.amazonaws.com/mnist/train-labels-idx1-ubyte.gz
+;;;;     curl -LO https://ossci-datasets.s3.amazonaws.com/mnist/t10k-images-idx3-ubyte.gz
+;;;;     curl -LO https://ossci-datasets.s3.amazonaws.com/mnist/t10k-labels-idx1-ubyte.gz
+;;;;     gunzip *.gz
+;;;;
+;;;; The idx files are read with plain C I/O rather than through
+;;;; torch::data::datasets::MNIST and a DataLoader. That is deliberate: the
+;;;; DataLoader is a stack of templates with deduced types, and reaching it from
+;;;; Cicili would be mostly code escapes -- which would demonstrate escapes
+;;;; rather than the language. Reading the file and slicing batches with
+;;;; `narrow' is the same program with more of it visible.
+;;;;
+;;;; The paths in :compile and :link are this machine's. See example/torch.cicili.
+
+(source "mnist.cpp"
+  (make :cpp #t
+        :compile ("-std=c++17" "-Wno-c++20-extensions"
+                  "-I/usr/local/opt/pytorch/include"
+                  "-I/usr/local/opt/pytorch/include/torch/csrc/api/include"
+                  "-c" "mnist.cpp")
+        :link ("-lmnist.o"
+               "-L/usr/local/opt/pytorch/lib" "-ltorch" "-ltorch_cpu" "-lc10"
+               "-o" "mnist"))
+
+  (include <torch/torch.h>)
+  (include <cstdio>)
+  (include <cstdlib>)
+
+  (import "lib/cpp/torch/torch.cicili")
+
+  (var i64 PIXELS  . 784)          ; 28 * 28
+  (var i64 CLASSES . 10)
+  (var i64 HIDDEN  . 128)
+  (var i64 BATCH   . 100)
+  (var int EPOCHS  . 3)
+
+  ;;; ---- the network ---------------------------------------------------
+  ;;; A struct inheriting torch::nn::Module. No `class', no `public:', `this'
+  ;;; implicit. The layers are registered in the member-initializer list, which
+  ;;; is where libtorch wants them and the only place a member without a default
+  ;;; constructor can be given a value.
+  (struct Net (inherits torch::nn::Module)
+          (member torch::nn::Linear fc1)
+          (member torch::nn::Linear fc2)
+
+          ;; register_module is inherited from Module, and Cicili has no
+          ;; implicit `this' for CALLS -- only for members -- so it is written.
+          ;; Calling it in the init list is legal: a base is constructed before
+          ;; the members that follow it.
+          (ctor ()
+                (init (fc1 (($ this register_module) "fc1" (torch::nn::Linear PIXELS HIDDEN)))
+                      (fc2 (($ this register_module) "fc2" (torch::nn::Linear HIDDEN CLASSES)))))
+
+          (method forward ((const torch::Tensor & x)) (out torch::Tensor)
+                  (letin* ((h (torch::relu ((-> ($ this fc1) forward) x))))
+                    (return (torch::log_softmax ((-> ($ this fc2) forward) h) 1)))))
+
+  ;;; ---- reading the idx files -----------------------------------------
+  ;;; An idx file is a big-endian header followed by unsigned bytes. Both are
+  ;;; read here into a float buffer, because from_blob over floats needs no
+  ;;; dtype argument and no overload that Cicili would have to pick between.
+
+  (func be32 ((const uchar * p)) (out u32)
+        (return (bitor (<< (cast u32 (nth 0 p)) 24)
+                       (bitor (<< (cast u32 (nth 1 p)) 16)
+                              (bitor (<< (cast u32 (nth 2 p)) 8)
+                                     (cast u32 (nth 3 p)))))))
+
+  ;; reads `count' items of `each' bytes past a header of `header' bytes,
+  ;; scaling by `scale'. Answers the number of items read, or 0.
+  (func read_idx ((const char * path) (int header) (i64 each) (double scale)
+                  (float * out) (i64 cap))
+        (out i64)
+        (let ((FILE * f . #'(fopen path "rb")))
+          (when (not f) (return 0))
+          (let ((uchar head [ 16 ]))
+            (when (!= (fread head 1 (cast size_t header) f) (cast size_t header))
+              (block (fclose f) (return 0)))
+            (let ((i64 n . #'(cast i64 (be32 (+ head 4)))))
+              (when (> (* n each) cap) (set n (/ cap each)))
+              (let ((uchar * buf . #'(alloc (cast size_t (* n each)) (sizeof uchar))))
+                (when (!= (fread buf 1 (cast size_t (* n each)) f) (cast size_t (* n each)))
+                  (block (fclose f) (return 0)))
+                (for ((i64 i . 0)) (< i (* n each)) ((++ i))
+                     (set (nth i out) (cast float (* (cast double (nth i buf)) scale))))
+                (fclose f)
+                (return n))))))
+
+  ;;; ---- accuracy -------------------------------------------------------
+  (func accuracy ((Net & net) (const torch::Tensor & x) (const torch::Tensor & y))
+        (out double)
+        (letin* ((g (torch::NoGradGuard)))
+          (letin* ((pred (($ (($ net forward) x) argmax) 1)))
+            (letin* ((hits (($ (($ pred eq) y) sum))))
+              (return (/ (cast double (($ hits (t<> item i64))))
+                         (cast double (($ y numel)))))))))
+
+  (main
+    (torch::manual_seed 1)
+
+    ;; ---- load ---------------------------------------------------------
+    (let ((i64 NTRAIN . 10000)
+          (i64 NTEST  .  2000))
+      (let ((float * ximg . #'(alloc (cast size_t (* NTRAIN PIXELS)) (sizeof float)))
+            (float * ylab . #'(alloc (cast size_t NTRAIN)            (sizeof float)))
+            (float * timg . #'(alloc (cast size_t (* NTEST PIXELS))  (sizeof float)))
+            (float * tlab . #'(alloc (cast size_t NTEST)             (sizeof float)))
+            (int real . 0))
+
+        ;; 1/255 scales a pixel to [0,1]; labels are read unscaled
+        (let ((i64 n . #'(read_idx "data/train-images-idx3-ubyte" 16 PIXELS 0.00392156862745098
+                                   ximg (* NTRAIN PIXELS))))
+          (when (> n 0)
+            (let ((i64 m . #'(read_idx "data/train-labels-idx1-ubyte" 8 1 1.0 ylab NTRAIN)))
+              (when (> m 0)
+                (let ((i64 a . #'(read_idx "data/t10k-images-idx3-ubyte" 16 PIXELS 0.00392156862745098
+                                           timg (* NTEST PIXELS))))
+                  (when (> a 0)
+                    (let ((i64 b . #'(read_idx "data/t10k-labels-idx1-ubyte" 8 1 1.0 tlab NTEST)))
+                      (when (> b 0) (set real 1)))))))))
+
+        (if real
+            (printf "MNIST: real data, %lld train / %lld test\n" NTRAIN NTEST)
+          (block
+            ;; a separable stand-in: each class is a distinct band of pixels, so
+            ;; the network has something real to learn and the accuracy number
+            ;; means something even without the download
+            (printf "MNIST: data/ not found, using generated data of the same shape\n")
+            (for ((i64 i . 0)) (< i NTRAIN) ((++ i))
+                 (let ((i64 c . #'(% i CLASSES)))
+                   (set (nth i ylab) (cast float c))
+                   (for ((i64 p . 0)) (< p PIXELS) ((++ p))
+                        (set (nth (+ (* i PIXELS) p) ximg)
+                             (? (== (/ p 78) c) 1.0 0.0)))))
+            (for ((i64 i . 0)) (< i NTEST) ((++ i))
+                 (let ((i64 c . #'(% i CLASSES)))
+                   (set (nth i tlab) (cast float c))
+                   (for ((i64 p . 0)) (< p PIXELS) ((++ p))
+                        (set (nth (+ (* i PIXELS) p) timg)
+                             (? (== (/ p 78) c) 1.0 0.0)))))))
+
+        ;; ---- to tensors --------------------------------------------------
+        ;; from_blob does not copy, so `clone' takes ownership -- the buffers
+        ;; outlive the tensors here anyway, but a tensor that owns its storage
+        ;; is the thing to hand to a training loop. Labels are float on the way
+        ;; in and int64 in the tensor, because nll_loss wants indices.
+        (letin* ((xs (($ (torch::from_blob ximg (dims NTRAIN PIXELS)) clone)))
+                 (ys (($ (($ (torch::from_blob ylab (dims NTRAIN)) to) torch::kInt64) clone)))
+                 (xt (($ (torch::from_blob timg (dims NTEST PIXELS)) clone)))
+                 (yt (($ (($ (torch::from_blob tlab (dims NTEST)) to) torch::kInt64) clone)))
+                 (net (Net)))
+
+          (letin* ((opt (torch::optim::SGD (($ net parameters)) 0.1)))
+
+            (printf "start accuracy: %.3f\n" (accuracy net xt yt))
+
+            (for ((int e . 0)) (< e EPOCHS) ((++ e))
+                 (let ((double total . 0.0)
+                       (int batches . 0))
+                   (for ((i64 i . 0)) (<= (+ i BATCH) NTRAIN) ((+= i BATCH))
+                        (letin* ((bx (($ xs narrow) 0 i BATCH))
+                                 (by (($ ys narrow) 0 i BATCH)))
+                          (($ opt zero_grad))
+                          (letin* ((out (($ net forward) bx)))
+                            (letin* ((loss (torch::nll_loss out by)))
+                              (($ loss backward))
+                              (($ opt step))
+                              (+= total (cast double (($ loss (t<> item float)))))
+                              (++ batches)))))
+                   (printf "epoch %d  loss %.4f  accuracy %.3f\n"
+                           (+ e 1) (/ total batches) (accuracy net xt yt))))
+
+            (let ((double acc . #'(accuracy net xt yt)))
+              (printf "final accuracy: %.3f\n" acc)
+              (return (? (> acc 0.8) 0 1)))))))
+
+    (return 1)))

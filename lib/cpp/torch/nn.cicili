@@ -29,12 +29,23 @@
   `($$$
 
      ;;; ---- the base ------------------------------------------------
+     ;;; the vector of tensors `parameters' hands back, and which an optimiser
+     ;;; is constructed from
+     (decl) (struct (t<> std::vector torch::Tensor))
+
      (decl) (struct torch::nn::Module
               (method train        ((bool on)))
               (method eval         ())
               (method zero_grad    ())
               (const) (method is_training () (out bool))
-              (const) (method parameters   () (out c10::IntArrayRef))
+              (const) (method parameters   () (out (t<> std::vector torch::Tensor)))
+              ;; register_module is a member template with the module type
+              ;; deduced. Cicili has one signature per name, so it is declared
+              ;; for Linear -- the one a program registers most -- and any other
+              ;; module type still works through the undeclared path, since the
+              ;; emitted name is the same either way.
+              (method register_module ((const std::string & name) (torch::nn::Linear m))
+                      (out torch::nn::Linear))
               (method to           ((torch::Device device))))
 
      ;;; ---- layers, class and holder --------------------------------

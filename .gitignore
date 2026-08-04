@@ -174,3 +174,12 @@ test/std/deferral.txt
 # emacs autosave
 \#*\#
 .\#*
+
+# example/ build products and downloaded datasets
+example/*.cpp
+example/*.o
+example/*.lo
+example/.libs/
+example/data/
+example/mnist
+example/torch_example

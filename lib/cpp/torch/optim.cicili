@@ -18,6 +18,8 @@
               (method step      ())
               (method zero_grad ()))
 
+     ;;; constructed from a module's parameters and a learning rate:
+     ;;;   (letin* ((opt (torch::optim::SGD (($ net parameters)) 0.1)))
      (decl) (struct torch::optim::SGD (inherits torch::optim::Optimizer)
               (method step      ())
               (method zero_grad ()))

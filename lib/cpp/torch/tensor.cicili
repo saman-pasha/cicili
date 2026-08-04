@@ -121,6 +121,13 @@
               (method add_                ((const torch::Tensor & other)) (out torch::Tensor &))
               (method mul_                ((const torch::Tensor & other)) (out torch::Tensor &))
 
+              ;;; selection and comparison -- what a training loop needs
+              (const) (method narrow  ((i64 dim) (i64 start) (i64 length)) (out torch::Tensor))
+              (const) (method argmax  ((i64 dim))                (out torch::Tensor))
+              (const) (method eq      ((const torch::Tensor & other)) (out torch::Tensor))
+              (const) (method to      ((torch::ScalarType ty))   (out torch::Tensor))
+              (const) (method (t<> to double) ()                 (out torch::Tensor))
+
               (const) (method print       ()))
 
      ;;; ---- construction -------------------------------------------
@@ -161,10 +168,24 @@
      (decl) (func torch::allclose ((const torch::Tensor & a) (const torch::Tensor & b))
                   (out bool))
 
-     ;;; ---- losses --------------------------------------------------
+     ;;; ---- losses and the log-softmax that feeds one ---------------
      (decl) (func torch::mse_loss ((const torch::Tensor & input)
                                    (const torch::Tensor & target))
                   (out torch::Tensor))
+     (decl) (func torch::log_softmax ((const torch::Tensor & x) (i64 dim))
+                  (out torch::Tensor))
+     (decl) (func torch::nll_loss ((const torch::Tensor & input)
+                                   (const torch::Tensor & target))
+                  (out torch::Tensor))
+
+     ;;; ---- dtypes --------------------------------------------------
+     ;;; torch::kFloat32 and friends are constants of type ScalarType. A typedef
+     ;;; is how a constant is declared to inference -- see lib/std/c/stdlib for
+     ;;; the same treatment of EXIT_SUCCESS.
+     (typedef torch::ScalarType torch::kFloat32)
+     (typedef torch::ScalarType torch::kFloat64)
+     (typedef torch::ScalarType torch::kInt64)
+     (typedef torch::ScalarType torch::kUInt8)
 
      ;;; ---- gradient mode -------------------------------------------
      ;;; An RAII guard: bind it with letin* and it turns grad off for the scope
