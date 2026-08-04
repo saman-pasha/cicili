@@ -1,0 +1,129 @@
+;;;; MNIST again -- the same network, the same result, described instead of built
+;;;;
+;;;; This is example/mnist.cicili with the network and the training loop written
+;;;; in the DSL from lib/cpp/torch/dsl.cicili. Everything below the DSL is
+;;;; unchanged: same libtorch, same declarations, same generated C++ shape.
+;;;;
+;;;;     sbcl --script cicili.lisp ./example/mnist-dsl.cicili
+;;;;     MNIST_DIR=~/mnist-data ./example/mnist_dsl
+;;;;
+;;;; The whole model and its training are the twelve lines at the bottom of this
+;;;; file. Everything above them is reading idx files, which is not a machine
+;;;; learning problem and is the part Keras hides in a dataset loader.
+
+(source "mnist_dsl.cpp"
+  (make :cpp #t
+        :compile ("-std=c++17" "-Wno-c++20-extensions"
+                  "-I/usr/local/opt/pytorch/include"
+                  "-I/usr/local/opt/pytorch/include/torch/csrc/api/include"
+                  "-c" "mnist_dsl.cpp")
+        :link ("-lmnist_dsl.o"
+               "-L/usr/local/opt/pytorch/lib" "-ltorch" "-ltorch_cpu" "-lc10"
+               "-o" "mnist_dsl"))
+
+  (include <torch/torch.h>)
+  (include <cstdio>)
+  (include <cstdlib>)
+
+  (import "lib/cpp/torch/torch.cicili")
+
+  (var i64 PIXELS . 784)
+  (var double MEAN . 0.1307)
+  (var double STD  . 0.3081)
+
+  ;;; ================= the model =====================================
+  ;;; Read it aloud: 784 in, two hidden layers of 256 and 128 with relu, ten
+  ;;; out as log-probabilities. Nothing here says how -- only what.
+  ;;;
+  ;;; Each layer's input width is the previous layer's output, worked out when
+  ;;; this expands. Writing a mismatch is not possible, and an unknown
+  ;;; activation is a compile error that lists the ones there are.
+
+  (network Classifier
+    (input   784)
+    (dense   256 relu)
+    (dense   128 relu)
+    (dense    10 log-softmax))
+
+  ;;; ================= reading the data ==============================
+  ;;; Not a machine-learning problem. Unchanged from example/mnist.cicili.
+
+  (func be32 ((const uchar * p)) (out u32)
+        (return (bitor (<< (cast u32 (nth 0 p)) 24)
+                       (bitor (<< (cast u32 (nth 1 p)) 16)
+                              (bitor (<< (cast u32 (nth 2 p)) 8)
+                                     (cast u32 (nth 3 p)))))))
+
+  (func read_idx ((const char * path) (int header) (i64 each) (double scale)
+                  (float * out) (i64 cap))
+        (out i64)
+        (let ((FILE * f . #'(fopen path "rb")))
+          (when (not f) (return 0))
+          (let ((uchar head [ 16 ]))
+            (when (!= (fread head 1 (cast size_t header) f) (cast size_t header))
+              (block (fclose f) (return 0)))
+            (let ((i64 n . #'(cast i64 (be32 (+ head 4)))))
+              (when (> (* n each) cap) (set n (/ cap each)))
+              (let ((uchar * buf . #'(alloc (cast size_t (* n each)) (sizeof uchar))))
+                (when (!= (fread buf 1 (cast size_t (* n each)) f) (cast size_t (* n each)))
+                  (block (fclose f) (return 0)))
+                (for ((i64 i . 0)) (< i (* n each)) ((++ i))
+                     (set (nth i out) (cast float (* (cast double (nth i buf)) scale))))
+                (fclose f)
+                (return n))))))
+
+  (func data_path ((const char * leaf) (char * out) (size_t cap))
+        (let ((const char * dir . #'(getenv "MNIST_DIR")))
+          (when (not dir) (set dir "data"))
+          (snprintf out cap "%s/%s" dir leaf)))
+
+  (main
+    (torch::manual_seed 1)
+
+    (let ((i64 NTRAIN . 60000)
+          (i64 NTEST  . 10000))
+      (let ((float * ximg . #'(alloc (cast size_t (* NTRAIN PIXELS)) (sizeof float)))
+            (float * ylab . #'(alloc (cast size_t NTRAIN)            (sizeof float)))
+            (float * timg . #'(alloc (cast size_t (* NTEST PIXELS))  (sizeof float)))
+            (float * tlab . #'(alloc (cast size_t NTEST)             (sizeof float)))
+            (int real . 0))
+
+        (let ((char p1 [ 512 ]) (char p2 [ 512 ]) (char p3 [ 512 ]) (char p4 [ 512 ]))
+          (data_path "train-images-idx3-ubyte" p1 512)
+          (data_path "train-labels-idx1-ubyte" p2 512)
+          (data_path "t10k-images-idx3-ubyte"  p3 512)
+          (data_path "t10k-labels-idx1-ubyte"  p4 512)
+          (let ((i64 n . #'(read_idx p1 16 PIXELS 0.00392156862745098 ximg (* NTRAIN PIXELS))))
+            (when (> n 0)
+              (let ((i64 m . #'(read_idx p2 8 1 1.0 ylab NTRAIN)))
+                (when (> m 0)
+                  (let ((i64 a . #'(read_idx p3 16 PIXELS 0.00392156862745098 timg (* NTEST PIXELS))))
+                    (when (> a 0)
+                      (let ((i64 b . #'(read_idx p4 8 1 1.0 tlab NTEST)))
+                        (when (> b 0) (set real 1))))))))))
+
+        (when (not real)
+          (block (printf "MNIST: idx files not found -- set MNIST_DIR\n")
+                 (return 1)))
+        (printf "MNIST: %lld train / %lld test\n" NTRAIN NTEST)
+
+        (letin* ((mean (torch::full (dims 1) (cast torch::Scalar MEAN)))
+                 (std  (torch::full (dims 1) (cast torch::Scalar STD)))
+                 (xs (($ (($ (torch::from_blob ximg (dims NTRAIN PIXELS)) sub) mean) div) std))
+                 (ys (($ (torch::from_blob ylab (dims NTRAIN)) to) torch::kInt64))
+                 (xt (($ (($ (torch::from_blob timg (dims NTEST PIXELS)) sub) mean) div) std))
+                 (yt (($ (torch::from_blob tlab (dims NTEST)) to) torch::kInt64)))
+
+          ;;; ================= the training ============================
+          ;;; What to train, on what, for how long, with which optimiser and
+          ;;; loss. `train' answers the final accuracy.
+
+          (let ((double acc . #'(train Classifier
+                                  (data      xs ys)
+                                  (test      xt yt)
+                                  (epochs    15)
+                                  (batch     100)
+                                  (optimiser adam 0.001)
+                                  (loss      nll))))
+            (printf "final accuracy: %.4f\n" acc)
+            (return (? (> acc 0.97) 0 1))))))))

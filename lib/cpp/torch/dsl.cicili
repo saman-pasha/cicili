@@ -1,0 +1,218 @@
+;;;; A neural-network DSL over lib/cpp/torch
+;;;;
+;;;; This is the layer the rest of the binding exists to make possible. A
+;;;; network is described, not constructed:
+;;;;
+;;;;     (network Classifier
+;;;;       (input   784)
+;;;;       (dense   256 relu)
+;;;;       (dense   128 relu)
+;;;;       (dense    10 log-softmax))
+;;;;
+;;;;     (train Classifier
+;;;;       (data    xs ys)
+;;;;       (test    xt yt)
+;;;;       (epochs  15)
+;;;;       (batch   100)
+;;;;       (optimiser adam 0.001)
+;;;;       (loss    nll))
+;;;;
+;;;; and that expands to the struct, the registered layers, the forward, and
+;;;; the training loop -- the whole of example/mnist.cicili, which is what it
+;;;; was written from.
+;;;;
+;;;; WHY THIS IS NOT KERAS, and the differences are the point rather than the
+;;;; marketing:
+;;;;
+;;;;   * IT IS NOT A LIBRARY, IT IS A MACRO. There is no model object, no
+;;;;     interpreter, no dispatch. `network' emits a C++ struct and `train'
+;;;;     emits a loop; what runs is the same code you would have written by
+;;;;     hand, and you can read it in the generated .cpp.
+;;;;   * SHAPES ARE CHECKED WHEN IT COMPILES. A dense layer's input width is
+;;;;     the previous layer's output, worked out at expansion time. Getting it
+;;;;     wrong is an error naming both layers, not a stack trace on the first
+;;;;     batch after your data has loaded.
+;;;;   * NO STRINGS THAT MEAN SOMETHING. Keras spells an activation "relu" and
+;;;;     an optimiser "adam"; a typo is a runtime KeyError. Here they are
+;;;;     symbols the macro knows, and an unknown one is a compile error that
+;;;;     lists what it does know.
+;;;;   * IT IS STILL CICILI UNDERNEATH. Anything the DSL does not cover is
+;;;;     written in the language directly, in the same file, against the same
+;;;;     declarations. There is no wall to hit and no C++ to drop into --
+;;;;     you were already there.
+;;;;
+;;;; Requires: (include <torch/torch.h>), a C++ target, and this file's
+;;;; siblings imported -- lib/cpp/torch/torch.cicili brings all of them.
+
+;;; ------------------------------------------------------------------
+;;; activations
+;;; ------------------------------------------------------------------
+
+;;; Wrap EXPR in the activation named by A. `none' and NIL leave it alone.
+(DEFUN activation< (a expr layer)
+  (COND ((OR (NULL a) (STRING= (SYMBOL-NAME a) "none")) expr)
+        ((STRING= (SYMBOL-NAME a) "relu")        `(torch::relu ,expr))
+        ((STRING= (SYMBOL-NAME a) "tanh")        `(torch::tanh ,expr))
+        ((STRING= (SYMBOL-NAME a) "sigmoid")     `(torch::sigmoid ,expr))
+        ((STRING= (SYMBOL-NAME a) "softmax")     `(torch::softmax ,expr 1))
+        ((STRING= (SYMBOL-NAME a) "log-softmax") `(torch::log_softmax ,expr 1))
+        (T (ERROR (FORMAT NIL "network: layer ~A has unknown activation '~A'.~%  known: relu tanh sigmoid softmax log-softmax none"
+                          layer a)))))
+
+;;; ------------------------------------------------------------------
+;;; (network NAME (input N) (dense N [act]) ...)
+;;; ------------------------------------------------------------------
+;;;
+;;; Emits a struct inheriting torch::nn::Module with one Linear per dense
+;;; layer, registered by name, and a forward that chains them.
+;;;
+;;; The width of each layer is carried along the list, so a dense layer knows
+;;; its own input without being told and a mismatch is impossible to write.
+
+(DEFMACRO network (name &REST layers)
+  (LET ((width  NIL)                    ; output width of the layer before
+        (n      0)                      ; how many Linears so far
+        (members '())
+        (inits   '())
+        (steps   '()))                  ; (var . expr) for the forward chain
+
+    (UNLESS layers
+      (ERROR (FORMAT NIL "network ~A: no layers" name)))
+
+    (DOLIST (layer layers)
+      (UNLESS (AND (LISTP layer) (SYMBOLP (CAR layer)))
+        (ERROR (FORMAT NIL "network ~A: ~A is not a layer form" name layer)))
+      (LET ((kind (SYMBOL-NAME (CAR layer))))
+        (COND
+          ;; (input N) -- the width of what is fed in. Only meaningful first.
+          ((STRING= kind "input")
+           (UNLESS (= (LENGTH layer) 2)
+             (ERROR (FORMAT NIL "network ~A: (input N) takes one width, got ~A" name layer)))
+           (WHEN width
+             (ERROR (FORMAT NIL "network ~A: (input ...) must come first and appear once" name)))
+           (SETQ width (CADR layer)))
+
+          ;; (dense N [activation])
+          ((STRING= kind "dense")
+           (UNLESS (AND (>= (LENGTH layer) 2) (<= (LENGTH layer) 3))
+             (ERROR (FORMAT NIL "network ~A: (dense N [activation]), got ~A" name layer)))
+           (UNLESS width
+             (ERROR (FORMAT NIL "network ~A: ~A has no input width -- put (input N) first"
+                            name layer)))
+           (SETQ n (1+ n))
+           (LET* ((out   (CADR layer))
+                  (act   (CADDR layer))
+                  (field (INTERN (FORMAT NIL "layer~A" n)))
+                  (label (FORMAT NIL "layer~A" n))
+                  (hvar  (INTERN (FORMAT NIL "h~A" n))))
+             (PUSH `(member torch::nn::Linear ,field) members)
+             (PUSH `(,field (($ this register_module) ,label
+                             (torch::nn::Linear ,width ,out)))
+                   inits)
+             (PUSH (CONS hvar (activation< act `((-> ($ this ,field) forward) ,'@PREV) layer))
+                   steps)
+             (SETQ width out)))
+
+          (T (ERROR (FORMAT NIL "network ~A: unknown layer '~A'.~%  known: input dense"
+                            name kind))))))
+
+    (WHEN (ZEROP n)
+      (ERROR (FORMAT NIL "network ~A: no dense layers" name)))
+
+    ;; thread the chain: each step's @PREV becomes the previous step's variable,
+    ;; the first being the forward's parameter
+    (LET* ((steps (REVERSE steps))
+           (prev  'x)
+           (bound '()))
+      (DOLIST (s (BUTLAST steps))
+        (PUSH (LIST (CAR s) (SUBST prev '@PREV (CDR s))) bound)
+        (SETQ prev (CAR s)))
+      (LET ((final (SUBST prev '@PREV (CDR (CAR (LAST steps))))))
+        `(struct ,name (inherits torch::nn::Module)
+                 ,@(REVERSE members)
+                 (ctor () (init ,@(REVERSE inits)))
+                 (method forward ((const torch::Tensor & x)) (out torch::Tensor)
+                         ,(IF bound
+                              `(letin* ,(REVERSE bound) (return ,final))
+                              `(return ,final))))))))
+
+;;; ------------------------------------------------------------------
+;;; (train NAME (data X Y) (test X Y) (epochs N) (batch N)
+;;;             (optimiser adam LR) (loss nll) [(quiet)])
+;;; ------------------------------------------------------------------
+;;;
+;;; Emits the loop. Every clause is optional except `data'; the defaults are
+;;; the ones a first run wants.
+
+(DEFUN train-clause< (clauses key)
+  (LET ((hit (FIND-IF #'(LAMBDA (c) (AND (LISTP c) (SYMBOLP (CAR c))
+                                         (STRING= (SYMBOL-NAME (CAR c)) key)))
+                      clauses)))
+    (CDR hit)))
+
+(DEFUN optimiser< (spec params)
+  (LET* ((which (IF spec (SYMBOL-NAME (CAR spec)) "adam"))
+         (lr    (IF (AND spec (CDR spec)) (CADR spec) 0.001)))
+    (COND ((STRING= which "adam") `(torch::optim::Adam ,params ,lr))
+          ((STRING= which "sgd")  `(torch::optim::SGD  ,params ,lr))
+          (T (ERROR (FORMAT NIL "train: unknown optimiser '~A'.~%  known: adam sgd" which))))))
+
+(DEFUN loss< (spec out target)
+  (LET ((which (IF spec (SYMBOL-NAME (CAR spec)) "nll")))
+    (COND ((STRING= which "nll") `(torch::nll_loss ,out ,target))
+          ((STRING= which "mse") `(torch::mse_loss ,out ,target))
+          (T (ERROR (FORMAT NIL "train: unknown loss '~A'.~%  known: nll mse" which))))))
+
+(DEFMACRO train (name &REST clauses)
+  (LET* ((data   (train-clause< clauses "data"))
+         (test   (train-clause< clauses "test"))
+         (epochs (OR (CAR (train-clause< clauses "epochs")) 10))
+         (batch  (OR (CAR (train-clause< clauses "batch"))  100))
+         (opt    (train-clause< clauses "optimiser"))
+         (lossf  (train-clause< clauses "loss"))
+         (quiet  (train-clause< clauses "quiet"))
+         (net    (GENSYM "net")) (o (GENSYM "opt"))
+         (e      (GENSYM "e"))   (i (GENSYM "i"))
+         (total  (GENSYM "total")) (nb (GENSYM "nb")))
+
+    (UNLESS (= (LENGTH data) 2)
+      (ERROR (FORMAT NIL "train ~A: (data INPUTS TARGETS) is required" name)))
+    (WHEN (AND test (/= (LENGTH test) 2))
+      (ERROR (FORMAT NIL "train ~A: (test INPUTS TARGETS) takes two" name)))
+
+    (LET ((xs (CAR data)) (ys (CADR data)))
+      `(letin* ((,net (,name))
+                (,o ,(optimiser< opt `(($ ,net parameters)))))
+         ,@(WHEN (AND test (NOT quiet))
+             `((printf "start accuracy: %.4f\n" (accuracy^network ,net ,(CAR test) ,(CADR test)))))
+         (for ((int ,e . 0)) (< ,e ,epochs) ((++ ,e))
+              (let ((double ,total . 0.0) (int ,nb . 0))
+                (for ((i64 ,i . 0)) (<= (+ ,i ,batch) (($ ,xs size) 0)) ((+= ,i ,batch))
+                     (letin* ((bx (($ ,xs narrow) 0 ,i ,batch))
+                              (by (($ ,ys narrow) 0 ,i ,batch)))
+                       (($ ,o zero_grad))
+                       (letin* ((out (($ ,net forward) bx)))
+                         (letin* ((l ,(loss< lossf 'out 'by)))
+                           (($ l backward))
+                           (($ ,o step))
+                           (+= ,total (cast double (($ l (t<> item float)))))
+                           (++ ,nb)))))
+                ,@(UNLESS quiet
+                    (IF test
+                        `((printf "epoch %2d  loss %.4f  accuracy %.4f\n"
+                                  (+ ,e 1) (/ ,total ,nb)
+                                  (accuracy^network ,net ,(CAR test) ,(CADR test))))
+                        `((printf "epoch %2d  loss %.4f\n" (+ ,e 1) (/ ,total ,nb)))))))
+         ,@(IF test
+               `((accuracy^network ,net ,(CAR test) ,(CADR test)))
+               '(0.0))))))
+
+;;; The accuracy pass the DSL reports with. Written once here rather than
+;;; generated, because it is the same three lines every time.
+(DEFMACRO accuracy^network (net x y)
+  `(progn
+     (letin* ((g (torch::NoGradGuard)))
+       (letin* ((pred (($ (($ ,net forward) ,x) argmax) 1)))
+         (letin* ((hits (($ (($ pred eq) ,y) sum))))
+           (/ (cast double (($ hits (t<> item i64))))
+              (cast double (($ ,y numel)))))))))

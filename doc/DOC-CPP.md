@@ -638,6 +638,49 @@ struct Net : public torch::nn::Module {
 > autograd, `NoGradGuard`. It is not in `run.sh`, because it needs libtorch and the paths
 > in it are one machine's. Run it by hand.
 
+#### A DSL on top
+
+[lib/cpp/torch/dsl.cicili](../lib/cpp/torch/dsl.cicili) is the layer the binding exists to
+make possible — a network is **described**, not constructed:
+
+```lisp
+(network Classifier
+  (input   784)
+  (dense   256 relu)
+  (dense   128 relu)
+  (dense    10 log-softmax))
+
+(train Classifier
+  (data      xs ys)
+  (test      xt yt)
+  (epochs    15)
+  (batch     100)
+  (optimiser adam 0.001)
+  (loss      nll))
+```
+
+That is the whole model and its training. It expands to the struct, the registered layers,
+the forward chain and the loop — [example/mnist-dsl.cicili](../example/mnist-dsl.cicili) is
+[example/mnist.cicili](../example/mnist.cicili) rewritten this way and produces **identical
+numbers**, 0.9784 on real MNIST, because it produces the same program.
+
+What separates it from Keras is not the syntax:
+
+* **It is a macro, not a library.** No model object, no interpreter, no dispatch. What runs
+  is the code you would have written by hand, and you can read it in the generated `.cpp`.
+* **Shapes are checked when it compiles.** A dense layer's input width is the previous
+  layer's output, worked out at expansion time. A mismatch cannot be written.
+* **No strings that mean something.** Keras spells an activation `"relu"`; a typo is a
+  runtime `KeyError`. Here an unknown one is a compile error that lists the alternatives:
+
+  ```
+  network: layer (dense 256 rectify) has unknown activation 'rectify'.
+    known: relu tanh sigmoid softmax log-softmax none
+  ```
+
+* **There is no wall.** Anything the DSL does not cover is written in Cicili directly, in
+  the same file, against the same declarations — you were already there.
+
 Two libtorch shapes worth knowing:
 
 * **Member templates** — `t.item<float>()` is written `($ t (t<> item float))`. A
