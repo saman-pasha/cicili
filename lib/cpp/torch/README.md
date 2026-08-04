@@ -23,7 +23,7 @@ Two layers over PyTorch's C++ library:
 ```
 
 That is a complete model and its training. It compiles to C++, links libtorch, and reaches
-**98.4%** on MNIST.
+**98.3%** on MNIST with the MLP, **98.8%** with the conv net.
 
 ---
 
@@ -140,34 +140,46 @@ only the batch is copied rather than the whole set. Without it the permutation i
 and the gather is the identity — one code path, and the identity gather costs nothing
 measurable.
 
-What it is worth, everything else held identical — **and measured in both front ends, which
-is what makes the answer trustworthy**:
+What it is worth — **each effect on its own, and in both front ends**. Accuracy only; the
+timings live in the [performance table](#measured-against-python), and separating the two
+questions is the point.
 
-| example | | without | with `(shuffle)` + `(schedule)` | change |
+### MNIST, MLP — accuracy, higher is better
+
+| | none | `(shuffle)` | `(schedule)` | both |
 |---|---|---|---|---|
-| [MNIST, MLP](../../../example/mnist-dsl.cicili) | Cicili | 0.9784 · 13.4 s | **0.9838** · 13.3 s | **+0.0054** |
-| [·](../../../example/python/mnist_mlp.py) | Python | 0.9785 · 19.8 s | **0.9828** · 20.1 s | **+0.0043** |
-| [California housing](../../../example/tabular.cicili) | Cicili | 0.5233 rmse · 1.8 s | 0.5270 rmse · 1.8 s | −0.0037 *(worse)* |
-| [·](../../../example/python/tabular.py) | Python | 0.5381 rmse · 3.2 s | 0.5343 rmse · 3.5 s | +0.0038 *(better)* |
-| [MNIST, conv](../../../example/mnist-conv.cicili) | Cicili | 0.9869 · 46.2 s | 0.9869 · 45.0 s | 0.0000 |
-| [·](../../../example/python/mnist_conv.py) | Python | 0.9866 · 50.4 s | 0.9880 · 48.8 s | +0.0014 |
+| Cicili | 0.9784 | 0.9798 | **0.9838** | 0.9829 |
+| Python | 0.9785 | 0.9794 | **0.9838** | 0.9828 |
 
-**Read the pairs, not the rows.** Two independent implementations of the same experiment
-agree or they do not, and that is the whole value of having both:
+### California housing — rmse, lower is better
 
-* **MNIST MLP — real.** +0.0054 and +0.0043, same direction, same order of magnitude, in
-  two front ends that share nothing but the maths. The model sees the same 60000 rows in
-  the same order fifteen times and settles into it; shuffling breaks that up.
-* **California housing — noise.** Cicili got 0.0037 **worse** and Python got 0.0038
-  **better**. An effect that flips sign between implementations is not an effect. The rows
-  were already permuted once before the split, so shuffling the batch order on top has
-  nothing left to fix.
-* **MNIST conv — nothing.** 0.0000 and +0.0014. Five epochs is not long enough to memorise
-  an order, so there is none to break up.
+| | none | `(shuffle)` | `(schedule)` | both |
+|---|---|---|---|---|
+| Cicili | **0.5233** | 0.5276 | 0.5270 | 0.5269 |
+| Python | **0.5381** | 0.5448 | 0.5338 | 0.5343 |
 
-Had only the Cicili column been measured, the tabular row would read as "shuffling hurts
-regression" and the MLP row as a clean win. One of those is true. The second column is how
-you tell which.
+### MNIST, conv — accuracy, higher is better
+
+| | none | `(shuffle)` |
+|---|---|---|
+| Cicili | 0.9869 | **0.9881** |
+| Python | 0.9866 | **0.9880** |
+
+**The two implementations now agree in every cell**, to within a thousandth, including on
+the schedule-only column where they land on the same 0.9838. That agreement is the evidence
+that the numbers mean something; it is not decoration.
+
+What the grid says, and it is not what a single "with everything" column said:
+
+* **On the MLP, the schedule does the work, not the shuffle.** Schedule alone is +0.0054;
+  shuffle alone is +0.0014; both together is *slightly worse* than the schedule alone.
+  Halving the learning rate every five epochs is what lets it settle.
+* **On the conv net, shuffling does the work** — +0.0012 and +0.0014 — and there is no
+  schedule to confuse it with. Five epochs is short enough that order still matters and
+  long enough that breaking it up helps.
+* **On the tabular regression, shuffling makes it worse in both**, 0.5233 → 0.5276 and
+  0.5381 → 0.5448. Those rows were already permuted once before the split, so shuffling
+  the batch order on top adds variance with nothing left to remove.
 
 Reach for it when a model sees the data many times. It is not free accuracy and it is not a
 default this DSL applies for you.
@@ -283,15 +295,16 @@ neither gets a warm machine to itself; the spread within a side was under 6%.
 
 | example | Cicili | Python | |
 |---|---|---|---|
-| MNIST, MLP — shuffled, StepLR(5, 0.5) | **0.9838** · **13.3 s** | 0.9828 · 20.1 s | **1.51×** |
-| California housing — shuffled, StepLR(10, 0.5) | 0.5270 rmse · **1.8 s** | 0.5343 rmse · 3.5 s | **1.94×** |
-| MNIST, conv — shuffled | 0.9869 · **45.0 s** | 0.9880 · 48.8 s | **1.08×** |
+| MNIST, MLP — shuffled, StepLR(5, 0.5) | 0.9829 · **11.8 s** | 0.9828 · 18.7 s | **1.58×** |
+| California housing — shuffled, StepLR(10, 0.5) | 0.5269 rmse · **1.8 s** | 0.5343 rmse · 3.2 s | **1.78×** |
+| MNIST, conv — shuffled | 0.9881 · **42.6 s** | 0.9880 · 44.3 s | **1.04×** |
 
 The two configurations tell the same story about the front ends and different stories about
-the models. **The speedups barely move** — 1.46 to 1.51, 1.78 to 1.94, 1.06 to 1.08 — which
-is what you would expect if the difference is per-batch overhead rather than anything to do
-with the model: shuffling adds a gather to every batch on both sides and neither side is
-much better at it. What the models do with shuffling is
+the models. **The speedups barely move** — 1.46 to 1.58, 1.78 either way, 1.06 to 1.04 —
+which is what you would expect if the difference is per-batch overhead rather than anything
+to do with the model: shuffling adds a gather to every batch on both sides and neither side
+is much better at it. The plain and shuffled rows were measured in different sittings and
+the machine drifts a few percent between them, which is most of the movement you see. What the models do with shuffling is
 [a separate question with a separate answer](#train), and only one of the three benefits.
 
 Loading is shared by [common.py](../../../example/python/common.py) on the Python side and

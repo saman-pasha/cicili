@@ -5,7 +5,7 @@ void check (const char * what , long got , long want ) {
   if (got  ==  want  )
     printf ("ok   %-32s %ld\n", what , got );
   else
-    { /* block215 */
+    { /* block220 */
       printf ("FAIL %-32s got %ld want %ld\n", what , got , want );
       (++bad );
     }
@@ -20,7 +20,7 @@ struct Net : public torch::nn::Module {
 };
 int main () {
   torch::manual_seed (1);
-  ({ /* letn222 */
+  ({ /* letn227 */
     torch::Tensor t  = torch::zeros ({ 2 , 3 } );
     // ----------
     check ("dim", ((long)(t . dim)()), 2);
@@ -28,47 +28,47 @@ int main () {
     check ("size 0", ((long)(t . size)(0)), 2);
     check ("size 1", ((long)(t . size)(1)), 3);
   });
-  ({ /* letn228 */
+  ({ /* letn233 */
     torch::Tensor o  = torch::ones ({ 1 } );
     // ----------
     check ("item<float>", ((long)(o . item<float>)()), 1);
     check ("item<double>", ((long)(o . item<double>)()), 1);
     check ("item<int64_t>", ((long)(o . item<int64_t>)()), 1);
   });
-  ({ /* letn234 */
+  ({ /* letn239 */
     torch::Tensor a  = torch::ones ({ 4 } );
     // ----------
-    ({ /* letn240 */
+    ({ /* letn245 */
       torch::Tensor s  = ((a . add)(a ). sum)();
       // ----------
       check ("add then sum", ((long)(s . item<float>)()), 8);
     });
   });
-  ({ /* letn243 */
+  ({ /* letn248 */
     torch::Tensor a  = torch::full ({ 3 } , ((torch::Scalar)2.0));
     // ----------
-    ({ /* letn249 */
+    ({ /* letn254 */
       torch::Tensor m  = (a . mean)();
       // ----------
       check ("mean", ((long)(m . item<float>)()), 2);
     });
   });
-  ({ /* letn252 */
+  ({ /* letn257 */
     torch::Tensor z  = torch::zeros ({ 3 } );
     // ----------
-    ({ /* letn258 */
+    ({ /* letn263 */
       torch::Tensor r  = torch::relu (z );
       // ----------
       check ("relu numel", ((long)(r . numel)()), 3);
     });
   });
-  ({ /* letn261 */
+  ({ /* letn266 */
     Net net  = Net (4, 2);
     // ----------
-    ({ /* letn264 */
+    ({ /* letn269 */
       torch::Tensor x  = torch::ones ({ 4 } );
       // ----------
-      ({ /* letn270 */
+      ({ /* letn275 */
         torch::Tensor y  = (net . forward)(x );
         // ----------
         check ("forward numel", ((long)(y . numel)()), 2);
@@ -77,21 +77,21 @@ int main () {
     (net . eval)();
     check ("inherited is_training", ((long)(((net . is_training)()) ? 1 : 0)), 0);
   });
-  ({ /* letn273 */
+  ({ /* letn278 */
     torch::Tensor w  = torch::ones ({ 1 } );
     // ----------
     (w . requires_grad_)(true );
-    ({ /* letn279 */
+    ({ /* letn284 */
       torch::Tensor y  = (w . mul)(w );
       // ----------
       (y . backward)();
       check ("grad", ((long)((w . grad)(). item<float>)()), 2);
     });
   });
-  ({ /* letn282 */
+  ({ /* letn287 */
     torch::NoGradGuard g  = torch::NoGradGuard ();
     // ----------
-    ({ /* letn285 */
+    ({ /* letn290 */
       torch::Tensor t  = torch::ones ({ 2 } );
       // ----------
       check ("inside no_grad requires_grad", ((long)(((t . requires_grad)()) ? 1 : 0)), 0);
