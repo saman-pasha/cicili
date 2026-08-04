@@ -46,6 +46,77 @@ for that only then.
   diagnostics, maps each one back to the Cicili form that produced it, and reports it with
   the compile path that led there.
 
+## Written for machines as well as people
+
+Cicili is meant to be a language an AI agent can write **correctly on the first attempt**,
+and the claim is made against specific factors rather than as an adjective. Each row below
+says what the factor is, why it matters when a model rather than a person is at the
+keyboard, and what Cicili actually does about it. The gaps are listed too — a claim you
+cannot check is worth nothing.
+
+### What helps a model write correct code
+
+| factor | why it matters to a model | Cicili |
+|---|---|---|
+| **Uniform shape** | Most syntax errors come from guessing structure — precedence, statement-vs-expression, where a brace goes. | Every construct is `(head …)`. There is no precedence to infer and no second grammar for expressions. A model that can balance parentheses cannot produce a malformed program. |
+| **One way to say a thing** | Every alternative spelling is a chance to pick the wrong one, and a model picks from what it has seen most, not what is best here. | The C++ layer's whole design rule is *if the language already has a construct that means this, use it.* There is no `class` (it is `struct`), no `namespace` clause (it is `module`), no reference wrapper (it is the `&` already in the type descriptor). Each application **deleted** syntax. |
+| **Failing rather than being silently wrong** | A model reports the build as green. A silent miscompile is therefore reported as success — the single worst outcome in an agent loop. | This is why C++ constructs are clauses and not text escapes. A `(code …)` escape spliced `(cof p)` as `p`, dropping the dereference with no diagnostic; as a clause the operand is a specified expression and cannot be dropped. |
+| **Errors that name your code** | A model can only act on a message that names the thing it wrote. Internal state is noise it will guess against. | `unknown member: w of type: Shape` names the member and the type. Every C-compiler diagnostic is mapped back to the Cicili form that produced it and reported with the path that led there. |
+| **Locality** | A model reasons about the form in front of it. Anything that depends on distant context is a chance to be wrong. | Attributes attach to the next clause only. A qualified name resolves without a `using` elsewhere in the file. A method's `this` is implicit and needs no declaration. |
+| **Determinism** | An agent diffs its output to know what changed. Output that churns on its own makes the diff useless. | Same source, same bytes. Anonymous struct names were derived from the clock until recently; they are now derived from the translation unit, and two full suite runs produce byte-identical C for every target. |
+| **Checkable by construction** | A model needs a cheap, total verdict, not a subjective review. | `sh test/run.sh` transpiles, compiles **and runs** every file under `test/c`, `test/std` and `test/cpp`, and must end `red: 0`. Every documented clause links to the runnable test that covers it. |
+| **A learnable surface** | An LLM has very little Cicili in its training data. It must learn the language from what is in context. | The complete clause set is two index tables — [DOC-C.md](doc/DOC-C.md) and [DOC-CPP.md](doc/DOC-CPP.md) — each clause with the generated C beneath it. The language is small enough to read in one sitting, which is the only reason a model can use it at all. |
+| **Compile-time ownership** | Use-after-move and double-free are exactly the bugs that survive review, human or model. | Ownership violations are compile-time errors, not runtime ones: use after `move`, double free, assigning a `non-copy`. |
+| **The generator is the language** | Code that writes code is where a model is most useful and most likely to drift. | Macros are ordinary Common Lisp over the same s-expressions, with the compiler's own type inference exposed (`CICILI:TYPE-CHECK`, `CICILI:INFER-TYPE`). A generated form is checked exactly like a written one. |
+
+### Why this is a Lisp
+
+Lisp was the first language built for AI, and it is worth being precise about why, because
+the reasons are the same ones above pointing in the opposite direction.
+
+John McCarthy — who had coined "artificial intelligence" for the 1956 Dartmouth proposal —
+designed Lisp at MIT in 1958 for symbolic computation. Early AI was logic, planning,
+language and search: **symbols and structure, not arithmetic.** FORTRAN gave you arrays.
+Lisp gave you the symbol and the list as primitives, so representing knowledge needed no
+encoding layer between the idea and the program. Four things followed from that and made
+Lisp the field's language for thirty years:
+
+* **Code is data.** A program is a list, so a program can build, inspect and transform
+  another program. Expert-system shells, planners and theorem provers were written as Lisp
+  programs that wrote Lisp.
+* **`eval`.** McCarthy defined the language by writing its interpreter in itself, so a
+  system could construct a form and then run it.
+* **Garbage collection**, invented for Lisp in 1959, because the lifetime of a search tree
+  cannot be known in advance.
+* **The REPL.** AI programs could not be specified up front; they had to be grown while
+  running.
+
+The parenthesised syntax was not even the plan — McCarthy intended a more conventional
+"M-expression" surface, and S-expressions were the internal representation. Programmers
+preferred the internal one, which is how homoiconicity became the language's defining
+feature by accident.
+
+**The direction has reversed.** Lisp was *a language for building AI*; the properties above
+made a machine's reasoning expressible. Today's AI is numeric and lives in Python and CUDA,
+and that era is over. But a model writing code needs uniform structure, one obvious spelling,
+and a program it can manipulate as data — which is the same list of properties, now serving
+*AI writing the language* rather than the language expressing AI. Cicili is a bet that those
+properties are worth as much in the second direction as they were in the first, and that
+they are worth having with C's performance underneath.
+
+### Where it is not there yet
+
+* **No overloading.** Two methods with the same name collide, and the error (`inner exists`)
+  says less than it should.
+* **Some errors still print specifier internals.** `pointer storage not found: #<(@NTH …`
+  names the compiler's state rather than your line. Every construct moved out of a `code`
+  escape removes one of these; there are still cases that reach it.
+* **Move analysis is not path-sensitive.** `(if c (eat a) (eat a))` is rejected although
+  only one branch runs.
+* **No language server.** No completion, no go-to-definition, no inline diagnostics.
+* **A small corpus.** No model has meaningful Cicili in its weights. Everything above is
+  what makes that survivable, not something that makes it untrue.
+
 ## Architecture
 
 ```

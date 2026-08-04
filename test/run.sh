@@ -6,7 +6,7 @@
 # non-zero cicili status line, and for gcc diagnostics, then runs the produced
 # binary and requires exit 0.
 #
-#   sh test/run.sh                  # every test under test/c and test/std
+#   sh test/run.sh                  # every test under test/c, test/std and test/cpp
 #   sh test/run.sh test/c/control   # just one, by path without extension
 #
 # CICILI_FLAGS is passed through to the transpiler, so the whole suite can be
@@ -89,7 +89,7 @@ run_one() {
 if [ $# -gt 0 ]; then
   for a in "$@"; do run_one "${a%.cicili}.cicili"; done
 else
-  for f in $(find test/c test/std -name '*.cicili' 2>/dev/null | sort); do
+  for f in $(find test/c test/std test/cpp -name '*.cicili' 2>/dev/null | sort); do
     run_one "$f"
   done
 fi
