@@ -82,8 +82,9 @@
                          ;; a::b::c, so a declaration binding for it makes it a
                          ;; type that `$' and `->' can see through, and without
                          ;; one it is still emitted verbatim for C++ to judge.
-                         ((string= (symbol-name func) "$$")
-                          (let ((qn (qualified-name< (cdr def))))
+                         ((or (string= (symbol-name func) "$$")
+                              (string= (symbol-name func) "t<>"))
+                          (let ((qn (name-form< def)))
                             (if (*gets* qn)
                                 (specify-symbol-expr qn)
                                 ;; No declaration for it, so it is somebody

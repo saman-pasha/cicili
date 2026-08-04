@@ -64,7 +64,7 @@ Everything here is **in addition to** the clauses in [DOC-C.md](DOC-C.md).
 | `a::b::c` | a qualified name — one name, written the way C++ writes it | [Qualified Names](#qualified-names) |
 | `&` | a reference; a type modifier, like `*` | [References](#references) |
 | `&&` | an rvalue reference | [References](#references) |
-| `t<>` | template arguments: `(t<> std::vector int)` → `std::vector<int>` | [Templates](#templates) |
+| `t<>` | a template-id — `(t<> std::vector int)` is the name `std::vector<int>` | [Templates](#templates) |
 | `template` | declares a template | [Templates](#templates) |
 
 ### Structs
@@ -418,9 +418,29 @@ a C++ library will instantiate, or specialising on a C++ type.
 
 ### Using a template — `t<>`
 
+A template-id is **a name**, folded to one symbol by the specifier exactly as `a::b::c` is.
+So it is emitted by printing, it can be declared and resolved, and it composes — a template
+argument may itself be a template-id or a qualified name:
+
 ```lisp
-(t<> std::vector int)                    ; std::vector<int>
-(t<> std::function (t<> Tensor))         ; nests
+(t<> std::vector int)                            ; std::vector<int>
+(t<> std::vector (t<> std::unique_ptr Module))   ; std::vector<std::unique_ptr<Module>>
+```
+
+It is a name in **member position** too, which is how a member template is written:
+
+```lisp
+($ t (t<> item float))                   ; t.item<float>
+(($ t (t<> item float)))                 ; t.item<float>()
+```
+
+and how one is **declared** — each instantiation with its own return type, since Cicili has
+no way to say "for all T":
+
+```lisp
+(decl) (struct torch::Tensor
+         (const) (method (t<> item float)  () (out float))
+         (const) (method (t<> item double) () (out double)))
 ```
 
 ```lisp
@@ -608,19 +628,28 @@ struct Net : public torch::nn::Module {
 };
 ```
 
-> **What is verified and what is not.** [test/cpp/torch.cicili](../test/cpp/torch.cicili) is
-> in the suite and green: the declarations resolve, members are found through them,
-> inheriting `torch::nn::Module` works, and a value bound with `letin*` is destroyed by C++.
-> It compiles against [test/cpp/torch_stub.hpp](../test/cpp/torch_stub.hpp), **not against
-> libtorch**, which is not installed on the machine this was developed on. So the Cicili
-> half is checked and the signatures matching the real library is not. The stub keeps to
-> libtorch's names and shapes so that on a machine with libtorch one `include` changes.
+> **Two tests, and they check different things.**
+> [test/cpp/torch.cicili](../test/cpp/torch.cicili) is in the suite and compiles against
+> [torch_stub.hpp](../test/cpp/torch_stub.hpp), so it runs anywhere with nothing installed:
+> it checks that the declarations resolve, that members are found through them, that
+> inheriting `torch::nn::Module` works, and that `letin*` leaves destruction to C++.
+> [example/torch.cicili](../example/torch.cicili) builds against `<torch/torch.h>` and
+> links libtorch, so it checks the signatures against the real library — member templates,
+> autograd, `NoGradGuard`. It is not in `run.sh`, because it needs libtorch and the paths
+> in it are one machine's. Run it by hand.
 
-Two shapes libtorch uses that Cicili cannot declare, and what to do instead:
+Two libtorch shapes worth knowing:
 
-* **Member templates** — `t.item<float>()`. Reach it with `(t<> ($ t item) float)`.
-* **`IntArrayRef` from a brace list** — `torch::zeros({2, 3})`. Cicili has no literal for
-  it; write a one-line helper returning one, as the test does.
+* **Member templates** — `t.item<float>()` is written `($ t (t<> item float))`. A
+  template-id is a name, so the instantiations are *declared* like anything else and each
+  gets its own return type; `lib/cpp/torch/tensor.cicili` declares `item<float>`,
+  `item<double>`, `item<i64>`, `item<i32>` and `item<bool>`.
+* **`IntArrayRef` from a brace list** — `torch::zeros({2, 3})` is `(torch::zeros (dims 2 3))`.
+  `dims` is a macro and **cannot be a function**: `IntArrayRef` is a non-owning span, so one
+  returned from a helper points at the initializer list's storage, which died with the
+  return statement. Expanded in place, the braced temporary lives for the whole
+  full-expression. That mistake compiles, links, and then asks the allocator for
+  1125615330997568 bytes — which is how it was found.
 
 ## Known Limitations
 
@@ -631,7 +660,7 @@ reading them here.
 |---|---|
 | **No overloading** | Two `method`s or two `ctor`s with the same name collide — the second raises `inner exists`. One signature per name. |
 | **`code` escapes have no type** | Anything reached through a raw `(code …)` cannot be resolved by `$` or `->`. This is why the constructs above are clauses and not escapes. |
-| **No `mutable`, `friend`, `operator`, or member templates** | Not yet expressible. Use a `(code …)` escape. |
+| **No `mutable`, `friend` or `operator`** | Not yet expressible. Use a `(code …)` escape. |
 
 ---
 

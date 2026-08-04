@@ -1,0 +1,110 @@
+;;;; lib/cpp/torch against the REAL libtorch
+;;;;
+;;;; This is the conformance check that test/cpp/torch.cicili cannot be: it
+;;;; compiles against <torch/torch.h> and links libtorch, so a declaration in
+;;;; lib/cpp/torch/ that does not match the real library fails here.
+;;;;
+;;;; It is NOT in test/run.sh, because it needs libtorch installed and the paths
+;;;; below are this machine's. Build it by hand:
+;;;;
+;;;;     sbcl --script cicili.lisp ./example/torch.cicili
+;;;;     ./example/torch_example
+;;;;
+;;;; On macOS the headers came from `brew install pytorch', which ships the C++
+;;;; frontend under include/torch/csrc/api/include -- two -I flags, not one.
+;;;; -std=c++17 is required and -Wno-c++20-extensions is needed because
+;;;; libtorch's own headers use a C++20 feature that -Werror would otherwise
+;;;; reject.
+
+(source "torch_example.cpp"
+  (make :cpp #t
+        :compile ("-std=c++17" "-Wno-c++20-extensions"
+                  "-I/usr/local/opt/pytorch/include"
+                  "-I/usr/local/opt/pytorch/include/torch/csrc/api/include"
+                  "-c" "torch_example.cpp")
+        :link ("-ltorch_example.o"
+               "-L/usr/local/opt/pytorch/lib" "-ltorch" "-ltorch_cpu" "-lc10"
+               "-o" "torch_example"))
+
+  (include <torch/torch.h>)
+  (include <cstdio>)
+
+  (import "lib/cpp/torch/torch.cicili")
+
+  (var int bad . 0)
+
+  (func check ((const char * what) (long got) (long want))
+        (if (== got want)
+            (printf "ok   %-32s %ld\n" what got)
+          (block (printf "FAIL %-32s got %ld want %ld\n" what got want)
+                 (++ bad))))
+
+
+  ;; ---- a module of our own, the shape every libtorch program has -------
+  (struct Net (inherits torch::nn::Module)
+          (member torch::nn::Linear fc)
+          (ctor ((i64 in) (i64 out))
+                (init (fc (torch::nn::Linear in out))))
+          (method forward ((const torch::Tensor & x)) (out torch::Tensor)
+                  (return (torch::relu ((-> ($ this fc) forward) x)))))
+
+  (main
+    (torch::manual_seed 1)
+
+    ;; ---- shape, through declared members --------------------------------
+    (letin* ((t (torch::zeros (dims 2 3))))
+      (check "dim"    (cast long (($ t dim)))    2)
+      (check "numel"  (cast long (($ t numel)))  6)
+      (check "size 0" (cast long (($ t size) 0)) 2)
+      (check "size 1" (cast long (($ t size) 1)) 3))
+
+    ;; ---- MEMBER TEMPLATE -- t.item<float>() -----------------------------
+    ;; ($ t (t<> item float)) is one member name, item<float>, folded to a
+    ;; symbol by the specifier. This is the case the bindings could not reach
+    ;; before templates became names.
+    (letin* ((o (torch::ones (dims 1))))
+      (check "item<float>"  (cast long (($ o (t<> item float))))  1)
+      (check "item<double>" (cast long (($ o (t<> item double)))) 1)
+      (check "item<int64_t>" (cast long (($ o (t<> item i64))))   1))
+
+    ;; ---- arithmetic, and the type flowing through ------------------------
+    (letin* ((a (torch::ones (dims 4))))
+      (letin* ((s (($ (($ a add) a) sum))))
+        (check "add then sum" (cast long (($ s (t<> item float)))) 8)))
+
+    (letin* ((a (torch::full (dims 3) (cast torch::Scalar 2.0))))
+      (letin* ((m (($ a mean))))
+        (check "mean" (cast long (($ m (t<> item float)))) 2)))
+
+    ;; ---- free functions --------------------------------------------------
+    (letin* ((z (torch::zeros (dims 3))))
+      (letin* ((r (torch::relu z)))
+        (check "relu numel" (cast long (($ r numel))) 3)))
+
+    ;; ---- our module ------------------------------------------------------
+    (letin* ((net (Net 4 2)))
+      (letin* ((x (torch::ones (dims 4))))
+        (letin* ((y (($ net forward) x)))
+          (check "forward numel" (cast long (($ y numel))) 2)))
+      (($ net eval))
+      (check "inherited is_training" (cast long (? (($ net is_training)) 1 0)) 0))
+
+    ;; ---- autograd, and an RAII guard destroyed by C++ ---------------------
+    ;; requires_grad_ returns Tensor &, so the tensor is named first -- binding
+    ;; a non-const reference to a temporary is a C++ error, and `auto' carries
+    ;; the declared `&' through
+    (letin* ((w (torch::ones (dims 1))))
+      (($ w requires_grad_) #t)
+      (letin* ((y (($ w mul) w)))
+        (($ y backward))
+        (check "grad" (cast long (($ (($ w grad)) (t<> item float)))) 2)))
+
+    (letin* ((g (torch::NoGradGuard)))
+      (letin* ((t (torch::ones (dims 2))))
+        (check "inside no_grad requires_grad"
+               (cast long (? (($ t requires_grad)) 1 0)) 0)))
+
+    (if (== bad 0)
+        (printf "torch (real libtorch): all ok\n")
+      (printf "torch (real libtorch): %d FAILED\n" bad))
+    (return bad)))

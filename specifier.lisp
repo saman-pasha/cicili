@@ -322,8 +322,8 @@
       ;; into its symbol before the descriptor is read positionally -- otherwise
       ;; ($$ std string) is a three-element list and the reader takes `std' for
       ;; the type and `string' for the variable.
-      (when (qualified-form< desc)
-        (setq desc (qualified-name< (cdr desc)))
+      (when (name-form-p< desc)
+        (setq desc (name-form< desc))
         (setq len 1))
       ;; walked by hand rather than with mapcar: a variable descriptor is a
       ;; DOTTED list -- (auto s . #'(...)) -- and mapcar drops the tail, which
@@ -331,9 +331,7 @@
       (when (consp desc)
         (setq desc (let ((walk desc) (acc '()))
                      (loop while (consp walk)
-                           do (progn (push (let ((x (car walk)))
-                                             (if (qualified-form< x) (qualified-name< (cdr x)) x))
-                                           acc)
+                           do (progn (push (name-form< (car walk)) acc)
                                      (setq walk (cdr walk))))
                      (let ((head (nreverse acc)))
                        (if walk (append head walk) head)))))
@@ -834,7 +832,9 @@
 (defun specify-cast-expr (def)
   (unless (= (length def) 3) (error (format nil "wrong cast form ~A" def)))
   (set-ast-obj def
-    (let* ((ty (expand-macros (nth 1 def)))
+    (let* (;; a qualified name or template-id in the cast's type slot is
+           ;; ONE name, folded before the descriptor is read positionally
+           (ty (name-form< (expand-macros (nth 1 def))))
            ;; (struct X) / (union X) / (enum X) is ONE type, not a descriptor.
            ;; Everything else that arrives as a list -- (int *), (const char *),
            ;; (a []) -- is a descriptor and specify-type< reads it positionally.
@@ -869,7 +869,9 @@
 (defun specify-cppcast-expr (def kind)
   (unless (= (length def) 3) (error (format nil "wrong ~A form ~A" kind def)))
   (set-ast-obj def
-    (let* ((ty (expand-macros (nth 1 def)))
+    (let* (;; a qualified name or template-id in the cast's type slot is
+           ;; ONE name, folded before the descriptor is read positionally
+           (ty (name-form< (expand-macros (nth 1 def))))
            (tagged (and (listp ty) (or (key-eq '|struct| (car ty))
                                        (key-eq '|union|  (car ty))
                                        (key-eq '|enum|   (car ty)))))
@@ -929,7 +931,9 @@
 (defun specify-$-expr (def)
   (set-ast-obj def
     (let ((len (length def))
-          (member (expand-macros (car (last def)))))
+          ;; a member may be a TEMPLATE-ID -- ($ t (t<> item float)) is
+          ;; t.item<float> -- and that is one member name, folded to one symbol
+          (member (name-form< (expand-macros (car (last def))))))
       (unless (>= len 3) (error (format nil "wrong access member $ form: ~A" def)))
       (unless (is-symbol member) (error (format nil "wrong access member name: ~A" def)))
       (make-specifier (if (> len 3)
@@ -945,7 +949,8 @@
   (set-ast-obj def
     (let* ((struct (specify-expr (expand-macros (nth 1 def))))
            (storage (deep-storageof "" struct))
-           (member (expand-macros (nth 2 def))))
+           ;; as in specify-$-expr: a template-id is one member name
+           (member (name-form< (expand-macros (nth 2 def)))))
       (unless storage (error (format nil "pointer storage not found: ~A~%  in: ~A~%" struct def)))
       (unless (is-symbol member) (error (format nil "wrong access member name: ~A" def)))
       (*push* (name storage))
@@ -1501,7 +1506,7 @@
 (defun specify-function-name< (name)
   ;; a qualified head -- (func torch::randn …) -- is one name, not a
   ;; (receiver . method) pair, so it is folded before anything else looks at it
-  (when (qualified-form< name) (setq name (name-form< name)))
+  (when (name-form-p< name) (setq name (name-form< name)))
   (if (listp name) ; method or shared
       (let ((recv (car name))
             (mthd (cdr name)))
@@ -1828,7 +1833,7 @@
            ;; a qualified head -- (struct torch::Tensor …) -- is a NAME, and is
            ;; folded to one here. Without this it is a list that is not a <>
            ;; form, which reads as an anonymous struct.
-           (def (if (and (> (length def) 1) (qualified-form< (nth 1 def)))
+           (def (if (and (> (length def) 1) (name-form-p< (nth 1 def)))
                     (cons (car def) (cons (name-form< (nth 1 def)) (cddr def)))
                     def))
            (is-anonymous (or (= (length def) 1)

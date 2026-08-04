@@ -48,19 +48,19 @@ int main () {
     check ("namespaced method", ((long)(p . sum)()), 7);
   });
   check ("template int", ((long)biggest (3, 9)), 9);
-  check ("template double", ((long)biggest < double > (2.5, 1.5)), 2);
-  { /* let137 */
+  check ("template double", ((long)biggest<double> (2.5, 1.5)), 2);
+  { /* let134 */
     int n  = 41;
     // ----------
     bump (n );
     check ("& wrote through", ((long)n ), 42);
   }
-  ({ /* letn140 */
+  ({ /* letn137 */
     std::string s  = std::string ("abcde");
     // ----------
     check ("const & no copy", ((long)lengthOf (s )), 5);
   });
-  { /* let142 */
+  { /* let139 */
     geom::Point * q  = new geom::Point ( 10 , 20 ) ;
     // ----------
     check ("new* then method", ((long)(q -> sum)()), 30);
@@ -68,19 +68,19 @@ int main () {
     q ;
   }
   check ("static_cast", ((long)static_cast<int>(3.9)), 3);
-  { /* let150 */
+  { /* let147 */
     int v  = 7;
     // ----------
-    { /* let152 */
+    { /* let149 */
       int * pv  = (&v );
       // ----------
       check ("unary operand survives", ((long)static_cast<long>((*pv ))), 7);
     }
   }
-  { /* let154 */
+  { /* let151 */
     geom::Point * q2  = new geom::Point ( 1 , 2 ) ;
     // ----------
-    { /* let159 */
+    { /* let156 */
       const geom::Point * cq  = q2 ;
       // ----------
       check ("cast result has a type", ((long)(const_cast<geom::Point *>(cq )-> sum)()), 3);
@@ -88,8 +88,8 @@ int main () {
     delete 
     q2 ;
   }
-  ({ /* letn165 */
-    auto v  = std::vector < int > ();
+  ({ /* letn162 */
+    std::vector<int> v  = std::vector<int> ();
     // ----------
     (v . push_back)(7);
     (v . push_back)(8);
@@ -97,12 +97,12 @@ int main () {
     check ("vector back", ((long)(v . back)()), 8);
   });
   check ("no throw", ((long)risky (21)), 42);
-  { /* let170 */
+  { /* let164 */
     int caught  = 0;
     // ----------
     try {
-        { /* block174 */
-          { /* let176 */
+        { /* block168 */
+          { /* let170 */
             int r  = risky (-1);
             // ----------
             ((void)r );
@@ -114,11 +114,11 @@ int main () {
 
     check ("caught the value", ((long)caught ), -10);
   }
-  { /* let180 */
+  { /* let174 */
     int any  = 0;
     // ----------
     try {
-        { /* block184 */
+        { /* block178 */
           throw 
           1;
         }

@@ -7,11 +7,11 @@
 ;;; a struct can inherit torch::nn::Module and override forward, and that a
 ;;; libtorch value bound with letin* is destroyed by C++ rather than by us.
 ;;;
-;;; It does NOT prove the signatures match the real libtorch, because libtorch
-;;; is not installed here -- it compiles against test/cpp/torch_stub.hpp, which
-;;; was written to the same names and shapes. On a machine with libtorch, one
-;;; include changes and this file should build against the real header. That is
-;;; the whole reason the stub keeps to libtorch's spelling.
+;;; It does NOT prove the signatures match the real libtorch: it compiles
+;;; against test/cpp/torch_stub.hpp so that it runs anywhere, in the suite, with
+;;; nothing installed. That check is example/torch.cicili, which builds against
+;;; <torch/torch.h> and links libtorch -- run it by hand on a machine that has
+;;; libtorch, and it is where a wrong signature is caught.
 
 (source "torch.cpp"
   (make :cpp #t :compile #t :link ("-ltorch.o" "-o" "torch_test"))
@@ -32,13 +32,6 @@
           (block (printf "FAIL %-32s got %ld want %ld\n" what got want)
                  (++ bad))))
 
-  ;; libtorch takes shapes as an IntArrayRef, which C++ builds from a brace
-  ;; list. Cicili has no literal for that, so one helper builds them -- and it
-  ;; is the only escape in this file.
-  (func shape1 ((i64 a)) (out c10::IntArrayRef)
-        (return (code '{ "c10::IntArrayRef" "{" a "}" })))
-  (func shape2 ((i64 a) (i64 b)) (out c10::IntArrayRef)
-        (return (code '{ "c10::IntArrayRef" "{" a "," b "}" })))
 
   ;; ---- a module of our own ------------------------------------------
   ;; This is the shape every libtorch program has: a struct inheriting Module,
@@ -52,25 +45,26 @@
 
   (main
     ;; ---- construction and shape, all through declared members --------
-    (letin* ((t (torch::zeros (shape2 2 3))))
+    (letin* ((t (torch::zeros (dims 2 3))))
       (check "dim"    (cast long (($ t dim)))   2)
       (check "numel"  (cast long (($ t numel))) 6)
       (check "size 0" (cast long (($ t size) 0)) 2)
       (check "size 1" (cast long (($ t size) 1)) 3))
 
     ;; ---- arithmetic returns a tensor, and the type flows -------------
-    (letin* ((a (torch::ones (shape1 4))))
+    (letin* ((a (torch::ones (dims 4))))
       (letin* ((b (($ a add) a)))                 ; b is a torch::Tensor
-        (check "add then sum" (cast long (nth 0 ($ (($ b sum)) data))) 8)))
+        ;; a member template: item<float> is one name
+        (check "add then sum" (cast long (($ (($ b sum)) (t<> item float)))) 8)))
 
     ;; ---- free functions ---------------------------------------------
-    (letin* ((z (torch::zeros (shape1 3))))
+    (letin* ((z (torch::zeros (dims 3))))
       (letin* ((r (torch::relu z)))
         (check "relu numel" (cast long (($ r numel))) 3)))
 
     ;; ---- our module, and virtual dispatch through the base ----------
     (letin* ((net (Net 4 2)))
-      (letin* ((x (torch::ones (shape1 4))))
+      (letin* ((x (torch::ones (dims 4))))
         (letin* ((y (($ net forward) x)))
           (check "forward numel" (cast long (($ y numel))) 2)))
       (($ net eval))                              ; inherited from Module
@@ -80,7 +74,7 @@
     ;; letin* with no destructor: NoGradGuard turns grad off for the scope and
     ;; its own destructor turns it back on. Nothing here calls it.
     (letin* ((g (torch::NoGradGuard)))
-      (letin* ((t (torch::ones (shape1 2))))
+      (letin* ((t (torch::ones (dims 2))))
         (check "inside no_grad" (cast long (($ t numel))) 2)))
 
     (if (== bad 0)

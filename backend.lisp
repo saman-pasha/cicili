@@ -32,26 +32,12 @@
                     (t (error (format nil "wrong name: ~A" name)))))))))
 
 (defun compile-type-name (name lvl globals parent-spec)
-  (cond ((key-eq name '|uchar|)  (set-ast-line (output "unsigned char")))
-	    ((key-eq name '|ushort|) (set-ast-line (output "unsigned short")))
-	    ((key-eq name '|uint|)   (set-ast-line (output "unsigned int")))
-	    ((key-eq name '|ulong|)  (set-ast-line (output "unsigned long")))
-	    ((key-eq name '|llong|)  (set-ast-line (output "long long")))
-	    ((key-eq name '|ullong|) (set-ast-line (output "unsigned long long")))
-	    ((key-eq name '|i8|)     (set-ast-line (output "int8_t")))
-	    ((key-eq name '|u8|)     (set-ast-line (output "uint8_t")))
-	    ((key-eq name '|i16|)    (set-ast-line (output "int16_t")))
-	    ((key-eq name '|u16|)    (set-ast-line (output "uint16_t")))
-	    ((key-eq name '|i32|)    (set-ast-line (output "int32_t")))
-	    ((key-eq name '|u32|)    (set-ast-line (output "uint32_t")))
-	    ((key-eq name '|i64|)    (set-ast-line (output "int64_t")))
-	    ((key-eq name '|u64|)    (set-ast-line (output "uint64_t")))
-	    ((key-eq name '|i128|)   (set-ast-line (output "__int128")))
-	    ((key-eq name '|u128|)   (set-ast-line (output "unsigned __int128")))
-	    ((key-eq name '|real|)   (set-ast-line (output "long double")))
-	    ((key-eq name '|auto|)   (set-ast-line (output (if *cpp* "auto" "__auto_type"))))
-	    ((key-eq name '|$$$|)    (set-ast-line (output "...")))
-	    (t (compile-name name lvl globals parent-spec))))
+  ;; the table lives in core.lisp, because a primitive can also appear inside a
+  ;; NAME -- (t<> item i64) is item<int64_t> -- and both places must agree
+  (let ((c (and (symbolp name) (c-type-name< name))))
+    (cond (c (set-ast-line (output "~A" c)))
+          ((key-eq name '|auto|) (set-ast-line (output (if *cpp* "auto" "__auto_type"))))
+          (t (compile-name name lvl globals parent-spec)))))
 
 (defun compile-array (desc lvl globals parent-spec)
   (cond ((null desc) t) ; empty

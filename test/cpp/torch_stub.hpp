@@ -114,6 +114,8 @@ struct Tensor {
     return r;
   }
 
+  template <typename T> T item() const { return (T)(data.empty() ? 0 : data[0]); }
+
   void    backward()          {}
   Tensor  grad()        const { return Tensor(shape, 1.0); }
   bool    requires_grad() const { return grad_on; }

@@ -10,19 +10,12 @@
 ;;;; language surface is a struct: the two things a C++ definition normally has
 ;;;; to say are the two things you never have to say.
 
-;;; (t<> vector int) -> vector<int>
-;;; Template arguments. Nests, and cooperates with $$ so that
-;;; ($$ std (t<> vector int)) is std::vector<int> and
-;;; (t<> std::function (t<> Tensor)) is what it looks like.
-(DEFMACRO t<> (name &REST templates)
-  (LET* ((tmps templates)
-         (name (IF (CICILI::QUALIFIED-FORM< name) (CICILI::QUALIFIED-NAME< (CDR name)) name))
-         (parts (LOOP FOR r IN tmps
-                      WITH l = (1- (LENGTH tmps))
-                      FOR i FROM 0 TO l
-                      COLLECT (LET ((p (IF (CICILI::QUALIFIED-FORM< r) (CICILI::QUALIFIED-NAME< (CDR r)) r)))
-                                (IF (< i l) (LIST p ",") (LIST p))))))
-    `(code '{ ,name #\< (code ',(APPLY #'APPEND parts)) #\> })))
+;;; There is no `t<>' macro either. A template-id is a NAME -- (t<> std::vector
+;;; int) is std::vector<int>, (t<> item float) is the member name item<float> --
+;;; and the specifier folds it to one symbol, the same as it folds a::b::c. So
+;;; it is emitted by printing, it can be declared and resolved, and it composes:
+;;; a template argument may itself be a template-id or a qualified name.
+;;; See core.lisp template-name<.
 
 ;;; a::b::c is read lexically and folded into one symbol by the specifier --
 ;;; there is no $$ macro any more. The reader turns torch::nn::Linear into

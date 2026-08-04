@@ -530,15 +530,62 @@
 
 ;;; Drop the parts of a name a validator has no business rejecting: the `~' of
 ;;; a destructor, and the `::' of a qualified name. Both are C++ only.
+;;; A template-id is a name too: (t<> std::vector int) is the single name
+;;; std::vector<int>, and (t<> item float) is the member name item<float>.
+;;; Folding it to a symbol is what qualified names get, and for the same
+;;; reasons -- it is emitted by printing, so it goes through set-ast-line; it
+;;; can be declared and resolved; and it composes, because a template argument
+;;; may itself be a template-id or a qualified name.
+(defun template-form< (x)
+  (and (listp x) (cdr x) (symbolp (car x)) (string= (symbol-name (car x)) "t<>")))
+
+(defun template-name< (parts)
+  (let ((head (car parts))
+        (args (cdr parts)))
+    (intern (format nil "~A<~{~A~^,~}>"
+                    (name-part< head)
+                    (mapcar #'name-part< args)))))
+
+;;; Cicili's primitive type names and their C spellings. The back end needs
+;;; this to emit a type; name-part< needs it because a primitive can appear
+;;; INSIDE a name -- (t<> item i64) is item<int64_t>, and printing the Cicili
+;;; spelling there produces an identifier C++ has never heard of.
+(defvar *c-type-names*
+  '((|uchar|  . "unsigned char")      (|ushort| . "unsigned short")
+    (|uint|   . "unsigned int")       (|ulong|  . "unsigned long")
+    (|llong|  . "long long")          (|ullong| . "unsigned long long")
+    (|i8|     . "int8_t")             (|u8|     . "uint8_t")
+    (|i16|    . "int16_t")            (|u16|    . "uint16_t")
+    (|i32|    . "int32_t")            (|u32|    . "uint32_t")
+    (|i64|    . "int64_t")            (|u64|    . "uint64_t")
+    (|i128|   . "__int128")           (|u128|   . "unsigned __int128")
+    (|real|   . "long double")        (|$$$|    . "...")))
+
+(defun c-type-name< (sym)
+  (cdr (assoc sym *c-type-names* :test #'key-eq)))
+
+(defun name-part< (p)
+  (cond ((template-form< p)  (symbol-name (template-name< (cdr p))))
+        ((qualified-form< p) (symbol-name (qualified-name< (cdr p))))
+        ((symbolp p)         (or (c-type-name< p) (symbol-name p)))
+        (t                   (format nil "~A" p))))
+
 ;;; A qualified name is a NAME wherever a name is expected -- the head of a
 ;;; struct, a func, a typedef -- and not only where a type is. Declaration
 ;;; bindings are written that way: (decl) (struct torch::Tensor …).
 (defun name-form< (x)
-  (if (qualified-form< x) (qualified-name< (cdr x)) x))
+  (cond ((qualified-form< x) (qualified-name< (cdr x)))
+        ((template-form< x)  (template-name< (cdr x)))
+        (t x)))
+
+;;; either of the two name-forming shapes
+(defun name-form-p< (x) (or (qualified-form< x) (template-form< x)))
 
 (defun bare-name< (n)
   (let ((n (if (and *cpp* (> (length n) 1) (char= (char n 0) #\~)) (subseq n 1) n)))
-    (if *cpp* (remove #\: n) n)))
+    ;; `::' of a qualified name and `<,>' of a template-id are part of the name
+    ;; in C++ and there is nowhere else for them to live
+    (if *cpp* (remove-if (lambda (c) (find c ":<>,")) n) n)))
 
 (defun is-decl-name (name)
   (let ((name (bare-name< (symbol-name name))))

@@ -21,6 +21,25 @@
 ;;;; heavily -- the most common form is declared and the others are reached the
 ;;;; same way an undeclared name is. See DOC-CPP.md, Known Limitations.
 
+;;; (dims 2 3) -> {2, 3}
+;;;
+;;; libtorch takes shapes as a c10::IntArrayRef, which C++ builds from a braced
+;;; list at the call site. THIS HAS TO BE A MACRO AND CANNOT BE A FUNCTION:
+;;; IntArrayRef is a non-owning span, so one returned from a helper points at
+;;; the initializer list's storage, which died with the return statement. That
+;;; mistake compiles, links, and then asks the allocator for 1125615330997568
+;;; bytes -- which is how it was found here, against the real library.
+;;;
+;;; Expanded in place, the braced temporary lives for the whole full-expression
+;;; containing the call, which is exactly long enough.
+;;;
+;;;     (torch::zeros (dims 2 3))     ->   torch::zeros({2, 3})
+(DEFMACRO dims (&REST ds)
+  `(code '{ "{" (code ',(LET ((l (1- (LENGTH ds))))
+                          (LOOP FOR d IN ds FOR i FROM 0 TO l
+                                APPEND (IF (< i l) (LIST d ",") (LIST d)))))
+            "}" }))
+
 (DEFMACRO init-macro ()
   `($$$
 
@@ -46,8 +65,16 @@
               (const) (method sizes       ()          (out c10::IntArrayRef))
               (const) (method size        ((i64 d))   (out i64))
 
-              ;;; element access. item<T>() is a member template, which Cicili
-              ;;; cannot declare -- reach it with (t<> ($ t item) float).
+              ;;; element access. item<T> is a member template, and a
+              ;;; template-id is a name, so the instantiations are declared the
+              ;;; way anything else is -- which is what gives each one its own
+              ;;; return type. Write it ($ t (t<> item float)).
+              (const) (method (t<> item float)  ()    (out float))
+              (const) (method (t<> item double) ()    (out double))
+              (const) (method (t<> item i64)    ()    (out i64))
+              (const) (method (t<> item i32)    ()    (out i32))
+              (const) (method (t<> item bool)   ()    (out bool))
+
               (const) (method is_cuda     ()          (out bool))
               (const) (method defined     ()          (out bool))
 
@@ -97,9 +124,8 @@
               (const) (method print       ()))
 
      ;;; ---- construction -------------------------------------------
-     ;;; The size argument is an IntArrayRef, which libtorch builds from a brace
-     ;;; list. From Cicili that is a (code …) escape or a declared helper -- see
-     ;;; the shapes example in test/cpp/torch.cicili.
+     ;;; The size argument is an IntArrayRef -- write (dims 2 3), the macro
+     ;;; above, which expands to a braced list at the call site.
      (decl) (func torch::zeros  ((c10::IntArrayRef size)) (out torch::Tensor))
      (decl) (func torch::ones   ((c10::IntArrayRef size)) (out torch::Tensor))
      (decl) (func torch::empty  ((c10::IntArrayRef size)) (out torch::Tensor))
