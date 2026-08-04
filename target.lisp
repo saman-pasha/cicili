@@ -18,6 +18,14 @@
                       ((find construct *attributes* :test #'key-eq) (push clause attributes))
 		              ((key-eq construct '|include|)
 		               (add-inner (specify-include  clause attributes) target-specifier) (setq attributes '()))
+                      ;; `import' inside a target, not only above it. A
+                      ;; declaration binding is read with the TARGET's settings
+                      ;; in effect -- which matters, because a C++ binding uses
+                      ;; clauses that are errors in a C target, and *cpp* is a
+                      ;; property of the target rather than of the file.
+                      ((key-eq construct '|import|)
+                       (load-macro-file (cadr clause) (caddr clause) (cadddr clause) *target-file*)
+                       (setq attributes '()))
 		              ((key-eq construct '|var|)
 		               (add-inner (specify-variable clause attributes) target-specifier) (setq attributes '()))
 		              ((key-eq construct '|func|)

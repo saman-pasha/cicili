@@ -548,20 +548,79 @@ what you use, in Cicili, and the declaration emits nothing.** It exists to feed 
 inference.
 
 ```lisp
-(module torch
-  (decl) (struct Tensor
-          (method sizes () (out IntArrayRef))
-          (method dim ()   (out i64)))
-  (decl) (func randn ((IntArrayRef s)) (out Tensor)))
+(DEFMACRO init-macro ()
+  `($$$
+     (decl) (struct torch::Tensor
+              (const) (method dim   () (out i64))
+              (const) (method sizes () (out c10::IntArrayRef)))
+     (decl) (func torch::randn ((c10::IntArrayRef size)) (out torch::Tensor))))
 ```
 
-With that in scope, `torch::Tensor` is a type: `(-> t dim)` resolves, a mistyped member is
-an error naming the member, and the type flows through `auto`.
+The `init-macro` wrapper is what makes it emit nothing: its forms are specified into the
+symbol table and never added to a target's output. The real declarations still come from
+the real header, so a target still needs its `include` and still has to link.
 
-Without it, `torch::Tensor` still works — it is emitted as written and C++ checks it. The
-difference is *who* catches your mistake and *what the message says*.
+**Declaring a name buys inference, not permission.** With the above in scope
+`torch::Tensor` is a type: `($ t dim)` resolves, a mistyped member is an error that names
+the member, and the type flows through `auto`. Without it the name still works — it is
+emitted as written and C++ is the only thing checking it. So an incomplete binding is a
+much smaller problem than a wrong one, which is why these files are a useful subset rather
+than a guess at everything.
 
----
+Import a binding **inside** the target, so it is read with that target's settings — `:cpp`
+is a property of the target, and a C++ binding uses clauses that are errors in a C one:
+
+```lisp
+(source "app.cpp"
+  (make :cpp #t …)
+  (include <torch/torch.h>)
+  (import "lib/cpp/torch/torch.cicili")
+  …)
+```
+
+### libtorch
+
+[lib/cpp/torch/](../lib/cpp/torch) is a working binding, in three files —
+[tensor.cicili](../lib/cpp/torch/tensor.cicili), [nn.cicili](../lib/cpp/torch/nn.cicili),
+[optim.cicili](../lib/cpp/torch/optim.cicili) — with
+[torch.cicili](../lib/cpp/torch/torch.cicili) as the aggregator. It covers `torch::Tensor`
+and its common methods, the factory and free functions, `torch::nn::Module` and the main
+layers in both their `Impl` and holder spellings, and the optimisers.
+
+A module of your own is written the way any struct is:
+
+```lisp
+(struct Net (inherits torch::nn::Module)
+        (member torch::nn::Linear fc)
+        (ctor ((i64 in) (i64 out))
+              (init (fc (torch::nn::Linear in out))))
+        (method forward ((const torch::Tensor & x)) (out torch::Tensor)
+                (return (torch::relu ((-> ($ this fc) forward) x)))))
+```
+
+```cpp
+struct Net : public torch::nn::Module {
+  torch::nn::Linear fc ;
+  Net (int64_t in , int64_t out ) : fc(torch::nn::Linear (in , out )) { }
+  torch::Tensor forward (const torch::Tensor & x ) {
+    return torch::relu (((this->fc)->forward)(x ));
+  }
+};
+```
+
+> **What is verified and what is not.** [test/cpp/torch.cicili](../test/cpp/torch.cicili) is
+> in the suite and green: the declarations resolve, members are found through them,
+> inheriting `torch::nn::Module` works, and a value bound with `letin*` is destroyed by C++.
+> It compiles against [test/cpp/torch_stub.hpp](../test/cpp/torch_stub.hpp), **not against
+> libtorch**, which is not installed on the machine this was developed on. So the Cicili
+> half is checked and the signatures matching the real library is not. The stub keeps to
+> libtorch's names and shapes so that on a machine with libtorch one `include` changes.
+
+Two shapes libtorch uses that Cicili cannot declare, and what to do instead:
+
+* **Member templates** — `t.item<float>()`. Reach it with `(t<> ($ t item) float)`.
+* **`IntArrayRef` from a brace list** — `torch::zeros({2, 3})`. Cicili has no literal for
+  it; write a one-line helper returning one, as the test does.
 
 ## Known Limitations
 

@@ -1,0 +1,81 @@
+;;;; Cicili declarations for libtorch -- torch::nn
+;;;;
+;;;; Requires in target: (include <torch/torch.h>) and a C++ target (:cpp #t).
+;;;; Nothing here emits C++. See tensor.cicili for what that means.
+;;;;
+;;;; THE MODULE HOLDER PATTERN. libtorch's nn types come in two spellings:
+;;;; torch::nn::LinearImpl is the class, and torch::nn::Linear is a
+;;;; shared-pointer holder around it that forwards `->'. Both are declared,
+;;;; because a program writes the holder and reaches through it:
+;;;;
+;;;;   (letin* ((fc (torch::nn::Linear 784 10)))
+;;;;     ((-> fc forward) x))
+;;;;
+;;;; SUBCLASSING Module is where the Cicili side earns its keep -- a struct
+;;;; that inherits it, with a forward method, is written the way any other
+;;;; struct is:
+;;;;
+;;;;   (struct Net (inherits torch::nn::Module)
+;;;;     (member torch::nn::Linear fc)
+;;;;     (ctor ((i64 in) (i64 out))
+;;;;           (init (fc (register_module "fc" (torch::nn::Linear in out)))))
+;;;;     (method forward ((torch::Tensor x)) (out torch::Tensor)
+;;;;             (return (torch::relu ((-> ($ this fc) forward) x)))))
+;;;;
+;;;; register_module is a member TEMPLATE in libtorch, so it is declared here
+;;;; with the holder type it is overwhelmingly used with rather than generically.
+
+(DEFMACRO init-macro ()
+  `($$$
+
+     ;;; ---- the base ------------------------------------------------
+     (decl) (struct torch::nn::Module
+              (method train        ((bool on)))
+              (method eval         ())
+              (method zero_grad    ())
+              (const) (method is_training () (out bool))
+              (const) (method parameters   () (out c10::IntArrayRef))
+              (method to           ((torch::Device device))))
+
+     ;;; ---- layers, class and holder --------------------------------
+     ;;; Each layer is declared twice because libtorch spells it twice: Impl is
+     ;;; the class you inherit or hold, and the bare name is the holder that
+     ;;; forwards `->' to it.
+
+     (decl) (struct torch::nn::LinearImpl (inherits torch::nn::Module)
+              (method forward ((const torch::Tensor & x)) (out torch::Tensor))
+              (member torch::Tensor weight)
+              (member torch::Tensor bias))
+     (decl) (struct torch::nn::Linear
+              (method forward ((const torch::Tensor & x)) (out torch::Tensor)))
+
+     (decl) (struct torch::nn::Conv2dImpl (inherits torch::nn::Module)
+              (method forward ((const torch::Tensor & x)) (out torch::Tensor)))
+     (decl) (struct torch::nn::Conv2d
+              (method forward ((const torch::Tensor & x)) (out torch::Tensor)))
+
+     (decl) (struct torch::nn::DropoutImpl (inherits torch::nn::Module)
+              (method forward ((const torch::Tensor & x)) (out torch::Tensor)))
+     (decl) (struct torch::nn::Dropout
+              (method forward ((const torch::Tensor & x)) (out torch::Tensor)))
+
+     (decl) (struct torch::nn::BatchNorm2dImpl (inherits torch::nn::Module)
+              (method forward ((const torch::Tensor & x)) (out torch::Tensor)))
+     (decl) (struct torch::nn::BatchNorm2d
+              (method forward ((const torch::Tensor & x)) (out torch::Tensor)))
+
+     (decl) (struct torch::nn::SequentialImpl (inherits torch::nn::Module)
+              (method forward ((const torch::Tensor & x)) (out torch::Tensor)))
+     (decl) (struct torch::nn::Sequential
+              (method forward ((const torch::Tensor & x)) (out torch::Tensor)))
+
+     ;;; ---- functional ----------------------------------------------
+     (decl) (func torch::nn::functional::relu
+                  ((const torch::Tensor & x)) (out torch::Tensor))
+     (decl) (func torch::nn::functional::softmax
+                  ((const torch::Tensor & x) (i64 dim)) (out torch::Tensor))
+     (decl) (func torch::nn::functional::mse_loss
+                  ((const torch::Tensor & input) (const torch::Tensor & target))
+                  (out torch::Tensor))
+
+     ))

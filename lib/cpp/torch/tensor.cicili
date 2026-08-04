@@ -1,0 +1,153 @@
+;;;; Cicili declarations for libtorch -- torch::Tensor and the free functions
+;;;;
+;;;; Requires in target: (include <torch/torch.h>) and a C++ target (:cpp #t).
+;;;;
+;;;; NOTHING HERE EMITS C++. These declarations exist so Cicili's type inference
+;;;; knows what a torch::Tensor is: what its members are called, what they
+;;;; return, and which free functions produce one. The real declarations still
+;;;; come from the real header at compile time. This is the same arrangement
+;;;; lib/std/c/ has with libc, and it is why a binding is cheap -- declare what
+;;;; you use, and grow the file when you use more.
+;;;;
+;;;; A NAME YOU HAVE NOT DECLARED STILL WORKS. torch::whatever is emitted as
+;;;; written and C++ decides whether it exists. Declaring it buys inference --
+;;;; ($ t sizes) resolving, a typo naming the member, `auto' knowing the type --
+;;;; not permission. So an incomplete binding is a smaller problem than a wrong
+;;;; one, and this file is deliberately a useful subset rather than a guess at
+;;;; everything.
+;;;;
+;;;; WHAT IS NOT COVERED, and why it does not hurt much: overloads. Cicili has
+;;;; one signature per name, so where libtorch overloads -- and it overloads
+;;;; heavily -- the most common form is declared and the others are reached the
+;;;; same way an undeclared name is. See DOC-CPP.md, Known Limitations.
+
+(DEFMACRO init-macro ()
+  `($$$
+
+     ;;; ---- supporting types ---------------------------------------
+     ;;; Declared as opaque: Cicili needs the NAME to type things with, and
+     ;;; libtorch's real definitions are none of its business.
+     (decl) (struct c10::IntArrayRef)
+     (decl) (struct torch::TensorOptions)
+     (decl) (struct torch::Device)
+     (decl) (struct torch::Scalar)
+     (decl) (struct torch::ScalarType)
+
+     ;;; ---- torch::Tensor ------------------------------------------
+     ;;; The methods a program actually reaches for. Every one of them is
+     ;;; const-correct as libtorch has it, and every one that hands back a
+     ;;; tensor hands back a NEW one -- libtorch is functional at this level,
+     ;;; the in-place forms are the ones ending in an underscore.
+     (decl) (struct torch::Tensor
+
+              ;;; shape and size
+              (const) (method dim         ()          (out i64))
+              (const) (method numel       ()          (out i64))
+              (const) (method sizes       ()          (out c10::IntArrayRef))
+              (const) (method size        ((i64 d))   (out i64))
+
+              ;;; element access. item<T>() is a member template, which Cicili
+              ;;; cannot declare -- reach it with (t<> ($ t item) float).
+              (const) (method is_cuda     ()          (out bool))
+              (const) (method defined     ()          (out bool))
+
+              ;;; shape changes
+              (const) (method view        ((c10::IntArrayRef shape)) (out torch::Tensor))
+              (const) (method reshape     ((c10::IntArrayRef shape)) (out torch::Tensor))
+              (const) (method squeeze     ()          (out torch::Tensor))
+              (const) (method unsqueeze   ((i64 d))   (out torch::Tensor))
+              (const) (method t           ()          (out torch::Tensor))
+              (const) (method contiguous  ()          (out torch::Tensor))
+              (const) (method flatten     ()          (out torch::Tensor))
+
+              ;;; arithmetic -- the non-mutating forms
+              (const) (method add         ((const torch::Tensor & other)) (out torch::Tensor))
+              (const) (method sub         ((const torch::Tensor & other)) (out torch::Tensor))
+              (const) (method mul         ((const torch::Tensor & other)) (out torch::Tensor))
+              (const) (method div         ((const torch::Tensor & other)) (out torch::Tensor))
+              (const) (method matmul      ((const torch::Tensor & other)) (out torch::Tensor))
+              (const) (method mm          ((const torch::Tensor & other)) (out torch::Tensor))
+              (const) (method sum         ()          (out torch::Tensor))
+              (const) (method mean        ()          (out torch::Tensor))
+              (const) (method max         ()          (out torch::Tensor))
+              (const) (method min         ()          (out torch::Tensor))
+              (const) (method abs         ()          (out torch::Tensor))
+              (const) (method exp         ()          (out torch::Tensor))
+              (const) (method log         ()          (out torch::Tensor))
+              (const) (method sqrt        ()          (out torch::Tensor))
+              (const) (method pow         ((double e))(out torch::Tensor))
+
+              ;;; autograd
+              (method  backward           ())
+              (const) (method grad        ()          (out torch::Tensor))
+              (const) (method requires_grad ()        (out bool))
+              (method  requires_grad_     ((bool on)) (out torch::Tensor &))
+              (const) (method detach      ()          (out torch::Tensor))
+              (const) (method clone       ()          (out torch::Tensor))
+
+              ;;; placement
+              (const) (method cpu         ()          (out torch::Tensor))
+              (const) (method cuda        ()          (out torch::Tensor))
+
+              ;;; in-place, and they return a reference to this tensor
+              (method zero_               ()          (out torch::Tensor &))
+              (method add_                ((const torch::Tensor & other)) (out torch::Tensor &))
+              (method mul_                ((const torch::Tensor & other)) (out torch::Tensor &))
+
+              (const) (method print       ()))
+
+     ;;; ---- construction -------------------------------------------
+     ;;; The size argument is an IntArrayRef, which libtorch builds from a brace
+     ;;; list. From Cicili that is a (code …) escape or a declared helper -- see
+     ;;; the shapes example in test/cpp/torch.cicili.
+     (decl) (func torch::zeros  ((c10::IntArrayRef size)) (out torch::Tensor))
+     (decl) (func torch::ones   ((c10::IntArrayRef size)) (out torch::Tensor))
+     (decl) (func torch::empty  ((c10::IntArrayRef size)) (out torch::Tensor))
+     (decl) (func torch::randn  ((c10::IntArrayRef size)) (out torch::Tensor))
+     (decl) (func torch::rand   ((c10::IntArrayRef size)) (out torch::Tensor))
+     (decl) (func torch::arange ((torch::Scalar end))     (out torch::Tensor))
+     (decl) (func torch::eye    ((i64 n))                 (out torch::Tensor))
+     (decl) (func torch::full   ((c10::IntArrayRef size) (torch::Scalar fill))
+                  (out torch::Tensor))
+     (decl) (func torch::from_blob ((void * data) (c10::IntArrayRef size))
+                  (out torch::Tensor))
+
+     ;;; ---- free-function operations -------------------------------
+     ;;; libtorch spells most operations twice, as a method and as a free
+     ;;; function. Both are declared because both are written.
+     (decl) (func torch::relu     ((const torch::Tensor & x)) (out torch::Tensor))
+     (decl) (func torch::sigmoid  ((const torch::Tensor & x)) (out torch::Tensor))
+     (decl) (func torch::tanh     ((const torch::Tensor & x)) (out torch::Tensor))
+     (decl) (func torch::softmax  ((const torch::Tensor & x) (i64 dim)) (out torch::Tensor))
+     (decl) (func torch::matmul   ((const torch::Tensor & a) (const torch::Tensor & b))
+                  (out torch::Tensor))
+     (decl) (func torch::mm       ((const torch::Tensor & a) (const torch::Tensor & b))
+                  (out torch::Tensor))
+     (decl) (func torch::add      ((const torch::Tensor & a) (const torch::Tensor & b))
+                  (out torch::Tensor))
+     (decl) (func torch::mul      ((const torch::Tensor & a) (const torch::Tensor & b))
+                  (out torch::Tensor))
+     (decl) (func torch::cat      ((c10::IntArrayRef tensors) (i64 dim)) (out torch::Tensor))
+     (decl) (func torch::sum      ((const torch::Tensor & x)) (out torch::Tensor))
+     (decl) (func torch::mean     ((const torch::Tensor & x)) (out torch::Tensor))
+     (decl) (func torch::equal    ((const torch::Tensor & a) (const torch::Tensor & b))
+                  (out bool))
+     (decl) (func torch::allclose ((const torch::Tensor & a) (const torch::Tensor & b))
+                  (out bool))
+
+     ;;; ---- losses --------------------------------------------------
+     (decl) (func torch::mse_loss ((const torch::Tensor & input)
+                                   (const torch::Tensor & target))
+                  (out torch::Tensor))
+
+     ;;; ---- gradient mode -------------------------------------------
+     ;;; An RAII guard: bind it with letin* and it turns grad off for the scope
+     ;;; and back on when the scope ends. That is the C++ object's own
+     ;;; destructor doing the work, which is exactly what letin* is for.
+     (decl) (struct torch::NoGradGuard)
+     (decl) (struct torch::AutoGradMode)
+
+     ;;; ---- serialisation -------------------------------------------
+     (decl) (func torch::manual_seed ((u64 seed)))
+
+     ))

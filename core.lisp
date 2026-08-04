@@ -474,12 +474,18 @@
                      (t (write-string head out))))))
               (t (write-char c out) (incf i)))))))))
 
+;; A file's text with qualified names folded. Everything that reads Cicili
+;; source goes through here -- read-file below, and the CL:LOAD in
+;; load-macro-file, which reads the same file a second time to evaluate its
+;; Lisp definitions and would otherwise see raw `::' and look for a package.
+(defun read-source-text< (path)
+  (qualify-source< (with-open-file (file path)
+                     (let ((s (make-string (file-length file))))
+                       (subseq s 0 (read-sequence s file))))))
+
 (defun read-file (path)
-  (let ((targets '())
-        (text (with-open-file (file path)
-                (let ((s (make-string (file-length file))))
-                  (subseq s 0 (read-sequence s file))))))
-    (with-input-from-string (file (qualify-source< text))
+  (let ((targets '()))
+    (with-input-from-string (file (read-source-text< path))
 	  (let ((*readtable* (copy-readtable))
             (*package* *package*))
 		(setf (readtable-case *readtable*) :preserve)
@@ -524,6 +530,12 @@
 
 ;;; Drop the parts of a name a validator has no business rejecting: the `~' of
 ;;; a destructor, and the `::' of a qualified name. Both are C++ only.
+;;; A qualified name is a NAME wherever a name is expected -- the head of a
+;;; struct, a func, a typedef -- and not only where a type is. Declaration
+;;; bindings are written that way: (decl) (struct torch::Tensor …).
+(defun name-form< (x)
+  (if (qualified-form< x) (qualified-name< (cdr x)) x))
+
 (defun bare-name< (n)
   (let ((n (if (and *cpp* (> (length n) 1) (char= (char n 0) #\~)) (subseq n 1) n)))
     (if *cpp* (remove #\: n) n)))

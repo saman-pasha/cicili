@@ -1499,6 +1499,9 @@
     body))
 
 (defun specify-function-name< (name)
+  ;; a qualified head -- (func torch::randn …) -- is one name, not a
+  ;; (receiver . method) pair, so it is folded before anything else looks at it
+  (when (qualified-form< name) (setq name (name-form< name)))
   (if (listp name) ; method or shared
       (let ((recv (car name))
             (mthd (cdr name)))
@@ -1822,6 +1825,12 @@
     (let* ((is-static   nil)
 	       (is-declare  nil)
 	       (is-non-copy nil)
+           ;; a qualified head -- (struct torch::Tensor …) -- is a NAME, and is
+           ;; folded to one here. Without this it is a list that is not a <>
+           ;; form, which reads as an anonymous struct.
+           (def (if (and (> (length def) 1) (qualified-form< (nth 1 def)))
+                    (cons (car def) (cons (name-form< (nth 1 def)) (cddr def)))
+                    def))
            (is-anonymous (or (= (length def) 1)
                              (not (or (and (listp (nth 1 def)) (key-eq (car (nth 1 def)) '<>))
                                       (symbolp (nth 1 def))))))

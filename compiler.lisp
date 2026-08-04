@@ -311,7 +311,11 @@
             (set-macro-character #\| nil nil)
             (let ((*readtable* (copy-readtable)))
 	          (setf (readtable-case *readtable*) :preserve)
-              (CL:LOAD (file-namestring file-name)))
+              ;; from the pre-passed text, not the file: this reads the same
+              ;; source a second time to evaluate its Lisp definitions, and raw
+              ;; `::' in it would be read as a package qualifier
+              (with-input-from-string (src (read-source-text< (file-namestring file-name)))
+                (CL:LOAD src)))
             (set-macro-character #\| function non-terminating-p))
           (use-package package))
         

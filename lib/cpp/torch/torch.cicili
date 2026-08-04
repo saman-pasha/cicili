@@ -1,0 +1,25 @@
+;;;; Cicili declarations for libtorch -- aggregator
+;;;;
+;;;; Import this to make libtorch's types visible to Cicili's type inference:
+;;;;
+;;;;     (import "lib/cpp/torch/torch.cicili")
+;;;;
+;;;; Or import only the part you need:
+;;;;
+;;;;     (import "lib/cpp/torch/tensor.cicili")
+;;;;
+;;;; Nothing here emits C++. The real declarations still come from the real
+;;;; header at compile time, so a target still needs
+;;;;
+;;;;     (include <torch/torch.h>)
+;;;;
+;;;; and still has to be linked against libtorch. What these files buy is
+;;;; inference: ($ t sizes) resolving, a mistyped member being an error that
+;;;; names the member, and `auto' knowing what it holds.
+;;;;
+;;;; Order matters: tensor first, because nn and optim are expressed in terms
+;;;; of torch::Tensor.
+
+(import "./tensor.cicili")
+(import "./nn.cicili")
+(import "./optim.cicili")
