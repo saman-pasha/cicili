@@ -8,10 +8,17 @@
 ;;;;     sbcl --script cicili.lisp ./example/mnist.cicili
 ;;;;     ./example/mnist
 ;;;;
-;;;; DATA. It trains on the real MNIST if the four idx files are in ./data,
-;;;; and on generated data with the same shapes if they are not, so it runs
-;;;; either way and the code path is identical past the loading. Get the real
-;;;; files with:
+;;;; DATA. It trains on the real MNIST if the four idx files are found, and on
+;;;; generated data with the same shapes if they are not, so it runs either way
+;;;; and the code path is identical past the loading.
+;;;;
+;;;; It looks in $MNIST_DIR, then ./data. Keeping a copy outside the working
+;;;; tree and pointing MNIST_DIR at it is the arrangement to prefer -- a build
+;;;; directory is not where 52MB of dataset should have to survive:
+;;;;
+;;;;     MNIST_DIR=~/mnist-data ./mnist
+;;;;
+;;;; Get the files with:
 ;;;;
 ;;;;     mkdir -p example/data && cd example/data
 ;;;;     curl -LO https://ossci-datasets.s3.amazonaws.com/mnist/train-images-idx3-ubyte.gz
@@ -47,9 +54,16 @@
 
   (var i64 PIXELS  . 784)          ; 28 * 28
   (var i64 CLASSES . 10)
-  (var i64 HIDDEN  . 128)
+  (var i64 HIDDEN1 . 256)
+  (var i64 HIDDEN2 . 128)
   (var i64 BATCH   . 100)
-  (var int EPOCHS  . 3)
+  (var int EPOCHS  . 15)
+
+  ;; MNIST's own mean and standard deviation. Normalising to them rather than
+  ;; leaving pixels in [0,1] is worth about a point of accuracy and a lot of
+  ;; convergence speed -- it is what every reference implementation does.
+  (var double MEAN . 0.1307)
+  (var double STD  . 0.3081)
 
   ;;; ---- the network ---------------------------------------------------
   ;;; A struct inheriting torch::nn::Module. No `class', no `public:', `this'
@@ -59,18 +73,21 @@
   (struct Net (inherits torch::nn::Module)
           (member torch::nn::Linear fc1)
           (member torch::nn::Linear fc2)
+          (member torch::nn::Linear fc3)
 
           ;; register_module is inherited from Module, and Cicili has no
           ;; implicit `this' for CALLS -- only for members -- so it is written.
           ;; Calling it in the init list is legal: a base is constructed before
           ;; the members that follow it.
           (ctor ()
-                (init (fc1 (($ this register_module) "fc1" (torch::nn::Linear PIXELS HIDDEN)))
-                      (fc2 (($ this register_module) "fc2" (torch::nn::Linear HIDDEN CLASSES)))))
+                (init (fc1 (($ this register_module) "fc1" (torch::nn::Linear PIXELS  HIDDEN1)))
+                      (fc2 (($ this register_module) "fc2" (torch::nn::Linear HIDDEN1 HIDDEN2)))
+                      (fc3 (($ this register_module) "fc3" (torch::nn::Linear HIDDEN2 CLASSES)))))
 
           (method forward ((const torch::Tensor & x)) (out torch::Tensor)
-                  (letin* ((h (torch::relu ((-> ($ this fc1) forward) x))))
-                    (return (torch::log_softmax ((-> ($ this fc2) forward) h) 1)))))
+                  (letin* ((h1 (torch::relu ((-> ($ this fc1) forward) x)))
+                           (h2 (torch::relu ((-> ($ this fc2) forward) h1))))
+                    (return (torch::log_softmax ((-> ($ this fc3) forward) h2) 1)))))
 
   ;;; ---- reading the idx files -----------------------------------------
   ;;; An idx file is a big-endian header followed by unsigned bytes. Both are
@@ -103,6 +120,13 @@
                 (fclose f)
                 (return n))))))
 
+  ;;; Where the dataset lives: $MNIST_DIR if set, else ./data. Writes the full
+  ;;; path of `leaf' into `out'.
+  (func data_path ((const char * leaf) (char * out) (size_t cap))
+        (let ((const char * dir . #'(getenv "MNIST_DIR")))
+          (when (not dir) (set dir "data"))
+          (snprintf out cap "%s/%s" dir leaf)))
+
   ;;; ---- accuracy -------------------------------------------------------
   (func accuracy ((Net & net) (const torch::Tensor & x) (const torch::Tensor & y))
         (out double)
@@ -116,25 +140,29 @@
     (torch::manual_seed 1)
 
     ;; ---- load ---------------------------------------------------------
-    (let ((i64 NTRAIN . 10000)
-          (i64 NTEST  .  2000))
+    ;; the whole of MNIST: 60000 training images, 10000 test
+    (let ((i64 NTRAIN . 60000)
+          (i64 NTEST  . 10000))
       (let ((float * ximg . #'(alloc (cast size_t (* NTRAIN PIXELS)) (sizeof float)))
             (float * ylab . #'(alloc (cast size_t NTRAIN)            (sizeof float)))
             (float * timg . #'(alloc (cast size_t (* NTEST PIXELS))  (sizeof float)))
             (float * tlab . #'(alloc (cast size_t NTEST)             (sizeof float)))
             (int real . 0))
 
-        ;; 1/255 scales a pixel to [0,1]; labels are read unscaled
-        (let ((i64 n . #'(read_idx "data/train-images-idx3-ubyte" 16 PIXELS 0.00392156862745098
-                                   ximg (* NTRAIN PIXELS))))
-          (when (> n 0)
-            (let ((i64 m . #'(read_idx "data/train-labels-idx1-ubyte" 8 1 1.0 ylab NTRAIN)))
-              (when (> m 0)
-                (let ((i64 a . #'(read_idx "data/t10k-images-idx3-ubyte" 16 PIXELS 0.00392156862745098
-                                           timg (* NTEST PIXELS))))
-                  (when (> a 0)
-                    (let ((i64 b . #'(read_idx "data/t10k-labels-idx1-ubyte" 8 1 1.0 tlab NTEST)))
-                      (when (> b 0) (set real 1)))))))))
+        ;; pixels are scaled to [0,1] here and normalised below; labels unscaled
+        (let ((char p1 [ 512 ]) (char p2 [ 512 ]) (char p3 [ 512 ]) (char p4 [ 512 ]))
+          (data_path "train-images-idx3-ubyte" p1 512)
+          (data_path "train-labels-idx1-ubyte" p2 512)
+          (data_path "t10k-images-idx3-ubyte"  p3 512)
+          (data_path "t10k-labels-idx1-ubyte"  p4 512)
+          (let ((i64 n . #'(read_idx p1 16 PIXELS 0.00392156862745098 ximg (* NTRAIN PIXELS))))
+            (when (> n 0)
+              (let ((i64 m . #'(read_idx p2 8 1 1.0 ylab NTRAIN)))
+                (when (> m 0)
+                  (let ((i64 a . #'(read_idx p3 16 PIXELS 0.00392156862745098 timg (* NTEST PIXELS))))
+                    (when (> a 0)
+                      (let ((i64 b . #'(read_idx p4 8 1 1.0 tlab NTEST)))
+                        (when (> b 0) (set real 1))))))))))
 
         (if real
             (printf "MNIST: real data, %lld train / %lld test\n" NTRAIN NTEST)
@@ -142,7 +170,7 @@
             ;; a separable stand-in: each class is a distinct band of pixels, so
             ;; the network has something real to learn and the accuracy number
             ;; means something even without the download
-            (printf "MNIST: data/ not found, using generated data of the same shape\n")
+            (printf "MNIST: idx files not found (set MNIST_DIR), using generated data of the same shape\n")
             (for ((i64 i . 0)) (< i NTRAIN) ((++ i))
                  (let ((i64 c . #'(% i CLASSES)))
                    (set (nth i ylab) (cast float c))
@@ -161,13 +189,20 @@
         ;; outlive the tensors here anyway, but a tensor that owns its storage
         ;; is the thing to hand to a training loop. Labels are float on the way
         ;; in and int64 in the tensor, because nll_loss wants indices.
-        (letin* ((xs (($ (torch::from_blob ximg (dims NTRAIN PIXELS)) clone)))
-                 (ys (($ (($ (torch::from_blob ylab (dims NTRAIN)) to) torch::kInt64) clone)))
-                 (xt (($ (torch::from_blob timg (dims NTEST PIXELS)) clone)))
-                 (yt (($ (($ (torch::from_blob tlab (dims NTEST)) to) torch::kInt64) clone)))
+        ;; from_blob does not copy, and these buffers outlive every tensor made
+        ;; from them, so there is nothing to clone. `sub' and `div' produce the
+        ;; normalised copy, which is the one that is trained on.
+        (letin* ((mean (torch::full (dims 1) (cast torch::Scalar MEAN)))
+                 (std  (torch::full (dims 1) (cast torch::Scalar STD)))
+                 (xs (($ (($ (torch::from_blob ximg (dims NTRAIN PIXELS)) sub) mean) div) std))
+                 (ys (($ (torch::from_blob ylab (dims NTRAIN)) to) torch::kInt64))
+                 (xt (($ (($ (torch::from_blob timg (dims NTEST PIXELS)) sub) mean) div) std))
+                 (yt (($ (torch::from_blob tlab (dims NTEST)) to) torch::kInt64))
                  (net (Net)))
 
-          (letin* ((opt (torch::optim::SGD (($ net parameters)) 0.1)))
+          ;; Adam rather than plain SGD: it reaches the same place in far fewer
+          ;; epochs on a network this small, and needs no schedule
+          (letin* ((opt (torch::optim::Adam (($ net parameters)) 0.001)))
 
             (printf "start accuracy: %.3f\n" (accuracy net xt yt))
 
