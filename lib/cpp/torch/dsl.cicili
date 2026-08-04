@@ -82,6 +82,28 @@
 ;;; The width of each layer is carried along the list, so a dense layer knows
 ;;; its own input without being told and a mismatch is impossible to write.
 
+;;; The output size of one dimension through a kernel: the standard formula,
+;;; and the reason a DSL can tell you the picture size at every step.
+;;;
+;;;     out = floor((in + 2*pad - kernel) / stride) + 1
+;;;
+;;; It answers NIL when any of them is not a literal number, and a later
+;;; (flatten) says so rather than guessing.
+(DEFUN conv-out< (in kernel pad stride)
+  (WHEN (AND (NUMBERP in) (NUMBERP kernel) (NUMBERP pad) (NUMBERP stride) (> stride 0))
+    (+ (FLOOR (- (+ in (* 2 pad)) kernel) stride) 1)))
+
+;;; (pad P) and (stride S) written after the activation, in either order.
+;;; Absent, they are 0 and 1 -- the shapes everyone means by default.
+(DEFUN spatial-opt< (tail key default layer name)
+  (LET ((hit (FIND-IF #'(LAMBDA (c) (AND (LISTP c) (SYMBOLP (CAR c))
+                                         (STRING= (SYMBOL-NAME (CAR c)) key)))
+                      tail)))
+    (COND ((NULL hit) default)
+          ((= (LENGTH hit) 2) (CADR hit))
+          (T (ERROR (FORMAT NIL "network ~A: (~A N) takes one number, got ~A in ~A"
+                            name key hit layer))))))
+
 (DEFMACRO network (name &REST layers)
   ;; SHAPE is what flows down the list. It is either
   ;;   (flat  W)        a vector of width W
@@ -157,37 +179,51 @@
             ;; the picture shrinks by KERNEL-1 in each direction and the DSL
             ;; knows by how much
             ((STRING= kind "conv")
-             (UNLESS (AND (>= (LENGTH layer) 3) (<= (LENGTH layer) 4))
-               (ERROR (FORMAT NIL "network ~A: (conv FILTERS KERNEL [activation]), got ~A" name layer)))
+             (UNLESS (>= (LENGTH layer) 3)
+               (ERROR (FORMAT NIL "network ~A: (conv FILTERS KERNEL [activation] [(pad P)] [(stride S)]), got ~A"
+                              name layer)))
              (LET* ((img (need-image layer))
                     (c (NTH 0 img)) (h (NTH 1 img)) (w (NTH 2 img))
-                    (f (CADR layer)) (k (CADDR layer)) (act (CADDDR layer)))
-               (WHEN (AND (NUMBERP k) (NUMBERP h) (> k h))
-                 (ERROR (FORMAT NIL "network ~A: ~A has a ~Ax~A kernel over a ~Ax~A picture" name layer k k h w)))
+                    (f (CADR layer)) (k (CADDR layer))
+                    (rest (CDDDR layer))
+                    ;; the activation is the one bare symbol among the rest
+                    (act (FIND-IF #'SYMBOLP rest))
+                    (tail (REMOVE-IF #'SYMBOLP rest))
+                    (pad (spatial-opt< tail "pad" 0 layer name))
+                    (str (spatial-opt< tail "stride" 1 layer name)))
+               (WHEN (AND (NUMBERP k) (NUMBERP h) (NUMBERP pad) (> k (+ h (* 2 pad))))
+                 (ERROR (FORMAT NIL "network ~A: ~A has a ~Ax~A kernel over a ~Ax~A picture"
+                                name layer k k h w)))
                (SETQ n (1+ n))
                (LET ((field (INTERN (FORMAT NIL "conv~A" n)))
                      (label (FORMAT NIL "conv~A" n))
                      (hvar  (INTERN (FORMAT NIL "h~A" n))))
                  (PUSH `(member torch::nn::Conv2d ,field) members)
                  (PUSH `(,field (($ this register_module) ,label
-                                 (torch::nn::Conv2d (torch::nn::Conv2dOptions ,c ,f ,k)))) inits)
+                                 (torch::nn::Conv2d
+                                   (($ (($ (torch::nn::Conv2dOptions ,c ,f ,k)
+                                           padding) (dims ,pad ,pad))
+                                       stride) (dims ,str ,str))))) inits)
                  (PUSH (CONS hvar (activation< act `((-> ($ this ,field) forward) ,(QUOTE @PREV)) layer)) steps)
-                 (SETQ shape (LIST :image f
-                                   (IF (AND (NUMBERP h) (NUMBERP k)) (+ (- h k) 1) h)
-                                   (IF (AND (NUMBERP w) (NUMBERP k)) (+ (- w k) 1) w))))))
+                 (SETQ shape (LIST :image f (conv-out< h k pad str) (conv-out< w k pad str))))))
 
             ;; ---- pool ---------------------------------------------------
             ((STRING= kind "pool")
-             (UNLESS (= (LENGTH layer) 2)
-               (ERROR (FORMAT NIL "network ~A: (pool K), got ~A" name layer)))
+             (UNLESS (>= (LENGTH layer) 2)
+               (ERROR (FORMAT NIL "network ~A: (pool K [(pad P)] [(stride S)]), got ~A" name layer)))
              (LET* ((img (need-image layer))
-                    (c (NTH 0 img)) (h (NTH 1 img)) (w (NTH 2 img)) (k (CADR layer)))
+                    (c (NTH 0 img)) (h (NTH 1 img)) (w (NTH 2 img)) (k (CADR layer))
+                    (tail (CDDR layer))
+                    (pad (spatial-opt< tail "pad" 0 layer name))
+                    ;; a pool's stride defaults to its kernel, which is what
+                    ;; "halve the picture" means and what libtorch does
+                    (str (spatial-opt< tail "stride" k layer name)))
                (SETQ n (1+ n))
                (LET ((hvar (INTERN (FORMAT NIL "h~A" n))))
-                 (PUSH (CONS hvar `(torch::max_pool2d ,(QUOTE @PREV) (dims ,k ,k))) steps)
-                 (SETQ shape (LIST :image c
-                                   (IF (AND (NUMBERP h) (NUMBERP k)) (FLOOR h k) h)
-                                   (IF (AND (NUMBERP w) (NUMBERP k)) (FLOOR w k) w))))))
+                 (PUSH (CONS hvar `(torch::max_pool2d ,(QUOTE @PREV)
+                                                      (dims ,k ,k) (dims ,str ,str) (dims ,pad ,pad)))
+                       steps)
+                 (SETQ shape (LIST :image c (conv-out< h k pad str) (conv-out< w k pad str))))))
 
             ;; ---- flatten ------------------------------------------------
             ((STRING= kind "flatten")
@@ -197,7 +233,8 @@
                (LET ((hvar (INTERN (FORMAT NIL "h~A" n))))
                  (PUSH (CONS hvar `(($ ,(QUOTE @PREV) flatten) 1)) steps)
                  (SETQ shape (LIST :flat (IF (AND (NUMBERP c) (NUMBERP h) (NUMBERP w)) (* c h w)
-                                             (ERROR (FORMAT NIL "network ~A: (flatten) needs a known picture size" name))))))))
+                                             (ERROR (FORMAT NIL "network ~A: (flatten) cannot know the picture size here -- it is ~A channels of ~Ax~A, and a non-literal size cannot be worked out at compile time"
+                                                            name c h w))))))))
 
             ;; ---- dropout ------------------------------------------------
             ;; a no-op at eval time, which torch::nn::Dropout handles itself

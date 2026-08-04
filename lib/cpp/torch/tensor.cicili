@@ -181,7 +181,12 @@
                   (out torch::Tensor))
      (decl) (func torch::log_softmax ((const torch::Tensor & x) (i64 dim))
                   (out torch::Tensor))
-     (decl) (func torch::max_pool2d ((const torch::Tensor & x) (c10::IntArrayRef kernel))
+     ;; kernel, stride and padding, always all three: Cicili has one signature
+     ;; per name and this is the one that can say everything the others can
+     (decl) (func torch::max_pool2d ((const torch::Tensor & x)
+                                     (c10::IntArrayRef kernel)
+                                     (c10::IntArrayRef stride)
+                                     (c10::IntArrayRef padding))
                   (out torch::Tensor))
      (decl) (func torch::nll_loss ((const torch::Tensor & input)
                                    (const torch::Tensor & target))

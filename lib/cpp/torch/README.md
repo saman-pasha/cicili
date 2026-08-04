@@ -87,8 +87,8 @@ previous layer's output, worked out at expansion time, so a mismatch cannot be w
 | `(input N)` | — | flat `N` | nothing; declares the input width |
 | `(image C H W)` | — | image `C×H×W` | nothing; declares the input picture |
 | `(dense N [act])` | flat `W` | flat `N` | `torch::nn::Linear(W, N)` |
-| `(conv F K [act])` | image `C×H×W` | image `F×(H−K+1)×(W−K+1)` | `torch::nn::Conv2d(Conv2dOptions(C,F,K))` |
-| `(pool K)` | image `C×H×W` | image `C×⌊H/K⌋×⌊W/K⌋` | `torch::max_pool2d(x, {K,K})` |
+| `(conv F K [act] [(pad P)] [(stride S)])` | image `C×H×W` | image `F×H'×W'` | `Conv2d(Conv2dOptions(C,F,K).padding({P,P}).stride({S,S}))` |
+| `(pool K [(pad P)] [(stride S)])` | image `C×H×W` | image `C×H'×W'` | `torch::max_pool2d(x, {K,K}, {S,S}, {P,P})` |
 | `(flatten)` | image `C×H×W` | flat `C·H·W` | `x.flatten(1)` |
 | `(dropout P)` | either | unchanged | `torch::nn::Dropout(P)` |
 | `(norm)` | image `C×H×W` | unchanged | `torch::nn::BatchNorm2d(C)` |
@@ -97,8 +97,24 @@ previous layer's output, worked out at expansion time, so a mismatch cannot be w
 Activations, wherever one is taken: `relu` `tanh` `sigmoid` `softmax` `log-softmax` `none`.
 Omitting it is `none`, which is what a regression head wants.
 
-`conv` is stride 1 with no padding — hence the `−K+1`. `pool` is max pooling with stride
-equal to the kernel.
+`H'` and `W'` are the standard formula, and the DSL works them out so you do not have to:
+
+```
+out = floor((in + 2·pad − kernel) / stride) + 1
+```
+
+`pad` defaults to 0 and `stride` defaults to 1 for `conv`, and to **the kernel** for `pool`
+— which is what "halve the picture" means and what libtorch does. Written after the
+activation, in either order:
+
+```lisp
+(conv  8 3 relu (pad 1))                ; 'same' -- 28x28 stays 28x28
+(conv 16 3 relu (pad 1) (stride 2))     ; halves it -- 28x28 -> 14x14
+(pool  2)                               ; halves it again -> 7x7
+```
+
+If a size is not a literal, the DSL says so at the `(flatten)` that needed it rather than
+guessing.
 
 ### `train`
 
@@ -121,8 +137,26 @@ optional and order does not matter.
 
 `(shuffle)` draws a fresh permutation each epoch and the batch **gathers through it**, so
 only the batch is copied rather than the whole set. Without it the permutation is `0..n-1`
-and the gather is the identity — one code path, and the cost of the identity gather is
-inside the noise. On MNIST, shuffling is worth about half a point: 0.9784 to 0.9838.
+and the gather is the identity — one code path, and the identity gather costs nothing
+measurable.
+
+What it is worth, everything else held identical:
+
+| example | without `(shuffle)` | with `(shuffle)` + `(schedule)` | |
+|---|---|---|---|
+| [MNIST, MLP](../../../example/mnist-dsl.cicili) | 0.9784 · 13.4 s | **0.9838** · 13.3 s | **+0.54 pt** |
+| [California housing](../../../example/tabular.cicili) | 0.5233 rmse · 1.8 s | 0.5270 rmse · 1.8 s | −0.004 (worse) |
+| [MNIST, conv](../../../example/mnist-conv.cicili) | 0.9869 · 46.2 s | 0.9869 · 45.0 s | unchanged |
+
+**Only the first row is a win, and that is the honest shape of it.** The MLP sees the same
+60000 rows in the same order fifteen times and settles into it; shuffling breaks that up.
+The conv net trains for five epochs and never had time to memorise an order. The tabular
+rows were already permuted once before the split, so shuffling the batch order on top adds
+noise rather than removing it — 0.004 rmse is within run-to-run variation, and calling it a
+loss would be as wrong as calling it a win.
+
+Reach for it when a model sees the data many times. It is not free accuracy and it is not a
+default this DSL applies for you.
 
 That is batch ORDER. If the rows themselves are ordered — California housing is sorted
 geographically — shuffle before you split, as

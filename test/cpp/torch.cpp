@@ -5,7 +5,7 @@ void check (const char * what , long got , long want ) {
   if (got  ==  want  )
     printf ("ok   %-32s %ld\n", what , got );
   else
-    { /* block218 */
+    { /* block220 */
       printf ("FAIL %-32s got %ld want %ld\n", what , got , want );
       (++bad );
     }
@@ -19,7 +19,7 @@ struct Net : public torch::nn::Module {
   }
 };
 int main () {
-  ({ /* letn225 */
+  ({ /* letn227 */
     torch::Tensor t  = torch::zeros ({ 2 , 3 } );
     // ----------
     check ("dim", ((long)(t . dim)()), 2);
@@ -27,31 +27,31 @@ int main () {
     check ("size 0", ((long)(t . size)(0)), 2);
     check ("size 1", ((long)(t . size)(1)), 3);
   });
-  ({ /* letn231 */
+  ({ /* letn233 */
     torch::Tensor a  = torch::ones ({ 4 } );
     // ----------
-    ({ /* letn237 */
+    ({ /* letn239 */
       torch::Tensor b  = (a . add)(a );
       // ----------
       check ("add then sum", ((long)((b . sum)(). item<float>)()), 8);
     });
   });
-  ({ /* letn240 */
+  ({ /* letn242 */
     torch::Tensor z  = torch::zeros ({ 3 } );
     // ----------
-    ({ /* letn246 */
+    ({ /* letn248 */
       torch::Tensor r  = torch::relu (z );
       // ----------
       check ("relu numel", ((long)(r . numel)()), 3);
     });
   });
-  ({ /* letn249 */
+  ({ /* letn251 */
     Net net  = Net (4, 2);
     // ----------
-    ({ /* letn252 */
+    ({ /* letn254 */
       torch::Tensor x  = torch::ones ({ 4 } );
       // ----------
-      ({ /* letn258 */
+      ({ /* letn260 */
         torch::Tensor y  = (net . forward)(x );
         // ----------
         check ("forward numel", ((long)(y . numel)()), 2);
@@ -60,10 +60,10 @@ int main () {
     (net . eval)();
     check ("inherited is_training", ((long)(((net . is_training)()) ? 1 : 0)), 0);
   });
-  ({ /* letn261 */
+  ({ /* letn263 */
     torch::NoGradGuard g  = torch::NoGradGuard ();
     // ----------
-    ({ /* letn264 */
+    ({ /* letn266 */
       torch::Tensor t  = torch::ones ({ 2 } );
       // ----------
       check ("inside no_grad", ((long)(t . numel)()), 2);

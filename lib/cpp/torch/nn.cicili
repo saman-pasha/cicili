@@ -63,7 +63,12 @@
      ;;; Conv2d is constructed through an options object rather than from bare
      ;;; numbers, which is libtorch's own spelling:
      ;;;   torch::nn::Conv2d(torch::nn::Conv2dOptions(in, out, kernel))
-     (decl) (struct torch::nn::Conv2dOptions)
+     ;;; the chained setters libtorch builds these with. Each answers the
+     ;;; options object again, so they compose:
+     ;;;   Conv2dOptions(1, 16, 3).padding({1,1}).stride({2,2})
+     (decl) (struct torch::nn::Conv2dOptions
+              (method padding ((c10::IntArrayRef p)) (out torch::nn::Conv2dOptions &))
+              (method stride  ((c10::IntArrayRef s)) (out torch::nn::Conv2dOptions &)))
      (decl) (struct torch::nn::Conv2dImpl (inherits torch::nn::Module)
               (method forward ((const torch::Tensor & x)) (out torch::Tensor)))
      (decl) (struct torch::nn::Conv2d
