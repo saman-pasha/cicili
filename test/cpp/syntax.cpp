@@ -37,7 +37,7 @@ int risky (int n ) {
   if (n  <  0 )
     { /* block124 */
       throw 
-      n ;
+      (n  *  10 );
     }
   return (n  *  2 );
 }
@@ -67,23 +67,28 @@ int main () {
     delete 
     q ;
   }
-  check ("static_cast", ((long)static_cast < int > ( 3.9 ) ), 3);
-  { /* let152 */
+  check ("static_cast", ((long)static_cast<int>(3.9)), 3);
+  { /* let150 */
+    int v  = 7;
+    // ----------
+    { /* let152 */
+      int * pv  = (&v );
+      // ----------
+      check ("unary operand survives", ((long)static_cast<long>((*pv ))), 7);
+    }
+  }
+  { /* let154 */
     geom::Point * q2  = new geom::Point ( 1 , 2 ) ;
     // ----------
-    { /* let157 */
+    { /* let159 */
       const geom::Point * cq  = q2 ;
       // ----------
-      { /* let159 */
-        geom::Point * mq  = const_cast < geom::Point * > ( cq ) ;
-        // ----------
-        check ("const_cast", ((long)(mq -> sum)()), 3);
-      }
+      check ("cast result has a type", ((long)(const_cast<geom::Point *>(cq )-> sum)()), 3);
     }
     delete 
     q2 ;
   }
-  ({ /* letn168 */
+  ({ /* letn165 */
     auto v  = std::vector < int > ();
     // ----------
     (v . push_back)(7);
@@ -92,22 +97,36 @@ int main () {
     check ("vector back", ((long)(v . back)()), 8);
   });
   check ("no throw", ((long)risky (21)), 42);
-  { /* let173 */
+  { /* let170 */
     int caught  = 0;
     // ----------
-    try 
-    { /* block178 */
-      { /* let180 */
-        int r  = risky (-1);
-        // ----------
-        ((void)r );
+    try {
+        { /* block174 */
+          { /* let176 */
+            int r  = risky (-1);
+            // ----------
+            ((void)r );
+          }
+        }
+      } catch (int e ) {
+        caught  = e ;
       }
-    }
-    catch ( int e ) 
-    { /* block183 */
-      caught  = 1;
-    }
-    check ("caught", ((long)caught ), 1);
+
+    check ("caught the value", ((long)caught ), -10);
+  }
+  { /* let180 */
+    int any  = 0;
+    // ----------
+    try {
+        { /* block184 */
+          throw 
+          1;
+        }
+      } catch (...) {
+        any  = 1;
+      }
+
+    check ("catch all", ((long)any ), 1);
   }
   if (bad  ==  0 )
     printf ("cpp syntax: all ok\n");

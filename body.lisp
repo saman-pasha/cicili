@@ -66,6 +66,17 @@
 		                 ((key-eq func '|nth|)    (specify-nth-expr    def))
 		                 ((key-eq func '|?|)      (specify-?-expr      def)) 
 		                 ((key-eq func '|cast|)   (specify-cast-expr   def))
+                         ;; the C++ named casts. `cast' stays the C cast, which
+                         ;; is what it means everywhere else in the language.
+                         ((key-eq func '|static-cast|)
+                          (specify-cppcast-expr def '|static_cast|))
+                         ((key-eq func '|dynamic-cast|)
+                          (specify-cppcast-expr def '|dynamic_cast|))
+                         ((key-eq func '|const-cast|)
+                          (specify-cppcast-expr def '|const_cast|))
+                         ((key-eq func '|reinterpret-cast|)
+                          (specify-cppcast-expr def '|reinterpret_cast|))
+                         ((key-eq func '|try|)    (specify-try         def))
                          ;; a::b::c -- one name, resolved as one. It is NOT a
                          ;; code escape any more: it interns to the symbol
                          ;; a::b::c, so a declaration binding for it makes it a
@@ -213,6 +224,7 @@
           ('|@NTH|     (compile-nth          spec lvl globals spec))
           ('|@?|       (compile-?            spec lvl globals spec))
           ('|@CAST|    (compile-cast         spec lvl globals spec))
+          ('|@CPPCAST| (compile-cppcast      spec lvl globals spec))
           ('|@$|       (compile-$            spec lvl globals spec))      
           ('|@-->|     (compile-->           spec lvl globals spec   t))
           ('|@->|      (compile-->           spec lvl globals spec nil))
@@ -262,11 +274,15 @@
         ('|@WHILE|   (compile-while        form (1+ lvl) globals parent-spec))
         ('|@FOR|     (compile-for          form (1+ lvl) globals parent-spec))
         ('|@COND|    (compile-cond         form (1+ lvl) globals parent-spec))
+        ('|@TRY|     (compile-try          form (1+ lvl) globals parent-spec))
         ('|@DO|      (compile-do           form      lvl globals parent-spec))
         ('|@BODY|    (compile-body         form      lvl globals parent-spec))
         (t           (compile-form         form      lvl globals parent-spec :from-body t))))
 
-(defvar *parent-bodies* (list '|@CICILI| '|@TARGET| '|@FUNC| '|@METHOD|
+;; @TRY is here so no `;' is appended to it -- it ends in a brace, like @IF.
+;; @CATCH is here because its body is a list of STATEMENTS, and this list is
+;; what says a construct's inner forms each get an indent and a `;'.
+(defvar *parent-bodies* (list '|@CICILI| '|@TARGET| '|@FUNC| '|@METHOD| '|@TRY| '|@CATCH|
                               '|@LET| '|@LETN| '|@BLOCK| '|@PROGN| '|@STRUCT| '|@UNION|
                               '|@DO| '|@WHILE| '|@FOR| '|@IF| '|@COND| '|@SWITCH|
                               '|@CASE| '|@DEFAULT| '|@GUARD| '|@MODULE|))

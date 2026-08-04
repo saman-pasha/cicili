@@ -288,6 +288,47 @@
     (compile-form value lvl globals spec)
     (output ")")))
 
+;;; static_cast<T>(e) and its three siblings. The type is a specified type, so
+;;; the result carries it and a member access through the cast resolves; the
+;;; operand is a specified expression, so (cof p) survives -- neither was true
+;;; when these were code escapes.
+(defun compile-cppcast (spec lvl globals parent-spec)
+  (with-slots (typeof (value default)) spec
+    (let ((kind (cdr (assoc '|kind| (attrs spec) :test #'key-eq))))
+      (set-ast-line (output "~A" (symbol-name kind)))
+      (output "<")
+      (if (and (typep typeof 'sp) (key-eq (construct typeof) '|@CODE|))
+          (compile-code typeof lvl globals spec)
+          (compile-spec-type spec lvl globals spec))
+      (output ">(")
+      (compile-form value lvl globals spec)
+      (set-ast-line (output ")")))))
+
+;;; try { … } catch (T e) { … } … -- a body construct, and its catch clause
+;;; DECLARES its variable, so the handler can use it.
+(defun compile-try (spec lvl globals parent-spec)
+  (let ((locals (copy-specifiers globals)))
+    (set-ast-line (output "try "))
+    (output "{~%")
+    (compile-body (body spec) lvl locals spec)
+    (output "~&~A" (indent (max 0 (- lvl 1))))
+    (output "}")
+    (dolist (catch-var (default spec))
+      (let ((clause-locals (copy-specifiers globals))
+            (params (params catch-var)))
+        (set-ast-line (output " catch ("))
+        (if (and params (> (hash-table-count params) 0))
+            (loop for param being the hash-value of params
+                  do (progn (setf (gethash (name param) clause-locals) param)
+                            (compile-variable param lvl clause-locals catch-var)))
+            (output "..."))
+        (set-ast-line (output ") "))
+        (output "{~%")
+        (compile-body (body catch-var) lvl clause-locals catch-var)
+        (output "~&~A" (indent (max 0 (- lvl 1))))
+        (output "}")))
+    (output "~%")))
+
 (defun compile-sizeof (spec lvl globals parent-spec)
   (set-ast-line (output "sizeof("))
   (let ((ast (prev-ast<)))

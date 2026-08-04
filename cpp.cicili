@@ -111,12 +111,11 @@
 (DEFMACRO delete* (expr)     `($$$ (code '{ delete }) ,expr))
 (DEFMACRO delete[]* (expr)   `($$$ (code '{ delete "[]" }) ,expr))
 
-;;; the four named casts. `cast' stays what it is -- a C cast -- because that
-;;; is what it means everywhere else in the language.
-(DEFMACRO static-cast (type expr)      `(code '{ static_cast #\< ,(cpp-type< type) #\> "(" ,expr ")" }))
-(DEFMACRO dynamic-cast (type expr)     `(code '{ dynamic_cast #\< ,(cpp-type< type) #\> "(" ,expr ")" }))
-(DEFMACRO const-cast (type expr)       `(code '{ const_cast #\< ,(cpp-type< type) #\> "(" ,expr ")" }))
-(DEFMACRO reinterpret-cast (type expr) `(code '{ reinterpret_cast #\< ,(cpp-type< type) #\> "(" ,expr ")" }))
+;;; The four named casts are CLAUSES now -- see specify-cppcast-expr. They were
+;;; macros producing code escapes, which meant the result had no type (so a
+;;; member access through one could not resolve) and the operand was spliced as
+;;; text (so a unary operator in it was silently dropped). Both are fixed by
+;;; being real forms; there is nothing left here to define.
 
 ;;;; ------------------------------------------------------------------
 ;;;; templates
@@ -148,34 +147,19 @@
 ;;;; ------------------------------------------------------------------
 ;;;; exceptions
 ;;;;
+;;;; `try' is a CLAUSE now -- see specify-try -- and its catch clause declares
+;;;; its variable, so the handler can use it:
+;;;;
+;;;;   (try (block ...)
+;;;;        (catch ((const std::exception & e)) (printf "%s\n" (($ e what))))
+;;;;        (catch ()                           (printf "unknown\n")))
+;;;;
+;;;; A catch with no parameter is `catch (...)'. `throw*' stays a macro: it is
+;;;; one keyword in front of an expression and introduces no name.
+;;;;
 ;;;; libtorch throws. A Cicili program that calls into it and does not catch
 ;;;; will terminate, which is a legitimate choice and should be a deliberate
 ;;;; one.
-;;;;
-;;;;   (try* (block ...)
-;;;;         ((const std::exception & e) (printf "failed\n"))
-;;;;         (()                            (printf "something else\n")))
-;;;;
-;;;; A catch with () catches everything. LIMITATION: the caught value is
-;;;; declared by the emitted C++ and not by Cicili, so `e' is not a name the
-;;;; body can refer to -- name it for the reader and for C++'s benefit, and
-;;;; reach what it holds through a (code ...) escape if you must. Declaring it
-;;;; properly needs the specifier to model the catch clause as a scope, which
-;;;; it does not yet.
 ;;;; ------------------------------------------------------------------
-
-(DEFMACRO try* (body &REST catches)
-  `($$$
-    (code '{ try })
-    ,body
-    ,@(APPLY #'APPEND
-             (MAPCAR #'(LAMBDA (c)
-                         `((code '{ catch "("
-                                    ,@(IF (EQUAL (CAR c) '())
-                                          (LIST "...")
-                                          (LIST (cpp-type< (CAR (CAR c))) (CADR (CAR c))))
-                                    ")" })
-                           (block ,@(CDR c))))
-                     catches))))
 
 (DEFMACRO throw* (expr) `($$$ (code '{ throw }) ,expr))

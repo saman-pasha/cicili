@@ -125,7 +125,10 @@
                                                                (modifier storage) (const-ptr storage) (array-def storage)
                                                                (default storage) (attrs storage))))
                               (*puts* storage-id new-storage)))))))))
-                ((eql const-val '|@CAST|)   (deep-storageof id (default spec)))
+                ;; a cast's STORAGE is its operand's -- the cast changes the
+                ;; type, not what is being named. Both spellings behave alike.
+                ((eql const-val '|@CAST|)    (deep-storageof id (default spec)))
+                ((eql const-val '|@CPPCAST|) (deep-storageof id (default spec)))
                 ((eql const-val '|@RETURN|) (deep-storageof id (default spec)))
                 ((eql const-val '|@TYPEOF|)
                  (deep-storageof id  (default spec))
@@ -188,7 +191,10 @@
                           ;; without the @UNION case ($ m i) on a union value fell
                           ;; through to nil and raised "unknown struct type"
                           ((or (eql const-val '|@STRUCT|) (eql const-val '|@UNION|)) spec)
+                          ;; a cast's TYPE is the cast's own -- that is the
+                          ;; whole point of writing one
                           ((eql const-val '|@CAST|) spec)
+                          ((eql const-val '|@CPPCAST|) spec)
                           ((eql const-val '|@RETURN|) (deep-typeof id (default spec)))
                           ((eql const-val '|@TYPEOF|)
                            (deep-typeof id (default spec))

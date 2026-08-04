@@ -858,6 +858,74 @@
         (make-specifier nil '|@CAST|
                         const type modifier const-ptr array (specify-expr (expand-macros (nth 2 def))) '())))))
 
+;;; The four C++ named casts. Same shape as `cast' -- the type is specified, so
+;;; the result HAS that type and (-> (dynamic-cast (Shape *) p) area) resolves
+;;; -- and the operand is an ordinary expression, so (cof p) survives, which it
+;;; did not when these were code escapes splicing text.
+;;;
+;;; The kind rides in attrs rather than in `name': compile-spec-type emits the
+;;; specifier's name after the type, which is right for a declaration and would
+;;; put "static_cast" after the type here.
+(defun specify-cppcast-expr (def kind)
+  (unless (= (length def) 3) (error (format nil "wrong ~A form ~A" kind def)))
+  (set-ast-obj def
+    (let* ((ty (expand-macros (nth 1 def)))
+           (tagged (and (listp ty) (or (key-eq '|struct| (car ty))
+                                       (key-eq '|union|  (car ty))
+                                       (key-eq '|enum|   (car ty)))))
+           (desc (specify-typeof< (if (listp ty)
+                                      (if (key-eq '|typeof| (car ty)) (list ty) ty)
+                                      (list ty)))))
+      (multiple-value-bind (const type modifier const-ptr variable array)
+	      (specify-type< (if tagged (list desc) desc))
+        (declare (ignore variable))
+        (make-specifier nil '|@CPPCAST|
+                        const type modifier const-ptr array
+                        (specify-expr (expand-macros (nth 2 def)))
+                        (list (cons '|kind| kind)))))))
+
+;;; (try BODY (catch (PARAM) BODY…) … )
+;;;
+;;; A body construct, like `if' and `while', and its catch clause DECLARES its
+;;; variable the way `for' declares an induction variable -- so the handler can
+;;; use it. A catch with no parameter is `catch (...)'.
+(defun specify-try (def)
+  (when (< (length def) 3) (error (format nil "wrong try form ~A" def)))
+  (set-ast-obj def
+    (let ((try-var (make-specifier (gensym "try") '|@TRY| nil nil nil nil nil nil '())))
+      (setf (body try-var) (specify-body (list (nth 1 def))))
+      (setf (default try-var)
+            (loop for clause in (nthcdr 2 def)
+                  collect (progn
+                            (unless (and (consp clause) (key-eq (car clause) '|catch|))
+                              (error (format nil "try takes catch clauses, got ~A" clause)))
+                            (let ((catch-var (let ((cv (make-specifier (*push* (gensym "catch"))
+                                                                       '|@CATCH| nil nil nil nil nil nil '())))
+                                               ;; make-specifier gives a params
+                                               ;; table only to the constructs it
+                                               ;; knows; a catch declares one
+                                               ;; variable and needs somewhere
+                                               ;; to put it
+                                               (setf (params cv) (make-hash-table :test 'eql))
+                                               cv))
+                                  ;; the parameter list has the same shape as a
+                                  ;; function's, so the catch-all is () and one
+                                  ;; parameter is ((T e)). C++ allows exactly
+                                  ;; one; a second is its error to report.
+                                  (param (car (nth 1 clause))))
+                              (when (and param (listp param))
+                                (multiple-value-bind (const typeof modifier const-ptr variable array)
+                                    (specify-type< param)
+                                  (let ((var-name (specify-decl-name< variable)))
+                                    (add-param
+                                        (*puts* var-name
+                                          (make-specifier var-name '|@VAR| const typeof modifier
+                                                          const-ptr array nil '()))
+                                      catch-var))))
+                              (setf (body catch-var) (specify-body (nthcdr 2 clause)))
+                              (*pop* catch-var)))))
+      try-var)))
+
 (defun specify-$-expr (def)
   (set-ast-obj def
     (let ((len (length def))

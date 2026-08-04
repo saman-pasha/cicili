@@ -51,12 +51,8 @@
         (return (cast int (($ s size)))))
 
   ;; ---- exceptions ---------------------------------------------------
-  ;; throwing an int rather than a std::runtime_error, because constructing a
-  ;; C++ library type by name needs that name declared on the Cicili side --
-  ;; which is what a declaration binding is for, and there is none here. What
-  ;; is being tested is that throw and catch work.
   (func risky ((int n)) (out int)
-        (when (< n 0) (throw* n))
+        (when (< n 0) (throw* (* n 10)))
         (return (* n 2)))
 
   (main
@@ -82,14 +78,18 @@
       (check "new* then method" (cast long ((-> q sum))) 30)
       (delete* q))
 
-    ;; the named casts. The operand is compiled as an expression, so it can be
-    ;; any expression -- but a UNARY one (& x, * p) does not survive being
-    ;; spliced into a code escape yet, so bind it first if you need one.
+    ;; the named casts are clauses, so the type is a TYPE and the operand is an
+    ;; expression -- a member access through the cast resolves, and a unary
+    ;; operand survives, neither of which was true of the code escapes
     (check "static_cast"  (cast long (static-cast int 3.9)) 3)
+    (let ((int v . 7))
+      (let ((int * pv . #'(aof v)))
+        (check "unary operand survives" (cast long (static-cast long (cof pv))) 7)))
     (let ((geom::Point * q2 . #'(new* geom::Point 1 2)))
       (let ((const geom::Point * cq . q2))
-        (let ((geom::Point * mq . #'(const-cast (geom::Point *) cq)))
-          (check "const_cast" (cast long ((-> mq sum))) 3)))
+        ;; a member access straight THROUGH the cast -- the cast has a type
+        (check "cast result has a type"
+               (cast long ((-> (const-cast (geom::Point *) cq) sum))) 3))
       (delete* q2))
 
     ;; std::vector through $$ and t<>, to prove the two compose
@@ -101,15 +101,20 @@
 
     ;; exceptions: the throwing path and the ordinary one
     (check "no throw" (cast long (risky 21)) 42)
+    ;; `try' is a clause and its catch DECLARES its variable, so the handler
+    ;; can read what was thrown -- it could not when this was a code escape
     (let ((int caught . 0))
-      ;; the caught value is declared by the emitted C++, not by Cicili, so it
-      ;; is not a name the body can refer to -- see the note on try* in
-      ;; cpp.cicili. Catching is what is being tested here.
-      (try* (block (let ((int r . #'(risky -1)))
-                     (cast void r)))
-            ((int e)
-             (set caught 1)))
-      (check "caught" (cast long caught) 1))
+      (try (block (let ((int r . #'(risky -1)))
+                    (cast void r)))
+           (catch ((int e))
+                  (set caught e)))
+      (check "caught the value" (cast long caught) -10))
+
+    ;; a catch with no parameter is catch (...)
+    (let ((int any . 0))
+      (try (block (throw* 1))
+           (catch () (set any 1)))
+      (check "catch all" (cast long any) 1))
 
     (if (== bad 0)
         (printf "cpp syntax: all ok\n")

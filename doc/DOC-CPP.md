@@ -96,7 +96,7 @@ Everything here is **in addition to** the clauses in [DOC-C.md](DOC-C.md).
 | `dynamic-cast` | `dynamic_cast<T>(e)` | [Casts](#casts) |
 | `const-cast` | `const_cast<T>(e)` | [Casts](#casts) |
 | `reinterpret-cast` | `reinterpret_cast<T>(e)` | [Casts](#casts) |
-| `try*` | `try { … } catch (T e) { … }` | [Exceptions](#exceptions) |
+| `try` / `catch` | `try { … } catch (T e) { … }` | [Exceptions](#exceptions) |
 | `throw*` | `throw e` | [Exceptions](#exceptions) |
 
 ### Method attributes
@@ -485,6 +485,22 @@ language. The four named casts are separate clauses:
 
 The type may be a plain descriptor (`(int *)`), a qualified name, or a `t<>` form.
 
+These are clauses, not escapes, and both halves of that matter. **The result carries the
+cast's type**, so a member access straight through one resolves:
+
+```lisp
+((-> (const-cast (geom::Point *) cq) sum))     ; const_cast<geom::Point *>(cq)->sum()
+```
+
+and **the operand is an ordinary expression**, so a unary survives:
+
+```lisp
+(static-cast long (cof pv))                    ; static_cast<long>((*pv))
+```
+
+Neither was true when they were macros: the escape had no type, and it spliced the operand
+as text, which dropped the `*` silently.
+
 ---
 
 ## Exceptions
@@ -493,16 +509,22 @@ libtorch throws. A Cicili program that calls into it and does not catch will ter
 which is a legitimate choice and should be a deliberate one.
 
 ```lisp
-(try* (block
-        (let ((int r . #'(risky -1)))
-          (cast void r)))
-      ((const std::exception & e) (printf "failed\n"))
-      (()                         (printf "something else\n")))
+(try (block
+       (let ((int r . #'(risky -1)))
+         (cast void r)))
+     (catch ((const std::exception & e)) (printf "%s\n" (($ e what))))
+     (catch ()                           (printf "something else\n")))
 
 (throw* n)
 ```
 
-A catch clause with `()` catches everything.
+`try` is a body construct like `if` and `while`, and **its catch clause declares its
+variable**, so the handler can read what was thrown. The parameter list has the same shape
+as a function's, which is why the catch-all is `()` and one parameter is `((T e))`. C++
+allows exactly one; a second is its error to report.
+
+`throw*` stays a macro — it is one keyword in front of an expression and introduces no
+name.
 
 ---
 
@@ -549,8 +571,6 @@ reading them here.
 | limitation | detail |
 |---|---|
 | **No overloading** | Two `method`s or two `ctor`s with the same name collide — the second raises `inner exists`. One signature per name. |
-| **Catch variable is not a name** | `(try* … ((int e) …))` declares `e` in the emitted C++, not in Cicili, so the body cannot refer to it. Name it for C++'s benefit; reach its value through a `(code …)` escape if you must. |
-| **Unary operators inside a cast** | `(static-cast int (cof p))` drops the `*`. Bind the value first. Binary operators are fine. |
 | **`code` escapes have no type** | Anything reached through a raw `(code …)` cannot be resolved by `$` or `->`. This is why the constructs above are clauses and not escapes. |
 | **No `mutable`, `friend`, `operator`, or member templates** | Not yet expressible. Use a `(code …)` escape. |
 
