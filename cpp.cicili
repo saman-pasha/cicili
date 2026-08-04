@@ -16,31 +16,25 @@
 ;;; (t<> std::function (t<> Tensor)) is what it looks like.
 (DEFMACRO t<> (name &REST templates)
   (LET* ((tmps templates)
+         (name (IF (CICILI::QUALIFIED-FORM< name) (CICILI::QUALIFIED-NAME< (CDR name)) name))
          (parts (LOOP FOR r IN tmps
                       WITH l = (1- (LENGTH tmps))
                       FOR i FROM 0 TO l
-                      COLLECT (LET ((p (IF (AND (LISTP r) (SYMBOLP (CAR r)) (STRING= (SYMBOL-NAME (CAR r)) "$$"))
-                                           (MACROEXPAND `($$ ,@(CDR r)))
-                                           r)))
+                      COLLECT (LET ((p (IF (CICILI::QUALIFIED-FORM< r) (CICILI::QUALIFIED-NAME< (CDR r)) r)))
                                 (IF (< i l) (LIST p ",") (LIST p))))))
     `(code '{ ,name #\< (code ',(APPLY #'APPEND parts)) #\> })))
 
-;;; ($$ std vector) -> std::vector
-;;; Scope resolution, for namespaces and for static members alike.
-(DEFMACRO $$ (&REST resolution)
-  (LET* ((res resolution)
-         (parts (LOOP FOR r IN res
-                      WITH l = (1- (LENGTH res))
-                      FOR i FROM 0 TO l
-                      COLLECT (LET ((p (IF (AND (LISTP r) (SYMBOLP (CAR r)) (STRING= (SYMBOL-NAME (CAR r)) "t<>"))
-                                           (MACROEXPAND `(t<> ,@(CDR r)))
-                                           r)))
-                                (IF (< i l) (LIST p "::") (LIST p))))))
-    `(code ',(APPLY #'APPEND parts))))
+;;; a::b::c is read lexically and folded into one symbol by the specifier --
+;;; there is no $$ macro any more. The reader turns torch::nn::Linear into
+;;; ($$ torch nn Linear) and the specifier interns that as the symbol
+;;; torch::nn::Linear, so it is a NAME the compiler can resolve rather than
+;;; text it splices. See core.lisp qualify-source< and qualified-name<.
 
 ;;; (using namespace std) / (using std vector)
 (DEFMACRO using (namespace &REST resolution)
-  (LET ((res (MACROEXPAND `($$ ,@resolution))))
+  (LET ((res (IF (AND (= (LENGTH resolution) 1) (CICILI::QUALIFIED-FORM< (CAR resolution)))
+                 (CICILI::QUALIFIED-NAME< (CDR (CAR resolution)))
+                 (CICILI::QUALIFIED-NAME< resolution))))
     (IF (EQL namespace 'namespace)
         `(code '{ using ,namespace ,res ";" })
         `(code '{ using 'namespace ,res ";" }))))
@@ -83,8 +77,9 @@
 ;;; as a type is expanded on the way in. Every macro below that takes a type
 ;;; goes through here.
 (DEFUN cpp-type< (ty)
-  (COND ((AND (LISTP ty) (SYMBOLP (CAR ty))
-              (MEMBER (SYMBOL-NAME (CAR ty)) '("$$" "t<>" "cref" "mref" "rref" "code") :TEST #'STRING=))
+  (COND ((CICILI::QUALIFIED-FORM< ty) (CICILI::QUALIFIED-NAME< (CDR ty)))
+        ((AND (LISTP ty) (SYMBOLP (CAR ty))
+              (MEMBER (SYMBOL-NAME (CAR ty)) '("t<>" "cref" "mref" "rref" "code") :TEST #'STRING=))
          (MACROEXPAND ty))
         ;; a plain type descriptor -- (int *), (const char *) -- is words, not
         ;; an expression, and a code form is how words are spelled here

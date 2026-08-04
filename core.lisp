@@ -501,12 +501,24 @@
 
 (defun is-name (name) (symbolp name))
 
+;;; a::b::c -- the one symbol a qualified C++ name interns to. The `::' is kept
+;;; in the name rather than encoded away, so the symbol table holds the name a
+;;; C++ reader would write and the back end emits it by printing it.
+(defun qualified-name< (parts)
+  (intern (format nil "~{~A~^::~}"
+                  (mapcar #'(lambda (p) (if (symbolp p) (symbol-name p) p)) parts))))
+
+(defun qualified-form< (x)
+  (and (listp x) (cdr x) (symbolp (car x)) (string= (symbol-name (car x)) "$$")))
+
+;;; Drop the parts of a name a validator has no business rejecting: the `~' of
+;;; a destructor, and the `::' of a qualified name. Both are C++ only.
+(defun bare-name< (n)
+  (let ((n (if (and *cpp* (> (length n) 1) (char= (char n 0) #\~)) (subseq n 1) n)))
+    (if *cpp* (remove #\: n) n)))
+
 (defun is-decl-name (name)
-  ;; A C++ destructor is named ~Type, and the tilde is part of the name rather
-  ;; than an operator -- there is nowhere else for it to live. It is accepted
-  ;; only in the leading position, and only in a C++ target.
-  (let ((name (let ((n (symbol-name name)))
-                (if (and *cpp* (> (length n) 1) (char= (char n 0) #\~)) (subseq n 1) n))))
+  (let ((name (bare-name< (symbol-name name))))
     (cond ((string= name "const") nil)
           ((zerop (length name)) nil)
 	      ((not (find (char name 0) "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_")) nil)
@@ -517,7 +529,7 @@
 	           t)))))
 
 (defun is-symbol (name)
-  (let ((name (symbol-name name)))
+  (let ((name (bare-name< (symbol-name name))))
     (cond ((string= name "const") nil)
 	      (t (progn
 	           (dotimes (i (length name))

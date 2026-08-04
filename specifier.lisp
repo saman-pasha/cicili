@@ -318,6 +318,25 @@
            ;; because for a func type `array' already carries the function spec
            (func-array nil)
 	       (status 0))
+      ;; A qualified name is ONE type name wherever it appears, so it is folded
+      ;; into its symbol before the descriptor is read positionally -- otherwise
+      ;; ($$ std string) is a three-element list and the reader takes `std' for
+      ;; the type and `string' for the variable.
+      (when (qualified-form< desc)
+        (setq desc (qualified-name< (cdr desc)))
+        (setq len 1))
+      ;; walked by hand rather than with mapcar: a variable descriptor is a
+      ;; DOTTED list -- (auto s . #'(...)) -- and mapcar drops the tail, which
+      ;; took the type with it and emitted `s = ...' with no declaration
+      (when (consp desc)
+        (setq desc (let ((walk desc) (acc '()))
+                     (loop while (consp walk)
+                           do (progn (push (let ((x (car walk)))
+                                             (if (qualified-form< x) (qualified-name< (cdr x)) x))
+                                           acc)
+                                     (setq walk (cdr walk))))
+                     (let ((head (nreverse acc)))
+                       (if walk (append head walk) head)))))
       ;; code has unextractable content
       (when (and (listp desc) (key-eq (car desc) '|code|))
         (return-from specify-type< (set-ast-vals def (values nil (specify-code-expr desc) nil nil nil nil))))

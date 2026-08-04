@@ -66,6 +66,27 @@
 		                 ((key-eq func '|nth|)    (specify-nth-expr    def))
 		                 ((key-eq func '|?|)      (specify-?-expr      def)) 
 		                 ((key-eq func '|cast|)   (specify-cast-expr   def))
+                         ;; a::b::c -- one name, resolved as one. It is NOT a
+                         ;; code escape any more: it interns to the symbol
+                         ;; a::b::c, so a declaration binding for it makes it a
+                         ;; type that `$' and `->' can see through, and without
+                         ;; one it is still emitted verbatim for C++ to judge.
+                         ((string= (symbol-name func) "$$")
+                          (let ((qn (qualified-name< (cdr def))))
+                            (if (*gets* qn)
+                                (specify-symbol-expr qn)
+                                ;; No declaration for it, so it is somebody
+                                ;; else's name -- emitted as written, and C++
+                                ;; decides whether it exists. Declare it with a
+                                ;; binding to get a type and member resolution;
+                                ;; erroring here instead would make every C++
+                                ;; library unusable until it was fully bound.
+                                ;; typed as ITSELF, which is right for the
+                                ;; common case: std::string("x") constructs a
+                                ;; std::string. It also gives `auto' something
+                                ;; to infer, so (letin* ((s (std::string "x"))))
+                                ;; declares std::string rather than nothing.
+                                (make-specifier '|@SYMBOL| '|@ATOM| nil qn nil nil nil qn '()))))
                          ((key-eq func '|$|)      (specify-$-expr      def)) ; member access operator
                          ((key-eq func '|-->|)    (specify-->-expr     def   t)) ; method name access operator
                          ((key-eq func '|->|)     (specify-->-expr     def nil)) ; method access operator
