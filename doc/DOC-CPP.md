@@ -681,6 +681,23 @@ What separates it from Keras is not the syntax:
 * **There is no wall.** Anything the DSL does not cover is written in Cicili directly, in
   the same file, against the same declarations — you were already there.
 
+The same six lines describe a different kind of problem.
+[example/tabular.cicili](../example/tabular.cicili) is a regression over eight numeric
+columns — a bare linear head instead of log-softmax, `mse` instead of `nll`, and an error
+metric instead of accuracy:
+
+```lisp
+(network Price (input 8) (dense 64 relu) (dense 32 relu) (dense 1))
+
+(train Price (data xtr ytr) (test xte yte)
+             (epochs 30) (batch 128)
+             (optimiser adam 0.005) (loss mse) (metric rmse))
+```
+
+`(metric accuracy | rmse | mae)` exists because reporting accuracy for a regression is
+exactly how a DSL admits it was built for one example. The clause set is otherwise
+identical to the classifier's.
+
 Two libtorch shapes worth knowing:
 
 * **Member templates** — `t.item<float>()` is written `($ t (t<> item float))`. A

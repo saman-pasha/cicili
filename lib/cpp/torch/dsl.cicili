@@ -15,7 +15,8 @@
 ;;;;       (epochs  15)
 ;;;;       (batch   100)
 ;;;;       (optimiser adam 0.001)
-;;;;       (loss    nll))
+;;;;       (loss    nll)
+;;;;       (metric  accuracy))
 ;;;;
 ;;;; and that expands to the struct, the registered layers, the forward, and
 ;;;; the training loop -- the whole of example/mnist.cicili, which is what it
@@ -157,6 +158,15 @@
           ((STRING= which "sgd")  `(torch::optim::SGD  ,params ,lr))
           (T (ERROR (FORMAT NIL "train: unknown optimiser '~A'.~%  known: adam sgd" which))))))
 
+;;; the metric a (metric …) clause selects: its form, and the word to print
+(DEFUN metric< (spec net x y)
+  (LET ((which (IF spec (SYMBOL-NAME (CAR spec)) "accuracy")))
+    (COND ((STRING= which "accuracy") (VALUES `(accuracy^network ,net ,x ,y) "accuracy"))
+          ((STRING= which "rmse")     (VALUES `(rmse^network     ,net ,x ,y) "rmse"))
+          ((STRING= which "mae")      (VALUES `(mae^network      ,net ,x ,y) "mae"))
+          (T (ERROR (FORMAT NIL "train: unknown metric '~A'.~%  known: accuracy rmse mae"
+                            which))))))
+
 (DEFUN loss< (spec out target)
   (LET ((which (IF spec (SYMBOL-NAME (CAR spec)) "nll")))
     (COND ((STRING= which "nll") `(torch::nll_loss ,out ,target))
@@ -170,6 +180,7 @@
          (batch  (OR (CAR (train-clause< clauses "batch"))  100))
          (opt    (train-clause< clauses "optimiser"))
          (lossf  (train-clause< clauses "loss"))
+         (metric (train-clause< clauses "metric"))
          (quiet  (train-clause< clauses "quiet"))
          (net    (GENSYM "net")) (o (GENSYM "opt"))
          (e      (GENSYM "e"))   (i (GENSYM "i"))
@@ -181,10 +192,12 @@
       (ERROR (FORMAT NIL "train ~A: (test INPUTS TARGETS) takes two" name)))
 
     (LET ((xs (CAR data)) (ys (CADR data)))
+     (MULTIPLE-VALUE-BIND (mform mname)
+         (metric< metric net (CAR test) (CADR test))
       `(letin* ((,net (,name))
                 (,o ,(optimiser< opt `(($ ,net parameters)))))
          ,@(WHEN (AND test (NOT quiet))
-             `((printf "start accuracy: %.4f\n" (accuracy^network ,net ,(CAR test) ,(CADR test)))))
+             `((printf ,(FORMAT NIL "start ~A: %.4f\n" mname) ,mform)))
          (for ((int ,e . 0)) (< ,e ,epochs) ((++ ,e))
               (let ((double ,total . 0.0) (int ,nb . 0))
                 (for ((i64 ,i . 0)) (<= (+ ,i ,batch) (($ ,xs size) 0)) ((+= ,i ,batch))
@@ -199,16 +212,21 @@
                            (++ ,nb)))))
                 ,@(UNLESS quiet
                     (IF test
-                        `((printf "epoch %2d  loss %.4f  accuracy %.4f\n"
-                                  (+ ,e 1) (/ ,total ,nb)
-                                  (accuracy^network ,net ,(CAR test) ,(CADR test))))
+                        `((printf ,(FORMAT NIL "epoch %2d  loss %.4f  ~A %.4f\n" mname)
+                                  (+ ,e 1) (/ ,total ,nb) ,mform))
                         `((printf "epoch %2d  loss %.4f\n" (+ ,e 1) (/ ,total ,nb)))))))
-         ,@(IF test
-               `((accuracy^network ,net ,(CAR test) ,(CADR test)))
-               '(0.0))))))
+         ,@(IF test (LIST mform) '(0.0)))))))
 
-;;; The accuracy pass the DSL reports with. Written once here rather than
-;;; generated, because it is the same three lines every time.
+;;; ------------------------------------------------------------------
+;;; metrics
+;;; ------------------------------------------------------------------
+;;;
+;;; What `train' reports each epoch, and answers at the end. A classifier wants
+;;; accuracy and a regression wants an error, and they are not interchangeable
+;;; -- reporting accuracy for a regression is how a DSL tells you it was built
+;;; for one example. Each is a whole pass under a NoGradGuard.
+
+;;; accuracy: the share of rows whose argmax is the label
 (DEFMACRO accuracy^network (net x y)
   `(progn
      (letin* ((g (torch::NoGradGuard)))
@@ -216,3 +234,19 @@
          (letin* ((hits (($ (($ pred eq) ,y) sum))))
            (/ (cast double (($ hits (t<> item i64))))
               (cast double (($ ,y numel)))))))))
+
+;;; root mean squared error -- in the UNITS OF THE TARGET, which is the whole
+;;; reason to prefer it to mse when reporting. The sqrt is not decoration: it
+;;; was missing here at first and the metric printed mse under the name rmse.
+(DEFMACRO rmse^network (net x y)
+  `(progn
+     (letin* ((g (torch::NoGradGuard)))
+       (letin* ((d (($ (($ ,net forward) ,x) sub) ,y)))
+         (cast double (($ (($ (($ (($ d pow) 2.0) mean)) sqrt)) (t<> item float))))))))
+
+;;; mean absolute error -- the same units, less swayed by one bad row
+(DEFMACRO mae^network (net x y)
+  `(progn
+     (letin* ((g (torch::NoGradGuard)))
+       (letin* ((d (($ (($ ,net forward) ,x) sub) ,y)))
+         (cast double (($ (($ (($ d abs)) mean)) (t<> item float))))))))

@@ -1,0 +1,170 @@
+;;;; Tabular regression with the DSL -- a different problem, the same six lines
+;;;;
+;;;; The point of this file is generality. MNIST is a classifier over images
+;;;; with a log-softmax head, nll loss and an accuracy metric; this is a
+;;;; regression over eight numeric columns with a bare linear head, mse loss
+;;;; and an error metric. If the DSL only fitted the first, it was fitted TO the
+;;;; first -- so here is the second, and the model and training are still:
+;;;;
+;;;;     (network Price (input 8) (dense 64 relu) (dense 32 relu) (dense 1))
+;;;;     (train Price (data …) (loss mse) (metric rmse) …)
+;;;;
+;;;;     sbcl --script cicili.lisp ./example/tabular.cicili
+;;;;     ./example/tabular
+;;;;
+;;;; DATA. It reads a headerless CSV of eight features and one target from
+;;;; $TABULAR_CSV, and generates data from a known function when there is none.
+;;;; The generated set is not a toy in the sense that matters here: the target
+;;;; is a non-linear function of the inputs with interaction terms and noise, so
+;;;; a linear fit cannot reach it and the network has to earn the number. The
+;;;; baseline printed alongside says what predicting the mean would score, which
+;;;; is the only honest way to read an RMSE.
+;;;;
+;;;; The California housing set is the obvious real one to point at -- eight
+;;;; numeric columns, one continuous target, 20640 rows:
+;;;;
+;;;;     TABULAR_CSV=housing.csv ./example/tabular
+;;;;
+;;;; The paths in :compile and :link are this machine's. See example/torch.cicili.
+
+(source "tabular.cpp"
+  (make :cpp #t
+        :compile ("-std=c++17" "-Wno-c++20-extensions"
+                  "-I/usr/local/opt/pytorch/include"
+                  "-I/usr/local/opt/pytorch/include/torch/csrc/api/include"
+                  "-c" "tabular.cpp")
+        :link ("-ltabular.o"
+               "-L/usr/local/opt/pytorch/lib" "-ltorch" "-ltorch_cpu" "-lc10"
+               "-o" "tabular"))
+
+  (include <torch/torch.h>)
+  (include <cstdio>)
+  (include <cstdlib>)
+  (include <cmath>)
+
+  (import "lib/cpp/torch/torch.cicili")
+
+  (var i64 FEATURES . 8)
+  (var i64 ROWS     . 20000)
+  (var i64 TRAIN    . 16000)     ; the rest is held out
+
+  ;;; ================= the model =====================================
+  ;;; Eight columns in, one number out. No activation on the last layer --
+  ;;; a regression head is bare, and `(dense 1)' with none is how that is said.
+
+  (network Price
+    (input   8)
+    (dense  64 relu)
+    (dense  32 relu)
+    (dense   1))
+
+  ;;; ================= the data ======================================
+
+  ;;; A deterministic generator, so a run is reproducible without a file.
+  (var u32 seed . 12345)
+  (func nextrand () (out u32)
+        (set seed (^ seed (<< seed 13)))
+        (set seed (^ seed (>> seed 17)))
+        (set seed (^ seed (<< seed 5)))
+        (return seed))
+  (func uniform () (out double)      ; [0,1)
+        (return (/ (cast double (bitand (nextrand) 0xFFFFFF)) 16777216.0)))
+
+  ;;; The target is a non-linear function of the features WITH interaction
+  ;;; terms and noise. A linear model cannot reach it, so the number the
+  ;;; network gets is a number it had to learn.
+  (func generate ((float * xs) (float * ys) (i64 rows))
+        (for ((i64 r . 0)) (< r rows) ((++ r))
+             (let ((double f [ 8 ]))
+               (for ((int c . 0)) (< c 8) ((++ c))
+                    (block (set (nth c f) (uniform))
+                           (set (nth (+ (* r FEATURES) c) xs) (cast float (nth c f)))))
+               ;; rooms and income interact; distance hurts; the rest is noise
+               (let ((double y . #'(+ (* 3.0 (nth 0 f) (nth 1 f))
+                                      (+ (* 2.0 (sqrt (nth 2 f)))
+                                         (+ (* -1.5 (nth 3 f) (nth 3 f))
+                                            (+ (* 0.8 (nth 4 f))
+                                               (* 0.5 (- (uniform) 0.5))))))))
+                 (set (nth r ys) (cast float y))))))
+
+  ;;; A headerless CSV: eight features then the target, one row per line.
+  (func read_csv ((const char * path) (float * xs) (float * ys) (i64 cap))
+        (out i64)
+        (let ((FILE * f . #'(fopen path "r")))
+          (when (not f) (return 0))
+          (let ((i64 r . 0))
+            (while (< r cap)
+              (let ((double v [ 9 ])
+                    (int got . 0))
+                (set got (fscanf f "%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf"
+                                 (+ v 0) (+ v 1) (+ v 2) (+ v 3) (+ v 4)
+                                 (+ v 5) (+ v 6) (+ v 7) (+ v 8)))
+                (when (!= got 9) (break))
+                (for ((int c . 0)) (< c 8) ((++ c))
+                     (set (nth (+ (* r FEATURES) c) xs) (cast float (nth c v))))
+                (set (nth r ys) (cast float (nth 8 v)))
+                (++ r)))
+            (fclose f)
+            (return r))))
+
+  ;;; What predicting the mean would score, as an RMSE. An error figure means
+  ;;; nothing on its own -- it is in the units of the target -- so this is the
+  ;;; number the network has to beat for its own to mean anything.
+  (func baseline_rmse ((const float * ys) (i64 from) (i64 to)) (out double)
+        (let ((double sum . 0.0))
+          (for ((i64 i . from)) (< i to) ((++ i)) (+= sum (cast double (nth i ys))))
+          (let ((double mean . #'(/ sum (cast double (- to from))))
+                (double err . 0.0))
+            (for ((i64 i . from)) (< i to) ((++ i))
+                 (let ((double d . #'(- (cast double (nth i ys)) mean)))
+                   (+= err (* d d))))
+            (return (sqrt (/ err (cast double (- to from))))))))
+
+  (main
+    (torch::manual_seed 1)
+
+    (let ((float * xs . #'(alloc (cast size_t (* ROWS FEATURES)) (sizeof float)))
+          (float * ys . #'(alloc (cast size_t ROWS)              (sizeof float)))
+          (i64 rows . 0))
+
+      (let ((const char * csv . #'(getenv "TABULAR_CSV")))
+        (if csv
+            (block (set rows (read_csv csv xs ys ROWS))
+                   (when (== rows 0)
+                     (block (printf "could not read %s\n" csv) (return 1)))
+                   (printf "tabular: %s, %lld rows\n" csv rows))
+          (block (set rows ROWS)
+                 (generate xs ys rows)
+                 (printf "tabular: generated data, %lld rows of %lld features\n"
+                         rows FEATURES))))
+
+      (let ((i64 ntrain . #'(? (< TRAIN rows) TRAIN (/ (* rows 4) 5))))
+        (printf "        %lld train / %lld held out\n" ntrain (- rows ntrain))
+        (printf "        predicting the mean scores %.4f rmse\n"
+                (baseline_rmse ys ntrain rows))
+
+        ;; ---- to tensors, split into train and held-out -----------------
+        ;; the target is [rows, 1] rather than [rows]: a regression head puts
+        ;; out one column, and mse wants the two shapes to agree
+        (letin* ((X (torch::from_blob xs (dims rows FEATURES)))
+                 (Y (($ (torch::from_blob ys (dims rows)) view) (dims rows 1)))
+                 (xtr (($ X narrow) 0 0 ntrain))
+                 (ytr (($ Y narrow) 0 0 ntrain))
+                 (xte (($ X narrow) 0 ntrain (- rows ntrain)))
+                 (yte (($ Y narrow) 0 ntrain (- rows ntrain))))
+
+          ;;; ================= the training ==========================
+          ;;; The same clause set as MNIST. Only the loss and the metric
+          ;;; differ, because the problem does.
+
+          (let ((double err . #'(train Price
+                                  (data      xtr ytr)
+                                  (test      xte yte)
+                                  (epochs    30)
+                                  (batch     128)
+                                  (optimiser adam 0.005)
+                                  (loss      mse)
+                                  (metric    rmse))))
+            (printf "final held-out rmse: %.4f   (mean predictor: %.4f)\n"
+                    err (baseline_rmse ys ntrain rows))
+            (return 0)))))))
