@@ -256,10 +256,16 @@ winner of that pair.**
 >
 > Every pair below is **interleaved and quoted at its best**, which is the right defence:
 > a background load slows both sides, so the *comparison* survives what the *absolute
-> number* does not. Read the ratios; treat the milliseconds as upper bounds.
-> Re-measurement on a quiet dedicated machine is pending, and
-> [benchmark/bench.py](benchmark/bench.py) is the harness for it — it records what it ran
-> on and refuses to measure a machine that is not idle.
+> number* does not. But it does not save a row whose two sides are within a few percent of
+> each other — re-running the owned `construct` row gave Cicili 88 ms against Rust 96 ms,
+> the opposite winner to the 105/100 below. **Read the rows where the gap is larger than
+> the spread; treat a row inside 10% as a tie.**
+>
+> Re-measurement on a quiet dedicated machine is pending.
+> [benchmark/bench.py](benchmark/bench.py) is the harness for it: it refuses to measure a
+> machine that is not idle, records what it ran on, alternates which side goes first, and
+> cross-checks the checksums both sides print so a comparison cannot quietly stop
+> comparing the same work.
 
 ### Owned — `(<> vector a)` vs `Vec<i32>`
 

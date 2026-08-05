@@ -1,17 +1,28 @@
 # `benchmark` — getting a number worth quoting
 
 Every timing in this repository was measured on one laptop that was doing other work at the
-time. That is not good enough for the claims built on it, and the evidence is in the
-repository's own history: `example/mnist_conv`, the same binary over the same data, has
-been observed at **42.6 s** and at **57.6 s** in different sessions, and the MLP at 11.8 s
-and 13.5 s. A 14–35% swing from machine state alone is larger than most of the differences
-the tables report.
+time. That is not good enough for the claims built on it. Same binary, same data, different
+sessions:
+
+| | | |
+|---|---|---|
+| `example/mnist_conv` | 42.6 s and 57.6 s | 35% |
+| `example/mnist_dsl` | 11.8 s and 13.5 s | 14% |
+| `std_vec_bench` construct | 97 ms and 158 ms | 63% |
+
+Those swings are larger than most of the differences the tables report — and one row has
+already flipped its winner on a re-run: the owned `construct` row reads Cicili 105 ms /
+Rust 100 ms in the README and Cicili 88 ms / Rust 96 ms when measured again.
 
 [bench.py](bench.py) exists so that the next set of numbers does not have that problem.
 
 ```sh
-python3 benchmark/bench.py --suite torch --repeats 5
+python3 benchmark/bench.py --suite all --repeats 7
 ```
+
+Suites: `torch` (the libtorch examples against PyTorch), `vector` and `btree` (against
+Rust), or `all`. Anything whose prerequisites are missing is skipped by name rather than
+half-run, and the output says the run was incomplete.
 
 ## What it does that running the examples by hand does not
 
@@ -26,6 +37,14 @@ python3 benchmark/bench.py --suite torch --repeats 5
   average out.
 * **Reports median, minimum and spread**, so run-to-run variation sits next to the number
   instead of behind it.
+* **Cross-checks the checksums both sides print.** If Cicili and Rust disagree on what the
+  work computed, the benchmark has stopped comparing the same thing, and no amount of
+  careful timing fixes that. The rows where the two legitimately differ — `construct` and
+  `append` accumulate a buffer address on the Cicili side so the compiler cannot fold the
+  loop away — are excluded by name rather than ignored silently.
+* **Names each row on each side.** The two do not use the same labels — Cicili's is
+  `construct (new^vector, …)` and Rust's is `construct (to_vec, …)` — so matching them by
+  position would survive a row being added to one side and quietly compare the wrong pair.
 * **Flags non-determinism.** If a metric is not identical across repeats, the row is marked
   and the metric is one draw rather than a result.
 
@@ -55,13 +74,25 @@ It checks all of these and names what is missing rather than half-running:
 
 | | |
 |---|---|
+**`torch`**
+
+| | |
+|---|---|
 | the three built examples | `sbcl --script cicili.lisp --release ./example/mnist-dsl.cicili`, and the same for `tabular` and `mnist-conv` |
 | `/usr/local/opt/pytorch/libexec/bin/python3` | the interpreter shipping **the same libtorch** the Cicili side links — two different PyTorch builds would be measuring the builds |
 | `$MNIST_DIR` | the four idx files, default `~/mnist-data` |
 | `$TABULAR_CSV` | `california.csv`, eight features and a target per line, default `~/tabular-data/california.csv` |
 
+**`vector` and `btree`**
+
+```sh
+sbcl --script cicili.lisp --release ./benchmark/std-vector-bench.cicili
+sbcl --script cicili.lisp --release ./benchmark/std-btree-bench.cicili
+cd benchmark/rust-vector-bench && cargo build --release
+```
+
 ## What is not in it yet
 
-The `vector`, `btree` and bounds-check tables in the [root README](../README.md) are still
-run by hand, and they compare against Rust rather than Python, so they need `cargo` and a
-second set of prerequisite checks. `--suite` is where those go.
+The **bounds-check** table in the [root README](../README.md) — check elided against check
+executed — comes from a third pair of binaries and is still run by hand.
+
