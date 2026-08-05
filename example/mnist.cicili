@@ -192,12 +192,10 @@
         ;; from_blob does not copy, and these buffers outlive every tensor made
         ;; from them, so there is nothing to clone. `sub' and `div' produce the
         ;; normalised copy, which is the one that is trained on.
-        (letin* ((mean (torch::full (dims 1) (cast torch::Scalar MEAN)))
-                 (std  (torch::full (dims 1) (cast torch::Scalar STD)))
-                 (xs (($ (($ (torch::from_blob ximg (dims NTRAIN PIXELS)) sub) mean) div) std))
-                 (ys (($ (torch::from_blob ylab (dims NTRAIN)) to) torch::kInt64))
-                 (xt (($ (($ (torch::from_blob timg (dims NTEST PIXELS)) sub) mean) div) std))
-                 (yt (($ (torch::from_blob tlab (dims NTEST)) to) torch::kInt64))
+        (letin* ((xs (normalise (features ximg NTRAIN PIXELS) MEAN STD))
+                 (ys (labels    ylab  NTRAIN))
+                 (xt (normalise (features timg NTEST PIXELS) MEAN STD))
+                 (yt (labels    tlab  NTEST))
                  (net (Net)))
 
           ;; Adam rather than plain SGD: it reaches the same place in far fewer

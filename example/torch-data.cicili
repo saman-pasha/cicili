@@ -1,0 +1,163 @@
+;;;; The data macros from lib/cpp/torch/data.cicili, checked against libtorch
+;;;;
+;;;;     sbcl --script cicili.lisp ./example/torch-data.cicili
+;;;;     ./example/torch_data
+;;;;
+;;;; Every check has a hand-computed answer, and three of them are there to
+;;;; catch a specific way of being wrong that libtorch does not report:
+;;;;
+;;;;   * (labels …) must produce int64, or nll_loss fails deep inside the
+;;;;     library with a message about a scalar type rather than about labels
+;;;;   * (targets …) must produce [N, 1], or mse against a [N] target
+;;;;     BROADCASTS into an [N, N] comparison and quietly trains on nonsense
+;;;;   * (standardise T NTRAIN) must take its statistics from the first NTRAIN
+;;;;     rows only -- the held-out rows are deliberately given a different mean
+;;;;     here, and the test is that they stay off-centre afterwards
+
+(source "torch_data.cpp"
+  (make :cpp #t
+        :compile ("-std=c++17" "-O2" "-Wno-c++20-extensions"
+                  "-I/usr/local/opt/pytorch/include"
+                  "-I/usr/local/opt/pytorch/include/torch/csrc/api/include"
+                  "-c" "torch_data.cpp")
+        :link ("-ltorch_data.o"
+               "-L/usr/local/opt/pytorch/lib" "-ltorch" "-ltorch_cpu" "-lc10"
+               "-o" "torch_data"))
+
+  (include <torch/torch.h>)
+  (include <cstdio>)
+
+  (import "lib/cpp/torch/torch.cicili")
+
+  (var int bad . 0)
+
+  (func check ((const char * what) (double got) (double want))
+        (if (< (? (> (- got want) 0.0) (- got want) (- want got)) 0.0001)
+            (printf "ok   %-40s %8.4f\n" what got)
+          (block (printf "FAIL %-40s got %.4f want %.4f\n" what got want)
+                 (++ bad))))
+
+  ;;; one element of a 2-D tensor, as a double
+  (DEFMACRO at2 (tn r c)
+    `(cast double (($ (($ (($ ,tn narrow) 0 ,r 1) narrow) 1 ,c 1)
+                      (t<> item float)))))
+
+  ;;; the mean of one column, as a double
+  (DEFMACRO colmean (tn c)
+    `(cast double (($ (($ (($ ,tn narrow) 1 ,c 1) mean)) (t<> item float)))))
+
+  (main
+    (torch::manual_seed 1)
+
+    ;; ---- 1. raw memory to tensors ---------------------------------
+    ;; six values, as two rows of three
+    (let ((float xb [ 6 ]))
+      (for ((int i . 0)) (< i 6) ((++ i)) (set (nth i xb) (cast float (+ i 1))))
+
+      (letin* ((X (features xb 2 3)))
+        (check "features rows"     (cast double (rows X))          2.0)
+        (check "features cols"     (cast double (($ X size) 1))    3.0)
+        (check "features [1][2]"   (at2 X 1 2)                     6.0)
+        (check "features sum"      (cast double (($ (($ X sum)) (t<> item float)))) 21.0)
+
+        ;; head and tail are views, and they partition the rows
+        (letin* ((h (head X 1)) (t (tail X 1)))
+          (check "head rows"  (cast double (rows h)) 1.0)
+          (check "tail rows"  (cast double (rows t)) 1.0)
+          (check "head [0][0]" (at2 h 0 0) 1.0)
+          (check "tail [0][0]" (at2 t 0 0) 4.0))))
+
+    ;; ---- 2. labels are int64, targets are a column ----------------
+    (let ((float lb [ 3 ]))
+      (set (nth 0 lb) 7.0 (nth 1 lb) 0.0 (nth 2 lb) 3.0)
+      (letin* ((L (labels lb 3)))
+        ;; item<i64> only compiles into a correct read if the tensor really is
+        ;; int64; on a float tensor libtorch throws at run time
+        (check "labels [0] as int64" (cast double (($ (($ L narrow) 0 0 1)
+                                                      (t<> item i64)))) 7.0)
+        (check "labels dim"          (cast double (($ L dim)))            1.0))
+      (letin* ((T (targets lb 3)))
+        (check "targets dim"    (cast double (($ T dim)))     2.0)
+        (check "targets rows"   (cast double (rows T))        3.0)
+        (check "targets cols"   (cast double (($ T size) 1))  1.0)))
+
+    ;; ---- 3. normalise ---------------------------------------------
+    ;; (x - 1) / 2 over 1..6 is 0, .5, 1, 1.5, 2, 2.5 -- summing to 7.5
+    (let ((float nb [ 6 ]))
+      (for ((int i . 0)) (< i 6) ((++ i)) (set (nth i nb) (cast float (+ i 1))))
+      (letin* ((N (normalise (features nb 2 3) 1.0 2.0)))
+        (check "normalise [0][0]" (at2 N 0 0) 0.0)
+        (check "normalise [1][2]" (at2 N 1 2) 2.5)
+        (check "normalise sum"
+               (cast double (($ (($ N sum)) (t<> item float)))) 7.5)))
+
+    ;; ---- 4. standardise, and the leak it is built to prevent -------
+    ;;
+    ;; Eight rows of two columns. The FIRST FOUR -- the training rows -- are
+    ;; column 0: 1 2 3 4 (mean 2.5, population sd 1.118)
+    ;;           column 1: 10 20 30 40 (mean 25, sd 11.18)
+    ;; The LAST FOUR are the same shifted up by 100, so if the statistics came
+    ;; from all eight rows the training half would no longer be centred, and if
+    ;; they came from the training rows only the held-out half stays far away.
+    (let ((float sb [ 16 ]))
+      (for ((int r . 0)) (< r 4) ((++ r))
+           (block (set (nth (* r 2) sb)       (cast float (+ r 1)))
+                  (set (nth (+ (* r 2) 1) sb) (cast float (* (+ r 1) 10)))))
+      (for ((int r . 4)) (< r 8) ((++ r))
+           (block (set (nth (* r 2) sb)       (cast float (+ (- r 3) 100)))
+                  (set (nth (+ (* r 2) 1) sb) (cast float (+ (* (- r 3) 10) 100)))))
+
+      (letin* ((S (standardise (features sb 8 2) 4)))
+        ;; the training rows come out centred, both columns
+        (letin* ((tr (head S 4)))
+          (check "standardise: train col 0 mean" (colmean tr 0) 0.0)
+          (check "standardise: train col 1 mean" (colmean tr 1) 0.0)
+          ;; and scaled: 1..4 has population sd 1.118, so 1 lands at -1.3416
+          (check "standardise: train [0][0]" (at2 tr 0 0) -1.3416)
+          (check "standardise: train [3][0]" (at2 tr 3 0)  1.3416))
+        ;; THE LEAK TEST. The held-out rows are 100 higher, and 100 / 1.118 is
+        ;; about 89. If the mean had been taken over all eight rows this would
+        ;; be near 44 instead -- half as far -- and the training rows above
+        ;; would not have come out at zero.
+        (letin* ((te (tail S 4)))
+          (check "standardise: held-out col 0 mean, off-centre"
+                 (colmean te 0) 89.4427))))
+
+    ;; ---- 5. shuffling features and targets together ---------------
+    ;;
+    ;; Y is X times ten, row for row. Gathering both through ONE order has to
+    ;; preserve that; gathering through two would pair every example with
+    ;; someone else's answer, and nothing would report it.
+    (let ((float gx [ 6 ]) (float gy [ 6 ]))
+      (for ((int i . 0)) (< i 6) ((++ i))
+           (block (set (nth i gx) (cast float (+ i 1)))
+                  (set (nth i gy) (cast float (* (+ i 1) 10)))))
+      (letin* ((X0 (features gx 6 1))
+               (Y0 (features gy 6 1)))
+        (letin* ((p  (shuffled-order (rows X0))))
+          (letin* ((X (gather X0 p))
+                   (Y (gather Y0 p)))
+            ;; every row still satisfies y == 10x, whatever the order became
+            (letin* ((d (($ (($ X mul) (torch::full (dims 1) (cast torch::Scalar 10.0)))
+                            sub) Y)))
+              (check "gather: pairing preserved"
+                     (cast double (($ (($ (($ d abs)) sum)) (t<> item float)))) 0.0))
+            ;; and it really did reorder -- the sum is the same, the first
+            ;; element almost certainly is not
+            (check "gather: same rows"
+                   (cast double (($ (($ X sum)) (t<> item float)))) 21.0)
+            (check "gather: same count" (cast double (rows X)) 6.0)))
+
+        ;; the identity order changes nothing, which is the no-shuffle path
+        (letin* ((q (row-order (rows X0))))
+          (letin* ((X (gather X0 q)))
+            (check "row-order is the identity" (at2 X 0 0) 1.0)))))
+
+    ;; ---- 6. split-point --------------------------------------------
+    (check "split-point 20640 0.8" (cast double (split-point 20640 0.8)) 16512.0)
+    (check "split-point 7 0.5"     (cast double (split-point 7 0.5))         3.0)
+
+    (if (== bad 0)
+        (printf "torch-data: all ok\n")
+      (printf "torch-data: %d FAILED\n" bad))
+    (return bad)))

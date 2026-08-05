@@ -114,15 +114,14 @@
                  (return 1)))
         (printf "MNIST: %lld train / %lld test\n" NTRAIN NTEST)
 
-        (letin* ((mean (torch::full (dims 1) (cast torch::Scalar MEAN)))
-                 (std  (torch::full (dims 1) (cast torch::Scalar STD)))
-                 ;; a conv net takes [N, channels, height, width]
-                 (xs (($ (($ (($ (torch::from_blob ximg (dims NTRAIN PIXELS)) sub) mean) div) std)
-                         view) (dims NTRAIN 1 28 28)))
-                 (ys (($ (torch::from_blob ylab (dims NTRAIN)) to) torch::kInt64))
-                 (xt (($ (($ (($ (torch::from_blob timg (dims NTEST PIXELS)) sub) mean) div) std)
-                         view) (dims NTEST 1 28 28)))
-                 (yt (($ (torch::from_blob tlab (dims NTEST)) to) torch::kInt64)))
+        ;; a conv net takes [N, channels, height, width], and `images' is that
+        ;; shape spelled out. The buffer is the same flat 784 floats per
+        ;; example either way -- what changes is what libtorch is told they
+        ;; mean, and a conv stack accepts nothing else.
+        (letin* ((xs (normalise (images ximg NTRAIN 1 28 28) MEAN STD))
+                 (ys (labels    ylab NTRAIN))
+                 (xt (normalise (images timg NTEST 1 28 28) MEAN STD))
+                 (yt (labels    tlab NTEST)))
 
           ;;; ================= the training ============================
           ;;; What to train, on what, for how long, with which optimiser and

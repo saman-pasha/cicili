@@ -1,11 +1,16 @@
 """The Python equal of example/tabular.cicili: 8-64-32-1, Adam 5e-3, batch 128,
 30 epochs, same shuffle-then-standardise-on-train-only preparation."""
-import torch, torch.nn as nn, torch.nn.functional as F, numpy as np, time
+import os, torch, torch.nn as nn, torch.nn.functional as F, numpy as np, time
 from common import california
 
-torch.manual_seed(1)
+# The seed decides the shuffle, hence the split, hence which rows are held out
+# -- and an RMSE moves with that by more than the gap between the two front
+# ends. $TABULAR_SEED matches the Cicili example's, so the spread can be
+# measured on both sides.
+SEED = int(os.environ.get("TABULAR_SEED", 1))
+torch.manual_seed(SEED)
 X, Y = california()
-rng = np.random.default_rng(12345)
+rng = np.random.default_rng(12345 + SEED - 1)
 perm = rng.permutation(len(X)); X, Y = X[perm], Y[perm]
 ntrain = 16512
 mu, sd = X[:ntrain].mean(0), X[:ntrain].std(0); sd[sd < 1e-6] = 1.0

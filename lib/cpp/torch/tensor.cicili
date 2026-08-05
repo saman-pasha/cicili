@@ -130,6 +130,11 @@
                              (out torch::Tensor))
               (const) (method argmax  ((i64 dim))                (out torch::Tensor))
               (const) (method eq      ((const torch::Tensor & other)) (out torch::Tensor))
+              ;; elementwise comparisons against a scalar, answering a bool
+              ;; tensor -- what torch::where takes as its condition
+              (const) (method lt      ((torch::Scalar other))    (out torch::Tensor))
+              (const) (method gt      ((torch::Scalar other))    (out torch::Tensor))
+              (const) (method clamp_min ((torch::Scalar min))    (out torch::Tensor))
               (const) (method to      ((torch::ScalarType ty))   (out torch::Tensor))
               (const) (method (t<> to double) ()                 (out torch::Tensor))
 
@@ -150,6 +155,15 @@
      (decl) (func torch::full   ((c10::IntArrayRef size) (torch::Scalar fill))
                   (out torch::Tensor))
      (decl) (func torch::from_blob ((void * data) (c10::IntArrayRef size))
+                  (out torch::Tensor))
+     ;; same shape and dtype as another tensor, which is how a mask's
+     ;; replacement value is built without naming the shape twice
+     (decl) (func torch::zeros_like ((const torch::Tensor & other)) (out torch::Tensor))
+     (decl) (func torch::ones_like  ((const torch::Tensor & other)) (out torch::Tensor))
+     ;; elementwise choice: where the condition holds take from a, else from b
+     (decl) (func torch::where ((const torch::Tensor & condition)
+                                (const torch::Tensor & a)
+                                (const torch::Tensor & b))
                   (out torch::Tensor))
 
      ;;; ---- free-function operations -------------------------------

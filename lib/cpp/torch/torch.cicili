@@ -23,4 +23,5 @@
 (import "./tensor.cicili")
 (import "./nn.cicili")
 (import "./optim.cicili")
+(import "./data.cicili")
 (import "./dsl.cicili")

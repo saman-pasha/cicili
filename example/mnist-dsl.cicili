@@ -107,12 +107,15 @@
                  (return 1)))
         (printf "MNIST: %lld train / %lld test\n" NTRAIN NTEST)
 
-        (letin* ((mean (torch::full (dims 1) (cast torch::Scalar MEAN)))
-                 (std  (torch::full (dims 1) (cast torch::Scalar STD)))
-                 (xs (($ (($ (torch::from_blob ximg (dims NTRAIN PIXELS)) sub) mean) div) std))
-                 (ys (($ (torch::from_blob ylab (dims NTRAIN)) to) torch::kInt64))
-                 (xt (($ (($ (torch::from_blob timg (dims NTEST PIXELS)) sub) mean) div) std))
-                 (yt (($ (torch::from_blob tlab (dims NTEST)) to) torch::kInt64)))
+        ;; the four buffers become four tensors. `features' and `labels' wrap
+        ;; the memory WITHOUT COPYING, so the buffers above have to outlive
+        ;; every tensor below -- which the nesting is what guarantees.
+        ;; `labels' is the one that converts to int64, because nll_loss wants
+        ;; indices and the buffer is float.
+        (letin* ((xs (normalise (features ximg NTRAIN PIXELS) MEAN STD))
+                 (ys (labels    ylab  NTRAIN))
+                 (xt (normalise (features timg NTEST PIXELS) MEAN STD))
+                 (yt (labels    tlab  NTEST)))
 
           ;;; ================= the training ============================
           ;;; What to train, on what, for how long, with which optimiser and

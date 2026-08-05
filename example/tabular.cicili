@@ -107,61 +107,39 @@
             (fclose f)
             (return r))))
 
-  ;;; ---- what real data needs and generated data does not ----------
+  ;;; ---- what real data needs, and where it now lives ---------------
   ;;;
-  ;;; SHUFFLE. California housing is ordered geographically, so splitting it by
-  ;;; position puts one part of the state in training and another in the test
-  ;;; set. That is not a hard test, it is a different problem. Fisher-Yates over
-  ;;; the row indices, moving both the features and the target together.
-  (func shuffle ((float * xs) (float * ys) (i64 rows))
-        (for ((i64 i . #'(- rows 1))) (> i 0) ((-- i))
-             (let ((i64 j . #'(cast i64 (% (nextrand) (cast u32 (+ i 1))))))
-               (for ((int c . 0)) (< c 8) ((++ c))
-                    (let ((float t . #'(nth (+ (* i FEATURES) c) xs)))
-                      (set (nth (+ (* i FEATURES) c) xs) (nth (+ (* j FEATURES) c) xs)
-                           (nth (+ (* j FEATURES) c) xs) t)))
-               (let ((float t . #'(nth i ys)))
-                 (set (nth i ys) (nth j ys)
-                      (nth j ys) t)))))
-
-  ;;; STANDARDISE. The columns are on wildly different scales -- median income
-  ;;; is single digits and population is in the thousands -- and a network fed
-  ;;; that spends its first epochs learning the scaling instead of the problem.
-  ;;; Mean and standard deviation are taken over the TRAINING rows only: using
-  ;;; the held-out rows to compute them leaks the test set into the model, which
-  ;;; is the most common way a good-looking number is not one.
-  (func standardise ((float * xs) (i64 rows) (i64 ntrain))
-        (for ((int c . 0)) (< c 8) ((++ c))
-             (let ((double sum . 0.0))
-               (for ((i64 r . 0)) (< r ntrain) ((++ r))
-                    (+= sum (cast double (nth (+ (* r FEATURES) c) xs))))
-               (let ((double mean . #'(/ sum (cast double ntrain)))
-                     (double var . 0.0))
-                 (for ((i64 r . 0)) (< r ntrain) ((++ r))
-                      (let ((double d . #'(- (cast double (nth (+ (* r FEATURES) c) xs)) mean)))
-                        (+= var (* d d))))
-                 (let ((double sd . #'(sqrt (/ var (cast double ntrain)))))
-                   (when (< sd 0.000001) (set sd 1.0))
-                   (for ((i64 r . 0)) (< r rows) ((++ r))
-                        (set (nth (+ (* r FEATURES) c) xs)
-                             (cast float (/ (- (cast double (nth (+ (* r FEATURES) c) xs)) mean)
-                                            sd)))))))))
-
-  ;;; What predicting the mean would score, as an RMSE. An error figure means
-  ;;; nothing on its own -- it is in the units of the target -- so this is the
-  ;;; number the network has to beat for its own to mean anything.
-  (func baseline_rmse ((const float * ys) (i64 from) (i64 to)) (out double)
-        (let ((double sum . 0.0))
-          (for ((i64 i . from)) (< i to) ((++ i)) (+= sum (cast double (nth i ys))))
-          (let ((double mean . #'(/ sum (cast double (- to from))))
-                (double err . 0.0))
-            (for ((i64 i . from)) (< i to) ((++ i))
-                 (let ((double d . #'(- (cast double (nth i ys)) mean)))
-                   (+= err (* d d))))
-            (return (sqrt (/ err (cast double (- to from))))))))
+  ;;; Shuffling, standardising, splitting and the baseline used to be four
+  ;;; hand-written functions here, about thirty-five lines of index arithmetic.
+  ;;; They are lib/cpp/torch/data.cicili now -- one macro each, over tensors
+  ;;; rather than over the float buffer -- and the whole preparation is the nine
+  ;;; bindings at the bottom of this file. Each of the four had a way to be
+  ;;; wrong that nothing reports, and the macro is where that is written down:
+  ;;;
+  ;;;   SHUFFLE BEFORE SPLITTING. California housing is ordered
+  ;;;   geographically, so cutting it by position puts one part of the state in
+  ;;;   training and another in the test set -- not a hard test, a different
+  ;;;   problem. Features and targets go through ONE order, or every example is
+  ;;;   paired with someone else's answer.
+  ;;;
+  ;;;   STANDARDISE ON THE TRAINING ROWS ONLY. The columns are on wildly
+  ;;;   different scales -- median income is single digits, population is in
+  ;;;   the thousands -- and a network fed that spends its first epochs
+  ;;;   learning the scaling. Taking the statistics over everything leaks the
+  ;;;   held-out rows into the model, which is the most common way a
+  ;;;   good-looking number is not one. `standardise' requires the row count,
+  ;;;   so the leak is something you would have to type.
+  ;;;
+  ;;;   THE BASELINE USES THE TRAINING MEAN. A predictor that already knows
+  ;;;   the mean of the rows it is tested on is not one you could have built.
 
   (main
-    (torch::manual_seed 1)
+    ;; The seed decides the shuffle, hence the split, hence which rows are
+    ;; held out -- and an RMSE moves with that. $TABULAR_SEED is here so the
+    ;; spread can be measured rather than guessed at; see the README, which
+    ;; quotes it alongside the number.
+    (let ((const char * sd . #'(getenv "TABULAR_SEED")))
+      (torch::manual_seed (cast u64 (? sd (atoi sd) 1))))
 
     (let ((float * xs . #'(alloc (cast size_t (* ROWS FEATURES)) (sizeof float)))
           (float * ys . #'(alloc (cast size_t ROWS)              (sizeof float)))
@@ -178,23 +156,31 @@
                  (printf "tabular: generated data, %lld rows of %lld features\n"
                          rows FEATURES))))
 
-      (let ((i64 ntrain . #'(? (< TRAIN rows) TRAIN (/ (* rows 4) 5))))
-        (shuffle xs ys rows)
-        (standardise xs rows ntrain)
-        (printf "        %lld train / %lld held out, shuffled and standardised\n"
-                ntrain (- rows ntrain))
-        (printf "        predicting the mean scores %.4f rmse\n"
-                (baseline_rmse ys ntrain rows))
+      (let ((i64 ntrain . #'(split-point rows 0.8)))
 
-        ;; ---- to tensors, split into train and held-out -----------------
-        ;; the target is [rows, 1] rather than [rows]: a regression head puts
-        ;; out one column, and mse wants the two shapes to agree
-        (letin* ((X (torch::from_blob xs (dims rows FEATURES)))
-                 (Y (($ (torch::from_blob ys (dims rows)) view) (dims rows 1)))
-                 (xtr (($ X narrow) 0 0 ntrain))
-                 (ytr (($ Y narrow) 0 0 ntrain))
-                 (xte (($ X narrow) 0 ntrain (- rows ntrain)))
-                 (yte (($ Y narrow) 0 ntrain (- rows ntrain))))
+        ;; ---- the whole preparation -------------------------------------
+        ;;
+        ;; Read down it: two buffers become two tensors, one shuffle order
+        ;; reorders both, the features are standardised on the training rows,
+        ;; and the two halves are views of that. `features' and `targets' wrap
+        ;; the buffers WITHOUT COPYING, so xs and ys above have to outlive all
+        ;; of this -- which is what the nesting says.
+        ;;
+        ;; ONE order, gathered through twice. Two orders would pair every
+        ;; example with someone else's answer and train to a stable,
+        ;; meaningless loss.
+        (letin* ((X0 (features xs rows FEATURES))
+                 (Y0 (targets  ys rows))
+                 (p  (shuffled-order rows))
+                 (X  (standardise (gather X0 p) ntrain))
+                 (Y  (gather Y0 p))
+                 (xtr (head X ntrain)) (ytr (head Y ntrain))
+                 (xte (tail X ntrain)) (yte (tail Y ntrain)))
+
+          (printf "        %lld train / %lld held out, shuffled and standardised\n"
+                  ntrain (- rows ntrain))
+          (printf "        predicting the training mean scores %.4f rmse\n"
+                  (baseline-rmse ytr yte))
 
           ;;; ================= the training ==========================
           ;;; The same clause set as MNIST. Only the loss and the metric
@@ -211,5 +197,5 @@
                                   (shuffle)
                                   (schedule  step 10 0.5))))
             (printf "final held-out rmse: %.4f   (mean predictor: %.4f)\n"
-                    err (baseline_rmse ys ntrain rows))
+                    err (baseline-rmse ytr yte))
             (return 0)))))))

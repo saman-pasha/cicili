@@ -35,6 +35,7 @@ That is a complete model and its training. It compiles to C++, links libtorch, a
 | [tensor.cicili](tensor.cicili) | `torch::Tensor`, the factories, the free functions, `dims` |
 | [nn.cicili](nn.cicili) | `torch::nn::Module` and the layers |
 | [optim.cicili](optim.cicili) | the optimisers |
+| [data.cicili](data.cicili) | buffers to tensors, shuffling, standardising, splitting |
 | [dsl.cicili](dsl.cicili) | `network`, `train`, and the metrics |
 
 ---
@@ -65,6 +66,72 @@ The paths are wherever libtorch is. On macOS `brew install pytorch` puts the C++
 under `include/torch/csrc/api/include`, which is why there are two `-I` flags.
 `-Wno-c++20-extensions` is needed because libtorch's own headers use a C++20 feature that
 `-Werror` would otherwise reject.
+
+---
+
+## Getting data in
+
+Every example reads a file into a `float` buffer and then has to turn that into tensors,
+standardise them, shuffle them and cut them in two. That was four hand-written functions
+per example, about thirty-five lines of index arithmetic, written slightly differently each
+time — and three of the four have a way to be wrong that nothing reports.
+[data.cicili](data.cicili) is those four concepts, one macro each, all composing with
+`letin*`.
+
+```lisp
+(letin* ((X0 (features xs rows 8))          ; wraps the buffer, [rows, 8]
+         (Y0 (targets  ys rows))            ; [rows, 1] -- what mse wants
+         (p  (shuffled-order rows))         ; ONE order …
+         (X  (standardise (gather X0 p) ntrain))
+         (Y  (gather Y0 p))                 ; … gathered through twice
+         (xtr (head X ntrain)) (ytr (head Y ntrain))
+         (xte (tail X ntrain)) (yte (tail Y ntrain)))
+  …)
+```
+
+| macro | is | and the trap it closes |
+|---|---|---|
+| `(features BUF ROWS COLS)` | `from_blob`, `[ROWS, COLS]` | |
+| `(images BUF N C H W)` | `from_blob`, `[N, C, H, W]` | a conv stack takes this shape and nothing else |
+| `(labels BUF N)` | `[N]`, **converted to int64** | `nll_loss` needs indices; a float target fails inside libtorch with a message about a scalar type |
+| `(targets BUF N)` | `[N, 1]` | `mse` against a `[N]` target **broadcasts** into `[N, N]` instead of failing, and training silently does not converge |
+| `(rows T)` | `T.size(0)` | |
+| `(normalise T MEAN STD)` | one mean and deviation for everything | what MNIST wants |
+| `(standardise T NTRAIN)` | per column, statistics **from the first NTRAIN rows only** | taking them over everything leaks the held-out rows into the model |
+| `(shuffled-order N)` / `(row-order N)` | `randperm` / the identity | |
+| `(gather T ORDER)` | `T.index_select(0, ORDER)` | features and targets must go through **one** order, or every example is paired with someone else's answer |
+| `(head T N)` / `(tail T N)` | the two halves, as views | |
+| `(split-point N RATIO)` | where to cut | |
+| `(baseline-rmse YTRAIN YTEST)` | what predicting the **training** mean scores | using the held-out mean flatters the baseline with a predictor you could not have built |
+
+`features`, `images`, `labels` and `targets` all **borrow**: libtorch does not copy the
+buffer and does not free it, so the buffer must outlive every tensor derived from it — and
+`head` and `tail` are views, so that includes the split halves.
+`standardise` and `normalise` answer new tensors.
+
+Checked against the real library in
+[example/torch-data.cicili](../../../example/torch-data.cicili), 27 assertions, including
+one that gives the held-out rows a deliberately different mean and fails if `standardise`
+ever looks at them.
+
+### Why this is not a binding for `torch::data`
+
+libtorch has its own `Dataset`/`Sampler`/`DataLoader` stack. Measured against what `train`
+already does — one `randperm` per epoch, one `index_select` per batch — over a
+`[60000, 784]` tensor, five epochs, batch 100:
+
+| | |
+|---|---|
+| gather (what `train` does) | **0.11 s** |
+| `DataLoader`, 0 workers | 1.22 s |
+| `DataLoader`, 2 workers | 0.73 s |
+| `DataLoader`, 4 workers | 0.45 s |
+
+Eleven times slower single-threaded, four times with four workers, because the loader
+slices one example at a time through a virtual `get()` and stacks them back together. For a
+tensor already in memory that is pure overhead. The `DataLoader` earns its keep on data
+that does **not** fit in memory, or that needs decoding per example — and binding it is the
+job for when there is some.
 
 ---
 
@@ -153,10 +220,20 @@ questions is the point.
 
 ### California housing — rmse, lower is better
 
+**Median of five seeds, range beneath.** This row used to be one run per cell and said
+something these numbers do not support — see below.
+
 | | none | `(shuffle)` | `(schedule)` | both |
 |---|---|---|---|---|
-| Cicili | **0.5233** | 0.5276 | 0.5270 | 0.5269 |
-| Python | **0.5381** | 0.5448 | 0.5338 | 0.5343 |
+| Cicili | 0.5421 | 0.5332 | 0.5463 | 0.5394 |
+| | <sub>0.5298–0.5604</sub> | <sub>0.5195–0.5491</sub> | <sub>0.5234–0.5529</sub> | <sub>0.5261–0.5449</sub> |
+| Python | 0.5381 | 0.5448 | 0.5338 | 0.5343 |
+| | <sub>0.5277–0.5554</sub> | <sub>0.5259–0.6142</sub> | <sub>0.5235–0.5493</sub> | <sub>0.5244–0.5517</sub> |
+
+The seed sets the shuffle, the shuffle sets the split, and the split sets which rows are
+held out — so **a single run of this example carries about ±0.02 of rmse that has nothing
+to do with the configuration**, which is three times the largest gap between the columns.
+`TABULAR_SEED` is on both sides so this can be checked rather than argued about.
 
 ### MNIST, conv — accuracy, higher is better
 
@@ -165,9 +242,11 @@ questions is the point.
 | Cicili | 0.9869 | **0.9881** |
 | Python | 0.9866 | **0.9880** |
 
-**The two implementations now agree in every cell**, to within a thousandth, including on
-the schedule-only column where they land on the same 0.9838. That agreement is the evidence
-that the numbers mean something; it is not decoration.
+**On the two MNIST grids the implementations agree in every cell**, to within a thousandth,
+including the schedule-only column where they land on the same 0.9838. That agreement is
+the evidence that those numbers mean something; it is not decoration. The tabular grid is
+the counter-example and is discussed below — there the agreement is between the *ranges*,
+not the cells, because a cell there is mostly the seed.
 
 What the grid says, and it is not what a single "with everything" column said:
 
@@ -177,9 +256,18 @@ What the grid says, and it is not what a single "with everything" column said:
 * **On the conv net, shuffling does the work** — +0.0012 and +0.0014 — and there is no
   schedule to confuse it with. Five epochs is short enough that order still matters and
   long enough that breaking it up helps.
-* **On the tabular regression, shuffling makes it worse in both**, 0.5233 → 0.5276 and
-  0.5381 → 0.5448. Those rows were already permuted once before the split, so shuffling
-  the batch order on top adds variance with nothing left to remove.
+* **On the tabular regression, nothing here is measurable.** This bullet used to read
+  "shuffling makes it worse in both, 0.5233 → 0.5276 and 0.5381 → 0.5448". At five seeds
+  that does not survive: the two front ends **rank the four configurations differently**
+  — Cicili puts shuffle-only first and Python puts it last — which is what noise looks
+  like when the same arithmetic is run twice. The differences between columns are around
+  0.005 and the seed-to-seed spread within a column is around 0.02.
+
+  Reading a difference off one run per cell is how it happened, and it is worth naming
+  because everything else on this page is one run per cell too. The MNIST rows have a
+  **fixed** train/test split — the corpus ships as four files — so their only variance is
+  initialisation and batch order, not which rows are held out, and that is a smaller
+  quantity. Smaller is not zero, and those spreads have not been measured.
 
 Reach for it when a model sees the data many times. It is not free accuracy and it is not a
 default this DSL applies for you.
@@ -288,7 +376,7 @@ neither gets a warm machine to itself; the spread within a side was under 6%.
 | example | Cicili | Python | |
 |---|---|---|---|
 | [MNIST, MLP](../../../example/mnist-dsl.cicili) · [py](../../../example/python/mnist_mlp.py) | 0.9784 · **13.4 s** | 0.9785 · 19.5 s | **1.46×** |
-| [California housing](../../../example/tabular.cicili) · [py](../../../example/python/tabular.py) | 0.5233 rmse · **1.8 s** | 0.5381 rmse · 3.2 s | **1.78×** |
+| [California housing](../../../example/tabular.cicili) · [py](../../../example/python/tabular.py) | 0.5421 rmse · **1.8 s** | 0.5381 rmse · 3.2 s | **1.78×** |
 | [MNIST, conv](../../../example/mnist-conv.cicili) · [py](../../../example/python/mnist_conv.py) | 0.9869 · **45.8 s** | 0.9866 · 48.5 s | **1.06×** |
 
 ### With `(shuffle)` and `(schedule)`, both sides
@@ -296,7 +384,7 @@ neither gets a warm machine to itself; the spread within a side was under 6%.
 | example | Cicili | Python | |
 |---|---|---|---|
 | MNIST, MLP — shuffled, StepLR(5, 0.5) | 0.9829 · **11.8 s** | 0.9828 · 18.7 s | **1.58×** |
-| California housing — shuffled, StepLR(10, 0.5) | 0.5269 rmse · **1.8 s** | 0.5343 rmse · 3.2 s | **1.78×** |
+| California housing — shuffled, StepLR(10, 0.5) | 0.5394 rmse · **1.8 s** | 0.5343 rmse · 3.2 s | **1.78×** |
 | MNIST, conv — shuffled | 0.9881 · **42.6 s** | 0.9880 · 44.3 s | **1.04×** |
 
 The two configurations tell the same story about the front ends and different stories about
