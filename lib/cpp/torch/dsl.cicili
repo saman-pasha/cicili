@@ -420,7 +420,7 @@
                                     (+ ,e 1) (/ ,total ,nb) ,mform))
                           `((printf "epoch %2d  loss %.4f\n" (+ ,e 1) (/ ,total ,nb)))))))
            ,@(UNLESS quiet
-               `((printf "trained in %.1fs\n" ,el))))
+               `((printf "trained in %.2fs\n" ,el))))
          ,@(IF test (LIST mform) '(0.0)))))))
 
 ;;; Seconds on a monotonic clock. `train' reports how long the loop took,

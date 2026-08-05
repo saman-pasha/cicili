@@ -371,6 +371,22 @@ Each example is measured in **two configurations**: plain, and with `(shuffle)` 
 `(schedule)` added on both sides. Best of three interleaved runs, alternating sides so
 neither gets a warm machine to itself; the spread within a side was under 6%.
 
+> **The seconds below are provisional.** They were taken on a laptop that was doing other
+> things at the time, and it shows: `example/mnist_conv`, the same binary over the same
+> data, has since been observed at **57.6 s** against the 42.6 s in the table, and the MLP
+> at **13.5 s** against the 11.8 s. A 14–35% swing from machine state alone is larger than
+> most of the differences these rows claim.
+>
+> Interleaving protects the **ratio** — a background load slows both sides — which is why
+> the tables were built that way and why the right-hand column is the part to read. The
+> absolute seconds should be treated as upper bounds on a busy machine, not as
+> measurements. Re-measurement on a quiet dedicated machine is pending;
+> [benchmark/bench.py](../../../benchmark/bench.py) is the harness for it and refuses to
+> run on a machine that is not idle.
+>
+> The **accuracy** columns are unaffected — they are deterministic given the seed, and
+> reproduce to the digit across all of these runs.
+
 ### Plain — no shuffling, no schedule
 
 | example | Cicili | Python | |

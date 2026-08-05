@@ -38,4 +38,4 @@ for e in range(30):
     sched.step()
 train_s = time.perf_counter() - t0
 base = ((yte - ytr.mean()) ** 2).mean().sqrt().item()
-print(f"final rmse: {rmse():.4f}   (mean predictor {base:.4f})   train {train_s:.1f}s")
+print(f"final rmse: {rmse():.4f}   (mean predictor {base:.4f})   train {train_s:.2f}s")

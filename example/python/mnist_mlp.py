@@ -28,4 +28,4 @@ for e in range(15):
         loss.backward(); opt.step()
     sched.step()
 train_s = time.perf_counter() - t0
-print(f"final accuracy: {accuracy():.4f}   train {train_s:.1f}s")
+print(f"final accuracy: {accuracy():.4f}   train {train_s:.2f}s")

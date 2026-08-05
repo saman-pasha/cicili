@@ -35,4 +35,4 @@ for e in range(5):
         loss = F.nll_loss(net(xs[idx]), ys[idx])
         loss.backward(); opt.step()
 train_s = time.perf_counter() - t0
-print(f"final accuracy: {accuracy():.4f}   train {train_s:.1f}s")
+print(f"final accuracy: {accuracy():.4f}   train {train_s:.2f}s")
