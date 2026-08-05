@@ -176,10 +176,17 @@ test/std/deferral.txt
 .\#*
 
 # example/ build products and downloaded datasets
+example/*.c
 example/*.cpp
 example/*.o
 example/*.lo
 example/.libs/
 example/data/
+example/python/__pycache__/
 example/mnist
+example/mnist_dsl
+example/mnist_conv
+example/tabular
 example/torch_example
+example/numpy_example
+example/numpy_torch

@@ -380,7 +380,9 @@ cicili.lisp        entry point            doc/DOC-C.md      the C-core reference
 *.lisp             the compiler           doc/DOC-CPP.md    the C++ reference
 builtins.cicili    the builtin macros     doc/FUNCTIONAL.md the functional layer
 cpp.cicili         the C++ macro layer    doc/test.md       the test suite
-lib/std/           the standard library   test/c, test/std  the suite (sh test/run.sh)
+lib/cpp/torch      libtorch bindings + DSL  test/c, test/std the suite (sh test/run.sh)
+lib/python/        CPython + numpy bindings example/        runnable examples
+lib/std/           the standard library
 lib/haskell/       the functional layer   test/cpp          the C++ suite
 emacs/             cicili-mode
 ```

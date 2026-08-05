@@ -1,0 +1,27 @@
+;;;; Cicili declarations for CPython and numpy -- aggregator
+;;;;
+;;;;     (import "lib/python/python.cicili")
+;;;;
+;;;; or one at a time:
+;;;;
+;;;;     (import "lib/python/cpython.cicili")
+;;;;     (import "lib/python/numpy.cicili")
+;;;;
+;;;; Nothing here emits C. A target still includes the real headers, IN THIS
+;;;; ORDER, and still has to link against libpython:
+;;;;
+;;;;     (include <Python.h>)                  ; first, always
+;;;;     (include <numpy/arrayobject.h>)
+;;;;
+;;;; with -DNPY_NO_DEPRECATED_API=NPY_1_7_API_VERSION on the compile line.
+;;;;
+;;;; The flags are wherever the interpreter is. Ask it rather than guessing:
+;;;;
+;;;;     python3 -c "import sysconfig;print(sysconfig.get_paths()['include'])"
+;;;;     python3 -c "import numpy;print(numpy.get_include())"
+;;;;     python3 -c "import sysconfig;print(sysconfig.get_config_var('LIBDIR'))"
+;;;;
+;;;; cpython first: numpy's declarations are expressed in terms of PyObject.
+
+(import "./cpython.cicili")
+(import "./numpy.cicili")

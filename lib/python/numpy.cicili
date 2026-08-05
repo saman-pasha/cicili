@@ -1,0 +1,127 @@
+;;;; Cicili declarations for the numpy C API
+;;;;
+;;;; Requires in target, in this order:
+;;;;
+;;;;     (include <Python.h>)              ; first, always
+;;;;     (include <numpy/arrayobject.h>)
+;;;;
+;;;; with -DNPY_NO_DEPRECATED_API=NPY_1_7_API_VERSION on the compile line. It
+;;;; goes there rather than in an (@define …) because @define specifies both of
+;;;; its operands as expressions, and the value NPY_1_7_API_VERSION is a macro
+;;;; from a header Cicili has no declaration for.
+;;;;
+;;;; and lib/python/cpython.cicili imported alongside this one -- there is no
+;;;; numpy array without a running interpreter.
+;;;;
+;;;; NOTHING HERE EMITS C. Type inference only; the real declarations come from
+;;;; the real header.
+;;;;
+;;;; THE ONE THING THAT WILL BITE YOU: `import_array' must be called once, in
+;;;; every translation unit that touches the API, after Py_Initialize and before
+;;;; anything else here. numpy's API is a table of function pointers that the
+;;;; import fills in; skipping it does not fail to compile, it segfaults on the
+;;;; first call. The macro `import_array' cannot be declared to Cicili because
+;;;; it expands to a `return', so the underlying function is declared instead:
+;;;;
+;;;;     (when (< (_import_array) 0)
+;;;;       (block (PyErr_Print) (return 1)))
+;;;;
+;;;; That is the whole ritual, and it is better than the macro anyway -- the
+;;;; macro returns for you, from whatever function you happened to be in.
+;;;;
+;;;; MOST OF THE API IS MACROS. PyArray_DATA, PyArray_NDIM and the rest expand
+;;;; to indexed calls through that table. They are declared here as the
+;;;; functions they behave like, which is all inference needs; the real macro is
+;;;; what the C compiler sees.
+
+;;; (npdims 2 3) -> ((npy_intp[]){2, 3})
+;;;
+;;; numpy takes shapes as `npy_intp *'. A compound literal has the lifetime of
+;;; the enclosing block, which outlives the call it is written in, so unlike
+;;; libtorch's IntArrayRef there is nothing here that dangles -- see `dims' in
+;;; lib/cpp/torch/tensor.cicili for the case where it does.
+;;;
+;;; THE OUTER PARENTHESES ARE LOAD-BEARING. Most of numpy's API is
+;;; function-like MACROS, and the preprocessor splits their arguments on commas
+;;; that are not inside parentheses -- braces do not protect them. Without the
+;;; wrapping parens, PyArray_SimpleNew(2, (npy_intp[]){2,3}, NPY_FLOAT32) is
+;;; four arguments to a three-argument macro, and the error names the macro
+;;; rather than the shape that caused it.
+;;;
+;;; Compound literals are C99. In a C++ target they are a GNU extension that
+;;; clang accepts, and `-Wno-c99-extensions' is needed to keep -Werror happy.
+(DEFMACRO npdims (&REST ds)
+  `(code '{ "((npy_intp[])" "{" (code ',(LET ((l (1- (LENGTH ds))))
+                                         (LOOP FOR d IN ds FOR i FROM 0 TO l
+                                               APPEND (IF (< i l) (LIST d ",") (LIST d)))))
+            "})" }))
+
+(DEFMACRO init-macro ()
+  `($$$
+
+     ;;; ---- types ----------------------------------------------------
+     ;;; PyArrayObject is a PyObject with a header numpy owns. The two are
+     ;;; cast between constantly, and the API is split down that line: the
+     ;;; constructors answer PyObject *, the accessors take PyArrayObject *.
+     (decl) (struct PyArrayObject)
+     (typedef ssize_t npy_intp)
+
+     ;;; ---- the ritual -----------------------------------------------
+     ;;; < 0 means the import failed and an exception is set
+     (decl) (func _import_array () (out int))
+
+     ;;; ---- making arrays --------------------------------------------
+     ;;; SimpleNew allocates and owns its memory, uninitialised.
+     (decl) (func PyArray_SimpleNew ((int nd) (npy_intp * dims) (int typenum))
+                  (out PyObject *))                                        ; NEW
+     ;;; SimpleNewFromData WRAPS memory you already have and does NOT copy it.
+     ;;; The buffer must outlive the array, and the array does not free it --
+     ;;; the same bargain as torch::from_blob, and the same way to get it wrong.
+     (decl) (func PyArray_SimpleNewFromData ((int nd) (npy_intp * dims) (int typenum)
+                                             (void * data))
+                  (out PyObject *))                                        ; NEW
+     (decl) (func PyArray_Zeros ((int nd) (npy_intp * dims) (PyObject * dtype) (int fortran))
+                  (out PyObject *))                                        ; NEW
+     ;;; Take any Python object and get an array of the type you asked for,
+     ;;; copying only if it has to. The requirements are the NPY_ARRAY_* flags.
+     (decl) (func PyArray_FromAny ((PyObject * o) (PyObject * dtype)
+                                   (int mindepth) (int maxdepth)
+                                   (int requirements) (PyObject * context))
+                  (out PyObject *))                                        ; NEW
+
+     ;;; ---- reading them ---------------------------------------------
+     (decl) (func PyArray_DATA     ((PyArrayObject * a)) (out void *))
+     (decl) (func PyArray_NDIM     ((PyArrayObject * a)) (out int))
+     (decl) (func PyArray_SIZE     ((PyArrayObject * a)) (out npy_intp))
+     (decl) (func PyArray_DIM      ((PyArrayObject * a) (int i)) (out npy_intp))
+     (decl) (func PyArray_DIMS     ((PyArrayObject * a)) (out npy_intp *))
+     (decl) (func PyArray_STRIDES  ((PyArrayObject * a)) (out npy_intp *))
+     (decl) (func PyArray_TYPE     ((PyArrayObject * a)) (out int))
+     (decl) (func PyArray_ITEMSIZE ((PyArrayObject * a)) (out int))
+     (decl) (func PyArray_NBYTES   ((PyArrayObject * a)) (out npy_intp))
+     ;;; whether the memory is laid out the way a plain C loop expects. An
+     ;;; array that came from Python may be a view, a slice or transposed, and
+     ;;; walking its DATA as if it were contiguous reads the wrong elements
+     ;;; without failing.
+     (decl) (func PyArray_IS_C_CONTIGUOUS ((PyArrayObject * a)) (out int))
+
+     ;;; ---- type numbers ---------------------------------------------
+     ;;; A typedef is how a constant is declared to inference; see
+     ;;; lib/std/c/stdlib.cicili for the same treatment of EXIT_SUCCESS.
+     (typedef int NPY_BOOL)
+     (typedef int NPY_INT8)    (typedef int NPY_UINT8)
+     (typedef int NPY_INT16)   (typedef int NPY_UINT16)
+     (typedef int NPY_INT32)   (typedef int NPY_UINT32)
+     (typedef int NPY_INT64)   (typedef int NPY_UINT64)
+     (typedef int NPY_FLOAT32) (typedef int NPY_FLOAT64)
+     (typedef int NPY_FLOAT)   (typedef int NPY_DOUBLE)
+
+     ;;; ---- requirement flags ----------------------------------------
+     (typedef int NPY_ARRAY_C_CONTIGUOUS)
+     (typedef int NPY_ARRAY_ALIGNED)
+     (typedef int NPY_ARRAY_WRITEABLE)
+     (typedef int NPY_ARRAY_FORCECAST)
+     (typedef int NPY_ARRAY_IN_ARRAY)
+     (typedef int NPY_ARRAY_OUT_ARRAY)
+
+     ))

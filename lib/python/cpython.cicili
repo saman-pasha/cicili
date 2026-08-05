@@ -1,0 +1,128 @@
+;;;; Cicili declarations for the CPython C API -- the embedding subset
+;;;;
+;;;; Requires in target: (include <Python.h>) FIRST, before any other header --
+;;;; CPython says so, and it is not a style preference: Python.h defines feature
+;;;; macros that change what the system headers declare.
+;;;;
+;;;; NOTHING HERE EMITS C. These declarations exist so Cicili's type inference
+;;;; knows what a PyObject is. The real ones come from the real header, exactly
+;;;; as with lib/std/c and lib/cpp/torch.
+;;;;
+;;;; WHY THIS FILE EXISTS AT ALL. It is here because numpy's C API needs it:
+;;;; there is no way to make a numpy array without a running interpreter, so
+;;;; anything that touches numpy from C is either an extension module Python
+;;;; loads, or a program that starts Python itself. Both need this.
+;;;;
+;;;; REFERENCE COUNTING IS YOURS. Py_DECREF and Py_INCREF are macros that
+;;;; cannot be declared here, so the FUNCTIONS Py_DecRef and Py_IncRef are
+;;;; declared instead -- CPython provides both spellings and the function form
+;;;; is the one another language can call. Every function below is marked with
+;;;; what it does to the count, because getting that wrong is a leak or a crash
+;;;; and the header will not tell you:
+;;;;
+;;;;   NEW      you own it and must Py_DecRef it
+;;;;   BORROWED you must NOT decref it; it dies with its owner
+;;;;   STEALS   the callee takes your reference; do not decref it yourself
+
+;;; ------------------------------------------------------------------
+;;; (python-support) -- emit the two functions that make letin* work
+;;; ------------------------------------------------------------------
+;;;
+;;; Write it once, at target level. It defines two static functions and nothing
+;;; else, and they exist because a letin* destructor has to be a NAMED FUNCTION
+;;; taking the address of what it destroys -- that is what
+;;; __attribute__((cleanup)) passes it. See lib/std/builtins for letin*.
+;;;
+;;; With them, an interpreter and every reference are scoped:
+;;;
+;;;     (python-support)
+;;;
+;;;     (main
+;;;       (letin* ((py (py_open) py_finalize))          ; Py_Finalize at exit
+;;;         (when (< py 0) (block (PyErr_Print) (return 1)))   ; -- even here
+;;;         (letin* ((a (PyArray_SimpleNew …) py_decref))      ; Py_DecRef at exit
+;;;           …)))
+;;;
+;;; THE EARLY RETURN IS THE POINT. Written by hand, the import-failed path
+;;; leaves the interpreter running, and every `return' added later has to
+;;; remember the decrefs above it. This is the same reason `letin' exists on
+;;; the C side, applied to the API where getting it wrong is most common.
+;;;
+;;; py_open answers what _import_array answered: < 0 means numpy is not usable
+;;; and an exception is set. Py_Finalize still runs.
+(DEFMACRO python-support ()
+  `($$$
+     (static) (func py_open () (out int)
+                    (Py_Initialize)
+                    (return (_import_array)))
+     ;; the parameter is the ADDRESS of the variable, which is what cleanup
+     ;; passes; its value is not needed, only the fact that the scope ended
+     (static) (func py_finalize ((int * unused))
+                    (cast void unused)
+                    (Py_Finalize))
+     (static) (func py_decref ((PyObject ** o))
+                    (when (cof o) (Py_DecRef (cof o))))))
+
+(DEFMACRO init-macro ()
+  `($$$
+
+     ;;; ---- the object -----------------------------------------------
+     (decl) (struct PyObject)
+
+     ;;; ---- interpreter lifetime ------------------------------------
+     (decl) (func Py_Initialize   ())
+     (decl) (func Py_Finalize     ())
+     (decl) (func Py_IsInitialized () (out int))
+     ;; 0 on success, non-zero if the interpreter could not shut down cleanly
+     (decl) (func Py_FinalizeEx   () (out int))
+
+     ;;; ---- errors ---------------------------------------------------
+     ;; PyErr_Occurred answers a BORROWED reference, or nil when nothing failed.
+     ;; Check it after anything that can fail and before using what came back.
+     (decl) (func PyErr_Occurred   () (out PyObject *))
+     (decl) (func PyErr_Print      ())
+     (decl) (func PyErr_Clear      ())
+
+     ;;; ---- reference counting ---------------------------------------
+     ;; the function spellings of Py_DECREF / Py_INCREF. Both tolerate nil.
+     (decl) (func Py_DecRef ((PyObject * o)))
+     (decl) (func Py_IncRef ((PyObject * o)))
+
+     ;;; ---- running code ---------------------------------------------
+     ;; 0 on success, -1 on an exception (which it prints)
+     (decl) (func PyRun_SimpleString ((const char * code)) (out int))
+
+     ;;; ---- modules and attributes -----------------------------------
+     (decl) (func PyImport_ImportModule    ((const char * name)) (out PyObject *))   ; NEW
+     (decl) (func PyObject_GetAttrString   ((PyObject * o) (const char * name))
+                  (out PyObject *))                                                  ; NEW
+     (decl) (func PyObject_SetAttrString   ((PyObject * o) (const char * name) (PyObject * v))
+                  (out int))
+     (decl) (func PyObject_HasAttrString   ((PyObject * o) (const char * name)) (out int))
+
+     ;;; ---- calling --------------------------------------------------
+     ;; args must be a tuple, or nil for no arguments
+     (decl) (func PyObject_CallObject ((PyObject * callable) (PyObject * args))
+                  (out PyObject *))                                                  ; NEW
+
+     ;;; ---- tuples ---------------------------------------------------
+     (decl) (func PyTuple_New     ((ssize_t n))                        (out PyObject *)) ; NEW
+     ;; STEALS the reference to `v'. This is the classic CPython trap: passing
+     ;; something you then decref yourself is a double free.
+     (decl) (func PyTuple_SetItem ((PyObject * t) (ssize_t i) (PyObject * v)) (out int))
+     (decl) (func PyTuple_GetItem ((PyObject * t) (ssize_t i))         (out PyObject *)) ; BORROWED
+     (decl) (func PyTuple_Size    ((PyObject * t))                     (out ssize_t))
+
+     ;;; ---- scalars in and out ---------------------------------------
+     (decl) (func PyLong_FromLong      ((long v))          (out PyObject *))  ; NEW
+     (decl) (func PyLong_AsLong        ((PyObject * o))    (out long))
+     (decl) (func PyFloat_FromDouble   ((double v))        (out PyObject *))  ; NEW
+     (decl) (func PyFloat_AsDouble     ((PyObject * o))    (out double))
+     (decl) (func PyUnicode_FromString ((const char * s))  (out PyObject *))  ; NEW
+     (decl) (func PyUnicode_AsUTF8     ((PyObject * o))    (out const char *)); BORROWED
+
+     ;;; ---- introspection --------------------------------------------
+     (decl) (func PyObject_Str  ((PyObject * o)) (out PyObject *))   ; NEW
+     (decl) (func PyObject_Repr ((PyObject * o)) (out PyObject *))   ; NEW
+
+     ))
