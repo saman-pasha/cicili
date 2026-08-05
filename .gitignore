@@ -191,3 +191,4 @@ example/torch_example
 example/numpy_example
 example/numpy_torch
 example/numpy_ops
+example/*.la

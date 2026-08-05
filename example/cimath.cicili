@@ -1,0 +1,169 @@
+;;;; A Python extension module, written in Cicili
+;;;;
+;;;; The other examples start an interpreter. This one is the other direction:
+;;;; a .so that `import cimath' loads, whose functions run as C.
+;;;;
+;;;;     sbcl --script cicili.lisp ./example/cimath.cicili
+;;;;     python3 example/cimath_test.py
+;;;;
+;;;; libtool writes the loadable object to example/.libs/cimath.so, which is
+;;;; why the test puts that directory on sys.path rather than the example's.
+;;;;
+;;;; THE THREE RULES, none of which the C compiler checks:
+;;;;
+;;;;   1. the init symbol is the contract. `import cimath' looks for
+;;;;      PyInit_cimath in a file named cimath.so and nothing else
+;;;;   2. answering nil without setting an exception raises SystemError --
+;;;;      a confusing way to find out you forgot
+;;;;   3. import_array must run in the init, once, or the first numpy call
+;;;;      from any function here segfaults
+;;;;
+;;;; The paths below are this machine's. Ask the interpreter for yours:
+;;;;
+;;;;     python3 -c "import sysconfig;print(sysconfig.get_paths()['include'])"
+;;;;     python3 -c "import numpy;print(numpy.get_include())"
+
+(source "cimath.c"
+  ;; A LOADABLE MODULE IS NOT A PROGRAM AND NOT A SHARED LIBRARY, and the four
+  ;; words that say so are `-shared -module -avoid-version', with `.la' as the
+  ;; output. libtool then writes the real thing to .libs/cimath.so with the
+  ;; right flags for the platform -- on macOS that is -bundle with
+  ;; -undefined dynamic_lookup, which leaves the CPython symbols to be resolved
+  ;; by whichever interpreter loads it.
+  ;;
+  ;; -rpath is required by libtool for any installable library, even one that
+  ;; is never installed. {$CWD} is this directory.
+  ;;
+  ;; DO NOT LINK libpython INTO A MODULE. The interpreter already has it, and a
+  ;; second copy is two of every static, including the type objects.
+  (make :compile ("-O2" "-fPIC" "-DNPY_NO_DEPRECATED_API=NPY_1_7_API_VERSION"
+                  "-I/usr/local/opt/python@3.14/Frameworks/Python.framework/Versions/3.14/include/python3.14"
+                  "-I/usr/local/opt/numpy/lib/python3.14/site-packages/numpy/_core/include"
+                  "-c" "cimath.c")
+        :link ("-lcimath.o" "-shared" "-module" "-avoid-version"
+               "-rpath" "{$CWD}" "-o" "cimath.la"))
+
+  (include <Python.h>)                   ; first, always
+  (include <numpy/arrayobject.h>)
+
+  (import "lib/python/python.cicili")
+
+  ;; py_decref only. An extension module starts no interpreter, so
+  ;; (python-support) -- which also emits py_open and py_finalize -- is the
+  ;; wrong one here.
+  (python-refs)
+
+  ;;; ---- add(a, b) -------------------------------------------------
+  ;;;
+  ;;; The plainest possible one, and it shows the whole shape: unpack, check,
+  ;;; convert, check again, answer a new reference.
+  ;;;
+  ;;; PyArg_UnpackTuple rather than PyArg_ParseTuple -- there is no format
+  ;;; string to get wrong, and each conversion below reports its own failure
+  ;;; with the type it wanted. What it hands back is BORROWED.
+  (static) (func py_add ((PyObject * self) (PyObject * args)) (out PyObject *)
+                 (cast void self)
+                 (let ((PyObject * a . nil)
+                       (PyObject * b . nil))
+                   (when (not (PyArg_UnpackTuple args "add" 2 2 (aof a) (aof b)))
+                     (return nil))
+                   (let ((double x . #'(PyFloat_AsDouble a))
+                         (double y . #'(PyFloat_AsDouble b)))
+                     ;; -1.0 is a legitimate answer, so the error is the
+                     ;; exception being set, not the value
+                     (when (PyErr_Occurred) (return nil))
+                     (return (PyFloat_FromDouble (+ x y))))))
+
+  ;;; ---- asum(a) ---------------------------------------------------
+  ;;;
+  ;;; Takes anything array-like and sums it in C. FROM_OTF is what makes the
+  ;;; function accept a list, a tuple, an int array or a non-contiguous view
+  ;;; without any of them being a special case -- it converts, copying only
+  ;;; when it must, and what comes back is contiguous float64 or nothing.
+  (static) (func py_asum ((PyObject * self) (PyObject * arg)) (out PyObject *)
+                 (cast void self)
+                 (letin* ((o (PyArray_FROM_OTF arg NPY_FLOAT64 NPY_ARRAY_IN_ARRAY)
+                             py_decref))
+                   (when (not o) (return nil))       ; FROM_OTF set the exception
+                   (let ((PyArrayObject * a . #'(cast (PyArrayObject *) o)))
+                     (let ((double * d . #'(cast (double *) (PyArray_DATA a)))
+                           (npy_intp n . #'(PyArray_SIZE a))
+                           (double s . 0.0))
+                       (for ((npy_intp i . 0)) (< i n) ((++ i)) (+= s (nth i d)))
+                       (return (PyFloat_FromDouble s))))))
+
+  ;;; ---- squares(n) ------------------------------------------------
+  ;;;
+  ;;; Builds a numpy array in C and hands it to Python. numpy owns the memory,
+  ;;; so nothing here has to outlive the call -- contrast with
+  ;;; example/numpy.cicili, where a C buffer is wrapped instead and the
+  ;;; lifetime is the caller's problem.
+  ;;;
+  ;;; NOTE the missing py_decref: the array IS the answer, and the reference
+  ;;; goes to Python. Scoping it with letin* would free what was returned.
+  (static) (func py_squares ((PyObject * self) (PyObject * arg)) (out PyObject *)
+                 (cast void self)
+                 (let ((long n . #'(PyLong_AsLong arg)))
+                   (when (PyErr_Occurred) (return nil))
+                   (when (< n 0)
+                     (block (PyErr_SetString PyExc_ValueError "n must not be negative")
+                            (return nil)))
+                   (let ((PyObject * o . #'(PyArray_ZEROS 1 (npdims n) NPY_FLOAT64 0)))
+                     (when (not o) (return nil))
+                     (let ((double * d . #'(cast (double *)
+                                                 (PyArray_DATA (cast (PyArrayObject *) o)))))
+                       (for ((long i . 0)) (< i n) ((++ i))
+                            (set (nth i d) (cast double (* i i))))
+                       (return o)))))
+
+  ;;; ---- scale(a, by=2.0) ------------------------------------------
+  ;;;
+  ;;; The kwargs convention, which is the one with the cast: CPython will call
+  ;;; this with three arguments through a two-argument pointer. (py-module …)
+  ;;; writes that cast, because a mismatch here is not a compile error.
+  ;;;
+  ;;; The keyword list is nil-terminated, exactly like the method table, and
+  ;;; the leading "|" in the format says the rest are optional.
+  (static) (func py_scale ((PyObject * self) (PyObject * args) (PyObject * kw))
+                 (out PyObject *)
+                 (cast void self)
+                 (let ((char * keywords [] . '{ "a" "by" nil })
+                       (PyObject * seq . nil)
+                       (double by . 2.0))
+                   (when (not (PyArg_ParseTupleAndKeywords
+                               args kw "O|d" keywords (aof seq) (aof by)))
+                     (return nil))
+                   (letin* ((o (PyArray_FROM_OTF seq NPY_FLOAT64 NPY_ARRAY_IN_ARRAY)
+                               py_decref))
+                     (when (not o) (return nil))
+                     ;; PyNumber_Multiply on an array IS np.multiply, so the
+                     ;; loop is numpy's and this stays three lines
+                     (letin* ((f (PyFloat_FromDouble by) py_decref))
+                       (return (PyNumber_Multiply o f))))))
+
+  ;;; ---- version() -------------------------------------------------
+  ;;;
+  ;;; The noargs convention. The second parameter is always nil and is there
+  ;;; only because ml_meth has room for it.
+  (static) (func py_version ((PyObject * self) (PyObject * unused)) (out PyObject *)
+                 (cast void self)
+                 (cast void unused)
+                 (return (PyUnicode_FromString "cimath 1.0, built by Cicili")))
+
+  ;;; ---- and the module itself -------------------------------------
+  ;;;
+  ;;; Three things get written here and nothing else: the method table, the
+  ;;; module definition, and PyInit_cimath.
+  (py-module cimath
+    (doc "arithmetic and array helpers, written in Cicili")
+    (method "add"     py_add     varargs "add(a, b) -> float")
+    (method "asum"    py_asum    one     "asum(seq) -> float, summed in C")
+    (method "squares" py_squares one     "squares(n) -> ndarray of i*i")
+    (method "scale"   py_scale   kwargs  "scale(a, by=2.0) -> ndarray")
+    (method "version" py_version noargs  "version() -> str")
+    ;; THE IMPORT GOES HERE AND NOWHERE ELSE. numpy's API is a table of
+    ;; function pointers this fills in; without it the first PyArray_ call in
+    ;; any function above segfaults, and nothing warns.
+    (setup m
+      (when (< (_import_array) 0) (return nil))
+      (PyModule_AddStringConstant m "__version__" "1.0"))))

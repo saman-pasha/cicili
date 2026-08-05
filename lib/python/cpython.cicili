@@ -50,6 +50,14 @@
 ;;;
 ;;; py_open answers what _import_array answered: < 0 means numpy is not usable
 ;;; and an exception is set. Py_Finalize still runs.
+;;; An EXTENSION MODULE starts no interpreter -- one is already running -- so
+;;; it wants only the reference helper. Write (python-refs) there and
+;;; (python-support) here; writing both defines py_decref twice.
+(DEFMACRO python-refs ()
+  `($$$
+     (static) (func py_decref ((PyObject ** o))
+                    (when (cof o) (Py_DecRef (cof o))))))
+
 (DEFMACRO python-support ()
   `($$$
      (static) (func py_open () (out int)
@@ -60,8 +68,7 @@
      (static) (func py_finalize ((int * unused))
                     (cast void unused)
                     (Py_Finalize))
-     (static) (func py_decref ((PyObject ** o))
-                    (when (cof o) (Py_DecRef (cof o))))))
+     (python-refs)))
 
 (DEFMACRO init-macro ()
   `($$$

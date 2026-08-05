@@ -20,6 +20,7 @@ needs. They emit nothing; the real declarations come from the real headers, exac
 | [python.cicili](python.cicili) | the aggregator — import this |
 | [cpython.cicili](cpython.cicili) | the embedding API, and `python-support` |
 | [numpy.cicili](numpy.cicili) | the array API, and `npdims` |
+| [module.cicili](module.cicili) | the other direction — a `.so` that Python imports, and `py-module` |
 
 ---
 
@@ -215,6 +216,91 @@ add `-Wno-c99-extensions` to keep `-Werror` happy.
 
 ---
 
+## Extension modules
+
+Everything above embeds Python in a program. The other direction is a `.so` that
+`import` loads, and it needs three things and nothing else: a `PyMethodDef`
+table, a `PyModuleDef`, and `PyInit_<name>`. `py-module` writes all three.
+
+```lisp
+(python-refs)                              ; py_decref, without py_open
+
+(py-module cimath
+  (doc "arithmetic and array helpers, written in Cicili")
+  (method "add"     py_add     varargs "add(a, b) -> float")
+  (method "asum"    py_asum    one     "asum(seq) -> float, summed in C")
+  (method "squares" py_squares one     "squares(n) -> ndarray of i*i")
+  (method "scale"   py_scale   kwargs  "scale(a, by=2.0) -> ndarray")
+  (method "version" py_version noargs  "version() -> str")
+  (setup m
+    (when (< (_import_array) 0) (return nil))     ; numpy, once, here
+    (PyModule_AddStringConstant m "__version__" "1.0")))
+```
+
+Use `(python-refs)` rather than `(python-support)` — an extension module starts
+no interpreter, so `py_open` and `py_finalize` are the wrong tools and defining
+both spellings defines `py_decref` twice.
+
+### The convention is a word, not a flag
+
+`ml_flags` tells CPython how to call the function, `ml_meth` is a two-argument
+pointer whatever the function really is, and a mismatch is **not a compile
+error** — it is a crash. So the convention is spelled out and the macro derives
+both the flag and, where C needs one, the cast:
+
+| word | flags | your function must be |
+|---|---|---|
+| `varargs` | `METH_VARARGS` | `(self args)` — `args` is a tuple |
+| `noargs` | `METH_NOARGS` | `(self unused)` — `unused` is nil |
+| `one` | `METH_O` | `(self arg)` — `arg` is *the* object |
+| `kwargs` | `METH_VARARGS \| METH_KEYWORDS` | `(self args kw)`, and gets the cast |
+
+An unknown word is a compile-time error naming the four.
+
+### Three things the C compiler will not tell you
+
+* **The init symbol is the contract.** `import cimath` looks for `PyInit_cimath`
+  in a file named `cimath.so`. The macro derives the symbol from the name you
+  give it; the filename is yours to keep in step.
+* **Answering nil without setting an exception raises `SystemError`** — a
+  confusing way to find out you forgot. Either propagate what the failing call
+  already set, or `PyErr_SetString` your own.
+* **`import_array` goes in `(setup …)`**, once. Without it the first
+  `PyArray_` call in *any* function in the module segfaults, and nothing warns.
+  There is nowhere else it can go, which is most of why the setup clause exists.
+
+### Reading arguments
+
+`PyArg_UnpackTuple` first. It takes a count range and `PyObject **` out
+parameters — no format string, so the only thing it can get wrong is the count,
+and it says so itself with the function's name in the message. Convert each
+value afterwards with `PyFloat_AsDouble`, `PyArray_FROM_OTF` and the rest, which
+each report their own failure.
+
+`PyArg_ParseTuple` and `PyArg_ParseTupleAndKeywords` are declared because they
+are the API, not because they are the safe one: nothing checks that `"dd"`
+matches two `double *`, and being wrong writes through a pointer of the wrong
+width.
+
+### Building one
+
+A loadable module is neither a program nor a shared library. The words that say
+so are `-shared -module -avoid-version` with a `.la` output; libtool then writes
+the real object to **`.libs/<name>.so`** with the right flags for the platform —
+on macOS `-bundle` with `-undefined dynamic_lookup`.
+
+```lisp
+:link ("-lcimath.o" "-shared" "-module" "-avoid-version"
+       "-rpath" "{$CWD}" "-o" "cimath.la")
+```
+
+`-rpath` is required by libtool for any installable library, even one that is
+never installed. **Do not link libpython into a module** — the interpreter
+already has it, and a second copy is two of every static, including the type
+objects.
+
+---
+
 ## Examples
 
 | file | what it shows | checks |
@@ -222,8 +308,9 @@ add `-Wno-c99-extensions` to keep `-Werror` happy.
 | [example/numpy.cicili](../../example/numpy.cicili) | a C target: scoped interpreter and references, an array numpy agrees is its own, and a C buffer wrapped without copying | 11 |
 | [example/numpy-ops.cicili](../../example/numpy-ops.cicili) | the rest of the API: shapes, strides, views, reductions, ufunc arithmetic, slicing, sorting, matrix products, keyword calls | 31 |
 | [example/numpy-torch.cicili](../../example/numpy-torch.cicili) | a C++ target: numpy and libtorch over the **same memory**, no copy in either direction | — |
+| [example/cimath.cicili](../../example/cimath.cicili) | an extension module: all four calling conventions, arrays in and out, exceptions raised from Cicili — driven by [cimath_test.py](../../example/cimath_test.py) | 27 |
 
-All three run against the real libraries. `example/numpy.cicili` prints eleven checks including
+All of them run against the real libraries. `example/numpy.cicili` prints eleven checks including
 this one, which is the whole argument for `SimpleNewFromData`:
 
 ```
@@ -256,12 +343,16 @@ Two things to get right, and neither will tell you when you have not:
 
 ## What is not here
 
-* **No extension-module scaffolding** — `PyModuleDef`, `PyMethodDef`, `PyInit_*`. These
-  bindings are for a program that *embeds* Python; making a `.so` that Python imports needs
-  those and they are not written yet.
-* **No varargs** — `PyObject_CallFunction`, `Py_BuildValue`, `PyArg_ParseTuple`. Cicili can
-  declare a `...` parameter, but the format-string contract is not something inference can
-  check, so the tuple-building functions are declared instead and are safer anyway.
+* **No custom types** — `PyTypeObject`, `tp_*` slots, `PyType_FromSpec`. A module can export
+  functions and constants; a module that exports a *class* needs those and they are not
+  written yet.
+* **No multi-phase init** — `PyModuleDef_Slot`, `Py_mod_exec`, `PyModuleDef_Init`.
+  `py-module` writes single-phase init with `m_size` of `-1`, which is what almost every
+  module does and which cannot be loaded twice into one process.
+* **No `PyObject_CallFunction`.** The varargs argument functions *are* declared —
+  `PyArg_ParseTuple`, `PyArg_ParseTupleAndKeywords`, `Py_BuildValue` — because writing an
+  extension module without them is not realistic. But nothing checks a format string, so the
+  tuple-building path is the one the examples take.
 * **No buffer protocol, no `NpyIter`, no ufunc API.** The number protocol
   reaches the common ufuncs — `PyNumber_Add` on two arrays *is* `np.add` — but
   registering your own, or iterating with broadcasting, needs `NpyIter` and
