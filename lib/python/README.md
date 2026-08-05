@@ -114,6 +114,89 @@ also scoping is a double free, so incref first:
 
 ---
 
+## What is declared
+
+The array API in full, plus enough of CPython to use it. The tables below name
+the traps rather than the functions — every declaration in the two files carries
+its own comment.
+
+### Making and taking arrays
+
+| | |
+|---|---|
+| `PyArray_SimpleNew` `PyArray_ZEROS` `PyArray_EMPTY` `PyArray_Arange` | numpy allocates and owns the memory |
+| `PyArray_SimpleNewFromData` | wraps memory **you** own — no copy, no free |
+| `PyArray_Zeros` `PyArray_Empty` `PyArray_NewLikeArray` | take a `PyArray_Descr *` and **steal** it |
+| `PyArray_FROM_OTF` `PyArray_FROMANY` | the workhorses for whatever Python handed you — a list, a scalar, a view, the wrong dtype |
+| `PyArray_FromAny` | the function underneath them; steals the descr |
+
+Prefer the SHOUTING spellings. They build the dtype from a type number, so
+nothing is stolen and nothing leaks; the lowercase ones exist for when you
+already have a descr.
+
+### Reading them
+
+`PyArray_DATA` `BYTES` `NDIM` `SIZE` `DIM` `DIMS` `SHAPE` `STRIDES` `STRIDE`
+`TYPE` `ITEMSIZE` `NBYTES` `DESCR` `BASE`, and the layout predicates
+`FLAGS` `CHKFLAGS` `IS_C_CONTIGUOUS` `IS_F_CONTIGUOUS` `ISWRITEABLE` `ISALIGNED`.
+
+**Strides are in bytes, not elements.** A row of three `double`s is 24.
+
+**`PyArray_GETPTR1`…`GETPTR4` are the correct way to reach one element** of an
+array you did not allocate. They walk the strides; `DATA[i * cols + j]` does not,
+and a transposed or sliced array is exactly where the two disagree without
+either of them failing. `example/numpy-ops.cicili` checks both answers on the
+same array.
+
+### Shape, copies, reductions
+
+| | |
+|---|---|
+| `Reshape` `Transpose` `Ravel` `Squeeze` `SwapAxes` `Concatenate` | answer a **view when they can and a copy when they must**, and you cannot tell which from the call — ask `PyArray_BASE` |
+| `Flatten` `NewCopy` `GETCONTIGUOUS` `CopyInto` `CopyObject` `CastToType` `ToList` | copies |
+| `Sum` `Prod` `Mean` `Std` `Max` `Min` `ArgMax` `ArgMin` `CumSum` | pass `NPY_RAVEL_AXIS` for "over everything" |
+| `Sort` `ArgSort` `Nonzero` `Where` `MatrixProduct` | `Sort` is **in place** and answers `0`/`-1`, unlike everything around it |
+
+Two things numpy 2 changed that the older documentation still gets wrong:
+
+* **`NPY_MAXDIMS` is no longer the "all axes" sentinel.** It is the dimension
+  limit, 64, and passing it as an axis raises. Use **`NPY_RAVEL_AXIS`**.
+* **`PyArray_Cast` is gone.** Use `PyArray_CastToType` (which steals a descr) or,
+  more simply, `PyArray_FROM_OTF`.
+
+A reduction answers a numpy scalar or a zero-dimensional array, never a C
+double. `PyFloat_AsDouble` converts it.
+
+### The CPython side
+
+Beyond the embedding basics: **the number protocol** — `PyNumber_Add`,
+`Subtract`, `Multiply`, `TrueDivide`, `Power`, `MatrixMultiply`, `Negative` and
+the in-place forms. On arrays these *are* the ufuncs, so element-wise arithmetic
+needs no call back through the module:
+
+```lisp
+(letin* ((twice (PyNumber_Add m m) py_decref))   ; np.add, elementwise, in C
+  …)
+```
+
+The in-place forms write into their first argument **and answer it increfed** —
+a second reference you must also drop. It is the leak that looks like it cannot
+be one.
+
+Also `PyObject_GetItem`/`SetItem` with `PySlice_New` (a slice is a **view**;
+assigning through it changes the array you took it from), `PyObject_Call` with a
+kwargs dict, lists, dicts, rich comparison, and `PyErr_SetString` with the
+built-in exception types.
+
+Watch the setters, which do not agree with each other:
+
+| | |
+|---|---|
+| `PyTuple_SetItem` `PyList_SetItem` | **steal** |
+| `PyList_Append` `PyDict_SetItem` `PyDict_SetItemString` | do not |
+
+---
+
 ## `npdims`
 
 numpy takes shapes as `npy_intp *`, so `(npdims 2 3)` expands to `((npy_intp[]){2, 3})` — a
@@ -134,12 +217,13 @@ add `-Wno-c99-extensions` to keep `-Werror` happy.
 
 ## Examples
 
-| file | what it shows |
-|---|---|
-| [example/numpy.cicili](../../example/numpy.cicili) | a C target: scoped interpreter and references, an array numpy agrees is its own, and a C buffer wrapped without copying |
-| [example/numpy-torch.cicili](../../example/numpy-torch.cicili) | a C++ target: numpy and libtorch over the **same memory**, no copy in either direction |
+| file | what it shows | checks |
+|---|---|---|
+| [example/numpy.cicili](../../example/numpy.cicili) | a C target: scoped interpreter and references, an array numpy agrees is its own, and a C buffer wrapped without copying | 11 |
+| [example/numpy-ops.cicili](../../example/numpy-ops.cicili) | the rest of the API: shapes, strides, views, reductions, ufunc arithmetic, slicing, sorting, matrix products, keyword calls | 31 |
+| [example/numpy-torch.cicili](../../example/numpy-torch.cicili) | a C++ target: numpy and libtorch over the **same memory**, no copy in either direction | — |
 
-Both run against the real libraries. `example/numpy.cicili` prints eleven checks including
+All three run against the real libraries. `example/numpy.cicili` prints eleven checks including
 this one, which is the whole argument for `SimpleNewFromData`:
 
 ```
@@ -178,5 +262,8 @@ Two things to get right, and neither will tell you when you have not:
 * **No varargs** — `PyObject_CallFunction`, `Py_BuildValue`, `PyArg_ParseTuple`. Cicili can
   declare a `...` parameter, but the format-string contract is not something inference can
   check, so the tuple-building functions are declared instead and are safer anyway.
-* **No buffer protocol, no iterators, no ufunc API.**
+* **No buffer protocol, no `NpyIter`, no ufunc API.** The number protocol
+  reaches the common ufuncs — `PyNumber_Add` on two arrays *is* `np.add` — but
+  registering your own, or iterating with broadcasting, needs `NpyIter` and
+  `PyUFunc_FromFuncAndData`, which are not declared.
 * **No GIL management** — `PyGILState_Ensure` and friends. Single-threaded embedding only.

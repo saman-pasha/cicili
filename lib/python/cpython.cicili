@@ -68,6 +68,13 @@
 
      ;;; ---- the object -----------------------------------------------
      (decl) (struct PyObject)
+     ;;; Py_None is a macro for the address of a static object, so it is
+     ;;; declared the way a global is -- see lib/std/c/stdio.cicili and
+     ;;; `stdout'. It is a singleton: never decref it, never compare against
+     ;;; it with anything but ==.
+     (typedef PyObject * Py_None)
+     (typedef PyObject * Py_True)
+     (typedef PyObject * Py_False)
 
      ;;; ---- interpreter lifetime ------------------------------------
      (decl) (func Py_Initialize   ())
@@ -79,9 +86,22 @@
      ;;; ---- errors ---------------------------------------------------
      ;; PyErr_Occurred answers a BORROWED reference, or nil when nothing failed.
      ;; Check it after anything that can fail and before using what came back.
-     (decl) (func PyErr_Occurred   () (out PyObject *))
+     ;;
+     ;; THE RULE: a function that answers a pointer signals failure with nil,
+     ;; and one that answers an int signals it with -1. Either way an exception
+     ;; is left set, and leaving it set across the next call makes the next
+     ;; failure look like this one. Print it or clear it.
+     (decl) (func PyErr_Occurred   () (out PyObject *))                     ; BORROWED
      (decl) (func PyErr_Print      ())
      (decl) (func PyErr_Clear      ())
+     ;; raise. Answers nil always, so it tail-calls out of a failing function.
+     (decl) (func PyErr_SetString  ((PyObject * type) (const char * msg)))
+     ;; the built-in exception types, declared the way globals are
+     (typedef PyObject * PyExc_RuntimeError)
+     (typedef PyObject * PyExc_ValueError)
+     (typedef PyObject * PyExc_TypeError)
+     (typedef PyObject * PyExc_IndexError)
+     (typedef PyObject * PyExc_MemoryError)
 
      ;;; ---- reference counting ---------------------------------------
      ;; the function spellings of Py_DECREF / Py_INCREF. Both tolerate nil.
@@ -99,11 +119,22 @@
      (decl) (func PyObject_SetAttrString   ((PyObject * o) (const char * name) (PyObject * v))
                   (out int))
      (decl) (func PyObject_HasAttrString   ((PyObject * o) (const char * name)) (out int))
+     ;; the already-imported module, without importing it. "__main__" is the
+     ;; one PyRun_SimpleString runs in, so this is how you read back what a
+     ;; snippet of Python left behind.
+     (decl) (func PyImport_AddModule ((const char * name)) (out PyObject *))          ; BORROWED
+     (decl) (func PyModule_GetDict   ((PyObject * m))      (out PyObject *))          ; BORROWED
 
      ;;; ---- calling --------------------------------------------------
      ;; args must be a tuple, or nil for no arguments
      (decl) (func PyObject_CallObject ((PyObject * callable) (PyObject * args))
                   (out PyObject *))                                                  ; NEW
+     ;; with keywords: args is a tuple (never nil here), kwargs a dict or nil
+     (decl) (func PyObject_Call ((PyObject * callable) (PyObject * args)
+                                 (PyObject * kwargs))
+                  (out PyObject *))                                                  ; NEW
+     (decl) (func PyObject_CallNoArgs ((PyObject * callable)) (out PyObject *))       ; NEW
+     (decl) (func PyCallable_Check    ((PyObject * o)) (out int))
 
      ;;; ---- tuples ---------------------------------------------------
      (decl) (func PyTuple_New     ((ssize_t n))                        (out PyObject *)) ; NEW
@@ -113,13 +144,93 @@
      (decl) (func PyTuple_GetItem ((PyObject * t) (ssize_t i))         (out PyObject *)) ; BORROWED
      (decl) (func PyTuple_Size    ((PyObject * t))                     (out ssize_t))
 
+     ;;; ---- lists ----------------------------------------------------
+     ;; SetItem steals like the tuple one; Append does NOT -- it increfs. The
+     ;; two sit next to each other and behave differently, which is the second
+     ;; classic trap after PyTuple_SetItem.
+     (decl) (func PyList_New     ((ssize_t n))                        (out PyObject *)) ; NEW
+     (decl) (func PyList_SetItem ((PyObject * l) (ssize_t i) (PyObject * v)) (out int)) ; STEALS v
+     (decl) (func PyList_GetItem ((PyObject * l) (ssize_t i))         (out PyObject *)) ; BORROWED
+     (decl) (func PyList_Append  ((PyObject * l) (PyObject * v))      (out int))
+     (decl) (func PyList_Size    ((PyObject * l))                     (out ssize_t))
+
+     ;;; ---- dicts ----------------------------------------------------
+     ;; these steal nothing, unlike the sequence setters
+     (decl) (func PyDict_New           ()                             (out PyObject *)) ; NEW
+     (decl) (func PyDict_SetItem       ((PyObject * d) (PyObject * k) (PyObject * v))
+                  (out int))
+     (decl) (func PyDict_GetItem       ((PyObject * d) (PyObject * k))
+                  (out PyObject *))                                                  ; BORROWED
+     (decl) (func PyDict_SetItemString ((PyObject * d) (const char * k) (PyObject * v))
+                  (out int))
+     (decl) (func PyDict_GetItemString ((PyObject * d) (const char * k))
+                  (out PyObject *))                                                  ; BORROWED
+     (decl) (func PyDict_Size          ((PyObject * d))               (out ssize_t))
+
+     ;;; ---- indexing -------------------------------------------------
+     ;; what a[…] compiles to. The key is an object, so an integer index needs
+     ;; PyLong_FromLong and a slice needs PySlice_New -- which is how a numpy
+     ;; view is taken from C.
+     (decl) (func PyObject_GetItem ((PyObject * o) (PyObject * key)) (out PyObject *)) ; NEW
+     (decl) (func PyObject_SetItem ((PyObject * o) (PyObject * key) (PyObject * v))
+                  (out int))
+     (decl) (func PyObject_DelItem ((PyObject * o) (PyObject * key)) (out int))
+     ;; any of the three may be nil, meaning the open end
+     (decl) (func PySlice_New ((PyObject * start) (PyObject * stop) (PyObject * step))
+                  (out PyObject *))                                                  ; NEW
+     (decl) (func PyObject_Length ((PyObject * o)) (out ssize_t))
+
+     ;;; ---- arithmetic -----------------------------------------------
+     ;; the operators, as functions. On numpy arrays these ARE the ufuncs, so
+     ;; this is how element-wise work is done from C without calling back
+     ;; through the module. Every one answers a new array.
+     (decl) (func PyNumber_Add            ((PyObject * a) (PyObject * b)) (out PyObject *)) ; NEW
+     (decl) (func PyNumber_Subtract       ((PyObject * a) (PyObject * b)) (out PyObject *)) ; NEW
+     (decl) (func PyNumber_Multiply       ((PyObject * a) (PyObject * b)) (out PyObject *)) ; NEW
+     (decl) (func PyNumber_TrueDivide     ((PyObject * a) (PyObject * b)) (out PyObject *)) ; NEW
+     (decl) (func PyNumber_FloorDivide    ((PyObject * a) (PyObject * b)) (out PyObject *)) ; NEW
+     (decl) (func PyNumber_Remainder      ((PyObject * a) (PyObject * b)) (out PyObject *)) ; NEW
+     ;; the third argument is the modulus of pow(a, b, m); pass Py_None
+     (decl) (func PyNumber_Power          ((PyObject * a) (PyObject * b) (PyObject * m))
+                  (out PyObject *))                                                       ; NEW
+     ;; the @ operator -- matrix multiply
+     (decl) (func PyNumber_MatrixMultiply ((PyObject * a) (PyObject * b)) (out PyObject *)) ; NEW
+     (decl) (func PyNumber_Negative       ((PyObject * a))                (out PyObject *)) ; NEW
+     (decl) (func PyNumber_Absolute       ((PyObject * a))                (out PyObject *)) ; NEW
+     ;; the in-place forms. For an array they write into `a' and answer it
+     ;; increfed -- a SECOND reference you must also decref, which is the
+     ;; thing that looks like it cannot leak and does.
+     (decl) (func PyNumber_InPlaceAdd      ((PyObject * a) (PyObject * b)) (out PyObject *)) ; NEW
+     (decl) (func PyNumber_InPlaceSubtract ((PyObject * a) (PyObject * b)) (out PyObject *)) ; NEW
+     (decl) (func PyNumber_InPlaceMultiply ((PyObject * a) (PyObject * b)) (out PyObject *)) ; NEW
+     (decl) (func PyNumber_InPlaceTrueDivide ((PyObject * a) (PyObject * b)) (out PyObject *)) ; NEW
+
+     ;;; ---- comparing ------------------------------------------------
+     ;; RichCompare on two arrays answers an ARRAY of booleans, not a bool --
+     ;; the same trap as writing `if a == b' in Python. Use PyObject_RichCompareBool
+     ;; only on scalars.
+     (decl) (func PyObject_RichCompare     ((PyObject * a) (PyObject * b) (int op))
+                  (out PyObject *))                                                  ; NEW
+     (decl) (func PyObject_RichCompareBool ((PyObject * a) (PyObject * b) (int op))
+                  (out int))
+     ;; -1 on error, so check PyErr_Occurred rather than trusting 0
+     (decl) (func PyObject_IsTrue ((PyObject * o)) (out int))
+     (typedef int Py_LT) (typedef int Py_LE) (typedef int Py_EQ)
+     (typedef int Py_NE) (typedef int Py_GT) (typedef int Py_GE)
+
      ;;; ---- scalars in and out ---------------------------------------
      (decl) (func PyLong_FromLong      ((long v))          (out PyObject *))  ; NEW
      (decl) (func PyLong_AsLong        ((PyObject * o))    (out long))
      (decl) (func PyFloat_FromDouble   ((double v))        (out PyObject *))  ; NEW
      (decl) (func PyFloat_AsDouble     ((PyObject * o))    (out double))
      (decl) (func PyUnicode_FromString ((const char * s))  (out PyObject *))  ; NEW
+     ;; the char * points into the string object and dies with it
      (decl) (func PyUnicode_AsUTF8     ((PyObject * o))    (out const char *)); BORROWED
+     (decl) (func PyBool_FromLong      ((long v))          (out PyObject *))  ; NEW
+     ;; a Python float from anything float-like -- including a numpy scalar or
+     ;; a zero-dimensional array, which is what every numpy reduction answers
+     (decl) (func PyFloat_Check        ((PyObject * o))    (out int))
+     (decl) (func PyLong_Check         ((PyObject * o))    (out int))
 
      ;;; ---- introspection --------------------------------------------
      (decl) (func PyObject_Str  ((PyObject * o)) (out PyObject *))   ; NEW
