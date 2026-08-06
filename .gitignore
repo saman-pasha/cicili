@@ -141,6 +141,12 @@ benchmark/concurrent_btree
 draft/tests/collection/btree
 benchmark/royal_btree
 benchmark/simple_btree
+# the last two benchmark binaries to be tracked by accident. Every other
+# one is ignored above; these two were missed, so a --release rebuild put
+# 24K of changed binary into an unrelated commit. std_vec_bench was
+# deleted once already (1460868) and came back for want of this line.
+benchmark/std_vec_bench
+benchmark/std_btree_bench
 draft/tests/collection/royal_btree
 *.toml~
 *.lock
