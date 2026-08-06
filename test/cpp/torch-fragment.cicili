@@ -79,11 +79,20 @@
        (check_true "a class in range"        (and (>= a 0) (< a 10)))
        (check "the same input twice agrees"  (net_predict net px 784) a)
 
-       ;; THE ONE THAT CATCHES A DEAD PATH. A model that ignores its input --
-       ;; a from_blob that zeroes, a forward that answers a constant -- passes
-       ;; every check above and fails this one.
        (letin* ((b (net_predict net qx 784)))
-         (check_true "a different input can differ" (!= a b))))
+         (check_true "a class in range, second input" (and (>= b 0) (< b 10)))))
+
+     ;; THE ONE THAT CATCHES A DEAD PATH, and it asks for a SCORE rather than
+     ;; a class. An untrained network's argmax is very nearly
+     ;; input-independent -- one class wins for almost every picture -- so
+     ;; two inputs sharing a class says nothing either way. The largest
+     ;; log-probability moves with the input for a trained and an untrained
+     ;; network alike, so two pictures scoring the same to six decimals did
+     ;; not both reach the model.
+     (letin* ((sa (net_score net px 784)))
+       (check "the same input scores the same" (net_score net px 784) sa)
+       (letin* ((sb (net_score net qx 784)))
+         (check_true "a different input scores differently" (!= sa sb))))
 
      ;; The length is checked, not trusted: 783 floats into a 784-input model
      ;; is a caller's bug and must not be read past.

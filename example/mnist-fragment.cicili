@@ -56,6 +56,8 @@
   (decl) (func net_load    ((const char * path)) (out (t<> std::shared_ptr Classifier)))
   (decl) (func net_predict ((const (t<> std::shared_ptr Classifier) & n)
                             (const float * pixels) (long count)) (out long))
+  (decl) (func net_score   ((const (t<> std::shared_ptr Classifier) & n)
+                            (const float * pixels) (long count)) (out long))
   (decl) (func net_inputs  () (out long)))
 
 ;;; ---- the CPP block ----------------------------------------------------
@@ -112,4 +114,27 @@
                                         (($ (torch::TensorOptions) dtype) torch::kFloat32))))
             (letin* ((y (($ (cof (($ n get))) forward) x)))
               (return (cast long (($ (($ y argmax) 1) (t<> item i64)))))))))
+
+  ;; THE SAME FORWARD PASS, ANSWERED AS A NUMBER RATHER THAN A CLASS.
+  ;;
+  ;; A class is the wrong thing to test a model's wiring with. An UNTRAINED
+  ;; network's argmax is very nearly input-independent -- the random
+  ;; projections average out and one class wins for almost every picture --
+  ;; so "two different inputs give two different classes" fails against a
+  ;; real untrained net while passing against a stand-in, and the failure
+  ;; says nothing about the plumbing it was written to check.
+  ;;
+  ;; The largest log-probability does depend on the input, continuously, for
+  ;; a trained and an untrained network alike. Scaled by a million and
+  ;; truncated so it can cross a boundary that only carries integers, it is
+  ;; the signal a caller can assert on: two pictures that produce the same
+  ;; score to six decimal places did not both reach the model.
+  (func net_score ((const (t<> std::shared_ptr Classifier) & n)
+                   (const float * pixels) (long count)) (out long)
+        (when (!= count (net_inputs)) (return 0))
+        (letin* ((guard (torch::NoGradGuard)))
+          (letin* ((x (torch::from_blob (cast (void *) pixels) (dims 1 784)
+                                        (($ (torch::TensorOptions) dtype) torch::kFloat32))))
+            (letin* ((y (($ (cof (($ n get))) forward) x)))
+              (return (cast long (* (cast double (($ (($ y max)) (t<> item float)))) 1000000.0)))))))
   )

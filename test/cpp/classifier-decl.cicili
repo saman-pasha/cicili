@@ -33,4 +33,6 @@
      (decl) (func net_load    ((const char * path)) (out (t<> std::shared_ptr Classifier)))
      (decl) (func net_predict ((const (t<> std::shared_ptr Classifier) & n)
                                (const float * pixels) (long count)) (out long))
+     (decl) (func net_score   ((const (t<> std::shared_ptr Classifier) & n)
+                               (const float * pixels) (long count)) (out long))
      (decl) (func net_inputs  () (out long))))
