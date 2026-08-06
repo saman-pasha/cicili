@@ -39,8 +39,21 @@ using c10::IntArrayRef;
 
 struct Device      { int id = 0; };
 struct Scalar      { double d = 0; Scalar() {} Scalar(double x) : d(x) {} };
-struct ScalarType  { int id = 0; };
-struct TensorOptions { int id = 0; };
+struct ScalarType  { int id = 0; ScalarType() {} ScalarType(int i) : id(i) {} };
+
+// the dtype tags a from_blob caller has to name. Only their identity matters
+// here -- nothing in the stub reads a tensor's dtype back.
+const ScalarType kFloat32 = ScalarType(6);
+const ScalarType kFloat64 = ScalarType(7);
+const ScalarType kInt64   = ScalarType(4);
+const ScalarType kLong    = ScalarType(4);
+
+struct TensorOptions {
+  int id = 0;
+  ScalarType st;
+  TensorOptions dtype(ScalarType s) const { TensorOptions o = *this; o.st = s; return o; }
+  TensorOptions device(Device)      const { return *this; }
+};
 
 struct Tensor {
   std::vector<double>    data;
@@ -114,6 +127,18 @@ struct Tensor {
     return r;
   }
 
+  // The index of the largest element, which for a classifier's output IS the
+  // answer -- so this one has to compute rather than stand in, or every
+  // prediction is class 0 and a test that asserts two inputs differ cannot
+  // fail. The dimension is ignored: everything here is one row.
+  Tensor argmax(long long = 0) const {
+    Tensor r; r.shape = { 1 };
+    size_t best = 0;
+    for (size_t i = 1; i < data.size(); i++) if (data[i] > data[best]) best = i;
+    r.data = { (double)best };
+    return r;
+  }
+
   template <typename T> T item() const { return (T)(data.empty() ? 0 : data[0]); }
 
   void    backward()          {}
@@ -145,12 +170,25 @@ inline Tensor arange(Scalar end) {
   for (long long i = 0; i < n; i++) r.data.push_back((double)i);
   return r;
 }
-inline Tensor from_blob(void*, IntArrayRef s) { return Tensor(s.v, 0.0); }
+// The real from_blob does not copy; this one does, and the difference is not
+// observable to a caller that only reads the result. What it must NOT do is
+// return a tensor of zeros: a classifier fed a buffer it ignores answers the
+// same class for every input, and a test built on that proves nothing.
+inline Tensor from_blob(const void* p, IntArrayRef s) {
+  Tensor t(s.v, 0.0);
+  const float* f = (const float*)p;
+  for (size_t i = 0; i < t.data.size(); i++) t.data[i] = (double)f[i];
+  return t;
+}
+inline Tensor from_blob(const void* p, IntArrayRef s, TensorOptions) { return from_blob(p, s); }
 
 inline Tensor relu(const Tensor& x)    { return x.unop([](double d){ return d > 0 ? d : 0.0; }); }
 inline Tensor sigmoid(const Tensor& x) { return x.unop([](double d){ return 1.0 / (1.0 + std::exp(-d)); }); }
 inline Tensor tanh(const Tensor& x)    { return x.unop([](double d){ return std::tanh(d); }); }
 inline Tensor softmax(const Tensor& x, long long) { return x; }
+// log_softmax is monotone, so it cannot move the argmax -- which is the only
+// thing anything downstream of it reads here.
+inline Tensor log_softmax(const Tensor& x, long long) { return x; }
 inline Tensor matmul(const Tensor& a, const Tensor& b) { return a.matmul(b); }
 inline Tensor mm(const Tensor& a, const Tensor& b)     { return a.mm(b); }
 inline Tensor add(const Tensor& a, const Tensor& b)    { return a.add(b); }
@@ -176,6 +214,17 @@ struct Module {
   bool is_training() const { return training; }
   IntArrayRef parameters() const { return IntArrayRef(); }
   void to(Device)     {}
+
+  // What (network …) emits: every layer is registered in the member
+  // initializer list, so this has to return its argument and it has to be a
+  // template -- the DSL registers Linear, Conv2d, Dropout and BatchNorm2d
+  // through the same call. The real one takes ownership for parameter
+  // collection; nothing here collects parameters, so holding the name is
+  // enough to keep the call honest about being made.
+  template <typename T> T register_module(const char* name, T module) {
+    (void)name;
+    return module;
+  }
 };
 
 struct LinearImpl : public Module {
@@ -185,11 +234,28 @@ struct LinearImpl : public Module {
     weight = Tensor({ o, i }, 0.1);
     bias   = Tensor({ o },    0.0);
   }
+
+  // NOT A CONSTANT, and that is the whole point of the shape of it. This used
+  // to answer sum(x) * 0.1 in every output cell, which made argmax 0 for every
+  // input -- fine while nothing read the answer, useless the moment a test
+  // asserts that two different inputs land in two different classes.
+  //
+  // So the weight varies with both indices. It is arbitrary and it is not
+  // trained; what it is, is a deterministic function of the input that is not
+  // constant across the output. That is exactly as much as a stand-in owes a
+  // test of the plumbing around it, and no more -- there is no learning here
+  // and nothing should read an accuracy off it.
   Tensor forward(const Tensor& x) const {
     Tensor r; r.shape = { out };
-    double s = 0;
-    for (double d : x.data) s += d;
-    r.data.assign((size_t)out, s * 0.1);
+    r.data.assign((size_t)out, 0.0);
+    for (long long j = 0; j < out; j++) {
+      double acc = 0;
+      for (size_t i = 0; i < x.data.size(); i++) {
+        double w = (double)(((long long)i * 31 + j * 17) % 7 - 3) * 0.01;
+        acc += x.data[i] * w;
+      }
+      r.data[(size_t)j] = acc;
+    }
     return r;
   }
 };
@@ -210,5 +276,12 @@ struct Optimizer { void step() {} void zero_grad() {} };
 struct SGD  : public Optimizer {};
 struct Adam : public Optimizer {};
 } // namespace optim
+
+// Serialisation, to the extent the declarations need it to exist. THIS DOES
+// NOT READ OR WRITE ANYTHING -- a stub that silently "loaded" weights would
+// let a test pass while the real call was failing, so the honest stand-in is
+// one that is never reached by a test that passes a path.
+template <typename T> void save(const T&, const char*) {}
+template <typename T> void load(const T&, const char*) {}
 
 } // namespace torch

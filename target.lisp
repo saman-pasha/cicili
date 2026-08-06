@@ -1,5 +1,48 @@
 (in-package :cicili)
 
+;;; `-lNAME.o' is the house spelling for "the libtool object NAME.lo" -- every
+;;; :link in test/, benchmark/ and example/ is written that way, and it is what
+;;; the `make' macro produces.
+;;;
+;;; IT ONLY MEANS THAT TO APPLE'S LIBTOOL. GNU libtool does not recognise the
+;;; .o suffix inside a -l, so it hands `-lNAME.o' straight to ld, which goes
+;;; looking for libNAME.o.so and libNAME.o.a, finds neither, and fails. The
+;;; result was that on Linux EVERY target with a :link failed to link -- the
+;;; whole of test/c, test/std and test/cpp, not a subset -- and the suite could
+;;; not be run on the platform at all. It reported "C linking failed: 1" with
+;;; ld's message underneath, which reads like a missing library rather than a
+;;; spelling the linker was never going to understand.
+;;;
+;;; So resolve it here, where the argument list is already assembled: if a
+;;; -lNAME.o has a matching NAME.lo under one of the -L directories or the
+;;; working directory, pass that file instead. Handing libtool a .lo directly
+;;; is ordinary libtool usage and means the same thing on both platforms, so
+;;; this is not a Linux branch -- macOS takes the same path and the same file.
+;;; A -lNAME.o with no .lo anywhere is left exactly as written, because then it
+;;; is a real library the user is naming and not our business.
+(defun resolve-libtool-objects< (args)
+  (let ((dirs (list (namestring (uiop/os:getcwd)))))
+    (dolist (a args)
+      (when (and (stringp a) (> (length a) 2) (string= "-L" (subseq a 0 2)))
+        (push (subseq a 2) dirs)))
+    (mapcar
+     (lambda (a)
+       (if (and (stringp a) (> (length a) 4)
+                (string= "-l" (subseq a 0 2))
+                (string= ".o" (subseq a (- (length a) 2))))
+           (let* ((stem (concatenate 'string (subseq a 2 (- (length a) 2)) ".lo"))
+                  (hit  (loop for d in dirs
+                              for path = (merge-pathnames
+                                          stem
+                                          (pathname (if (and (plusp (length d))
+                                                             (char= (char d (1- (length d))) #\/))
+                                                        d
+                                                        (concatenate 'string d "/"))))
+                              when (probe-file path) return path)))
+             (if hit (namestring hit) a))
+           a))
+     args)))
+
 (defun specify-target (target)
   (set-ast-obj target
     (let* ((name    (nth 1 target))
@@ -193,6 +236,7 @@
                                      (cwd       (uiop/os:getcwd))
                                      (args      `(,program ,@arguments ,@custom)))
                                  (setq args (replace-args< `(("{$CCL}" ,ccl) ("{$CWD}" ,cwd)) args))
+                                 (setq args (resolve-libtool-objects< args))
                                  (display "cicili link:" args #\Newline)
 
 		                         (let ((exit-status

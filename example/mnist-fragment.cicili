@@ -1,0 +1,115 @@
+;;;; The mnist-dsl classifier, emitted as a fragment for a Parsi CLASS
+;;;;
+;;;; example/mnist-dsl.cicili trains this network and prints an accuracy. This
+;;;; file takes the SAME (network Classifier …) and emits it as two files of
+;;;; plain C++ that are not translation units, for ZiguratIP's two blocks:
+;;;;
+;;;;     CLASS Demo::Classifier
+;;;;     BEGIN
+;;;;         INCLUDE '<torch/torch.h>';   LINK '-ltorch';
+;;;;         BEGIN HPP  ... classifier.hpp ...  END
+;;;;         BEGIN CPP  ... classifier.cpp ...  END
+;;;;     PRIVATE:
+;;;;         DECLARE _net AS `std::`shared_ptr<`Classifier>;
+;;;;     PUBLIC:
+;;;;         FUNCTION predict(pixels AS Vector<Float>) RETURNS Long ...
+;;;;     END
+;;;;
+;;;; so a Zeytun page can answer a request with a prediction. See
+;;;; example/parsi-fragment.cicili for the mechanism on its own, without torch.
+;;;;
+;;;; Run:  sbcl --script cicili.lisp ./example/mnist-fragment.cicili
+;;;; Writes example/classifier.hpp and example/classifier.cpp. Neither is
+;;;; compiled here -- Parsi compiles them, as part of the object, with the
+;;;; object's own flags.
+;;;;
+;;;; WHY THE THREE FREE FUNCTIONS. Parsi has no dereference operator and no `*'
+;;;; type suffix, so it cannot call a method on a struct it holds a pointer to.
+;;;; What it can do is hold a `std::`shared_ptr<`Classifier> and pass it to a
+;;;; function. So the network's own interface -- a `forward' method taking a
+;;;; Tensor -- is unreachable from Parsi, and these three are the adaptation:
+;;;; make one, feed it a flat buffer of floats, get an answer back.
+;;;;
+;;;; THE PIXELS ARE A BARE POINTER AND A LENGTH, deliberately. Parsi's
+;;;; Vector<Float> is its own type and this fragment must not know about it;
+;;;; the Parsi side hands over the address of its first element. torch::from_blob
+;;;; does not copy, so the buffer must outlive the call -- it does, since the
+;;;; caller's vector is alive across it -- and net_predict copies out of the
+;;;; result before returning a long.
+
+(import "lib/cpp/memory.cicili")
+
+;;; std::shared_ptr<Classifier> for inference. In init-macro, which is the only
+;;; place a declaration emits nothing.
+(DEFMACRO init-macro ()
+  `($$$ ,@(shared-ptr< 'Classifier)))
+
+;;; ---- the HPP block ----------------------------------------------------
+;;;
+;;; A forward declaration and three prototypes. NOT the struct: a member
+;;; declared shared_ptr<Classifier> does not need the type complete, and
+;;; leaving it incomplete here is what keeps torch::nn out of the header --
+;;; which every Zigurat object that REQUIRES this one includes.
+
+(header "classifier.hpp" (make :cpp #t)
+  (decl) (struct Classifier)
+  (decl) (func net_load    ((const char * path)) (out (t<> std::shared_ptr Classifier)))
+  (decl) (func net_predict ((const (t<> std::shared_ptr Classifier) & n)
+                            (const float * pixels) (long count)) (out long))
+  (decl) (func net_inputs  () (out long)))
+
+;;; ---- the CPP block ----------------------------------------------------
+;;;
+;;; The network itself, from the DSL, plus the three functions. This is the
+;;; half that names torch, and it stays in the object's own .cpp.
+
+(source "classifier.cpp" (make :cpp #t)
+
+  ;; The declarations, imported into the body the way test/cpp/torch.cicili
+  ;; imports them. They emit nothing.
+  (import "lib/cpp/torch/torch.cicili")
+
+  ;; The same four lines as example/mnist-dsl.cicili. 784 in, ten classes out.
+  (network Classifier
+    (input   784)
+    (dense   256 relu)
+    (dense   128 relu)
+    (dense    10 log-softmax))
+
+  ;; How many floats net_predict wants. The Parsi side checks its input
+  ;; against this rather than hardcoding 784 in two places.
+  (func net_inputs () (out long)
+        (return 784))
+
+  ;; PATH IS ACCEPTED AND IGNORED WHEN IT IS EMPTY, which is the case the test
+  ;; suite runs: an untrained network still answers, deterministically, and
+  ;; that is enough to prove the object loads and the page calls it. With a
+  ;; path, the weights are read -- and a model that cannot read its weights
+  ;; must fail loudly rather than answer from noise, so this throws.
+  ;; THE HANDLE IS BUILT BY ITS CONSTRUCTOR, not by std::make_shared, and the
+  ;; reason is inference rather than taste. Bound with letin*, a make_shared
+  ;; call comes out as `std::make_shared<Classifier> net' -- the function's own
+  ;; name standing where its return type belongs, because the inference does
+  ;; not reach through a template-id declaration's `out'. A constructor call
+  ;; names its type, so (shared_ptr<T> (new* T)) infers correctly. It also
+  ;; costs one allocation more than make_shared, which for one model loaded
+  ;; once is not a cost worth writing around a compiler bug for.
+  (func net_load ((const char * path)) (out (t<> std::shared_ptr Classifier))
+        (letin* ((net ((t<> std::shared_ptr Classifier) (new* Classifier))))
+          (when (and path (!= (nth 0 path) #\Null))
+            (torch::load net path))
+          (($ (cof (($ net get))) eval))
+          (return net)))
+
+  ;; NoGradGuard, because this is inference: without it every call builds a
+  ;; graph nothing will ever walk backwards, and the memory it holds is not
+  ;; returned until the tensors die.
+  (func net_predict ((const (t<> std::shared_ptr Classifier) & n)
+                     (const float * pixels) (long count)) (out long)
+        (when (!= count (net_inputs)) (return -1))
+        (letin* ((guard (torch::NoGradGuard)))
+          (letin* ((x (torch::from_blob (cast (void *) pixels) (dims 1 784)
+                                        (($ (torch::TensorOptions) dtype) torch::kFloat32))))
+            (letin* ((y (($ (cof (($ n get))) forward) x)))
+              (return (cast long (($ (($ y argmax) 1) (t<> item i64)))))))))
+  )

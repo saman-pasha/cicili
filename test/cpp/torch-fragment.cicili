@@ -1,0 +1,96 @@
+;;;; test the fragment path -- what example/mnist-fragment.cicili emits
+;;;
+;;; WHAT THIS PROVES. That the two files example/mnist-fragment.cicili writes
+;;; are usable C++ in the arrangement they were written for: the declarations
+;;; alone are enough to call the model, the definitions compile beside them,
+;;; and the three functions answer. That is the half a build system on the far
+;;; side -- ZiguratIP's BEGIN HPP / BEGIN CPP -- depends on and cannot check
+;;; for itself.
+;;;
+;;; IT COMPILES AGAINST test/cpp/torch_stub.hpp, so it runs in the suite with
+;;; nothing installed. The stub's Linear is not trained and answers an
+;;; arbitrary function of its input, so NOTHING HERE MAY ASSERT AN ACCURACY.
+;;; What it asserts is what the plumbing owes: a handle that is not null, a
+;;; class in range, the same input twice giving the same answer, and two
+;;; different inputs not being quietly collapsed into one. Against the real
+;;; libtorch the same fragment is exercised by ZiguratIP's Test/run-ai-e2e.sh.
+;;;
+;;; THE FRAGMENT IS INCLUDED, NOT IMPORTED. It is C++ text by the time it gets
+;;; here -- that being the point of it -- so the two #includes below are how a
+;;; consumer uses it, and running this test is what checks the emission is
+;;; still what a consumer can take.
+;;;
+;;; Regenerate the two files first, from the repository root:
+;;;
+;;;     sbcl --script cicili.lisp ./example/mnist-fragment.cicili
+
+(source "torch-fragment.cpp"
+  (make :cpp #t :compile #t :link ("-ltorch-fragment.o" "-o" "torch_fragment_test"))
+
+  ;; the declarations. They emit nothing; they are here so the compiler
+  ;; knows what the fragment's three functions are.
+  (import "test/cpp/classifier-decl.cicili")
+
+  (include "torch_stub.hpp")
+  (include <cstdio>)
+  (include <memory>)
+
+  ;; the emitted fragments, in the order a consumer splices them: declarations
+  ;; where the header goes, definitions where the implementation goes
+  (include "../../example/classifier.hpp")
+  (include "../../example/classifier.cpp")
+
+  (var int bad . 0)
+
+  (func check ((const char * what) (long got) (long want))
+        (if (== got want)
+            (printf "ok   %-38s %ld\n" what got)
+          (block (printf "FAIL %-38s got %ld want %ld\n" what got want)
+                 (++ bad))))
+
+  (func check_true ((const char * what) (int cond))
+        (if cond
+            (printf "ok   %-38s\n" what)
+          (block (printf "FAIL %-38s\n" what) (++ bad))))
+
+  ;; A picture. `seed' shifts the pattern so two calls can differ, which is
+  ;; what makes the "not a constant" check able to fail.
+  (func fill ((float * px) (long n) (long seed))
+        (for ((long i . 0)) (< i n) ((++ i))
+             (set (nth i px) (cast float (/ (cast double (% (+ (* i 7) seed) 256)) 255.0)))))
+
+  (main
+   (let ((float px [784])
+         (float qx [784]))
+
+   (check "net_inputs" (net_inputs) 784)
+
+   ;; No path: an untrained network, which is all a stub can offer and all the
+   ;; plumbing needs. A path here would reach torch::load, which this stub
+   ;; deliberately does not implement.
+   (letin* ((net (net_load "")))
+     (check_true "net_load answers a handle" (!= (($ net get)) nil))
+     (check_true "the handle owns one net"   (== (($ net use_count)) 1))
+
+     (fill px 784 0)
+     (fill qx 784 137)
+
+     (letin* ((a (net_predict net px 784)))
+       (check_true "a class in range"        (and (>= a 0) (< a 10)))
+       (check "the same input twice agrees"  (net_predict net px 784) a)
+
+       ;; THE ONE THAT CATCHES A DEAD PATH. A model that ignores its input --
+       ;; a from_blob that zeroes, a forward that answers a constant -- passes
+       ;; every check above and fails this one.
+       (letin* ((b (net_predict net qx 784)))
+         (check_true "a different input can differ" (!= a b))))
+
+     ;; The length is checked, not trusted: 783 floats into a 784-input model
+     ;; is a caller's bug and must not be read past.
+     (check "a short buffer is refused"     (net_predict net px 783) -1)
+     (check "a long buffer is refused"      (net_predict net px 785) -1))
+
+   (if (== bad 0)
+       (printf "\ntorch-fragment: all checks passed\n")
+     (printf "\ntorch-fragment: %d check(s) failed\n" bad))
+   (return bad))))
