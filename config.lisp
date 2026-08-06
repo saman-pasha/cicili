@@ -37,29 +37,50 @@
 
 ;;;; os specific toolset, one set per build type.
 ;;;;
-;;;; WHAT GOES IN `opt\' IS EVERY RELEASE BUILD\'S OPTIMISATION, so it is worth
-;;;; saying what is deliberately NOT there:
+;;;; THE RELEASE SET IS DIFFERENT FOR C AND FOR C++, and the difference is one
+;;;; flag:
 ;;;;
-;;;;   -O3               in. The obvious one.
-;;;;   -falign-loops=32  in. clang defaults loops to .p2align 4 -- sixteen
+;;;;   C     -O3 -falign-loops=32
+;;;;   C++   -O3
+;;;;
+;;;;   -O3               in, both. The obvious one.
+;;;;   -falign-loops=32  C only. clang defaults loops to .p2align 4 -- sixteen
 ;;;;                     bytes -- and a ~52 byte loop landing 16 off a 32-byte
 ;;;;                     boundary spans three uop-cache windows instead of two.
 ;;;;                     Measured up to 20% on test/std/array.cicili, and it is
 ;;;;                     alignment only: it cannot change what the code does.
+;;;;                     It is not in the C++ set because a C++ target here is a
+;;;;                     libtorch target, where the loops that matter are inside
+;;;;                     the library and were aligned when the library was
+;;;;                     built -- so the flag moves nothing and only widens the
+;;;;                     difference between what we compile and what we measure.
 ;;;;   -flto             OUT. Measured BOTH ways: it erased the rc penalty on
 ;;;;                     the vector benchmark (1104 -> 492 ms) and cost ~14% on
 ;;;;                     loops whose bounds check had already folded (452 ->
-;;;;                     514). Not a default until that is understood; ask for
-;;;;                     it per target.
+;;;;                     514). And against libtorch it links a binary that dies
+;;;;                     in "Accessing empty ModuleHolder" for the conv net
+;;;;                     while producing correct ones for the others, which is
+;;;;                     worse than failing. Ask for it per target.
 ;;;;   -ffast-math       OUT, and not negotiable as a default -- it changes
-;;;;                     floating point results. The benchmarks opt in.
+;;;;                     floating point results. It also does not compile
+;;;;                     against libtorch at all: activation.h negates
+;;;;                     numeric_limits::infinity() for attention masking, and
+;;;;                     -Wnan-infinity-disabled under -Werror rejects it.
 ;;;;
 ;;;; A target\'s own :compile / :link arguments are appended AFTER these, and
 ;;;; for a repeated flag the last one wins, so a target asking for -O3
 ;;;; -ffast-math overrides the base without having to know what the base was.
+;;;;
+;;;; WHICH IS WHY A BENCHMARK MUST BE BUILT WITH --release AND THE BENCHMARKS
+;;;; NOW REFUSE OTHERWISE. benchmark/*.cicili carry `:compile #t\' -- no flags of
+;;;; their own -- so without --release they are built at -g -O0 and every number
+;;;; from them is meaningless. That is not a hypothetical: it is checkable by
+;;;; rebuilding with --release and comparing the binary byte for byte, and the
+;;;; benchmarks call (release-only) so the mistake cannot be made silently.
 (defun configs< ()
-  (let* ((os  (software-type))
-         (opt (if *release* (list "-O3" "-falign-loops=32") (list "-g" "-O0"))))
+  (let* ((os      (software-type))
+         (opt     (if *release* (list "-O3" "-falign-loops=32") (list "-g" "-O0")))
+         (cpp-opt (if *release* (list "-O3")                    (list "-g" "-O0"))))
     (cond
 
       ((string= os "Linux")
@@ -70,8 +91,8 @@
         'linker   `("libtool" "--tag=CC" "--mode=link"    "gcc" ,@opt ,*verbose*)
         ;; C++
         'cpp-dumper   '("")
-        'cpp-compiler `("libtool" "--tag=CXX" "--mode=compile" "g++" ,@opt ,*verbose*)
-        'cpp-linker   `("libtool" "--tag=CXX" "--mode=link"    "g++" ,@opt ,*verbose*)))
+        'cpp-compiler `("libtool" "--tag=CXX" "--mode=compile" "g++" ,@cpp-opt ,*verbose*)
+        'cpp-linker   `("libtool" "--tag=CXX" "--mode=link"    "g++" ,@cpp-opt ,*verbose*)))
 
       ((string= os "Darwin")
        (list
@@ -83,8 +104,8 @@
         'linker   `("glibtool" "--tag=CC" "--mode=link"    "clang" ,@opt ,*verbose*)
         ;; C++
         'cpp-dumper   '()
-        'cpp-compiler `("glibtool" "--tag=CXX" "--mode=compile" "clang++" "-Werror" "-Wall" ,@opt ,*verbose*)
-        'cpp-linker   `("glibtool" "--tag=CXX" "--mode=link"    "clang++" ,@opt ,*verbose*)))
+        'cpp-compiler `("glibtool" "--tag=CXX" "--mode=compile" "clang++" "-Werror" "-Wall" ,@cpp-opt ,*verbose*)
+        'cpp-linker   `("glibtool" "--tag=CXX" "--mode=link"    "clang++" ,@cpp-opt ,*verbose*)))
 
       (t
        (list
@@ -94,5 +115,5 @@
         'linker   `("libtool" "--tag=CC" "--mode=link"    "gcc" ,@opt ,*verbose*)
         ;; C++
         'cpp-dumper   '()
-        'cpp-compiler `("libtool" "--tag=CXX" "--mode=compile" "g++" ,@opt ,*verbose*)
-        'cpp-linker   `("libtool" "--tag=CXX" "--mode=link"    "g++" ,@opt ,*verbose*))))))
+        'cpp-compiler `("libtool" "--tag=CXX" "--mode=compile" "g++" ,@cpp-opt ,*verbose*)
+        'cpp-linker   `("libtool" "--tag=CXX" "--mode=link"    "g++" ,@cpp-opt ,*verbose*))))))

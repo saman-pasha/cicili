@@ -78,8 +78,12 @@ SUITES = {
         # (so the compiler cannot fold the loop away), so they legitimately
         # differ and are not compared.
         "checksums": ["nth", "nth rc"],
-        "build": ("sbcl --script cicili.lisp --release ./benchmark/std-vector-bench.cicili"
-                  "  &&  (cd benchmark/rust-vector-bench && cargo build --release)"),
+        "build": [
+            (["sbcl", "--script", "cicili.lisp", "--release",
+              "./benchmark/std-vector-bench.cicili"], ROOT),
+            (["cargo", "build", "--release"],
+             os.path.join(ROOT, "benchmark", "rust-vector-bench")),
+        ],
     },
     "btree": {
         "title": "lib/std btree vs Rust BTreeMap<i32,i32>",
@@ -92,10 +96,18 @@ SUITES = {
             ("delete",            r"^delete \d+ keys",   r"^delete \d+ keys"),
         ],
         "checksums": ["insert", "search", "traverse", "delete"],
-        "build": ("sbcl --script cicili.lisp --release ./benchmark/std-btree-bench.cicili"
-                  "  &&  (cd benchmark/rust-vector-bench && cargo build --release)"),
+        "build": [
+            (["sbcl", "--script", "cicili.lisp", "--release",
+              "./benchmark/std-btree-bench.cicili"], ROOT),
+            (["cargo", "build", "--release"],
+             os.path.join(ROOT, "benchmark", "rust-vector-bench")),
+        ],
     },
 }
+
+TORCH_BUILD = [(["sbcl", "--script", "cicili.lisp", "--release", f"./example/{name}.cicili"],
+                ROOT)
+               for name in ("mnist-dsl", "tabular", "mnist-conv")]
 
 # the torch pairs are shaped differently: one time and one metric per run
 TORCH_PAIRS = [
@@ -183,6 +195,26 @@ def run(argv, cwd, env):
     if p.returncode != 0:
         raise RuntimeError(f"{' '.join(argv)} exited {p.returncode}\n{p.stderr[-2000:]}")
     return p.stdout
+
+
+def build(name):
+    """Rebuild the suite's binaries with --release, every time.
+
+    NOT AN OPTIMISATION AND NOT A CONVENIENCE. The benchmark targets carry
+    `:compile #t' -- no flags of their own -- so without --release they compile
+    at -g -O0, and the binary still builds, still runs, still prints
+    milliseconds. Nothing downstream objects. The .cicili sources now call
+    (release-only) and refuse, but a STALE binary left on disk from an earlier
+    build gets measured without anything being compiled at all, and no guard in
+    the compiler can catch that. Rebuilding here is what closes it.
+    """
+    steps = TORCH_BUILD if name == "torch" else SUITES[name]["build"]
+    for argv, cwd in steps:
+        print(f"  building: {' '.join(argv)}")
+        p = subprocess.run(argv, cwd=cwd, capture_output=True, text=True)
+        if p.returncode != 0:
+            raise RuntimeError(f"build failed: {' '.join(argv)}\n"
+                               f"{(p.stdout + p.stderr)[-3000:]}")
 
 
 def rows_of(text):
@@ -275,12 +307,11 @@ def run_torch(repeats, env):
 
 
 def missing_for(name, env):
+    """Only what this script cannot produce itself. The binaries it builds."""
     out = []
+    if not shutil.which("sbcl"):
+        out.append("sbcl -- needed to build the Cicili side with --release")
     if name == "torch":
-        for _, cic, _, _ in TORCH_PAIRS:
-            if not os.path.exists(os.path.join(ROOT, cic[0])):
-                out.append(f"{cic[0]} -- sbcl --script cicili.lisp --release "
-                           f"./example/<name>.cicili")
         if not os.path.exists(PYTORCH_PY):
             out.append(f"{PYTORCH_PY} -- the interpreter shipping the SAME libtorch the "
                        "Cicili side links; a different PyTorch build measures the builds")
@@ -288,11 +319,8 @@ def missing_for(name, env):
             out.append("$MNIST_DIR -- the four idx files")
         if not os.path.exists(env.get("TABULAR_CSV", "")):
             out.append("$TABULAR_CSV -- california.csv")
-    else:
-        spec = SUITES[name]
-        for who, argv, cwd in (spec["left"], spec["right"]):
-            if not os.path.exists(os.path.join(cwd, argv[0])):
-                out.append(f"{argv[0]} ({who}) -- build with:\n     {spec['build']}")
+    elif not shutil.which("cargo"):
+        out.append("cargo -- needed to build the Rust side with --release")
     return out
 
 
@@ -355,6 +383,9 @@ def main():
                     help="maximum one-minute load average per core (default 0.30)")
     ap.add_argument("--force", action="store_true",
                     help="measure a busy machine anyway, and say so in the output")
+    ap.add_argument("--no-build", action="store_true",
+                    help="do NOT rebuild first. Only for iterating on this script -- "
+                         "the numbers are then whatever happens to be on disk")
     args = ap.parse_args()
 
     wanted = ["torch", "vector", "btree"] if "all" in args.suite else list(args.suite)
@@ -375,6 +406,15 @@ def main():
     print("\nmeasuring on: " + info.get("cpu", info["platform"]))
     forced = require_quiet(args.load_limit, args.force)
 
+    # BUILD FIRST, ALL OF IT, WITH --release. Everything is rebuilt before
+    # anything is timed, so a suite cannot be measured against a binary left
+    # over from an earlier build -- which is the one way a debug build still
+    # reaches a benchmark now that the sources call (release-only).
+    if not args.no_build:
+        print("\nbuilding everything with --release")
+        for s in ready:
+            build(s)
+
     results = {}
     for s in ready:
         if s == "torch":
@@ -389,6 +429,10 @@ def main():
         print(f"* **{k}** — {v}")
     print(f"* **repeats** — {args.repeats} interleaved pairs, alternating which side "
           "runs first")
+    print("* **build** — " + ("`--release` for the Cicili side, `cargo build --release` "
+                              "for Rust, rebuilt by this script before timing"
+                              if not args.no_build else
+                              "**--no-build: whatever was already on disk**"))
     if forced:
         print("* **WARNING** — measured on a machine that FAILED the idleness check; "
               "these numbers are not publishable")

@@ -43,7 +43,7 @@ typedef struct JustT_ref_pair_int_int {
 } JustT_ref_pair_int_int;
 typedef struct Maybe_ref_pair_int_int {
   MAYBE_CTOR ctor ;
-  union { /* ciciliUnion114 */
+  union { /* ciciliUnion116 */
     JustT_ref_pair_int_int just ;
     NothingT nothing ;
   } data ;
@@ -76,7 +76,7 @@ typedef struct RightT_size_t {
 #define __EITHER__BTREE_ERR_size_t__H_
 typedef struct Either_BTREE_ERR_size_t {
   EITHER_CTOR ctor ;
-  union { /* ciciliUnion135 */
+  union { /* ciciliUnion137 */
     RightT_size_t right ;
     LeftT_BTREE_ERR left ;
   } data ;
@@ -139,7 +139,7 @@ __attribute__((weak)) Either_BTREE_ERR_size_t left_BTREE_ERR_size_t (BTREE_ERR e
 }
 #endif /* __EITHER_IMPL__BTREE_ERR_size_t__H_ */ 
 bthead_int_int_6 * restrict newleaf_btree_int_int_6 () {
-  { /* let236 */
+  { /* let238 */
     bthead_int_int_6 * restrict leaf  = malloc (sizeof(bthead_int_int_6 ));
     // ----------
     (leaf -> n) = 0;
@@ -147,7 +147,7 @@ bthead_int_int_6 * restrict newleaf_btree_int_int_6 () {
   }
 }
 bthead_int_int_6 * restrict newnode_btree_int_int_6 () {
-  { /* let245 */
+  { /* let247 */
     btnode_int_int_6 * restrict node  = malloc (sizeof(btnode_int_int_6 ));
     // ----------
     ((node -> head). n) = 0;
@@ -157,18 +157,18 @@ bthead_int_int_6 * restrict newnode_btree_int_int_6 () {
 }
 void freeall_btree_int_int_6 (bthead_int_int_6 * restrict h , size_t level ) {
   if (h )
-    { /* block258 */
+    { /* block260 */
       if (level  >  0 )
-        { /* block263 */
-          { /* let265 */
+        { /* block265 */
+          { /* let267 */
             btnode_int_int_6 * restrict in  = ((btnode_int_int_6 *)h );
             // ----------
             for (size_t i  = 0; (i  <=  (h -> n) ); (++i )) {
-                { /* let272 */
+                { /* let274 */
                   bthead_int_int_6 * restrict kid  = (in -> kids)[i ];
                   // ----------
                   if (kid )
-                    { /* block278 */
+                    { /* block280 */
                       freeall_btree_int_int_6 (kid , (level  -  1 ));
                     }
                 }
@@ -180,7 +180,7 @@ void freeall_btree_int_int_6 (bthead_int_int_6 * restrict h , size_t level ) {
 }
 void free_btree_int_int_6 (btree_int_int_6 * restrict tree ) {
   if ((tree -> root))
-    { /* block291 */
+    { /* block293 */
       freeall_btree_int_int_6 ((tree -> root), (tree -> height));
     }
   (tree -> root) = NULL ;
@@ -204,22 +204,22 @@ size_t height_btree_int_int_6 (btree_int_int_6 * restrict tree ) {
 }
 bool proof_btree_int_int_6 (bthead_int_int_6 * restrict h , size_t level ) {
   if (level  ==  0 )
-    { /* block316 */
+    { /* block318 */
       return true ;
     }
-  { /* let318 */
+  { /* let320 */
     btnode_int_int_6 * restrict in  = ((btnode_int_int_6 *)h );
     // ----------
     for (size_t i  = 0; (i  <=  (h -> n) ); (++i )) {
-        { /* let325 */
+        { /* let327 */
           bthead_int_int_6 * restrict kid  = (in -> kids)[i ];
           // ----------
           if (!kid )
-            { /* block331 */
+            { /* block333 */
               return false ;
             }
           if (!proof_btree_int_int_6 (kid , (level  -  1 )))
-            { /* block337 */
+            { /* block339 */
               return false ;
             }
         }
@@ -229,32 +229,32 @@ bool proof_btree_int_int_6 (bthead_int_int_6 * restrict h , size_t level ) {
 }
 bool balanced_btree_int_int_6 (btree_int_int_6 * restrict tree ) {
   if (!(tree -> root))
-    { /* block345 */
+    { /* block347 */
       return ((tree -> height) ==  0 );
     }
   return proof_btree_int_int_6 ((tree -> root), (tree -> height));
 }
 Maybe_ref_pair_int_int search_btree_int_int_6 (btree_int_int_6 * restrict tree , int key ) {
-  { /* let352 */
+  { /* let354 */
     bthead_int_int_6 * restrict h  = (tree -> root);
     size_t level  = (tree -> height);
     // ----------
     while (h ) {
-        { /* let357 */
+        { /* let359 */
           size_t i  = 0;
           // ----------
           while (((i  <  (h -> n) ) &&  (((h -> items)[i ]. key) <  key  ) )) {
               (++i );
           }
           if ((i  <  (h -> n) ) &&  (((h -> items)[i ]. key) ==  key  ) )
-            { /* block364 */
+            { /* block366 */
               return ((Maybe_ref_pair_int_int){ .ctor = JUST_CTOR , .data.just.value = ((h -> items) +  i  )});
             }
           if (level  ==  0 )
-            { /* block370 */
+            { /* block372 */
               return ((Maybe_ref_pair_int_int){ .ctor = NOTHING_CTOR });
             }
-          { /* let373 */
+          { /* let375 */
             btnode_int_int_6 * restrict in  = ((btnode_int_int_6 *)h );
             // ----------
             h  = (in -> kids)[i ];
@@ -266,16 +266,16 @@ Maybe_ref_pair_int_int search_btree_int_int_6 (btree_int_int_6 * restrict tree ,
   }
 }
 Maybe_ref_pair_int_int min_btree_int_int_6 (btree_int_int_6 * restrict tree ) {
-  { /* let382 */
+  { /* let384 */
     bthead_int_int_6 * restrict h  = (tree -> root);
     size_t level  = (tree -> height);
     // ----------
     if (!h )
-      { /* block388 */
+      { /* block390 */
         return ((Maybe_ref_pair_int_int){ .ctor = NOTHING_CTOR });
       }
     while ((level  >  0 )) {
-        { /* let393 */
+        { /* let395 */
           btnode_int_int_6 * restrict in  = ((btnode_int_int_6 *)h );
           // ----------
           h  = (in -> kids)[0];
@@ -283,23 +283,23 @@ Maybe_ref_pair_int_int min_btree_int_int_6 (btree_int_int_6 * restrict tree ) {
         }
     }
     if ((h -> n) ==  0 )
-      { /* block400 */
+      { /* block402 */
         return ((Maybe_ref_pair_int_int){ .ctor = NOTHING_CTOR });
       }
     return ((Maybe_ref_pair_int_int){ .ctor = JUST_CTOR , .data.just.value = ((h -> items) +  0 )});
   }
 }
 Maybe_ref_pair_int_int max_btree_int_int_6 (btree_int_int_6 * restrict tree ) {
-  { /* let408 */
+  { /* let410 */
     bthead_int_int_6 * restrict h  = (tree -> root);
     size_t level  = (tree -> height);
     // ----------
     if (!h )
-      { /* block414 */
+      { /* block416 */
         return ((Maybe_ref_pair_int_int){ .ctor = NOTHING_CTOR });
       }
     while ((level  >  0 )) {
-        { /* let419 */
+        { /* let421 */
           btnode_int_int_6 * restrict in  = ((btnode_int_int_6 *)h );
           // ----------
           h  = (in -> kids)[(h -> n)];
@@ -307,7 +307,7 @@ Maybe_ref_pair_int_int max_btree_int_int_6 (btree_int_int_6 * restrict tree ) {
         }
     }
     if ((h -> n) ==  0 )
-      { /* block426 */
+      { /* block428 */
         return ((Maybe_ref_pair_int_int){ .ctor = NOTHING_CTOR });
       }
     return ((Maybe_ref_pair_int_int){ .ctor = JUST_CTOR , .data.just.value = ((h -> items) +  ((h -> n) -  1 ) )});
@@ -315,17 +315,17 @@ Maybe_ref_pair_int_int max_btree_int_int_6 (btree_int_int_6 * restrict tree ) {
 }
 void walk_btree_int_int_6 (bthead_int_int_6 * restrict h , size_t level , void (*callback) (pair_int_int * restrict item )) {
   if (h )
-    { /* block438 */
+    { /* block440 */
       if (level  ==  0 )
         for (size_t i  = 0; (i  <  (h -> n) ); (++i )) {
             callback (((h -> items) +  i  ));
         }
       else
-        { /* let446 */
+        { /* let448 */
           btnode_int_int_6 * restrict in  = ((btnode_int_int_6 *)h );
           // ----------
           for (size_t i  = 0; (i  <  (h -> n) ); (++i )) {
-              { /* block453 */
+              { /* block455 */
                 walk_btree_int_int_6 ((in -> kids)[i ], (level  -  1 ), callback );
                 callback (((h -> items) +  i  ));
               }
@@ -338,18 +338,18 @@ void traverse_btree_int_int_6 (btree_int_int_6 * restrict tree , void (*callback
   walk_btree_int_int_6 ((tree -> root), (tree -> height), callback );
 }
 void split_btree_int_int_6 (btnode_int_int_6 * restrict parent , size_t at , size_t klevel ) {
-  { /* let466 */
+  { /* let468 */
     bthead_int_int_6 * restrict full  = (parent -> kids)[at ];
     bthead_int_int_6 * restrict ph  = (&(parent -> head));
     // ----------
-    { /* let470 */
+    { /* let472 */
       bthead_int_int_6 * restrict half  = (((klevel  ==  0 )) ? newleaf_btree_int_int_6 () : newnode_btree_int_int_6 ());
       // ----------
       (half -> n) = (6 -  1 );
       memcpy ((half -> items), ((full -> items) +  6 ), ((6 -  1 ) *  sizeof(pair_int_int ) ));
       if (klevel  >  0 )
-        { /* block479 */
-          { /* let481 */
+        { /* block481 */
+          { /* let483 */
             btnode_int_int_6 * restrict fin  = ((btnode_int_int_6 *)full );
             btnode_int_int_6 * restrict hin  = ((btnode_int_int_6 *)half );
             // ----------
@@ -358,13 +358,13 @@ void split_btree_int_int_6 (btnode_int_int_6 * restrict parent , size_t at , siz
         }
       (full -> n) = (6 -  1 );
       memmove (((parent -> kids) +  (at  +  2 ) ), ((parent -> kids) +  (at  +  1 ) ), (((ph -> n) -  at  ) *  sizeof(bthead_int_int_6 (*)) ));
-      { /* let489 */
+      { /* let491 */
         bthead_int_int_6 ** kslot  = ((parent -> kids) +  (at  +  1 ) );
         // ----------
         (*kslot ) = half ;
       }
       memmove (((ph -> items) +  (at  +  1 ) ), ((ph -> items) +  at  ), (((ph -> n) -  at  ) *  sizeof(pair_int_int ) ));
-      { /* let493 */
+      { /* let495 */
         pair_int_int * restrict up  = ((ph -> items) +  at  );
         pair_int_int * restrict mid  = ((full -> items) +  (6 -  1 ) );
         // ----------
@@ -375,24 +375,24 @@ void split_btree_int_int_6 (btnode_int_int_6 * restrict parent , size_t at , siz
   }
 }
 bool insertNonfull_btree_int_int_6 (bthead_int_int_6 * restrict h , size_t level , int key , int val ) {
-  { /* let500 */
+  { /* let502 */
     size_t i  = 0;
     // ----------
     while (((i  <  (h -> n) ) &&  (((h -> items)[i ]. key) <  key  ) )) {
         (++i );
     }
     if ((i  <  (h -> n) ) &&  (((h -> items)[i ]. key) ==  key  ) )
-      { /* block507 */
+      { /* block509 */
         return false ;
       }
     if (level  ==  0 )
-      { /* block512 */
-        { /* block514 */
+      { /* block514 */
+        { /* block516 */
           if (i  <  (h -> n) )
-            { /* block519 */
+            { /* block521 */
               memmove (((h -> items) +  (i  +  1 ) ), ((h -> items) +  i  ), (((h -> n) -  i  ) *  sizeof(pair_int_int ) ));
             }
-          { /* let522 */
+          { /* let524 */
             pair_int_int * restrict slot  = ((h -> items) +  i  );
             // ----------
             (slot -> key) = key ;
@@ -402,22 +402,22 @@ bool insertNonfull_btree_int_int_6 (bthead_int_int_6 * restrict h , size_t level
           return true ;
         }
       }
-    { /* let525 */
+    { /* let527 */
       btnode_int_int_6 * restrict in  = ((btnode_int_int_6 *)h );
       // ----------
-      { /* let529 */
+      { /* let531 */
         bthead_int_int_6 * restrict child  = (in -> kids)[i ];
         // ----------
         if ((child -> n) ==  ((2 *  6 ) -  1 ) )
-          { /* block535 */
-            { /* block537 */
+          { /* block537 */
+            { /* block539 */
               split_btree_int_int_6 (in , i , (level  -  1 ));
               if (((h -> items)[i ]. key) ==  key  )
-                { /* block543 */
+                { /* block545 */
                   return false ;
                 }
               if (((h -> items)[i ]. key) <  key  )
-                { /* block548 */
+                { /* block550 */
                   (++i );
                 }
             }
@@ -430,19 +430,19 @@ bool insertNonfull_btree_int_int_6 (bthead_int_int_6 * restrict h , size_t level
 }
 Either_BTREE_ERR_size_t insert_btree_int_int_6 (btree_int_int_6 * restrict tree , int key , int val ) {
   if (!(tree -> root))
-    { /* block558 */
+    { /* block560 */
       (tree -> root) = newleaf_btree_int_int_6 ();
       (tree -> height) = 0;
     }
   if (((tree -> root)-> n) ==  ((2 *  6 ) -  1 ) )
-    { /* block564 */
-      { /* let566 */
+    { /* block566 */
+      { /* let568 */
         bthead_int_int_6 * restrict fh  = newnode_btree_int_int_6 ();
         // ----------
-        { /* let570 */
+        { /* let572 */
           btnode_int_int_6 * restrict fresh  = ((btnode_int_int_6 *)fh );
           // ----------
-          { /* let574 */
+          { /* let576 */
             bthead_int_int_6 ** kslot  = ((fresh -> kids) +  0 );
             // ----------
             (*kslot ) = (tree -> root);
@@ -454,19 +454,19 @@ Either_BTREE_ERR_size_t insert_btree_int_int_6 (btree_int_int_6 * restrict tree 
       }
     }
   if (!insertNonfull_btree_int_int_6 ((tree -> root), (tree -> height), key , val ))
-    { /* block582 */
+    { /* block584 */
       return ((Either_BTREE_ERR_size_t){ .ctor = LEFT_CTOR , .data.left.error = BT_DUPLICATE_KEY });
     }
   (tree -> len) = ((tree -> len) +  1 );
   return ((Either_BTREE_ERR_size_t){ .ctor = RIGHT_CTOR , .data.right.value = (tree -> len)});
 }
 void merge_btree_int_int_6 (btnode_int_int_6 * restrict parent , size_t at , size_t klevel ) {
-  { /* let589 */
+  { /* let591 */
     bthead_int_int_6 * restrict ph  = (&(parent -> head));
     bthead_int_int_6 * restrict left  = (parent -> kids)[at ];
     bthead_int_int_6 * restrict right  = (parent -> kids)[(at  +  1 )];
     // ----------
-    { /* let594 */
+    { /* let596 */
       pair_int_int * restrict down  = ((left -> items) +  (6 -  1 ) );
       pair_int_int * restrict sep  = ((ph -> items) +  at  );
       // ----------
@@ -474,8 +474,8 @@ void merge_btree_int_int_6 (btnode_int_int_6 * restrict parent , size_t at , siz
     }
     memcpy (((left -> items) +  6 ), (right -> items), ((right -> n) *  sizeof(pair_int_int ) ));
     if (klevel  >  0 )
-      { /* block602 */
-        { /* let604 */
+      { /* block604 */
+        { /* let606 */
           btnode_int_int_6 * restrict lin  = ((btnode_int_int_6 *)left );
           btnode_int_int_6 * restrict rin  = ((btnode_int_int_6 *)right );
           // ----------
@@ -490,40 +490,40 @@ void merge_btree_int_int_6 (btnode_int_int_6 * restrict parent , size_t at , siz
   }
 }
 void borrowLeft_btree_int_int_6 (btnode_int_int_6 * restrict parent , size_t at , size_t klevel ) {
-  { /* let618 */
+  { /* let620 */
     bthead_int_int_6 * restrict ph  = (&(parent -> head));
     bthead_int_int_6 * restrict child  = (parent -> kids)[at ];
     bthead_int_int_6 * restrict sib  = (parent -> kids)[(at  -  1 )];
     // ----------
     memmove (((child -> items) +  1 ), (child -> items), ((child -> n) *  sizeof(pair_int_int ) ));
     if (klevel  >  0 )
-      { /* block627 */
-        { /* let629 */
+      { /* block629 */
+        { /* let631 */
           btnode_int_int_6 * restrict cin  = ((btnode_int_int_6 *)child );
           // ----------
           memmove (((cin -> kids) +  1 ), (cin -> kids), (((child -> n) +  1 ) *  sizeof(bthead_int_int_6 (*)) ));
         }
       }
-    { /* let634 */
+    { /* let636 */
       pair_int_int * restrict head  = ((child -> items) +  0 );
       pair_int_int * restrict sep  = ((ph -> items) +  (at  -  1 ) );
       // ----------
       (*head ) = (*sep );
     }
     if (klevel  >  0 )
-      { /* block641 */
-        { /* let643 */
+      { /* block643 */
+        { /* let645 */
           btnode_int_int_6 * restrict cin  = ((btnode_int_int_6 *)child );
           btnode_int_int_6 * restrict sin  = ((btnode_int_int_6 *)sib );
           // ----------
-          { /* let649 */
+          { /* let651 */
             bthead_int_int_6 ** kslot  = ((cin -> kids) +  0 );
             // ----------
             (*kslot ) = (sin -> kids)[(sib -> n)];
           }
         }
       }
-    { /* let652 */
+    { /* let654 */
       pair_int_int * restrict sep  = ((ph -> items) +  (at  -  1 ) );
       pair_int_int * restrict tail  = ((sib -> items) +  ((sib -> n) -  1 ) );
       // ----------
@@ -534,31 +534,31 @@ void borrowLeft_btree_int_int_6 (btnode_int_int_6 * restrict parent , size_t at 
   }
 }
 void borrowRight_btree_int_int_6 (btnode_int_int_6 * restrict parent , size_t at , size_t klevel ) {
-  { /* let659 */
+  { /* let661 */
     bthead_int_int_6 * restrict ph  = (&(parent -> head));
     bthead_int_int_6 * restrict child  = (parent -> kids)[at ];
     bthead_int_int_6 * restrict sib  = (parent -> kids)[(at  +  1 )];
     // ----------
-    { /* let664 */
+    { /* let666 */
       pair_int_int * restrict tail  = ((child -> items) +  (child -> n) );
       pair_int_int * restrict sep  = ((ph -> items) +  at  );
       // ----------
       (*tail ) = (*sep );
     }
     if (klevel  >  0 )
-      { /* block671 */
-        { /* let673 */
+      { /* block673 */
+        { /* let675 */
           btnode_int_int_6 * restrict cin  = ((btnode_int_int_6 *)child );
           btnode_int_int_6 * restrict sin  = ((btnode_int_int_6 *)sib );
           // ----------
-          { /* let679 */
+          { /* let681 */
             bthead_int_int_6 ** kslot  = ((cin -> kids) +  ((child -> n) +  1 ) );
             // ----------
             (*kslot ) = (sin -> kids)[0];
           }
         }
       }
-    { /* let682 */
+    { /* let684 */
       pair_int_int * restrict sep  = ((ph -> items) +  at  );
       pair_int_int * restrict head  = ((sib -> items) +  0 );
       // ----------
@@ -566,8 +566,8 @@ void borrowRight_btree_int_int_6 (btnode_int_int_6 * restrict parent , size_t at
     }
     memmove ((sib -> items), ((sib -> items) +  1 ), (((sib -> n) -  1 ) *  sizeof(pair_int_int ) ));
     if (klevel  >  0 )
-      { /* block690 */
-        { /* let692 */
+      { /* block692 */
+        { /* let694 */
           btnode_int_int_6 * restrict sin  = ((btnode_int_int_6 *)sib );
           // ----------
           memmove ((sin -> kids), ((sin -> kids) +  1 ), ((sib -> n) *  sizeof(bthead_int_int_6 (*)) ));
@@ -578,17 +578,17 @@ void borrowRight_btree_int_int_6 (btnode_int_int_6 * restrict parent , size_t at
   }
 }
 size_t fill_btree_int_int_6 (btnode_int_int_6 * restrict parent , size_t at , size_t klevel ) {
-  { /* let700 */
+  { /* let702 */
     bthead_int_int_6 * restrict ph  = (&(parent -> head));
     // ----------
     if (at  >  0 )
-      { /* block706 */
-        { /* let708 */
+      { /* block708 */
+        { /* let710 */
           bthead_int_int_6 * restrict lsib  = (parent -> kids)[(at  -  1 )];
           // ----------
           if ((lsib -> n) >=  6 )
-            { /* block714 */
-              { /* block716 */
+            { /* block716 */
+              { /* block718 */
                 borrowLeft_btree_int_int_6 (parent , at , klevel );
                 return at ;
               }
@@ -596,13 +596,13 @@ size_t fill_btree_int_int_6 (btnode_int_int_6 * restrict parent , size_t at , si
         }
       }
     if (at  <  (ph -> n) )
-      { /* block722 */
-        { /* let724 */
+      { /* block724 */
+        { /* let726 */
           bthead_int_int_6 * restrict rsib  = (parent -> kids)[(at  +  1 )];
           // ----------
           if ((rsib -> n) >=  6 )
-            { /* block730 */
-              { /* block732 */
+            { /* block732 */
+              { /* block734 */
                 borrowRight_btree_int_int_6 (parent , at , klevel );
                 return at ;
               }
@@ -610,59 +610,59 @@ size_t fill_btree_int_int_6 (btnode_int_int_6 * restrict parent , size_t at , si
         }
       }
     if (at  <  (ph -> n) )
-      { /* block737 */
+      { /* block739 */
         merge_btree_int_int_6 (parent , at , klevel );
         return at ;
       }
     else
-      { /* block741 */
+      { /* block743 */
         merge_btree_int_int_6 (parent , (at  -  1 ), klevel );
         return (at  -  1 );
       }
   }
 }
 bool del_btree_int_int_6 (bthead_int_int_6 * restrict h , size_t level , int key ) {
-  { /* let747 */
+  { /* let749 */
     size_t i  = 0;
     // ----------
     while (((i  <  (h -> n) ) &&  (((h -> items)[i ]. key) <  key  ) )) {
         (++i );
     }
     if ((i  <  (h -> n) ) &&  (((h -> items)[i ]. key) ==  key  ) )
-      { /* block754 */
-        { /* block756 */
+      { /* block756 */
+        { /* block758 */
           if (level  ==  0 )
-            { /* block761 */
-              { /* block763 */
+            { /* block763 */
+              { /* block765 */
                 memmove (((h -> items) +  i  ), ((h -> items) +  (i  +  1 ) ), ((((h -> n) -  i  ) -  1 ) *  sizeof(pair_int_int ) ));
                 (h -> n) = ((h -> n) -  1 );
                 return true ;
               }
             }
-          { /* let766 */
+          { /* let768 */
             btnode_int_int_6 * restrict in  = ((btnode_int_int_6 *)h );
             // ----------
-            { /* let770 */
+            { /* let772 */
               bthead_int_int_6 * restrict lkid  = (in -> kids)[i ];
               // ----------
               if ((lkid -> n) >=  6 )
-                { /* block776 */
-                  { /* let778 */
+                { /* block778 */
+                  { /* let780 */
                     bthead_int_int_6 * restrict cur  = (in -> kids)[i ];
                     size_t cl  = (level  -  1 );
                     // ----------
                     while ((cl  >  0 )) {
-                        { /* let783 */
+                        { /* let785 */
                           btnode_int_int_6 * restrict cin  = ((btnode_int_int_6 *)cur );
                           // ----------
                           cur  = (cin -> kids)[(cur -> n)];
                           cl  = (cl  -  1 );
                         }
                     }
-                    { /* let787 */
+                    { /* let789 */
                       pair_int_int pred  = (cur -> items)[((cur -> n) -  1 )];
                       // ----------
-                      { /* let790 */
+                      { /* let792 */
                         pair_int_int * restrict slot  = ((h -> items) +  i  );
                         // ----------
                         (*slot ) = pred ;
@@ -672,27 +672,27 @@ bool del_btree_int_int_6 (bthead_int_int_6 * restrict h , size_t level , int key
                   }
                 }
             }
-            { /* let794 */
+            { /* let796 */
               bthead_int_int_6 * restrict rkid  = (in -> kids)[(i  +  1 )];
               // ----------
               if ((rkid -> n) >=  6 )
-                { /* block800 */
-                  { /* let802 */
+                { /* block802 */
+                  { /* let804 */
                     bthead_int_int_6 * restrict cur  = (in -> kids)[(i  +  1 )];
                     size_t cl  = (level  -  1 );
                     // ----------
                     while ((cl  >  0 )) {
-                        { /* let807 */
+                        { /* let809 */
                           btnode_int_int_6 * restrict cin  = ((btnode_int_int_6 *)cur );
                           // ----------
                           cur  = (cin -> kids)[0];
                           cl  = (cl  -  1 );
                         }
                     }
-                    { /* let811 */
+                    { /* let813 */
                       pair_int_int succ  = (cur -> items)[0];
                       // ----------
-                      { /* let814 */
+                      { /* let816 */
                         pair_int_int * restrict slot  = ((h -> items) +  i  );
                         // ----------
                         (*slot ) = succ ;
@@ -708,17 +708,17 @@ bool del_btree_int_int_6 (bthead_int_int_6 * restrict h , size_t level , int key
         }
       }
     if (level  ==  0 )
-      { /* block823 */
+      { /* block825 */
         return false ;
       }
-    { /* let825 */
+    { /* let827 */
       btnode_int_int_6 * restrict in  = ((btnode_int_int_6 *)h );
       // ----------
-      { /* let829 */
+      { /* let831 */
         bthead_int_int_6 * restrict kid  = (in -> kids)[i ];
         // ----------
         if ((kid -> n) <  6 )
-          { /* block835 */
+          { /* block837 */
             i  = fill_btree_int_int_6 (in , i , (level  -  1 ));
           }
       }
@@ -729,22 +729,22 @@ bool del_btree_int_int_6 (bthead_int_int_6 * restrict h , size_t level , int key
 }
 Either_BTREE_ERR_size_t delete_btree_int_int_6 (btree_int_int_6 * restrict tree , int key ) {
   if (!(tree -> root))
-    { /* block846 */
+    { /* block848 */
       return ((Either_BTREE_ERR_size_t){ .ctor = LEFT_CTOR , .data.left.error = BT_NOT_FOUND });
     }
   if (!del_btree_int_int_6 ((tree -> root), (tree -> height), key ))
-    { /* block853 */
+    { /* block855 */
       return ((Either_BTREE_ERR_size_t){ .ctor = LEFT_CTOR , .data.left.error = BT_NOT_FOUND });
     }
   if (((tree -> root)-> n) ==  0 )
-    { /* block859 */
-      { /* let861 */
+    { /* block861 */
+      { /* let863 */
         bthead_int_int_6 * restrict old  = (tree -> root);
         // ----------
         if ((tree -> height) ==  0 )
           (tree -> root) = NULL ;
         else
-          { /* let867 */
+          { /* let869 */
             btnode_int_int_6 * restrict in  = ((btnode_int_int_6 *)old );
             // ----------
             (tree -> root) = (in -> kids)[0];
@@ -758,7 +758,7 @@ Either_BTREE_ERR_size_t delete_btree_int_int_6 (btree_int_int_6 * restrict tree 
 }
 #endif /* __BTREE_IMPL__int_int_6__H_ */ 
 long long ms_now () {
-  { /* let875 */
+  { /* let877 */
     struct timespec ts ;
     // ----------
     timespec_get ((&ts ), TIME_UTC );
@@ -782,31 +782,31 @@ void tally (pair_int_int * restrict item ) {
 }
 int main () {
   printf ("Cicili lib/std btree -- %d operations per row, t=6 (11 pairs a node)\n\n", N );
-  ({ /* letn885 */
+  ({ /* letn887 */
     btree_int_int_6 tr  __attribute__((__cleanup__(free_btree_int_int_6 ))) = new_btree_int_int_6 ();
     // ----------
     reseed ();
-    { /* let888 */
+    { /* let890 */
       int64_t ok  = 0;
       long long t0  = ms_now ();
       // ----------
       for (int i  = 0; (i  <  N  ); (++i )) {
-          { /* let893 */
+          { /* let895 */
             int key  = ((int)(nextrand () &  MASK  ));
             // ----------
-            { /* let898 */
-              Either_BTREE_ERR_size_t match897  = insert_btree_int_int_6 ((&tr ), key , (key  +  1 ));
+            { /* let900 */
+              Either_BTREE_ERR_size_t match899  = insert_btree_int_int_6 ((&tr ), key , (key  +  1 ));
               // ----------
-              if ((match897 . ctor) ==  RIGHT_CTOR  ) {
-                  { /* let902 */
-                    size_t n  = (((match897 . data). right). value);
+              if ((match899 . ctor) ==  RIGHT_CTOR  ) {
+                  { /* let904 */
+                    size_t n  = (((match899 . data). right). value);
                     // ----------
                     ok  += ((int64_t)n ) ;
                   }
               }
-              else if ((match897 . ctor) ==  LEFT_CTOR  ) {
-                  { /* let905 */
-                    BTREE_ERR e  = (((match897 . data). left). error);
+              else if ((match899 . ctor) ==  LEFT_CTOR  ) {
+                  { /* let907 */
+                    BTREE_ERR e  = (((match899 . data). left). error);
                     // ----------
                     ((void)e );
                   }
@@ -819,25 +819,25 @@ int main () {
     }
     printf ("  distinct keys stored: %zu\n", len_btree_int_int_6 ((&tr )));
     reseed ();
-    { /* let908 */
+    { /* let910 */
       int64_t hit  = 0;
       long long t0  = ms_now ();
       // ----------
       for (int i  = 0; (i  <  N  ); (++i )) {
-          { /* let913 */
+          { /* let915 */
             int key  = ((int)(nextrand () &  MASK  ));
             // ----------
-            { /* let918 */
-              Maybe_ref_pair_int_int match917  = search_btree_int_int_6 ((&tr ), key );
+            { /* let920 */
+              Maybe_ref_pair_int_int match919  = search_btree_int_int_6 ((&tr ), key );
               // ----------
-              if ((match917 . ctor) ==  JUST_CTOR  ) {
-                  { /* let922 */
-                    pair_int_int * restrict p  = (((match917 . data). just). value);
+              if ((match919 . ctor) ==  JUST_CTOR  ) {
+                  { /* let924 */
+                    pair_int_int * restrict p  = (((match919 . data). just). value);
                     // ----------
                     hit  += (p -> val) ;
                   }
               }
-              else if ((match917 . ctor) ==  NOTHING_CTOR  ) {
+              else if ((match919 . ctor) ==  NOTHING_CTOR  ) {
                   ((void)0);
               }
             }
@@ -846,7 +846,7 @@ int main () {
       printf ("  (search checksum: %lld)\n", hit );
       printf ("  search %d keys: %lld ms\n", N , (ms_now () -  t0  ));
     }
-    { /* let925 */
+    { /* let927 */
       long long t0  = ms_now ();
       // ----------
       sink  = 0;
@@ -855,30 +855,30 @@ int main () {
       printf ("  traverse in order: %lld ms\n", (ms_now () -  t0  ));
     }
     reseed ();
-    { /* let928 */
+    { /* let930 */
       int64_t gone  = 0;
       long long t0  = ms_now ();
       // ----------
       for (int i  = 0; (i  <  N  ); (++i )) {
-          { /* let933 */
+          { /* let935 */
             int key  = ((int)(nextrand () &  MASK  ));
             // ----------
-            { /* let938 */
-              Either_BTREE_ERR_size_t match937  = delete_btree_int_int_6 ((&tr ), key );
+            { /* let940 */
+              Either_BTREE_ERR_size_t match939  = delete_btree_int_int_6 ((&tr ), key );
               // ----------
-              if ((match937 . ctor) ==  RIGHT_CTOR  ) {
-                  { /* let942 */
-                    size_t n  = (((match937 . data). right). value);
+              if ((match939 . ctor) ==  RIGHT_CTOR  ) {
+                  { /* let944 */
+                    size_t n  = (((match939 . data). right). value);
                     // ----------
-                    { /* block944 */
+                    { /* block946 */
                       ((void)n );
                       gone  += 1 ;
                     }
                   }
               }
-              else if ((match937 . ctor) ==  LEFT_CTOR  ) {
-                  { /* let947 */
-                    BTREE_ERR e  = (((match937 . data). left). error);
+              else if ((match939 . ctor) ==  LEFT_CTOR  ) {
+                  { /* let949 */
+                    BTREE_ERR e  = (((match939 . data). left). error);
                     // ----------
                     ((void)e );
                   }

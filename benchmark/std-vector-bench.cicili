@@ -27,6 +27,11 @@
   (make :std #t
         :compile #t :link ("-lstd_vector_bench.o" "-o" "std_vec_bench"))
 
+  ;; no flags of its own, so WITHOUT --release this builds at -g -O0 and
+  ;; every millisecond it prints is meaningless. Refuse, rather than measure.
+  (import "benchmark/release-only.cicili")
+  (release-only)
+
   (include <time.h>)
 
   (var int N    . 1000000000) ; total operations

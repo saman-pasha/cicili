@@ -1,0 +1,38 @@
+;;;; (release-only) -- refuse to build a benchmark at -O0
+;;;;
+;;;; Import this and call it at the top of any target whose purpose is to be
+;;;; timed:
+;;;;
+;;;;     (import "benchmark/release-only.cicili")
+;;;;     (release-only)
+;;;;
+;;;; WHY IT HAS TO BE A RULE AND NOT A HABIT. The benchmark targets carry
+;;;; `:compile #t' -- no flags of their own, deliberately, so that what they
+;;;; measure is what `--release' means and not a hand-tuned per-file list. The
+;;;; cost of that choice is that WITHOUT --release they compile at -g -O0, and
+;;;; the binary still builds, still runs, still prints milliseconds, and is
+;;;; worth nothing. Nothing else in the pipeline objects.
+;;;;
+;;;; That is exactly the failure mode this project treats as the worst kind: a
+;;;; wrong answer that looks like a right one. So it is a compile-time error
+;;;; instead, and it names the command to use.
+;;;;
+;;;; Note the case. Macro bodies in a .cicili file are read with the case
+;;;; PRESERVED, and cicili's own specials were interned by a reader that
+;;;; upcased -- so it is CICILI::*RELEASE* here, in capitals and package-qualified,
+;;;; and would silently be a different, unbound symbol written any other way.
+
+(DEFMACRO release-only ()
+  (UNLESS CICILI::*RELEASE*
+    (ERROR (FORMAT NIL "~
+this target is a benchmark and must be built with --release.~%~
+  Without it there are no optimisation flags at all -- benchmark targets~%~
+  carry `:compile #t' on purpose -- so it compiles at -g -O0 and every~%~
+  number it prints is meaningless.~%~
+  ~%~
+    sbcl --script cicili.lisp --release <this file>~%~
+  ~%~
+  benchmark/bench.py rebuilds with --release itself, which is the way to~%~
+  run these that cannot get it wrong.")))
+  ;; expands to nothing at all
+  `($$$))

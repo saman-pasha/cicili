@@ -24,6 +24,34 @@ Suites: `torch` (the libtorch examples against PyTorch), `vector` and `btree` (a
 Rust), or `all`. Anything whose prerequisites are missing is skipped by name rather than
 half-run, and the output says the run was incomplete.
 
+## The rule: a benchmark is built with `--release` or not at all
+
+The benchmark targets carry **`:compile #t`** — no flags of their own, deliberately, so that
+what they measure is what `--release` *means* rather than a hand-tuned per-file list. The
+cost of that choice is that **without `--release` they compile at `-g -O0`**, and the binary
+still builds, still runs, still prints milliseconds, and is worth nothing. Nothing else in
+the pipeline objects.
+
+That is closed in two places, because one is not enough:
+
+* [release-only.cicili](release-only.cicili) makes it a **compile-time error**. Each
+  benchmark source calls `(release-only)`, which reads `CICILI::*RELEASE*` at macroexpansion
+  and refuses with the command to use.
+* **`bench.py` rebuilds everything with `--release` before timing anything.** The guard
+  above cannot catch a *stale* binary from an earlier build, because in that case nothing
+  is compiled at all. Rebuilding is what closes that. `--no-build` exists only for
+  iterating on the script, and stamps *"whatever was already on disk"* into the output.
+
+The release flags themselves, from [config.lisp](../config.lisp):
+
+| | |
+|---|---|
+| **C** | `-O3 -falign-loops=32` |
+| **C++** | `-O3` |
+
+`-falign-loops=32` is C-only: a C++ target here is a libtorch target, where the loops that
+matter are inside the library and were aligned when the library was built.
+
 ## What it does that running the examples by hand does not
 
 * **Refuses a busy machine.** It reads the one-minute load average per core and stops above
@@ -74,22 +102,15 @@ It checks all of these and names what is missing rather than half-running:
 
 | | |
 |---|---|
-**`torch`**
+Only what the script cannot produce itself — it builds every binary.
 
-| | |
-|---|---|
-| the three built examples | `sbcl --script cicili.lisp --release ./example/mnist-dsl.cicili`, and the same for `tabular` and `mnist-conv` |
-| `/usr/local/opt/pytorch/libexec/bin/python3` | the interpreter shipping **the same libtorch** the Cicili side links — two different PyTorch builds would be measuring the builds |
-| `$MNIST_DIR` | the four idx files, default `~/mnist-data` |
-| `$TABULAR_CSV` | `california.csv`, eight features and a target per line, default `~/tabular-data/california.csv` |
-
-**`vector` and `btree`**
-
-```sh
-sbcl --script cicili.lisp --release ./benchmark/std-vector-bench.cicili
-sbcl --script cicili.lisp --release ./benchmark/std-btree-bench.cicili
-cd benchmark/rust-vector-bench && cargo build --release
-```
+| | for | |
+|---|---|---|
+| `sbcl` | all | to build the Cicili side |
+| `cargo` | `vector`, `btree` | to build the Rust side |
+| `/usr/local/opt/pytorch/libexec/bin/python3` | `torch` | the interpreter shipping **the same libtorch** the Cicili side links — two different PyTorch builds would be measuring the builds |
+| `$MNIST_DIR` | `torch` | the four idx files, default `~/mnist-data` |
+| `$TABULAR_CSV` | `torch` | `california.csv`, eight features and a target per line, default `~/tabular-data/california.csv` |
 
 ## What is not in it yet
 
