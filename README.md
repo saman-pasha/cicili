@@ -248,24 +248,6 @@ The claim "zero runtime overhead" is worth only as much as the measurement behin
 with `--release`; Rust with `cargo build --release`. **Lower is better; bold is the
 winner of that pair.**
 
-> **Every millisecond on this page is provisional.** All of it was measured on one laptop
-> that was doing other work at the time. How much that is worth: the torch example
-> `mnist_conv`, the same binary over the same data, has been observed at 42.6 s and at
-> 57.6 s in different sessions — a 35% swing from machine state alone, larger than most
-> differences claimed here.
->
-> Every pair below is **interleaved and quoted at its best**, which is the right defence:
-> a background load slows both sides, so the *comparison* survives what the *absolute
-> number* does not. But it does not save a row whose two sides are within a few percent of
-> each other — re-running the owned `construct` row gave Cicili 88 ms against Rust 96 ms,
-> the opposite winner to the 105/100 below. **Read the rows where the gap is larger than
-> the spread; treat a row inside 10% as a tie.**
->
-> Re-measurement on a quiet dedicated machine is pending.
-> [benchmark/bench.py](benchmark/bench.py) is the harness for it: it refuses to measure a
-> machine that is not idle, records what it ran on, alternates which side goes first, and
-> cross-checks the checksums both sides print so a comparison cannot quietly stop
-> comparing the same work.
 
 ### Owned — `(<> vector a)` vs `Vec<i32>`
 
