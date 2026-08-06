@@ -244,6 +244,13 @@ The claim "zero runtime overhead" is worth only as much as the measurement behin
 [benchmark/std-vector-bench.cicili](benchmark/std-vector-bench.cicili) and
 [benchmark/rust-vector-bench](benchmark/rust-vector-bench).
 
+Every benchmark target refuses to build without `--release` — they carry
+`:compile #t` and no flags of their own, so without it they compile at `-g -O0`
+and print meaningless milliseconds. See
+[benchmark/release-only.cicili](benchmark/release-only.cicili), and
+[doc/benchmark.md](doc/benchmark.md) for a measurement that was withdrawn for
+exactly that reason.
+
 10⁹ elements per row, Intel i9-9880H, Apple clang 21.0.0 vs rustc 1.96.0. Cicili built
 with `--release`; Rust with `cargo build --release`. **Lower is better; bold is the
 winner of that pair.**

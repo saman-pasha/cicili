@@ -6,6 +6,14 @@
         :compile ("-O3" "-march=native" "-flto" "vec_bench.c" "-o" "vec_bench")
         :link #t)
 
+  ;; This one carries its own -O3 -march=native -flto, so --release changes
+  ;; none of its flags. The guard is here anyway, because the rule is that a
+  ;; benchmark is built with --release and a rule with an exception in it is
+  ;; one people have to remember -- and because its numbers are published in
+  ;; the README, where "built with --release" is what they are labelled.
+  (import "benchmark/release-only.cicili")
+  (release-only)
+
   (include <time.h>)
 
   ;; prevent dependency repetition

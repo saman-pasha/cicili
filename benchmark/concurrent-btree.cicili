@@ -15,6 +15,12 @@
         :compile #t
         :link "concurrent_btree.o -o concurrent_btree")
 
+
+  ;; no flags of its own, so WITHOUT --release this builds at -g -O0 and every
+  ;; millisecond it prints is meaningless. Refuse, rather than measure.
+  (import "benchmark/release-only.cicili")
+  (release-only)
+
   (include "haskell.h")
   (include <pthread.h>)
   (include <unistd.h>)

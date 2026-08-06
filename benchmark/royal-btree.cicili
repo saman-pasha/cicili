@@ -9,6 +9,12 @@
         :compile #t
         :link "royal_btree.o -o royal_btree")
 
+
+  ;; no flags of its own, so WITHOUT --release this builds at -g -O0 and every
+  ;; millisecond it prints is meaningless. Refuse, rather than measure.
+  (import "benchmark/release-only.cicili")
+  (release-only)
+
   (include <time.h>)
 
   ;; Define a simple User type, contains name and salary
