@@ -1,0 +1,26 @@
+;;;; Cicili declarations for test/c/python_stub.h's inspection helpers
+;;;;
+;;;; NOTHING HERE EMITS C. Same arrangement as lib/cpp/torch/tensor.cicili.
+;;;;
+;;;; These exist because PyObject, PyMethodDef and PyModuleDef are declared
+;;;; opaque to Cicili -- it needs the names to type things with, and CPython's
+;;;; layouts are none of its business. So a Cicili program cannot read a method
+;;;; table's fields, and the test reads them through C instead.
+
+(DEFMACRO init-macro ()
+  `($$$
+     (decl) (func py_stub_method_count ((PyModuleDef * d)) (out int))
+     (decl) (func py_stub_method_name  ((PyModuleDef * d) (int i)) (out const char *))
+     (decl) (func py_stub_method_doc   ((PyModuleDef * d) (int i)) (out const char *))
+     (decl) (func py_stub_method_flags ((PyModuleDef * d) (int i)) (out int))
+     (decl) (func py_stub_call         ((PyModuleDef * d) (int i)
+                                        (PyObject * self) (PyObject * a)) (out PyObject *))
+     (decl) (func py_stub_module_name  ((PyModuleDef * d)) (out const char *))
+     (decl) (func py_stub_module_doc   ((PyModuleDef * d)) (out const char *))
+     (decl) (func py_stub_module_size  ((PyModuleDef * d)) (out long))
+     (decl) (func py_stub_def_of       ((PyObject * m)) (out PyModuleDef *))
+     (decl) (func PyErr_Clear    () (out void))
+     (decl) (func PyTuple_New    ((long n)) (out PyObject *))
+     (decl) (func PyTuple_SetItem ((PyObject * t) (long i) (PyObject * v)) (out int))
+     (decl) (func py_stub_lookup ((const char * name)) (out void *))
+     (decl) (func strcmp ((const char * a) (const char * b)) (out int))))

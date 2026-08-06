@@ -1,0 +1,207 @@
+;;;; test the CPython declaration bindings and the py-module scaffold
+;;;
+;;; WHAT THIS PROVES, and what it does not.
+;;;
+;;; It proves the Cicili half: that lib/python/cpython.cicili's declarations
+;;; resolve, that py-module writes a method table Python's protocol can walk,
+;;; a PyModuleDef with its slots in the right order, and an entry point whose
+;;; symbol is the contract -- and that a method reached THROUGH the emitted
+;;; table answers what calling it directly answers.
+;;;
+;;; It does NOT prove the signatures match a real CPython: it compiles against
+;;; test/c/python_stub.h so that it runs in the suite with nothing installed.
+;;; That check is example/cimath.cicili, which builds against the real
+;;; Python.h and is loaded by a real interpreter -- run it by hand on a machine
+;;; with the headers, and it is where a wrong signature is caught.
+;;;
+;;; NOT COVERED HERE: numpy. lib/python/numpy.cicili is a second C API with its
+;;; own import-time ritual, and stubbing it convincingly is a separate job.
+;;;
+;;; The two regressions this exists to hold, both of which used to fail a long
+;;; way from the macro that caused them:
+;;;
+;;;   nodoc has no (doc …). That emitted `{ HEAD_INIT , "nodoc", , -1, … }' --
+;;;   a C syntax error -- because Lisp NIL is not Cicili's nil.
+;;;
+;;;   Both entry points are PyMODINIT_FUNC. Emitted as PyObject *, a :cpp
+;;;   module's PyInit_ is mangled and `import' fails at run time having
+;;;   compiled and linked without complaint.
+
+(source "python.c"
+  ;; -export-dynamic puts this executable's own symbols in its dynamic table,
+  ;; without which py_stub_lookup answers null for everything and the two
+  ;; symbol checks below cannot mean anything. -ldl for dlsym itself.
+  (make :cpp #t :compile #t
+        :link ("-lpython.o" "-export-dynamic" "-ldl" "-o" "python_test"))
+
+  (include "python_stub.h")
+  (include <stdio.h>)
+
+  ;; the declarations. They emit nothing; they are here so the compiler knows
+  ;; what a PyObject is.
+  (import "lib/python/python.cicili")
+  (import "test/c/python-stub-decl.cicili")
+
+  ;; the exception slot the stub's PyErr_SetString writes. Declared extern in
+  ;; the header so this is where it actually lives.
+  (var PyObject * py_stub_last_exc . nil)
+  (var const char * py_stub_last_msg . nil)
+
+  (var int bad . 0)
+
+  (func check ((const char * what) (long got) (long want))
+        (if (== got want)
+            (printf "ok   %-42s %ld\n" what got)
+          (block (printf "FAIL %-42s got %ld want %ld\n" what got want)
+                 (++ bad))))
+
+  (func check_true ((const char * what) (int cond))
+        (if cond
+            (printf "ok   %-42s\n" what)
+          (block (printf "FAIL %-42s\n" what) (++ bad))))
+
+  (func check_str ((const char * what) (const char * got) (const char * want))
+        (if (and got (== (strcmp got want) 0))
+            (printf "ok   %-42s %s\n" what got)
+          (block (printf "FAIL %-42s got %s want %s\n" what
+                         (? got got "(null)") want)
+                 (++ bad))))
+
+  ;;; ---- the methods a module is made of ---------------------------
+
+  (func answer ((PyObject * self) (PyObject * args)) (out PyObject *)
+        (return (PyLong_FromLong 42)))
+
+  (func twice ((PyObject * self) (PyObject * arg)) (out PyObject *)
+        (return (PyLong_FromLong (* (PyLong_AsLong arg) 2))))
+
+  (func sum3 ((PyObject * self) (PyObject * args)) (out PyObject *)
+        (let ((long a . 0) (long b . 0) (long c . 0))
+          ;; answering nil WITHOUT setting an exception raises SystemError in
+          ;; a real interpreter, which is a confusing way to find out you
+          ;; forgot -- PyArg_ParseTuple sets one, so this path is correct.
+          (when (not (PyArg_ParseTuple args "lll" (aof a) (aof b) (aof c)))
+            (return nil))
+          (return (PyLong_FromLong (+ a (+ b c))))))
+
+  ;;; ---- two modules ------------------------------------------------
+
+  (py-module withdoc
+    (doc "a module that has a doc")
+    (method "answer" answer noargs)
+    (method "twice"  twice  one "twice what it is given")
+    (method "sum3"   sum3   varargs))
+
+  ;; NO (doc …). This is the one that used to emit invalid C.
+  (py-module nodoc
+    (method "answer" answer noargs))
+
+  (main
+   ;;; ---- the entry points answer ----------------------------------
+
+   (let ((PyObject * m . #'(PyInit_withdoc)))
+     (check_true "PyInit_withdoc answers a module" (!= m nil))
+
+     ;;; ---- the table it wrote ------------------------------------
+     ;;;
+     ;;; Reached from the module object, the way an interpreter would: the
+     ;;; def the entry point created it from, then the table on that. Walked
+     ;;; to the nil-named entry, which is what ENDS it -- a table without
+     ;;; that terminator is read past its end, and it is the single most
+     ;;; load-bearing thing py-module emits.
+
+     (let ((PyModuleDef * def . #'(py_stub_def_of m)))
+       (check_true "the module remembers its def" (!= def nil))
+       (check_str  "the def knows its name" (py_stub_module_name def) "withdoc")
+       (check "m_size is -1" (py_stub_module_size def) -1)
+       (check_str "withdoc carries its doc" (py_stub_module_doc def)
+                  "a module that has a doc")
+
+       (check "three methods, then the terminator"
+              (cast long (py_stub_method_count def)) 3)
+
+       (check_str "entry 0 is answer" (py_stub_method_name def 0) "answer")
+       (check_str "entry 1 is twice"  (py_stub_method_name def 1) "twice")
+       (check_str "entry 2 is sum3"   (py_stub_method_name def 2) "sum3")
+
+       (check "answer is METH_NOARGS"  (cast long (py_stub_method_flags def 0))
+              (cast long METH_NOARGS))
+       (check "twice is METH_O"        (cast long (py_stub_method_flags def 1))
+              (cast long METH_O))
+       (check "sum3 is METH_VARARGS"   (cast long (py_stub_method_flags def 2))
+              (cast long METH_VARARGS))
+
+       ;; a doc given is carried; a doc omitted is a null and not a hole
+       (check_str  "the given method doc is carried" (py_stub_method_doc def 1)
+                   "twice what it is given")
+       (check_true "the omitted method doc is null"
+                   (== (py_stub_method_doc def 0) nil))
+
+       ;;; ---- calling THROUGH the table ------------------------------
+       ;;;
+       ;;; Reading the names proves the table was written. This proves the
+       ;;; pointers in it are the functions they claim to be, which is what
+       ;;; Python actually depends on.
+
+       (check "answer through the table"
+              (PyLong_AsLong (py_stub_call def 0 nil nil)) 42)
+
+       (let ((PyObject * seven . #'(PyLong_FromLong 7)))
+         (check "twice through the table"
+                (PyLong_AsLong (py_stub_call def 1 nil seven)) 14))
+
+       (let ((PyObject * args . #'(PyTuple_New 3)))
+         (PyTuple_SetItem args 0 (PyLong_FromLong 1))
+         (PyTuple_SetItem args 1 (PyLong_FromLong 2))
+         (PyTuple_SetItem args 2 (PyLong_FromLong 4))
+         (check "sum3 through the table"
+                (PyLong_AsLong (py_stub_call def 2 nil args)) 7))
+
+       ;; too few arguments: nil back AND an exception set. Answering nil
+       ;; without setting one raises SystemError in a real interpreter, which
+       ;; is a confusing way to find out a method forgot.
+       (PyErr_Clear)
+       (let ((PyObject * few . #'(PyTuple_New 1)))
+         (PyTuple_SetItem few 0 (PyLong_FromLong 1))
+         (check_true "a short tuple is refused"
+                     (== (py_stub_call def 2 nil few) nil))
+         (check_true "and it set an exception" (!= (PyErr_Occurred) nil)))))
+
+   ;;; ---- THE REGRESSION ---------------------------------------------
+   ;;;
+   ;;; nodoc has no (doc …). That used to emit `{ HEAD_INIT , "nodoc", , -1,
+   ;;; … }' -- a C syntax error -- so this file would not have compiled at
+   ;;; all. Reaching this line is most of the check; reading a null is the
+   ;;; rest.
+
+   (let ((PyObject * m2 . #'(PyInit_nodoc)))
+     (check_true "PyInit_nodoc answers a module" (!= m2 nil))
+     (let ((PyModuleDef * d2 . #'(py_stub_def_of m2)))
+       (check_str  "nodoc knows its name" (py_stub_module_name d2) "nodoc")
+       (check_true "an omitted module doc is null"
+                   (== (py_stub_module_doc d2) nil))
+       (check "nodoc has one method"
+              (cast long (py_stub_method_count d2)) 1)))
+
+   ;;; ---- THE OTHER REGRESSION ---------------------------------------
+   ;;;
+   ;;; `import' does not call PyInit_; it dlopens the module and looks the
+   ;;; symbol up BY NAME. So the check has to be a lookup by name too --
+   ;;; every call above resolves whether the symbol is mangled or not,
+   ;;; because they are calls within one translation unit, and that is
+   ;;; precisely why a mangled PyInit_ compiles, links, and fails only when
+   ;;; an interpreter goes looking.
+   ;;;
+   ;;; THIS TARGET IS C++ for the same reason: under C the question does not
+   ;;; arise. Emitted as PyObject * rather than PyMODINIT_FUNC, the symbol
+   ;;; below is _Z14PyInit_withdocv and these two checks fail.
+
+   (check_true "PyInit_withdoc is findable by name"
+               (!= (py_stub_lookup "PyInit_withdoc") nil))
+   (check_true "PyInit_nodoc is findable by name"
+               (!= (py_stub_lookup "PyInit_nodoc") nil))
+
+   (if (== bad 0)
+       (printf "\npython: all checks passed\n")
+     (printf "\npython: %d check(s) failed\n" bad))
+   (return bad)))
