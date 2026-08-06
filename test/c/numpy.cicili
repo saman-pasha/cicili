@@ -1,0 +1,180 @@
+;;;; test the numpy declaration bindings in lib/python/numpy.cicili
+;;;
+;;; WHAT THIS PROVES. That the declarations resolve, and that the calls Cicili
+;;; emits from them are the shape a C compiler accepts and the array protocol
+;;; expects: an array made, its geometry asked, its elements REACHED THROUGH
+;;; PyArray_GETPTR against real strides, and its memory owned or borrowed on
+;;; purpose.
+;;;
+;;; The strides are the sharp end. A wrong signature on GETPTR2 does not raise
+;;; -- it computes an address and reads it -- so this writes through the
+;;; accessor and reads back through the raw buffer, which only agree if the
+;;; stride arithmetic is right. Faking the strides in the stub would have made
+;;; the accessor agree with itself and with nothing else.
+;;;
+;;; It does NOT prove the signatures match a real numpy: it compiles against
+;;; test/c/numpy_stub.h so that it runs in the suite with nothing installed.
+;;; That check is example/numpy.cicili and example/numpy-ops.cicili, which
+;;; build against the real arrayobject.h -- run them by hand on a machine with
+;;; numpy, and they are where a wrong signature is caught.
+;;;
+;;; NOT COVERED, and it is a real gap rather than an oversight: the reductions
+;;; (Sum, Mean, Std, ArgMax…), sorting, casting, Concatenate, the
+;;; FROM_OTF/FROMANY/FromAny converters, and the descr machinery past
+;;; DescrFromType. A stub implementing numpy's reductions would be asserting
+;;; its own arithmetic rather than the binding, which is worth less than
+;;; saying plainly that they are untested.
+
+(source "numpy.c"
+  (make :compile #t :link ("-lnumpy.o" "-o" "numpy_test"))
+
+  (include "numpy_stub.h")
+  (include <stdio.h>)
+
+  ;; the declarations. They emit nothing.
+  (import "lib/python/python.cicili")
+  (import "test/c/python-stub-decl.cicili")
+  (import "test/c/numpy-stub-decl.cicili")
+
+  ;; the counters the stubs declare extern
+  (var PyObject * py_stub_last_exc . nil)
+  (var const char * py_stub_last_msg . nil)
+  (var int npy_stub_imports . 0)
+
+  (var int bad . 0)
+
+  (func check ((const char * what) (long got) (long want))
+        (if (== got want)
+            (printf "ok   %-44s %ld\n" what got)
+          (block (printf "FAIL %-44s got %ld want %ld\n" what got want)
+                 (++ bad))))
+
+  (func check_d ((const char * what) (double got) (double want))
+        (if (< (? (> (- got want) 0.0) (- got want) (- want got)) 0.000001)
+            (printf "ok   %-44s %g\n" what got)
+          (block (printf "FAIL %-44s got %g want %g\n" what got want)
+                 (++ bad))))
+
+  (func check_true ((const char * what) (int cond))
+        (if cond
+            (printf "ok   %-44s\n" what)
+          (block (printf "FAIL %-44s\n" what) (++ bad))))
+
+  (main
+   ;;; ---- import_array ------------------------------------------------
+   ;;;
+   ;;; It has to run once, before any other numpy call, or the first one
+   ;;; segfaults. That is rule three of example/cimath.cicili and the one
+   ;;; with no diagnostic at all when it is broken.
+
+   (check "import_array has not run yet" (cast long (npy_stub_import_count)) 0)
+   (check "_import_array succeeds"       (cast long (_import_array)) 0)
+   (check "and it ran exactly once"      (cast long (npy_stub_import_count)) 1)
+
+   ;;; ---- a 2-D array of doubles --------------------------------------
+
+   (let ((npy_intp dims [ 2 ]))
+     (set (nth 0 dims) 3)
+     (set (nth 1 dims) 4)
+
+     (let ((PyObject * o . #'(PyArray_SimpleNew 2 dims NPY_DOUBLE)))
+       (check_true "PyArray_SimpleNew answers an array" (PyArray_Check o))
+
+       (let ((PyArrayObject * a . #'(npy_stub_as_array o)))
+         (check "NDIM is 2"        (cast long (PyArray_NDIM a)) 2)
+         (check "DIM 0 is 3"       (PyArray_DIM a 0) 3)
+         (check "DIM 1 is 4"       (PyArray_DIM a 1) 4)
+         (check "SIZE is 12"       (PyArray_SIZE a) 12)
+         (check "ITEMSIZE is 8"    (PyArray_ITEMSIZE a) 8)
+         (check "NBYTES is 96"     (PyArray_NBYTES a) 96)
+         (check "TYPE is NPY_DOUBLE" (cast long (PyArray_TYPE a))
+                (cast long NPY_DOUBLE))
+
+         ;; C-contiguous, so the last axis moves by one element and the first
+         ;; by a whole row. These two numbers are what GETPTR2 multiplies by.
+         (check "STRIDE 0 is a row"     (PyArray_STRIDE a 0) 32)
+         (check "STRIDE 1 is an element" (PyArray_STRIDE a 1) 8)
+
+         (check_true "it is C-contiguous" (PyArray_IS_C_CONTIGUOUS a))
+         (check_true "it is writeable"    (PyArray_ISWRITEABLE a))
+         (check_true "it owns its data"
+                     (PyArray_CHKFLAGS a NPY_ARRAY_OWNDATA))
+
+         ;;; ---- THE ONE THAT MATTERS ------------------------------------
+         ;;;
+         ;;; Write through GETPTR2, read back through the raw buffer at the
+         ;;; flat offset those indices ought to mean. They agree only if the
+         ;;; stride arithmetic is right, and a wrong GETPTR2 does not raise --
+         ;;; it reads some other address and answers whatever is there.
+
+         (npy_stub_set_d (PyArray_GETPTR2 a 0 0) 1.0)
+         (npy_stub_set_d (PyArray_GETPTR2 a 1 2) 7.5)
+         (npy_stub_set_d (PyArray_GETPTR2 a 2 3) 9.25)
+
+         (check_d "GETPTR2(0,0) lands at flat 0"  (npy_stub_data_at a 0)  1.0)
+         (check_d "GETPTR2(1,2) lands at flat 6"  (npy_stub_data_at a 6)  7.5)
+         (check_d "GETPTR2(2,3) lands at flat 11" (npy_stub_data_at a 11) 9.25)
+
+         ;; and back out through the accessor, which is the round trip
+         (check_d "GETPTR2 reads what it wrote"
+                  (npy_stub_get_d (PyArray_GETPTR2 a 1 2)) 7.5)
+
+         ;; DATA is the same buffer, not a copy
+         (check_true "DATA is the buffer itself"
+                     (== (PyArray_DATA a) (PyArray_GETPTR1 a 0)))
+
+         ;; GETPTR1 on a 2-D array steps whole rows
+         (check_d "GETPTR1(2) is the start of row 2"
+                  (npy_stub_get_d (PyArray_GETPTR1 a 2)) 0.0)
+         (npy_stub_set_d (PyArray_GETPTR1 a 2) 4.5)
+         (check_d "and row 2 starts at flat 8" (npy_stub_data_at a 8) 4.5)
+
+         ;;; ---- flags are settable, both ways -------------------------
+
+         (PyArray_CLEARFLAGS a NPY_ARRAY_WRITEABLE)
+         (check_true "CLEARFLAGS took the flag off"
+                     (not (PyArray_ISWRITEABLE a)))
+         (PyArray_ENABLEFLAGS a NPY_ARRAY_WRITEABLE)
+         (check_true "ENABLEFLAGS put it back" (PyArray_ISWRITEABLE a)))))
+
+   ;;; ---- a borrowed buffer, and who keeps it alive --------------------
+   ;;;
+   ;;; SimpleNewFromData does NOT copy: the array points into memory somebody
+   ;;; else owns, and the array must not free it. SetBaseObject is what keeps
+   ;;; that owner alive for as long as the array -- the arrangement whose
+   ;;; absence is a use-after-free with no diagnostic anywhere.
+
+   (let ((double buf [ 4 ]) (npy_intp d1 [ 1 ]))
+     (set (nth 0 buf) 10.0)
+     (set (nth 1 buf) 20.0)
+     (set (nth 2 buf) 30.0)
+     (set (nth 3 buf) 40.0)
+     (set (nth 0 d1) 4)
+
+     (let ((PyObject * o . #'(PyArray_SimpleNewFromData 1 d1 NPY_DOUBLE
+                                                        (cast (void *) buf))))
+       (let ((PyArrayObject * a . #'(npy_stub_as_array o)))
+         (check "the borrowed array has 4 elements" (PyArray_SIZE a) 4)
+         (check_d "it sees the caller's data"
+                  (npy_stub_get_d (PyArray_GETPTR1 a 2)) 30.0)
+
+         ;; THE FLAG THAT SAYS WHO FREES IT. A borrowed buffer must not carry
+         ;; OWNDATA, or numpy frees memory it never allocated.
+         (check_true "a borrowed buffer does not own its data"
+                     (not (PyArray_CHKFLAGS a NPY_ARRAY_OWNDATA)))
+
+         ;; writing through the array is visible to the owner, since there is
+         ;; one buffer and not two
+         (npy_stub_set_d (PyArray_GETPTR1 a 1) 99.0)
+         (check_d "a write reaches the caller's buffer" (nth 1 buf) 99.0)
+
+         (check_true "base is unset until it is set" (== (PyArray_BASE a) nil))
+         (let ((PyObject * owner . #'(PyLong_FromLong 1)))
+           (check "SetBaseObject succeeds"
+                  (cast long (PyArray_SetBaseObject a owner)) 0)
+           (check_true "and base is what was set" (== (PyArray_BASE a) owner))))))
+
+   (if (== bad 0)
+       (printf "\nnumpy: all checks passed\n")
+     (printf "\nnumpy: %d check(s) failed\n" bad))
+   (return bad)))
