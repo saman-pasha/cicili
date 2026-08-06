@@ -157,7 +157,16 @@
 ;;; the first N rows, and everything after them. Both are VIEWS: no copy, and
 ;;; they keep the tensor they came from alive but not the buffer under it.
 (DEFMACRO head (tn n) `(($ ,tn narrow) 0 0 ,n))
-(DEFMACRO tail (tn n) `(($ ,tn narrow) 0 ,n (- (($ ,tn size) 0) ,n)))
+;; TN IS BOUND BEFORE IT IS USED, because tail needs it twice -- once for the
+;; narrow and once for the size it narrows to the end of. Written straight,
+;; (tail (standardise (gather X0 p) k) k) standardises and gathers the whole
+;; matrix twice, and if the argument has any state -- (tail (gather X0
+;; (shuffled-order n)) k) -- the tensor being narrowed is not the tensor being
+;; measured. Every other macro here that needs its argument more than once
+;; binds it first; this one did not.
+(DEFMACRO tail (tn n)
+  `(letin* ((t^tail ,tn) (n^tail ,n))
+     (($ t^tail narrow) 0 n^tail (- (($ t^tail size) 0) n^tail))))
 
 ;;; where to cut, as a share: (split-point 20640 0.8) is 16512. Rounded down,
 ;;; so the training half never ends up one row longer than asked for.

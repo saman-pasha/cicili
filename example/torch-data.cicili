@@ -151,7 +151,11 @@
         ;; the identity order changes nothing, which is the no-shuffle path
         (letin* ((q (row-order (rows X0))))
           (letin* ((X (gather X0 q)))
-            (check "row-order is the identity" (at2 X 0 0) 1.0)))))
+;; (at2 X 0 0) would pass for ANY order that happens to fix index 0 --
+            ;; including all-zeros and any constant. The last row is what
+            ;; distinguishes the identity from those.
+            (check "row-order is the identity, first" (at2 X 0 0) 1.0)
+            (check "row-order is the identity, last"  (at2 X 5 0) 6.0)))))
 
     ;; ---- 6. split-point --------------------------------------------
     (check "split-point 20640 0.8" (cast double (split-point 20640 0.8)) 16512.0)
