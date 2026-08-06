@@ -789,6 +789,40 @@ int main () { ... }
 
 ---
 
+## Emitting a Fragment
+
+A target does not have to be a translation unit. `header` targets are written and never
+handed to a compiler; a `source` target with no `:compile` is written and Cicili stops. And
+no `#include` appears in either unless one is written — `:std` is a feature you ask for,
+and `include` is a clause. So the output of
+
+```lisp
+(header "netfrag.hpp" (make :cpp #t)
+  (decl) (struct Net)
+  (decl) (func net_make ((long start)) (out (t<> std::shared_ptr Net))))
+
+(source "netfrag.cpp" (make :cpp #t)
+  (struct Net (member long total) (ctor ((long start)) (init (total start))))
+  (func net_make ((long start)) (out (t<> std::shared_ptr Net))
+        (return ((t<> std::make_shared Net) start))))
+```
+
+is two files of plain C++ that some other build can paste into a header and a source of
+its own. Nothing about this is a mode: it is what those two targets already do when you
+ask for nothing else.
+
+The case it was written for is ZiguratIP's `BEGIN HPP` / `BEGIN CPP`, which take C++
+whole inside a Parsi `CLASS`. Declarations go in the block that lands in the object's
+header, definitions in the block that stays in its `.cpp`, and the database compiles both.
+[example/parsi-fragment.cicili](../example/parsi-fragment.cicili) is the whole of it,
+including what the Parsi side looks like.
+
+`std::shared_ptr` is how a handle crosses that boundary, and
+[lib/cpp/memory.cicili](../lib/cpp/memory.cicili) declares it — one instantiation at a
+time, since Cicili has one signature per name.
+
+---
+
 ## See also
 
 * [DOC-C.md](DOC-C.md) — the C half, and everything this file builds on
