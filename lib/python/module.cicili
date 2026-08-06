@@ -135,12 +135,25 @@
          ;; m_size is -1: no per-module state, and the module cannot be loaded
          ;; twice into one process. That is what almost every module wants and
          ;; the only thing this scaffold supports.
+         ;; ,(OR doc 'nil) and not ,doc. An omitted (doc …) leaves DOC as Lisp
+         ;; NIL, which is NOT Cicili's nil -- key-eq is case-sensitive -- so
+         ;; the specifier emitted nothing for it while the separator was still
+         ;; written, giving `{ HEAD_INIT , "mod" , , -1, … }' and a C syntax
+         ;; error with no word from the macro. The per-method doc one screen up
+         ;; had this right; the module doc did not.
          (static) (var PyModuleDef ,def
-                       . '{ PyModuleDef_HEAD_INIT ,mod ,doc -1 ,tbl nil nil nil nil })
+                       . '{ PyModuleDef_HEAD_INIT ,mod ,(OR doc 'nil) -1 ,tbl nil nil nil nil })
          ;; the entry point. Its NAME is the contract: `import cimath' looks
          ;; for PyInit_cimath and nothing else, so the symbol here and the file
          ;; name on disk have to agree.
-         (func ,init () (out PyObject *)
+         ;; PyMODINIT_FUNC, NOT PyObject *. Under C++ the entry point needs
+         ;; extern "C" or the symbol is mangled and `import' fails at runtime,
+         ;; having compiled and linked without complaint -- and a bare
+         ;; extern "C" cannot be written here instead, because a module target
+         ;; may be C (example/cimath.cicili is) and it is not valid C.
+         ;; PyMODINIT_FUNC is CPython's own answer to exactly that: extern "C"
+         ;; plus default visibility under C++, and plain PyObject * under C.
+         (func ,init () (out PyMODINIT_FUNC)
                (let ((PyObject * ,mvar . #'(PyModule_Create (aof ,def))))
                  (when (not ,mvar) (return nil))
                  ,@(WHEN setup (CDDR setup))
@@ -170,6 +183,12 @@
      (typedef int METH_NOARGS)
      (typedef int METH_O)
      (typedef int METH_FASTCALL)
+
+     ;;; What a module's entry point is declared to return. A macro from
+     ;;; Python.h rather than a type: extern "C" and default visibility under
+     ;;; C++, plain PyObject * under C. Declared here as the thing it resolves
+     ;;; to, so returning a PyObject * from PyInit_… type-checks either way.
+     (typedef PyObject * PyMODINIT_FUNC)
 
      ;;; ---- making the module ----------------------------------------
      ;;; answers the module, or nil with an exception set
