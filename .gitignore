@@ -202,3 +202,9 @@ example/*.hpp
 # and the diff is what tells you the emission changed.
 !example/classifier.hpp
 !example/classifier.cpp
+
+# MNIST idx files and the checkpoint mnist-train writes. Downloaded and built,
+# not authored -- see example/mnist-train.cpp for both.
+example/data/
+example/classifier.pt
+example/mnist_train

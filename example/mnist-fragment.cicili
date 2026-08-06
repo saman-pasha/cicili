@@ -58,6 +58,10 @@
                             (const float * pixels) (long count)) (out long))
   (decl) (func net_score   ((const (t<> std::shared_ptr Classifier) & n)
                             (const float * pixels) (long count)) (out long))
+  (decl) (func net_predict_idx ((const (t<> std::shared_ptr Classifier) & n)
+                                (const char * images) (long index)) (out long))
+  (decl) (func idx_label   ((const char * labels) (long index)) (out long))
+  (decl) (func mnist_dir   () (out const char *))
   (decl) (func net_inputs  () (out long)))
 
 ;;; ---- the CPP block ----------------------------------------------------
@@ -129,6 +133,51 @@
   ;; truncated so it can cross a boundary that only carries integers, it is
   ;; the signal a caller can assert on: two pictures that produce the same
   ;; score to six decimal places did not both reach the model.
+  ;; ---- reading a real digit ------------------------------------------
+  ;;
+  ;; THE NORMALISATION IS NOT OPTIONAL AND NOT COSMETIC. Training subtracted
+  ;; 0.1307 and divided by 0.3081, so a network fed raw 0..1 pixels is being
+  ;; shown a distribution it never saw and answers accordingly -- confidently,
+  ;; and wrongly, with nothing in the output to say why. It is the one line
+  ;; that silently separates 98% from noise, so it lives beside the reader
+  ;; that produces the pixels rather than anywhere a caller could forget it.
+  ;;
+  ;; An idx image file is a 16-byte header and then one byte per pixel,
+  ;; row-major, so the k-th picture starts at 16 + k * 784. Labels are the
+  ;; same with an 8-byte header and one byte each.
+  (func net_predict_idx ((const (t<> std::shared_ptr Classifier) & n)
+                         (const char * images) (long index)) (out long)
+        (let ((FILE * f . #'(fopen images "rb")))
+          (when (not f) (return -1))
+          (when (!= (fseek f (+ 16 (* index 784)) SEEK_SET) 0)
+            (block (fclose f) (return -1)))
+          (let ((uchar raw [ 784 ]) (float px [ 784 ]))
+            (when (!= (fread raw 1 784 f) 784)
+              (block (fclose f) (return -1)))
+            (fclose f)
+            (for ((long i . 0)) (< i 784) ((++ i))
+                 (set (nth i px)
+                      (cast float (/ (- (/ (cast double (nth i raw)) 255.0) 0.1307) 0.3081))))
+            (return (net_predict n px 784)))))
+
+  ;; MNIST_DIR, or the empty string -- NEVER null. A caller in a language with
+  ;; no null test, which is the case this exists for, would otherwise have to
+  ;; hand getenv's answer straight to std::string and hope.
+  (func mnist_dir () (out const char *)
+        (let ((const char * d . #'(getenv "MNIST_DIR")))
+          (return (? d d ""))))
+
+  (func idx_label ((const char * labels) (long index)) (out long)
+        (let ((FILE * f . #'(fopen labels "rb")))
+          (when (not f) (return -1))
+          (when (!= (fseek f (+ 8 index) SEEK_SET) 0)
+            (block (fclose f) (return -1)))
+          (let ((uchar b . 0))
+            (when (!= (fread (aof b) 1 1 f) 1)
+              (block (fclose f) (return -1)))
+            (fclose f)
+            (return (cast long b)))))
+
   (func net_score ((const (t<> std::shared_ptr Classifier) & n)
                    (const float * pixels) (long count)) (out long)
         (when (!= count (net_inputs)) (return 0))
