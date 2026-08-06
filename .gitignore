@@ -194,3 +194,11 @@ example/numpy_ops
 example/*.la
 example/torch_data
 example/*.hpp
+
+# ...but the classifier fragment is a committed artefact, not a build product.
+# test/cpp/torch-fragment.cicili includes it, so a fresh clone has to have it
+# for `sh test/run.sh' to pass. Regenerate with
+#   sbcl --script cicili.lisp ./example/mnist-fragment.cicili
+# and the diff is what tells you the emission changed.
+!example/classifier.hpp
+!example/classifier.cpp
