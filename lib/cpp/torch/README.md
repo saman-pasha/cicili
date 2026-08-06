@@ -235,6 +235,14 @@ held out — so **a single run of this example carries about ±0.02 of rmse that
 to do with the configuration**, which is three times the largest gap between the columns.
 `TABULAR_SEED` is on both sides so this can be checked rather than argued about.
 
+The grid was re-measured with the Cicili side built `--release`, and all twenty values came
+back **identical to the digit**. They should have: a libtorch target carries its own `-O3`
+in `:compile`, target flags are appended after the base set and the last repeat of a flag
+wins, so these examples compile at `-O3` either way and `--release` only drops `-g`. That
+is *not* true of [benchmark/](../../../benchmark), where the targets carry `:compile #t`
+and have no flags of their own — those really do build at `-O0` without the switch, and
+[refuse to](../../../benchmark/release-only.cicili).
+
 ### MNIST, conv — accuracy, higher is better
 
 | | none | `(shuffle)` |
