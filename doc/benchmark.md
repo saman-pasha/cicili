@@ -101,23 +101,25 @@ where the two sides differ in exactly one known way.
 
 ## What would make this a measurement
 
-Neither half can be rebuilt in this repository as it stands:
+**The Haskell layer is parked**, deliberately and not temporarily: the prelude
+load is commented out at `cicili.lisp:24` while `std` is the focus, `test/haskell`
+is skipped by `test/run.sh`, and `word-count-bench.cicili` depends on it. So this
+benchmark does not build, and **unparking the prelude to rerun it is not the
+thing to do** — the parking is a decision about where the language is going, and
+a withdrawn benchmark is not a reason to reverse it.
 
-* **The Cicili side does not build.** The Haskell prelude load is commented out
-  in `cicili.lisp:24` while `std` is the focus, and `word-count-bench.cicili`
-  depends on it. `test/haskell` is skipped by `test/run.sh` for the same reason.
-* **GHC is not part of this project's toolchain**, so the other side needs an
-  environment that has it.
+GHC is also not part of this project's toolchain, so the other side needs an
+environment that has one.
 
-To redo it properly:
+If the comparison is ever wanted again, it needs to be rebuilt on `lib/std`
+rather than resurrected, and then:
 
-1. Restore the Haskell prelude, or port the sample to `lib/std`.
-2. Build with `--release` on both sides:
-   `sbcl --script cicili.lisp --release ./benchmark/word-count-bench.cicili`
-3. Name the CPU, the OS and every compiler version.
-4. Run enough times to report a spread, not a mean — the README quotes 14–35%
+1. Build with `--release` on both sides. `word-count-bench.cicili` now carries
+   `(release-only)`, so the Cicili half cannot be built any other way.
+2. Name the CPU, the OS and every compiler version.
+3. Run enough times to report a spread, not a mean — the README quotes 14–35%
    run-to-run on this class of hardware, so anything under that is noise.
-5. State what differs between the two implementations, since they are not the
+4. State what differs between the two implementations, since they are not the
    same program.
 
 Until then this page has a method and a transcript, and no result.
