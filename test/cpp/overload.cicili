@@ -1,0 +1,93 @@
+;;;; overload declarations -- the `^^' suffix
+;;;
+;;; WHAT THIS PROVES. That two methods differing only in their parameters can
+;;; both be declared, that a call site picks between them, and that the suffix
+;;; never reaches the C.
+;;;
+;;; WHY IT MATTERS. Cicili's symbol table is keyed by name alone, so before this
+;;; a second `method mean' raised "inner exists" and only one could be declared.
+;;; That is fine until a real C++ library is bound: torch::Tensor::mean has a
+;;; no-argument form and an axis-wise one, and lib/cpp/torch needs both -- five
+;;; call sites want the first and `standardise' wants the second.
+;;;
+;;; THIS DOES NOT RESOLVE OVERLOADS. C++ does that, from the arguments. All the
+;;; suffix does is stop the symbol table refusing to hold two entries, so the
+;;; right RETURN TYPE is known at each call site -- which is what inference
+;;; needs and what a chained call like (($ (($ x mean^^dim) …) sqrt)) depends on.
+;;;
+;;; TWO CARETS AND NOT ONE, because a single `^' is already the generic-mangling
+;;; separator: lib/std spells an instantiation `array^int' and it folds to the
+;;; distinct name `array_int'. An overload wants the opposite -- a distinct
+;;; entry and the same emitted name -- so the marker has to survive that fold.
+;;; The `value_of' check below is here for the same reason: a name that merely
+;;; shares a prefix with an overloaded one must be left alone.
+
+(source "overload.cpp"
+  (make :cpp #t
+        :compile ("-std=c++17" "-c" "overload.cpp")
+        :link ("-loverload.o" "-o" "overload_test"))
+
+  (include <cstdio>)
+
+  (var int bad . 0)
+
+  (func check ((const char * what) (long got) (long want))
+        (if (== got want)
+            (printf "ok   %-40s %ld\n" what got)
+          (block (printf "FAIL %-40s got %ld want %ld\n" what got want)
+                 (++ bad))))
+
+  ;;; Three overloads of one name, and their RETURN TYPES DIFFER on purpose:
+  ;;; if the symbol table held only one entry, two of the three call sites
+  ;;; below would infer the wrong type, and the chained call would not compile.
+  (struct Box
+          (member int seed)
+          (ctor ((int s)) (init (seed s)))
+
+          (method value    ()                (out int)
+                  (return ($ this seed)))
+          (method value^^n  ((int k))         (out int)
+                  (return (* ($ this seed) k)))
+          ;; a different return type, so inference has something to get wrong
+          (method value^^d  ((double k))      (out double)
+                  (return (* (cast double ($ this seed)) k)))
+
+          ;; and one that is not an overload at all, sharing a PREFIX with them
+          ;; -- `value_of' must not be mistaken for `value' with a suffix
+          (method value_of ((int k))         (out int)
+                  (return (+ ($ this seed) k))))
+
+  (main
+   (let ((Box b . #'(Box 10)))
+     (check "the no-argument form"      (cast long (($ b value)))       10)
+     (check "the int form"              (cast long (($ b value^^n) 3))   30)
+     (check "a different return type"   (cast long (($ b value^^d) 2.5)) 25)
+     (check "a name that merely shares a prefix"
+            (cast long (($ b value_of) 5)) 15)
+
+     ;; and through a POINTER, which is a different emission path -- `->' and
+     ;; `$' both go through compile-name, and this is what says so
+     (let ((Box * p . #'(aof b)))
+       (check "the same overload through ->" (cast long ((-> p value^^n) 3)) 30))
+
+     ;;; THE ONE THAT NEEDS THE RETURN TYPE, and the only one here that does.
+     ;;;
+     ;;; Every check above would pass with a single shared entry, because both
+     ;;; overloads EMIT `value' and C++ picks from the arguments either way --
+     ;;; the emitted C is identical. What differs is what Cicili believes the
+     ;;; call answers, and that only shows once the answer is bound and used.
+     ;;;
+     ;;; letin* binds through inference, so `v' is a double only if value^^d's
+     ;;; own declaration was found. Under the int entry it is an int, and the
+     ;;; fraction is truncated away.
+     ;;;
+     ;;; 0.25 AND NOT 0.5, deliberately: 10 * 0.5 is 5.0, which survives
+     ;;; truncation to an int and makes the check pass either way. 10 * 0.25 is
+     ;;; 2.5, which does not -- 10 against 8.
+     (letin* ((v (($ b value^^d) 0.25)))
+       (check "inferred through letin*" (cast long (* v 4.0)) 10)))
+
+   (if (== bad 0)
+       (printf "\noverload: all checks passed\n")
+     (printf "\noverload: %d check(s) failed\n" bad))
+   (return bad)))

@@ -593,8 +593,12 @@
           ((zerop (length name)) nil)
 	      ((not (find (char name 0) "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_")) nil)
 	      (t (progn
+	           ;; `^' is legal after the first character and only there: it
+	           ;; marks an overload suffix, which overload-name< strips before
+	           ;; anything is emitted. A name may not START with one, since
+	           ;; then there is nothing left to emit.
 	           (dotimes (i (- (length name) 1))
-		         (unless (find (char name (+ i 1)) "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_1234567890")
+		         (unless (find (char name (+ i 1)) "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_1234567890^")
 		           (return-from is-decl-name nil)))
 	           t)))))
 
@@ -606,6 +610,40 @@
 		         (unless (find (char name i) "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_1234567890_^")
 		           (return-from is-symbol nil)))
 	           t)))))
+
+
+;;; OVERLOADS, and the `^^' that declares one.
+;;;
+;;; C++ overloads on the parameter list; Cicili's symbol table is keyed by name
+;;; alone, so two `method mean' collide with "inner exists" and only one of them
+;;; can be declared. That is the Known Limitation in DOC-CPP.md, and where it
+;;; hurt was lib/cpp/torch: Tensor::mean has a no-argument form and an axis-wise
+;;; one, `standardise' wants the second and five other call sites want the first.
+;;;
+;;; So a suffix after `^^' distinguishes the ENTRY without reaching the emitted
+;;; name: (method mean^^dim ((c10::IntArrayRef dim) (bool keepdim)) …) is keyed
+;;; `mean^^dim', looked up as `mean^^dim' at the call site, and printed `mean'.
+;;; C++ then picks the overload from the arguments, which is its job and not
+;;; ours -- this does not resolve overloads, it stops the symbol table from
+;;; refusing to hold two.
+;;;
+;;; WHY TWO CARETS AND NOT ONE. A single `^' is already the generic-mangling
+;;; separator -- lib/std spells an instantiation `array^int' and
+;;; specify-decl-name< folds it to `array_int', which is a genuinely distinct
+;;; type and must stay distinct. An overload wants the opposite: a distinct
+;;; symbol-table entry and the SAME emitted name. Doubling the caret is what
+;;; survives that fold, so the two conventions do not collide. (`ctor' and
+;;; `dtor' take a single-`^' suffix, which works there because their emitted
+;;; name is the struct's and never the one written.)
+;;;
+;;; The suffix is a comment to the reader and nothing checks it against the
+;;; parameters. `mean^^dim' and `mean^^axis' would be two entries for one C++
+;;; function, which is a mistake this cannot see.
+(defun overload-name< (n)
+  "The emitted name: everything before the first `^^', which is the whole
+string when there is none."
+  (let ((at (search "^^" n)))
+    (if at (subseq n 0 at) n)))
 
 (defun key-eq (symbol1 symbol2)
   (and (symbolp symbol1) (symbolp symbol2) (equal (symbol-name symbol1) (symbol-name symbol2))))

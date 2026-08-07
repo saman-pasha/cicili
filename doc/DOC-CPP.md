@@ -718,7 +718,7 @@ reading them here.
 
 | limitation | detail |
 |---|---|
-| **No overloading** | Two `method`s or two `ctor`s with the same name collide — the second raises `inner exists`. One signature per name. |
+| **Overloads need a `^^` suffix** | The symbol table is keyed by name, so two `method mean` collide with `inner exists`. Declare the second `mean^^dim`: the suffix distinguishes the *entry*, is stripped before anything is emitted, and C++ picks between them from the arguments. Call it as `($ t mean^^dim)`. Two carets and not one — a single `^` is the generic-mangling separator, where `array^int` must fold to the *distinct* name `array_int`. This does not resolve overloads; it stops the table refusing to hold two, so each call site knows its own return type. A suffix is a comment to the reader and is not checked against the parameters. |
 | **`code` escapes have no type** | Anything reached through a raw `(code …)` cannot be resolved by `$` or `->`. This is why the constructs above are clauses and not escapes. |
 | **No `mutable`, `friend` or `operator`** | Not yet expressible. Use a `(code …)` escape. |
 
@@ -819,7 +819,7 @@ including what the Parsi side looks like.
 
 `std::shared_ptr` is how a handle crosses that boundary, and
 [lib/cpp/memory.cicili](../lib/cpp/memory.cicili) declares it — one instantiation at a
-time, since Cicili has one signature per name.
+time, since an instantiation is a distinct name rather than an overload of one.
 
 ---
 

@@ -168,7 +168,17 @@
   (maphash #'(lambda (k v) (print-specifier v lvl)) table))
 
 (defun specify-decl-name< (name)
-  (let ((name (intern (substitute #\_ #\^ (symbol-name name)))))
+  ;; A SINGLE `^' folds to `_' -- that is the generic-mangling separator, and
+  ;; `array^int' has to become the distinct name `array_int'.
+  ;;
+  ;; `^^' DOES NOT FOLD. It marks an overload suffix (overload-name< in
+  ;; core.lisp), so it has to reach the symbol table, where it is the whole
+  ;; reason two entries with one emitted name can coexist. Splitting on it first
+  ;; is what keeps the two conventions from meeting: each piece folds on its own
+  ;; and the marker is put back untouched.
+  (let ((name (intern (str:join "^^"
+                        (mapcar (lambda (part) (substitute #\_ #\^ part))
+                                (str:split "^^" (symbol-name name)))))))
     (if (is-decl-name name) name
         (error (format nil "wrong declaration name ~S" name)))))
 
