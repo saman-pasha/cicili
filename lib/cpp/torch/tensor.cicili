@@ -16,13 +16,10 @@
 ;;;; one, and this file is deliberately a useful subset rather than a guess at
 ;;;; everything.
 ;;;;
-;;;; OVERLOADS, which libtorch has heavily. The symbol table is keyed by name,
-;;;; so a second entry needs a `^^' suffix: `mean' and `mean^^dim' are two
-;;;; entries and one emitted `mean', and C++ picks between them from the
-;;;; arguments. Where only one form is used here only one is declared, and
-;;;; anything else is still reached the way an undeclared name is -- working,
-;;;; but without a return type to infer from. See DOC-CPP.md, Known
-;;;; Limitations.
+;;;; WHAT IS NOT COVERED, and why it does not hurt much: overloads. Cicili has
+;;;; one signature per name, so where libtorch overloads -- and it overloads
+;;;; heavily -- the most common form is declared and the others are reached the
+;;;; same way an undeclared name is. See DOC-CPP.md, Known Limitations.
 
 ;;; (dims 2 3) -> {2, 3}
 ;;;
@@ -100,25 +97,16 @@
               (const) (method matmul      ((const torch::Tensor & other)) (out torch::Tensor))
               (const) (method mm          ((const torch::Tensor & other)) (out torch::Tensor))
               (const) (method sum         ()          (out torch::Tensor))
-              ;; BOTH FORMS, which needs the `^' suffix: the symbol table is
-              ;; keyed by name, and mean is where that first bit. Five call
-              ;; sites want the whole-tensor mean and `standardise' wants the
-              ;; axis-wise one; before overload-name< only one of them could be
-              ;; declared, and standardise reached its own the way an
-              ;; undeclared name is reached.
-              ;;
-              ;; The suffix is stripped before anything is emitted -- both of
-              ;; these are `mean' in the C++, and C++ picks between them from
-              ;; the arguments. What the second entry buys is that the RETURN
-              ;; TYPE is known at a call site that passes an axis, so a chained
-              ;; call off it resolves.
+              ;; NO ARGUMENTS, deliberately, and the axis-wise form is not
+              ;; declared beside it: Cicili has one signature per name, and this
+              ;; is the spelling five call sites use. `standardise' reaches the
+              ;; three-argument overload the way an undeclared name is reached.
               (const) (method mean        ()          (out torch::Tensor))
-              (const) (method mean^^dim    ((c10::IntArrayRef dim) (bool keepdim))
-                                          (out torch::Tensor))
-              ;; std has no no-argument use here, so one entry is enough. It is
-              ;; what `standardise' in data.cicili leans on hardest: without it
-              ;; that macro's `s0' was inferred off an unknown, and (($ s0 lt) …)
-              ;; on the next line could not resolve.
+              ;; std, on the other hand, HAS no no-argument use here, so the
+              ;; parameterised form is the one worth declaring -- and it is what
+              ;; `standardise' in data.cicili leans on hardest. Without it that
+              ;; macro's result was inferred off an unknown, so nothing chained
+              ;; onto a standardised matrix could be inferred either.
               ;;
               ;; UNBIASED IS THE SECOND ARGUMENT and #f is what matches numpy
               ;; and scikit-learn's StandardScaler -- the population deviation,

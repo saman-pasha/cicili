@@ -344,14 +344,9 @@ Two shapes worth knowing:
   mistake compiles, links, and then asks the allocator for 1125615330997568 bytes — which
   is how it was found.
 
-**Overloads take a `^^` suffix.** The symbol table is keyed by name, so a second entry is
-declared `mean^^dim` and called `($ t mean^^dim)` — two entries, one emitted `mean`, and C++
-picks between them from the arguments. `Tensor::mean` is declared both ways for that reason:
-five call sites want the whole-tensor form and `standardise` wants the axis-wise one.
-
-libtorch overloads heavily and most names here still carry only their most-used form. The
-rest go through the undeclared path — working, but with no return type to infer from, so a
-chained call off one will not resolve.
+**No overloading.** Cicili has one signature per name, so where libtorch overloads — and it
+overloads heavily — the most-used form is declared and the rest go through the undeclared
+path, working but without inference.
 
 ---
 

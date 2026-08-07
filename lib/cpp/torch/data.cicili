@@ -114,10 +114,7 @@
   `(progn
      (letin* ((x ,tn))
        (letin* ((tr (($ x narrow) 0 0 ,ntrain)))
-         ;; mean^^dim, not mean: the axis-wise overload, so `m' is known to be
-         ;; a Tensor from its own declaration rather than from the no-argument
-         ;; one that happens to return the same thing
-         (letin* ((m  (($ tr mean^^dim) (dims 0) #t))
+         (letin* ((m  (($ tr mean) (dims 0) #t))
                   (s0 (($ tr std) (dims 0) #f #t)))
            (letin* ((s (torch::where
                         (($ s0 lt) (cast torch::Scalar 0.000001))

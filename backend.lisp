@@ -6,10 +6,7 @@
         (let ((sym-name (symbol-name name)))
           (when (str:starts-with-p "/" sym-name)
             (setq sym-name (str:substring 1 t sym-name)))
-          ;; an overload suffix is a symbol-table matter and never C -- see
-          ;; overload-name< in core.lisp. This is the call-site half:
-          ;; ($ t mean^dim) emits `t . mean'.
-          (set-ast-line (output (overload-name< sym-name))))
+          (set-ast-line (output sym-name)))
         (if (typep name 'sp)
             (progn
               (cond ((key-eq '|@TYPEOF| (construct name))
@@ -697,8 +694,7 @@
               ;; already says which type it belongs to -- there is nothing to
               ;; mangle and no Struct_m_ prefix to add.
               ((and is-method (symbolp name))
-               ;; and the declaration half: (method mean^dim …) emits `mean'
-               (set-ast-line (output "~A " (overload-name< (symbol-name name)))))
+               (set-ast-line (output "~A " name)))
               ((and as-type (key-eq name '_))
                (if is-volatile (set-ast-line (output "(* volatile)")) (set-ast-line (output "(*)"))))
               ;; an ARRAY of function pointers: int (*ops[])(int a, int b). The
