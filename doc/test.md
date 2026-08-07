@@ -1,19 +1,31 @@
 # The test suite
 
-`test/` holds three folders and a runner.
+`test/` holds four folders and a runner.
 
 | folder | what it covers | green? |
 |---|---|---|
 | `test/c` | every pure-C Cicili clause, one file per clause family | yes |
 | `test/std` | the `lib/std` types and collections | yes |
+| `test/cpp` | the C++ clauses, the libtorch and CPython bindings against their stubs | yes |
 | `test/haskell` | the Haskell layer | no, see below |
 
 ## Running
 
 ```sh
-sh test/run.sh                  # everything under test/c and test/std
+sh test/run.sh                  # everything under test/c, test/std and test/cpp
 sh test/run.sh test/c/control   # one target, by path without the extension
 ```
+
+**Run it plain.** `CICILI_FLAGS` reaches the transpiler, but `--release` is a
+*benchmarking* flag and not a second way to run the suite. It is what makes a
+measurement mean anything — without it a target compiles at `-g -O0` and every
+number from it is noise, which is why `benchmark/` targets carry
+`(release-only)` and refuse to build any other way. The suite asks whether the
+code is correct, and `-g -O0` is the right build for that: it compiles faster,
+and a red test is debuggable where an `-O3` one is not.
+
+Running the suite a second time at `-O3` is not extra evidence, and treating it
+as such is a habit worth not forming.
 
 Each test's `main` returns the number of failed assertions, and every assertion
 prints `ok` or `FAIL` with the value it got. So a green run means the C compiled
@@ -62,6 +74,32 @@ inference-driven one in `builtins.cicili`.
 prints `ok` or `FAIL` and `main` returns the failure count. The collection tests
 print a trace instead and are checked by reading it against the expected output
 recorded at the bottom of each file.
+
+## What is in test/cpp
+
+Every target here is `:cpp #t`. The folder went unmentioned in this document
+while the runner had been walking it all along.
+
+| file | covers |
+|---|---|
+| `syntax` | the C++-only clauses: `struct` with methods, `ctor`/`dtor`, `inherits`, `letin*`, `new*`/`delete*`, `throw*`/`try` |
+| `objects` | several C++ objects in one file, and what a `header` target emits for them |
+| `specialise` | `<>` specialisation reached as a METHOD, through `$` and `->`, and a macro dispatching on `CICILI:INFER-TYPE` — which is how Cicili spells an overload |
+| `torch` | `lib/cpp/torch` against `torch_stub.hpp`: tensors, autograd, `nn::Module`, and the `mean_t` dispatcher over a `code` escape |
+| `torch-fragment` | the C++ that `example/mnist-fragment.cicili` emits, compiled and run against the stub |
+
+`classifier-decl.cicili` is **not** a test. It holds declarations that
+`torch-fragment` imports, so it has no target and the runner reports it as
+`SKIP macro file (imported by another test)` — the same as `helpers`,
+`numpy-stub-decl` and `python-stub-decl` under `test/c`. A file with no target
+is not a silent failure; the runner says which it is.
+
+`torch_stub.hpp` stands in for libtorch, as `test/c`'s two stubs do for CPython
+and numpy, so the suite runs with none of the three installed. They are honest
+about what that buys: it checks the *bindings* are a shape a compiler accepts
+and that calls carry their arguments in the right order — not that the
+signatures match the real library. `example/` answers that second question,
+against the real thing.
 
 ## Debugging a red test
 
