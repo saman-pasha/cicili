@@ -39,11 +39,11 @@
 (source "mnist.cpp"
   (make :cpp #t
         :compile ("-std=c++17" "-O3" "-Wno-c++20-extensions"
-                  "-I/usr/local/opt/pytorch/include"
-                  "-I/usr/local/opt/pytorch/include/torch/csrc/api/include"
+                  "-I{$TORCH_INCLUDE}"
+                  "-I{$TORCH_API_INCLUDE}"
                   "-c" "mnist.cpp")
         :link ("-lmnist.o"
-               "-L/usr/local/opt/pytorch/lib" "-ltorch" "-ltorch_cpu" "-lc10"
+               "-L{$TORCH_LIBDIR}" "-ltorch" "-ltorch_cpu" "-lc10"
                "-o" "mnist"))
 
   (include <torch/torch.h>)

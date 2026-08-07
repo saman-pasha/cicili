@@ -37,8 +37,8 @@
   ;; DO NOT LINK libpython INTO A MODULE. The interpreter already has it, and a
   ;; second copy is two of every static, including the type objects.
   (make :compile ("-O2" "-fPIC" "-DNPY_NO_DEPRECATED_API=NPY_1_7_API_VERSION"
-                  "-I/usr/local/opt/python@3.14/Frameworks/Python.framework/Versions/3.14/include/python3.14"
-                  "-I/usr/local/opt/numpy/lib/python3.14/site-packages/numpy/_core/include"
+                  "-I{$PYTHON_INCLUDE}"
+                  "-I{$NUMPY_INCLUDE}"
                   "-c" "cimath.c")
         :link ("-lcimath.o" "-shared" "-module" "-avoid-version"
                "-rpath" "{$CWD}" "-o" "cimath.la"))

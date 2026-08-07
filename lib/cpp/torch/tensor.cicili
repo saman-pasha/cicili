@@ -97,7 +97,25 @@
               (const) (method matmul      ((const torch::Tensor & other)) (out torch::Tensor))
               (const) (method mm          ((const torch::Tensor & other)) (out torch::Tensor))
               (const) (method sum         ()          (out torch::Tensor))
+              ;; NO ARGUMENTS, deliberately, and the axis-wise form is not
+              ;; declared beside it: Cicili has one signature per name, and this
+              ;; is the spelling five call sites use. `standardise' reaches the
+              ;; three-argument overload the way an undeclared name is reached.
               (const) (method mean        ()          (out torch::Tensor))
+              ;; std, on the other hand, HAS no no-argument use here, so the
+              ;; parameterised form is the one worth declaring -- and it is what
+              ;; `standardise' in data.cicili leans on hardest. Without it that
+              ;; macro's result was inferred off an unknown, so nothing chained
+              ;; onto a standardised matrix could be inferred either.
+              ;;
+              ;; UNBIASED IS THE SECOND ARGUMENT and #f is what matches numpy
+              ;; and scikit-learn's StandardScaler -- the population deviation,
+              ;; dividing by n rather than n-1. Passing it wrongly is not an
+              ;; error, it is a slightly different number, which is the kind of
+              ;; thing a declaration is for.
+              (const) (method std         ((c10::IntArrayRef dim) (bool unbiased)
+                                           (bool keepdim))
+                                          (out torch::Tensor))
               (const) (method max         ()          (out torch::Tensor))
               (const) (method min         ()          (out torch::Tensor))
               (const) (method abs         ()          (out torch::Tensor))

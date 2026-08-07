@@ -30,6 +30,7 @@
 #define CICILI_PYTHON_STUB_H
 
 #include <stddef.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdarg.h>
@@ -108,6 +109,12 @@ static void Py_DecRef(PyObject* o) { if (o) o->refcnt--; }
 
 static void PyErr_SetString(PyObject* type, const char* msg) {
   py_stub_last_exc = type; py_stub_last_msg = msg;
+}
+/* prints and clears, which is CPython's behaviour and the reason a caller can
+ * follow it with a plain return -- the next call must not see this exception */
+static void PyErr_Print(void) {
+  if (py_stub_last_msg) fprintf(stderr, "stub exception: %s\n", py_stub_last_msg);
+  py_stub_last_exc = 0; py_stub_last_msg = 0;
 }
 static void PyErr_Clear(void) { py_stub_last_exc = NULL; py_stub_last_msg = NULL; }
 static PyObject* PyErr_Occurred(void) { return py_stub_last_exc; }

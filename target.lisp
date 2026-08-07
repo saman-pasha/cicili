@@ -191,8 +191,13 @@
                                  (cwd       (uiop/os:getcwd))
                                  (args      `(,program ,@arguments ,@custom))
                                  (dump-args `(,program ,@arguments ,@dumper ,@custom)))
-                             (setq args      (replace-args< `(("{$CCL}" ,ccl) ("{$CWD}" ,cwd)) args))
-                             (setq dump-args (replace-args< `(("{$CCL}" ,ccl) ("{$CWD}" ,cwd)) dump-args))
+                             ;; {$PYTHON_INCLUDE} and friends join {$CCL} and {$CWD} here.
+                             ;; toolchain-args< resolves only the tokens that actually
+                             ;; appear, so a target naming none of them runs no
+                             ;; subprocess -- see config.lisp.
+                             (let ((discovered (toolchain-args< custom)))
+                               (setq args      (replace-args< `(("{$CCL}" ,ccl) ("{$CWD}" ,cwd) ,@discovered) args))
+                               (setq dump-args (replace-args< `(("{$CCL}" ,ccl) ("{$CWD}" ,cwd) ,@discovered) dump-args)))
                              (display "cicili compile:" (if dump dump-args args) #\Newline)
 
                              (setq exit-status
@@ -235,7 +240,8 @@
                                (let ((ccl       *cicili-path*)
                                      (cwd       (uiop/os:getcwd))
                                      (args      `(,program ,@arguments ,@custom)))
-                                 (setq args (replace-args< `(("{$CCL}" ,ccl) ("{$CWD}" ,cwd)) args))
+                                 (setq args (replace-args< `(("{$CCL}" ,ccl) ("{$CWD}" ,cwd)
+                                                             ,@(toolchain-args< custom)) args))
                                  (setq args (resolve-libtool-objects< args))
                                  (display "cicili link:" args #\Newline)
 

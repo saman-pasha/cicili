@@ -67,6 +67,180 @@
                                                APPEND (IF (< i l) (LIST d ",") (LIST d)))))
             "})" }))
 
+;;;; ---------------------------------------------------------------------
+;;;; The friendly layer
+;;;;
+;;;; Everything above is the C API as it is. Everything below is what the
+;;;; examples kept writing by hand on top of it -- and writing by hand is the
+;;;; problem: example/numpy-ops.cicili opened with its own `arr' cast and its own
+;;;; take_double, example/numpy.cicili with its own ten-line numpy_call, and each
+;;;; was a chance to get the reference counting wrong in a way that shows up as a
+;;;; crash three calls later. Written once here, they are written once.
+;;;;
+;;;; NOTHING HERE HIDES AN ERROR. A macro that swallowed a NULL would trade a
+;;;; diagnosable failure for a segfault, which is the opposite of easy to use.
+;;;; These are shorter spellings of the same calls, not a safety net -- the
+;;;; result still has to be checked.
+
+;;; (nparr o) and (npobj a) -- the cast between the two halves of the API.
+;;;
+;;; numpy is split down this line and there is no way around it: the
+;;; constructors answer PyObject * and every accessor takes PyArrayObject *. So
+;;; a program that makes an array and asks its shape casts, and casts again, and
+;;; every example in this repository opened by defining this for itself.
+;;;
+;;; Applying it to something already a PyArrayObject * is a no-op, which is why
+;;; the shorthands below apply it themselves: a caller holding either kind can
+;;; write (npsum m) and be right.
+(DEFMACRO nparr (o) `(cast (PyArrayObject *) ,o))
+(DEFMACRO npobj (a) `(cast (PyObject *) ,a))
+
+;;; (npget double a 1 2) -- the element at those indices.
+;;; (npput double a 1 2 7.5) -- and writing one.
+;;;
+;;; PyArray_GETPTR answers void *, so reaching an element is a cast and a
+;;; dereference, and the rank picks which of GETPTR1/2/3 to call. Spelled out,
+;;; that is (cof (cast (double *) (PyArray_GETPTR2 a 1 2))) at every use.
+;;;
+;;; THE TYPE IS WRITTEN AND NOT INFERRED, deliberately. An array's dtype is a
+;;; runtime number; reading a float64 array as float32 is a wrong answer with no
+;;; diagnostic, and a macro that guessed would be guessing about that. Writing
+;;; `double' is the caller saying which array this is.
+;;;
+;;; GO THROUGH THESE RATHER THAN INDEXING DATA. a[i * cols + j] is right only
+;;; for a contiguous array, and a transpose or a slice from Python is not one --
+;;; it answers a plausible number from the wrong element. GETPTR walks the
+;;; strides and is right either way.
+(DEFMACRO np-getptr< (a ix)
+  (CASE (LENGTH ix)
+    (1 `(PyArray_GETPTR1 (nparr ,a) ,@ix))
+    (2 `(PyArray_GETPTR2 (nparr ,a) ,@ix))
+    (3 `(PyArray_GETPTR3 (nparr ,a) ,@ix))
+    (T (ERROR "npget/npput take 1, 2 or 3 indices; numpy's C API stops at GETPTR3"))))
+
+(DEFMACRO npget (type a &REST ix)
+  `(cof (cast (,type *) (np-getptr< ,a ,ix))))
+
+(DEFMACRO npput (type a &REST ix-and-value)
+  `(set (cof (cast (,type *) (np-getptr< ,a ,(BUTLAST ix-and-value))))
+        ,(CAR (LAST ix-and-value))))
+
+;;; (npsum a) over everything, (npsum a 0) along an axis.
+;;;
+;;; THE DEFAULT IS THE POINT. Written out, every reduction carries
+;;; `NPY_RAVEL_AXIS NPY_NOTYPE nil' -- three arguments that are the same at
+;;; almost every call site, one of which is the trap the file warns about at
+;;; :271. NPY_MAXDIMS meant "over everything" under numpy 1 and is now the
+;;; dimension limit, 64, so code carried over compiles, reads correctly, and
+;;; raises at the call. A default nobody has to type cannot be typed wrongly.
+;;;
+;;; NPY_NOTYPE lets numpy choose the accumulator, which is what you want unless
+;;; you are summing float32 and care about the drift; reach for PyArray_Sum
+;;; directly for that.
+(DEFMACRO npsum    (a &OPTIONAL (axis 'NPY_RAVEL_AXIS)) `(PyArray_Sum    (nparr ,a) ,axis NPY_NOTYPE nil))
+(DEFMACRO npprod   (a &OPTIONAL (axis 'NPY_RAVEL_AXIS)) `(PyArray_Prod   (nparr ,a) ,axis NPY_NOTYPE nil))
+(DEFMACRO npmean   (a &OPTIONAL (axis 'NPY_RAVEL_AXIS)) `(PyArray_Mean   (nparr ,a) ,axis NPY_NOTYPE nil))
+(DEFMACRO npcumsum (a &OPTIONAL (axis 'NPY_RAVEL_AXIS)) `(PyArray_CumSum (nparr ,a) ,axis NPY_NOTYPE nil))
+(DEFMACRO npmax    (a &OPTIONAL (axis 'NPY_RAVEL_AXIS)) `(PyArray_Max    (nparr ,a) ,axis nil))
+(DEFMACRO npmin    (a &OPTIONAL (axis 'NPY_RAVEL_AXIS)) `(PyArray_Min    (nparr ,a) ,axis nil))
+(DEFMACRO npargmax (a &OPTIONAL (axis 'NPY_RAVEL_AXIS)) `(PyArray_ArgMax (nparr ,a) ,axis nil))
+(DEFMACRO npargmin (a &OPTIONAL (axis 'NPY_RAVEL_AXIS)) `(PyArray_ArgMin (nparr ,a) ,axis nil))
+;;; the standard deviation, and (npvar a) for the variance -- the same call with
+;;; its fifth argument set, which is easy to drop and answers the other thing
+;;; without complaining.
+(DEFMACRO npstd (a &OPTIONAL (axis 'NPY_RAVEL_AXIS)) `(PyArray_Std (nparr ,a) ,axis NPY_NOTYPE nil 0))
+(DEFMACRO npvar (a &OPTIONAL (axis 'NPY_RAVEL_AXIS)) `(PyArray_Std (nparr ,a) ,axis NPY_NOTYPE nil 1))
+
+;;; (npzeros NPY_DOUBLE 2 3), (npempty NPY_DOUBLE 4), (nparray NPY_DOUBLE buf 2 3)
+;;;
+;;; The rank is counted rather than passed, which removes the one argument that
+;;; can disagree with the shape beside it: PyArray_SimpleNew(2, dims, ...) where
+;;; dims has three entries reads two of them and the third is never noticed.
+;;;
+;;; nparray WRAPS AND DOES NOT COPY. The buffer must outlive the array, and the
+;;; array will not free it -- see PyArray_SetBaseObject for handing it over.
+(DEFMACRO npzeros (type &REST shape)
+  `(PyArray_ZEROS ,(LENGTH shape) (npdims ,@shape) ,type 0))
+(DEFMACRO npempty (type &REST shape)
+  `(PyArray_SimpleNew ,(LENGTH shape) (npdims ,@shape) ,type))
+(DEFMACRO nparray (type buf &REST shape)
+  `(PyArray_SimpleNewFromData ,(LENGTH shape) (npdims ,@shape) ,type (cast (void *) ,buf)))
+
+;;; (npshape 2 3) -- the tuple that Reshape and Resize want.
+;;;
+;;; PyTuple_SetItem STEALS its argument and PyLong_FromLong hands over a fresh
+;;; reference, so this pairing is correct and the obvious defensive Py_IncRef
+;;; beside it would be the leak. Getting that backwards by hand is the single
+;;; most common way to break a numpy program in C, which is the argument for
+;;; writing it once.
+;;;
+;;; Answers a NEW reference, or nil. Decref it -- letin* with py_decref.
+(DEFMACRO npshape (&REST ds)
+  `(np_shape ,(LENGTH ds) (npdims ,@ds)))
+
+;;; ---- what the shorthands need emitted ------------------------------
+;;;
+;;; (numpy-support) beside (python-support), and for the same reason: a macro
+;;; that expands to a call needs the function to exist, and a function has to be
+;;; emitted somewhere exactly once.
+(DEFMACRO numpy-support ()
+  `($$$
+     ;;; A reduction answers a numpy scalar or a zero-dimensional array, never a
+     ;;; C double. PyFloat_AsDouble asks it for __float__, which both of those
+     ;;; answer -- and -1.0 with an exception set when it cannot.
+     ;;;
+     ;;; IT TAKES THE REFERENCE rather than borrowing it, because every caller
+     ;;; has just been handed a new one and wants it gone. That is what makes
+     ;;; (np_double (npsum m)) leak nothing.
+     (static) (func np_double ((PyObject * o)) (out double)
+                    (letin* ((r o py_decref))
+                      (when (not r) (block (PyErr_Print) (return -1.0)))
+                      (return (PyFloat_AsDouble r))))
+
+     ;;; the same for a count or an index -- what argmax answers
+     (static) (func np_long ((PyObject * o)) (out long)
+                    (letin* ((r o py_decref))
+                      (when (not r) (block (PyErr_Print) (return -1)))
+                      (return (PyLong_AsLong r))))
+
+     ;;; The shape tuple behind npshape. It takes the shape as an ARRAY and not
+     ;;; as varargs, because va_start and va_arg are C macros over a bare type
+     ;;; name and lib/std/c/stdarg.cicili says why Cicili cannot declare them.
+     ;;; npdims already builds the compound literal, so the shorthand hands this
+     ;;; one what PyArray_SimpleNew is handed everywhere else.
+     ;;;
+     ;;; COUNT IS PASSED rather than the array being sentinel-terminated: 0 is a
+     ;;; legal extent -- an empty axis -- and would end the walk early.
+     (static) (func np_shape ((int count) (npy_intp * ds)) (out PyObject *)
+                    (let ((PyObject * tuple . #'(PyTuple_New count)))
+                      (when (not tuple) (return nil))
+                      (for ((int i . 0)) (< i count) ((++ i))
+                           ;; SetItem STEALS, and FromLong is fresh: exactly
+                           ;; matched, and an incref here would be the leak
+                           (PyTuple_SetItem tuple i
+                                            (PyLong_FromLong (cast long (nth i ds)))))
+                      (return tuple)))
+
+     ;;; (np_call "mean" a) -- numpy.NAME(a), answered as a new reference.
+     ;;;
+     ;;; For the parts of numpy that have no C entry point, which is most of it:
+     ;;; the C API covers the array object and the reductions, and everything
+     ;;; else -- linspace, percentile, linalg -- is reached the way Python
+     ;;; reaches it. Every example wrote this for itself.
+     ;;;
+     ;;; `a' is BORROWED: it is increfed here because SetItem is about to steal
+     ;;; it, so the caller's reference is still the caller's afterwards.
+     (static) (func np_call ((const char * name) (PyObject * a)) (out PyObject *)
+                    (letin* ((mod (PyImport_ImportModule "numpy") py_decref))
+                      (when (not mod) (return nil))
+                      (letin* ((fn (PyObject_GetAttrString mod name) py_decref))
+                        (when (not fn) (return nil))
+                        (letin* ((args (PyTuple_New 1) py_decref))
+                          (when (not args) (return nil))
+                          (Py_IncRef a)
+                          (PyTuple_SetItem args 0 a)
+                          (return (PyObject_CallObject fn args))))))))
+
 (DEFMACRO init-macro ()
   `($$$
 

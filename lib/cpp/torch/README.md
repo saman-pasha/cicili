@@ -50,11 +50,11 @@ uses clauses that are errors in a C one.
 (source "app.cpp"
   (make :cpp #t
         :compile ("-std=c++17" "-O3" "-Wno-c++20-extensions"
-                  "-I/usr/local/opt/pytorch/include"
-                  "-I/usr/local/opt/pytorch/include/torch/csrc/api/include"
+                  "-I{$TORCH_INCLUDE}"
+                  "-I{$TORCH_API_INCLUDE}"
                   "-c" "app.cpp")
         :link ("-lapp.o"
-               "-L/usr/local/opt/pytorch/lib" "-ltorch" "-ltorch_cpu" "-lc10"
+               "-L{$TORCH_LIBDIR}" "-ltorch" "-ltorch_cpu" "-lc10"
                "-o" "app"))
 
   (include <torch/torch.h>)
@@ -62,10 +62,23 @@ uses clauses that are errors in a C one.
   …)
 ```
 
-The paths are wherever libtorch is. On macOS `brew install pytorch` puts the C++ frontend
-under `include/torch/csrc/api/include`, which is why there are two `-I` flags.
-`-Wno-c++20-extensions` is needed because libtorch's own headers use a C++20 feature that
-`-Werror` would otherwise reject.
+`{$TORCH_INCLUDE}`, `{$TORCH_API_INCLUDE}` and `{$TORCH_LIBDIR}` are resolved on the machine
+doing the building, from `$LIBTORCH` (or `$TORCH_ROOT`) if it is set, and otherwise from the
+pip package — `python3 -c "import torch, os; print(os.path.dirname(torch.__file__))"`, whose
+directory *is* the distribution, `include/` and `lib/` inside it. A standalone libtorch
+download has no interpreter to ask, which is what `$LIBTORCH` is for:
+
+```sh
+export LIBTORCH=/opt/libtorch
+```
+
+There are **two** `-I` flags because the C++ frontend's headers sit under
+`include/torch/csrc/api/include` while ATen's sit under `include`; `{$TORCH_API_INCLUDE}` is
+the first of those. `-Wno-c++20-extensions` is needed because libtorch's own headers use a
+C++20 feature that `-Werror` would otherwise reject.
+
+If libtorch cannot be found, the error names the token and says to set `$LIBTORCH` — rather
+than failing later on a missing `torch/torch.h`.
 
 ---
 

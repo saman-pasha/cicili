@@ -19,11 +19,11 @@
 (source "torch_example.cpp"
   (make :cpp #t
         :compile ("-std=c++17" "-O3" "-Wno-c++20-extensions"
-                  "-I/usr/local/opt/pytorch/include"
-                  "-I/usr/local/opt/pytorch/include/torch/csrc/api/include"
+                  "-I{$TORCH_INCLUDE}"
+                  "-I{$TORCH_API_INCLUDE}"
                   "-c" "torch_example.cpp")
         :link ("-ltorch_example.o"
-               "-L/usr/local/opt/pytorch/lib" "-ltorch" "-ltorch_cpu" "-lc10"
+               "-L{$TORCH_LIBDIR}" "-ltorch" "-ltorch_cpu" "-lc10"
                "-o" "torch_example"))
 
   (include <torch/torch.h>)

@@ -50,6 +50,12 @@
   (var const char * py_stub_last_msg . nil)
   (var int npy_stub_imports . 0)
 
+  ;; emits np_double, np_long, np_shape and np_call -- what the shorthands in
+  ;; lib/python/numpy.cicili expand into. Beside (python-support), which emits
+  ;; the py_decref they are built on.
+  (python-support)
+  (numpy-support)
+
   (var int bad . 0)
 
   (func check ((const char * what) (long got) (long want))
@@ -278,6 +284,121 @@
              (check "CumSum is as long as the input" (PyArray_SIZE csa) 6)
              (check_d "it ends at the total" (npy_stub_data_at csa 5) 21.0)
              (check_d "and starts at the first" (npy_stub_data_at csa 0) 1.0))))))
+
+;;; ---- the friendly layer -------------------------------------------
+   ;;;
+   ;;; The shorthands lib/python/numpy.cicili adds on top of the raw API. They
+   ;;; are covered HERE and not only in example/, because the whole point of
+   ;;; them is that nobody re-derives the reference rules by hand -- and a
+   ;;; shorthand that gets one wrong is worse than the boilerplate it replaced.
+   ;;;
+   ;;; Each check below is written to fail if the macro expands to the wrong
+   ;;; call, not merely to compile.
+
+   (let ((PyObject * z . #'(npzeros NPY_DOUBLE 2 3)))
+     (check_true "npzeros answers an array" (PyArray_Check z))
+     (check "npzeros counted the rank"  (cast long (PyArray_NDIM (nparr z))) 2)
+     (check "npzeros took the shape"    (PyArray_SIZE (nparr z)) 6)
+     (check_d "and it is zeroed"        (npget double z 1 2) 0.0)
+
+     ;; npput and npget are a pair, and the second index is the one that moves
+     ;; by an element -- a rank the macro got wrong would read the wrong place
+     (npput double z 1 2 7.5)
+     (check_d "npput then npget round-trips" (npget double z 1 2) 7.5)
+     (check_d "and it landed at flat 5"      (npy_stub_data_at (nparr z) 5) 7.5)
+     (npput double z 0 0 1.0)
+     (check_d "npget with a fresh index"     (npget double z 0 0) 1.0)
+
+     ;; nparr is idempotent: applying it to something already cast must work,
+     ;; which is what lets the shorthands below take either kind
+     (check "nparr over an array pointer"
+            (PyArray_SIZE (nparr (nparr z))) 6))
+
+   ;;; ---- the reduction shorthands ------------------------------------
+   ;;;
+   ;;; The same 2x3 of 1..6. What is asserted is that each shorthand expands to
+   ;;; the reduction it names, with the default axis meaning "over everything"
+   ;;; -- the argument that is NPY_RAVEL_AXIS and not NPY_MAXDIMS, which is the
+   ;;; mistake the default exists to make unmakeable.
+
+   (let ((npy_intp sdims [ 2 ]))
+     (set (nth 0 sdims) 2)
+     (set (nth 1 sdims) 3)
+     (let ((PyObject * so . #'(npempty NPY_DOUBLE 2 3)))
+       (let ((PyArrayObject * sm . #'(nparr so)))
+         (for ((long r . 0)) (< r 2) ((++ r))
+              (for ((long c . 0)) (< c 3) ((++ c))
+                   (npput double so r c (cast double (+ (* r 3) c 1)))))
+
+         (check_d "npsum"    (np_double (npsum so))    21.0)
+         (check_d "npprod"   (np_double (npprod so))   720.0)
+         (check_d "npmean"   (np_double (npmean so))   3.5)
+         (check_d "npmax"    (np_double (npmax so))    6.0)
+         (check_d "npmin"    (np_double (npmin so))    1.0)
+         (check "npargmax"   (np_long   (npargmax so)) 5)
+         (check "npargmin"   (np_long   (npargmin so)) 0)
+         (check_d "npvar"    (np_double (npvar so))    (/ 35.0 12.0))
+
+         ;; npstd and npvar differ, which is the fifth argument being passed
+         (let ((double sd . #'(np_double (npstd so))))
+           (check_d "npstd is the root of npvar" (* sd sd) (/ 35.0 12.0)))
+
+         ;; the axis argument still reaches through, and the shape it answers
+         ;; is the one that tells axis 0 from axis 1 on a 2x3
+         (let ((PyObject * a0 . #'(npsum so 0)))
+           (check "npsum along axis 0" (PyArray_SIZE (nparr a0)) 3)
+           (check_d "and its first column" (npget double a0 0) 5.0))
+         (let ((PyObject * a1 . #'(npsum so 1)))
+           (check "npsum along axis 1" (PyArray_SIZE (nparr a1)) 2)
+           (check_d "and its first row"  (npget double a1 0) 6.0))
+
+         (check_d "npcumsum ends at the total"
+                  (npget double (npcumsum so) 5) 21.0)
+
+         ;;; ---- npshape, where stealing is the right answer -------------
+         ;;;
+         ;;; PyTuple_SetItem steals and PyLong_FromLong is fresh, so np_shape
+         ;;; increfs nothing. What is checkable here is that the tuple came out
+         ;;; the right length with the right numbers in the right order.
+
+         (let ((PyObject * shp . #'(npshape 2 3)))
+           (check "npshape is a tuple of two" (PyTuple_Size shp) 2)
+           (check "npshape kept the order, 0" (PyLong_AsLong (PyTuple_GetItem shp 0)) 2)
+           (check "npshape kept the order, 1" (PyLong_AsLong (PyTuple_GetItem shp 1)) 3))
+
+         ;;; ---- nparray wraps rather than copies ------------------------
+
+         (let ((double wbuf [ 3 ]))
+           (set (nth 0 wbuf) 5.0)
+           (set (nth 1 wbuf) 6.0)
+           (set (nth 2 wbuf) 7.0)
+           (let ((PyObject * w . #'(nparray NPY_DOUBLE wbuf 3)))
+             (check "nparray took the shape" (PyArray_SIZE (nparr w)) 3)
+             (check_d "and sees the buffer"  (npget double w 1) 6.0)
+             (check_true "without owning it"
+                         (not (PyArray_CHKFLAGS (nparr w) NPY_ARRAY_OWNDATA)))
+             ;; the same memory, which is the whole reason not to copy
+             (npput double w 2 99.0)
+             (check_d "a write reaches the buffer" (nth 2 wbuf) 99.0)))
+
+         ;;; ---- np_call, the escape hatch to the module -----------------
+         ;;;
+         ;;; numpy's C API stops at the array object and the reductions;
+         ;;; everything else is import, getattr, call. np_call is that, and its
+         ;;; reference rules are the ones worth having written once: the
+         ;;; argument is BORROWED, so `so' must still be usable afterwards.
+
+         (check_d "np_call numpy.sum"  (np_double (np_call "sum" so))  21.0)
+         (check_d "np_call numpy.mean" (np_double (np_call "mean" so)) 3.5)
+         (check_d "np_call numpy.max"  (np_double (np_call "max" so))  6.0)
+         (check_d "and the argument survives being called with"
+                  (np_double (npsum so)) 21.0)
+
+         ;; a name it does not have FAILS rather than answering something
+         (set py_stub_last_exc nil)
+         (check_true "an unknown name answers nothing"
+                     (== (np_call "percentile" so) nil))
+         (check_true "having set an exception" (!= py_stub_last_exc nil)))))
 
    (if (== bad 0)
        (printf "\nnumpy: all checks passed\n")

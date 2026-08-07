@@ -141,6 +141,12 @@ static int PyArray_Check(PyObject* o) {
   return (o && o->kind == 5) ? 1 : 0;
 }
 
+/* the PyObject * -> PyArrayObject * cast, defined here because PyObject_CallObject
+ * below needs it and npy_stub_as_array (the name the test uses) is further down */
+static PyArrayObject* npy_stub_as_array_fwd(PyObject* o) {
+  return PyArray_Check(o) ? (PyArrayObject*)(void*)o : NULL;
+}
+
 static void*    PyArray_DATA(PyArrayObject* a)     { return a ? (void*)a->data : NULL; }
 static char*    PyArray_BYTES(PyArrayObject* a)    { return a ? a->data : NULL; }
 static int      PyArray_NDIM(PyArrayObject* a)     { return a ? a->nd : 0; }
@@ -367,11 +373,84 @@ static PyObject* PyArray_CumSum(PyArrayObject* a, int axis, int rtype, PyArrayOb
   return (PyObject*)(void*)result;
 }
 
+/* ---- import, getattr, call ----------------------------------------------
+ *
+ * These three are CPython's and not numpy's, so python_stub.h would be their
+ * home -- except that what makes them worth having is calling numpy.mean on an
+ * ARRAY, and python_stub.h is the lower layer and does not know what one is.
+ * They live here, above both, which is the only place that does.
+ *
+ * WHAT THEY EXIST FOR is np_call in lib/python/numpy.cicili: numpy's C API
+ * covers the array object and the reductions, and everything else -- linspace,
+ * percentile, linalg -- is reached by importing the module the way Python does.
+ * That path is four calls with two different reference rules (GetAttrString
+ * answers a new reference, PyTuple_SetItem steals) and it is the one every
+ * example wrote out by hand.
+ *
+ * The dispatch below is four names deep. It is not numpy and does not pretend
+ * to be: what a test can assert here is that the import/getattr/call chain
+ * reaches a function with the argument in the tuple and hands a reference back.
+ */
+
+#define _NPY_KIND_MODULE   4
+#define _NPY_KIND_CALLABLE 7
+
+static PyObject* PyImport_ImportModule(const char* name) {
+  PyObject* m;
+  /* only numpy: an import of anything else fails, which is what makes a test
+   * for the failing path possible */
+  if (!name || strcmp(name, "numpy") != 0) {
+    PyErr_SetString(PyExc_RuntimeError, "no such module in the stub");
+    return NULL;
+  }
+  m = _py_alloc(_NPY_KIND_MODULE, 0);
+  m->s = "numpy";
+  return m;
+}
+
+static PyObject* PyObject_GetAttrString(PyObject* o, const char* name) {
+  PyObject* f;
+  if (!o || o->kind != _NPY_KIND_MODULE) {
+    PyErr_SetString(PyExc_TypeError, "not a module");
+    return NULL;
+  }
+  f = _py_alloc(_NPY_KIND_CALLABLE, 0);
+  f->s = name;                  /* NEW reference, which is CPython's rule */
+  return f;
+}
+
+static PyObject* PyObject_CallObject(PyObject* fn, PyObject* args) {
+  PyArrayObject* a;
+  int op;
+
+  if (!fn || fn->kind != _NPY_KIND_CALLABLE) {
+    PyErr_SetString(PyExc_TypeError, "not callable");
+    return NULL;
+  }
+  if (!args || args->n < 1) {
+    PyErr_SetString(PyExc_TypeError, "wanted one argument");
+    return NULL;
+  }
+  a = npy_stub_as_array_fwd(args->items[0]);
+  if (!a) {
+    PyErr_SetString(PyExc_TypeError, "wanted an array");
+    return NULL;
+  }
+
+  if      (strcmp(fn->s, "sum")  == 0) op = _NPY_SUM;
+  else if (strcmp(fn->s, "mean") == 0) op = _NPY_MEAN;
+  else if (strcmp(fn->s, "max")  == 0) op = _NPY_MAX;
+  else if (strcmp(fn->s, "min")  == 0) op = _NPY_MIN;
+  else { PyErr_SetString(PyExc_ValueError, "the stub knows sum, mean, max, min"); return NULL; }
+
+  return _npy_reduce(a, NPY_RAVEL_AXIS, op, NULL);
+}
+
 /* ---- inspection, for the test only ------------------------------------
  * PyArrayObject is opaque to Cicili, as it should be, so a test cannot cast
  * a PyObject * to it. This is that cast, in C. */
 static PyArrayObject* npy_stub_as_array(PyObject* o) {
-  return PyArray_Check(o) ? (PyArrayObject*)(void*)o : NULL;
+  return npy_stub_as_array_fwd(o);
 }
 static double npy_stub_get_d(void* p)            { return *(double*)p; }
 static void   npy_stub_set_d(void* p, double v)  { *(double*)p = v; }
