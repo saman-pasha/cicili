@@ -1,0 +1,214 @@
+;;;; Cicili declarations for <inttypes.h>
+;;;; Import from lib/std/prelude.cicili:  (import "./c/inttypes.cicili")
+;;;; Requires in target: (include <inttypes.h>)  or  (:std #t)
+;;;;
+;;;; size_t/wchar_t come from stddef.cicili; intmax_t/uintmax_t/intptr_t/
+;;;; uintptr_t and all fixed/least/fast width types come from stdint.cicili.
+;;;; Only the symbols this header itself introduces are declared below.
+
+(DEFMACRO init-macro ()
+  `($$$
+     ;;; ---- types ----
+     (decl) (struct imaxdiv_t
+              (member intmax_t quot)
+              (member intmax_t rem))
+
+     ;;; ---- functions ----
+     (decl) (func imaxabs   ((intmax_t j)) (out intmax_t))
+     (decl) (func imaxdiv   ((intmax_t numer) (intmax_t denom)) (out imaxdiv_t))
+     (decl) (func strtoimax ((const char * restrict nptr) (char ** restrict endptr) (int base)) (out intmax_t))
+     (decl) (func strtoumax ((const char * restrict nptr) (char ** restrict endptr) (int base)) (out uintmax_t))
+     (decl) (func wcstoimax ((const wchar_t * restrict nptr) (wchar_t ** restrict endptr) (int base)) (out intmax_t))
+     (decl) (func wcstoumax ((const wchar_t * restrict nptr) (wchar_t ** restrict endptr) (int base)) (out uintmax_t))
+
+     ;;; ---- PRI* macros (printf) ----
+     ;; exact-width / least-width / fastest-minimum-width, per size, then MAX and PTR
+     (typedef char * PRId8)
+     (typedef char * PRIi8)
+     (typedef char * PRIo8)
+     (typedef char * PRIu8)
+     (typedef char * PRIx8)
+     (typedef char * PRIX8)
+     ;
+     (typedef char * PRIdLEAST8)
+     (typedef char * PRIiLEAST8)
+     (typedef char * PRIoLEAST8)
+     (typedef char * PRIuLEAST8)
+     (typedef char * PRIxLEAST8)
+     (typedef char * PRIXLEAST8)
+     ;
+     (typedef char * PRIdFAST8)
+     (typedef char * PRIiFAST8)
+     (typedef char * PRIoFAST8)
+     (typedef char * PRIuFAST8)
+     (typedef char * PRIxFAST8)
+     (typedef char * PRIXFAST8)
+     ;
+     (typedef char * PRId16)
+     (typedef char * PRIi16)
+     (typedef char * PRIo16)
+     (typedef char * PRIu16)
+     (typedef char * PRIx16)
+     (typedef char * PRIX16)
+     ;
+     (typedef char * PRIdLEAST16)
+     (typedef char * PRIiLEAST16)
+     (typedef char * PRIoLEAST16)
+     (typedef char * PRIuLEAST16)
+     (typedef char * PRIxLEAST16)
+     (typedef char * PRIXLEAST16)
+     ;
+     (typedef char * PRIdFAST16)
+     (typedef char * PRIiFAST16)
+     (typedef char * PRIoFAST16)
+     (typedef char * PRIuFAST16)
+     (typedef char * PRIxFAST16)
+     (typedef char * PRIXFAST16)
+     ;
+     (typedef char * PRId32)
+     (typedef char * PRIi32)
+     (typedef char * PRIo32)
+     (typedef char * PRIu32)
+     (typedef char * PRIx32)
+     (typedef char * PRIX32)
+     ;
+     (typedef char * PRIdLEAST32)
+     (typedef char * PRIiLEAST32)
+     (typedef char * PRIoLEAST32)
+     (typedef char * PRIuLEAST32)
+     (typedef char * PRIxLEAST32)
+     (typedef char * PRIXLEAST32)
+     ;
+     (typedef char * PRIdFAST32)
+     (typedef char * PRIiFAST32)
+     (typedef char * PRIoFAST32)
+     (typedef char * PRIuFAST32)
+     (typedef char * PRIxFAST32)
+     (typedef char * PRIXFAST32)
+     ;
+     (typedef char * PRId64)
+     (typedef char * PRIi64)
+     (typedef char * PRIo64)
+     (typedef char * PRIu64)
+     (typedef char * PRIx64)
+     (typedef char * PRIX64)
+     ;
+     (typedef char * PRIdLEAST64)
+     (typedef char * PRIiLEAST64)
+     (typedef char * PRIoLEAST64)
+     (typedef char * PRIuLEAST64)
+     (typedef char * PRIxLEAST64)
+     (typedef char * PRIXLEAST64)
+     ;
+     (typedef char * PRIdFAST64)
+     (typedef char * PRIiFAST64)
+     (typedef char * PRIoFAST64)
+     (typedef char * PRIuFAST64)
+     (typedef char * PRIxFAST64)
+     (typedef char * PRIXFAST64)
+     ;
+     ;; intmax_t / uintmax_t
+     (typedef char * PRIdMAX)
+     (typedef char * PRIiMAX)
+     (typedef char * PRIoMAX)
+     (typedef char * PRIuMAX)
+     (typedef char * PRIxMAX)
+     (typedef char * PRIXMAX)
+     ;
+     ;; intptr_t / uintptr_t
+     (typedef char * PRIdPTR)
+     (typedef char * PRIiPTR)
+     (typedef char * PRIoPTR)
+     (typedef char * PRIuPTR)
+     (typedef char * PRIxPTR)
+     (typedef char * PRIXPTR)
+
+     ;;; ---- SCN* macros (scanf) ----
+     ;; exact-width / least-width / fastest-minimum-width, per size, then MAX and PTR
+     ;; (no uppercase-X variant: scanf's %x reads hex regardless of case)
+     (typedef char * SCNd8)
+     (typedef char * SCNi8)
+     (typedef char * SCNo8)
+     (typedef char * SCNu8)
+     (typedef char * SCNx8)
+     ;
+     (typedef char * SCNdLEAST8)
+     (typedef char * SCNiLEAST8)
+     (typedef char * SCNoLEAST8)
+     (typedef char * SCNuLEAST8)
+     (typedef char * SCNxLEAST8)
+     ;
+     (typedef char * SCNdFAST8)
+     (typedef char * SCNiFAST8)
+     (typedef char * SCNoFAST8)
+     (typedef char * SCNuFAST8)
+     (typedef char * SCNxFAST8)
+     ;
+     (typedef char * SCNd16)
+     (typedef char * SCNi16)
+     (typedef char * SCNo16)
+     (typedef char * SCNu16)
+     (typedef char * SCNx16)
+     ;
+     (typedef char * SCNdLEAST16)
+     (typedef char * SCNiLEAST16)
+     (typedef char * SCNoLEAST16)
+     (typedef char * SCNuLEAST16)
+     (typedef char * SCNxLEAST16)
+     ;
+     (typedef char * SCNdFAST16)
+     (typedef char * SCNiFAST16)
+     (typedef char * SCNoFAST16)
+     (typedef char * SCNuFAST16)
+     (typedef char * SCNxFAST16)
+     ;
+     (typedef char * SCNd32)
+     (typedef char * SCNi32)
+     (typedef char * SCNo32)
+     (typedef char * SCNu32)
+     (typedef char * SCNx32)
+     ;
+     (typedef char * SCNdLEAST32)
+     (typedef char * SCNiLEAST32)
+     (typedef char * SCNoLEAST32)
+     (typedef char * SCNuLEAST32)
+     (typedef char * SCNxLEAST32)
+     ;
+     (typedef char * SCNdFAST32)
+     (typedef char * SCNiFAST32)
+     (typedef char * SCNoFAST32)
+     (typedef char * SCNuFAST32)
+     (typedef char * SCNxFAST32)
+     ;
+     (typedef char * SCNd64)
+     (typedef char * SCNi64)
+     (typedef char * SCNo64)
+     (typedef char * SCNu64)
+     (typedef char * SCNx64)
+     ;
+     (typedef char * SCNdLEAST64)
+     (typedef char * SCNiLEAST64)
+     (typedef char * SCNoLEAST64)
+     (typedef char * SCNuLEAST64)
+     (typedef char * SCNxLEAST64)
+     ;
+     (typedef char * SCNdFAST64)
+     (typedef char * SCNiFAST64)
+     (typedef char * SCNoFAST64)
+     (typedef char * SCNuFAST64)
+     (typedef char * SCNxFAST64)
+     ;
+     ;; intmax_t / uintmax_t
+     (typedef char * SCNdMAX)
+     (typedef char * SCNiMAX)
+     (typedef char * SCNoMAX)
+     (typedef char * SCNuMAX)
+     (typedef char * SCNxMAX)
+     ;
+     ;; intptr_t / uintptr_t
+     (typedef char * SCNdPTR)
+     (typedef char * SCNiPTR)
+     (typedef char * SCNoPTR)
+     (typedef char * SCNuPTR)
+     (typedef char * SCNxPTR)
+     ))

@@ -1,0 +1,368 @@
+;;;; Cicili declarations for the numpy C API
+;;;;
+;;;; Requires in target, in this order:
+;;;;
+;;;;     (include <Python.h>)              ; first, always
+;;;;     (include <numpy/arrayobject.h>)
+;;;;
+;;;; with -DNPY_NO_DEPRECATED_API=NPY_1_7_API_VERSION on the compile line. It
+;;;; goes there rather than in an (@define …) because @define specifies both of
+;;;; its operands as expressions, and the value NPY_1_7_API_VERSION is a macro
+;;;; from a header Cicili has no declaration for.
+;;;;
+;;;; and lib/python/cpython.cicili imported alongside this one -- there is no
+;;;; numpy array without a running interpreter.
+;;;;
+;;;; NOTHING HERE EMITS C. Type inference only; the real declarations come from
+;;;; the real header.
+;;;;
+;;;; THE ONE THING THAT WILL BITE YOU: `import_array' must be called once, in
+;;;; every translation unit that touches the API, after Py_Initialize and before
+;;;; anything else here. numpy's API is a table of function pointers that the
+;;;; import fills in; skipping it does not fail to compile, it segfaults on the
+;;;; first call. The macro `import_array' cannot be declared to Cicili because
+;;;; it expands to a `return', so the underlying function is declared instead:
+;;;;
+;;;;     (when (< (_import_array) 0)
+;;;;       (block (PyErr_Print) (return 1)))
+;;;;
+;;;; That is the whole ritual, and it is better than the macro anyway -- the
+;;;; macro returns for you, from whatever function you happened to be in.
+;;;; (python-support) in cpython.cicili wraps it as `py_open'.
+;;;;
+;;;; MOST OF THE API IS MACROS. PyArray_DATA, PyArray_NDIM and the rest expand
+;;;; to indexed calls through that table, or to static inline functions. They
+;;;; are declared here as the functions they behave like, which is all inference
+;;;; needs; the real macro is what the C compiler sees.
+;;;;
+;;;; REFERENCES. Every function that answers a PyObject * is annotated the same
+;;;; way as in cpython.cicili -- NEW, BORROWED, or STEALS. numpy has more
+;;;; stealers than CPython does, and the header itself marks them with
+;;;; NPY_STEALS_REF_TO_ARG; those are the ones written STEALS ARG n below.
+;;;;
+;;;; SIGNATURES WERE TAKEN FROM THE HEADER, not from the documentation. Two
+;;;; that the docs get wrong or leave stale: PyArray_Zeros and PyArray_FromAny
+;;;; take a PyArray_Descr *, not a PyObject *, and steal it; and PyArray_Cast
+;;;; no longer exists in numpy 2 -- use PyArray_CastToType or PyArray_FROM_OTF.
+
+;;; (npdims 2 3) -> ((npy_intp[]){2, 3})
+;;;
+;;; numpy takes shapes as `npy_intp *'. A compound literal has the lifetime of
+;;; the enclosing block, which outlives the call it is written in, so unlike
+;;; libtorch's IntArrayRef there is nothing here that dangles -- see `dims' in
+;;; lib/cpp/torch/tensor.cicili for the case where it does.
+;;;
+;;; THE OUTER PARENTHESES ARE LOAD-BEARING. Most of numpy's API is
+;;; function-like MACROS, and the preprocessor splits their arguments on commas
+;;; that are not inside parentheses -- braces do not protect them. Without the
+;;; wrapping parens, PyArray_SimpleNew(2, (npy_intp[]){2,3}, NPY_FLOAT32) is
+;;; four arguments to a three-argument macro, and the error names the macro
+;;; rather than the shape that caused it.
+;;;
+;;; Compound literals are C99. In a C++ target they are a GNU extension that
+;;; clang accepts, and `-Wno-c99-extensions' is needed to keep -Werror happy.
+(DEFMACRO npdims (&REST ds)
+  `(code '{ "((npy_intp[])" "{" (code ',(LET ((l (1- (LENGTH ds))))
+                                         (LOOP FOR d IN ds FOR i FROM 0 TO l
+                                               APPEND (IF (< i l) (LIST d ",") (LIST d)))))
+            "})" }))
+
+(DEFMACRO init-macro ()
+  `($$$
+
+     ;;; ---- types ----------------------------------------------------
+     ;;; PyArrayObject is a PyObject with a header numpy owns. The two are
+     ;;; cast between constantly, and the API is split down that line: the
+     ;;; constructors answer PyObject *, the accessors take PyArrayObject *.
+     (decl) (struct PyArrayObject)
+     ;;; a dtype. Made with PyArray_DescrFromType, and most of the functions
+     ;;; that take one STEAL it -- so the usual shape is to build one inline
+     ;;; and never store it.
+     (decl) (struct PyArray_Descr)
+     ;;; { npy_intp *ptr; int len; } -- a shape passed by address. Every
+     ;;; function taking one accepts NIL for "the default", which is what you
+     ;;; want almost always (reverse the axes, keep the size).
+     (decl) (struct PyArray_Dims)
+     (typedef ssize_t npy_intp)
+
+     ;;; memory order and sort kind. These are C enums; declaring them as
+     ;;; distinct names rather than plain int is what keeps a C++ target
+     ;;; compiling, because the constants below are the real enumerators and
+     ;;; C++ will not convert an int to an enum.
+     (typedef int NPY_ORDER)
+     (typedef int NPY_SORTKIND)
+
+     ;;; ---- the ritual -----------------------------------------------
+     ;;; < 0 means the import failed and an exception is set
+     (decl) (func _import_array () (out int))
+
+     ;;; ---- making arrays --------------------------------------------
+     ;;; SimpleNew allocates and owns its memory, uninitialised.
+     (decl) (func PyArray_SimpleNew ((int nd) (npy_intp * dims) (int typenum))
+                  (out PyObject *))                                        ; NEW
+     ;;; SimpleNewFromData WRAPS memory you already have and does NOT copy it.
+     ;;; The buffer must outlive the array, and the array does not free it --
+     ;;; the same bargain as torch::from_blob, and the same way to get it wrong.
+     ;;; To hand the buffer over instead, see PyArray_SetBaseObject below.
+     (decl) (func PyArray_SimpleNewFromData ((int nd) (npy_intp * dims) (int typenum)
+                                             (void * data))
+                  (out PyObject *))                                        ; NEW
+     ;;; the friendly spellings: they build the descr for you from a type
+     ;;; number, so nothing is stolen and nothing leaks. Prefer these.
+     (decl) (func PyArray_ZEROS ((int nd) (npy_intp * dims) (int typenum) (int is_f_order))
+                  (out PyObject *))                                        ; NEW
+     (decl) (func PyArray_EMPTY ((int nd) (npy_intp * dims) (int typenum) (int is_f_order))
+                  (out PyObject *))                                        ; NEW
+     ;;; and the underlying functions, which take a descr and STEAL it
+     (decl) (func PyArray_Zeros ((int nd) (npy_intp * dims) (PyArray_Descr * dtype)
+                                 (int is_f_order))
+                  (out PyObject *))                              ; NEW, STEALS ARG 3
+     (decl) (func PyArray_Empty ((int nd) (npy_intp * dims) (PyArray_Descr * dtype)
+                                 (int is_f_order))
+                  (out PyObject *))                              ; NEW, STEALS ARG 3
+     ;;; half-open, like Python's range: (PyArray_Arange 0.0 5.0 1.0 NPY_FLOAT64)
+     ;;; is 0 1 2 3 4
+     (decl) (func PyArray_Arange ((double start) (double stop) (double step) (int typenum))
+                  (out PyObject *))                                        ; NEW
+     ;;; same shape as an existing array. NIL for the descr means "the same
+     ;;; dtype", which is the reason to reach for this instead of EMPTY.
+     (decl) (func PyArray_NewLikeArray ((PyArrayObject * proto) (NPY_ORDER order)
+                                        (PyArray_Descr * dtype) (int subok))
+                  (out PyObject *))                              ; NEW, STEALS ARG 3
+     (decl) (func PyArray_DescrFromType ((int typenum)) (out PyArray_Descr *))  ; NEW
+
+     ;;; ---- taking arrays from Python --------------------------------
+     ;;; FROM_OTF is the workhorse for accepting whatever Python handed you:
+     ;;; it converts lists, scalars, other dtypes and non-contiguous views into
+     ;;; an array of the type and layout you asked for, copying ONLY if it has
+     ;;; to. The flags are the NPY_ARRAY_* set; NPY_ARRAY_IN_ARRAY is the
+     ;;; read-only C-contiguous default.
+     (decl) (func PyArray_FROM_OTF ((PyObject * o) (int typenum) (int requirements))
+                  (out PyObject *))                                        ; NEW
+     (decl) (func PyArray_FROMANY ((PyObject * o) (int typenum) (int mindepth)
+                                   (int maxdepth) (int requirements))
+                  (out PyObject *))                                        ; NEW
+     ;;; the function underneath them. Takes a descr and steals it; NIL means
+     ;;; "whatever dtype it already had".
+     (decl) (func PyArray_FromAny ((PyObject * o) (PyArray_Descr * dtype)
+                                   (int mindepth) (int maxdepth)
+                                   (int requirements) (PyObject * context))
+                  (out PyObject *))                              ; NEW, STEALS ARG 2
+     (decl) (func PyArray_ContiguousFromAny ((PyObject * o) (int typenum)
+                                             (int mindepth) (int maxdepth))
+                  (out PyObject *))                                        ; NEW
+     ;;; a C-contiguous array of the same dtype -- the SAME object, increfed,
+     ;;; when it already was one. Either way you own what comes back.
+     ;;;
+     ;;; Note the answer: this is one of the few that hands back a
+     ;;; PyArrayObject * rather than a PyObject *, so it needs a cast on the
+     ;;; way into anything that decrefs it.
+     (decl) (func PyArray_GETCONTIGUOUS ((PyArrayObject * a))
+                  (out PyArrayObject *))                                   ; NEW
+     ;;; is this object an ndarray at all? Ask before casting anything that
+     ;;; came from Python.
+     (decl) (func PyArray_Check ((PyObject * o)) (out int))
+
+     ;;; ---- reading them ---------------------------------------------
+     (decl) (func PyArray_DATA     ((PyArrayObject * a)) (out void *))
+     ;;; the same pointer as char *, which is what the GETPTR arithmetic and
+     ;;; PyArray_GETITEM want
+     (decl) (func PyArray_BYTES    ((PyArrayObject * a)) (out char *))
+     (decl) (func PyArray_NDIM     ((PyArrayObject * a)) (out int))
+     (decl) (func PyArray_SIZE     ((PyArrayObject * a)) (out npy_intp))
+     (decl) (func PyArray_DIM      ((PyArrayObject * a) (int i)) (out npy_intp))
+     (decl) (func PyArray_DIMS     ((PyArrayObject * a)) (out npy_intp *))
+     (decl) (func PyArray_SHAPE    ((PyArrayObject * a)) (out npy_intp *))
+     (decl) (func PyArray_STRIDES  ((PyArrayObject * a)) (out npy_intp *))
+     ;;; strides are in BYTES, not elements -- the single most common way to
+     ;;; walk an array wrongly
+     (decl) (func PyArray_STRIDE   ((PyArrayObject * a) (int i)) (out npy_intp))
+     (decl) (func PyArray_TYPE     ((PyArrayObject * a)) (out int))
+     (decl) (func PyArray_ITEMSIZE ((PyArrayObject * a)) (out npy_intp))
+     (decl) (func PyArray_NBYTES   ((PyArrayObject * a)) (out npy_intp))
+     (decl) (func PyArray_DESCR    ((PyArrayObject * a)) (out PyArray_Descr *)) ; BORROWED
+     ;;; what this array is a view of, or nil when it owns its memory
+     (decl) (func PyArray_BASE     ((PyArrayObject * a)) (out PyObject *))      ; BORROWED
+
+     ;;; ---- layout ---------------------------------------------------
+     ;;; whether the memory is laid out the way a plain C loop expects. An
+     ;;; array that came from Python may be a view, a slice or transposed, and
+     ;;; walking its DATA as if it were contiguous reads the wrong elements
+     ;;; without failing.
+     (decl) (func PyArray_FLAGS            ((PyArrayObject * a)) (out int))
+     (decl) (func PyArray_CHKFLAGS         ((PyArrayObject * a) (int flags)) (out int))
+     (decl) (func PyArray_IS_C_CONTIGUOUS  ((PyArrayObject * a)) (out int))
+     (decl) (func PyArray_IS_F_CONTIGUOUS  ((PyArrayObject * a)) (out int))
+     (decl) (func PyArray_ISWRITEABLE      ((PyArrayObject * a)) (out int))
+     (decl) (func PyArray_ISALIGNED        ((PyArrayObject * a)) (out int))
+
+     ;;; ---- one element at a time ------------------------------------
+     ;;; the correct way to reach element (i, j) of an array you did NOT
+     ;;; allocate: it uses the strides, so it is right for views and
+     ;;; transposes where DATA + i * cols + j is not.
+     (decl) (func PyArray_GETPTR1 ((PyArrayObject * a) (npy_intp i)) (out void *))
+     (decl) (func PyArray_GETPTR2 ((PyArrayObject * a) (npy_intp i) (npy_intp j))
+                  (out void *))
+     (decl) (func PyArray_GETPTR3 ((PyArrayObject * a) (npy_intp i) (npy_intp j)
+                                   (npy_intp k))
+                  (out void *))
+     (decl) (func PyArray_GETPTR4 ((PyArrayObject * a) (npy_intp i) (npy_intp j)
+                                   (npy_intp k) (npy_intp l))
+                  (out void *))
+     ;;; boxing and unboxing one element through Python, for when the dtype is
+     ;;; not known at compile time. Both want the char * spelling of the
+     ;;; pointer, so cast what GETPTR answered.
+     (decl) (func PyArray_GETITEM ((PyArrayObject * a) (const char * itemptr))
+                  (out PyObject *))                                        ; NEW
+     (decl) (func PyArray_SETITEM ((PyArrayObject * a) (char * itemptr) (PyObject * v))
+                  (out int))
+
+     ;;; ---- handing memory over --------------------------------------
+     ;;; SimpleNewFromData does not free the buffer. To make numpy responsible
+     ;;; for it, give the array a base object whose destructor frees it and
+     ;;; then set OWNDATA -- or, far more simply, keep the buffer alive
+     ;;; yourself with letin* and never set either. SetBaseObject STEALS the
+     ;;; base, and returns -1 having decrefed it if it fails.
+     (decl) (func PyArray_SetBaseObject ((PyArrayObject * a) (PyObject * base))
+                  (out int))                                      ; STEALS ARG 2
+     ;;; no checking whatsoever -- setting OWNDATA on memory numpy's allocator
+     ;;; did not hand out is a free of the wrong pointer, later, elsewhere
+     (decl) (func PyArray_ENABLEFLAGS ((PyArrayObject * a) (int flags)))
+     (decl) (func PyArray_CLEARFLAGS  ((PyArrayObject * a) (int flags)))
+
+     ;;; ---- reshaping ------------------------------------------------
+     ;;; all of these answer a VIEW when they can and a copy when they must,
+     ;;; and you cannot tell which from the call. If you then write through
+     ;;; DATA, check PyArray_BASE to know whether the original changed too.
+     (decl) (func PyArray_Reshape  ((PyArrayObject * a) (PyObject * shape))
+                  (out PyObject *))                                        ; NEW
+     ;;; NIL for the permutation reverses the axes, which is what `.T' means
+     (decl) (func PyArray_Transpose ((PyArrayObject * a) (PyArray_Dims * permute))
+                  (out PyObject *))                                        ; NEW
+     (decl) (func PyArray_SwapAxes ((PyArrayObject * a) (int a1) (int a2))
+                  (out PyObject *))                                        ; NEW
+     ;;; Ravel answers a view when it can; Flatten always copies
+     (decl) (func PyArray_Ravel    ((PyArrayObject * a) (NPY_ORDER order))
+                  (out PyObject *))                                        ; NEW
+     (decl) (func PyArray_Flatten  ((PyArrayObject * a) (NPY_ORDER order))
+                  (out PyObject *))                                        ; NEW
+     (decl) (func PyArray_Squeeze  ((PyArrayObject * a)) (out PyObject *)) ; NEW
+     ;;; op is a TUPLE of arrays, not one array
+     (decl) (func PyArray_Concatenate ((PyObject * op) (int axis)) (out PyObject *)) ; NEW
+
+     ;;; ---- copying and casting --------------------------------------
+     (decl) (func PyArray_NewCopy ((PyArrayObject * a) (NPY_ORDER order))
+                  (out PyObject *))                                        ; NEW
+     ;;; broadcasts and casts src into dest's memory; 0 on success
+     (decl) (func PyArray_CopyInto ((PyArrayObject * dest) (PyArrayObject * src))
+                  (out int))
+     ;;; and from any Python object, not just an array
+     (decl) (func PyArray_CopyObject ((PyArrayObject * dest) (PyObject * src))
+                  (out int))
+     ;;; PyArray_Cast is GONE in numpy 2. This is its replacement, and it
+     ;;; steals the descr, so PyArray_FROM_OTF is usually the easier call.
+     (decl) (func PyArray_CastToType ((PyArrayObject * a) (PyArray_Descr * dtype)
+                                      (int is_f_order))
+                  (out PyObject *))                              ; NEW, STEALS ARG 2
+     ;;; nested Python lists, all the way down
+     (decl) (func PyArray_ToList ((PyArrayObject * a)) (out PyObject *))   ; NEW
+
+     ;;; ---- reductions -----------------------------------------------
+     ;;; axis is NPY_RAVEL_AXIS for "over everything" -- NOT NPY_MAXDIMS,
+     ;;; which meant that under numpy 1 and is now just the dimension limit,
+     ;;; 64. Passing it is out of range and raises. rtype is the accumulator
+     ;;; dtype (NPY_NOTYPE to let numpy choose), out is NIL to allocate. What
+     ;;; comes back is a zero-dimensional ARRAY or a numpy scalar, not a C
+     ;;; double -- PyFloat_AsDouble converts it.
+     (decl) (func PyArray_Sum  ((PyArrayObject * a) (int axis) (int rtype)
+                                (PyArrayObject * out))
+                  (out PyObject *))                                        ; NEW
+     (decl) (func PyArray_Prod ((PyArrayObject * a) (int axis) (int rtype)
+                                (PyArrayObject * out))
+                  (out PyObject *))                                        ; NEW
+     (decl) (func PyArray_Mean ((PyArrayObject * a) (int axis) (int rtype)
+                                (PyArrayObject * out))
+                  (out PyObject *))                                        ; NEW
+     ;;; variance non-zero answers the variance instead of the deviation
+     (decl) (func PyArray_Std  ((PyArrayObject * a) (int axis) (int rtype)
+                                (PyArrayObject * out) (int variance))
+                  (out PyObject *))                                        ; NEW
+     (decl) (func PyArray_Max  ((PyArrayObject * a) (int axis) (PyArrayObject * out))
+                  (out PyObject *))                                        ; NEW
+     (decl) (func PyArray_Min  ((PyArrayObject * a) (int axis) (PyArrayObject * out))
+                  (out PyObject *))                                        ; NEW
+     (decl) (func PyArray_ArgMax ((PyArrayObject * a) (int axis) (PyArrayObject * out))
+                  (out PyObject *))                                        ; NEW
+     (decl) (func PyArray_ArgMin ((PyArrayObject * a) (int axis) (PyArrayObject * out))
+                  (out PyObject *))                                        ; NEW
+     (decl) (func PyArray_CumSum ((PyArrayObject * a) (int axis) (int rtype)
+                                  (PyArrayObject * out))
+                  (out PyObject *))                                        ; NEW
+
+     ;;; ---- sorting and selecting ------------------------------------
+     ;;; Sort is IN PLACE and answers 0 or -1, unlike everything around it
+     (decl) (func PyArray_Sort    ((PyArrayObject * a) (int axis) (NPY_SORTKIND which))
+                  (out int))
+     (decl) (func PyArray_ArgSort ((PyArrayObject * a) (int axis) (NPY_SORTKIND which))
+                  (out PyObject *))                                        ; NEW
+     ;;; a tuple of index arrays, one per dimension
+     (decl) (func PyArray_Nonzero ((PyArrayObject * a)) (out PyObject *))  ; NEW
+     ;;; with x and y nil this is np.nonzero; with both it is np.where
+     (decl) (func PyArray_Where ((PyObject * condition) (PyObject * x) (PyObject * y))
+                  (out PyObject *))                                        ; NEW
+
+     ;;; ---- linear algebra -------------------------------------------
+     ;;; np.dot: inner product for 1-D, matrix multiply for 2-D
+     (decl) (func PyArray_MatrixProduct ((PyObject * a) (PyObject * b))
+                  (out PyObject *))                                        ; NEW
+
+     ;;; ---- type numbers ---------------------------------------------
+     ;;; A typedef is how a constant is declared to inference; see
+     ;;; lib/std/c/stdlib.cicili for the same treatment of EXIT_SUCCESS.
+     (typedef int NPY_BOOL)
+     (typedef int NPY_INT8)    (typedef int NPY_UINT8)
+     (typedef int NPY_INT16)   (typedef int NPY_UINT16)
+     (typedef int NPY_INT32)   (typedef int NPY_UINT32)
+     (typedef int NPY_INT64)   (typedef int NPY_UINT64)
+     (typedef int NPY_FLOAT32) (typedef int NPY_FLOAT64)
+     (typedef int NPY_FLOAT)   (typedef int NPY_DOUBLE)
+     (typedef int NPY_INTP)
+     (typedef int NPY_OBJECT)
+     ;;; "you choose" -- what to pass as a reduction's rtype
+     (typedef int NPY_NOTYPE)
+     ;;; "over every axis" -- what to pass as a reduction's axis. Under numpy
+     ;;; 1 that was NPY_MAXDIMS; it is not any more.
+     (typedef int NPY_RAVEL_AXIS)
+     ;;; the dimension limit, 64. Not an axis sentinel.
+     (typedef int NPY_MAXDIMS)
+
+     ;;; ---- requirement and state flags ------------------------------
+     (typedef int NPY_ARRAY_C_CONTIGUOUS)
+     (typedef int NPY_ARRAY_F_CONTIGUOUS)
+     (typedef int NPY_ARRAY_ALIGNED)
+     (typedef int NPY_ARRAY_WRITEABLE)
+     ;;; set on an array that must free its own memory. Never set it by hand
+     ;;; on a buffer numpy did not allocate.
+     (typedef int NPY_ARRAY_OWNDATA)
+     (typedef int NPY_ARRAY_FORCECAST)
+     (typedef int NPY_ARRAY_ENSURECOPY)
+     (typedef int NPY_ARRAY_ENSUREARRAY)
+     (typedef int NPY_ARRAY_BEHAVED)
+     (typedef int NPY_ARRAY_DEFAULT)
+     ;;; the three worth remembering: IN for what you only read, OUT for what
+     ;;; you write, INOUT for both
+     (typedef int NPY_ARRAY_IN_ARRAY)
+     (typedef int NPY_ARRAY_OUT_ARRAY)
+     (typedef int NPY_ARRAY_INOUT_ARRAY)
+
+     ;;; ---- order and sort kind --------------------------------------
+     (typedef NPY_ORDER NPY_ANYORDER)      ; whatever the input was
+     (typedef NPY_ORDER NPY_CORDER)        ; row-major, what C loops expect
+     (typedef NPY_ORDER NPY_FORTRANORDER)  ; column-major
+     (typedef NPY_ORDER NPY_KEEPORDER)
+     (typedef NPY_SORTKIND NPY_QUICKSORT)
+     (typedef NPY_SORTKIND NPY_HEAPSORT)
+     (typedef NPY_SORTKIND NPY_MERGESORT)
+     (typedef NPY_SORTKIND NPY_STABLESORT)
+
+     ))

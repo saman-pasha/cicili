@@ -1,0 +1,245 @@
+;;;; Cicili declarations for building a Python EXTENSION MODULE
+;;;;
+;;;; The other two files in this directory are for a program that starts an
+;;;; interpreter. This one is the other direction: a .so that `import' loads,
+;;;; whose functions are written in Cicili and called from Python.
+;;;;
+;;;; Requires in target: (include <Python.h>) FIRST, and cpython.cicili
+;;;; imported. numpy is optional, and if it is used then `import_array' must be
+;;;; called from the module's init -- see (setup …) below, which is the only
+;;;; place it can go.
+;;;;
+;;;; NOTHING HERE EMITS C.
+;;;;
+;;;; ------------------------------------------------------------------
+;;;; (py-module NAME …) -- the whole scaffold
+;;;; ------------------------------------------------------------------
+;;;;
+;;;;     (py-module cimath
+;;;;       (doc "arithmetic and arrays, written in Cicili")
+;;;;       (method "add"     py_add     varargs "add(a, b) -> float")
+;;;;       (method "asum"    py_asum    varargs "asum(a) -> float")
+;;;;       (method "version" py_version noargs  "version() -> str")
+;;;;       (setup m
+;;;;         (when (< (_import_array) 0) (return nil))
+;;;;         (PyModule_AddIntConstant m "ANSWER" 42)))
+;;;;
+;;;; expands to the three things every extension module has and nothing else:
+;;;; the PyMethodDef table (nil-terminated for you), the PyModuleDef, and
+;;;; PyInit_cimath. There is no state and no magic -- write the same three by
+;;;; hand if you would rather, the declarations below are all it uses.
+;;;;
+;;;; THE CALLING CONVENTION IS THE ONE THING THAT CANNOT BE CHECKED IN C.
+;;;; ml_flags says how CPython will call the function, ml_meth is cast to a
+;;;; two-argument pointer whatever the function really is, and a mismatch is
+;;;; not a compile error -- it is a crash, or worse, silence. So the macro
+;;;; takes the convention as a WORD and writes both the flag and the cast:
+;;;;
+;;;;   word      flags                          your function must be
+;;;;   ------------------------------------------------------------------
+;;;;   varargs   METH_VARARGS                   (self args)        args is a tuple
+;;;;   noargs    METH_NOARGS                    (self unused)      unused is nil
+;;;;   one       METH_O                         (self arg)         arg is THE object
+;;;;   kwargs    METH_VARARGS | METH_KEYWORDS   (self args kw)     and gets the cast
+;;;;
+;;;; `self' is the module object for a module-level function, not an instance.
+;;;; Every one answers a NEW reference, or nil with an exception set.
+;;;;
+;;;; ------------------------------------------------------------------
+;;;; WHAT THE MODULE OWES PYTHON
+;;;; ------------------------------------------------------------------
+;;;;
+;;;; A function that answers nil without setting an exception raises
+;;;; SystemError, which is a confusing way to learn you forgot. Either set one
+;;;; with PyErr_SetString, or answer what the failing call already set:
+;;;;
+;;;;     (when (not a) (return nil))          ; a's failure set the exception
+;;;;     (PyErr_SetString PyExc_ValueError "n must be positive")
+;;;;     (return nil)
+;;;;
+;;;; And a function with nothing to answer must still answer something:
+;;;; (return-none) below, which is Py_RETURN_NONE -- the incref matters,
+;;;; because returning Py_None without it is a reference the interpreter will
+;;;; eventually drop one time too many.
+
+;;; ------------------------------------------------------------------
+;;; (return-none) / (return-true) / (return-false)
+;;; ------------------------------------------------------------------
+;;; The Py_RETURN_* macros, which are statements rather than expressions --
+;;; each is an incref and a return, and skipping the incref is a use-after-free
+;;; in whatever runs next.
+(DEFMACRO return-none  () `($$$ (Py_IncRef Py_None)  (return Py_None)))
+(DEFMACRO return-true  () `($$$ (Py_IncRef Py_True)  (return Py_True)))
+(DEFMACRO return-false () `($$$ (Py_IncRef Py_False) (return Py_False)))
+
+;;; ------------------------------------------------------------------
+;;; (py-module …)
+;;; ------------------------------------------------------------------
+
+(DEFUN py-clause< (clauses key)
+  (FIND-IF #'(LAMBDA (c) (AND (CONSP c) (SYMBOLP (CAR c))
+                              (STRING= (SYMBOL-NAME (CAR c)) key)))
+           clauses))
+
+(DEFUN py-clauses< (clauses key)
+  (REMOVE-IF-NOT #'(LAMBDA (c) (AND (CONSP c) (SYMBOLP (CAR c))
+                                    (STRING= (SYMBOL-NAME (CAR c)) key)))
+                 clauses))
+
+;;; the convention word -> (flags-form . needs-cast)
+(DEFUN py-convention< (name kind)
+  (UNLESS (SYMBOLP kind)
+    (ERROR (FORMAT NIL "py-module ~A: a method's convention is a word, got ~A~%  one of: varargs noargs one kwargs"
+                   name kind)))
+  (LET ((k (SYMBOL-NAME kind)))
+    (COND ((STRING= k "varargs") (CONS 'METH_VARARGS NIL))
+          ((STRING= k "noargs")  (CONS 'METH_NOARGS  NIL))
+          ((STRING= k "one")     (CONS 'METH_O       NIL))
+          ;; METH_KEYWORDS is never used alone, and the function really takes
+          ;; three arguments, so it is the one that needs the cast
+          ((STRING= k "kwargs")  (CONS '(bitor METH_VARARGS METH_KEYWORDS) T))
+          (T (ERROR (FORMAT NIL "py-module ~A: unknown calling convention '~A'~%  one of: varargs noargs one kwargs"
+                            name k))))))
+
+(DEFMACRO py-module (name &REST clauses)
+  (UNLESS (SYMBOLP name)
+    (ERROR (FORMAT NIL "py-module: the name is a symbol, got ~A" name)))
+  (LET* ((mod   (SYMBOL-NAME name))
+         (doc   (SECOND (py-clause< clauses "doc")))
+         (setup (py-clause< clauses "setup"))
+         (specs (py-clauses< clauses "method"))
+         (tbl   (INTERN (FORMAT NIL "~A_methods" mod)))
+         (def   (INTERN (FORMAT NIL "~A_module"  mod)))
+         (init  (INTERN (FORMAT NIL "PyInit_~A"  mod)))
+         (mvar  (IF setup (SECOND setup) (INTERN "m"))))
+    (UNLESS specs
+      (ERROR (FORMAT NIL "py-module ~A: no (method …) clauses -- an empty module is almost certainly a mistake" mod)))
+    (WHEN (AND setup (NOT (SYMBOLP (SECOND setup))))
+      (ERROR (FORMAT NIL "py-module ~A: (setup NAME body…) binds the module object to NAME, got ~A"
+                     mod (SECOND setup))))
+    (LET ((entries
+            (LOOP FOR spec IN specs
+                  COLLECT
+                  (DESTRUCTURING-BIND (kw py-name fn kind &OPTIONAL mdoc) spec
+                    (DECLARE (IGNORE kw))
+                    (UNLESS (STRINGP py-name)
+                      (ERROR (FORMAT NIL "py-module ~A: the name Python sees is a string, got ~A"
+                                     mod py-name)))
+                    (LET* ((c (py-convention< mod kind))
+                           (m (IF (CDR c) `(cast PyCFunction ,fn) fn)))
+                      `'{ ,py-name ,m ,(CAR c) ,(OR mdoc 'nil) })))))
+      `($$$
+         ;; the table Python walks. Its last entry is all-nil and that is what
+         ;; ends it -- a table without one is read past its end.
+         (static) (var PyMethodDef ,tbl [] . '{ ,@entries '{ nil nil 0 nil } })
+         ;; m_size is -1: no per-module state, and the module cannot be loaded
+         ;; twice into one process. That is what almost every module wants and
+         ;; the only thing this scaffold supports.
+         ;; ,(OR doc 'nil) and not ,doc. An omitted (doc …) leaves DOC as Lisp
+         ;; NIL, which is NOT Cicili's nil -- key-eq is case-sensitive -- so
+         ;; the specifier emitted nothing for it while the separator was still
+         ;; written, giving `{ HEAD_INIT , "mod" , , -1, … }' and a C syntax
+         ;; error with no word from the macro. The per-method doc one screen up
+         ;; had this right; the module doc did not.
+         (static) (var PyModuleDef ,def
+                       . '{ PyModuleDef_HEAD_INIT ,mod ,(OR doc 'nil) -1 ,tbl nil nil nil nil })
+         ;; the entry point. Its NAME is the contract: `import cimath' looks
+         ;; for PyInit_cimath and nothing else, so the symbol here and the file
+         ;; name on disk have to agree.
+         ;; PyMODINIT_FUNC, NOT PyObject *. Under C++ the entry point needs
+         ;; extern "C" or the symbol is mangled and `import' fails at runtime,
+         ;; having compiled and linked without complaint -- and a bare
+         ;; extern "C" cannot be written here instead, because a module target
+         ;; may be C (example/cimath.cicili is) and it is not valid C.
+         ;; PyMODINIT_FUNC is CPython's own answer to exactly that: extern "C"
+         ;; plus default visibility under C++, and plain PyObject * under C.
+         (func ,init () (out PyMODINIT_FUNC)
+               (let ((PyObject * ,mvar . #'(PyModule_Create (aof ,def))))
+                 (when (not ,mvar) (return nil))
+                 ,@(WHEN setup (CDDR setup))
+                 (return ,mvar)))))))
+
+(DEFMACRO init-macro ()
+  `($$$
+
+     ;;; ---- the structures -------------------------------------------
+     ;;; { ml_name, ml_meth, ml_flags, ml_doc }, nil-terminated
+     (decl) (struct PyMethodDef)
+     ;;; { m_base, m_name, m_doc, m_size, m_methods, m_slots,
+     ;;;   m_traverse, m_clear, m_free }
+     (decl) (struct PyModuleDef)
+     (decl) (struct PyModuleDef_Base)
+     ;;; PyObject *(*)(PyObject *, PyObject *) -- what ml_meth is, whatever the
+     ;;; function really is. Only needed for the kwargs convention, and
+     ;;; (py-module …) writes that cast for you.
+     (decl) (struct PyCFunction)
+     ;;; the m_base initialiser, which is a brace group the preprocessor
+     ;;; supplies. It has to be first and positional.
+     (typedef PyModuleDef_Base PyModuleDef_HEAD_INIT)
+
+     ;;; ---- calling conventions --------------------------------------
+     (typedef int METH_VARARGS)
+     (typedef int METH_KEYWORDS)      ; only ever ORed with VARARGS
+     (typedef int METH_NOARGS)
+     (typedef int METH_O)
+     (typedef int METH_FASTCALL)
+
+     ;;; What a module's entry point is declared to return. A macro from
+     ;;; Python.h rather than a type: extern "C" and default visibility under
+     ;;; C++, plain PyObject * under C. Declared here as the thing it resolves
+     ;;; to, so returning a PyObject * from PyInit_… type-checks either way.
+     (typedef PyObject * PyMODINIT_FUNC)
+
+     ;;; ---- making the module ----------------------------------------
+     ;;; answers the module, or nil with an exception set
+     (decl) (func PyModule_Create ((PyModuleDef * def)) (out PyObject *))       ; NEW
+     ;;; AddObject STEALS the reference -- but ONLY when it succeeds, which
+     ;;; makes correct error handling read backwards. AddObjectRef does not
+     ;;; steal at all and is the one to use (CPython 3.10 and later).
+     (decl) (func PyModule_AddObject    ((PyObject * m) (const char * name) (PyObject * v))
+                  (out int))                                    ; STEALS v ON SUCCESS
+     (decl) (func PyModule_AddObjectRef ((PyObject * m) (const char * name) (PyObject * v))
+                  (out int))
+     (decl) (func PyModule_AddIntConstant    ((PyObject * m) (const char * name) (long v))
+                  (out int))
+     (decl) (func PyModule_AddStringConstant ((PyObject * m) (const char * name)
+                                              (const char * v))
+                  (out int))
+     (decl) (func PyModule_GetName ((PyObject * m)) (out const char *))
+     (decl) (func PyModule_GetDef  ((PyObject * m)) (out PyModuleDef *))
+
+     ;;; ---- reading arguments ----------------------------------------
+     ;;; UnpackTuple FIRST. It takes no format string -- just a count range and
+     ;;; PyObject ** out-parameters -- so the only thing it can get wrong is
+     ;;; how many you asked for, and it says so itself:
+     ;;;
+     ;;;     (let ((PyObject * a . nil) (PyObject * b . nil))
+     ;;;       (when (not (PyArg_UnpackTuple args "add" 2 2 (aof a) (aof b)))
+     ;;;         (return nil))
+     ;;;       …)                       ; a and b are BORROWED
+     ;;;
+     ;;; then convert each with PyFloat_AsDouble, PyArray_FROM_OTF and the
+     ;;; rest, each of which says what it wanted when it fails.
+     (decl) (func PyArg_UnpackTuple ((PyObject * args) (const char * name)
+                                     (ssize_t min) (ssize_t max) ($$$))
+                  (out int))
+     ;;; ParseTuple is the one every C tutorial shows, and it is a VARARGS
+     ;;; FORMAT STRING: nothing checks that "dd" matches two double *, and
+     ;;; getting it wrong writes through a pointer of the wrong width. It is
+     ;;; declared because it is the API, not because it is the safe one.
+     ;;;
+     ;;;     "d" double   "i" int      "l" long     "n" Py_ssize_t
+     ;;;     "s" const char *          "O" PyObject *  (BORROWED)
+     ;;;     "|" the rest are optional "O!" type-checked  "O&" converter
+     (decl) (func PyArg_ParseTuple ((PyObject * args) (const char * format) ($$$))
+                  (out int))
+     (decl) (func PyArg_ParseTupleAndKeywords ((PyObject * args) (PyObject * kw)
+                                               (const char * format) (char ** keywords)
+                                               ($$$))
+                  (out int))
+     ;;; the inverse, and varargs in the same way. For one value the typed
+     ;;; constructors -- PyFloat_FromDouble and friends -- are clearer and
+     ;;; cannot be told the wrong format.
+     (decl) (func Py_BuildValue ((const char * format) ($$$)) (out PyObject *)) ; NEW
+
+     ))

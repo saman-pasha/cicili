@@ -1,0 +1,341 @@
+;;;; Cicili lib/std vector vs Rust Vec<i32> -- the four API operations
+;;;;
+;;;; The Rust side is benchmark/rust-vector-bench (cargo build --release); this
+;;;; file is the Cicili side, and the two are meant to be read together. Same N,
+;;;; same STEP, same shapes. NO optimisation flags in this file: they live in
+;;;; config.lisp, so build it with --release. -falign-loops=32 is part of that
+;;;; set and it matters here -- without it a 32-byte code-layout accident is
+;;;; worth ~10%, more than most of the differences being measured.
+;;;;
+;;;; FAIRNESS. This is now a like for like comparison, which it was NOT before
+;;;; the vector was flattened:
+;;;;
+;;;;   (<> vector a)  { a *arr ; size_t cap ; size_t len }  owns its buffer
+;;;;   Vec<i32>       { ptr, cap, len }                     owns its buffer
+;;;;
+;;;; Neither can be shared and neither checks a refcount to write, so the Vec
+;;;; column is the one that counts. Rc<Vec<i32>> is still reported because it is
+;;;; what the OLD rc'd vector had to be measured against, and the two together
+;;;; show what the rc was costing.
+;;;;
+;;;; Growth is matched deliberately: both sides start EMPTY and grow
+;;;; geometrically. Rust's bench_a_push in vec_bench used Vec::with_capacity
+;;;; once and clear() per epoch, so it never reallocates after the first --
+;;;; api_bench uses Vec::new() instead, which is what (<> new vector a) does.
+
+(source "std_vector_bench.c"
+  (make :std #t
+        :compile #t :link ("-lstd_vector_bench.o" "-o" "std_vec_bench"))
+
+  ;; no flags of its own, so WITHOUT --release this builds at -g -O0 and
+  ;; every millisecond it prints is meaningless. Refuse, rather than measure.
+  (import "benchmark/release-only.cicili")
+  (release-only)
+
+  (include <time.h>)
+
+  (var int N    . 1000000000) ; total operations
+  (var int STEP . 1000)       ; elements per epoch
+
+  (decl-vector int)
+  (impl-vector int)
+  ;; the rc'd rows below wrap the very same vector -- opting in, which is the
+  ;; whole point of the vector no longer doing it for you
+  (decl-rc vector^int)
+  (impl-rc vector^int)
+
+  (func ms_now ()
+        (out llong)
+        (let (((struct timespec) ts))
+          (timespec_get (aof ts) TIME_UTC)
+          (return (+ (* (cast llong ($ ts tv_sec)) 1000) (/ ($ ts tv_nsec) 1000000))))
+        (return 0))
+
+  ;; ---- nth ------------------------------------------------------------
+  ;; 50 elements and (% i 50), the same shape as the array benchmark and as
+  ;; Rust's bench_a_nth, so the three rows can be read against each other.
+  ;; This is the one operation where the Rc costs a load the array's does not:
+  ;; (<> buffer vector a) walks cell -> rc -> array before the bounds check.
+  (func bench_nth ()
+        (out long)
+        (letin ((v (new vector (cast (const int []) '{
+                                     0  1  2  3  4  5  6  7  8  9
+                                     10 11 12 13 14 15 16 17 18 19
+                                     20 21 22 23 24 25 26 27 28 29
+                                     30 31 32 33 34 35 36 37 38 39
+                                     40 41 42 43 44 45 46 47 48 49 })))
+                ) ; decls
+          (let ((i64 sum . 0)
+                (llong t0 . #'(ms_now)))
+            (for ((int i . 0)) (< i N) ((++ i))
+                 (match (nth^vector (% i 50) v)
+                   (just val (+= sum (cof val)))))
+            (let ((llong elapsed . #'(- (ms_now) t0)))
+              (printf "  (nth checksum: %lld)\n" sum) ; after the timer -- forces liveness
+              (return elapsed)))))
+
+  ;; ---- construct -------------------------------------------------------
+  ;; N/STEP vectors of STEP items each, so the element count matches every
+  ;; other row. Each one is freed at the end of its letin scope.
+  (func bench_construct ((const int * items))
+        (out long)
+        (let ((i64 sum . 0)
+              (llong t0 . #'(ms_now)))
+          (for ((int e . 0)) (< e (/ N STEP)) ((++ e))
+               (letin ((v (new^vector items STEP)))
+                 (+= sum (cast i64 (cast size_t ($ v arr))))))
+          (let ((llong elapsed . #'(- (ms_now) t0)))
+            (printf "  (construct checksum: %lld)\n" sum)
+            (return elapsed))))
+
+  ;; ---- push ------------------------------------------------------------
+  ;; a fresh EMPTY vector per epoch, STEP pushes into it, grown by
+  ;; (<> arraySize vector a) doubling from 16 cells -- Vec::new() does the same
+  (func bench_push ()
+        (out long)
+        (let ((i64 sum . 0)
+              (llong t0 . #'(ms_now)))
+          (for ((int e . 0)) (< e (/ N STEP)) ((++ e))
+               (letin ((v (new vector (cast (const int []) '{ 0 }) 0)))
+                 (for ((int i . 0)) (< i STEP) ((++ i))
+                      (push^vector v (+ (* e STEP) i)))
+                 (+= sum (cast i64 (cast size_t ($ v arr))))))
+          (let ((llong elapsed . #'(- (ms_now) t0)))
+            (printf "  (push checksum: %lld)\n" sum)
+            (return elapsed))))
+
+  ;; ---- append ----------------------------------------------------------
+  ;; the same total element count as push, but as one memcpy per epoch
+  (func bench_append ((const int * items))
+        (out long)
+        (let ((i64 sum . 0)
+              (llong t0 . #'(ms_now)))
+          (for ((int e . 0)) (< e (/ N STEP)) ((++ e))
+               (letin ((v (new vector (cast (const int []) '{ 0 }) 0)))
+                 (append^vector v items STEP)
+                 (+= sum (cast i64 (cast size_t ($ v arr))))))
+          (let ((llong elapsed . #'(- (ms_now) t0)))
+            (printf "  (append checksum: %lld)\n" sum)
+            (return elapsed))))
+
+  ;;;; ==== the same four, with the vector inside an rc =================
+  ;;;; This is what the OLD vector did to every user whether they wanted it or
+  ;;;; not. Now it is opt in, and these rows are what opting in costs.
+  ;;;; Against Rust's Rc<Vec<i32>> rows in api_bench.
+
+  ;; construct: an rc'd vector per epoch, freed at the end of its letin
+  (func bench_construct_rc ((const int * items))
+        (out long)
+        (let ((i64 sum . 0)
+              (llong t0 . #'(ms_now)))
+          (for ((int e . 0)) (< e (/ N STEP)) ((++ e))
+               (letin ((r (new rc vector items STEP)))
+                 (+= sum (letn^rc (v r (cast i64 0)) (cast i64 (cast size_t (-> v arr)))))))
+          (let ((llong elapsed . #'(- (ms_now) t0)))
+            (printf "  (construct rc checksum: %lld)\n" sum)
+            (return elapsed))))
+
+  ;; nth: the rc is borrowed ONCE and indexed inside, which is what Rust does
+  ;; too -- `v.get(i % 50)' on an Rc<Vec<i32>> derefs by a constant offset and
+  ;; LLVM hoists the Vec's ptr/len out of the loop. Borrowing per iteration
+  ;; would be a closure call per element and would measure letn^rc, not the rc.
+  (func bench_nth_rc ()
+        (out long)
+        (letin ((r (new rc vector (cast (const int []) '{
+                                        0  1  2  3  4  5  6  7  8  9
+                                        10 11 12 13 14 15 16 17 18 19
+                                        20 21 22 23 24 25 26 27 28 29
+                                        30 31 32 33 34 35 36 37 38 39
+                                        40 41 42 43 44 45 46 47 48 49 }) 50)))
+          (let ((i64 sum . 0)
+                (llong t0 . #'(ms_now)))
+            ;; the sum accumulates in a LOCAL inside the closure and is handed
+            ;; back once. Capturing it by address instead -- :sum (aof sum),
+            ;; then (+= (cof sum) val) -- makes every iteration a load and a
+            ;; store through a pointer where the flat row keeps it in a
+            ;; register, and measured 1293 ms against 594. That is the capture,
+            ;; not the rc, and it would have been charged to the rc.
+            (set sum (letn^rc (v r (cast i64 0))
+                       (letn ((i64 s . 0))
+                         (for ((int i . 0)) (< i N) ((++ i))
+                              (match (nth^vector (% i 50) v)
+                                (just val (+= s (cof val)))))
+                         s)))
+            (let ((llong elapsed . #'(- (ms_now) t0)))
+              (printf "  (nth rc checksum: %lld)\n" sum)
+              (return elapsed)))))
+
+  ;; push: sole^rc before every write is Rc::get_mut before every push -- a
+  ;; shared payload belongs to the other owners too, and neither language
+  ;; writes through one
+  (func bench_push_rc ()
+        (out long)
+        (let ((i64 sum . 0)
+              (llong t0 . #'(ms_now)))
+          (for ((int e . 0)) (< e (/ N STEP)) ((++ e))
+               (letin ((r (new rc vector (cast (const int []) '{ 0 }) 0)))
+                 (let^rc (v r :e e)
+                   (for ((int i . 0)) (< i STEP) ((++ i))
+                        (push^vector v (+ (* e STEP) i))))
+                 (+= sum (letn^rc (v r (cast i64 0)) (cast i64 (cast size_t (-> v arr)))))))
+          (let ((llong elapsed . #'(- (ms_now) t0)))
+            (printf "  (push rc checksum: %lld)\n" sum)
+            (return elapsed))))
+
+  (func bench_append_rc ((const int * items))
+        (out long)
+        (let ((i64 sum . 0)
+              (llong t0 . #'(ms_now)))
+          (for ((int e . 0)) (< e (/ N STEP)) ((++ e))
+               (letin ((r (new rc vector (cast (const int []) '{ 0 }) 0)))
+                 (when (sole^rc r)
+                   (let^rc (v r :items items)
+                     (append^vector v items STEP)))
+                 (+= sum (letn^rc (v r (cast i64 0)) (cast i64 (cast size_t (-> v arr)))))))
+          (let ((llong elapsed . #'(- (ms_now) t0)))
+            (printf "  (append rc checksum: %lld)\n" sum)
+            (return elapsed))))
+
+  (main
+    (printf "Cicili lib/std vector -- %d operations each\n\n" N)
+
+    (let ((int * items . #'(alloc STEP (sizeof int))))
+      (for ((int i . 0)) (< i STEP) ((++ i))
+           (set (nth i items) i))
+
+      (printf "  construct (new^vector, %d x %d): %ld ms\n" (/ N STEP) STEP (bench_construct items))
+      (printf "  nth (bounds-checked) %d times: %ld ms\n" N (bench_nth))
+      (printf "  push %d elements (%d x %d epoch): %ld ms\n" N (/ N STEP) STEP (bench_push))
+      (printf "  append %d elements (%d x %d epoch): %ld ms\n" N (/ N STEP) STEP (bench_append items))
+
+      (printf "\n  -- inside an rc --\n")
+      (printf "  construct rc (%d x %d): %ld ms\n" (/ N STEP) STEP (bench_construct_rc items))
+      (printf "  nth rc (bounds-checked) %d times: %ld ms\n" N (bench_nth_rc))
+      (printf "  push rc %d elements: %ld ms\n" N (bench_push_rc))
+      (printf "  append rc %d elements: %ld ms\n" N (bench_append_rc items))
+      ) ; let
+
+    (return 0)))
+
+;; sbcl --script cicili.lisp ./benchmark/std-vector-bench.cicili
+;; ./benchmark/std_vec_bench
+;;
+;; cd benchmark/rust-vector-bench && cargo build --release
+;; ./target/release/api_bench
+
+
+;;;; ---------------------------------------------------------------------
+;;;; Result. Intel i9-9880H, Apple clang 21.0.0 vs rustc 1.96.0, two rounds
+;;;; each, same session. Both sides at -falign-loops=32 / their own best
+;;;; layout -- see test/std/array.cicili for why that is not optional.
+;;;;
+;;;;   op         Cicili vector   Rust Vec   verdict
+;;;;   construct     99 ms          105      parity
+;;;;   nth          500 ms          532      Cicili ~6% faster
+;;;;   push        1807 ms         1974      Cicili ~8% faster
+;;;;   append        96 ms          102      parity
+;;;;
+;;;; And the same four with the vector inside an rc, against Rust's
+;;;; Rc<Vec<i32>> + Rc::get_mut:
+;;;;
+;;;;   op            Cicili rc<vector>   Rust Rc<Vec>   verdict
+;;;;   construct rc      260 ms             161         1.6x slower
+;;;;   nth rc           1208 ms             558         see below
+;;;;   push rc          1848 ms            2974         Cicili 1.6x FASTER
+;;;;   append rc         287 ms             167         1.7x slower
+;;;;
+;;;; nth rc was 1842 before (decl-maybe ref a) -- the maybe now carries a
+;;;; pointer into the buffer instead of a copy of the element. But the row is
+;;;; still not comparable to Rust's 558: LLVM folds the bounds check straight
+;;;; through the Rc there, so 558 is the check-ELIDED case and 1208 the
+;;;; executed one. The honest control is api_bench's `nth_opaque', which
+;;;; black_box's the length so neither side can fold:
+;;;;
+;;;;   bounds check ELIDED     Cicili  428   Rust   469    parity
+;;;;   bounds check EXECUTED   Cicili  957   Rust  1126    Cicili ~15% faster
+;;;;
+;;;; push rc is the one Cicili wins and it is worth knowing why: Rust checks
+;;;; Rc::get_mut on every single push, Cicili borrows once per epoch with
+;;;; let^rc and pushes inside. Both are the idiomatic way to write it in each
+;;;; language, so it is a fair row -- but it is an API-shape difference, not
+;;;; codegen, and reading it as "Cicili's rc is faster" would be wrong.
+;;;;
+;;;; nth rc looked like a 3.3x loss to Rust. It is not, and the row above is
+;;;; retained only so the correction is visible. Four measurements, all in ONE
+;;;; binary so code layout cannot explain them (benchmark scratch, N = 1e9):
+;;;;
+;;;;   array,  len a compile-time constant     469 463 ms
+;;;;   vector, len a compile-time constant     449 453 ms
+;;;;   vector, len from a GLOBAL, NO rc       1544 1543 ms
+;;;;   vector, in an rc                       1678 1733 ms
+;;;;
+;;;; A flat vector with a length clang cannot fold is 1544 -- 93% of the way to
+;;;; the rc, with no rc anywhere in it. So the cost is not the refcount and not
+;;;; the extra pointer hop. It is entirely whether clang can PROVE the length:
+;;;;
+;;;;   provable   `index < len' folds to true for (% i 50), check deleted,
+;;;;              loop 2-way unrolled           -> ~450 ms
+;;;;   not        compare and branch stay, no unroll -> ~1550 ms
+;;;;
+;;;; And `nth array' and `nth vector' are the same to within noise, which is
+;;;; what the identical source says they should be. There was never a vector
+;;;; penalty to explain.
+;;;;
+;;;; Making the letn^rc closure `static inline' does NOT recover it (1663 ms),
+;;;; so it is not the function boundary either -- clang cannot track the length
+;;;; through malloc + memcpy into the box however much it can see.
+;;;;
+;;;; THE ROW ABOVE COMPARED A CHECKED LOOP TO AN UNCHECKED ONE. Rust's nth_rc
+;;;; asm has no bounds compare and is 2-way unrolled: LLVM folded the length
+;;;; straight through the Rc. Its 558 ms is the elided case, Cicili's 1842 the
+;;;; executed one, and putting them in a table together was wrong. The control
+;;;; that makes it honest is api_bench's `nth_opaque', which black_box's the
+;;;; length so neither side can fold:
+;;;;
+;;;;   bounds check ELIDED     Cicili  449   Rust   460    parity
+;;;;   bounds check EXECUTED   Cicili 1544   Rust  1084    Cicili ~42% SLOWER
+;;;;
+;;;; That is the number that matters, and it is the one to work on. Likely
+;;;; cause, stated as the hypothesis it is: Rust's Option<&i32> is niche
+;;;; encoded -- None is a null pointer -- so the bounds test and the `is there
+;;;; a value' test are one branch. Cicili's (<> Maybe a) carries a separate
+;;;; ctor tag, so `nth' branches on the bound, writes a tag, and `match'
+;;;; branches on the tag: two branches and a struct round trip where Rust has
+;;;; one. Not yet confirmed in the asm.
+;;;;
+;;;; Note what that means for the FLAT rows above, honestly: clang elides the
+;;;; bounds check there because the length is a compile-time constant. Rust's
+;;;; flat row elides it too -- neither loop has a bounds branch in its asm -- so
+;;;; the comparison is like for like. It does mean both figures are the
+;;;; check-elided case, not the worst case.
+;;;;
+;;;; What the rc was costing, same four rows before the vector was flattened:
+;;;;
+;;;;   op         rc'd vector   flat vector   Rust Rc<Vec>
+;;;;   construct     515 ms        103            161
+;;;;   nth          1910 ms        505            558
+;;;;   push         5515 ms       1887           2974
+;;;;   append        950 ms         97            167
+;;;;
+;;;; nth went 1910 -> 505 and it was never a codegen problem. Three things, in
+;;;; order of size:
+;;;;
+;;;; 1. The rc'd nth called TWO weak functions per element. letn^cell passes the
+;;;;    default as a closure ARGUMENT, so nothing_int() ran on every call even
+;;;;    when the element was found, and the found path called just_int(). Both
+;;;;    carry (inline), which emits __attribute__((weak)) -- a symbol the
+;;;;    compiler may not inline. Making those two static inline by hand took the
+;;;;    rc'd version from 4785 to 1894 ms: 60% of it was the calls, not the
+;;;;    structure. The flat nth uses the brace-list front ends and calls nothing.
+;;;; 2. Four dependent loads to reach an element (vector.vec.ptr -> ctx.ptr ->
+;;;;    arr.arr -> [at]) against the flat two, plus a liveness test.
+;;;; 3. calloc of the whole capacity followed by a memcpy over it, and four
+;;;;    allocations per construct against one.
+;;;;
+;;;; Only (1) is a compiler matter and it is still there: any code forced to
+;;;; CALL a std constructor -- an argument slot, a closure return -- pays a
+;;;; call that cannot be inlined. (inline) meaning weak is the reason.
+;;;;
+;;;; Sharing was not removed, it was moved. (new^rc vector ...) puts the vector
+;;;; in an rc for callers who want one, and only they pay for it.
+;;;; ---------------------------------------------------------------------

@@ -1,0 +1,96 @@
+
+;;; test Cicili std vector
+;;; construction, len, bounds-checked nth through maybe, push, append, growth
+(source "vector.c"
+  (make :std #t
+        :compile #t :link ("-lvector.o" "-o" "vec_test"))
+
+  (decl-vector int)
+  (impl-vector int)
+
+  (func check ((const char * what) (llong got) (llong want))
+        (out int)
+        (if (== got want)
+            (block (printf "ok   %-34s %lld\n" what got) (return 0))
+          (block (printf "FAIL %-34s got %lld want %lld\n" what got want) (return 1)))
+        (return 1))
+
+  ;; nth answers with a maybe: unwrap to a plain int, -1 when out of range.
+  ;; A `ref' parameter is a pointer, so these two are called with (aof v).
+  (func at ((size_t index) ((<> vector int) ref v))
+        (out int)
+        (return (matchn ((<> nth vector int) index v)
+                  (just    x (cof x))
+                  (nothing  -1))))
+
+  ;; the whole vector as one number, so growth can be checked in a single value
+  (func total (((<> vector int) ref v))
+        (out llong)
+        (let ((llong sum . 0))
+          (for ((size_t i . 0)) (< i ((<> len vector int) v)) ((++ i))
+               (+= sum (at i v)))
+          (return sum)))
+
+  (main
+    (let ((int bad . 0))
+
+      ;; ---- construction ---------------------------------------------
+      (letin ((v (new vector (cast (const int []) '{ 1 2 3 4 5 }))))
+        (+= bad (check "len after new"         (len^vector v) 5))
+        (+= bad (check "nth 0"                 (at 0 (aof v)) 1))
+        (+= bad (check "nth 4"                 (at 4 (aof v)) 5))
+        (+= bad (check "nth past the end"      (at 5 (aof v)) -1))
+        (+= bad (check "checksum"              (total (aof v)) 15))
+
+        ;; ---- push, inside the capacity arraySize handed out ----------
+        ;; 5 items ask for 16 cells, so these fit without reallocating
+        (+= bad (check "push returns the len"  (push^vector v 6) 6))
+        (+= bad (check "pushed value"          (at 5 (aof v)) 6))
+        (push^vector v 7)
+        (+= bad (check "len after two pushes"  (len^vector v) 7))
+        (+= bad (check "checksum after push"   (total (aof v)) 28))
+        (+= bad (check "old items intact"      (at 0 (aof v)) 1))
+
+        ;; ---- append a brace list, counted by the front end -----------
+        (+= bad (check "append returns len"    (append^vector v '{ 8 9 10 }) 10))
+        (+= bad (check "appended first"        (at 7 (aof v)) 8))
+        (+= bad (check "appended last"         (at 9 (aof v)) 10))
+        (+= bad (check "checksum after append" (total (aof v)) 55))
+
+        ;; ---- growth: past 16 cells the buffer is replaced ------------
+        (for ((int n . 11)) (<= n 40) ((++ n))
+             (push^vector v n))
+        (+= bad (check "len after growth"      (len^vector v) 40))
+        (+= bad (check "first survived growth" (at 0 (aof v)) 1))
+        (+= bad (check "last after growth"     (at 39 (aof v)) 40))
+        (+= bad (check "checksum 1..40"        (total (aof v)) 820))
+        (+= bad (check "still bounds checked"  (at 40 (aof v)) -1)))
+
+      ;; ---- a vector built empty, then filled ------------------------
+      (letin ((e (new vector (cast (const int []) '{ 0 }) 0)))
+        (+= bad (check "len of an empty vector" (len^vector e) 0))
+        (+= bad (check "nth of an empty vector" (at 0 (aof e)) -1))
+        (+= bad (check "push onto empty"        (push^vector e 42) 1))
+        (+= bad (check "the pushed value"       (at 0 (aof e)) 42))
+        (+= bad (check "append onto one"        (append^vector e '{ 43 44 }) 3))
+        (+= bad (check "checksum of the three"  (total (aof e)) 129))
+
+        ;; a second vector shares nothing with the first
+        (letin ((o (new vector (cast (const int []) '{ 7 7 }))))
+          (push^vector o 7)
+          (+= bad (check "other vector len"     (len^vector o) 3))
+          (+= bad (check "other vector total"   (total (aof o)) 21))
+          (+= bad (check "first is untouched"   (total (aof e)) 129))))
+
+      (if (== bad 0)
+          (printf "vector: all ok\n")
+        (printf "vector: %d FAILED\n" bad))
+      (return bad))))
+
+
+;; sbcl --script cicili.lisp ./test/std/vector.cicili
+;; ./test/std/vec_test
+
+;; (nth rc) benchmark, kept from the previous version of this file:
+;; Cicili 408 404 410 406 413
+;; Rust   456 467 459 455 465

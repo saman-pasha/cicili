@@ -1,0 +1,262 @@
+;;;; Cicili std vector
+;;; contiguous memory that grows -- an array that owns its headroom
+;;;
+;;; A vector is an array plus the two things an array cannot do: it knows how
+;;; much of its buffer is used, and it can take more items than it was built
+;;; with. That is the whole difference. The layout is the array's, with a
+;;; used-count added:
+;;;
+;;;   struct vector_int { int *arr; size_t cap; size_t len; };
+;;;
+;;; NOTHING HERE IS SHARED. There is no reference count, no cell, no liveness
+;;; check on the read path -- a vector owns its buffer outright and `nth' is the
+;;; same three loads the array's is. Sharing is a decision the caller makes, not
+;;; one the type makes for them:
+;;;
+;;;   (letin ((v (new vector (cast (const int []) '{ 1 2 3 }))))    ; owned
+;;;     (push^vector v 4))
+;;;
+;;;   (letin ((v (new^rc vector (cast (const int []) '{ 1 2 3 }) 3)))  ; shared
+;;;     (let^rc (vec v) (printf "%zu\n" (len^vector (cof vec)))))
+;;;
+;;; That split is the point. The previous vector was a window over an rc'd
+;;; array, so every read walked cell -> rc -> array before the bounds check and
+;;; every write loaded a refcount to see whether it was allowed -- costs paid by
+;;; every user whether or not anything was ever shared. Wrap it in an `rc' when
+;;; you want that, and pay for it then.
+;;;
+;;; `cap' is what is allocated, `len' what is used, and cap is always
+;;; (<> arraySize vector a) of something -- a power of two, never below 16. The
+;;; buffer is malloc'd, not calloc'd: cells past `len' are never read, so
+;;; zeroing them is work nobody asks for.
+;;;
+;;; Growth is `realloc', so an extension the allocator can satisfy in place
+;;; costs no copy at all.
+
+(generic decl-vector
+  (a)
+
+  ;; the payload carrier for (<> nth vector a) -- the only thing vector needs
+  ;; from the rest of std
+  (decl-maybe ref a)
+
+  (non-copy)
+  (struct (<> vector a)
+          (member a ref arr)
+          (member size_t cap)
+          (member size_t len))
+
+  (typedef a (<> vector a item_t))
+
+  ;; super type declaration to use in 'type-check
+  (guard __VECTOR_TYPE_H_
+    (decl) (struct (<> std vector)))
+  (typedef (<> std vector) (<> vector a type_t))
+
+  (decl) (func (<> free vector a) (((<> vector a) ref vector)))
+  (decl) (func (<> free vector a pointer) (((<> vector a) ** vector)))
+  ;; rounds a length up to the next power of two, never below 16. Named per
+  ;; instantiation: an ungeneric `arraySize' would be defined twice the moment
+  ;; a second element type is instantiated.
+  (decl) (func (<> arraySize vector a) ((size_t size)) (out size_t))
+  ;; `len' cells are copied from `items'; the buffer is arraySize(len) cells, so
+  ;; a vector always starts with headroom
+  (decl) (func (<> new vector a) ((const a * items) (size_t len)) (out (<> vector a)))
+  (decl) (func (<> len vector a) (((<> vector a) ref vector)) (out size_t))
+  ;; bounds-checked access cannot answer for an out of range index, so it hands
+  ;; back a maybe rather than a sentinel -- open it with 'match
+  (decl) (func (<> nth vector a) ((size_t index) ((<> vector a) ref vector)) (out (<> Maybe ref a)))
+  ;; makes room for `needed' cells if there is not room already
+  (decl) (func (<> grow vector a) (((<> vector a) ref vector) (size_t needed)))
+  ;; both grow the vector in place and hand back the new length, so
+  ;; `(push^vector v 6)' is a statement and there is nothing to re-bind or free
+  (decl) (func (<> push vector a) (((<> vector a) ref vector) (a item)) (out size_t))
+  (decl) (func (<> append vector a) (((<> vector a) ref vector) (const a * items) (size_t count))
+               (out size_t))
+
+  ) ; decl-vector
+
+
+(generic impl-vector
+  (a)
+
+  (impl-maybe ref a)
+
+  (inline)
+  (func (<> free vector a) (((<> vector a) ref vector))
+        (syslog! (printf "FREE VEC: %p\n" (-> vector arr)))
+        (free (-> vector arr)))
+
+  (inline)
+  (func (<> free vector a pointer) (((<> vector a) ** vector))
+        ((<> free vector a) (cof vector)))
+
+  (func (<> arraySize vector a) ((size_t size))
+        (out size_t)
+        (let ((size_t two_pow . 0x10))
+          (while (< two_pow size)
+            (set two_pow (<< two_pow 1)))
+          (return two_pow)))
+
+  ;; malloc, not calloc: `nth' bounds-checks against `len', so the cells between
+  ;; `len' and `cap' are unreachable and zeroing them is work nobody asks for.
+  ;; That is the difference from (<> new array a), which HAS to zero its
+  ;; headroom because an array's `len' IS its capacity -- every cell it owns is
+  ;; readable.
+  ;;
+  ;; The first `len' cells are a different matter. They are live the moment this
+  ;; returns, so a caller passing items == nil with len > 0 would be handed
+  ;; cells that were never written -- undefined to read, whatever the allocator
+  ;; happens to hold. memset covers exactly those, and only when there is
+  ;; nothing to copy, so the ordinary path is untouched.
+  (func (<> new vector a) ((const a * items) (size_t len))
+        (out (<> vector a))
+        ;; an empty vector allocates NOTHING. arraySize never answers below 16,
+        ;; so reserving up front would make the first append a malloc AND a
+        ;; realloc where one allocation does. realloc(NULL, n) is malloc(n) and
+        ;; free(NULL) is a no-op, so nothing downstream needs a special case.
+        (when (== len 0)
+          (return (cast (<> vector a) '{ nil 0 0 })))
+        (return (letn ((const size_t cap . #'((<> arraySize vector a) len))
+                       (a ref arr . #'(malloc (* cap (sizeof a)))))
+                  (syslog! (printf "NEW VEC: %s %p %zu of %zu\n"
+                                   (symbol-name (<> vector a)) arr len cap))
+                  (if (and items len)
+                      (memcpy arr items (* len (sizeof a)))
+                    (memset arr 0 (* len (sizeof a))))
+                  (cast (<> vector a) '{ arr cap len }))))
+
+  (func (<> len vector a) (((<> vector a) ref vector))
+        (out size_t)
+        (return (-> vector len)))
+
+  ;; The array's nth exactly, with `len' meaning used rather than allocated.
+  ;;
+  ;; The maybe is (decl-maybe ref a), so the payload is a POINTER INTO the
+  ;; buffer rather than a copy of the element -- `match' hands out an `a ref'
+  ;; to deref, which is what makes nth usable for writing.
+  ;;
+  ;; `just' and `nothing' are the front ends, so this is a struct literal and
+  ;; no call. Calling the back-end constructors instead would be a real call
+  ;; per element: they carry (inline), which emits __attribute__((weak)), and a
+  ;; weak symbol is one the compiler is not allowed to inline.
+  (func (<> nth vector a) ((size_t index) ((<> vector a) ref vector))
+        (out (<> Maybe ref a))
+        (if (< index (-> vector len))
+            (return (just (+ (-> vector arr) index)))
+          (return (nothing))))
+
+  ;; realloc, so an extension the allocator can satisfy in place costs no copy
+  (func (<> grow vector a) (((<> vector a) ref vector) (size_t needed))
+        (when (> needed (-> vector cap))
+          (let ((const size_t cap . #'((<> arraySize vector a) needed)))
+            (syslog! (printf "GROW VEC: %s %zu to %zu cells\n"
+                             (symbol-name (<> vector a)) (-> vector cap) cap))
+            (set (-> vector arr) (realloc (-> vector arr) (* cap (sizeof a)))
+                 (-> vector cap) cap))))
+
+  ;; one store, not a memcpy of a single element through the append path
+  (func (<> push vector a) (((<> vector a) ref vector) (a item))
+        (out size_t)
+        ((<> grow vector a) vector (+ (-> vector len) 1))
+        (set (nth (-> vector len) (-> vector arr)) item)
+        (set (-> vector len) (+ (-> vector len) 1))
+        (return (-> vector len)))
+
+  (func (<> append vector a) (((<> vector a) ref vector) (const a * items) (size_t count))
+        (out size_t)
+        ((<> grow vector a) vector (+ (-> vector len) count))
+        (memcpy (+ (-> vector arr) (-> vector len)) items (* count (sizeof a)))
+        (set (-> vector len) (+ (-> vector len) count))
+        (return (-> vector len)))
+
+  ) ; impl-vector
+
+
+;;;; ------------------------------------------------------------------
+;;;; front ends: infer which instantiation the vector belongs to and dispatch.
+;;;; An owned vector is passed by address, one already held by reference as is.
+;;;; ------------------------------------------------------------------
+
+;;; the vector's type name and the form to pass for it, as one step.
+;;; The name comes from the ROOT of the typedef chain, not from the declared
+;;; type: a vector borrowed out of an rc arrives as (<> rc vector^int interior_t)
+;;; and (<> len rc_vector_int_interior_t) is not a function anybody defined.
+;;; type-root answers origin-first, so its CAR is the struct the typedefs lead
+;;; to -- the same thing len^array does for a `ref' array.
+(DEFUN vector-call< (vector)
+  (MULTIPLE-VALUE-BIND (desc full-type root-type) (CICILI:TYPE-CHECK vector :TYPEOF :std^vector
+                                                                            :MODIFIER '(move ref nil))
+    (DECLARE (IGNORE desc))
+    (VALUES (CAR root-type)
+            (IF (CICILI:KEY-EQ (NTH 2 full-type) 'ref) vector `(aof ,vector)))))
+
+;;; (new vector ITEMS [LEN]) -- LEN is inferred from a brace list or a string.
+;;; The capacity is arraySize(LEN), so a vector always starts with headroom.
+(DEFMACRO new^vector (items &OPTIONAL len)
+  (LET* ((items items)
+         (type (CICILI:INFER-TYPE items))
+         ;; a pointer to the element, however it is qualified: (T *),
+         ;; (const T *), (T * const), or both
+         (elem (COND ((AND (= (LENGTH type) 2) (CICILI:KEY-EQ (NTH 1 type) '*))
+                      (CAR type))
+                     ((AND (= (LENGTH type) 3) (CICILI:KEY-EQ (NTH 1 type) '*)
+                           (CICILI:KEY-EQ (NTH 2 type) 'const))
+                      (CAR type))
+                     ((AND (= (LENGTH type) 3) (CICILI:KEY-EQ (CAR type) 'const)
+                           (CICILI:KEY-EQ (NTH 2 type) '*))
+                      (CADR type))
+                     ((AND (= (LENGTH type) 4) (CICILI:KEY-EQ (CAR type) 'const)
+                           (CICILI:KEY-EQ (NTH 2 type) '*) (CICILI:KEY-EQ (NTH 3 type) 'const))
+                      (CADR type))
+                     (T (ERROR (FORMAT NIL "new vector got invalid type ~A of ~A" type items)))))
+         (len (IF len len
+                (LET ((value (IF (CICILI:KEY-EQ (CAR items) 'cast) (CADDR items) NIL)))
+                  (IF (AND value (LISTP value) (CICILI:KEY-EQ (CAR value) 'QUOTE))
+                      (LENGTH (CADR value))
+                    (IF (STRINGP value)
+                        (LENGTH value)
+                      (ERROR (FORMAT NIL "new vector can't infer length ~A" items))))))))
+    (IF len
+        `((<> new vector ,elem) ,items ,len)
+      (ERROR (FORMAT NIL "new^~A len required for dynamic array input: ~A" type items)))))
+
+(DEFMACRO free^vector (vector)
+  (LET ((vector vector))
+    (MULTIPLE-VALUE-BIND (type-name self) (vector-call< vector)
+      `((<> free ,type-name) ,self))))
+
+(DEFMACRO len^vector (vector)
+  (LET ((vector vector))
+    (MULTIPLE-VALUE-BIND (type-name self) (vector-call< vector)
+      `((<> len ,type-name) ,self))))
+
+(DEFMACRO nth^vector (index vector &KEY unchecked)
+  (LET ((index index) (vector vector) (unchecked unchecked))
+    (MULTIPLE-VALUE-BIND (type-name self) (vector-call< vector)
+      (IF unchecked
+          `(nth ,index ($ ,vector arr))
+        `((<> nth ,type-name) ,index ,self)))))
+
+(DEFMACRO push^vector (vector item)
+  (LET ((vector vector) (item item))
+    (MULTIPLE-VALUE-BIND (type-name self) (vector-call< vector)
+      `((<> push ,type-name) ,self ,item))))
+
+;;; (append^vector v '{ 6 7 8 })       -- a brace list, counted here
+;;; (append^vector v "abc")            -- a string, counted here
+;;; (append^vector v items count)      -- anything else needs its count
+(DEFMACRO append^vector (vector items &OPTIONAL count)
+  (LET* ((vector vector)
+         (items items)
+         (literal (OR (AND (LISTP items) (CICILI:KEY-EQ (CAR items) 'QUOTE)) (STRINGP items)))
+         (count (IF count count
+                  (IF (AND (LISTP items) (CICILI:KEY-EQ (CAR items) 'QUOTE))
+                      (LENGTH (CADR items))
+                    (IF (STRINGP items)
+                        (LENGTH items)
+                      (ERROR (FORMAT NIL "append vector can't infer how many items: ~A" items)))))))
+    (MULTIPLE-VALUE-BIND (type-name self) (vector-call< vector)
+      `((<> append ,type-name) ,self
+        ,(IF literal `(cast (const (<> ,type-name item_t) []) ,items) items)
+        ,count))))

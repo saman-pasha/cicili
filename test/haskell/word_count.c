@@ -63,7 +63,11 @@ Either_String_cfile_t writeTmpFile () {
     // ----------
     if (tmpf  ==  NULL  )
       { /* cicili#Block152 */
-        Left_String_cfile_t (strerror (errno ));
+        { /* cicili#Let154 */
+          __auto_type err  = strerror (errno );
+          // ----------
+          return Left_String_cfile_t (new_List_char_Pure (err , strlen (err )));
+        }
       }
     fputs ("Alan Turing\n", tmpf );
     fputs ("John von Neumann\n", tmpf );
@@ -72,7 +76,7 @@ Either_String_cfile_t writeTmpFile () {
   }
 }
 List_String safeReadFile (FILE * file ) {
-  return (((file  ==  NULL  )) ? Empty_String () : ({ /* cicili#Let156 */
+  return (((file  ==  NULL  )) ? Empty_String () : ({ /* cicili#Let160 */
         char buf [8];
         size_t count  = 0;
         // ----------
@@ -81,45 +85,45 @@ List_String safeReadFile (FILE * file ) {
       }));
 }
 int count_words (String text ) {
-  return ({ /* cicili#Let168 */
+  return ({ /* cicili#Let172 */
       __auto_type ch  = (((text -> __h_data ). Cons ). __h_0_mem );
-      __auto_type __h_match166_1_arg  = (((text -> __h_data ). Cons ). __h_1_mem );
-      __auto_type tail  = __h_match166_1_arg ;
+      __auto_type __h_match170_1_arg  = (((text -> __h_data ). Cons ). __h_1_mem );
+      __auto_type tail  = __h_match170_1_arg ;
       // ----------
-      /* cicili#Block170 */
-      ({ /* cicili#Let172 */
+      /* cicili#Block174 */
+      ({ /* cicili#Let176 */
         bool __h_case_result  = (((text -> __h_ctor ) ==  __h_Cons_t  ) &&  ((tail -> __h_ctor ) ==  __h_Cons_t  ) );
         // ----------
-        ((__h_case_result ) ? ((((ch  ==  ' ' ) ||  (ch  ==  '\n' ) )) ? (1 +  count_words (tail ) ) : count_words (tail )) : ({ /* cicili#Let177 */
+        ((__h_case_result ) ? ((((ch  ==  ' ' ) ||  (ch  ==  '\n' ) )) ? (1 +  count_words (tail ) ) : count_words (tail )) : ({ /* cicili#Let181 */
             // ----------
-            /* cicili#Block179 */
+            /* cicili#Block183 */
             1;
           }));
       });
     });
 }
 void iter_words (List_String list ) {
-  { /* cicili#Let184 */
+  { /* cicili#Let188 */
     __auto_type str  = (((list -> __h_data ). Cons ). __h_0_mem );
     __auto_type tail  = (((list -> __h_data ). Cons ). __h_1_mem );
     // ----------
-    /* cicili#Block186 */
-    ({ /* cicili#Let188 */
+    /* cicili#Block190 */
+    ({ /* cicili#Let192 */
       bool __h_case_result  = ((list -> __h_ctor ) ==  __h_Cons_t  );
       // ----------
       if (__h_case_result )
-        ({ /* cicili#Progn191 */
+        ({ /* cicili#Progn195 */
           show_String (str );
           printf (" Word count: %d\n", count_words (str ));
           iter_words (tail );
           free_String ((&str ));
         });
       else
-        { /* cicili#Let196 */
+        { /* cicili#Let200 */
           __auto_type empty_str  = list ;
           // ----------
-          /* cicili#Block198 */
-          free_String ((&empty_str ));
+          /* cicili#Block202 */
+          free_List_String ((&empty_str ));
         }
     });
   }
@@ -129,18 +133,18 @@ void file_close (FILE ** file_ptr ) {
   fclose ((*file_ptr ));
 }
 int main () {
-  ({ /* cicili#Let204 */
+  ({ /* cicili#Let208 */
     __auto_type tmpf  = writeTmpFile ();
     // ----------
-    { /* cicili#Let208 */
+    { /* cicili#Let212 */
       __auto_type error  = (((tmpf . __h_data ). Left ). __h_0_mem );
       // ----------
-      /* cicili#Block210 */
-      ({ /* cicili#Let212 */
+      /* cicili#Block214 */
+      ({ /* cicili#Let216 */
         bool __h_case_result  = ((tmpf . __h_ctor ) ==  __h_Left_t  );
         // ----------
         if (__h_case_result )
-          ({ /* cicili#Let216 */
+          ({ /* cicili#Let220 */
             __auto_type error  __attribute__((__cleanup__(free_String ))) = error ;
             // ----------
             printf ("File opening error: ");
@@ -148,37 +152,37 @@ int main () {
             putchar ('\n');
           });
         else
-          { /* cicili#Let221 */
+          { /* cicili#Let225 */
             __auto_type file  = (((tmpf . __h_data ). Right ). __h_0_mem );
             // ----------
-            /* cicili#Block223 */
-            ({ /* cicili#Let225 */
+            /* cicili#Block227 */
+            ({ /* cicili#Let229 */
               bool __h_case_result  = ((tmpf . __h_ctor ) ==  __h_Right_t  );
               // ----------
               if (__h_case_result )
-                ({ /* cicili#Let229 */
+                ({ /* cicili#Let233 */
                   __auto_type file  __attribute__((__cleanup__(file_close ))) = file ;
                   // ----------
                   rewind (file );
-                  { /* cicili#Let234 */
-                    __auto_type __h_data233  = safeReadFile (file );
+                  { /* cicili#Let238 */
+                    __auto_type __h_data237  = safeReadFile (file );
                     // ----------
-                    /* cicili#Block236 */
-                    ({ /* cicili#Let238 */
-                      bool __h_case_result  = ((__h_data233 -> __h_ctor ) ==  __h_Empty_t  );
+                    /* cicili#Block240 */
+                    ({ /* cicili#Let242 */
+                      bool __h_case_result  = ((__h_data237 -> __h_ctor ) ==  __h_Empty_t  );
                       // ----------
                       if (__h_case_result )
                         printf ("Error: nothing to read\n");
                       else
-                        { /* cicili#Let244 */
-                          __auto_type first_cons  = __h_data233 ;
+                        { /* cicili#Let248 */
+                          __auto_type first_cons  = __h_data237 ;
                           // ----------
-                          /* cicili#Block246 */
-                          ({ /* cicili#Let248 */
+                          /* cicili#Block250 */
+                          ({ /* cicili#Let252 */
                             bool __h_case_result  = ((first_cons -> __h_ctor ) ==  __h_Cons_t  );
                             // ----------
                             if (__h_case_result )
-                              ({ /* cicili#Progn251 */
+                              ({ /* cicili#Progn255 */
                                 printf ("File loaded successfully!\n");
                                 iter_words (first_cons );
                               });

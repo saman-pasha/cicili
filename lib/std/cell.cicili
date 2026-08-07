@@ -1,0 +1,116 @@
+;;;; Cicili std cell
+(generic decl-cell
+  (a)
+
+  (non-copy)
+  (struct (<> cell a)
+          (member a ref ptr))
+
+  (typedef a (<> cell a interior_t))
+
+  ;; super type declaration to use in 'type-check
+  (guard __CELL_TYPE_H_
+    (decl) (struct (<> std cell)))
+  (typedef (<> std cell) (<> cell a type_t))
+
+  (decl) (func (<> free cell a) (((<> cell a) * cell)))          ; needed for letin
+  (decl) (func (<> free cell a pointer) (((<> cell a) ** cell))) ; needed for pass move to function
+
+  ) ; decl-cell
+
+
+;;; Reach a cell's interior through let^cell / take^cell, never free it
+;;; yourself. This cannot be guarded by a (DEFMACRO (<> free a)): that name IS
+;;; the back-end free of the celled type, so the guard shadows the function
+;;; free_cell itself has to call.
+
+(generic impl-cell
+  (a)
+
+  (inline)
+  (func (<> free cell a) (((<> cell a) * cell))
+        (syslog! (printf "FREE CELL: %p\n" (-> cell ptr)))
+        (when (-> cell ptr)
+          ((<> free a) (-> cell ptr))
+          (free (-> cell ptr))))
+
+  (inline)
+  (func (<> free cell a pointer) (((<> cell a) ** cell))
+        ((<> free cell a) (cof cell)))
+
+  ) ; impl-cell
+
+(DEFMACRO free^cell (cell)
+  (LET ((cell cell)
+        (full-type (NTH-VALUE 1 (CICILI:TYPE-CHECK cell :TYPEOF :std^cell :MODIFIER '(move ref)))))
+    (IF (CICILI:KEY-EQ (NTH 2 full-type) 'move)
+        `((<> free ,(NTH 1 full-type)) (aof ,cell))
+      `((<> free ,(NTH 1 full-type)) ,cell))))
+
+
+(DEFMACRO new^cell (type &REST args)
+  (LET* ((ctor `(<> new ,type))
+         (args args)
+         (a (CICILI:INFER-TYPE `(,ctor ,@args)))
+         (ptr-name (GENSYM (FORMAT NIL "~A_ptr" (SYMBOL-NAME (CAR a)))))
+         (obj-name (GENSYM (FORMAT NIL "~A_obj" (SYMBOL-NAME (CAR a))))))
+    (WHEN (> (LENGTH a) 1) (ERROR (FORMAT NIL "new cell got invalid type ~A for ~A" a ctor)))
+    `(letn ((,@a * ,ptr-name . (FUNCTION (malloc (sizeof ,@a))))
+            (,@a move ,obj-name . (FUNCTION (,ctor ,@args))))
+       (syslog! (printf "NEW CELL: %p\n" ,ptr-name))
+       (memcpy ,ptr-name (aof ,obj-name) (sizeof ,obj-name))
+       (cast (<> cell ,@a) '{ ,ptr-name }))))
+
+
+(DEFMACRO let^cell ((obj cell &REST captures) &REST body)
+  (LET ((obj obj)
+        (cell cell))
+    ;; full-type is list of inferred type details
+    (MULTIPLE-VALUE-BIND (_ full-type) (CICILI:TYPE-CHECK cell :TYPEOF :std^cell :MODIFIER :move)
+      (LET ((type-name (NTH 1 full-type)))
+        `(closure ((<> let ,type-name ,(GENSYM)) :cell (aof ,cell) ,@captures)
+           (when (-> cell ptr)
+             (let (((<> ,type-name interior_t) ref ,obj . (FUNCTION (-> cell ptr))))
+               ,@body)))))))
+
+
+(DEFMACRO letn^cell ((obj cell default &REST captures) &REST body)
+  (LET ((obj obj)
+        (cell cell)
+        (default default))
+    ;; full-type is list of inferred type details
+    (MULTIPLE-VALUE-BIND (_ full-type) (CICILI:TYPE-CHECK cell :TYPEOF :std^cell :MODIFIER :move)
+      (LET ((type-name (NTH 1 full-type)))
+        `(closure ((<> letn ,type-name ,(GENSYM)) :cell (aof ,cell) :default_value ,default ,@captures)
+           (out auto)
+           (return (? (-> cell ptr)
+                      (letn (((<> ,type-name interior_t) ref ,obj . (FUNCTION (-> cell ptr))))
+                        ,@body)
+                      default_value)))))))
+
+
+(DEFMACRO take^cell ((obj cell &REST captures) &REST body)
+  (LET ((obj obj)
+        (cell cell))
+    ;; full-type is list of inferred type details
+    (MULTIPLE-VALUE-BIND (_ full-type) (CICILI:TYPE-CHECK cell :TYPEOF :std^cell :MODIFIER :move)
+      (LET* ((type-name (NTH 1 full-type)))
+        `(closure ((<> take ,type-name ,(GENSYM)) :cell ,cell ,@captures)
+           (when ($ cell ptr)
+             (letin ((,obj (cof ($ cell ptr))))
+               ,@body)))))))
+
+
+(DEFMACRO taken^cell ((obj cell default &REST captures) &REST body)
+  (LET ((obj obj)
+        (cell cell)
+        (default default))
+    ;; full-type is list of inferred type details
+    (MULTIPLE-VALUE-BIND (_ full-type) (CICILI:TYPE-CHECK cell :TYPEOF :std^cell :MODIFIER :move)
+      (LET* ((type-name (NTH 1 full-type)))
+        `(closure ((<> taken ,type-name ,(GENSYM)) :cell ,cell :default_value ,default ,@captures)
+           (out auto)
+           (return (? ($ cell ptr)
+                      (letin ((,obj (cof ($ cell ptr)))) ; should zeroed ($ cell ptr)
+                        ,@body)
+                      default_value)))))))

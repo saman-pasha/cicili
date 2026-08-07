@@ -1,0 +1,66 @@
+;;;; numpy and libtorch over the SAME MEMORY
+;;;;
+;;;; The reason to bind numpy from a language that already has libtorch: the
+;;;; two can share a buffer with no copy in either direction.
+;;;;
+;;;;     sbcl --script cicili.lisp ./example/numpy-torch.cicili
+;;;;     ./example/numpy_torch
+;;;;
+;;;; numpy allocates, Cicili fills, torch wraps the same pointer with
+;;;; from_blob, and a mutation through the tensor is visible through the array.
+;;;; Nothing is copied and nothing is serialised.
+;;;;
+;;;; TWO WARNINGS THIS FILE EXISTS TO CARRY:
+;;;;
+;;;;   * NEITHER SIDE OWNS THE MEMORY. numpy owns it here, torch borrows it.
+;;;;     If the array is freed first the tensor is dangling, and nothing
+;;;;     complains -- the letin* nesting below is what keeps the array alive
+;;;;     longer than the tensor, and it is the whole safety argument.
+;;;;   * THE LAYOUT MUST AGREE. from_blob assumes C-contiguous. An array that
+;;;;     came from Python may be a view, a slice or transposed, and the tensor
+;;;;     would read the wrong elements without failing. Check
+;;;;     PyArray_IS_C_CONTIGUOUS, or ask numpy for a contiguous copy first.
+;;;;
+;;;; The paths are this machine's. See example/numpy.cicili and
+;;;; example/torch.cicili.
+
+(source "numpy_torch.cpp"
+  (make :cpp #t
+        :compile ("-std=c++17" "-O3" "-Wno-c++20-extensions" "-Wno-c99-extensions"
+                  "-DNPY_NO_DEPRECATED_API=NPY_1_7_API_VERSION"
+                  "-I/usr/local/opt/python@3.14/Frameworks/Python.framework/Versions/3.14/include/python3.14"
+                  "-I/usr/local/opt/numpy/lib/python3.14/site-packages/numpy/_core/include"
+                  "-I/usr/local/opt/pytorch/include"
+                  "-I/usr/local/opt/pytorch/include/torch/csrc/api/include"
+                  "-c" "numpy_torch.cpp")
+        :link ("-lnumpy_torch.o"
+               "-L/usr/local/opt/python@3.14/Frameworks/Python.framework/Versions/3.14/lib" "-lpython3.14"
+               "-L/usr/local/opt/pytorch/lib" "-ltorch" "-ltorch_cpu" "-lc10"
+               "-o" "numpy_torch"))
+  (include <Python.h>)
+  (include <numpy/arrayobject.h>)
+  (include <torch/torch.h>)
+  (include <cstdio>)
+  (import "lib/python/python.cicili")
+  (import "lib/cpp/torch/torch.cicili")
+  (python-support)
+
+  (main
+    (letin* ((py (py_open) py_finalize))
+      (when (< py 0) (block (PyErr_Print) (return 1)))
+      ;; the array outlives the tensor because it is bound further out --
+      ;; get this the wrong way round and the tensor dangles silently
+      (letin* ((o (PyArray_SimpleNew 1 (npdims 6) NPY_FLOAT32) py_decref))
+        (let ((PyArrayObject * a . #'(cast (PyArrayObject *) o)))
+          (let ((float * d . #'(cast (float *) (PyArray_DATA a))))
+            (for ((int i . 0)) (< i 6) ((++ i)) (set (nth i d) (cast float (+ i 1))))
+            ;; the SAME memory, as a torch tensor. from_blob does not copy and
+            ;; does not own; the array above is what keeps it alive.
+            (letin* ((t (torch::from_blob (cast (void *) d) (dims 6))))
+              (printf "torch sees numpy: sum=%.1f (want 21)\n"
+                      (cast double (($ (($ t sum)) (t<> item float)))))
+              ;; write through torch, read through numpy
+              (($ t mul_) (torch::full (dims 1) (cast torch::Scalar 2.0)))
+              (printf "numpy sees torch: [0]=%.1f [5]=%.1f (want 2 and 12)\n"
+                      (cast double (nth 0 d)) (cast double (nth 5 d)))))))
+      (return 0))))

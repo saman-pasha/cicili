@@ -1,0 +1,28 @@
+;;;; Cicili declarations for test/c/numpy_stub.h's inspection helpers
+;;;;
+;;;; NOTHING HERE EMITS C. Same arrangement as test/c/python-stub-decl.cicili.
+;;;;
+;;;; PyArrayObject is opaque to Cicili -- rightly, numpy's layout is none of
+;;;; its business -- so a Cicili program holding the PyObject * that
+;;;; PyArray_SimpleNew answers cannot turn it into the PyArrayObject * that
+;;;; every accessor takes. npy_stub_as_array is that cast, done in C.
+;;;;
+;;;; The three double helpers are here for the same reason: Cicili has no cast
+;;;; from void * to double *, and reading through PyArray_GETPTR is the whole
+;;;; point of the exercise.
+
+(DEFMACRO init-macro ()
+  `($$$
+     (decl) (func npy_stub_as_array   ((PyObject * o)) (out PyArrayObject *))
+     (decl) (func npy_stub_import_count () (out int))
+     (decl) (func npy_stub_get_d      ((void * p)) (out double))
+     (decl) (func npy_stub_set_d      ((void * p) (double v)))
+     (decl) (func npy_stub_data_at    ((PyArrayObject * a) (npy_intp flat)) (out double))
+
+     ;;; the flags and type numbers the stub defines, as the ints they are
+     (typedef int NPY_DOUBLE)
+     (typedef int NPY_INT64)
+     (typedef int NPY_ARRAY_C_CONTIGUOUS)
+     (typedef int NPY_ARRAY_OWNDATA)
+     (typedef int NPY_ARRAY_WRITEABLE)
+     (typedef int NPY_ARRAY_ALIGNED)))

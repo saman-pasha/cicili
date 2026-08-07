@@ -1,0 +1,75 @@
+;;;; Cicili declarations for <netdb.h>
+;;;; Import from lib/std/prelude.cicili:  (import "./c/posix/netdb.cicili")
+;;;; Requires in target: (include <netdb.h>)  or  (:std #t)
+;;;;
+;;;; socklen_t and `struct sockaddr` are declared by posix/socket.cicili and
+;;;; are only used (not repeated) here. `struct addrinfo`, `struct hostent`
+;;;; and `struct servent` have no C typedef, so they are referenced as
+;;;; `struct X` at use sites, matching real C usage.
+
+(DEFMACRO init-macro ()
+  `($$$
+     ;;; ---- structs ----
+     (decl) (struct addrinfo
+              (member int ai_flags)
+              (member int ai_family)
+              (member int ai_socktype)
+              (member int ai_protocol)
+              (member socklen_t ai_addrlen)
+              (member sockaddr * ai_addr)
+              (member char * ai_canonname)
+              (member addrinfo * ai_next))
+
+     (decl) (struct hostent
+              (member char *  h_name)
+              (member char ** h_aliases)
+              (member int     h_addrtype)
+              (member int     h_length)
+              (member char ** h_addr_list))
+
+     (decl) (struct servent
+              (member char *  s_name)
+              (member char ** s_aliases)
+              (member int     s_port)
+              (member char *  s_proto))
+
+     ;;; ---- constants: getaddrinfo() ai_flags ----
+     (typedef int AI_PASSIVE)
+     (typedef int AI_CANONNAME)
+     (typedef int AI_NUMERICHOST)
+     (typedef int AI_NUMERICSERV)
+     (typedef int AI_ADDRCONFIG)
+     (typedef int AI_ALL)
+     (typedef int AI_V4MAPPED)
+
+     ;;; ---- constants: getnameinfo() buffer sizes / flags ----
+     (typedef int NI_MAXHOST)
+     (typedef int NI_MAXSERV)
+     (typedef int NI_NUMERICHOST)
+     (typedef int NI_NUMERICSERV)
+     (typedef int NI_NAMEREQD)
+     (typedef int NI_DGRAM)
+
+     ;;; ---- constants: getaddrinfo()/getnameinfo() error codes ----
+     (typedef int EAI_AGAIN)
+     (typedef int EAI_BADFLAGS)
+     (typedef int EAI_FAIL)
+     (typedef int EAI_FAMILY)
+     (typedef int EAI_MEMORY)
+     (typedef int EAI_NONAME)
+     (typedef int EAI_SERVICE)
+     (typedef int EAI_SOCKTYPE)
+     (typedef int EAI_SYSTEM)
+     (typedef int EAI_OVERFLOW)
+
+     ;;; ---- functions ----
+     (decl) (func getaddrinfo  ((const char * restrict node) (const char * restrict service) (const addrinfo * restrict hints) (addrinfo ** restrict res)) (out int))
+     (decl) (func freeaddrinfo ((addrinfo * res)))
+     (decl) (func gai_strerror ((int errcode)) (out char *))
+     (decl) (func getnameinfo  ((const sockaddr * restrict addr) (socklen_t addrlen) (char * restrict host) (socklen_t hostlen) (char * restrict serv) (socklen_t servlen) (int flags)) (out int))
+
+     (decl) (func gethostbyname ((const char * name)) (out hostent *))
+     (decl) (func gethostbyaddr ((const void * addr) (socklen_t len) (int type)) (out hostent *))
+     (decl) (func getservbyname ((const char * name) (const char * proto)) (out servent *))
+     (decl) (func getservbyport ((int port) (const char * proto)) (out servent *))
+     ))

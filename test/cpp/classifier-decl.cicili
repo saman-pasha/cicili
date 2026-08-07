@@ -1,0 +1,38 @@
+;;;; Cicili declarations for the fragment example/mnist-fragment.cicili emits
+;;;;
+;;;; NOTHING HERE EMITS C++. Same arrangement as lib/cpp/torch/tensor.cicili
+;;;; and for the same reason: the fragment arrives as C++ text -- that being
+;;;; the whole point of a fragment -- and text is the one thing the inference
+;;;; cannot read. So a consumer says the signatures once, in Cicili terms.
+;;;;
+;;;; IT HAS TO BE A SEPARATE FILE. init-macro is honoured only in a file
+;;;; reached by `import' (compiler.lisp:288, inside load-macro-file); written
+;;;; at the top level of a target file it is registered as an ordinary macro,
+;;;; never called, and every declaration in it silently does nothing. The
+;;;; failure is quiet, because an undeclared name still compiles -- see
+;;;; lib/cpp/torch/tensor.cicili:12-17 -- so what you lose is the inference,
+;;;; not the build, and you lose it without being told.
+;;;;
+;;;; These four signatures are said twice: here, and in the `header' target of
+;;;; example/mnist-fragment.cicili. That is not ideal and it is not unchecked
+;;;; -- test/cpp/torch-fragment.cicili compiles both against each other, so a
+;;;; signature that drifts on either side is a C++ error with both spellings
+;;;; in the message.
+
+(import "lib/cpp/memory.cicili")
+
+(DEFMACRO init-macro ()
+  `($$$
+     ;; the handle Parsi holds and this test passes around
+     ,@(shared-ptr< 'Classifier)
+
+     ;; incomplete on purpose: nothing outside the fragment's own .cpp knows
+     ;; what a Classifier is, and nothing needs to
+     (decl) (struct Classifier)
+
+     (decl) (func net_load    ((const char * path)) (out (t<> std::shared_ptr Classifier)))
+     (decl) (func net_predict ((const (t<> std::shared_ptr Classifier) & n)
+                               (const float * pixels) (long count)) (out long))
+     (decl) (func net_score   ((const (t<> std::shared_ptr Classifier) & n)
+                               (const float * pixels) (long count)) (out long))
+     (decl) (func net_inputs  () (out long))))

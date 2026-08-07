@@ -1,0 +1,207 @@
+;;;; Cicili std array
+;;; contigous memory allocation
+;;; most minimal performant indexable array
+(generic decl-array
+  (a)
+
+  ;; the payload carrier for (<> nth array a)
+  (decl-maybe ref a)
+
+  ;; `a * const', where the vector's buffer is a plain `a ref': an array's
+  ;; buffer never moves, so the pointer is const and only the cells are
+  ;; writable. A vector reallocs, so its own pointer has to be assignable.
+  (non-copy)
+  (struct (<> array a)
+          (member a * const arr)
+          (member size_t len))
+
+  (typedef a (<> array a item_t))
+
+  ;; super type declaration to use in 'type-check
+  (guard __ARRAY_TYPE_H_
+    (decl) (struct (<> std array)))
+  (typedef (<> std array) (<> array a type_t))
+
+  (decl) (func (<> free array a) (((<> array a) ref array)))
+  (decl) (func (<> free array a pointer) (((<> array a) ** array)))
+  ;; `cap' cells are allocated and zeroed, the first `len' of them copied from
+  ;; `arr'. The array's own `len' IS the capacity -- an array does not grow, so
+  ;; the two are the same number for every caller in the tree today. `cap' is
+  ;; kept because a caller CAN ask for headroom, but nothing does since the
+  ;; vector stopped being a window over an array and grew its own buffer.
+  ;;
+  ;; The cells between `len' and `cap' read as zero, and an array built from
+  ;; nothing is entirely zero -- see the impl for how, and for why that is one
+  ;; write per cell rather than the two calloc + memcpy used to cost.
+  (decl) (func (<> new array a) ((const a * arr) (size_t len) (size_t cap)) (out (<> array a)))
+  (decl) (func (<> len array a) (((<> array a) ref array)) (out size_t))
+  ;; bounds-checked access cannot answer for an out of range index, so it hands
+  ;; back a maybe rather than a sentinel -- open it with 'match
+  (decl) (func (<> nth array a) ((size_t index) ((<> array a) ref array)) (out (<> Maybe ref a)))
+
+  ) ; decl-array
+
+(generic impl-array
+  (a)
+
+  ;; the payload carrier for (<> nth array a)
+  (impl-maybe ref a)
+  
+  (inline)
+  (func (<> free array a) (((<> array a) ref array))
+        (syslog! (printf "FREE ARR: %p\n" (-> array arr)))
+        (free (-> array arr)))
+
+  (inline)
+  (func (<> free array a pointer) (((<> array a) ** array))
+        ((<> free array a) (cof array)))
+
+  ;; malloc, then zero only what the memcpy will not cover. calloc zeroed all
+  ;; `cap' cells and the memcpy then overwrote the first `len' of them -- and
+  ;; since every caller in the tree passes cap == len, that was the whole
+  ;; buffer written twice.
+  ;;
+  ;; The contract is unchanged: cells past `len' read as zero, and an array
+  ;; built from nothing is entirely zero. Only the work changed.
+  ;;
+  ;; The (> cap len) guard is load bearing, not defensive: cap and len are
+  ;; size_t, so a caller passing len > cap would make (- cap len) a huge
+  ;; positive number and memset would run off the end. calloc could not be
+  ;; misused that way, malloc can.
+  (func (<> new array a) ((const a * arr) (size_t len) (size_t cap))
+        (out (<> array a))
+        (return (letn ((a ref new_arr . #'(malloc (* cap (sizeof a)))))
+                  (syslog! (printf "NEW ARR: %s %p %zu of %zu\n" (symbol-name (<> array a)) new_arr len cap))
+                  (if (and arr len)
+                      (block
+                        (memcpy new_arr arr (* len (sizeof a)))
+                        (when (> cap len)
+                          (memset (+ new_arr len) 0 (* (- cap len) (sizeof a)))))
+                    (memset new_arr 0 (* cap (sizeof a))))
+                  (cast (<> array a) '{ new_arr cap }))))
+
+  (func (<> len array a) (((<> array a) ref array))
+        (out size_t)
+        (return (-> array len)))
+  
+  ;; The maybe is instantiated (decl-maybe ref a), so its payload is a POINTER
+  ;; INTO the array, not a copy of the element. `match' hands the caller an
+  ;; `a ref' to deref -- which is what makes nth usable for writing, and what
+  ;; keeps a large element out of the return value.
+  ;;
+  ;; `just' / `nothing' are brace lists typed by the return slot. Calling
+  ;; (<> just ref a) instead would be a real call per element: those are
+  ;; (inline), i.e. __attribute__((weak)), which is never inlined -- 4x on the
+  ;; nth benchmark.
+  (func (<> nth array a) ((size_t index) ((<> array a) ref array))
+        (out (<> Maybe ref a))
+        (if (< index (-> array len))
+            (return (just (+ (-> array arr) index)))
+          (return (nothing))))
+  
+  ) ; impl-array
+
+(DEFMACRO free^array (array)
+  (LET ((array array)
+        (full-type (NTH-VALUE 1 (CICILI:TYPE-CHECK array :TYPEOF :std^array :MODIFIER '(move ref)))))
+    (IF (CICILI:KEY-EQ (NTH 2 full-type) 'move)
+        `((<> free ,(NTH 1 full-type)) (aof ,array))
+      `((<> free ,(NTH 1 full-type)) ,array))))
+
+;;; (new array ARR [LEN [CAP]]) -- LEN is inferred from a brace list or a
+;;; string, CAP defaults to LEN. A caller that wants headroom passes it: this is
+;;; the path new^rc / new^cell forward their extra arguments through, which is
+;;; how vector asks for an over-allocated buffer.
+(DEFMACRO new^array (arr &OPTIONAL len cap)
+  (LET* ((arr arr)
+         (type (CICILI:INFER-TYPE arr))
+         ;; a pointer to the element, however it is qualified: (T *),
+         ;; (const T *), (T * const) -- the last is what a member declared
+         ;; `a * const', an array's own buffer, infers as -- or both
+         (elem (COND ((AND (= (LENGTH type) 2) (CICILI:KEY-EQ (NTH 1 type) '*))
+                      (CAR type))
+                     ((AND (= (LENGTH type) 3) (CICILI:KEY-EQ (NTH 1 type) '*)
+                           (CICILI:KEY-EQ (NTH 2 type) 'const))
+                      (CAR type))
+                     ((AND (= (LENGTH type) 3) (CICILI:KEY-EQ (CAR type) 'const)
+                           (CICILI:KEY-EQ (NTH 2 type) '*))
+                      (CADR type))
+                     ((AND (= (LENGTH type) 4) (CICILI:KEY-EQ (CAR type) 'const)
+                           (CICILI:KEY-EQ (NTH 2 type) '*) (CICILI:KEY-EQ (NTH 3 type) 'const))
+                      (CADR type))
+                     (T (ERROR (FORMAT NIL "new array got invalid type ~A of ~A" type arr)))))
+         (len (IF len len
+                (LET ((value (IF (CICILI:KEY-EQ (CAR arr) 'cast) (CADDR arr) NIL)))
+                  (IF (AND value (LISTP value) (CICILI:KEY-EQ (CAR value) 'QUOTE))
+                      (LENGTH (CADR value))
+                    (IF (STRINGP value)
+                        (LENGTH value)
+                      (ERROR (FORMAT NIL "new array can't infer length ~A" arr))))))))
+    (IF len
+        `((<> new array ,elem) ,arr ,len ,(IF cap cap len))
+      (ERROR (FORMAT NIL "new^~A len required for dynamic array input: ~A" type arr)))))
+
+(DEFMACRO len^array (array)
+  (LET ((array array))
+    (MULTIPLE-VALUE-BIND (desc full-type root-type origin) (CICILI:TYPE-CHECK array :TYPEOF :std^array :MODIFIER '(move ref))
+      (IF (CICILI:KEY-EQ (NTH 2 full-type) 'ref) `((<> len ,(CAR root-type)) ,array) `($ ,array len)))))
+
+(DEFMACRO nth^array (index array &KEY unchecked)
+  (LET ((index index)
+        (array array)
+        (unchecked unchecked))
+    (IF unchecked
+        (MULTIPLE-VALUE-BIND (_ full-type) (CICILI:TYPE-CHECK array :TYPEOF :std^array :MODIFIER :move)
+          (LET ((type-name (NTH 1 full-type)))
+            `(nth ,index ($ ,array arr))))
+      (MULTIPLE-VALUE-BIND (_ full-type) (CICILI:TYPE-CHECK array :TYPEOF :std^array :MODIFIER '(move ref))
+        (LET ((type-name (NTH 1 full-type)))
+          `((<> nth ,type-name) ,index (aof ,array)))))))
+
+(DEFMACRO let^array ((arr len array &REST captures) &REST body)
+  (LET ((arr arr)
+        (len len)
+        (array array))
+    (MULTIPLE-VALUE-BIND (_ full-type) (CICILI:TYPE-CHECK array :TYPEOF :std^array :MODIFIER :move)
+      (LET ((type-name (NTH 1 full-type)))
+        `(closure ((<> let ,type-name ,(GENSYM)) :array (aof ,array) ,@captures)
+           (let (((<> ,type-name item_t) * ,arr . (FUNCTION (-> array arr)))
+                 (size_t ,len . (FUNCTION (-> array len))))
+             ,@body))))))
+
+(DEFMACRO letn^array ((arr len array &REST captures) &REST body)
+  (LET ((arr arr)
+        (len len)
+        (array array)
+        (body body))
+    (MULTIPLE-VALUE-BIND (_ full-type) (CICILI:TYPE-CHECK array :TYPEOF :std^array :MODIFIER :move)
+      (LET ((type-name (NTH 1 full-type)))
+        `(closure ((<> letn ,type-name ,(GENSYM)) :array (aof ,array) ,@captures)
+           (out auto)
+           (return (letn (((<> ,type-name item_t) * ,arr . (FUNCTION (-> array arr)))
+                          (size_t ,len . (FUNCTION (-> array len))))
+                     ,@body)))))))
+
+(DEFMACRO take^array ((arr len array &REST captures) &REST body)
+  (LET ((arr arr)
+        (len len)
+        (array array))
+    (MULTIPLE-VALUE-BIND (_ full-type) (CICILI:TYPE-CHECK array :TYPEOF :std^array :MODIFIER :move)
+      (LET ((type-name (NTH 1 full-type)))
+        `(closure ((<> take ,type-name ,(GENSYM)) :array ,array ,@captures)
+           (let (((<> ,type-name item_t) * ,arr . (FUNCTION ($ array arr)))
+                 (size_t ,len . (FUNCTION ($ array len))))
+             ,@body))))))
+
+(DEFMACRO taken^array ((arr len array &REST captures) &REST body)
+  (LET ((arr arr)
+        (len len)
+        (array array)
+        (body body))
+    (MULTIPLE-VALUE-BIND (_ full-type) (CICILI:TYPE-CHECK array :TYPEOF :std^array :MODIFIER :move)
+      (LET ((type-name (NTH 1 full-type)))
+        `(closure ((<> taken ,type-name ,(GENSYM)) :array ,array ,@captures)
+           (out auto)
+           (return (letn (((<> ,type-name item_t) * ,arr . (FUNCTION ($ array arr)))
+                          (size_t ,len . (FUNCTION ($ array len))))
+                     ,@body)))))))

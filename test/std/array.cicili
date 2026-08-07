@@ -1,0 +1,373 @@
+
+;;; test Cicili std array
+;;;
+;;; NO OPTIMISATION FLAGS HERE, deliberately. They live in config.lisp now, so
+;;; that one place decides what every target is built with and a test cannot
+;;; drift from the rest of the suite:
+;;;
+;;;   sbcl --script cicili.lisp           ./test/std/array.cicili   -g -O0
+;;;   sbcl --script cicili.lisp --release ./test/std/array.cicili   -O3 -falign-loops=32
+;;;
+;;; The nth benchmark at the bottom of this file is only meaningful under
+;;; --release; a -O0 build of it measures nothing but the debug codegen.
+(source "array.c"
+  (make :std #t
+        :compile #t :link ("-larray.o" "-o" "arr_test"))
+
+  (include <time.h>)
+  (include <limits.h>)
+
+  (var int N    . 1000000000) ; total operations
+  (var int STEP . 1000)       ; elements per epoch
+
+  (decl-array int)
+  (impl-array int)
+  ;; a second payload type, and a string one at that: the maybe machinery is
+  ;; shared (MAYBE_CTOR, NothingT) while JustT_char / Maybe_char are its own,
+  ;; so this proves `just' / `nothing' name no instantiation anywhere
+  (decl-array char)
+  (impl-array char)
+
+  (func ms_now ()
+        (out llong)
+        (let (((struct timespec) ts))
+          (timespec_get (aof ts) TIME_UTC)
+          (return (+ (* (cast llong ($ ts tv_sec)) 1000) (/ ($ ts tv_nsec) 1000000))))
+        (return 0))
+
+  (func bench_a_nth ()
+        (out long)
+        (letin ((v (new^array (cast (const int []) '{
+                                    0  1  2  3  4  5  6  7  8  9
+                                    10 11 12 13 14 15 16 17 18 19
+                                    20 21 22 23 24 25 26 27 28 29
+                                    30 31 32 33 34 35 36 37 38 39
+                                    40 41 42 43 44 45 46 47 48 49 })))
+                ) ; decls
+          
+          (let ((i64 sum . 0)
+                (llong t0 . #'(ms_now)))
+
+            ;; if try to call v instead of by ref causes
+            ;; using 'move var: #<SP @VAR v array_int move = #<SP @CALL #<SP @ATOM new_array_int_G127 @SYMBOL  {12022CEBF3}> = ...
+            ;; inside loop
+            ;; in call: ('(lambda* (<> nth array_int G145) ...
+            (for ((int i . 0)) (< i N) ((++ i))
+                 ;; (+= sum ((<> nth array) (% i 50) v :unchecked T)))
+                 (match ((<> nth array) (% i 50) v)
+                   (just val (+= sum (cof val)))))
+            
+            (let ((llong elapsed . #'(- (ms_now) t0)))
+              (printf "  (nth checksum: %lld)\n" sum)  ; after timer — forces liveness
+              (return elapsed)))))
+
+  ;; if uncomment function, compile-time error:
+  ;; non-copy struct assignment for: #<SP @PARAM arr array_int  {12037AAC33}>
+  ;; by: NIL
+  ;; inside: #<SP @FUNC a_func_copy_array void  {12037AA8D3}>
+  ;; (func a_func_copy_array ((array^int arr))
+  ;;       (format #t "length of copied array %zu\n" (len^array arr)))
+
+  ;; but allows to use 'move instance modifier
+  (func a_func_move_array ((array^int move arr))
+        (format #t "length of moved array %zu\n" (len^array arr))
+        ;; arr is 'move so no need to free here manually
+        ;; ((<> free array^int) (aof arr))
+        )
+
+  ;; and also allows 'ref instance modifier
+  ;; references are pointers
+  (func a_func_referenced_array ((array^int ref referred_arr))
+        (format #t "length of referenced array %zu\n" (len^array (cof referred_arr)))
+        ;; new ctor return type is 'copy but Cicili rejects to assign to a 'copy instance happend by 'cof
+        ;; non-copy struct assignment for: #<SP @UNARY * = #<SP @ATOM referred_arr @SYMBOL  {120235DD13}>  {120235DDC3}>
+        ;; by: #<SP @CALL #<SP @ATOM new_array_int_G124 @SYMBOL  {12023884F3}> = (#<SP @CAST const int #<SP @NIL  {12023885A3}> ...
+        ;; inside: #<SP @SET  {120235DC63}>
+        ;; (set (cof referred_arr) (new array (cast (const int []) '{ 1 2 3 })))
+        )
+
+  (main
+    (printf "sizeof %s: %zu\n" (symbol-name (<> array int)) (sizeof (<> array int)))
+
+    ;; example to ues new generic constructor
+    (let ((int * iarr . #'(alloc 2 (sizeof int))) ; alloc is auto free allocation
+          ;; try to get copy instance of a 'non-copy struct fails with:
+          ;; non-copy struct assignment for: #<SP @VAR copyarr array_int = #<SP @CAST array_int = #<SP @CALL #<SP @ATOM iarr @SYMBOL ...
+          ;; by: #<SP @CAST array_int = #<SP @CALL #<SP @ATOM iarr @SYMBOL  {120389DE53}> = (#<SP @ATOM 2 @NUMBER  {120389DF03}>) ...
+          ;; inside: #<SP @FUNC main int {(static . T)} {1203887623}>
+          ;; (array^int copyarr . #'(cast array^int { iarr 2 }))
+          ) ; decls
+      
+      ;; letin use 'move instance modifier for 'non-copy structs variables
+      (letin ((arr01 (new array (cast (const int []) '{ 1 2 3 4 5 })))
+              (arr02 (new array iarr 2))
+              ) ; decls
+
+        ;; (printf "arr01 len: %zu\n" (len^array arr01))       ; by access move
+        (printf "arr02 len: %zu\n" (len^array (aof arr02))) ; by ref
+
+        (a_func_referenced_array (aof arr02))
+        (a_func_referenced_array (aof arr02))
+        (a_func_move_array arr02)
+        ;; cause moving moved object error
+        ;; trying to move already moved var: #<SP @VAR arr02 array_int ref  {1205476273}>
+        ;; in call: (a_func_referenced_array (aof arr02))
+        ;; (a_func_referenced_array (aof arr02))
+        
+        ;; using unchecked does not consume arr01
+        (printf "print int array using Unsafe nth: ")
+        (for ((size_t i . 0)) (< i (len^array arr01)) ((++ i))
+             (printf "%d" (nth^array i arr01 :unchecked T)))
+        (putchar #\Newline)
+
+        ;; with default arr01 is consumed by nth.
+        ;; i deliberately runs two past the end, so the last two are 'nothing.
+        ;; 'match is the statement form and may be partial, but here both cases
+        ;; are listed to show the out of range answer.
+        (printf "print int array using Safe nth: ")
+        (for ((size_t i . 0)) (< i 7) ((++ i))
+             (match (nth^array i arr01)
+               (just val (printf "%d" (cof val)))
+               (nothing  (printf "-"))))
+        (putchar #\Newline)
+
+        ;; ---- headroom: cells past `len' read as zero -------------------
+        ;; (<> new array a) takes cap separately from len, and the cells
+        ;; between them are part of the contract. Nothing else in the suite
+        ;; passes cap > len, so without this the malloc/memset rewrite of `new'
+        ;; could have dropped the zeroing and stayed green.
+        (letin ((head (new^array (cast (const int []) '{ 7 8 }) 2 6)))
+          (printf "headroom: ")
+          (for ((size_t i . 0)) (< i 7) ((++ i))
+               (match (nth^array i head)
+                 (just c  (printf "%d" (cof c)))
+                 (nothing (printf "-"))))
+          (putchar #\Newline))
+
+        ;; ---- the same, over a string ---------------------------------
+        ;; (<> nth array char) answers a (<> Maybe char) built by the SAME
+        ;; (just v) / (nothing) forms that built the int one -- nothing in
+        ;; either front end mentions int or char
+        (letin ((str (new^array (cast (const char *) "cicili"))))
+          (printf "print char array using Safe nth: ")
+          (for ((size_t i . 0)) (< i 8) ((++ i))
+               (match (nth^array i str)
+                 (just c  (putchar (cof c)))
+                 (nothing (putchar #\-))))
+          (putchar #\Newline)
+
+          (printf "the same string through matchn: ")
+          (for ((size_t i . 0)) (< i 8) ((++ i))
+               (putchar (matchn (nth^array i str)
+                          (just c  (cof c))
+                          (nothing #\.))))
+          (putchar #\Newline))
+
+        ;; 'matchn is the expression form, so it has to cover every case or
+        ;; carry a default -- 'match/'matchn read the type, nothing is declared
+        (printf "the same run through matchn:    ")
+        (for ((size_t i . 0)) (< i 7) ((++ i))
+             (printf "%d" (matchn (nth^array i arr01)
+                            (just val (cof val))
+                            (nothing  0))))
+        (putchar #\Newline)
+        
+        (let ((i64 sum . 0))
+          (printf "letn sum1: %lld\n"
+            (letn^array (arr len arr01 :sum (aof sum))
+                        ;; arr01 will refer to movedin param in letn no local in main
+                        (cast void len)
+                        (for ((int i . 0)) (< i N) ((++ i))
+                             (+= (cof sum) (nth (% i 5) arr)))
+                        (cof sum)))
+
+          (take^array (arr len arr01 :sum (aof sum))
+                      ;; arr01 will refer to movedin param in letn no local in main
+                      (cast void len)
+                      (for ((int i . 0)) (< i N) ((++ i))
+                           (+= (cof sum) (nth (% i 5) arr)))
+                      ;; arr01 is 'move so it will be freed here deferred, no need to free manually
+                      ;; ((<> free array^int) (aof arr01))
+                      ;; but needs to free C array itself because it is not Cicili std type
+                      (printf "take sum2: %lld\n" (cof sum)))
+
+          ;; trying to move already moved var: #<SP @VAR arr01 array_int move = #<SP @CALL #<SP @ATOM new_array_int_G176 @SYMBOL ...
+          ;; in call: ('(lambda* (<> taken array_int G229)
+          ;; (printf "taken sum3: %lld\n"
+          ;;   (taken^array (arr len arr01 :sum (aof sum))
+          ;;     (cast void len)
+          ;;     (for ((int i . 0)) (< i N) ((++ i))
+          ;;          (+= (cof sum) (nth (% i 5) arr)))
+          ;;     (cof sum)))
+          ) ; let sum
+        
+        )) ; let
+
+    (printf "  nth (bounds-checked) %d times: %ld ms\n" N (bench_a_nth))
+
+    )) ; array.c
+
+;; sbcl --script cicili.lisp --syslog ./test/std/array.cicili
+;; ./test/std/arr_test
+
+;; sizeof array_int: 16
+;; NEW ARR: array_int 0x7f7f9c706080 5 of 5
+;; NEW ARR: array_int 0x7f7f9c705f60 2 of 2
+;; arr02 len: 2
+;; length of referenced array 2
+;; length of referenced array 2
+;; length of moved array 2
+;; FREE ARR: 0x7f7f9c705f60
+;; print int array using Unsafe nth: 12345
+;; print int array using Safe nth: 12345--
+;; the same run through matchn:    1234500
+;; letn sum1: 3000000000
+;; take sum2: 6000000000
+;; FREE ARR: 0x7f7f9c706080
+;; FREE ARR: 0x0
+;; FREE ARR: 0x0
+;; NEW ARR: array_int 0x7f7f9d004080 50 of 50
+;;   (nth checksum: 24500000000)
+;; FREE ARR: 0x7f7f9d004080
+;;   nth (bounds-checked) 1000000000 times: 504 ms
+
+
+;;;; ---------------------------------------------------------------------
+;;;; (nth) bench, full optimization
+;;;;
+;;;; Apple clang 21.0.0, x86_64, Intel i9-9880H (Coffee Lake). Five runs per
+;;;; flag set, INTERLEAVED round-robin rather than five-of-each: this laptop
+;;;; drifts ~10% as it warms, and back-to-back blocks would charge that drift
+;;;; to whichever flag set ran last.
+;;;;
+;;;;   flags on :compile and :link                       ms
+;;;;   -O3 -ffast-math                        568 562 561 563 561
+;;;;   -O3 -flto -ffast-math                  561 563 564 563 574
+;;;;   -O3 -flto -ffast-math -funroll-loops   561 561 561 562 560
+;;;;   -O3 -ffast-math -falign-loops=32       506 505 508 505 506   <- in use
+;;;;   -O3 -march=native -flto -ffast-math   2008 2008 2022 2009 2020
+;;;;
+;;;; What the numbers say:
+;;;;
+;;;; * -falign-loops=32 is worth 10%, and finding out why is the reason it is
+;;;;   here. Without it, the --syslog build measured ~508 ms and the plain build
+;;;;   ~562 -- the build with EXTRA printf calls was the faster one. No printf
+;;;;   is inside the timed region (NEW ARR runs before t0, FREE ARR after
+;;;;   elapsed), so it is not I/O, not a flush, not an interrupt. Both builds
+;;;;   emit a byte-for-byte identical 52-byte inner loop; only its address
+;;;;   differs, because the extra printf setup shifts everything after it:
+;;;;
+;;;;     plain   loop head 0x...730 = 16 mod 32 -> spans 3 32-byte windows
+;;;;     syslog  loop head 0x...780 =  0 mod 32 -> spans 2
+;;;;
+;;;;   The Skylake/Coffee Lake DSB (decoded uop cache) delivers from one
+;;;;   32-byte window per cycle, so the 3-window layout needs an extra
+;;;;   front-end cycle per iteration. Adding -falign-loops=32 to the plain
+;;;;   build reproduces the syslog time exactly (503 505 505), which is the
+;;;;   proof: same code, same data, alignment alone.
+;;;;
+;;;;   Keep the flag. Without it this benchmark reports whatever the linker
+;;;;   happened to do with byte offsets, and an unrelated edit anywhere earlier
+;;;;   in the file can move the result 10% with no change to `nth' at all.
+;;;; * -flto measures as noise: the benchmark is one translation unit, so there
+;;;;   is nothing cross-module left to inline. Not in the flags for that reason,
+;;;;   but it is free, and worth adding back the moment this target grows a
+;;;;   second object.
+;;;; * -funroll-loops is noise too: -O3 already unrolls this loop.
+;;;; * -march=native is 3.6x SLOWER, and that is not a typo. It lets clang
+;;;;   vectorize the loop, and the vectorized form loads through AVX2 gathers:
+;;;;
+;;;;     clang -O3 -ffast-math          -S array.c   ->  0 ymm/zmm operands
+;;;;     clang -O3 -march=native ...    -S array.c   -> 87, incl. 25 vpgatherdd
+;;;;
+;;;;   vpgatherdd on Coffee Lake is ~12-20 cycles of throughput for what eight
+;;;;   scalar loads do in a fraction of that, and the vectorized `% 50' costs a
+;;;;   vpmuludq/vpsrld pair on top. "Newer instructions" is not "faster code";
+;;;;   measure the flag, do not assume it.
+;;;; * -Ofast is not on the list because clang 21 deprecated it and this target
+;;;;   builds with -Werror. -O3 -ffast-math is its documented replacement.
+;;;;
+;;;; ---- Against Rust -------------------------------------------------
+;;;;
+;;;; TWO columns, because one of them is easy to quote and says nothing. When
+;;;; the element count is a compile-time constant BOTH compilers prove
+;;;; `index < len' and DELETE the check -- that column is a bounds-checked API
+;;;; compiling to an unchecked loop on both sides. Hide the length (a global
+;;;; here, black_box in api_bench) and the check actually runs:
+;;;;
+;;;;                            check ELIDED     check EXECUTED
+;;;;   Cicili (<> nth array int)    428 ms           957 ms
+;;;;   Rust   Vec::<i32>::get       469 ms          1126 ms
+;;;;
+;;;; Parity on the first, ~15% to Cicili on the second -- and the second is the
+;;;; one that means anything.
+;;;;
+;;;; It did not start there. With the maybe carrying a COPY of the element the
+;;;; checked column read 1544 against Rust's 1084, a 42% deficit. The fix was
+;;;; (decl-maybe ref a): the payload is now a POINTER INTO the array, so `nth'
+;;;; returns a tag and an address it already had, and `match' hands out an
+;;;; `a ref' to deref. The ctor tag -- the obvious suspect next to Rust's
+;;;; niche-encoded Option<&i32> -- turned out to cost nothing measurable. The
+;;;; whole 42% was copying the element out of the buffer on every hit.
+;;;;
+;;;; METHOD, and it is not optional here. Each language is quoted at its BEST
+;;;; over a sweep of code layouts, because on this benchmark layout is worth
+;;;; more than the languages differ by:
+;;;;
+;;;;   Cicili  -falign-loops= 16   560     <- clang's default
+;;;;                          32   505     <- in use, smallest that gets there
+;;;;                          64   505
+;;;;                         128   506
+;;;;   Rust    (five builds of identical source, see below)  532 .. 637
+;;;;
+;;;; Quoting either side from a single build would be quoting a coin flip.
+;;;; Rust was sampled MORE than Cicili (five layouts against four), so its 532
+;;;; is if anything the better-established minimum -- the 5% is a conservative
+;;;; number, not a flattering one.
+;;;;
+;;;; -falign-loops=32 is not a thumb on the scale. clang defaults loops to
+;;;; .p2align 4, sixteen bytes; rustc's LLVM already lands this loop on 32.
+;;;; The flag asks clang for the alignment Rust was getting for free. Verify
+;;;; it: `clang -O3 -S` any loop and read the .p2align.
+;;;;
+;;;; How the Rust spread was produced -- all of it from IDENTICAL benchmark
+;;;; source, none of it touching the loop:
+;;;;
+;;;;   532  vec_bench, default flags
+;;;;   559  api_bench, -align-all-nofallthru-blocks=5
+;;;;   582  api_bench, -align-loops=32
+;;;;   625  vec_bench, -align-all-nofallthru-blocks=5
+;;;;   637  api_bench, default flags
+;;;;
+;;;; Note the third and fourth lines: forcing alignment made Rust SLOWER in
+;;;; both cases. -align-all-nofallthru-blocks pads every block, not just
+;;;; loops, and the code growth costs more than the alignment wins. That is
+;;;; why no alignment flag is pinned on the Rust side: the fair thing is each
+;;;; toolchain at its own best, and Rust's best is its default.
+;;;;
+;;;; What this does NOT support: a precise figure. The honest claim is that a
+;;;; bounds-checked, match-destructured index through a generic std type costs
+;;;; nothing over Rust, and is a few percent under it. Anyone quoting "Cicili
+;;;; is 5% faster than Rust" as a headline is quoting inside the noise floor of
+;;;; their own measurement.
+;;;;
+;;;; And it is one operation. lib/std vector loses every row of the same
+;;;; comparison by 2x to 6x -- benchmark/std-vector-bench.cicili. Both are
+;;;; true; only one of them is a headline.
+;;;;
+;;;; Older numbers on this machine, kept for the record. They are NOT
+;;;; comparable to anything above -- the machine was in a cooler state then, so
+;;;; compare within a table, never across them:
+;;;;
+;;;;   Cicili 422 419 417 410 411   |  Rust 439 435 437 439 436  (opt-level 3)
+;;;;
+;;;; after nth moved from an inline struct '{ p v } to (<> maybe a),
+;;;; built with clang -O3 -ffast-math:
+;;;;   Cicili 430 431 428 428 432
+;;;;
+;;;; Building the maybe through the (<> just maybe int) FUNCTION instead of the
+;;;; struct literal costs 1692 ms -- (inline) emits __attribute__((weak)), which
+;;;; the compiler is not allowed to inline. This is why `just' and `nothing' are
+;;;; front-end macros that expand to the literal rather than wrappers over the
+;;;; back-end constructors.
+;;;; ---------------------------------------------------------------------

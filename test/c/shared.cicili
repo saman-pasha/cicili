@@ -1,0 +1,93 @@
+;;;; Cicili C clauses: the header target, guard, and import
+;;;
+;;; Two targets in one file. A `header' target produces a .h and is never
+;;; compiled or linked; the `source' target below includes it. This is also the
+;;; layout a multi-value return needs when it is not static: declared in the
+;;; header, defined in the source, so the generated __ciciliS_ struct is visible
+;;; at both ends.
+
+(header "shared.h"
+  (make)
+
+  ;; guard wraps everything in #ifndef / #define / #endif
+  (guard __TEST_C_SHARED_H__
+
+    (typedef int Weight)
+
+    (enum Level
+      (LOW . 1)
+      (MID)
+      (HIGH))
+
+    (struct Parcel
+      (member int id)
+      (member Weight weight))
+
+    ;; declarations only -- the bodies live in shared.c
+    (decl) (func parcel_make ((int id) (Weight w)) (out Parcel))
+    (decl) (func parcel_total ((const Parcel * ps) (int n)) (out Weight))
+    ;; a multi-value return, declared here and defined in the source
+    (decl) (func parcel_split ((Weight w)) (out '{ (Weight half) (Weight rest) }))))
+
+
+(source "shared.c"
+  (make :std #t :compile #t :link ("-lshared.o" "-o" "shared_test"))
+
+  ;; include the header this same file produced. A quoted name is a local
+  ;; header (#include "x"), an angled symbol is a system one (#include <x>).
+  (include "shared.h")
+
+  (func check ((const char * what) (llong got) (llong want))
+        (out int)
+        (if (== got want)
+            (block (printf "ok   %-32s %lld\n" what got) (return 0))
+          (block (printf "FAIL %-32s got %lld want %lld\n" what got want) (return 1)))
+        (return 1))
+
+  (func parcel_make ((int id) (Weight w))
+        (out Parcel)
+        (return (cast Parcel '{ id w })))
+
+  (func parcel_total ((const Parcel * ps) (int n))
+        (out Weight)
+        (let ((Weight total . 0))
+          (for ((int i . 0)) (< i n) ((++ i))
+               (+= total ($ (nth i ps) weight)))
+          (return total))
+        (return 0))
+
+  (func parcel_split ((Weight w))
+        (out '{ (Weight half) (Weight rest) })
+        (return '{ (/ w 2) (- w (/ w 2)) }))
+
+  (main
+    (let ((int bad . 0))
+
+      ;; ---- types and constants from the header ---------------------
+      (+= bad (check "typedef from header" (sizeof Weight) 4))
+      (+= bad (check "enum from header LOW"  LOW  1))
+      (+= bad (check "enum from header MID"  MID  2))
+      (+= bad (check "enum from header HIGH" HIGH 3))
+
+      ;; ---- a struct declared in the header -------------------------
+      (let ((Parcel p . #'(parcel_make 7 250)))
+        (+= bad (check "header struct id"     ($ p id)     7))
+        (+= bad (check "header struct weight" ($ p weight) 250)))
+
+      ;; ---- a function declared in the header, defined here ---------
+      (let ((Parcel ps [] . '{ '{ 1 100 } '{ 2 200 } '{ 3 300 } }))
+        (+= bad (check "function across header" (parcel_total ps 3) 600)))
+
+      ;; ---- a multi-value return split across header and source -----
+      (let (((typeof (parcel_split 1)) s))
+        (set s (parcel_split 101))
+        (+= bad (check "multi return half" ($ s half) 50))
+        (+= bad (check "multi return rest" ($ s rest) 51)))
+
+      (if (== bad 0)
+          (printf "shared: all ok\n")
+        (printf "shared: %d FAILED\n" bad))
+      (return bad))))
+
+;; sbcl --script cicili.lisp ./test/c/shared.cicili
+;; ./test/c/shared_test

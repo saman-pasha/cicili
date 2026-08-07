@@ -1,0 +1,59 @@
+;;;; Cicili declarations for <fcntl.h>
+;;;; Import from lib/std/prelude.cicili:  (import "./c/posix/fcntl.cicili")
+;;;; Requires in target: (include <fcntl.h>)  or  (:std #t)
+;;;;
+;;;; openat is declared here with its fixed 3-argument form (dirfd, pathname,
+;;;; flags); the optional mode_t mode argument taken when O_CREAT is set is
+;;;; not expressible without the variadic tail and is left to `open`.
+
+(DEFMACRO init-macro ()
+  `($$$
+     ;;; ---- open() flags ----
+     (typedef int O_RDONLY)
+     (typedef int O_WRONLY)
+     (typedef int O_RDWR)
+     (typedef int O_ACCMODE)
+     (typedef int O_APPEND)
+     (typedef int O_CREAT)
+     (typedef int O_EXCL)
+     (typedef int O_TRUNC)
+     (typedef int O_NONBLOCK)
+     (typedef int O_SYNC)
+     (typedef int O_DSYNC)
+     (typedef int O_NOFOLLOW)
+     (typedef int O_CLOEXEC)
+     (typedef int O_DIRECTORY)
+
+     ;;; ---- fcntl() commands ----
+     (typedef int F_DUPFD)
+     (typedef int F_GETFD)
+     (typedef int F_SETFD)
+     (typedef int F_GETFL)
+     (typedef int F_SETFL)
+     (typedef int F_GETLK)
+     (typedef int F_SETLK)
+     (typedef int F_SETLKW)
+     (typedef int FD_CLOEXEC)
+
+     ;;; ---- struct flock l_type values ----
+     (typedef int F_RDLCK)
+     (typedef int F_WRLCK)
+     (typedef int F_UNLCK)
+
+     ;;; ---- openat() special dirfd ----
+     (typedef int AT_FDCWD)
+
+     ;;; ---- types ----
+     (decl) (struct flock
+              (member short  l_type)
+              (member short  l_whence)
+              (member off_t  l_start)
+              (member off_t  l_len)
+              (member pid_t  l_pid))
+
+     ;;; ---- functions ----
+     (decl) (func open   ((const char * pathname) (int flags) ($$$)) (out int))
+     (decl) (func openat ((int dirfd) (const char * pathname) (int flags)) (out int))
+     (decl) (func creat  ((const char * pathname) (mode_t mode)) (out int))
+     (decl) (func fcntl  ((int fd) (int cmd) ($$$)) (out int))
+     ))

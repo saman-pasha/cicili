@@ -1,0 +1,52 @@
+;;;; Cicili declarations for the C17 standard library
+;;;;
+;;;; Aggregator. Import this from lib/std/prelude.cicili to make every C standard
+;;;; header's types, constants and functions visible to Cicili's type inference:
+;;;;
+;;;;     (import "./c/c.cicili")
+;;;;
+;;;; Or import only what you need, one header at a time:
+;;;;
+;;;;     (import "./c/stdio.cicili")
+;;;;     (import "./c/string.cicili")
+;;;;
+;;;; Nothing here emits C. The real declarations still come from the real header
+;;;; at compile time -- keep using (include <stdio.h>) or (:std #t) in your target.
+;;;;
+;;;; Order matters: stddef and stdint first, because every other file's types are
+;;;; expressed in terms of size_t / ptrdiff_t / intN_t.
+
+;;; foundation types
+(import "./stddef.cicili")
+(import "./stdint.cicili")
+(import "./stdbool.cicili")
+(import "./stdarg.cicili")
+
+;;; limits
+(import "./limits.cicili")
+(import "./float.cicili")
+
+;;; core library
+(import "./stdio.cicili")
+(import "./stdlib.cicili")
+(import "./string.cicili")
+(import "./ctype.cicili")
+(import "./errno.cicili")
+(import "./assert.cicili")
+
+;;; numerics
+(import "./math.cicili")
+(import "./fenv.cicili")
+(import "./inttypes.cicili")
+
+;;; time and locale
+(import "./time.cicili")
+(import "./locale.cicili")
+
+;;; control flow
+(import "./signal.cicili")
+(import "./setjmp.cicili")
+
+;;; wide characters
+(import "./wchar.cicili")
+(import "./wctype.cicili")

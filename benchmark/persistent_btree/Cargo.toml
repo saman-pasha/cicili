@@ -1,0 +1,10 @@
+[package]
+name = "immutable_bench"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+immutable-map = "0.1.2"
+
+[profile.release]
+opt-level = 3

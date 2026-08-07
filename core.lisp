@@ -1,12 +1,38 @@
 (in-package :cicili)
 
-(defvar *unaries* '(|+| |-| |++| |1+| |--| |1-| |~| |not| |cof| |aof| |stringize|))
+(defvar *unaries* '(|+| |-| |++| |1+| |--| |1-| |~| |not| |cof| |aof|))
 (defvar *operators* '(|+| |-| |*| |/| |%| |==| |!=| |>| |<| |>=| |<=| |^| |<<| |>>| |xor| |and| |or| |bitand| |bitor|))
-(defvar *assignments* '(|+=| |-=| |*=| |/=| |%=| |<<=| |>>=|))
-(defvar *modifiers* '(|&| |*| |**| |***|))
-(defvar *trait-regex* "'(?:\\w+?\\s)?(\\w+?)(?:\\[\\d*\\]|\\s\\*)?'.*'(?:\\w+?\\s)?(\\w+?)(?:\\[\\d*\\]|\\s\\*)?'")
+(defvar *assignments* '(|=| |+=| |-=| |*=| |/=| |%=| |<<=| |>>=|))
+;; `&' was already here and already emits a C++ reference -- (const T & x) is
+;; `const T & x' and always was. `&&' is the rvalue reference, and it joins the
+;; list rather than getting a wrapper of its own: a reference qualifies a type,
+;; which is exactly what this slot is for. That is why there is no cref/mref.
+(defvar *modifiers* '(|&| |&&| |*| |**| |***| |move| |ref|))
+;; C keywords that stand alone as a statement and name nothing in the symbol
+;; table, so 'specify-symbol-expr must emit them rather than resolve them
+(defvar *keywords* '(|break| |continue|))
+(defvar *attributes* '(|static| |decl|         |inline|  |register| |extern| |volatile|
+                       |auto|   |thread-local| |atomic|   |defer|   |non-copy|
+                       ;; C++ member functions. `const' is here and not in
+                       ;; *modifiers* because it qualifies the method, not a
+                       ;; type -- (const) before a method is `T f () const'.
+                       |virtual| |override| |const| |explicit| |noexcept|))
 (defvar *globals* (make-hash-table :test 'eql))
 
+;; Symbol Table
+(defparameter *symbols* (make-hash-table :test 'equal))
+;; Lex Id, push and pop to create id segments
+(defvar *lexemes-id* '())
+;; distinct type inference time macro expantion from real specifying time
+(defparameter *type-infer-time-var* nil)
+(defparameter *type-infer-time-lambda* nil)
+;; AST Table, keeps metadata attached to any ast object
+(defparameter *ast-table* (make-hash-table :test 'eq))
+;; keeps expanded version if any for any ast object
+(defparameter *expanded-table* (make-hash-table :test 'eq))
+
+
+;; cicili script path
 (defvar *cicili-path* (uiop/os:getcwd))
 ;; current output file
 (defvar *output* t)
@@ -22,6 +48,19 @@
 (defparameter *module-spec* nil)
 ;; current module spec during module compiling
 (defparameter *module-path* nil)
+
+;; The struct a C++ member function is being specified inside. It is NOT
+;; *struct-spec*: that one has to be nil while a method body is specified, or
+;; every local in the body gets keyed as `local/Struct' and the struct's own
+;; name stops resolving. This carries only what `this' needs -- its type.
+(defparameter *method-struct* nil)
+
+;; struct name -> its C++ base names, from (inherits ...). Flat and global on
+;; purpose: an inherited member is looked up while the derived struct is still
+;; being specified, from inside one of its own methods, and the scoped symbol
+;; table is the wrong instrument for that -- it answers by lexeme path, and the
+;; path in there is the method's.
+(defvar *struct-bases* (make-hash-table :test 'eql))
 ;; all object names inside modules
 (defvar *module-names* (make-hash-table :test 'equal))
 ;; current typedef spec during type inline struct compiling
@@ -32,18 +71,28 @@
 (defparameter *function-spec* nil)
 ;; current function out part is compiling
 (defparameter *function-outp* nil)
+;; current struct spec during struct compiling
+(defparameter *struct-spec* nil)
 ;; resolve current function
-(defparameter *resolve* t)
 ;; storing line num and col num of target's ASTs
 (defparameter *ast-lines* '())
 ;; storing the next hash table for *ast-lines*
 (defparameter *next-ast-line* (make-hash-table :test 'equal))
 ;; stores current resolver run number
+;; A first pass and a final pass. The first runs the C compiler and gathers its
+;; diagnostics; the final one is where a failure is reported, so it is shown with
+;; everything the first pass collected rather than part way through it.
+;;
+;; The pass loop in compile-ast runs (1- *ast-total-runs*) of these; the final
+;; one is the separate run after the loop, the one that writes the real
+;; <target>. --separate depends on the split: every pass in the loop goes to
+;; <target>.run<N>.<ext> and only the final one to <target>. So a failure leaves
+;; run1 holding the whole C that the compiler complained about, and <target>
+;; half written at the point the error was raised.
+(defparameter *ast-total-runs* 2)
 (defparameter *ast-run* 0)
 ;; stores total resolver run number
-(defparameter *ast-total-runs* 3)
 ;; stores whether resolver needs another run run number
-(defparameter *more-run* nil)                 
 ;; stores names symbols of all loaded macros 
 (defvar *macros* (make-hash-table :test 'equal))
 ;; whether cicili is during macro expantion
@@ -51,10 +100,40 @@
 ;; whether target uses :cpp key #t
 (defparameter *cpp* nil)
 
+;; pushes a segment to lexemes id path
+(defun *push* (id)
+  (let ((segment (if (symbolp id) (symbol-name id) id)))
+    (push segment *lexemes-id*)
+    id))
+;; pops a segment from lexemes id path
+(defun *pop* (spec)
+  (pop *lexemes-id*)
+  spec)
+;; puts id and its def to *symbols* by creating id from *lexemes-id*
+(defun *puts* (id def)
+  (let ((lex-id (if *struct-spec*
+                    (if (eq def *struct-spec*)
+                        (symbol-name id)
+                        (str:join "/" (append (list (substitute #\_ #\^ (symbol-name id)))
+                                              (list (symbol-name (name *struct-spec*))))))
+                    (str:join "/" (append (list (substitute #\_ #\^ (symbol-name id))) *lexemes-id*)))))
+    (setf (gethash lex-id *symbols*) def)))
+;; 'gets and 'gets-of helper get def by id from *symbols* by creating id from *lexemes-id*
+(defun *gets-from* (id lexemes-id &optional default)
+  (let ((lex-id (str:join "/" (append (list (substitute #\_ #\^ (symbol-name id))) lexemes-id))))
+    (let ((def (gethash lex-id *symbols*)))
+      (if def def (if lexemes-id (*gets-from* id (cdr lexemes-id) default) nil)))))
+;; *gets* front-end
+(defun *gets* (id &optional default)
+  (let* ((id (expand-macros id))
+         (lex-id (str:join "/" (append (list (substitute #\_ #\^ (symbol-name id))) *lexemes-id*))))
+    (let ((def (gethash lex-id *symbols*)))
+      (if def def (if *lexemes-id* (*gets-from* id (cdr *lexemes-id*) default) nil)))))
+
 ;; relative files from target directory or cicili directory
 ;; if begins with . (./ ../) from target path
-;;; or / (/usr/...) from unix path
-;;; or anything (lib/std/...) from cicili path
+;; or / (/usr/...) from unix path
+;; or anything (lib/std/...) from cicili path
 (defun find-import-file (file-name)
   (if (find (char file-name 0) "./")
       file-name
@@ -63,22 +142,28 @@
 ;; expands all defined macros
 ;; for type specification only
 (defun expand-macros (def)
-  (if (atom def) def
-      (let* ((func (car def))
-             (macro (if (symbolp func) (gethash (symbol-name func) *macros*) nil)))
-        (if (or macro (and (symbolp func) (macro-function func)))
-            (let ((tmp-expantion *macroexpand*)
-                  (id (gensym "ME:"))
-                  (result nil))
-              (when *debug-macroexpand* (format t "~A ~A~%" id def))
-              (setf *macroexpand* t)
-              (setq result (if macro (macroexpand `(,macro ,@(cdr def))) (macroexpand def)))
-              (when (and (listp result) (listp (cadr result)) (key-eq (caadr result) 'EVAL-WHEN)) ; outputs macro
-                (setq result (eval result)))
-              (when *debug-macroexpand* (format t "~A macro: ~A result: ~A~%" id macro result))
-              (setf *macroexpand* tmp-expantion)
-              result)
-            def))))
+  (let ((cached (gethash def *expanded-table*)))
+    (if cached
+        cached
+        (setf (gethash def *expanded-table*)
+              (if (atom def) def
+                  (let* ((func (car def))
+                         (macro (if (symbolp func) (gethash (symbol-name func) *macros*) nil)))
+                    (if (and (symbolp func) (key-eq func 'QUASIQUOTE))
+                        (eval (car (macroexpand `(,(cadr def) ,@(cddr def)))))
+                        (if (or macro (and (symbolp func) (macro-function func)))
+                            (let ((tmp-expantion *macroexpand*)
+                                  (id (gensym "ME:"))
+                                  (result nil))
+                              (when *debug-macroexpand* (format t "~A ~A~%" id def))
+                              (setf *macroexpand* t)
+                              (setq result (if macro (macroexpand `(,macro ,@(cdr def))) (macroexpand def)))
+                              (when (and (listp result) (listp (cadr result)) (key-eq (caadr result) 'EVAL-WHEN)) ; outputs macro
+                                (setq result (eval result)))
+                              (when *debug-macroexpand* (format t "~A macro: ~A result: ~A~%" id macro result))
+                              (setf *macroexpand* tmp-expantion)
+                              result)
+                            def))))))))
 
 (defparameter *macro-counter*
   (let ((count 100))
@@ -117,9 +202,6 @@
 		  when pos do (write-string replacement out)
 		  while pos)))
 
-(defmacro warn! (&rest rest)
-  `(format t ,@rest))
-
 (defparameter *line-num*
   (let ((count 1)
         (actual-count 1))
@@ -154,11 +236,68 @@
   (let* ((line-n  (funcall *line-num* 0))
          (col-n   (funcall *col-num* 0))
          (ast-key (ast-key< (+ line-n plus-line) (+ col-n plus-col))))
-    (when *debug* (display "M:" ast-key (gethash ast-key (nth 1 *ast-lines*)) #\NewLine))
+    (when *debug-ast* (display "M:" ast-key (gethash ast-key (nth 1 *ast-lines*)) #\NewLine))
     (gethash ast-key (nth 1 *ast-lines*))))
 
 (defun prev-ast-by-key< (ast-key)
   (gethash ast-key (nth 1 *ast-lines*)))
+
+;; Maps a C compiler message back to the Cicili form that wrote it.
+;;
+;; set-ast-line records the line and column every printed symbol lands on. After
+;; the first pass the compiler's `file:line:col: error: ...' lines are filed under
+;; those same positions, so on the final pass each spec asks: did a message land
+;; where I wrote last time? If one did, the error can name the Cicili form instead
+;; of leaving the user to map a C line number back by hand.
+;;
+;; KEY-NAME separates the several positions one spec may write (a symbol, a `.',
+;; an argument, ...). Returns the whole record filed at that position -- the
+;; message under 'info and the compile path under 'bt -- or NIL when no message
+;; landed there, and records this pass's position for the next one.
+;;
+;; Returning the record rather than the bare message is what lets ast-error<
+;; print the path: by the time it runs, the key has already been overwritten
+;; with this pass's position and the record could not be found again.
+(defun ast-info< (spec key-name)
+  (let ((record (prev-ast-by-key< (gethash key-name (keys spec)))))
+    (setf (gethash key-name (keys spec))
+          (ast-key< (funcall *line-num* 0) (funcall *col-num* 0)))
+    (when (getf record 'info) record)))
+
+;; The chain of compile- calls that was on the stack when this position was
+;; written, outermost last: the target, the function, the body, down to the form
+;; that printed the symbol the C compiler complained about. Depth is bounded and
+;; each frame is printed shallowly -- a whole spec tree per frame would bury the
+;; message it is there to explain.
+(defun compile-path< (bt &optional (depth 12))
+  (let ((*print-level* 3)      ; a whole spec tree per frame buries the message
+        (*print-length* 6)
+        (*print-pretty* nil)   ; one frame, one line
+        (shown 0))
+    (with-output-to-string (out)
+      (dolist (frame bt)
+        (when (and (listp frame) (symbolp (car frame))
+                   (let ((n (symbol-name (car frame))))
+                     (or (str:starts-with-p "COMPILE-" n)
+                         (str:starts-with-p "SPECIFY-" n))))
+          (incf shown)
+          (cond ((<= shown depth)
+                 ;; a frame often carries the same spec as both subject and
+                 ;; parent -- print it once
+                 (format out "~%    ~A~{ ~A~}" (car frame)
+                         (remove-duplicates
+                          (remove-if-not #'(lambda (a) (typep a 'sp)) (cdr frame))
+                          :test #'eq)))
+                ((= shown (1+ depth))
+                 (format out "~%    ..."))))))))
+
+;; signalled on the final pass, with the Cicili form the message belongs to
+;; and the compile path that produced it
+(defun ast-error< (what record spec)
+  (let ((path (compile-path< (getf record 'bt))))
+    (error (format nil "cicili: ~A: ~A~&  in: ~A~@[~&  compiled through:~A~]~%"
+                   what (replace-module-names (getf record 'info)) spec
+                   (when (string/= path "") path)))))
 
 ;; logs on last pushed hash table, first, current run
 (defmacro set-ast-line (out)
@@ -170,7 +309,7 @@
             (,col-n  (funcall *col-num* 0))
             (,item   (gethash (ast-key< ,line-n ,col-n) (nth 0 *ast-lines*)))
             (,result ,out))
-       (when *debug* (display "set-run" *ast-run* ">" (ast-key< ,line-n ,col-n) ""))
+       (when *debug-ast* (display "set-run" *ast-run* ">" (ast-key< ,line-n ,col-n) ""))
        (setf (getf ,item 'line-n) ,line-n)
        (setf (getf ,item 'col-n) ,col-n)
        (setf (getf ,item 'res) ,result)
@@ -178,35 +317,21 @@
          (setf (getf ,item 'bt)  (cdr (backtrace))))
        (setf (gethash (ast-key< ,line-n ,col-n) (nth 0 *ast-lines*)) ,item))))
 
+;; The stack from here up to COMPILE-TARGET, one list per frame -- it used to be
+;; appended flat, which lost the frame boundaries compile-path< reads. The head
+;; entry is the invocation itself; set-ast-line stores (cdr …), the frames alone.
+;; A trailing hash table is the globals table and is dropped: it is the same
+;; object in every frame and printing it buries everything else.
 (defun backtrace ()
-  (let ((bt (list (or *compile-file-truename* *load-truename*) (uiop:command-line-arguments))))
+  (let ((bt (list (list (or *compile-file-truename* *load-truename*)
+                        (uiop:command-line-arguments)))))
     (dolist (trace (nthcdr 1 (sb-debug:list-backtrace)))
-      (setq bt (append bt
-                       (if (hash-table-p (car (last trace)))
-                           (without-last trace)
-                           trace)))
+      (setq bt (append bt (list (if (hash-table-p (car (last trace)))
+                                    (without-last trace)
+                                    trace))))
       (when (eq (car trace) 'COMPILE-TARGET) (return t)))
     bt))
 
-;; (setf sb-ext:*invoke-debugger-hook*
-;;       #'(lambda (&rest args)
-;;           (format *error-output* ";~%")
-;;           (format *error-output* "; cicili error:~%")
-;;           (format *error-output* ";~%")
-;;           (format *error-output* "; ~A~%" (car args))
-;;           (format *error-output* ";~%")
-;;           (format *error-output* "; compiling ~S ~A ~%" (or *compile-file-truename* *load-truename*) (uiop:command-line-arguments))
-;;           (format *error-output* ";~%")
-;;           (format *error-output* "Backtrace:~%")
-;;           (let ((counter 0))
-;;             (setq *print-pretty* nil)
-;;             (dolist (trace (sb-debug:list-backtrace))
-;;               (format *error-output* "[~A] ~A~%" counter
-;;                       (if (hash-table-p (car (last trace))) (without-last trace) trace))
-;;               (when (eq (car trace) 'COMPILE-TARGET) (return t))
-;;               (setq counter (1+ counter)))
-;;             (setq *print-pretty* t))
-;;           (sb-ext:exit)))
 
 (defun print-trace ()
   (format t "~A" (sb-debug:list-backtrace)))
@@ -218,7 +343,10 @@
 
 (defun output (ctrl &rest rest)
   (let ((result (apply 'format (append (list nil ctrl) rest))))
-    (apply 'format (list *output* result))
+    ;; write it literally: `result' is finished text, not a control string. Passing
+    ;; it as one made any ~ in the generated C -- a "~/path" literal, a printf of
+    ;; a tilde -- blow up as an unknown format directive.
+    (format *output* "~A" result)
     (let* ((index (search *new-line* result :from-end t))
            (line-count (str:count-substring *new-line* result)))
       (funcall *line-num* line-count)
@@ -228,24 +356,149 @@
                     (funcall *col-num* 0 :reset 1 :actual t)
                     (funcall *col-num* (1- (- (length result) index)))))
           (funcall *col-num* (length result)))
-      (when *debug* (display result #\NewLine))
+      (when *debug-ast* (display result #\NewLine))
       result)))
+
+;; The package a top-level (IN-PACKAGE …) selects, or NIL if TARGET is not one.
+;; The designator is looked up as written first, because read-file reads with
+;; :preserve case -- (IN-PACKAGE :CL-USER) gives :|CL-USER|, which matches, while
+;; a lower case (in-package :cl-user) needs the upcase.
+(defun in-package-form< (target)
+  (when (and (listp target) (cdr target) (key-eq (car target) '|IN-PACKAGE|))
+    (let* ((name (cadr target))
+           (designator (if (symbolp name) (symbol-name name) (string name))))
+      (or (find-package designator)
+          (find-package (string-upcase designator))
+          (error (format nil "in-package: there is no package named ~A" designator))))))
+
+;; Reads every top-level form of a file.
+;;
+;; IN-PACKAGE is honoured HERE, as the forms are read, which is the only place it
+;; can mean anything: a symbol is interned when it is read, so switching packages
+;; after the whole file is in memory changes nothing. That is why the form used to
+;; fall through to compile-ast's `(eval target)' and appear to do nothing --
+;; everything after it had already been interned in the previous package.
+;;
+;; *package* is rebound for the duration, so the switch dies with the file, the
+;; same as CL:LOAD.
+;;;; ------------------------------------------------------------------
+;;;; Qualified C++ names, lexically
+;;;;
+;;;; torch::nn::Linear is one name and reads like one. It cannot BE one symbol:
+;;;; `:' is Common Lisp's package marker, and a .cicili file contains real
+;;;; Common Lisp -- :TYPEOF, :TEST, :REGEX -- so the character cannot be
+;;;; repurposed. Escaping with |…| is out too: this readtable makes `|' a
+;;;; constituent, because it is the bitwise-or operator.
+;;;;
+;;;; So the source is rewritten before READ sees it:
+;;;;
+;;;;   torch::nn::Linear   ->   ($$ torch nn Linear)
+;;;;
+;;;; which is lexical to write and a form to work with. A single `:' is left
+;;;; alone, so :cpp and :TEST still read as keywords -- only an identifier
+;;;; followed by `::' and another identifier is a qualified name.
+;;;; ------------------------------------------------------------------
+
+(defun ident-start< (c) (or (alpha-char-p c) (char= c #\_)))
+(defun ident-char<  (c) (or (alphanumericp c) (char= c #\_)))
+
+;; Is there an `::' at I that joins two identifiers?
+(defun qualifier-at< (text i n)
+  (and (< (+ i 2) n)
+       (char= (char text i) #\:)
+       (char= (char text (1+ i)) #\:)
+       (ident-start< (char text (+ i 2)))))
+
+(defun qualify-source< (text)
+  (let ((n (length text)))
+    (with-output-to-string (out)
+      (let ((i 0))
+        (loop while (< i n) do
+          (let ((c (char text i)))
+            (cond
+              ;; a string literal is text, not source
+              ((char= c #\")
+               (write-char c out) (incf i)
+               (loop while (and (< i n) (char/= (char text i) #\"))
+                     do (progn (when (char= (char text i) #\\)
+                                 (write-char (char text i) out) (incf i))
+                               (when (< i n) (write-char (char text i) out) (incf i))))
+               (when (< i n) (write-char (char text i) out) (incf i)))
+              ;; #\: is a character literal, and its colon is not a qualifier
+              ((and (char= c #\#) (< (1+ i) n) (char= (char text (1+ i)) #\\))
+               (dotimes (k (min 3 (- n i))) (write-char (char text (+ i k)) out))
+               (incf i 3))
+              ;; #| block comment |#
+              ((and (char= c #\#) (< (1+ i) n) (char= (char text (1+ i)) #\|))
+               (write-char c out) (incf i)
+               (loop while (and (< i n)
+                                (not (and (char= (char text i) #\|)
+                                          (< (1+ i) n)
+                                          (char= (char text (1+ i)) #\#))))
+                     do (progn (write-char (char text i) out) (incf i)))
+               (when (< (1+ i) n)
+                 (write-char (char text i) out) (write-char (char text (1+ i)) out))
+               (incf i 2))
+              ;; ; line comment
+              ((char= c #\;)
+               (loop while (and (< i n) (char/= (char text i) #\Newline))
+                     do (progn (write-char (char text i) out) (incf i))))
+              ;; an identifier, possibly qualified
+              ((ident-start< c)
+               (let ((start i))
+                 (loop while (and (< i n) (ident-char< (char text i))) do (incf i))
+                 (let ((head (subseq text start i)))
+                   (cond
+                     ;; NOT a C++ name: the prefix names a Lisp package, so this
+                     ;; is CICILI::EXPAND-MACROS and belongs to the reader. Copy
+                     ;; the whole token through untouched -- Lisp symbols carry
+                     ;; characters (`-', `*', `<') that a C++ name never does,
+                     ;; so the run is taken to the next delimiter rather than
+                     ;; scanned as identifiers.
+                     ((and (qualifier-at< text i n) (find-package head))
+                      (write-string head out)
+                      (loop while (and (< i n)
+                                       (not (find (char text i) " ()'`,;\"" :test #'char=))
+                                       (char/= (char text i) #\Newline)
+                                       (char/= (char text i) #\Tab))
+                            do (progn (write-char (char text i) out) (incf i))))
+                     ;; a qualified C++ name
+                     ((qualifier-at< text i n)
+                      (let ((parts (list head)))
+                        (loop while (qualifier-at< text i n)
+                              do (progn (incf i 2)
+                                        (let ((s i))
+                                          (loop while (and (< i n) (ident-char< (char text i))) do (incf i))
+                                          (push (subseq text s i) parts))))
+                        (format out "($$ ~{~A~^ ~})" (nreverse parts))))
+                     (t (write-string head out))))))
+              (t (write-char c out) (incf i)))))))))
+
+;; A file's text with qualified names folded. Everything that reads Cicili
+;; source goes through here -- read-file below, and the CL:LOAD in
+;; load-macro-file, which reads the same file a second time to evaluate its
+;; Lisp definitions and would otherwise see raw `::' and look for a package.
+(defun read-source-text< (path)
+  (qualify-source< (with-open-file (file path)
+                     (let ((s (make-string (file-length file))))
+                       (subseq s 0 (read-sequence s file))))))
 
 (defun read-file (path)
   (let ((targets '()))
-    (with-open-file (file path)
-	  (let ((*readtable* (copy-readtable)))
+    (with-input-from-string (file (read-source-text< path))
+	  (let ((*readtable* (copy-readtable))
+            (*package* *package*))
 		(setf (readtable-case *readtable*) :preserve)
-		(DO ((target (READ file) (READ file NIL NIL)))
+		(DO ((target (READ file NIL NIL) (READ file NIL NIL)))
 			((NULL target) T)
+          (let ((pack (in-package-form< target)))
+            (when pack (setq *package* pack)))
 		  (PUSH target targets))))
     (reverse targets)))
 
 (defun indent (lvl)
   (make-string (* lvl 2) :initial-element #\Space))
 
-;; (defun <> (name &rest body)
-;;   (intern (format nil "~{~A~^_~}" name body)))
 
 (defun make-generic-name (name generic)
   (format nil "~A ## _ ~A" name generic))
@@ -258,9 +511,86 @@
 
 (defun is-name (name) (symbolp name))
 
+;;; a::b::c -- the one symbol a qualified C++ name interns to. The `::' is kept
+;;; in the name rather than encoded away, so the symbol table holds the name a
+;;; C++ reader would write and the back end emits it by printing it.
+(defun qualified-name< (parts)
+  (intern (format nil "~{~A~^::~}"
+                  (mapcar #'(lambda (p) (if (symbolp p) (symbol-name p) p)) parts))))
+
+;; Does a module mangle the names inside it? In C it must: a module is only a
+;; naming convention there, and free-name is what keeps two modules' `init'
+;; apart. In C++ it must NOT -- the module emits a real `namespace' and the
+;; language does the separating, so the names stay as written and
+;; module::name refers to them.
+(defun module-mangles< () (and *module-path* (not *cpp*)))
+
+(defun qualified-form< (x)
+  (and (listp x) (cdr x) (symbolp (car x)) (string= (symbol-name (car x)) "$$")))
+
+;;; Drop the parts of a name a validator has no business rejecting: the `~' of
+;;; a destructor, and the `::' of a qualified name. Both are C++ only.
+;;; A template-id is a name too: (t<> std::vector int) is the single name
+;;; std::vector<int>, and (t<> item float) is the member name item<float>.
+;;; Folding it to a symbol is what qualified names get, and for the same
+;;; reasons -- it is emitted by printing, so it goes through set-ast-line; it
+;;; can be declared and resolved; and it composes, because a template argument
+;;; may itself be a template-id or a qualified name.
+(defun template-form< (x)
+  (and (listp x) (cdr x) (symbolp (car x)) (string= (symbol-name (car x)) "t<>")))
+
+(defun template-name< (parts)
+  (let ((head (car parts))
+        (args (cdr parts)))
+    (intern (format nil "~A<~{~A~^,~}>"
+                    (name-part< head)
+                    (mapcar #'name-part< args)))))
+
+;;; Cicili's primitive type names and their C spellings. The back end needs
+;;; this to emit a type; name-part< needs it because a primitive can appear
+;;; INSIDE a name -- (t<> item i64) is item<int64_t>, and printing the Cicili
+;;; spelling there produces an identifier C++ has never heard of.
+(defvar *c-type-names*
+  '((|uchar|  . "unsigned char")      (|ushort| . "unsigned short")
+    (|uint|   . "unsigned int")       (|ulong|  . "unsigned long")
+    (|llong|  . "long long")          (|ullong| . "unsigned long long")
+    (|i8|     . "int8_t")             (|u8|     . "uint8_t")
+    (|i16|    . "int16_t")            (|u16|    . "uint16_t")
+    (|i32|    . "int32_t")            (|u32|    . "uint32_t")
+    (|i64|    . "int64_t")            (|u64|    . "uint64_t")
+    (|i128|   . "__int128")           (|u128|   . "unsigned __int128")
+    (|real|   . "long double")        (|$$$|    . "...")))
+
+(defun c-type-name< (sym)
+  (cdr (assoc sym *c-type-names* :test #'key-eq)))
+
+(defun name-part< (p)
+  (cond ((template-form< p)  (symbol-name (template-name< (cdr p))))
+        ((qualified-form< p) (symbol-name (qualified-name< (cdr p))))
+        ((symbolp p)         (or (c-type-name< p) (symbol-name p)))
+        (t                   (format nil "~A" p))))
+
+;;; A qualified name is a NAME wherever a name is expected -- the head of a
+;;; struct, a func, a typedef -- and not only where a type is. Declaration
+;;; bindings are written that way: (decl) (struct torch::Tensor …).
+(defun name-form< (x)
+  (cond ((qualified-form< x) (qualified-name< (cdr x)))
+        ((template-form< x)  (template-name< (cdr x)))
+        (t x)))
+
+;;; either of the two name-forming shapes
+(defun name-form-p< (x) (or (qualified-form< x) (template-form< x)))
+
+(defun bare-name< (n)
+  (let ((n (if (and *cpp* (> (length n) 1) (char= (char n 0) #\~)) (subseq n 1) n)))
+    ;; `::' of a qualified name and `<,>' of a template-id are part of the name
+    ;; in C++ and there is nowhere else for them to live
+    (if *cpp* (remove-if (lambda (c) (find c ":<>,")) n) n)))
+
 (defun is-decl-name (name)
-  (let ((name (symbol-name name)))
+  (let ((name (bare-name< (symbol-name name))))
     (cond ((string= name "const") nil)
+          ((zerop (length name)) nil)
 	      ((not (find (char name 0) "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_")) nil)
 	      (t (progn
 	           (dotimes (i (- (length name) 1))
@@ -269,7 +599,7 @@
 	           t)))))
 
 (defun is-symbol (name)
-  (let ((name (symbol-name name)))
+  (let ((name (bare-name< (symbol-name name))))
     (cond ((string= name "const") nil)
 	      (t (progn
 	           (dotimes (i (length name))
@@ -306,8 +636,11 @@
 
 (defun free-name (path name)
   (let* ((r-name (format nil "~{~A~^/~}"
-                         (map 'list #'(lambda (x) (if (typep x 'sp) (symbol-name (name x))
-                                                      (symbol-name x)))
+                         (map 'list #'(lambda (x) (if (typep x 'sp)
+                                                      (symbol-name (name x))
+                                                      (if (stringp x)
+                                                          x
+                                                          (symbol-name x))))
                               (append path (if (listp name) name (list name))))))
          (m-name (intern
                   (format nil "cicili~A"
@@ -332,3 +665,16 @@
 
 (defun lvl-value (lvl)
   (if (listp lvl) (car lvl) lvl))
+
+(defmacro set-ast-obj (def spec)
+  (let ((def def))
+    `,spec))
+    ;; `(let ((saved-spec (gethash ,def *ast-table*)))
+    ;;    (if saved-spec
+    ;;        saved-spec
+    ;;        (setf (gethash ,def *ast-table*) ,spec)))))
+
+(defmacro set-ast-vals (def vals)
+  (let ((def def))
+    `,vals))
+    ;; `(let ((saved-spec (gethash ,def *ast-table*)))

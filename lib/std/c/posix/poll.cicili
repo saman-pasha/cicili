@@ -1,0 +1,35 @@
+;;;; Cicili declarations for <poll.h>
+;;;; Import from lib/std/prelude.cicili:  (import "./c/posix/poll.cicili")
+;;;; Requires in target: (include <poll.h>)  or  (:std #t)
+;;;;
+;;;; struct timespec is declared by time.cicili and sigset_t is declared by
+;;;; signal.cicili; both are only used (not repeated) here. `struct pollfd`
+;;;; has no C typedef, so it is referenced as `struct pollfd` at use sites,
+;;;; matching real C usage.
+
+(DEFMACRO init-macro ()
+  `($$$
+     ;;; ---- types ----
+     (typedef ulong nfds_t)
+
+     (decl) (struct pollfd
+              (member int   fd)
+              (member short events)
+              (member short revents))
+
+     ;;; ---- constants: events / revents bits ----
+     (typedef int POLLIN)
+     (typedef int POLLPRI)
+     (typedef int POLLOUT)
+     (typedef int POLLERR)
+     (typedef int POLLHUP)
+     (typedef int POLLNVAL)
+     (typedef int POLLRDNORM)
+     (typedef int POLLRDBAND)
+     (typedef int POLLWRNORM)
+     (typedef int POLLWRBAND)
+
+     ;;; ---- functions ----
+     (decl) (func poll  ((pollfd * fds) (nfds_t nfds) (int timeout)) (out int))
+     (decl) (func ppoll ((pollfd * restrict fds) (nfds_t nfds) (const timespec * restrict tmo_p) (const sigset_t * restrict sigmask)) (out int)) ; GNU/Linux extension
+     ))

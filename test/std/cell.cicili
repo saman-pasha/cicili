@@ -1,0 +1,62 @@
+
+;;; test Cicili std cell
+(source "cell.c"
+  (make :std #t
+        :compile #t :link ("-lcell.o" "-o" "cell_test"))
+
+  (decl-array int)
+  (impl-array int)
+  (decl-cell array^int)
+  (impl-cell array^int)
+  
+  (main
+    ;; new array call inside new cell call
+    ;; pass type which has (<> new type) and (<> free type) interface and args
+    (letin ((cell01 (new cell array (cast (int []) '{ 1 2 3 4 }))) 
+            (cell02 (new cell array (cast (int []) '{ 1 2 3 4 5 }))) 
+            ) ; decls
+      (let ((int aInt . 10)) ; to capture
+        
+        (let^cell (arr_ref cell01)
+                  (printf "1. cell01 arr len: %zu\n" (len^array arr_ref)))
+        
+        ;; default value used in case of DEAD cell
+        ;; -1 as default_value presented in letn scope
+        (printf "2. cell02 arr len + over: %zu\n"
+          (letn^cell (arr_ref cell02 -1 :over aInt)
+                     (+ (len^array arr_ref) over)))
+
+        (take^cell (arr cell01)
+                   (printf "3. cell01 arr len: %zu\n" (len^array arr)))
+
+        (taken^cell (arr cell02
+                         (printf "4. default value is strict\n"))
+                    (printf "4. cell02 arr len: %zu\n" (len^array arr)))
+
+        ;; type-check: invalid modifier value: (ref) of: (NIL cell_array_int move NIL NIL) for: cell02
+        ;; (free^cell cell02)
+        
+        )) ; letin
+    )) ; cell.c
+
+
+;; sbcl --script cicili.lisp --syslog ./test/std/cell.cicili
+;; ./test/std/cell_test
+
+;; NEW ARR: array_int 0x600002ad4050 4
+;; NEW CELL: 0x600002ad4040
+;; NEW ARR: array_int 0x6000028d11e0 5
+;; NEW CELL: 0x600002ad4060
+;; 1. cell01 arr len: 4
+;; 2. cell02 arr len + over: 15
+;; 3. cell01 arr len: 4
+;; FREE ARR: 0x600002ad4050
+;; FREE CELL: 0x600002ad4040
+;; FREE ARR: 0x0
+;; 4. default value is strict
+;; 4. cell02 arr len: 5
+;; FREE ARR: 0x6000028d11e0
+;; FREE CELL: 0x600002ad4060
+;; FREE ARR: 0x0
+;; FREE CELL: 0x0
+;; FREE CELL: 0x0

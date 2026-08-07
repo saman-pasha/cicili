@@ -1,0 +1,49 @@
+;;;; Cicili declarations for libtorch -- torch::optim
+;;;;
+;;;; Requires in target: (include <torch/torch.h>) and a C++ target (:cpp #t).
+;;;; Nothing here emits C++. See tensor.cicili for what that means.
+;;;;
+;;;; An optimiser owns the training step, and the shape of the loop it belongs
+;;;; to is the same for all of them:
+;;;;
+;;;;   (($ opt zero_grad))
+;;;;   (letin* ((loss (torch::mse_loss out target)))
+;;;;     (($ loss backward))
+;;;;     (($ opt step)))
+
+(DEFMACRO init-macro ()
+  `($$$
+
+     (decl) (struct torch::optim::Optimizer
+              (method step      ())
+              (method zero_grad ()))
+
+     ;;; constructed from a module's parameters and a learning rate:
+     ;;;   (letin* ((opt (torch::optim::SGD (($ net parameters)) 0.1)))
+     (decl) (struct torch::optim::SGD (inherits torch::optim::Optimizer)
+              (method step      ())
+              (method zero_grad ()))
+
+     (decl) (struct torch::optim::Adam (inherits torch::optim::Optimizer)
+              (method step      ())
+              (method zero_grad ()))
+
+     (decl) (struct torch::optim::AdamW (inherits torch::optim::Optimizer)
+              (method step      ())
+              (method zero_grad ()))
+
+     ;;; ---- learning-rate schedules ---------------------------------
+     ;;; A scheduler holds a REFERENCE to the optimiser and changes its learning
+     ;;; rate when stepped. It must therefore not outlive the optimiser, and it
+     ;;; is stepped once per EPOCH -- stepping it per batch is the classic way
+     ;;; to decay a learning rate to nothing in one pass.
+     (decl) (struct torch::optim::StepLR
+              (method step ()))
+
+     ;;; the options each takes. Declared opaque: they are built with libtorch's
+     ;;; own chained setters, which are member functions returning *this and are
+     ;;; reached through the object rather than declared one by one here.
+     (decl) (struct torch::optim::SGDOptions)
+     (decl) (struct torch::optim::AdamOptions)
+
+     ))

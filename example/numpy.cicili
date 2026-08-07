@@ -1,0 +1,108 @@
+;;;; numpy from Cicili, through its C API
+;;;;
+;;;; A C target -- numpy's API is C, and this needs no C++ at all.
+;;;;
+;;;;     sbcl --script cicili.lisp ./example/numpy.cicili
+;;;;     ./example/numpy_example
+;;;;
+;;;; The paths below are this machine's. Ask the interpreter for yours:
+;;;;
+;;;;     python3 -c "import sysconfig;print(sysconfig.get_paths()['include'])"
+;;;;     python3 -c "import numpy;print(numpy.get_include())"
+;;;;     python3 -c "import sysconfig;print(sysconfig.get_config_var('LIBDIR'))"
+;;;;
+;;;; WHAT IT SHOWS, in order:
+;;;;
+;;;;   1. the interpreter and every reference are scoped with letin*, so
+;;;;      Py_Finalize and Py_DecRef run on every path out -- including the
+;;;;      early return when numpy fails to import
+;;;;   2. an array made in Cicili is a REAL numpy array: numpy.mean is called
+;;;;      on it and answers what it should
+;;;;   3. a C buffer is wrapped WITHOUT COPYING, and writing through the C
+;;;;      pointer changes what Python sees
+
+(source "numpy_example.c"
+  (make :compile ("-O2" "-DNPY_NO_DEPRECATED_API=NPY_1_7_API_VERSION"
+                  "-I/usr/local/opt/python@3.14/Frameworks/Python.framework/Versions/3.14/include/python3.14"
+                  "-I/usr/local/opt/numpy/lib/python3.14/site-packages/numpy/_core/include"
+                  "-c" "numpy_example.c")
+        :link ("-lnumpy_example.o"
+               "-L/usr/local/opt/python@3.14/Frameworks/Python.framework/Versions/3.14/lib"
+               "-lpython3.14" "-o" "numpy_example"))
+
+  ;; Python.h first, always -- it sets feature macros the system headers read
+  (include <Python.h>)
+  (include <numpy/arrayobject.h>)
+  (include <stdio.h>)
+
+  (import "lib/python/python.cicili")
+
+  ;; emits py_open, py_finalize and py_decref, which is what letin* binds to
+  (python-support)
+
+  (var int bad . 0)
+
+  (func check ((const char * what) (double got) (double want))
+        (if (< (? (> (- got want) 0.0) (- got want) (- want got)) 0.0001)
+            (printf "ok   %-34s %.4f\n" what got)
+          (block (printf "FAIL %-34s got %.4f want %.4f\n" what got want)
+                 (++ bad))))
+
+  ;;; Call numpy.NAME(a) and answer the result as a double.
+  ;;;
+  ;;; The reference dance is the interesting part and the reason the binding
+  ;;; annotates every function with what it does to the count:
+  ;;; PyTuple_SetItem STEALS, so `a' is increfed first -- without that, the
+  ;;; tuple's decref and letin*'s would both fire on one reference.
+  (func numpy_call ((const char * name) (PyObject * a)) (out double)
+        (letin* ((mod (PyImport_ImportModule "numpy") py_decref))
+          (when (not mod) (return -1.0))
+          (letin* ((fn (PyObject_GetAttrString mod name) py_decref))
+            (when (not fn) (return -1.0))
+            (letin* ((args (PyTuple_New 1) py_decref))
+              (Py_IncRef a)                          ; SetItem is about to steal it
+              (PyTuple_SetItem args 0 a)
+              (letin* ((res (PyObject_CallObject fn args) py_decref))
+                (when (not res) (block (PyErr_Print) (return -1.0)))
+                (return (PyFloat_AsDouble res)))))))
+
+  (main
+    ;; Py_Finalize runs at the end of this binding -- and on the return below
+    (letin* ((py (py_open) py_finalize))
+      (when (< py 0)
+        (block (PyErr_Print) (printf "numpy did not import\n") (return 1)))
+
+      ;; ---- 1. an array numpy made, filled from C ---------------------
+      (letin* ((o (PyArray_SimpleNew 2 (npdims 2 3) NPY_FLOAT64) py_decref))
+        (let ((PyArrayObject * a . #'(cast (PyArrayObject *) o)))
+          (let ((double * d . #'(cast (double *) (PyArray_DATA a))))
+            (for ((int i . 0)) (< i 6) ((++ i)) (set (nth i d) (cast double (+ i 1))))
+
+            (check "ndim"        (cast double (PyArray_NDIM a))  2.0)
+            (check "size"        (cast double (PyArray_SIZE a))  6.0)
+            (check "rows"        (cast double (PyArray_DIM a 0)) 2.0)
+            (check "cols"        (cast double (PyArray_DIM a 1)) 3.0)
+            (check "itemsize"    (cast double (PyArray_ITEMSIZE a)) 8.0)
+            (check "contiguous"  (cast double (PyArray_IS_C_CONTIGUOUS a)) 1.0)
+
+            ;; ---- 2. and numpy agrees it is one of its own -------------
+            ;; 1..6 sums to 21 and averages 3.5
+            (check "numpy.sum  of 1..6"  (numpy_call "sum" o)  21.0)
+            (check "numpy.mean of 1..6"  (numpy_call "mean" o)  3.5)
+            (check "numpy.max  of 1..6"  (numpy_call "max" o)   6.0))))
+
+      ;; ---- 3. wrapping a C buffer, no copy ---------------------------
+      (let ((double buf [ 4 ]))
+        (for ((int i . 0)) (< i 4) ((++ i)) (set (nth i buf) 10.0))
+        (letin* ((w (PyArray_SimpleNewFromData 1 (npdims 4) NPY_FLOAT64 (cast (void *) buf))
+                    py_decref))
+          (check "wrapped mean" (numpy_call "mean" w) 10.0)
+          ;; writing through the C pointer, not through numpy
+          (set (nth 0 buf) 30.0)
+          ;; 30 + 10 + 10 + 10 = 60, mean 15 -- so it is the same memory
+          (check "same memory after C write" (numpy_call "mean" w) 15.0)))
+
+      (if (== bad 0)
+          (printf "numpy: all ok\n")
+        (printf "numpy: %d FAILED\n" bad))
+      (return bad))))

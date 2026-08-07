@@ -1,0 +1,119 @@
+;;;; test Cicili std maybe -- the `just' / `nothing' front ends
+;;; The back-end constructors ((<> just T) v) always worked; what is under test
+;;; here is that the front ends name no instantiation, take their type from the
+;;; slot they land in, and expand to a struct literal rather than a call.
+
+(source "maybe.c"
+  (make :std #t :compile #t :link ("-lmaybe.o" "-o" "maybe_test"))
+
+  ;; (decl-array int) pulls in (decl-maybe int); asking for it again is
+  ;; harmless now that each instantiation sits behind its own guard
+  (decl-array int)     (impl-array int)
+  (decl-maybe int)     (impl-maybe int)
+  (decl-maybe size_t)  (impl-maybe size_t)
+  (decl-maybe double)  (impl-maybe double)
+
+  (func check ((const char * what) (llong got) (llong want))
+        (out int)
+        (if (== got want)
+            (block (printf "ok   %-34s %lld\n" what got) (return 0))
+          (block (printf "FAIL %-34s got %lld want %lld\n" what got want) (return 1)))
+        (return 1))
+
+  ;; ---- the shape the front ends exist for -----------------------------
+  ;; both constructors are brace lists typed by the return slot; neither
+  ;; spells out (<> Maybe size_t) and neither looks it up
+  (func (<> find array int) ((int needle) ((<> array int) ref array))
+        (out (<> Maybe size_t))
+        (for ((size_t i . 0)) (< i (-> array len)) ((1+ i))
+          (when (== (nth i (-> array arr)) needle)
+            (return (just i))))
+        (return (nothing)))
+
+  ;; a bare 0 would infer as int, but nothing is inferred: the slot is a
+  ;; Maybe_size_t and the literal is initialised into it, no cast needed
+  (func zero ()
+        (out (<> Maybe size_t))
+        (return (just 0)))
+
+  ;; a second instantiation in the same file, to prove one pair of front ends
+  ;; serves every payload type
+  (func half ((double x))
+        (out (<> Maybe double))
+        (when (< x 0) (return (nothing)))
+        (return (just (/ x 2))))
+
+  ;; a closure has its own return slot, so the brace list inside one is typed
+  ;; by the closure -- a Maybe_int here, not the enclosing Maybe_size_t
+  (func nested ()
+        (out (<> Maybe size_t))
+        (let ((int n . #'(matchn (closure ((<> cl inner))
+                                   (out (<> Maybe int))
+                                   (return (nothing)))
+                           (just v v)
+                           (nothing -7))))
+          (when (== n -7) (return (just (cast size_t 1))))
+          (return (nothing))))
+
+  (main
+    (let ((int bad . 0))
+      (letin ((arr (new^array (cast (const int []) '{ 3 5 7 9 }))))
+
+        ;; ---- found / not found ------------------------------------------
+        (+= bad (check "just, through match"
+                  (matchn ((<> find array int) 7 (aof arr)) (just at (cast llong at)) (nothing -1))
+                  2))
+        (+= bad (check "nothing, through match"
+                  (matchn ((<> find array int) 8 (aof arr)) (just at (cast llong at)) (nothing -1))
+                  -1))
+
+        ;; the statement form of match sees the same two cases
+        (let ((int hits . 0))
+          (match ((<> find array int) 3 (aof arr))
+            (just    at (block (cast void at) (++ hits)))
+            (nothing    (-- hits)))
+          (match ((<> find array int) 4 (aof arr))
+            (just    at (block (cast void at) (++ hits)))
+            (nothing    (-- hits)))
+          (+= bad (check "match statement, both arms" hits 0)))
+
+        ;; ---- the slot decides, not the value ----------------------------
+        ;; (just 0) in a Maybe_size_t function is a just carrying 0 -- the very
+        ;; case a sentinel return cannot express
+        (+= bad (check "just 0 is present"
+                  (matchn (zero) (just v (cast llong v)) (nothing -1)) 0))
+
+        ;; ---- a second instantiation --------------------------------------
+        (+= bad (check "just, maybe double"
+                  (matchn (half 9.0) (just v (cast llong (* v 100))) (nothing -1)) 450))
+        (+= bad (check "nothing, maybe double"
+                  (matchn (half -1.0) (just v (cast llong (* v 100))) (nothing -1)) -1))
+
+        ;; ---- the innermost slot wins --------------------------------------
+        (+= bad (check "nothing inside a closure"
+                  (matchn (nested) (just v (cast llong v)) (nothing -1)) 1))
+
+        ;; ---- a declaration is a slot too -----------------------------------
+        ;; no return in sight; the declared type of `m' is what types the list.
+        ;; It needs #' like any other call in a var value: the dotted cdr of a
+        ;; variable form splices, so a bare (just 42) would arrive as two
+        ;; elements rather than one macro call.
+        (let (((<> Maybe int) m . #'(just 42)))
+          (+= bad (check "just in a let, from the slot"
+                    (matchn m (just v (cast llong v)) (nothing -1)) 42)))
+
+        ;; the back ends are still the way to name an instantiation directly
+        (+= bad (check "back-end just still works"
+                  (matchn ((<> just int) 5) (just v (cast llong v)) (nothing -1)) 5))
+        (+= bad (check "back-end nothing still works"
+                  (matchn ((<> nothing int)) (just v (cast llong v)) (nothing -1)) -1))
+
+        ) ; letin
+
+      (if (== bad 0)
+          (printf "maybe: all ok\n")
+        (printf "maybe: %d FAILED\n" bad))
+      (return bad))))
+
+;; sbcl --script cicili.lisp ./test/std/maybe.cicili
+;; ./test/std/maybe_test

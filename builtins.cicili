@@ -1,0 +1,632 @@
+;;;; builtins includes many useful macros for cicili
+
+(DEFUN import (file-name &OPTIONAL pack init-args)
+  (CICILI:LOAD-MACRO-FILE file-name pack init-args (OR *LOAD-TRUENAME* *COMPILE-FILE-TRUENAME*)))
+
+;;; A `cicili' form inside a macro file -- targets compiled while the file is
+;;; loaded -- is compiled by load-macro-file's own walk over the forms, so there
+;;; is nothing to do here. It needs a Lisp definition all the same: a macro file
+;;; is also CL:LOADed, which EVALUATES every top-level form, and without one
+;;; (cicili (header …)) is a call to an undefined function whose arguments get
+;;; evaluated -- `#f' reads as the symbol `false', and the load died with "the
+;;; variable false is unbound". `import' and `generic' are the other two Cicili
+;;; forms allowed at that level, and both are real Lisp definitions for the same
+;;; reason; this was the only one missing.
+(DEFMACRO cicili (&REST targets)
+  (DECLARE (IGNORE targets))
+  NIL)
+
+(DEFMACRO make (&KEY (std '#f) (cpp '#f) (haskell '#f) (compile '#f) (link '#f))
+  (LET ((std std)
+        (cpp cpp)
+        (compile compile)
+        (link link))
+    `(,@(IF std (LIST ':std std) (LIST '#f))
+        ,@(IF std (LIST ':cpp cpp) (LIST '#f))
+        ,@(IF haskell (LIST ':haskell haskell) (LIST '#f))
+        ,@(IF compile (LIST ':compile compile) (LIST '#f))
+        ,@(IF link (LIST ':link link) (LIST '#f)))))
+
+;;; main simple forms
+(DEFMACRO main (&REST body)
+  `(func main () (out int) ,@body))
+
+(DEFMACRO main* (&REST body)
+  `(func main ((int argc) (char * argv [])) (out int) ,@body))
+
+;; 4 levels debugging facility
+(DEFMACRO syslog! (&REST body)
+  (IF (> CICILI::*DEBUG-WARNINGS* 3)
+      `(progn ,@body)
+      `($$$ )))
+
+;; 3 levels debugging facility
+(DEFMACRO debug! (&REST body)
+  (IF (> CICILI::*DEBUG-WARNINGS* 2)
+      `(progn ,@body)
+      `($$$ )))
+
+(DEFMACRO warn! (&REST body)
+  (IF (> CICILI::*DEBUG-WARNINGS* 1)
+      `(progn ,@body)
+      `($$$ )))
+
+(DEFMACRO info! (&REST body)
+  (IF (> CICILI::*DEBUG-WARNINGS* 0)
+      `(progn ,@body)
+      `($$$ )))
+
+;; prints everythings to stderr instead of stdout temporary
+(DEFMACRO error! (&REST body)
+  `(letn ((auto tmp_stdout . stdout))
+     (set stdout stderr)
+     ,@body
+     (set stdout tmp_stdout)))
+
+(DEFMACRO analyze! (name pointer)
+  (IF (AND CICILI::*DEBUG-ANALYZE*
+        (NOT (STR:CONTAINSP"__h_StackItem" (SYMBOL-NAME name))))
+      `(__h_stack_push ,pointer)
+      pointer))
+
+(DEFMACRO analyze-data! (&REST body)
+  (IF CICILI::*DEBUG-ANALYZE*
+      `(let ((char * __h_stack_buffer . #'(calloc 2048 (sizeof char)))
+             (CFile __h_stack_out . #'(fmemopen __h_stack_buffer 2048 "w+")))
+         ,@body
+         (fclose __h_stack_out)
+         (__h_stack_push_data __h_stack_buffer)
+         (__h_stack_push_separator))
+      `($$$ )))
+
+(DEFMACRO <> (&REST body)
+  (INTERN (FORMAT NIL "~{~A~^^~}"
+                  (MAPCAR #'(LAMBDA (reso)
+                              (IF (SYMBOLP reso)
+                                  reso
+                                  (MACROEXPAND reso)))
+                          body))))
+
+;;; letin* -- for values whose destruction is NOT (<> free TYPE).
+;;;
+;;;   (letin* ((v expr))        no destructor at all
+;;;   (letin* ((v expr dtor))   `dtor' is called with the value at scope exit
+;;;
+;;; `letin' infers the destructor from the type and calls (<> free TYPE). That
+;;; is the right answer for a Cicili type and the wrong one for a C++ object,
+;;; which already has a destructor and runs it itself at scope exit -- calling
+;;; anything of our own on top would destroy it twice. So a C++ object is bound
+;;; with the two-element form and C++ owns its lifetime, which is the only
+;;; arrangement that works with a library like libtorch where every type is
+;;; RAII and every call hands back a temporary.
+;;;
+;;;   (letin* ((x (t<> torch::randn '{ 2 3 })))     ; ~Tensor runs at scope exit
+;;;     (t<> std::cout << x))
+;;;
+;;; The three-element form is for the other case: a C value whose cleanup is
+;;; not the type's `free' -- a FILE, a descriptor, a handle from a C library.
+;;; THE DESTRUCTOR TAKES THE ADDRESS OF THE VARIABLE, not the variable: this
+;;; compiles to __attribute__((__cleanup__(f))) and that is what the attribute
+;;; passes. So it is `void d (T ** x)' for a T *, and a C function that takes
+;;; the handle itself needs one line of adaptation:
+;;;
+;;;   (func closefile ((FILE ** f)) (when (cof f) (fclose (cof f))))
+;;;   (letin* ((f (fopen "x" "r") closefile))
+;;;     ...)
+;;;
+;;; The type is `auto', which is C++'s `auto' in a C++ target and
+;;; __auto_type in a C one, so neither has to name the type twice.
+(DEFMACRO letin* (var-list &REST body)
+  `(letn ,(APPLY 'APPEND
+                 (MAP 'LIST #'(LAMBDA (var)
+                                (WHEN (OR (NOT (LISTP var)) (< (LENGTH var) 2) (> (LENGTH var) 3))
+                                  (ERROR (FORMAT NIL "wrong letin* variable definition: ~A -- want (name init) or (name init destructor)" var)))
+                                (IF (= (LENGTH var) 2)
+                                    `((auto ,(CAR var) . (FUNCTION ,(CADR var))))
+                                    `((defer () ,(CADDR var)) (auto ,(CAR var) . (FUNCTION ,(CADR var))))))
+                       var-list))
+     ,@body))
+
+;; accepts all variables, inferes type to find destructor
+(DEFMACRO letin (var-list &REST body)
+  `(letn ,(APPLY 'APPEND
+                 (MAP 'LIST #'(LAMBDA (var)
+                                (WHEN (/= (LENGTH var) 2)
+                                  (ERROR (FORMAT NIL "wrong letin variable definition: ~A" var)))
+                                (MULTIPLE-VALUE-BIND (type full-type root-type) (CICILI:INFER-TYPE (CADR var))
+                                  (LET ((type-name (NTH 1 full-type)))
+                                    (UNLESS (SYMBOLP (NTH 1 full-type))
+                                      (MULTIPLE-VALUE-SETQ (type full-type) (CICILI:INFER-TYPE-SPEC "" (NTH 1 full-type)))
+                                      (SETQ type-name (NTH 1 full-type)))
+                                    (IF (NTH 2 full-type) ; check has any modifier
+                                        `((defer () (<> free ,type-name))
+                                          (,@type ,(CAR var) . (FUNCTION ,(CADR var))))
+                                        (IF (CICILI:IS-NON-COPY (NTH 1 full-type)) ; define non-copy instances as 'move
+                                            `((defer () (<> free ,type-name))
+                                              (,@type move ,(CAR var) . (FUNCTION ,(CADR var))))
+                                            `((defer () (<> free ,type-name))
+                                              (,@type ,(CAR var) . (FUNCTION ,(CADR var)))))))))
+                      var-list))
+     ,@body))
+
+;;; SUBST replaces a node with another node; it cannot replace one with NOTHING,
+;;; because there is no value that means "and now I am absent" -- NIL is a
+;;; perfectly good replacement, not an omission. This deletes instead, and
+;;; handles dotted lists, which matter here: (int x . 0) is an ordinary form.
+(DEFUN subst-out< (old tree)
+  (LABELS ((walk (node)
+             (IF (ATOM node)
+                 (IF (EQL old node) NIL node)
+                 (LET ((tail (walk (CDR node))))
+                   (IF (EQL old (CAR node))
+                       tail
+                       (CONS (walk (CAR node)) tail))))))
+    (walk tree)))
+
+;;; A generic's LEADING parameters may be omitted, and an omitted one expands to
+;;; nothing at all rather than to NIL. That is what lets one generic serve
+;;;
+;;;   (decl-maybe int)        a is int,  mod absent -> (member a value)
+;;;   (decl-maybe ref int)    a is int,  mod is ref -> (member a ref value)
+;;;
+;;; from a single (mod a) parameter list, and it is why the names stay distinct:
+;;; (<> Maybe mod a) interns as Maybe_int in the first and Maybe_ref_int in the
+;;; second, so the two instantiations cannot collide.
+;;;
+;;; A generic parameter whose name begins with `mod' is a MODIFIER SLOT: the
+;;; caller may fill it or leave it out, and leaving it out deletes the symbol
+;;; from the body entirely rather than substituting NIL -- see subst-out< above.
+;;;
+;;; Arity alone cannot place those once there are two of them. (decl-either int
+;;; long) against (mod-e e mod-a a) supplies two arguments for four slots, and
+;;; no counting rule says which pair was omitted. So placement is driven by the
+;;; ARGUMENT instead: a token that IS a modifier claims a modifier slot,
+;;; anything else claims a type slot. A generic with no `mod' parameters behaves
+;;; exactly as it always did -- one argument per slot, in order.
+(DEFUN modifier-arg< (x)
+  (AND x (SYMBOLP x)
+       (FIND (SYMBOL-NAME x) '("&" "*" "**" "***" "move" "ref" "const")
+             :TEST #'STRING=)))
+
+(DEFUN mod-slot< (ty)
+  (AND ty (SYMBOLP ty) (STR:STARTS-WITH-P "mod" (SYMBOL-NAME ty))))
+
+(DEFUN align-generic-args< (macro types args)
+  (LET ((filled '()))
+    (DOLIST (ty types)
+      (IF (mod-slot< ty)
+          (IF (modifier-arg< (CAR args))
+              (PUSH (POP args) filled)
+              (PUSH NIL filled))
+          (IF args
+              (PUSH (POP args) filled)
+              (ERROR (FORMAT NIL "missing generic argument for ~A in: ~A" ty macro)))))
+    (WHEN args
+      (ERROR (FORMAT NIL "too many generic arguments: ~A ~A" macro args)))
+    (NREVERSE filled)))
+
+(DEFMACRO generic (macro types &REST body)
+  `(DEFMACRO ,macro (&REST args)
+     (LET* ((types ',types)
+            (body ',body))
+       (SETQ args (align-generic-args< (QUOTE ,macro) types args))
+       (DOTIMES (i (LENGTH types))
+         (LET ((arg (NTH i args)))
+           (SETQ body
+                 (IF (NULL arg)
+                     (subst-out< (NTH i types) body)
+                     (SUBST (IF (AND (LISTP arg) (EQUAL (CAR arg) '<>)) (MACROEXPAND arg) arg)
+                            (NTH i types) body)))))
+       `($$$ ,@body)))) ; $$$ for replace extracted
+
+(DEFMACRO inline-generic (args body)
+  (LET ((body body))
+    (DOLIST (arg args)
+      (LET ((dst (CAR arg))
+            (src (CADR arg)))
+        (SETQ body (SUBST (IF (AND (LISTP src) (EQUAL (CAR src) '<>)) (MACROEXPAND src) src) dst body))))
+    body))
+
+(DEFMACRO shared-func-name (struct method)
+  (INTERN (FORMAT NIL "~A_s_~A" struct method)))
+
+(DEFMACRO method-func-name (struct method)
+  (INTERN (FORMAT NIL "~A_m_~A" struct method)))
+
+(DEFMACRO constant (a const_val)
+  (LET ((a a))
+    `('(lambda ()
+        (out const ,a * const)
+        (static) (var const ,a constant_value . (FUNCTION ,const_val)) 
+        (return (aof constant_value))))))
+
+;;; each struct which implements string can write itself to a FILE *
+;;; notice inline methods won't be resolved and -> is point to, not method access
+(DEFMACRO IString (struct)
+  `((decl) (method (,struct . toString) ((FILE * file)))))
+
+;;; use format lisp clause insted of printf
+;;; f  FILE *
+;;; #t short for stdout
+;;; #f short for stderr
+(DEFMACRO format (f fmt &REST args)
+  (COND ((EQ f '#t) (SETQ f 'stdout))
+        ((EQ f '#f) (SETQ f 'stderr)))
+  `(fprintf ,f ,fmt ,@args))
+
+(DEFMACRO when (cond &REST body)
+  `(if ,cond (block ,@body)))
+
+(DEFMACRO unless (cond &REST body)
+  `(if (not ,cond) (block ,@body)))
+
+;;; loops over any indexable structures in C for each item []
+;; name of counter variable
+;; name of iterator pointer
+;; array to be traveresed or pointer to its one of items
+;; length of array or count of loop should go through
+;; what to do each turn
+(DEFMACRO for-each (counter item array length &REST body)
+  `(let (((typeof (nth 0 ,array)) * ,item . ,(IF (LISTP array) `(FUNCTION ,array) array)))
+     (for ((int ,counter . 0))
+       (< ,counter ,length)
+       ((++ ,item)
+        (++ ,counter))
+       ,@body)))
+
+;;; loops over any indexable constant structures in C for each item []
+;; name of counter variable
+;; name of iterator pointer
+;; array to be traveresed or pointer to its one of items
+;; length of array or count of loop should go through
+;; what to do each turn
+(DEFMACRO for-each-const (counter item array length &REST body)
+  `(let ((const (typeof (nth 0 ,array)) * ,item . ,(IF (LISTP array) `(FUNCTION ,array) array)))
+     (for ((int ,counter . 0))
+       (< ,counter ,length)
+       ((++ ,item)
+        (++ ,counter))
+       ,@body)))
+
+;;; defers execution at end of current scope
+;;; var list is lamda parameters and works to get and store this values or pointers to use in defer execution
+;;; usage:
+;;; (defer* ((FILE * file) (char * message))
+;;;   (format file "%s\n" message)
+;;;   (fclose file))
+(DEFMACRO defer* (var-list &REST body)
+  ;; The destructor's parameter is named after the VARIABLE, not <variable>_ptr:
+  ;; specify-let builds the deferred lambda with (intern (format nil "~A" variable))
+  ;; and gives it pointer modifier, so `name' is already the pointer. Reaching for
+  ;; <name>_ptr here left every defer* dead with "unknown symbol: ciciliDeferNNN_ptr".
+  (LET ((name (GENSYM "ciciliDefer")))
+    `($$$
+       (defer ()
+         ,@(MAP 'LIST #'(LAMBDA (var)
+                          (MULTIPLE-VALUE-BIND (const type modifier const-ptr variable array-def)
+                              (CICILI:SPECIFY-TYPE< var)
+                            `(var ,@var . (FUNCTION (-> ,name ,variable)))))
+                var-list)
+         ,@body)
+       (var '(,@var-list) ,name . 
+            '(,@(MAP 'LIST #'(LAMBDA (var)
+                               (MULTIPLE-VALUE-BIND (const type modifier const-ptr variable array-def)
+                                   (CICILI:SPECIFY-TYPE< var)
+                                 variable))
+                     var-list))))))
+
+;;; copies capture list to context, use pointer to keep access to context along the process
+;;; don't free pointers copied into context if the closure is alive
+;;; (def-closure (capture list)
+;;;     '(lambda (parameter list)
+;;;         body))
+(DEFMACRO def-closure (var-list lambda)
+  (LET* ((captures (MAP 'LIST #'(LAMBDA (var) (MULTIPLE-VALUE-LIST (CICILI:SPECIFY-TYPE-VALUE< var))) var-list))
+         (sname    (GENSYM "__ciciliC_Context_"))
+         (lname    (GENSYM "__ciciliC_Routine_"))
+         (values   (MAP 'LIST #'(LAMBDA (var1)
+                                  (DESTRUCTURING-BIND (const type modifier const-ptr variable array-def default) var1
+                                    (IF (NULL default) variable default)))
+                        captures))
+         (vars     (MAP 'LIST #'(LAMBDA (var2)
+                                  (DESTRUCTURING-BIND (const type modifier const-ptr variable array-def default) var2
+                                    `(var ,@(REMOVE NIL (LIST const type modifier const-ptr variable array-def)) .
+                                          (FUNCTION ($ (-> context context) ,variable)))))
+                        captures))
+         (members  (MAP 'LIST #'(LAMBDA (var3)
+                                  (DESTRUCTURING-BIND (const type modifier const-ptr variable array-def default) var3
+                                    `(member ,@(REMOVE NIL (LIST const type modifier const-ptr variable array-def)))))
+                        captures))
+         (body     (LET ((lm (CADR lambda)))
+                     (IF (EQL (CAADDR lm) 'out)
+                         (APPEND (LIST (CADDR lm)) vars (CDDDR lm))
+                         (APPEND vars (CDDR lm))))))
+    `'(def-closure* (struct ,sname
+                            (member func routine (((struct ,sname) * context) ,@(CADADR lambda))
+                                    ,(IF (EQL (CAR (CAR body)) 'out) (CAR body) (LIST 'out 'void)))
+                            (struct ,@members (declare context)))
+       (cast (struct ,sname) '{ '(lambda* (<> ,sname ,lname)
+                                  (((struct ,sname) * context) ,@(CADADR lambda)) ,@body)
+             '{ ,@values } }))))
+
+;; way to execute closure routine
+(DEFMACRO exec-closure (closure &REST args)
+  `((($ ,closure routine) (aof ,closure) ,@args)))
+
+;;; asycronous clauses
+;;; declare a handle in a header for global access or
+;;; define over main entry by async-main | async-main*
+(DEFMACRO async-handle-decl ()
+  `((static) (thread-local)
+    (var Coordinator __ciciliA_Coordinator_)))
+
+(DEFMACRO async-handle-def ()
+  `((static) (thread-local)
+    (var Coordinator __ciciliA_Coordinator_ . '{ nil nil #f })))
+
+(DEFMACRO async-main (&REST body)
+  `((async-handle-def)
+    (main ,@body
+          (-> __ciciliA_Coordinator_ loop))))
+
+(DEFMACRO async-main* (&REST body)
+  `((async-handle-def)
+    (main* ,@body
+           (-> __ciciliA_Coordinator_ loop))))
+
+;;; non-local exits: done, yield, error
+;;; done calls done_callback and returns from function
+;;; yield calls done_callback without returning
+;;; error calls error_callback and returns
+(DEFMACRO async (var-list &REST body)
+  (LET ((cls  (GENSYM "cls"))
+        (name (GENSYM "task"))
+        (body body))
+    
+    `(macrolet ((yield (callback &REST args)
+                  `(block
+                     (,callback ,@args)
+                     (longjmp ($ __ciciliA_Coordinator_ main) -1)))
+                (done (callback &REST args)
+                  `(block
+                     (,callback ,@args)
+                     (return 0)))
+                (error (callback &REST args)
+                  `(block
+                     (,callback ,@args)
+                     (return 0)))
+                )
+
+       (letn ((Coroutine * ,name . #'(malloc (sizeof Coroutine)))
+              (auto ,cls . #'(def-closure ,var-list
+                               '(lambda ((Coroutine * __ciciliA_Context_)) (out int)
+                                 (defer* ((void * context))
+                                   (free context))
+                                 ,@body
+                                 (longjmp ($ __ciciliA_Coordinator_ main) -1))))
+              (void * data . #'(malloc (sizeof ,cls))))
+         (memcpy data (aof ,cls) (sizeof ,cls))
+         (set (-> ,name status)  0)
+         (set (-> ,name args)    data)
+         (set (-> ,name routine) (cast (func _ ((void * args) (Coroutine * coroutine)) (out int)) ($ ,cls routine)))
+         (set (-> ,name next)    nil)
+         (-> __ciciliA_Coordinator_ reg_task ,name)))))
+
+;;; optional helper macro will auto defer all vars
+(DEFMACRO defer-let (var-list &REST body)
+  `(block ,@(MAP 'LIST #'(LAMBDA (var)
+                           `((defer #t) (var ,@var)))
+                 var-list)
+          ,@body))
+
+;;; list should have a len member
+(DEFMACRO dolist (vars &REST body)
+  (LET ((var     (FIRST  vars))
+        (list    (SECOND vars))
+        (array   (GENSYM "ciciliArr"))
+        (len     (GENSYM "ciciliLen"))
+        (counter (GENSYM "ciciliCounter")))
+    `(let ((auto ,array . ,(IF (LISTP list) `(FUNCTION ,list) list))
+           ((typeof (nth 0 ,array)) * ,var . ,array)
+           (size_t ,len . #'($ ,array len)))
+       (for ((int ,counter . 0))
+         (< ,counter ,len)
+         ((++ ,var)
+          (++ ,counter))
+         ,@body))))
+
+(DEFMACRO dotimes (vars &REST body)
+  (LET ((var   (CAR  vars))
+        (count (CADR vars)))
+    `(for ((int ,var . 0))
+       (< ,var ,count)
+       ((++ ,var))
+       ,@body)))
+
+(DEFMACRO null (value)
+  `(== ,value nil))
+
+;; compile-time symbol to C "constant string"
+(DEFMACRO symbol-name (symb)
+  (LET ((symb (CICILI::EXPAND-MACROS symb)))
+    (IF (LISTP symb)
+        (LET ((symbs (STR:JOIN " " (MAP 'LIST #'(LAMBDA (psymb) (SUBSTITUTE #\_ #\^ (SYMBOL-NAME psymb))) symb))))
+          `,symbs)
+        `(QUASIQUOTE (SUBSTITUTE #\_ #\^ (SYMBOL-NAME ',symb))))))
+
+(DEFUN find-subseq (itm lst &OPTIONAL &KEY (test #'EQUAL))
+  (DO* ((lst (CDR lst) (CDR lst))
+        (elm (CAR lst) (IF (LISTP lst) (CAR lst) lst)))
+       ((OR (ATOM lst) (NULL elm)) (FUNCALL test itm elm))
+    (IF (LISTP elm)
+        (LET ((res (find-subseq itm elm :test test)))
+          (IF res (RETURN-FROM find-subseq T) NIL))
+        (WHEN (FUNCALL test itm elm)
+          (RETURN-FROM find-subseq T)))))
+
+;; helpers using cicili type inference
+(DEFMACRO closure ((name &REST captures) &REST body)
+  (LET ((captures captures)
+        (params (LOOP FOR (param value) ON captures BY #'CDDR
+                      COLLECT (IF (SYMBOLP param)
+                                  (CICILI:INFER-TYPE value :WITH-NAME param)
+                                  (ERROR (FORMAT NIL "closure: paramter name passed: ~A inside: ~A" param (LIST name captures))))))
+        (args (LOOP FOR (_ value) ON captures BY #'CDDR COLLECT value)))
+    ;; `((QUOTE ,(LET ((body body))
+    ;;             (PUSH params body)
+    ;;             (PUSH name body)
+    ;;             (PUSH 'lambda* body)
+    ;;             body))
+    ;;   ,@args)))
+    `('(lambda* ,name ,params ,@body) ,@args)))
+
+(DEFMACRO new (type &REST args)
+  `((<> new ,type) ,@args))
+
+;;;; ------------------------------------------------------------------
+;;;; match -- pattern matching driven by type inference
+;;;;
+;;;; A matchable type registers its cases once with 'def-matchable, keyed by the
+;;;; opaque super type CICILI:TYPE-ORIGIN reports for it. 'match then infers the
+;;;; scrutinee's origin, looks the cases up and expands to a plain test chain:
+;;;; no tag byte, no v-table, no allocation. What is left in C is the `if' you
+;;;; would have written by hand.
+;;;;
+;;;; This is not the Haskell layer's 'match (lib/haskell/match.cicili), which
+;;;; walks a constructor tag at run time. Here the type does the talking, so the
+;;;; whole dispatch is resolved at specification time.
+;;;;
+;;;; 'match is a statement, 'matchn is an expression that yields a value -- the
+;;;; same n-suffix convention as let / letn and take^cell / taken^cell.
+;;;; ------------------------------------------------------------------
+
+;;; a macro file may only carry DEFUN / DEFMACRO / generic / import / cicili at
+;;; its top level, so the registry hangs off a symbol plist rather than a DEFVAR
+(DEFUN matchable-table< ()
+  (OR (GET 'matchable 'table)
+      (SETF (GET 'matchable 'table) (MAKE-HASH-TABLE :TEST 'EQUAL))))
+
+(DEFUN matchable-key< (origin)
+  (WHEN (AND origin (SYMBOLP origin))
+    (SUBSTITUTE #\_ #\^ (SYMBOL-NAME origin))))
+
+(DEFUN matchable-cases< (origin)
+  (LET ((key (matchable-key< origin)))
+    (WHEN key (GETHASH key (matchable-table<)))))
+
+(DEFUN matchable-put< (origin cases)
+  (LET ((key (matchable-key< origin)))
+    (UNLESS key
+      (ERROR (FORMAT NIL "def-matchable: origin must be a symbol: ~A" origin)))
+    (DOLIST (c cases)
+      (UNLESS (AND (LISTP c) (= (LENGTH c) 3) (CAR c) (SYMBOLP (CAR c)))
+        (ERROR (FORMAT NIL "def-matchable: case needs (name test accessor): ~A" c))))
+    (SETF (GETHASH key (matchable-table<)) cases)
+    origin))
+
+;;; Teaches 'match how to take a type apart. `%' stands for the scrutinee and is
+;;; substituted before anything is specified, so it never reaches C. The
+;;; accessor is NIL for a case that carries no payload.
+;;;
+;;;   (def-matchable std^maybe
+;;;     (just    ($ % present)       ($ % value))
+;;;     (nothing (not ($ % present)) NIL))
+;;;
+;;; The key is the opaque super type a `<name>^type_t' typedef points at, so one
+;;; registration covers every instantiation of the generic. Call it from the
+;;; type's own decl- generic, so declaring the type registers how to open it.
+;;; It emits nothing; re-registering the same origin simply overwrites.
+(DEFMACRO def-matchable (origin &REST cases)
+  (matchable-put< origin cases)
+  `($$$ ))
+
+;;; one written clause -> (test binding body); the payload binds with 'auto
+(DEFUN match-clause< (who spec clause box)
+  (LET ((test (SUBST box '% (NTH 1 spec)))
+        (acc  (NTH 2 spec))
+        (name (CAR clause)))
+    (IF acc
+        (LET ((var (NTH 1 clause)))
+          (UNLESS (AND var (SYMBOLP var))
+            (ERROR (FORMAT NIL "~A: case ~A carries a value, it needs a binding name: ~A"
+                           who name clause)))
+          (LIST test `(auto ,var . (FUNCTION ,(SUBST box '% acc))) (CDDR clause)))
+        (LIST test NIL (CDR clause)))))
+
+;;; walks the clause list once, checking names and collecting coverage
+(DEFUN match-parse< (who value clauses cases box)
+  (LET ((parsed '()) (seen '()) (default NIL))
+    (DOLIST (clause clauses)
+      (UNLESS (AND (LISTP clause) (CAR clause) (SYMBOLP (CAR clause)))
+        (ERROR (FORMAT NIL "~A: bad clause ~A in ~A" who clause value)))
+      (LET ((name (CAR clause)))
+        (IF (CICILI:KEY-EQ name 'default)
+            (PROGN
+              (WHEN default (ERROR (FORMAT NIL "~A: two default clauses in ~A" who value)))
+              (SETQ default (CDR clause)))
+            (LET ((spec (FIND name cases :KEY #'CAR :TEST #'CICILI:KEY-EQ)))
+              (UNLESS spec
+                (ERROR (FORMAT NIL "~A: unknown case ~A of ~A, expected one of ~A"
+                               who name value (MAP 'LIST #'CAR cases))))
+              (WHEN (FIND name seen :TEST #'CICILI:KEY-EQ)
+                (ERROR (FORMAT NIL "~A: case ~A appears twice in ~A" who name value)))
+              (PUSH name seen)
+              (PUSH (match-clause< who spec clause box) parsed)))))
+    (WHEN (NULL parsed)
+      (ERROR (FORMAT NIL "~A: no cases given for ~A" who value)))
+    (VALUES (REVERSE parsed) seen default)))
+
+;;; the origin of the scrutinee plus the cases registered for it
+(DEFUN match-cases-of< (who value)
+  (LET ((origin (NTH-VALUE 3 (CICILI:TYPE-CHECK value))))
+    (LET ((cases (matchable-cases< origin)))
+      (UNLESS cases
+        (ERROR (FORMAT NIL "~A: ~A is not matchable, its origin is ~A~%  register its cases with def-matchable"
+                       who value origin)))
+      cases)))
+
+(DEFUN match-body< (bind body)
+  (IF bind `(letn (,bind) ,@body) `(progn ,@body)))
+
+;;; (match m (just v ...) (nothing ...))  -- a statement, expands to a cond
+;;; Partial is fine: an unlisted case simply does nothing, like `when'.
+(DEFMACRO match (value &REST clauses)
+  (LET* ((value value)
+         (cases (match-cases-of< "match" value))
+         (box (GENSYM "match")))
+    (MULTIPLE-VALUE-BIND (parsed seen default) (match-parse< "match" value clauses cases box)
+      (DECLARE (IGNORE seen))
+      `(let ((auto ,box . (FUNCTION ,value)))
+         (cond ,@(MAP 'LIST
+                      #'(LAMBDA (p)
+                          (LET ((bind (NTH 1 p)) (body (NTH 2 p)))
+                            (IF bind
+                                (LIST (NTH 0 p) `(let (,bind) ,@body))
+                                (CONS (NTH 0 p) body))))
+                      parsed)
+               ,@(WHEN default (LIST (CONS '#t default))))))))
+
+;;; (matchn m (just v ...) (nothing ...))  -- an expression, nested ?
+;;; Must cover every case or carry a default, checked at expansion time.
+(DEFMACRO matchn (value &REST clauses)
+  (LET* ((value value)
+         (cases (match-cases-of< "matchn" value))
+         (box (GENSYM "matchn")))
+    (MULTIPLE-VALUE-BIND (parsed seen default) (match-parse< "matchn" value clauses cases box)
+      (UNLESS (OR default (= (LENGTH seen) (LENGTH cases)))
+        (ERROR (FORMAT NIL "matchn: ~A is not exhaustive, missing ~A~%  add the case or a default"
+                       value (MAP 'LIST #'CAR
+                                  (REMOVE-IF #'(LAMBDA (c)
+                                                 (FIND (CAR c) seen :TEST #'CICILI:KEY-EQ))
+                                             cases)))))
+      ;; fold right: the innermost else is the default, or the last case's value
+      (LET* ((rest (REVERSE parsed))
+             (tail (IF default
+                       `(progn ,@default)
+                       (LET ((last (CAR rest)))
+                         (SETQ rest (CDR rest))
+                         (match-body< (NTH 1 last) (NTH 2 last))))))
+        (DOLIST (p rest)
+          (SETQ tail `(? ,(NTH 0 p) ,(match-body< (NTH 1 p) (NTH 2 p)) ,tail)))
+        `(letn ((auto ,box . (FUNCTION ,value)))
+           ,tail)))))

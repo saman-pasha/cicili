@@ -1,0 +1,80 @@
+;;;; Cicili targets: several sources, a libtool library, and an executable
+;;; header + three separately compiled objects + libMyMath.la + library_test
+;;;
+;;; This is the only test that exercises a multi-target build: custom :compile
+;;; strings, building a .la, and linking an executable against it. It also uses
+;;; the raw (:std #t :compile … :link …) plist rather than the `make' macro --
+;;; `make' expands to exactly this, so both spellings stay covered.
+
+;; MyMath library declaration
+(header "mymath.h"
+  (:compile #f)
+
+  (guard __MYMATH_H__
+    ;; Parameters are named. An unnamed one becomes `_', and two of those in the
+    ;; same list collide in the symbol table with "paramter exists".
+    (decl) (func obj1_does ((int x) (int y)) (out int))
+    (decl) (func obj2_does ((int x) (int y)) (out int))
+    (decl) (func obj3_does ((int x) (int y)) (out int))))
+
+;; Default compilation
+(source "obj1.c"
+  (:compile #t)
+  (include "mymath.h")
+  (func obj1_does ((int x) (int y)) (out int)
+	    (return (+ x y))))
+
+;; Custom compilation: the object name is chosen here, and obj3 links it by that
+;; name below
+(source "obj2.c"
+  (:compile "-c obj2.c -o objmul.lo")
+  (include "mymath.h")
+  (func obj2_does ((int x) (int y)) (out int)
+	    (return (* x y))))
+
+;; Library creation and linking
+(source "obj3.c"
+  (:compile #t :link "-o libMyMath.la -L{$CWD} obj1.lo objmul.lo obj3.lo")
+  (include "mymath.h")
+  (func obj3_does ((int x) (int y)) (out int)
+	    (return (obj1_does (obj2_does x y) (obj2_does x y)))))
+
+;; Executable creation and linking
+(source "main.c"
+  (:std #t :compile #t :link "-o library_test -L{$CWD} main.lo -lMyMath")
+  (include "mymath.h")
+
+  (func check ((const char * what) (llong got) (llong want))
+        (out int)
+        (if (== got want)
+            (block (printf "ok   %-24s %lld\n" what got) (return 0))
+          (block (printf "FAIL %-24s got %lld want %lld\n" what got want) (return 1)))
+        (return 1))
+
+  (func main ((int argc) (char * argv []))
+        (out int)
+        ;; two digits may be given on the command line; without them the test
+        ;; runs itself on 3 and 4 so it stays non-interactive
+        (let ((int x . 3)
+              (int y . 4)
+              (int bad . 0))
+          (if (== argc 3)
+              (block
+                (set x (atoi (nth 1 argv)))
+                (set y (atoi (nth 2 argv)))))
+
+          (+= bad (check "obj1_does adds"      (obj1_does 20 22) 42))
+          (+= bad (check "obj2_does multiplies" (obj2_does 6 7)  42))
+          ;; obj3 lives in the library and calls the other two
+          (+= bad (check "obj3_does through lib" (obj3_does x y)
+                         (+ (* x y) (* x y))))
+          (printf "MyMath lib outputs: %d\n" (obj3_does x y))
+
+          (if (== bad 0)
+              (printf "library: all ok\n")
+            (printf "library: %d FAILED\n" bad))
+          (return bad))
+        (return 1)))
+
+;; sbcl --script cicili.lisp ./test/c/library.cicili
+;; ./test/c/library_test       or  ./test/c/library_test 3 4

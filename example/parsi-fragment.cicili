@@ -1,0 +1,81 @@
+;;;; Emitting a fragment for a Parsi CLASS
+;;;;
+;;;; ZiguratIP's language, Parsi, has two blocks that take C++ whole:
+;;;;
+;;;;     CLASS Demo::Net
+;;;;     BEGIN
+;;;;         INCLUDE '<memory>';
+;;;;         BEGIN HPP  ... declarations ...  END
+;;;;         BEGIN CPP  ... definitions  ...  END
+;;;;     PRIVATE:
+;;;;         DECLARE _net AS `std::`shared_ptr<`Net>;
+;;;;     PUBLIC:
+;;;;         FUNCTION bump(by AS Long) RETURNS Long
+;;;;         BEGIN
+;;;;             RETURN `net_bump(this._net, by.`value());
+;;;;         END
+;;;;     END
+;;;;
+;;;; and each such object compiles standalone into a .so the database loads.
+;;;; So the two things Cicili has to produce are the two blocks: declarations
+;;;; for HPP, definitions for CPP.
+;;;;
+;;;; NO NEW MACHINERY IS NEEDED FOR THIS -- which is the point of the example.
+;;;; A `header' target is written and never handed to a compiler, and a
+;;;; `source' target with no :compile is written and stops. Neither emits an
+;;;; #include unless one is written, and the Parsi side supplies those through
+;;;; its own INCLUDE clause. Both files below are fragments, complete C++ but
+;;;; not translation units, which is exactly what a block wants.
+;;;;
+;;;; WHY THE SPLIT IS TWO FILES AND NOT ONE. Every Zigurat object that REQUIRES
+;;;; this one includes its header, so anything in HPP is inherited by all of
+;;;; them, while CPP stays in this object's own translation unit. Put the
+;;;; forward declaration in HPP and <torch/torch.h> in CPP, and a page calling
+;;;; the model inherits the linkage without paying for the header. That is why
+;;;; the struct is declared in one file and defined in the other rather than
+;;;; both landing in the same place.
+;;;;
+;;;; Run:  sbcl --script cicili.lisp example/parsi-fragment.cicili
+;;;; Then paste netfrag.hpp into BEGIN HPP and netfrag.cpp into BEGIN CPP.
+
+(import "lib/cpp/memory.cicili")
+
+;;; std::shared_ptr<Net> for inference. In init-macro, which is the only place
+;;; a declaration emits nothing -- see lib/cpp/memory.cicili.
+(DEFMACRO init-macro ()
+  `($$$ ,@(make-shared< 'Net 'long)))
+
+;;; ---- the HPP block: what the Parsi class needs to see ------------------
+;;;
+;;; A forward declaration and the free functions. Not the struct itself: a
+;;; member declared shared_ptr<Net> does not need Net to be complete, and
+;;; keeping it incomplete here is what keeps it out of every object
+;;; downstream.
+;;;
+;;; Free functions rather than methods because Parsi has no dereference
+;;; operator: it can hold a `std::`shared_ptr<`Net> and pass it, and that is
+;;; all it needs to do.
+
+(header "netfrag.hpp" (make :cpp #t)
+  (decl) (struct Net)
+  (decl) (func net_make ((long start)) (out (t<> std::shared_ptr Net)))
+  (decl) (func net_bump ((const (t<> std::shared_ptr Net) & n) (long by)) (out long)))
+
+;;; ---- the CPP block: the whole of it -----------------------------------
+;;;
+;;; :cpp #t and nothing else. No :compile, so the file is written and Cicili
+;;; stops -- Parsi compiles it, as part of the object, with the object's own
+;;; flags. A real model would put the network here, and (include <torch/torch.h>)
+;;; would be a LINK and an INCLUDE on the Parsi side.
+
+(source "netfrag.cpp" (make :cpp #t)
+  (struct Net
+          (member long total)
+          (ctor ((long start)) (init (total start))))
+
+  (func net_make ((long start)) (out (t<> std::shared_ptr Net))
+        (return ((t<> std::make_shared Net) start)))
+
+  (func net_bump ((const (t<> std::shared_ptr Net) & n) (long by)) (out long)
+        (set ($ (cof (($ n get))) total) (+ ($ (cof (($ n get))) total) by))
+        (return ($ (cof (($ n get))) total))))

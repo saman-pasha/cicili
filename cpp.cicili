@@ -1,0 +1,158 @@
+;;;; C++ language macros
+;;;;
+;;;; What the compiler itself knows about C++ lives in the back end: `struct'
+;;;; takes (inherits ...), (method ...), (ctor ...) and (dtor ...), `this' is
+;;;; implicit, and a C++ target emits no typedefs. This file is the rest -- the
+;;;; syntax that is only ever punctuation, and has no business in the specifier.
+;;;;
+;;;; Nothing here needs a `class' and nothing here writes `public:'. A struct's
+;;;; members and bases are public already, which is exactly why the whole
+;;;; language surface is a struct: the two things a C++ definition normally has
+;;;; to say are the two things you never have to say.
+
+;;; There is no `t<>' macro either. A template-id is a NAME -- (t<> std::vector
+;;; int) is std::vector<int>, (t<> item float) is the member name item<float> --
+;;; and the specifier folds it to one symbol, the same as it folds a::b::c. So
+;;; it is emitted by printing, it can be declared and resolved, and it composes:
+;;; a template argument may itself be a template-id or a qualified name.
+;;; See core.lisp template-name<.
+
+;;; a::b::c is read lexically and folded into one symbol by the specifier --
+;;; there is no $$ macro any more. The reader turns torch::nn::Linear into
+;;; ($$ torch nn Linear) and the specifier interns that as the symbol
+;;; torch::nn::Linear, so it is a NAME the compiler can resolve rather than
+;;; text it splices. See core.lisp qualify-source< and qualified-name<.
+
+;;; (using namespace std) / (using std vector)
+(DEFMACRO using (namespace &REST resolution)
+  (LET ((res (IF (AND (= (LENGTH resolution) 1) (CICILI::QUALIFIED-FORM< (CAR resolution)))
+                 (CICILI::QUALIFIED-NAME< (CDR (CAR resolution)))
+                 (CICILI::QUALIFIED-NAME< resolution))))
+    (IF (EQL namespace 'namespace)
+        `(code '{ using ,namespace ,res ";" })
+        `(code '{ using 'namespace ,res ";" }))))
+
+;;; (extern-c ...) -- C linkage for everything inside
+(DEFMACRO extern-c (&REST body)
+  `($$$
+    (code '{ extern ,(FORMAT NIL "~S" "C") })
+    (block ,@body)))
+
+;;;; ------------------------------------------------------------------
+;;;; namespaces
+;;;;
+;;;; There is no `namespace' clause. `module' is Cicili's named scope and in a
+;;;; C++ target it emits one -- see module.lisp. The same clause mangles names
+;;;; in a C target, because C has no namespaces to emit.
+;;;; ------------------------------------------------------------------
+
+;;;; ------------------------------------------------------------------
+;;;; references
+;;;;
+;;;; There is nothing here, and that is the point. A reference qualifies a
+;;;; type, and Cicili's type descriptor already has a slot for that -- the one
+;;;; holding *, **, move and ref. `&' was in it before any of this work
+;;;; started and already emitted a C++ reference; `&&' has been added beside
+;;;; it. So a reference is written where every other modifier is written:
+;;;;
+;;;;   (func f ((const torch::Tensor & x)))    const torch::Tensor & x
+;;;;   (func g ((torch::Tensor & x)))                torch::Tensor & x
+;;;;   (func h ((torch::Tensor && x)))               torch::Tensor && x
+;;;;
+;;;; A (cref T) wrapper was written for this and then deleted: it said the
+;;;; same thing in a shape the rest of the language does not use, and it was a
+;;;; code escape, so the type it produced could not be resolved.
+;;;;
+;;;; `&' is the one to reach for by default when calling a C++ library.
+;;;; Passing a libtorch type by value copies it -- cheaply, since a Tensor is
+;;;; a refcounted handle, but the refcount traffic is real and the whole
+;;;; library's own signatures are const-ref for a reason.
+;;;; ------------------------------------------------------------------
+
+;;; A type spliced into a code escape may be written as a form -- (t<> ...),
+;;; (int *) -- and an escape takes words, not forms. This is what the macros
+;;; below run their type argument through.
+(DEFUN cpp-type< (ty)
+  (COND ((CICILI::QUALIFIED-FORM< ty) (CICILI::QUALIFIED-NAME< (CDR ty)))
+        ((AND (LISTP ty) (SYMBOLP (CAR ty))
+              (MEMBER (SYMBOL-NAME (CAR ty)) '("t<>" "code") :TEST #'STRING=))
+         (MACROEXPAND ty))
+        ((LISTP ty) `(code ',ty))
+        (T ty)))
+
+;;;; ------------------------------------------------------------------
+;;;; allocation and casts
+;;;; ------------------------------------------------------------------
+
+;;; (new* Widget 1 2) -> new Widget(1, 2)
+;;; Named with a star because `new' is already the std constructor convention
+;;; on the C side ((new vector ...)), and the two mean different things: this
+;;; one allocates and the other does not.
+(DEFMACRO new* (type &REST args)
+  (IF (NULL args)
+      ;; no arguments is `new T()', not `new T(NIL)' -- an empty loop over the
+      ;; argument list produced the latter, which does not name anything
+      `(code '{ new ,(cpp-type< type) "()" })
+      `(code '{ new ,(cpp-type< type) "(" (code ',(LET ((l (1- (LENGTH args))))
+                                    (LOOP FOR a IN args FOR i FROM 0 TO l
+                                          APPEND (IF (< i l) (LIST a ",") (LIST a)))))
+                ")" })))
+
+;; spliced rather than wrapped, so the expression stays an ordinary statement
+;; and gets its own `;' -- a code escape supplies its own punctuation and there
+;; is none to supply here
+(DEFMACRO delete* (expr)     `($$$ (code '{ delete }) ,expr))
+(DEFMACRO delete[]* (expr)   `($$$ (code '{ delete "[]" }) ,expr))
+
+;;; The four named casts are CLAUSES now -- see specify-cppcast-expr. They were
+;;; macros producing code escapes, which meant the result had no type (so a
+;;; member access through one could not resolve) and the operand was spliced as
+;;; text (so a unary operator in it was silently dropped). Both are fixed by
+;;; being real forms; there is nothing left here to define.
+
+;;;; ------------------------------------------------------------------
+;;;; templates
+;;;;
+;;;; `t<>' USES a template; this DECLARES one. Cicili's own `generic' covers
+;;;; most of what templates are for and does it by name interning, so this is
+;;;; for the cases generic cannot reach: writing something a C++ library will
+;;;; instantiate, or specialising on a C++ type.
+;;;;
+;;;;   (template ((typename T))
+;;;;     (func maxOf ((const T & a) (const T & b)) (out T)
+;;;;           (return (? (< a b) b a))))
+;;;;
+;;;; The parameter list is a LIST OF PARAMETERS, each of which is itself a
+;;;; list -- ((typename T) (int N)) -- because `typename T' is two words and
+;;;; the comma goes between parameters, not between words.
+;;;; ------------------------------------------------------------------
+
+(DEFMACRO template (params &REST body)
+  `($$$
+    (code '{ template #\< (code ',(LET ((l (1- (LENGTH params))))
+                                    (LOOP FOR p IN params FOR i FROM 0 TO l
+                                          APPEND (IF (< i l)
+                                                     (APPEND (IF (LISTP p) p (LIST p)) (LIST ","))
+                                                     (IF (LISTP p) p (LIST p))))))
+             #\> })
+    ,@body))
+
+;;;; ------------------------------------------------------------------
+;;;; exceptions
+;;;;
+;;;; `try' is a CLAUSE now -- see specify-try -- and its catch clause declares
+;;;; its variable, so the handler can use it:
+;;;;
+;;;;   (try (block ...)
+;;;;        (catch ((const std::exception & e)) (printf "%s\n" (($ e what))))
+;;;;        (catch ()                           (printf "unknown\n")))
+;;;;
+;;;; A catch with no parameter is `catch (...)'. `throw*' stays a macro: it is
+;;;; one keyword in front of an expression and introduces no name.
+;;;;
+;;;; libtorch throws. A Cicili program that calls into it and does not catch
+;;;; will terminate, which is a legitimate choice and should be a deliberate
+;;;; one.
+;;;; ------------------------------------------------------------------
+
+(DEFMACRO throw* (expr) `($$$ (code '{ throw }) ,expr))

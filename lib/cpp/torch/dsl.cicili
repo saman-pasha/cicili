@@ -1,0 +1,477 @@
+;;;; A neural-network DSL over lib/cpp/torch
+;;;;
+;;;; This is the layer the rest of the binding exists to make possible. A
+;;;; network is described, not constructed:
+;;;;
+;;;;     (network Classifier
+;;;;       (input   784)
+;;;;       (dense   256 relu)
+;;;;       (dense   128 relu)
+;;;;       (dense    10 log-softmax))
+;;;;
+;;;; or, for a picture rather than a vector:
+;;;;
+;;;;     (network ConvNet
+;;;;       (image   1 28 28)
+;;;;       (conv   16 3 relu)     ; 16 filters, 3x3   -> 16 of 26x26
+;;;;       (pool    2)            ;                   -> 16 of 13x13
+;;;;       (conv   32 3 relu)     ;                   -> 32 of 11x11
+;;;;       (pool    2)            ;                   -> 32 of  5x5
+;;;;       (flatten)              ;                   -> 800
+;;;;       (dropout 0.25)
+;;;;       (dense  10 log-softmax))
+;;;;
+;;;;     (train Classifier
+;;;;       (data    xs ys)
+;;;;       (test    xt yt)
+;;;;       (epochs  15)
+;;;;       (batch   100)
+;;;;       (optimiser adam 0.001)
+;;;;       (loss    nll)
+;;;;       (metric  accuracy))
+;;;;
+;;;; and that expands to the struct, the registered layers, the forward, and
+;;;; the training loop -- the whole of example/mnist.cicili, which is what it
+;;;; was written from.
+;;;;
+;;;; WHY THIS IS NOT KERAS, and the differences are the point rather than the
+;;;; marketing:
+;;;;
+;;;;   * IT IS NOT A LIBRARY, IT IS A MACRO. There is no model object, no
+;;;;     interpreter, no dispatch. `network' emits a C++ struct and `train'
+;;;;     emits a loop; what runs is the same code you would have written by
+;;;;     hand, and you can read it in the generated .cpp.
+;;;;   * SHAPES ARE CHECKED WHEN IT COMPILES. A dense layer's input width is
+;;;;     the previous layer's output, worked out at expansion time. Getting it
+;;;;     wrong is an error naming both layers, not a stack trace on the first
+;;;;     batch after your data has loaded.
+;;;;   * NO STRINGS THAT MEAN SOMETHING. Keras spells an activation "relu" and
+;;;;     an optimiser "adam"; a typo is a runtime KeyError. Here they are
+;;;;     symbols the macro knows, and an unknown one is a compile error that
+;;;;     lists what it does know.
+;;;;   * IT IS STILL CICILI UNDERNEATH. Anything the DSL does not cover is
+;;;;     written in the language directly, in the same file, against the same
+;;;;     declarations. There is no wall to hit and no C++ to drop into --
+;;;;     you were already there.
+;;;;
+;;;; Requires: (include <torch/torch.h>), a C++ target, and this file's
+;;;; siblings imported -- lib/cpp/torch/torch.cicili brings all of them.
+
+;;; ------------------------------------------------------------------
+;;; activations
+;;; ------------------------------------------------------------------
+
+;;; Wrap EXPR in the activation named by A. `none' and NIL leave it alone.
+(DEFUN activation< (a expr layer)
+  (COND ((OR (NULL a) (STRING= (SYMBOL-NAME a) "none")) expr)
+        ((STRING= (SYMBOL-NAME a) "relu")        `(torch::relu ,expr))
+        ((STRING= (SYMBOL-NAME a) "tanh")        `(torch::tanh ,expr))
+        ((STRING= (SYMBOL-NAME a) "sigmoid")     `(torch::sigmoid ,expr))
+        ((STRING= (SYMBOL-NAME a) "softmax")     `(torch::softmax ,expr 1))
+        ((STRING= (SYMBOL-NAME a) "log-softmax") `(torch::log_softmax ,expr 1))
+        (T (ERROR (FORMAT NIL "network: layer ~A has unknown activation '~A'.~%  known: relu tanh sigmoid softmax log-softmax none"
+                          layer a)))))
+
+;;; ------------------------------------------------------------------
+;;; (network NAME (input N) (dense N [act]) ...)
+;;; ------------------------------------------------------------------
+;;;
+;;; Emits a struct inheriting torch::nn::Module with one Linear per dense
+;;; layer, registered by name, and a forward that chains them.
+;;;
+;;; The width of each layer is carried along the list, so a dense layer knows
+;;; its own input without being told and a mismatch is impossible to write.
+
+;;; The output size of one dimension through a kernel: the standard formula,
+;;; and the reason a DSL can tell you the picture size at every step.
+;;;
+;;;     out = floor((in + 2*pad - kernel) / stride) + 1
+;;;
+;;; It answers NIL when any of them is not a literal number, and a later
+;;; (flatten) says so rather than guessing.
+(DEFUN conv-out< (in kernel pad stride)
+  (WHEN (AND (NUMBERP in) (NUMBERP kernel) (NUMBERP pad) (NUMBERP stride) (> stride 0))
+    (+ (FLOOR (- (+ in (* 2 pad)) kernel) stride) 1)))
+
+;;; (pad P) and (stride S) written after the activation, in either order.
+;;; Absent, they are 0 and 1 -- the shapes everyone means by default.
+(DEFUN spatial-opt< (tail key default layer name)
+  (LET ((hit (FIND-IF #'(LAMBDA (c) (AND (LISTP c) (SYMBOLP (CAR c))
+                                         (STRING= (SYMBOL-NAME (CAR c)) key)))
+                      tail)))
+    (COND ((NULL hit) default)
+          ((= (LENGTH hit) 2) (CADR hit))
+          (T (ERROR (FORMAT NIL "network ~A: (~A N) takes one number, got ~A in ~A"
+                            name key hit layer))))))
+
+(DEFMACRO network (name &REST layers)
+  ;; SHAPE is what flows down the list. It is either
+  ;;   (flat  W)        a vector of width W
+  ;;   (image C H W)    C channels of H by W
+  ;; and each layer says what it takes and what it leaves. A layer that gets
+  ;; the wrong one says so, naming both -- (dense …) after a conv without a
+  ;; (flatten) is the mistake this catches, and it is the common one.
+  (LET ((shape  NIL)
+        (n      0)
+        (members '())
+        (inits   '())
+        (steps   '()))
+
+    (UNLESS layers (ERROR (FORMAT NIL "network ~A: no layers" name)))
+
+    (FLET ((need-flat (layer)
+             (UNLESS shape
+               (ERROR (FORMAT NIL "network ~A: ~A has no input -- put (input N) or (image C H W) first"
+                              name layer)))
+             (UNLESS (EQ (CAR shape) :flat)
+               (ERROR (FORMAT NIL "network ~A: ~A needs a flat input but the shape here is ~A channels of ~Ax~A.~%  put (flatten) before it"
+                              name layer (CADR shape) (CADDR shape) (CADDDR shape))))
+             (CADR shape))
+           (need-image (layer)
+             (UNLESS shape
+               (ERROR (FORMAT NIL "network ~A: ~A has no input -- put (image C H W) first" name layer)))
+             (UNLESS (EQ (CAR shape) :image)
+               (ERROR (FORMAT NIL "network ~A: ~A needs an image input but the shape here is a flat width of ~A"
+                              name layer (CADR shape))))
+             (CDR shape))
+           (add (field-prefix ctor-form act-fn)
+             (SETQ n (1+ n))
+             (LET* ((field (INTERN (FORMAT NIL "~A~A" field-prefix n)))
+                    (label (FORMAT NIL "~A~A" field-prefix n))
+                    (hvar  (INTERN (FORMAT NIL "h~A" n))))
+               (VALUES field label hvar))))
+
+      (DOLIST (layer layers)
+        (UNLESS (AND (LISTP layer) (SYMBOLP (CAR layer)))
+          (ERROR (FORMAT NIL "network ~A: ~A is not a layer form" name layer)))
+        (LET ((kind (SYMBOL-NAME (CAR layer))))
+          (COND
+
+            ;; ---- inputs -------------------------------------------------
+            ((STRING= kind "input")
+             (UNLESS (= (LENGTH layer) 2)
+               (ERROR (FORMAT NIL "network ~A: (input N) takes one width, got ~A" name layer)))
+             (WHEN shape (ERROR (FORMAT NIL "network ~A: the input must come first and appear once" name)))
+             (SETQ shape (LIST :flat (CADR layer))))
+
+            ((STRING= kind "image")
+             (UNLESS (= (LENGTH layer) 4)
+               (ERROR (FORMAT NIL "network ~A: (image CHANNELS HEIGHT WIDTH), got ~A" name layer)))
+             (WHEN shape (ERROR (FORMAT NIL "network ~A: the input must come first and appear once" name)))
+             (SETQ shape (LIST :image (CADR layer) (CADDR layer) (CADDDR layer))))
+
+            ;; ---- dense --------------------------------------------------
+            ((STRING= kind "dense")
+             (UNLESS (AND (>= (LENGTH layer) 2) (<= (LENGTH layer) 3))
+               (ERROR (FORMAT NIL "network ~A: (dense N [activation]), got ~A" name layer)))
+             (LET ((in (need-flat layer)) (out (CADR layer)) (act (CADDR layer)))
+               (SETQ n (1+ n))
+               (LET ((field (INTERN (FORMAT NIL "layer~A" n)))
+                     (label (FORMAT NIL "layer~A" n))
+                     (hvar  (INTERN (FORMAT NIL "h~A" n))))
+                 (PUSH `(member torch::nn::Linear ,field) members)
+                 (PUSH `(,field (($ this register_module) ,label (torch::nn::Linear ,in ,out))) inits)
+                 (PUSH (CONS hvar (activation< act `((-> ($ this ,field) forward) ,(QUOTE @PREV)) layer)) steps)
+                 (SETQ shape (LIST :flat out)))))
+
+            ;; ---- conv ---------------------------------------------------
+            ;; (conv FILTERS KERNEL [activation]) -- stride 1, no padding, so
+            ;; the picture shrinks by KERNEL-1 in each direction and the DSL
+            ;; knows by how much
+            ((STRING= kind "conv")
+             (UNLESS (>= (LENGTH layer) 3)
+               (ERROR (FORMAT NIL "network ~A: (conv FILTERS KERNEL [activation] [(pad P)] [(stride S)]), got ~A"
+                              name layer)))
+             (LET* ((img (need-image layer))
+                    (c (NTH 0 img)) (h (NTH 1 img)) (w (NTH 2 img))
+                    (f (CADR layer)) (k (CADDR layer))
+                    (rest (CDDDR layer))
+                    ;; the activation is the one bare symbol among the rest
+                    (act (FIND-IF #'SYMBOLP rest))
+                    (tail (REMOVE-IF #'SYMBOLP rest))
+                    (pad (spatial-opt< tail "pad" 0 layer name))
+                    (str (spatial-opt< tail "stride" 1 layer name)))
+               (WHEN (AND (NUMBERP k) (NUMBERP h) (NUMBERP pad) (> k (+ h (* 2 pad))))
+                 (ERROR (FORMAT NIL "network ~A: ~A has a ~Ax~A kernel over a ~Ax~A picture"
+                                name layer k k h w)))
+               (SETQ n (1+ n))
+               (LET ((field (INTERN (FORMAT NIL "conv~A" n)))
+                     (label (FORMAT NIL "conv~A" n))
+                     (hvar  (INTERN (FORMAT NIL "h~A" n))))
+                 (PUSH `(member torch::nn::Conv2d ,field) members)
+                 (PUSH `(,field (($ this register_module) ,label
+                                 (torch::nn::Conv2d
+                                   (($ (($ (torch::nn::Conv2dOptions ,c ,f ,k)
+                                           padding) (dims ,pad ,pad))
+                                       stride) (dims ,str ,str))))) inits)
+                 (PUSH (CONS hvar (activation< act `((-> ($ this ,field) forward) ,(QUOTE @PREV)) layer)) steps)
+                 (SETQ shape (LIST :image f (conv-out< h k pad str) (conv-out< w k pad str))))))
+
+            ;; ---- pool ---------------------------------------------------
+            ((STRING= kind "pool")
+             (UNLESS (>= (LENGTH layer) 2)
+               (ERROR (FORMAT NIL "network ~A: (pool K [(pad P)] [(stride S)]), got ~A" name layer)))
+             (LET* ((img (need-image layer))
+                    (c (NTH 0 img)) (h (NTH 1 img)) (w (NTH 2 img)) (k (CADR layer))
+                    (tail (CDDR layer))
+                    (pad (spatial-opt< tail "pad" 0 layer name))
+                    ;; a pool's stride defaults to its kernel, which is what
+                    ;; "halve the picture" means and what libtorch does
+                    (str (spatial-opt< tail "stride" k layer name)))
+               (SETQ n (1+ n))
+               (LET ((hvar (INTERN (FORMAT NIL "h~A" n))))
+                 (PUSH (CONS hvar `(torch::max_pool2d ,(QUOTE @PREV)
+                                                      (dims ,k ,k) (dims ,str ,str) (dims ,pad ,pad)))
+                       steps)
+                 (SETQ shape (LIST :image c (conv-out< h k pad str) (conv-out< w k pad str))))))
+
+            ;; ---- flatten ------------------------------------------------
+            ((STRING= kind "flatten")
+             (LET* ((img (need-image layer))
+                    (c (NTH 0 img)) (h (NTH 1 img)) (w (NTH 2 img)))
+               (SETQ n (1+ n))
+               (LET ((hvar (INTERN (FORMAT NIL "h~A" n))))
+                 (PUSH (CONS hvar `(($ ,(QUOTE @PREV) flatten) 1)) steps)
+                 (SETQ shape (LIST :flat (IF (AND (NUMBERP c) (NUMBERP h) (NUMBERP w)) (* c h w)
+                                             (ERROR (FORMAT NIL "network ~A: (flatten) cannot know the picture size here -- it is ~A channels of ~Ax~A, and a non-literal size cannot be worked out at compile time"
+                                                            name c h w))))))))
+
+            ;; ---- dropout ------------------------------------------------
+            ;; a no-op at eval time, which torch::nn::Dropout handles itself
+            ;; from the module's training flag
+            ((STRING= kind "dropout")
+             (UNLESS (= (LENGTH layer) 2)
+               (ERROR (FORMAT NIL "network ~A: (dropout P), got ~A" name layer)))
+             (UNLESS shape
+               (ERROR (FORMAT NIL "network ~A: ~A has no input before it" name layer)))
+             (SETQ n (1+ n))
+             (LET ((field (INTERN (FORMAT NIL "drop~A" n)))
+                   (label (FORMAT NIL "drop~A" n))
+                   (hvar  (INTERN (FORMAT NIL "h~A" n))))
+               (PUSH `(member torch::nn::Dropout ,field) members)
+               (PUSH `(,field (($ this register_module) ,label (torch::nn::Dropout ,(CADR layer)))) inits)
+               (PUSH (CONS hvar `((-> ($ this ,field) forward) ,(QUOTE @PREV))) steps)))
+
+            ;; ---- batch normalisation ------------------------------------
+            ((STRING= kind "norm")
+             (LET* ((img (need-image layer)) (c (NTH 0 img)))
+               (SETQ n (1+ n))
+               (LET ((field (INTERN (FORMAT NIL "norm~A" n)))
+                     (label (FORMAT NIL "norm~A" n))
+                     (hvar  (INTERN (FORMAT NIL "h~A" n))))
+                 (PUSH `(member torch::nn::BatchNorm2d ,field) members)
+                 (PUSH `(,field (($ this register_module) ,label (torch::nn::BatchNorm2d ,c))) inits)
+                 (PUSH (CONS hvar `((-> ($ this ,field) forward) ,(QUOTE @PREV))) steps))))
+
+            ;; ---- a bare activation --------------------------------------
+            ((MEMBER kind '("relu" "tanh" "sigmoid" "softmax" "log-softmax") :TEST #'STRING=)
+             (UNLESS shape (ERROR (FORMAT NIL "network ~A: ~A has no input before it" name layer)))
+             (SETQ n (1+ n))
+             (LET ((hvar (INTERN (FORMAT NIL "h~A" n))))
+               (PUSH (CONS hvar (activation< (CAR layer) (QUOTE @PREV) layer)) steps)))
+
+            (T (ERROR (FORMAT NIL "network ~A: unknown layer '~A'.~%  known: input image dense conv pool flatten dropout norm relu tanh sigmoid softmax log-softmax"
+                              name kind)))))))
+
+    (WHEN (NULL steps)
+      (ERROR (FORMAT NIL "network ~A: no layers that do anything" name)))
+
+    ;; thread the chain: each step's @PREV is the previous step's variable, the
+    ;; first being the forward's parameter
+    (LET* ((steps (REVERSE steps))
+           (prev  (QUOTE x))
+           (bound (QUOTE ())))
+      (DOLIST (st (BUTLAST steps))
+        (PUSH (LIST (CAR st) (SUBST prev (QUOTE @PREV) (CDR st))) bound)
+        (SETQ prev (CAR st)))
+      (LET ((final (SUBST prev (QUOTE @PREV) (CDR (CAR (LAST steps))))))
+        `(struct ,name (inherits torch::nn::Module)
+                 ,@(REVERSE members)
+                 (ctor () (init ,@(REVERSE inits)))
+                 (method forward ((const torch::Tensor & x)) (out torch::Tensor)
+                         ,(IF bound
+                              `(letin* ,(REVERSE bound) (return ,final))
+                              `(return ,final))))))))
+
+;;; ------------------------------------------------------------------
+;;; (train NAME (data X Y) (test X Y) (epochs N) (batch N)
+;;;             (optimiser adam LR) (loss nll) [(quiet)])
+;;; ------------------------------------------------------------------
+;;;
+;;; Emits the loop. Every clause is optional except `data'; the defaults are
+;;; the ones a first run wants.
+
+(DEFUN find-clause< (clauses key)
+  (FIND-IF #'(LAMBDA (c) (AND (LISTP c) (SYMBOLP (CAR c))
+                              (STRING= (SYMBOL-NAME (CAR c)) key)))
+           clauses))
+
+;;; the ARGUMENTS of a clause, for the ones that take some
+(DEFUN train-clause< (clauses key) (CDR (find-clause< clauses key)))
+
+;;; whether a clause is PRESENT, for the ones that take none.
+;;;
+;;; These need separate readers and did not have them. (shuffle) and (quiet)
+;;; carry no arguments, so train-clause< answered NIL for both "absent" and
+;;; "present with nothing in it" -- and every (shuffle) written since it was
+;;; added was silently ignored. It was found by asking what shuffling alone was
+;;; worth and getting a number identical to no shuffling at all, to four
+;;; decimal places, which is not what a real effect looks like.
+(DEFUN train-flag< (clauses key) (AND (find-clause< clauses key) T))
+
+(DEFUN optimiser< (spec params)
+  (LET* ((which (IF spec (SYMBOL-NAME (CAR spec)) "adam"))
+         (lr    (IF (AND spec (CDR spec)) (CADR spec) 0.001)))
+    (COND ((STRING= which "adam") `(torch::optim::Adam ,params ,lr))
+          ((STRING= which "sgd")  `(torch::optim::SGD  ,params ,lr))
+          (T (ERROR (FORMAT NIL "train: unknown optimiser '~A'.~%  known: adam sgd" which))))))
+
+;;; (schedule step SIZE GAMMA) -- multiply the learning rate by GAMMA every
+;;; SIZE epochs. Stepped once per epoch, which is where a schedule belongs:
+;;; stepping per batch decays it to nothing inside one pass.
+(DEFUN schedule< (spec opt)
+  (LET ((which (SYMBOL-NAME (CAR spec))))
+    (COND ((STRING= which "step")
+           (UNLESS (= (LENGTH spec) 3)
+             (ERROR (FORMAT NIL "train: (schedule step EVERY GAMMA), got ~A" (CONS 'schedule spec))))
+           `(torch::optim::StepLR ,opt ,(CADR spec) ,(CADDR spec)))
+          (T (ERROR (FORMAT NIL "train: unknown schedule '~A'.~%  known: step" which))))))
+
+;;; the metric a (metric …) clause selects: its form, and the word to print
+(DEFUN metric< (spec net x y)
+  (LET ((which (IF spec (SYMBOL-NAME (CAR spec)) "accuracy")))
+    (COND ((STRING= which "accuracy") (VALUES `(accuracy^network ,net ,x ,y) "accuracy"))
+          ((STRING= which "rmse")     (VALUES `(rmse^network     ,net ,x ,y) "rmse"))
+          ((STRING= which "mae")      (VALUES `(mae^network      ,net ,x ,y) "mae"))
+          (T (ERROR (FORMAT NIL "train: unknown metric '~A'.~%  known: accuracy rmse mae"
+                            which))))))
+
+(DEFUN loss< (spec out target)
+  (LET ((which (IF spec (SYMBOL-NAME (CAR spec)) "nll")))
+    (COND ((STRING= which "nll") `(torch::nll_loss ,out ,target))
+          ((STRING= which "mse") `(torch::mse_loss ,out ,target))
+          (T (ERROR (FORMAT NIL "train: unknown loss '~A'.~%  known: nll mse" which))))))
+
+(DEFMACRO train (name &REST clauses)
+  (LET* ((data   (train-clause< clauses "data"))
+         (test   (train-clause< clauses "test"))
+         (epochs (OR (CAR (train-clause< clauses "epochs")) 10))
+         (batch  (OR (CAR (train-clause< clauses "batch"))  100))
+         (opt    (train-clause< clauses "optimiser"))
+         (lossf  (train-clause< clauses "loss"))
+         (metric (train-clause< clauses "metric"))
+         (shuf   (train-flag<   clauses "shuffle"))
+         (sched  (train-clause< clauses "schedule"))
+         (quiet  (train-flag<   clauses "quiet"))
+         (net    (GENSYM "net")) (o (GENSYM "opt"))
+         (e      (GENSYM "e"))   (i (GENSYM "i"))
+         (total  (GENSYM "total")) (nb (GENSYM "nb"))
+         (t0     (GENSYM "t0"))    (el (GENSYM "elapsed"))
+         (perm   (GENSYM "perm"))  (sc (GENSYM "sched")))
+
+    (UNLESS (= (LENGTH data) 2)
+      (ERROR (FORMAT NIL "train ~A: (data INPUTS TARGETS) is required" name)))
+    (WHEN (AND test (/= (LENGTH test) 2))
+      (ERROR (FORMAT NIL "train ~A: (test INPUTS TARGETS) takes two" name)))
+
+    (LET ((xs (CAR data)) (ys (CADR data)))
+     (MULTIPLE-VALUE-BIND (mform mname)
+         (metric< metric net (CAR test) (CADR test))
+      `(letin* ((,net (,name))
+                (,o ,(optimiser< opt `(($ ,net parameters))))
+                ,@(WHEN sched (LIST (LIST sc (schedule< sched o)))))
+         ,@(WHEN (AND test (NOT quiet))
+             `((printf ,(FORMAT NIL "start ~A: %.4f\n" mname) ,mform)))
+         ;; the clock covers the BATCH LOOPS only. A metric pass over the
+         ;; held-out set is reporting, not training, and counting it would make
+         ;; the number depend on how often you asked to be told.
+         (let ((double ,t0 . 0.0) (double ,el . 0.0))
+           (for ((int ,e . 0)) (< ,e ,epochs) ((++ ,e))
+                (let ((double ,total . 0.0) (int ,nb . 0))
+                  (set ,t0 (now^seconds))
+                  ;; a fresh order each epoch, and the batch GATHERS through it,
+                  ;; so only the batch is copied rather than the whole set.
+                  ;; Without (shuffle) this is 0..n-1 and the gather is the
+                  ;; identity, which costs a copy and keeps one code path.
+                  (letin* ((,perm ,(IF shuf
+                                       `(torch::randperm (($ ,xs size) 0))
+                                       `(($ (torch::arange
+                                              (cast torch::Scalar (($ ,xs size) 0)))
+                                            to) torch::kInt64))))
+                    (for ((i64 ,i . 0)) (<= (+ ,i ,batch) (($ ,xs size) 0)) ((+= ,i ,batch))
+                         (letin* ((idx (($ ,perm narrow) 0 ,i ,batch)))
+                           (letin* ((bx (($ ,xs index_select) 0 idx))
+                                    (by (($ ,ys index_select) 0 idx)))
+                             (($ ,o zero_grad))
+                             (letin* ((out (($ ,net forward) bx)))
+                               (letin* ((l ,(loss< lossf 'out 'by)))
+                                 (($ l backward))
+                                 (($ ,o step))
+                                 (+= ,total (cast double (($ l (t<> item float)))))
+                                 (++ ,nb)))))))
+                  (+= ,el (- (now^seconds) ,t0))
+                  ;; the schedule steps once per EPOCH -- stepping it per batch
+                  ;; is the classic way to decay a learning rate to nothing in
+                  ;; a single pass
+                  ,@(WHEN sched `((($ ,sc step))))
+                  ,@(UNLESS quiet
+                      (IF test
+                          `((printf ,(FORMAT NIL "epoch %2d  loss %.4f  ~A %.4f\n" mname)
+                                    (+ ,e 1) (/ ,total ,nb) ,mform))
+                          `((printf "epoch %2d  loss %.4f\n" (+ ,e 1) (/ ,total ,nb)))))))
+           ,@(UNLESS quiet
+               `((printf "trained in %.2fs\n" ,el))))
+         ,@(IF test (LIST mform) '(0.0)))))))
+
+;;; Seconds on a monotonic clock. `train' reports how long the loop took,
+;;; because "it trained" and "it trained in four seconds" are different claims.
+(DEFMACRO now^seconds ()
+  `(letn (((struct timespec) ts))
+     (timespec_get (aof ts) TIME_UTC)
+     (+ (cast double ($ ts tv_sec))
+        (/ (cast double ($ ts tv_nsec)) 1000000000.0))))
+
+;;; ------------------------------------------------------------------
+;;; metrics
+;;; ------------------------------------------------------------------
+;;;
+;;; What `train' reports each epoch, and answers at the end. A classifier wants
+;;; accuracy and a regression wants an error, and they are not interchangeable
+;;; -- reporting accuracy for a regression is how a DSL tells you it was built
+;;; for one example. Each is a whole pass under a NoGradGuard.
+
+;;; Every metric runs under a NoGradGuard AND in eval mode. The second half is
+;;; not decoration: dropout and batch-norm behave differently while training,
+;;; and leaving them in training mode for the evaluation pass cost the conv net
+;;; half a point of accuracy before this line existed. `train #t' puts it back.
+
+;;; accuracy: the share of rows whose argmax is the label
+(DEFMACRO accuracy^network (net x y)
+  `(progn
+     (letin* ((g (torch::NoGradGuard)))
+       (($ ,net eval))
+       (letin* ((pred (($ (($ ,net forward) ,x) argmax) 1)))
+         (letin* ((hits (($ (($ pred eq) ,y) sum))))
+           (($ ,net train) #t)
+           (/ (cast double (($ hits (t<> item i64))))
+              (cast double (($ ,y numel)))))))))
+
+;;; root mean squared error -- in the UNITS OF THE TARGET, which is the whole
+;;; reason to prefer it to mse when reporting. The sqrt is not decoration: it
+;;; was missing here at first and the metric printed mse under the name rmse.
+(DEFMACRO rmse^network (net x y)
+  `(progn
+     (letin* ((g (torch::NoGradGuard)))
+       (($ ,net eval))
+       (letin* ((d (($ (($ ,net forward) ,x) sub) ,y)))
+         (($ ,net train) #t)
+         (cast double (($ (($ (($ (($ d pow) 2.0) mean)) sqrt)) (t<> item float))))))))
+
+;;; mean absolute error -- the same units, less swayed by one bad row
+(DEFMACRO mae^network (net x y)
+  `(progn
+     (letin* ((g (torch::NoGradGuard)))
+       (($ ,net eval))
+       (letin* ((d (($ (($ ,net forward) ,x) sub) ,y)))
+         (($ ,net train) #t)
+         (cast double (($ (($ (($ d abs)) mean)) (t<> item float))))))))

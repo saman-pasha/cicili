@@ -1,0 +1,54 @@
+;;;; Cicili declarations for <memory> -- std::shared_ptr and std::make_shared
+;;;;
+;;;; Requires in target: (include <memory>) and a C++ target (:cpp #t).
+;;;;
+;;;; NOTHING HERE EMITS C++, the same arrangement lib/cpp/torch uses. The real
+;;;; declarations come from the real header; what these buy is inference --
+;;;; ($ (cof (($ p get))) member) resolving instead of "unknown struct type".
+;;;;
+;;;; WHY THIS IS A FUNCTION AND NOT A DECLARATION FILE. Cicili has one
+;;;; signature per name and no way to say "for all T", so std::shared_ptr<Net>
+;;;; and std::shared_ptr<Other> are two names and need two declarations. A file
+;;;; of fixed declarations could not know which. So the file exports a function
+;;;; that BUILDS the forms for one instantiation, and the target splices as
+;;;; many as it uses into its own init-macro:
+;;;;
+;;;;     (import "lib/cpp/memory.cicili")
+;;;;
+;;;;     (DEFMACRO init-macro ()
+;;;;       `($$$ ,@(shared-ptr< 'Net)))
+;;;;
+;;;; init-macro is the only place a declaration emits nothing. Called anywhere
+;;;; else -- inside a target body, say -- the same forms are spliced into the
+;;;; output and `struct std::shared_ptr<Net>;' lands in the generated file,
+;;;; which is not a thing C++ will accept.
+
+;;; The declarations for ONE instantiation of std::shared_ptr.
+;;;
+;;; `get' rather than operator-> or operator*, because Cicili reaches a member
+;;; through a pointer the same way C does -- ($ (cof p) member) -- and get()
+;;; is the one accessor spelled as an ordinary method call:
+;;;
+;;;     ($ (cof (($ n get))) total)      ->   ((*(n.get())).total)
+;;;
+;;; `use_count' is there because a leak in a model holder is the failure this
+;;; whole arrangement is exposed to, and counting is how you find it.
+(DEFUN shared-ptr< (type)
+  `((decl) (struct (t<> std::shared_ptr ,type)
+             (const) (method get       () (out ,type *))
+             (const) (method use_count () (out long))
+             (method reset ()))))
+
+;;; The declarations for std::shared_ptr AND the make_shared that produces it.
+;;;
+;;; Separate from shared-ptr< because make_shared takes the constructor's
+;;; arguments, and Cicili has one signature per name: a type whose constructor
+;;; takes something other than one long needs its own declaration, or none at
+;;; all -- an undeclared name is still emitted as written and still compiles.
+(DEFUN make-shared< (type &REST params)
+  `(,@(shared-ptr< type)
+    (decl) (func (t<> std::make_shared ,type) ,(IF params
+                                                   (LOOP FOR p IN params FOR i FROM 0
+                                                         COLLECT (LIST p (INTERN (FORMAT NIL "a~D" i))))
+                                                   '())
+                 (out (t<> std::shared_ptr ,type)))))

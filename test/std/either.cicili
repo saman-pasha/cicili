@@ -1,0 +1,159 @@
+;;;; test Cicili std either -- the `left' / `right' front ends
+;;; Neither constructor can be inferred from its argument: one value names one
+;;; half of an (<> Either e a). Both expand to a brace list and take their type
+;;; from the slot they land in. What is under test is that no instantiation is
+;;; named at a construction site, that `match' opens both cases, and that two
+;;; instantiations in one file stay apart.
+
+(source "either.c"
+  (make :std #t :compile #t :link ("-leither.o" "-o" "either_test"))
+
+  (include <errno.h>)
+
+  ;; `<>' interns its parts by name, so every parameter has to BE a name --
+  ;; a bare (const char *) cannot be part of one. An enum is a name, and an
+  ;; error code is what the left half usually carries anyway.
+  (enum ParseErr
+    (PE_EMPTY . 1)
+    (PE_ODD))
+
+  (decl-either int      long)   (impl-either int      long)
+  (decl-either ParseErr double) (impl-either ParseErr double)
+  ;; each half takes its own optional modifier, and it is part of the name, so
+  ;; this is a THIRD type rather than a redefinition of the first: the answer
+  ;; comes back as a pointer, the error still by value
+  (decl-either int ref long)    (impl-either int ref long)
+
+  (func check ((const char * what) (llong got) (llong want))
+        (out int)
+        (if (== got want)
+            (block (printf "ok   %-34s %lld\n" what got) (return 0))
+          (block (printf "FAIL %-34s got %lld want %lld\n" what got want) (return 1)))
+        (return 1))
+
+  ;; ---- the shape the front ends exist for -----------------------------
+  ;; three returns, three instantiation names not written down
+  (func (<> parse either int long) ((const char * text))
+        (out (<> Either int long))
+        (let ((char * end) (long n))
+          (set errno 0)
+          (set n (strtol text (aof end) 10))
+          (when (== end text) (return (left EINVAL)))
+          (when errno         (return (left errno)))
+          (return (right n))))
+
+  ;; a second instantiation, sharing neither half with the first, to prove the
+  ;; front ends dispatch per function and not per program
+  (func (<> half either ParseErr double) ((int x))
+        (out (<> Either ParseErr double))
+        (when (% x 2) (return (left PE_ODD)))
+        (return (right (/ x 2.0))))
+
+  ;; a closure has its own out type, so the brace list inside one is typed by
+  ;; the closure and not by the function around it
+  (func nested ()
+        (out (<> Either int long))
+        (let ((int n . #'(matchn (closure ((<> cl inner))
+                                   (out (<> Either ParseErr double))
+                                   (return (left PE_EMPTY)))
+                           (right v (cast int v))
+                           (left  e (cast void e) -7))))
+          (when (== n -7) (return (right (cast long 1))))
+          (return (left EINVAL))))
+
+  ;; (decl-either int ref long): `right' carries an (long ref), `left' an int.
+  ;; Nothing else in the suite instantiates a modified half, so without this the
+  ;; mod-e/mod-a plumbing could break and every other case stay green.
+  (func (<> pick either int ref long) ((long ref cell) (int ok))
+        (out (<> Either int ref long))
+        (when ok (return (right cell)))
+        (return (left ERANGE)))
+
+  (main
+    (let ((int bad . 0))
+
+      ;; ---- a half carried by ref ---------------------------------------
+      (let ((long n . 41))
+        (+= bad (check "right by ref reads through"
+                  (matchn ((<> pick either int ref long) (aof n) 1)
+                    (right p   (cof p))
+                    (left  err (cast long (- err))))
+                  41))
+        ;; the payload is a pointer INTO n, so writing through it is visible
+        (match ((<> pick either int ref long) (aof n) 1)
+          (right p   (set (cof p) 99))
+          (left  err (cast void err)))
+        (+= bad (check "right by ref writes through" n 99))
+        (+= bad (check "left still by value"
+                  (matchn ((<> pick either int ref long) (aof n) 0)
+                    (right p   (cof p))
+                    (left  err (cast long err)))
+                  ERANGE)))
+
+      ;; ---- right / left ------------------------------------------------
+      (+= bad (check "right, through match"
+                (matchn ((<> parse either int long) "42")
+                  (right n   n)
+                  (left  err (cast long (- err))))
+                42))
+      (+= bad (check "left, through match"
+                (matchn ((<> parse either int long) "nope")
+                  (right n   n)
+                  (left  err (cast long err)))
+                EINVAL))
+
+      ;; a right carrying 0 is still a right -- what a sentinel cannot say
+      (+= bad (check "right 0 is not an error"
+                (matchn ((<> parse either int long) "0")
+                  (right n   (+ n 1))
+                  (left  err (cast long (- err))))
+                1))
+
+      ;; the statement form of match sees the same two cases
+      (let ((int hits . 0))
+        (match ((<> parse either int long) "5")
+          (right n   (block (cast void n)   (++ hits)))
+          (left  err (block (cast void err) (-- hits))))
+        (match ((<> parse either int long) "x")
+          (right n   (block (cast void n)   (++ hits)))
+          (left  err (block (cast void err) (-- hits))))
+        (+= bad (check "match statement, both arms" hits 0)))
+
+      ;; ---- a second instantiation, neither half shared --------------------
+      (+= bad (check "right, either ParseErr double"
+                (matchn ((<> half either ParseErr double) 10)
+                  (right v (cast llong (* v 10)))
+                  (left  e (cast llong (- e))))
+                50))
+      (+= bad (check "left, either ParseErr double"
+                (matchn ((<> half either ParseErr double) 7)
+                  (right v (cast llong (* v 10)))
+                  (left  e (cast llong e)))
+                PE_ODD))
+
+      ;; ---- the innermost out type wins -----------------------------------
+      (+= bad (check "left inside a closure"
+                (matchn (nested)
+                  (right n   n)
+                  (left  err (cast long (- err))))
+                1))
+
+      ;; ---- the back ends are still the way to name one directly -----------
+      (+= bad (check "back-end right still works"
+                (matchn ((<> right int long) 9)
+                  (right n   n)
+                  (left  err (cast long (- err))))
+                9))
+      (+= bad (check "back-end left still works"
+                (matchn ((<> left int long) 3)
+                  (right n   n)
+                  (left  err (cast long err)))
+                3))
+
+      (if (== bad 0)
+          (printf "either: all ok\n")
+        (printf "either: %d FAILED\n" bad))
+      (return bad))))
+
+;; sbcl --script cicili.lisp ./test/std/either.cicili
+;; ./test/std/either_test

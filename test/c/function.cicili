@@ -1,0 +1,150 @@
+;;;; Cicili C clauses: functions
+;;; func / out / parameters / function pointers / multiple returns
+;;; lambda / closure / def-closure / exec-closure
+
+(source "function.c"
+  (make :std #t :compile #t :link ("-lfunction.o" "-o" "function_test"))
+
+  (include <stdarg.h>)
+
+  (func check ((const char * what) (llong got) (llong want))
+        (out int)
+        (if (== got want)
+            (block (printf "ok   %-32s %lld\n" what got) (return 0))
+          (block (printf "FAIL %-32s got %lld want %lld\n" what got want) (return 1)))
+        (return 1))
+
+  ;; a function-pointer type alias, used for the array of pointers below
+  (typedef func BinOp ((int a) (int b)) (out int))
+
+  ;; ---- plain functions ------------------------------------------------
+  (func add ((int a) (int b)) (out int) (return (+ a b)))
+
+  ;; no out clause means void
+  (func store_into ((int * where) (int what)) (set (cof where) what))
+
+  ;; static: not visible outside this translation unit
+  (static) (func triple ((int n)) (out int) (return (* n 3)))
+
+  ;; An unnamed parameter belongs on a DECLARATION. Omitting the name in a
+  ;; definition is a C23 extension, which -Werror rejects, so a definition names
+  ;; every parameter even when the body ignores one.
+  (decl) (func ignores_second ((int a) (int)) (out int))
+  (func ignores_second ((int a) (int unused)) (out int) (return a))
+
+  ;; a parameter that is itself a function pointer
+  (func apply_twice ((func f ((int n)) (out int)) (int seed))
+        (out int)
+        (return (f (f seed))))
+
+  ;; Variadic: $$$ is the ... in a parameter list. The BODY has to be raw C --
+  ;; va_start and va_arg are C macros taking a bare type name or the un-decayed
+  ;; last named parameter, neither of which is an expression the func grammar can
+  ;; carry, so lib/std/c/stdarg.cicili deliberately leaves them undeclared.
+  (code "int sum_all (int count, ...) { va_list ap; int t = 0; va_start (ap, count); for (int i = 0; i < count; i++) t += va_arg (ap, int); va_end (ap); return t; }")
+  (decl) (func sum_all ((int count) ($$$)) (out int))
+
+  ;; ---- multiple returns ------------------------------------------------
+  ;; the out clause is an inline struct. The function must be (static) in a
+  ;; source, or (decl) in a header and defined in a source, because the
+  ;; generated struct type has to be visible at both ends.
+  (static) (func divmod ((int a) (int b))
+                 (out '{ (int q) (int r) })
+                 (return '{ (/ a b) (% a b) }))
+
+  ;; ---- a function returning a pointer ---------------------------------
+  (func pick ((int * xs) (int i)) (out int *) (return (aof (nth i xs))))
+
+  (main
+    (let ((int bad . 0))
+
+      ;; ---- calling ---------------------------------------------------
+      (+= bad (check "plain call" (add 20 22) 42))
+      (+= bad (check "static function" (triple 14) 42))
+      (+= bad (check "unnamed parameter" (ignores_second 42 99) 42))
+
+      (let ((int slot . 0))
+        (store_into (aof slot) 42)
+        (+= bad (check "void function wrote" slot 42)))
+
+      ;; ---- function pointers ----------------------------------------
+      ;; a func clause in TYPE position is a pointer to a function
+      (let ((func op ((int a) (int b)) (out int) . add))
+        (+= bad (check "function pointer variable" (op 20 22) 42)))
+
+      (+= bad (check "function pointer parameter" (apply_twice triple 2) 18))
+
+      ;; An array of function pointers. The [] goes after the NAME and before the
+      ;; parameter list, the same place it sits on any other variable.
+      (let ((func ops [] ((int a) (int b)) (out int) . '{ add add }))
+        (+= bad (check "array of function pointers" ((nth 1 ops) 20 22) 42))
+        (+= bad (check "array of fn ptrs, first"    ((nth 0 ops) 1 2)    3)))
+
+      ;; the same thing through a typedef also works
+      (let ((BinOp typed_ops [] . '{ add add }))
+        (+= bad (check "typedef'd array of fn ptrs" ((nth 1 typed_ops) 20 22) 42)))
+
+      ;; ---- variadic --------------------------------------------------
+      (+= bad (check "variadic sum" (sum_all 4 1 2 3 36) 42))
+
+      ;; ---- multiple returns ------------------------------------------
+      ;; typeof names the generated inline struct type
+      (let (((typeof (divmod 1 1)) d))
+        (set d (divmod 47 5))
+        (+= bad (check "multi return quotient" ($ d q) 9))
+        (+= bad (check "multi return remainder" ($ d r) 2)))
+
+      ;; ---- returning a pointer ---------------------------------------
+      (let ((int xs [] . '{ 1 2 3 4 }))
+        (set (cof (pick xs 2)) 42)
+        (+= bad (check "returned pointer writes" (nth 2 xs) 42)))
+
+      ;; ---- lambda: a lifted top-level function -----------------------
+      ;; The lambda is quoted. `auto' reads the binding two ways: given the
+      ;; lambda ITSELF the type is a pointer to that function, given a CALL of
+      ;; one it is whatever the call returns.
+      (let ((func square ((int n)) (out int) .
+                  '(lambda ((int n)) (out int) (return (* n n)))))
+        (+= bad (check "lambda, explicit func type" (square 7) 49)))
+
+      ;; the same binding with auto: a pointer to the lambda
+      (let ((auto cube . '(lambda ((int n)) (out int) (return (* n (* n n))))))
+        (+= bad (check "auto on the lambda itself" (cube 4) 64)))
+
+      ;; auto on a CALL of a quoted lambda: the call's return type, not a
+      ;; pointer. A call initializer is marked with #' the same as any other.
+      (let ((auto called . #'('(lambda ((int n)) (out int) (return (+ n 2))) 40)))
+        (+= bad (check "auto on a call of a lambda" called 42)))
+
+      ;; a void lambda through auto
+      (let ((int sink . 0))
+        (let ((auto store . '(lambda ((int * where) (int what)) (set (cof where) what))))
+          (store (aof sink) 42)
+          (+= bad (check "auto on a void lambda" sink 42))))
+
+      ;; a lambda passed straight into a call
+      (+= bad (check "lambda as argument"
+                     (apply_twice '(lambda ((int n)) (out int) (return (+ n 3))) 36)
+                     42))
+
+      ;; a lambda nested inside a lambda, both bound with auto
+      (let ((auto outer . '(lambda ((int n)) (out int)
+                            (let ((auto inner . '(lambda ((int m)) (out int) (return (* m 2)))))
+                              (return (+ (inner n) 2))))))
+        (+= bad (check "nested lambda" (outer 20) 42)))
+
+      ;; ---- closure: a function that captures its environment ---------
+      (let ((int base . 40))
+        (+= bad (check "closure captures"
+                       (closure ((<> cl demo) :base (aof base))
+                         (out int)
+                         (return (+ (cof base) 2)))
+                       42)))
+
+      (if (== bad 0)
+          (printf "function: all ok\n")
+        (printf "function: %d FAILED\n" bad))
+      (return bad))))
+
+;; sbcl --script cicili.lisp ./test/c/function.cicili
+;; ./test/c/function_test

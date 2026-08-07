@@ -1,0 +1,195 @@
+;;;; Getting data into libtorch -- the part that is not machine learning
+;;;;
+;;;; Requires in target: (include <torch/torch.h>), a C++ target (:cpp #t), and
+;;;; lib/cpp/torch/torch.cicili imported.
+;;;;
+;;;; Every example here reads a file into a float buffer and then has to turn
+;;;; that into tensors, standardise them, shuffle them and cut them in two. That
+;;;; is four concepts and about forty lines, written slightly differently each
+;;;; time, and three of the four have a way to be wrong that nothing reports.
+;;;; These are those four concepts, one macro each, all composing with letin*.
+;;;;
+;;;; ------------------------------------------------------------------
+;;;; WHY THIS IS NOT A BINDING FOR torch::data
+;;;; ------------------------------------------------------------------
+;;;;
+;;;; libtorch has its own Dataset/Sampler/DataLoader stack, and it is the right
+;;;; answer for data that does not fit in memory or that needs decoding per
+;;;; example. It was measured against what `train' already does -- one
+;;;; randperm per epoch and one index_select per batch -- over a [60000, 784]
+;;;; tensor, five epochs, batch 100, this machine:
+;;;;
+;;;;     gather (what train does)        0.11 s
+;;;;     DataLoader, 0 workers           1.22 s
+;;;;     DataLoader, 2 workers           0.73 s
+;;;;     DataLoader, 4 workers           0.45 s
+;;;;
+;;;; Eleven times slower single-threaded, four times with four workers, because
+;;;; the loader slices one example at a time through a virtual get() and then
+;;;; stacks them back together. For a tensor that is already in memory that work
+;;;; is pure overhead. So the layer here operates on WHOLE TENSORS, and binding
+;;;; torch::data is the job for streaming data, when there is some.
+;;;;
+;;;; ------------------------------------------------------------------
+;;;; THE ONE THING TO KEEP IN MIND: from_blob BORROWS
+;;;; ------------------------------------------------------------------
+;;;;
+;;;; (features …), (images …), (labels …) and (targets …) all wrap memory you
+;;;; own. libtorch does not copy it and does not free it, so THE BUFFER MUST
+;;;; OUTLIVE EVERY TENSOR DERIVED FROM IT -- and the derived ones are views, so
+;;;; that includes the split halves and anything narrowed out of them.
+;;;;
+;;;; In practice: allocate the buffer in the enclosing scope, bind the tensors
+;;;; with letin* inside it, and the nesting is the proof. Freeing the buffer
+;;;; first is not a compile error and not a crash; it is wrong numbers.
+;;;;
+;;;; (standardise …) and (normalise …) answer NEW tensors, so anything derived
+;;;; from those is safe on its own.
+
+;;; ------------------------------------------------------------------
+;;; raw memory -> tensors
+;;; ------------------------------------------------------------------
+
+;;; a design matrix: ROWS examples of COLS features each
+(DEFMACRO features (buf rows cols)
+  `(torch::from_blob (cast (void *) ,buf) (dims ,rows ,cols)))
+
+;;; images, as libtorch wants them: N examples, C channels, H by W. A conv
+;;; stack takes this shape and nothing else, and getting the order wrong
+;;; trains happily on transposed pictures.
+(DEFMACRO images (buf n c h w)
+  `(torch::from_blob (cast (void *) ,buf) (dims ,n ,c ,h ,w)))
+
+;;; CLASS LABELS, for nll_loss and cross-entropy. The `to' is the point: those
+;;; losses require an int64 target and the buffer is float, and passing the
+;;; float straight through fails inside libtorch with a message about a scalar
+;;; type rather than about your labels.
+(DEFMACRO labels (buf n)
+  `(($ (torch::from_blob (cast (void *) ,buf) (dims ,n)) to) torch::kInt64))
+
+;;; REGRESSION TARGETS, for mse_loss. The view is the point: a regression head
+;;; puts out [N, 1], and mse against a [N] target broadcasts into an [N, N]
+;;; comparison instead of failing -- so the loss is wrong and training simply
+;;; does not converge, with nothing anywhere saying why.
+(DEFMACRO targets (buf n)
+  `(($ (torch::from_blob (cast (void *) ,buf) (dims ,n)) view) (dims ,n 1)))
+
+;;; how many examples. ($ t size) 0 reads as arithmetic; this reads as a count.
+(DEFMACRO rows (tn) `(($ ,tn size) 0))
+
+;;; ------------------------------------------------------------------
+;;; preparing
+;;; ------------------------------------------------------------------
+
+;;; ONE mean and ONE deviation for every element -- what MNIST wants, because
+;;; every feature is a pixel on the same scale and the constants are the
+;;; well-known ones for the corpus.
+(DEFMACRO normalise (tn mean std)
+  `(progn
+     (letin* ((x ,tn))
+       (letin* ((m (torch::full (dims 1) (cast torch::Scalar ,mean)))
+                (s (torch::full (dims 1) (cast torch::Scalar ,std))))
+         (($ (($ x sub) m) div) s)))))
+
+;;; PER COLUMN, which is what a table wants: median income is single digits and
+;;; population is in the thousands, and a network fed that spends its first
+;;; epochs learning the scaling instead of the problem.
+;;;
+;;; NTRAIN IS NOT OPTIONAL, and that is the whole point of the macro. The mean
+;;; and deviation come from the FIRST NTRAIN ROWS ONLY. Computing them over
+;;; everything leaks the held-out rows into the model, and the result is a
+;;; better-looking number that means less -- the most common way a good score
+;;; is not one. Requiring the argument makes the leak something you have to
+;;; type rather than something you forget.
+;;;
+;;; Population deviation, not sample: it matches numpy's and scikit-learn's
+;;; StandardScaler, so a Python comparison stays a comparison.
+;;;
+;;; A CONSTANT COLUMN gets a deviation of 1 rather than its real 0. Not a
+;;; clamp to something small -- dividing a constant column by 1e-6 amplifies
+;;; whatever rounding is in it into a feature made entirely of noise. Leaving
+;;; it at 1 makes the column a constant offset, which is what it is, and it is
+;;; what scikit-learn's StandardScaler does.
+(DEFMACRO standardise (tn ntrain)
+  `(progn
+     (letin* ((x ,tn))
+       (letin* ((tr (($ x narrow) 0 0 ,ntrain)))
+         (letin* ((m  (($ tr mean) (dims 0) #t))
+                  (s0 (($ tr std) (dims 0) #f #t)))
+           (letin* ((s (torch::where
+                        (($ s0 lt) (cast torch::Scalar 0.000001))
+                        (torch::ones_like s0)
+                        s0)))
+             (($ (($ x sub) m) div) s)))))))
+
+;;; ------------------------------------------------------------------
+;;; ordering and splitting
+;;; ------------------------------------------------------------------
+
+;;; A random order of 0..n-1, as an index tensor.
+;;;
+;;; SHUFFLE BEFORE SPLITTING, not after, whenever the file has an order to it.
+;;; California housing is sorted geographically, so cutting it by position puts
+;;; one part of the state in training and another in the test set -- which is
+;;; not a hard test, it is a different problem.
+;;;
+;;; To move features and targets TOGETHER, gather both through one order:
+;;;
+;;;     (letin* ((p  (shuffled-order (rows X0)))
+;;;              (X  (gather X0 p))
+;;;              (Y  (gather Y0 p)))
+;;;       …)
+;;;
+;;; The shared p is what makes row i of X still belong with row i of Y. Two
+;;; separate calls to shuffled-order would silently pair every example with
+;;; someone else's answer, and the model would train to a stable, meaningless
+;;; loss.
+(DEFMACRO shuffled-order (n) `(torch::randperm ,n))
+
+;;; the identity order, for when you want the same code path without shuffling
+(DEFMACRO row-order (n)
+  `(($ (torch::arange (cast torch::Scalar ,n)) to) torch::kInt64))
+
+;;; reorder rows. This COPIES the rows it selects, so it does not extend the
+;;; life of anything -- unlike head and tail below, which are views.
+(DEFMACRO gather (tn order) `(($ ,tn index_select) 0 ,order))
+
+;;; the first N rows, and everything after them. Both are VIEWS: no copy, and
+;;; they keep the tensor they came from alive but not the buffer under it.
+(DEFMACRO head (tn n) `(($ ,tn narrow) 0 0 ,n))
+;; TN IS BOUND BEFORE IT IS USED, because tail needs it twice -- once for the
+;; narrow and once for the size it narrows to the end of. Written straight,
+;; (tail (standardise (gather X0 p) k) k) standardises and gathers the whole
+;; matrix twice, and if the argument has any state -- (tail (gather X0
+;; (shuffled-order n)) k) -- the tensor being narrowed is not the tensor being
+;; measured. Every other macro here that needs its argument more than once
+;; binds it first; this one did not.
+(DEFMACRO tail (tn n)
+  `(letin* ((t^tail ,tn) (n^tail ,n))
+     (($ t^tail narrow) 0 n^tail (- (($ t^tail size) 0) n^tail))))
+
+;;; where to cut, as a share: (split-point 20640 0.8) is 16512. Rounded down,
+;;; so the training half never ends up one row longer than asked for.
+(DEFMACRO split-point (n ratio)
+  `(cast i64 (* (cast double ,n) ,ratio)))
+
+;;; ------------------------------------------------------------------
+;;; the number that makes an error readable
+;;; ------------------------------------------------------------------
+
+;;; What predicting a constant would score on the held-out rows, as an RMSE.
+;;;
+;;; An error figure means nothing on its own -- it is in the units of the
+;;; target, so 0.53 is good or terrible depending entirely on the column. This
+;;; is the number a model has to beat for its own to say anything.
+;;;
+;;; THE CONSTANT IS THE TRAINING MEAN, not the held-out mean, and the two are
+;;; not the same claim: a predictor that already knows the mean of the rows it
+;;; is being tested on is not one you could have built. Using the held-out mean
+;;; makes the baseline look better and the model look worse, and it is the easy
+;;; mistake because the held-out targets are the ones already in hand.
+(DEFMACRO baseline-rmse (ytrain ytest)
+  `(progn
+     (letin* ((mu (($ ,ytrain mean))))
+       (letin* ((d (($ ,ytest sub) mu)))
+         (cast double (($ (($ (($ (($ d pow) 2.0) mean)) sqrt)) (t<> item float))))))))

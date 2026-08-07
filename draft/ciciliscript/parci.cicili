@@ -1,0 +1,25 @@
+
+(import "draft/types/dynamic-macros.cicili")
+
+(DEFMACRO parci (input output &REST body)
+  (LET ((input input)
+        (output output)
+        (body body))
+    (FORMAT T "~A~%" body)
+  
+
+    )) ; parci
+
+
+(parci ; sample1
+    'in 'out
+    
+    (func function
+      a: int
+      b: float
+      out string
+      return @data.name.1
+      @insert
+      return a :toString() + b :toString())
+    
+    ) ; parci

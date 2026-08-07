@@ -1,0 +1,87 @@
+;;;; Cicili declarations for <stdlib.h>
+;;;; Import from lib/std/prelude.cicili:  (import "./c/stdlib.cicili")
+;;;; Requires in target: (include <stdlib.h>)  or  (:std #t)
+;;;;
+;;;; size_t and wchar_t belong to stddef.cicili and are only used here, not
+;;;; redeclared. malloc, calloc and free used to live in lib/std/prelude.cicili;
+;;;; they are declared here now.
+
+(DEFMACRO init-macro ()
+  `($$$
+     ;;; ---- types ----
+     (decl) (struct div_t
+              (member int quot)
+              (member int rem))
+     (decl) (struct ldiv_t
+              (member long quot)
+              (member long rem))
+     (decl) (struct lldiv_t
+              (member llong quot)
+              (member llong rem))
+
+     ;;; ---- constants ----
+     (typedef int    EXIT_FAILURE)
+     (typedef int    EXIT_SUCCESS)
+     (typedef int    RAND_MAX)
+     (typedef size_t MB_CUR_MAX)
+
+     ;;; ---- numeric conversion functions ----
+     (decl) (func atof    ((const char * s)) (out double))
+     (decl) (func atoi    ((const char * s)) (out int))
+     (decl) (func atol    ((const char * s)) (out long))
+     (decl) (func atoll   ((const char * s)) (out llong))
+     (decl) (func strtod  ((const char * restrict nptr) (char ** restrict endptr)) (out double))
+     (decl) (func strtof  ((const char * restrict nptr) (char ** restrict endptr)) (out float))
+     (decl) (func strtold ((const char * restrict nptr) (char ** restrict endptr)) (out real))
+     (decl) (func strtol   ((const char * restrict nptr) (char ** restrict endptr) (int base)) (out long))
+     (decl) (func strtoll  ((const char * restrict nptr) (char ** restrict endptr) (int base)) (out llong))
+     (decl) (func strtoul  ((const char * restrict nptr) (char ** restrict endptr) (int base)) (out ulong))
+     (decl) (func strtoull ((const char * restrict nptr) (char ** restrict endptr) (int base)) (out ullong))
+
+     ;;; ---- pseudo-random sequence generation ----
+     (decl) (func rand  () (out int))
+     (decl) (func srand ((uint seed)))
+
+     ;;; ---- memory management ----
+     (decl) (func malloc        ((size_t size)) (out void *))
+     (decl) (func calloc        ((size_t count) (size_t size)) (out void *))
+     (decl) (func free          ((void * ptr)))
+     (decl) (func realloc       ((void * ptr) (size_t size)) (out void *))
+     (decl) (func aligned_alloc ((size_t alignment) (size_t size)) (out void *))
+
+     ;;; ---- communication with the environment ----
+     (decl) (func abort        ())
+     (decl) (func atexit       ((func handler ())) (out int))
+     (decl) (func at_quick_exit ((func handler ())) (out int))
+     (decl) (func exit         ((int status)))
+     (decl) (func _Exit        ((int status)))
+     (decl) (func getenv       ((const char * name)) (out char *))
+     (decl) (func setenv       ((const char * name) (const char * value) (int overwrite)) (out int)) ; POSIX
+     (decl) (func unsetenv     ((const char * name)) (out int))                                      ; POSIX
+     (decl) (func quick_exit   ((int status)))
+     (decl) (func system       ((const char * command)) (out int))
+
+     ;;; ---- searching and sorting ----
+     (decl) (func bsearch ((const void * key) (const void * base) (size_t nmemb) (size_t size)
+                            (func compar ((const void * a) (const void * b)) (out int)))
+                           (out void *))
+     (decl) (func qsort   ((void * base) (size_t nmemb) (size_t size)
+                            (func compar ((const void * a) (const void * b)) (out int))))
+
+     ;;; ---- integer arithmetic ----
+     (decl) (func abs   ((int j)) (out int))
+     (decl) (func div   ((int numer) (int denom)) (out div_t))
+     (decl) (func labs  ((long j)) (out long))
+     (decl) (func ldiv  ((long numer) (long denom)) (out ldiv_t))
+     (decl) (func llabs ((llong j)) (out llong))
+     (decl) (func lldiv ((llong numer) (llong denom)) (out lldiv_t))
+
+     ;;; ---- multibyte/wide character conversion ----
+     (decl) (func mblen  ((const char * s) (size_t n)) (out int))
+     (decl) (func mbtowc ((wchar_t * restrict pwc) (const char * restrict s) (size_t n)) (out int))
+     (decl) (func wctomb ((char * s) (wchar_t wc)) (out int))
+
+     ;;; ---- multibyte/wide string conversion ----
+     (decl) (func mbstowcs ((wchar_t * restrict pwcs) (const char * restrict s) (size_t n)) (out size_t))
+     (decl) (func wcstombs ((char * restrict s) (const wchar_t * restrict pwcs) (size_t n)) (out size_t))
+     ))

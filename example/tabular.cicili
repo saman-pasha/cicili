@@ -1,0 +1,201 @@
+;;;; Tabular regression with the DSL -- a different problem, the same six lines
+;;;;
+;;;; The point of this file is generality. MNIST is a classifier over images
+;;;; with a log-softmax head, nll loss and an accuracy metric; this is a
+;;;; regression over eight numeric columns with a bare linear head, mse loss
+;;;; and an error metric. If the DSL only fitted the first, it was fitted TO the
+;;;; first -- so here is the second, and the model and training are still:
+;;;;
+;;;;     (network Price (input 8) (dense 64 relu) (dense 32 relu) (dense 1))
+;;;;     (train Price (data …) (loss mse) (metric rmse) …)
+;;;;
+;;;;     sbcl --script cicili.lisp ./example/tabular.cicili
+;;;;     ./example/tabular
+;;;;
+;;;; DATA. It reads a headerless CSV of eight features and one target from
+;;;; $TABULAR_CSV, and generates data from a known function when there is none.
+;;;; The generated set is not a toy in the sense that matters here: the target
+;;;; is a non-linear function of the inputs with interaction terms and noise, so
+;;;; a linear fit cannot reach it and the network has to earn the number. The
+;;;; baseline printed alongside says what predicting the mean would score, which
+;;;; is the only honest way to read an RMSE.
+;;;;
+;;;; The California housing set is the obvious real one to point at -- eight
+;;;; numeric columns, one continuous target, 20640 rows:
+;;;;
+;;;;     TABULAR_CSV=housing.csv ./example/tabular
+;;;;
+;;;; The paths in :compile and :link are this machine's. See example/torch.cicili.
+
+(source "tabular.cpp"
+  (make :cpp #t
+        :compile ("-std=c++17" "-O3" "-Wno-c++20-extensions"
+                  "-I/usr/local/opt/pytorch/include"
+                  "-I/usr/local/opt/pytorch/include/torch/csrc/api/include"
+                  "-c" "tabular.cpp")
+        :link ("-ltabular.o"
+               "-L/usr/local/opt/pytorch/lib" "-ltorch" "-ltorch_cpu" "-lc10"
+               "-o" "tabular"))
+
+  (include <torch/torch.h>)
+  (include <cstdio>)
+  (include <cstdlib>)
+  (include <cmath>)
+
+  (import "lib/cpp/torch/torch.cicili")
+
+  (var i64 FEATURES . 8)
+  (var i64 ROWS     . 21000)   ; California housing is 20640
+  (var i64 TRAIN    . 16512)   ; 80% of 20640     ; the rest is held out
+
+  ;;; ================= the model =====================================
+  ;;; Eight columns in, one number out. No activation on the last layer --
+  ;;; a regression head is bare, and `(dense 1)' with none is how that is said.
+
+  (network Price
+    (input   8)
+    (dense  64 relu)
+    (dense  32 relu)
+    (dense   1))
+
+  ;;; ================= the data ======================================
+
+  ;;; A deterministic generator, so a run is reproducible without a file.
+  (var u32 seed . 12345)
+  (func nextrand () (out u32)
+        (set seed (^ seed (<< seed 13)))
+        (set seed (^ seed (>> seed 17)))
+        (set seed (^ seed (<< seed 5)))
+        (return seed))
+  (func uniform () (out double)      ; [0,1)
+        (return (/ (cast double (bitand (nextrand) 0xFFFFFF)) 16777216.0)))
+
+  ;;; The target is a non-linear function of the features WITH interaction
+  ;;; terms and noise. A linear model cannot reach it, so the number the
+  ;;; network gets is a number it had to learn.
+  (func generate ((float * xs) (float * ys) (i64 rows))
+        (for ((i64 r . 0)) (< r rows) ((++ r))
+             (let ((double f [ 8 ]))
+               (for ((int c . 0)) (< c 8) ((++ c))
+                    (block (set (nth c f) (uniform))
+                           (set (nth (+ (* r FEATURES) c) xs) (cast float (nth c f)))))
+               ;; rooms and income interact; distance hurts; the rest is noise
+               (let ((double y . #'(+ (* 3.0 (nth 0 f) (nth 1 f))
+                                      (+ (* 2.0 (sqrt (nth 2 f)))
+                                         (+ (* -1.5 (nth 3 f) (nth 3 f))
+                                            (+ (* 0.8 (nth 4 f))
+                                               (* 0.5 (- (uniform) 0.5))))))))
+                 (set (nth r ys) (cast float y))))))
+
+  ;;; A headerless CSV: eight features then the target, one row per line.
+  (func read_csv ((const char * path) (float * xs) (float * ys) (i64 cap))
+        (out i64)
+        (let ((FILE * f . #'(fopen path "r")))
+          (when (not f) (return 0))
+          (let ((i64 r . 0))
+            (while (< r cap)
+              (let ((double v [ 9 ])
+                    (int got . 0))
+                (set got (fscanf f "%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf"
+                                 (+ v 0) (+ v 1) (+ v 2) (+ v 3) (+ v 4)
+                                 (+ v 5) (+ v 6) (+ v 7) (+ v 8)))
+                (when (!= got 9) (break))
+                (for ((int c . 0)) (< c 8) ((++ c))
+                     (set (nth (+ (* r FEATURES) c) xs) (cast float (nth c v))))
+                (set (nth r ys) (cast float (nth 8 v)))
+                (++ r)))
+            (fclose f)
+            (return r))))
+
+  ;;; ---- what real data needs, and where it now lives ---------------
+  ;;;
+  ;;; Shuffling, standardising, splitting and the baseline used to be four
+  ;;; hand-written functions here, about thirty-five lines of index arithmetic.
+  ;;; They are lib/cpp/torch/data.cicili now -- one macro each, over tensors
+  ;;; rather than over the float buffer -- and the whole preparation is the nine
+  ;;; bindings at the bottom of this file. Each of the four had a way to be
+  ;;; wrong that nothing reports, and the macro is where that is written down:
+  ;;;
+  ;;;   SHUFFLE BEFORE SPLITTING. California housing is ordered
+  ;;;   geographically, so cutting it by position puts one part of the state in
+  ;;;   training and another in the test set -- not a hard test, a different
+  ;;;   problem. Features and targets go through ONE order, or every example is
+  ;;;   paired with someone else's answer.
+  ;;;
+  ;;;   STANDARDISE ON THE TRAINING ROWS ONLY. The columns are on wildly
+  ;;;   different scales -- median income is single digits, population is in
+  ;;;   the thousands -- and a network fed that spends its first epochs
+  ;;;   learning the scaling. Taking the statistics over everything leaks the
+  ;;;   held-out rows into the model, which is the most common way a
+  ;;;   good-looking number is not one. `standardise' requires the row count,
+  ;;;   so the leak is something you would have to type.
+  ;;;
+  ;;;   THE BASELINE USES THE TRAINING MEAN. A predictor that already knows
+  ;;;   the mean of the rows it is tested on is not one you could have built.
+
+  (main
+    ;; The seed decides the shuffle, hence the split, hence which rows are
+    ;; held out -- and an RMSE moves with that. $TABULAR_SEED is here so the
+    ;; spread can be measured rather than guessed at; see the README, which
+    ;; quotes it alongside the number.
+    (let ((const char * sd . #'(getenv "TABULAR_SEED")))
+      (torch::manual_seed (cast u64 (? sd (atoi sd) 1))))
+
+    (let ((float * xs . #'(alloc (cast size_t (* ROWS FEATURES)) (sizeof float)))
+          (float * ys . #'(alloc (cast size_t ROWS)              (sizeof float)))
+          (i64 rows . 0))
+
+      (let ((const char * csv . #'(getenv "TABULAR_CSV")))
+        (if csv
+            (block (set rows (read_csv csv xs ys ROWS))
+                   (when (== rows 0)
+                     (block (printf "could not read %s\n" csv) (return 1)))
+                   (printf "tabular: %s, %lld rows\n" csv rows))
+          (block (set rows ROWS)
+                 (generate xs ys rows)
+                 (printf "tabular: generated data, %lld rows of %lld features\n"
+                         rows FEATURES))))
+
+      (let ((i64 ntrain . #'(split-point rows 0.8)))
+
+        ;; ---- the whole preparation -------------------------------------
+        ;;
+        ;; Read down it: two buffers become two tensors, one shuffle order
+        ;; reorders both, the features are standardised on the training rows,
+        ;; and the two halves are views of that. `features' and `targets' wrap
+        ;; the buffers WITHOUT COPYING, so xs and ys above have to outlive all
+        ;; of this -- which is what the nesting says.
+        ;;
+        ;; ONE order, gathered through twice. Two orders would pair every
+        ;; example with someone else's answer and train to a stable,
+        ;; meaningless loss.
+        (letin* ((X0 (features xs rows FEATURES))
+                 (Y0 (targets  ys rows))
+                 (p  (shuffled-order rows))
+                 (X  (standardise (gather X0 p) ntrain))
+                 (Y  (gather Y0 p))
+                 (xtr (head X ntrain)) (ytr (head Y ntrain))
+                 (xte (tail X ntrain)) (yte (tail Y ntrain)))
+
+          (printf "        %lld train / %lld held out, shuffled and standardised\n"
+                  ntrain (- rows ntrain))
+          (printf "        predicting the training mean scores %.4f rmse\n"
+                  (baseline-rmse ytr yte))
+
+          ;;; ================= the training ==========================
+          ;;; The same clause set as MNIST. Only the loss and the metric
+          ;;; differ, because the problem does.
+
+          (let ((double err . #'(train Price
+                                  (data      xtr ytr)
+                                  (test      xte yte)
+                                  (epochs    30)
+                                  (batch     128)
+                                  (optimiser adam 0.005)
+                                  (loss      mse)
+                                  (metric    rmse)
+                                  (shuffle)
+                                  (schedule  step 10 0.5))))
+            (printf "final held-out rmse: %.4f   (mean predictor: %.4f)\n"
+                    err (baseline-rmse ytr yte))
+            (return 0)))))))

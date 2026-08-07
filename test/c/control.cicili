@@ -1,0 +1,194 @@
+;;;; Cicili C clauses: decision making and loops
+;;; if / cond / switch-case-default / while / do / for / break / continue
+;;; block / progn / ?
+;;;
+;;; Everything here is non-interactive on purpose so the target can be run in a
+;;; check. The old test/control.cicili drove these with scanf.
+
+(source "control.c"
+  (make :std #t :compile #t :link ("-lcontrol.o" "-o" "control_test"))
+
+  (func check ((const char * what) (int got) (int want))
+        (out int)
+        (if (== got want)
+            (block
+              (printf "ok   %-28s %d\n" what got)
+              (return 0))
+          (block
+            (printf "FAIL %-28s got %d want %d\n" what got want)
+            (return 1)))
+        (return 1))
+
+  (main
+    (let ((int bad . 0))
+
+      ;; ---- if: two and three part -------------------------------------
+      ;; an if branch takes exactly one form; use block for several
+      (let ((int y . 5)
+            (int seen . 0))
+        (if (== y 3)
+            (set seen 3)
+          (if (== y 4)
+              (block (set seen 4) (set seen (+ seen 40)))
+            (if (== y 5)
+                (set seen 5)
+              (set seen 0))))
+        (+= bad (check "if three-part" seen 5))
+
+        ;; two-part if, no else
+        (set seen 0)
+        (if (== y 5) (set seen 1))
+        (+= bad (check "if two-part" seen 1)))
+
+      ;; ---- cond: an if / else if chain --------------------------------
+      ;; there is no default clause; a trailing (#t ...) becomes else if (true)
+      (let ((int x . 3)
+            (int seen . 0))
+        (cond ((== x 1) (set seen 10))
+              ((== x 2) (set seen 20))
+              ((== x 3) (set seen 30))
+              (#t       (set seen 99)))
+        (+= bad (check "cond third arm" seen 30))
+
+        (set x 77)
+        (cond ((== x 1) (set seen 10))
+              (#t       (set seen 99)))
+        (+= bad (check "cond trailing #t" seen 99)))
+
+      ;; ---- switch / case / default ------------------------------------
+      ;; no break is ever inserted, so fallthrough is whatever you write
+      (let ((int digits [] . '{ 1 3 5 7 9 })
+            (int sum . 0))
+        (for ((int i . 0)) (< i 5) ((++ i))
+             (switch (nth i digits)
+               (case 1 (+= sum 1)   break)
+               (case 3 (+= sum 30)  break)
+               (case 5 (+= sum 500) break)
+               (default (+= sum 1000))))
+        ;; 1 + 30 + 500 + 1000 (for 7) + 1000 (for 9)
+        (+= bad (check "switch with break" sum 2531)))
+
+      ;; deliberate fallthrough: 1 falls into 2
+      (let ((int hits . 0))
+        (switch 1
+          (case 1 (+= hits 1))
+          (case 2 (+= hits 10) break)
+          (default (+= hits 100)))
+        (+= bad (check "switch fallthrough" hits 11)))
+
+      ;; ---- while -----------------------------------------------------
+      (let ((int n . 0)
+            (int guard . 0))
+        (while (< n 5)
+          (++ n)
+          (+= guard n))
+        (+= bad (check "while" guard 15)))
+
+      ;; ---- do: the LAST form is the condition -------------------------
+      (let ((int n . 0)
+            (int runs . 0))
+        (do
+          (++ runs)
+          (++ n)
+          (< n 4)) ; condition
+        (+= bad (check "do runs to condition" runs 4)))
+
+      (let ((int runs . 0))
+        (do
+          (++ runs)
+          (!= 0 0)) ; false: still runs once
+        (+= bad (check "do false condition" runs 1)))
+
+      ;; ---- for: init list / test / advance list / body ----------------
+      ;; 1+ and 1- are the POSTFIX ++ and --; ++ and -- are prefix
+      ;; a name with no type in the init list becomes another declarator of the
+      ;; SAME declaration -- int i = 0, j = 0 -- so it shadows any outer j
+      (let ((int sum . 0)
+            (int j . 7))
+        (for ((int i . 0)
+              (j . 0))       ; second declarator, type inherited from i
+             (< i 4)         ; test
+             ((1+ i)         ; advance, postfix
+              (1+ j))
+             (+= sum i))
+        (+= bad (check "for two advances" sum 6))
+        (+= bad (check "for init shadows outer" j 7)))
+
+      ;; to advance a variable from an enclosing scope, just do not redeclare it
+      (let ((int sum . 0)
+            (int k . 0))
+        (for ((int i . 0)) (< i 4) ((++ i) (++ k))
+             (+= sum i))
+        (+= bad (check "for advances outer sum" sum 6))
+        (+= bad (check "for advances outer" k 4)))
+
+      ;; ---- break and continue ----------------------------------------
+      ;; both are bare symbols, as DOC-C documents; (break) / (continue) work too
+      (let ((int sum . 0))
+        (for ((int i . 0)) (< i 10) ((++ i))
+             (if (== i 5) break)
+             (+= sum i))
+        (+= bad (check "break out of for" sum 10)))
+
+      (let ((int sum . 0))
+        (for ((int i . 0)) (< i 6) ((++ i))
+             (if (== (% i 2) 0) continue)
+             (+= sum i))
+        (+= bad (check "continue in for" sum 9)))
+
+      (let ((int sum . 0)
+            (int i . 0))
+        (while (< i 10)
+          (++ i)
+          (if (> i 4) break)
+          (+= sum i))
+        (+= bad (check "break out of while" sum 10)))
+
+      ;; ---- block vs progn --------------------------------------------
+      ;; block is a plain { ... } statement; progn is ({ ... }) and has a value
+      (let ((int seen . 0))
+        (block
+          (set seen 1)
+          (+= seen 41))
+        (+= bad (check "block" seen 42)))
+
+      (let ((int got . #'(progn 7)))
+        (+= bad (check "progn has a value" got 7)))
+
+      ;; ---- ? conditional expression ----------------------------------
+      (let ((int a . #'(? (> 2 1) 111 222))
+            (int b . #'(? (< 2 1) 111 222)))
+        (+= bad (check "? true arm" a 111))
+        (+= bad (check "? false arm" b 222)))
+
+      ;; ---- conditions that are not self-bracketing ------------------
+      ;; `if' wraps the condition only when the condition's own emitter does
+      ;; not. A construct missing from that list emits C that will not parse:
+      ;; (when (nth i arr) …) came out as `if (arr)[i]', subscript outside the
+      ;; if. Nothing exercised a bare subscript or sizeof as a condition, so
+      ;; the hole survived until a B-tree walked its children.
+      (let ((int probe [4] . '{ 0 7 0 9 }))
+        (let ((int hits . 0))
+          (for ((int i . 0)) (< i 4) ((++ i))
+               (when (nth i probe) (++ hits)))
+          (+= bad (check "nth as a condition" hits 2)))
+        (let ((int n . 0))
+          (when (nth 1 probe) (set n (nth 1 probe)))
+          (+= bad (check "nth condition reads right" n 7))
+          (unless (nth 0 probe) (set n 5))
+          (+= bad (check "nth in unless" n 5))))
+      (+= bad (check "sizeof as a condition" (? (sizeof int) 1 0) 1))
+      (let ((int m . 0))
+        (when (sizeof int) (set m 3))
+        (+= bad (check "sizeof in when" m 3))
+        (cond ((nth 0 (cast (int []) '{ 0 })) (set m 1))
+              ((sizeof int)                   (set m 2)))
+        (+= bad (check "cond arms, same list" m 2)))
+
+      (if (== bad 0)
+          (printf "control: all ok\n")
+        (printf "control: %d FAILED\n" bad))
+      (return bad))))
+
+;; sbcl --script cicili.lisp ./test/c/control.cicili
+;; ./test/c/control_test

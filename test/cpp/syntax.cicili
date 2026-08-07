@@ -1,0 +1,125 @@
+;;;; test Cicili C++ syntax macros
+;;; namespaces, references, new/delete, the named casts, templates and
+;;; exceptions -- the part of C++ that is only ever punctuation, and so lives
+;;; in cpp.cicili as macros rather than in the compiler.
+
+(source "syntax.cpp"
+  (make :cpp #t :compile #t :link ("-lsyntax.o" "-o" "syntax_test"))
+
+  (include <cstdio>)
+  (include <string>)
+  (include <vector>)
+  (include <stdexcept>)
+
+  (var int bad . 0)
+
+  (func check ((const char * what) (long got) (long want))
+        (if (== got want)
+            (printf "ok   %-30s %ld\n" what got)
+          (block (printf "FAIL %-30s got %ld want %ld\n" what got want)
+                 (++ bad))))
+
+  ;; ---- module, which is a namespace here -----------------------------
+  ;; `module' is Cicili's named scope, and in a C++ target it IS a namespace:
+  ;; the names inside stay as written and C++ does the separating. In a C
+  ;; target the same clause mangles instead, because C has no such thing.
+  ;;
+  ;; So the type is geom::Point from outside, with no `using' -- and it is a
+  ;; TYPE, not text: the declaration below resolves and `$' sees through it.
+  (module geom
+    (struct Point
+            (member int x)
+            (member int y)
+            (ctor ((int a) (int b)) (init (x a) (y b)))
+            (const)
+            (method sum () (out int) (return (+ ($ this x) ($ this y))))))
+
+  ;; ---- templates ----------------------------------------------------
+  ;; `generic' covers most of what templates are for; this is for the rest
+  (template ((typename T))
+    (func biggest ((const T & a) (const T & b)) (out T)
+          (return (? (< a b) b a))))
+
+  ;; ---- references ---------------------------------------------------
+  ;; `&` borrows and writes, so the caller sees the change -- the same
+  ;; modifier slot that holds * and ref, not a wrapper of its own
+  (func bump ((int & n))
+        (set n (+ n 1)))
+
+  ;; const & borrows without copying -- what libtorch's own signatures use
+  (func lengthOf ((const std::string & s)) (out int)
+        (return (cast int (($ s size)))))
+
+  ;; ---- exceptions ---------------------------------------------------
+  (func risky ((int n)) (out int)
+        (when (< n 0) (throw* (* n 10)))
+        (return (* n 2)))
+
+  (main
+    ;; namespace + scope resolution
+    (letin* ((p (geom::Point 3 4)))
+      (check "namespaced method" (cast long (($ p sum))) 7))
+
+    ;; template instantiation, explicit and inferred
+    (check "template int"    (cast long (biggest 3 9)) 9)
+    (check "template double" (cast long ((t<> biggest double) 2.5 1.5)) 2)
+
+    ;; a mutable reference really writes through
+    (let ((int n . 41))
+      (bump n)
+      (check "& wrote through" (cast long n) 42))
+
+    ;; a const reference over a std::string
+    (letin* ((s (std::string "abcde")))
+      (check "const & no copy" (cast long (lengthOf s)) 5))
+
+    ;; new / delete
+    (let ((geom::Point * q . #'(new* geom::Point 10 20)))
+      (check "new* then method" (cast long ((-> q sum))) 30)
+      (delete* q))
+
+    ;; the named casts are clauses, so the type is a TYPE and the operand is an
+    ;; expression -- a member access through the cast resolves, and a unary
+    ;; operand survives, neither of which was true of the code escapes
+    (check "static_cast"  (cast long (static-cast int 3.9)) 3)
+    (let ((int v . 7))
+      (let ((int * pv . #'(aof v)))
+        (check "unary operand survives" (cast long (static-cast long (cof pv))) 7)))
+    (let ((geom::Point * q2 . #'(new* geom::Point 1 2)))
+      (let ((const geom::Point * cq . q2))
+        ;; a member access straight THROUGH the cast -- the cast has a type
+        (check "cast result has a type"
+               (cast long ((-> (const-cast (geom::Point *) cq) sum))) 3))
+      (delete* q2))
+
+    ;; std::vector through $$ and t<>, to prove the two compose
+    (letin* ((v ((t<> std::vector int))))
+      (($ v push_back) 7)
+      (($ v push_back) 8)
+      (check "vector size" (cast long (($ v size))) 2)
+      (check "vector back" (cast long (($ v back))) 8))
+
+    ;; exceptions: the throwing path and the ordinary one
+    (check "no throw" (cast long (risky 21)) 42)
+    ;; `try' is a clause and its catch DECLARES its variable, so the handler
+    ;; can read what was thrown -- it could not when this was a code escape
+    (let ((int caught . 0))
+      (try (block (let ((int r . #'(risky -1)))
+                    (cast void r)))
+           (catch ((int e))
+                  (set caught e)))
+      (check "caught the value" (cast long caught) -10))
+
+    ;; a catch with no parameter is catch (...)
+    (let ((int any . 0))
+      (try (block (throw* 1))
+           (catch () (set any 1)))
+      (check "catch all" (cast long any) 1))
+
+    (if (== bad 0)
+        (printf "cpp syntax: all ok\n")
+      (printf "cpp syntax: %d FAILED\n" bad))
+    (return bad)))
+
+;; sbcl --script cicili.lisp ./test/cpp/syntax.cicili
+;; ./test/cpp/syntax_test

@@ -1,0 +1,101 @@
+;;;; test Cicili C++ objects
+;;; struct inheritance, member functions with implicit `this', constructors
+;;; with a member-initializer list, destructors, and letin*.
+;;;
+;;; There is no `class' here and no access specifier anywhere, which is the
+;;; whole point: a struct's members and bases are public, so the two things a
+;;; C++ definition normally has to say are the two things it never has to say
+;;; here. What is left is what the type actually is.
+
+(source "objects.cpp"
+  (make :cpp #t :compile #t :link ("-lobjects.o" "-o" "objects_test"))
+
+  (include <cstdio>)
+
+  (var int bad . 0)
+
+  ;; a letin* destructor receives the address of the variable, so a C function
+  ;; that takes the handle itself needs one line of adaptation
+  (func closefile ((FILE ** f))
+        (when (cof f) (fclose (cof f))))
+
+  (func check ((const char * what) (long got) (long want))
+        (if (== got want)
+            (printf "ok   %-30s %ld\n" what got)
+          (block (printf "FAIL %-30s got %ld want %ld\n" what got want)
+                 (++ bad))))
+
+  ;; how many Counted objects are alive -- the destructor has to run for this
+  ;; to come back to zero, and nothing in Cicili calls it
+  (var int alive . 0)
+
+  ;; ---- a plain struct with methods ---------------------------------
+  (struct Shape
+          (member double w)
+          (member double h)
+          (ctor ((double w0) (double h0))
+                (init (w w0) (h h0)))
+          ;; (virtual) before the return type, (const) after the parameter
+          ;; list -- written as attributes, in the order C++ wants them
+          (virtual) (const)
+          (method area () (out double)
+                  (return (* ($ this w) ($ this h))))
+          (virtual)
+          (method scale ((double by))
+                  (set ($ this w) (* ($ this w) by)
+                       ($ this h) (* ($ this h) by))))
+
+  ;; ---- inheritance, with no `class' and no `public:' ---------------
+  (struct Square (inherits Shape)
+          ;; a constructor: no return type to write, and the name is C++'s
+          ;; problem rather than something to keep in sync with the struct.
+          ;; The init list runs the BASE's constructor -- the only place that
+          ;; can happen, and the reason `init' exists at all.
+          (ctor ((double side))
+                (init (Shape side side)))
+          (const) (override)
+          (method area () (out double)
+                  (return (* ($ this w) ($ this h))))
+          (method side () (out double)
+                  (return ($ this w))))
+
+  ;; ---- a destructor ------------------------------------------------
+  (struct Counted
+          (member int id)
+          (ctor ((int n)) (init (id n))
+                (++ alive))
+          (dtor ()
+                (-- alive)))
+
+  (main
+    (letin* ((sq (Square 3.0)))
+      (check "square area"  (cast long (($ sq area))) 9)
+      (check "square side"  (cast long (($ sq side))) 3)
+      (($ sq scale) 2.0)
+      (check "after scale"  (cast long (($ sq area))) 36))
+
+    ;; virtual dispatch through the base
+    (letin* ((sq (Square 4.0)))
+      (let ((Shape * s . #'(aof sq)))
+        (check "through base ptr" (cast long ((-> s area))) 16)))
+
+    ;; the destructor runs at scope exit, and nothing here asked it to
+    (check "alive before" alive 0)
+    (block
+      (letin* ((c (Counted 7)))
+        (check "alive inside" alive 1)
+        (check "counted id"   (cast long ($ c id)) 7)))
+    (check "alive after" alive 0)
+
+    ;; letin* with an explicit destructor, for a C handle. The destructor takes
+    ;; the ADDRESS of the variable, because that is what __cleanup__ passes it.
+    (letin* ((f (fopen "/dev/null" "w") closefile))
+      (check "opened" (cast long (!= f nil)) 1))
+
+    (if (== bad 0)
+        (printf "cpp objects: all ok\n")
+      (printf "cpp objects: %d FAILED\n" bad))
+    (return bad)))
+
+;; sbcl --script cicili.lisp ./test/cpp/objects.cicili
+;; ./test/cpp/objects_test

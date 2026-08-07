@@ -1,0 +1,63 @@
+
+;;; test Cicili std rc
+(source "rc.c"
+  (make :std #t
+        :compile #t :link ("-lrc.o" "-o" "rc_test"))
+
+  (decl-array int)
+  (impl-array int)
+  (decl-rc array^int)
+  (impl-rc array^int)
+  
+  (main
+    (letin ((rc01 (new rc array (cast (const int []) '{ 1 2 3 4 5 })))
+            ) ; decls
+
+      (let^rc (arr_ptr rc01)
+        (printf "1. rc01 arr len: %zu\n" (len^array (cof arr_ptr))))
+
+      (printf "2. rc01 arr len: %zu\n"
+        (letn^rc (arr_ptr rc01 -1)
+          (len^array (cof arr_ptr))))
+
+      ;; could not take because of counter is 2
+      (letin ((cl01 (clone^rc rc01)))
+        (take^rc (arr cl01)
+          (printf "3. rc01 arr len: %zu\n" (len^array arr))))
+
+      (taken^rc (arr rc01
+                  (printf "4. default value is strict\n"))
+        (printf "4. rc01 arr len: %zu\n" (len^array arr)))
+
+      (format #t "Done\n")
+      ) ; letin
+    )) ; rc.c
+
+
+;; sbcl --script cicili.lisp --syslog ./test/std/rc.cicili
+;; ./test/std/rc_test
+
+;; NEW ARR: array_int 0x7ff585f06080 5 of 5
+;; NEW RC: 0x7ff585f05f60
+;; 1. rc01 arr len: 5
+;; 2. rc01 arr len: 5
+;; CLONE RC: 0x7ff585f05f60, count 2
+;; FREE RC: 0x7ff585f05f60
+;; FREE RC COUNT: 2
+;; FREE RC: 0x0
+;; 4. default value is strict
+;; 4. rc01 arr len: 5
+;; FREE ARR: 0x7ff585f06080
+;; FREE RC: 0x0
+;; Done
+;; FREE RC: 0x0
+
+;; There is no "3." line and that is the test: cl01 is a live clone, so the
+;; count is 2 and take^rc declines -- a shared payload belongs to the other
+;; owner too. The FREE RC COUNT: 2 above it is that clone going away.
+;;
+;; No FREE CELL / NEW RC CTX lines any more either. An rc is no longer a cell
+;; over a context struct, it is a cell's ptr with a count beside it, so there is
+;; one allocation to trace instead of three.
+;;
+;; leaks --atExit -- ./rc_test   =>   0 leaks for 0 total leaked bytes

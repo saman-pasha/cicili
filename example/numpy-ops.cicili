@@ -1,0 +1,258 @@
+;;;; The rest of the numpy C API, from Cicili
+;;;;
+;;;; example/numpy.cicili shows the ritual -- starting the interpreter, making
+;;;; an array, wrapping a C buffer. This one is about the API you reach for
+;;;; once that works: shapes, views, strides, reductions, arithmetic, sorting,
+;;;; matrix products, slicing, and taking an array from Python.
+;;;;
+;;;;     sbcl --script cicili.lisp ./example/numpy-ops.cicili
+;;;;     ./example/numpy_ops
+;;;;
+;;;; The paths below are this machine's. Ask the interpreter for yours:
+;;;;
+;;;;     python3 -c "import sysconfig;print(sysconfig.get_paths()['include'])"
+;;;;     python3 -c "import numpy;print(numpy.get_include())"
+;;;;     python3 -c "import sysconfig;print(sysconfig.get_config_var('LIBDIR'))"
+;;;;
+;;;; THE THREE THINGS WORTH TAKING FROM IT:
+;;;;
+;;;;   * a transposed array is NOT contiguous, and PyArray_GETPTR2 is right
+;;;;     about it where DATA + i * cols + j is silently wrong
+;;;;   * PyNumber_Add on two arrays IS the ufunc -- element-wise arithmetic
+;;;;     needs no call back through the module
+;;;;   * a slice is a VIEW: assigning through it changes the memory the
+;;;;     original array is still looking at
+
+(source "numpy_ops.c"
+  (make :compile ("-O2" "-DNPY_NO_DEPRECATED_API=NPY_1_7_API_VERSION"
+                  "-I/usr/local/opt/python@3.14/Frameworks/Python.framework/Versions/3.14/include/python3.14"
+                  "-I/usr/local/opt/numpy/lib/python3.14/site-packages/numpy/_core/include"
+                  "-c" "numpy_ops.c")
+        :link ("-lnumpy_ops.o"
+               "-L/usr/local/opt/python@3.14/Frameworks/Python.framework/Versions/3.14/lib"
+               "-lpython3.14" "-o" "numpy_ops"))
+
+  (include <Python.h>)                   ; first, always
+  (include <numpy/arrayobject.h>)
+  (include <stdio.h>)
+
+  (import "lib/python/python.cicili")
+
+  (python-support)
+
+  (var int bad . 0)
+
+  (func check ((const char * what) (double got) (double want))
+        (if (< (? (> (- got want) 0.0) (- got want) (- want got)) 0.0001)
+            (printf "ok   %-34s %.4f\n" what got)
+          (block (printf "FAIL %-34s got %.4f want %.4f\n" what got want)
+                 (++ bad))))
+
+  ;;; Every numpy reduction answers a numpy scalar or a zero-dimensional
+  ;;; array, never a C double. PyFloat_AsDouble asks it for __float__, which
+  ;;; both of those answer -- and -1.0 with an exception set if it cannot.
+  ;;;
+  ;;; It takes the reference rather than borrowing it, because every caller
+  ;;; below has just been handed a NEW one and wants it gone.
+  (func take_double ((PyObject * o)) (out double)
+        (letin* ((r o py_decref))
+          (when (not r) (block (PyErr_Print) (return -1.0)))
+          (return (PyFloat_AsDouble r))))
+
+  ;;; shorthand for the cast that the split between the constructors
+  ;;; (PyObject *) and the accessors (PyArrayObject *) forces everywhere
+  (DEFMACRO arr (o) `(cast (PyArrayObject *) ,o))
+
+  (main
+    (letin* ((py (py_open) py_finalize))
+      (when (< py 0)
+        (block (PyErr_Print) (printf "numpy did not import\n") (return 1)))
+
+      ;; ---- 1. arange, reshape, and what a view costs -----------------
+      ;; 0 1 2 3 4 5, then as 2 rows of 3
+      (letin* ((flat (PyArray_Arange 0.0 6.0 1.0 NPY_FLOAT64) py_decref))
+        (when (not flat) (block (PyErr_Print) (return 1)))
+        (check "arange size" (cast double (PyArray_SIZE (arr flat))) 6.0)
+
+        (letin* ((shape (PyTuple_New 2) py_decref))
+          ;; SetItem steals, and PyLong_FromLong hands over a fresh reference,
+          ;; so this is the one place where stealing is exactly what is wanted
+          (PyTuple_SetItem shape 0 (PyLong_FromLong 2))
+          (PyTuple_SetItem shape 1 (PyLong_FromLong 3))
+
+          (letin* ((m (PyArray_Reshape (arr flat) shape) py_decref))
+            (when (not m) (block (PyErr_Print) (return 1)))
+            (check "reshaped rows" (cast double (PyArray_DIM (arr m) 0)) 2.0)
+            (check "reshaped cols" (cast double (PyArray_DIM (arr m) 1)) 3.0)
+            ;; strides are in BYTES: a row of three doubles is 24
+            (check "row stride (bytes)"
+                   (cast double (PyArray_STRIDE (arr m) 0)) 24.0)
+            (check "reshape is a view"
+                   (cast double (!= (PyArray_BASE (arr m)) nil)) 1.0)
+
+            ;; ---- 2. the transpose, where naive indexing goes wrong ----
+            ;; NIL permutation means "reverse the axes", which is .T
+            (letin* ((t (PyArray_Transpose (arr m) nil) py_decref))
+              (when (not t) (block (PyErr_Print) (return 1)))
+              (check "transposed rows" (cast double (PyArray_DIM (arr t) 0)) 3.0)
+              ;; and it is NOT laid out the way a C loop assumes
+              (check "transpose contiguous?"
+                     (cast double (PyArray_IS_C_CONTIGUOUS (arr t))) 0.0)
+              ;; m is 0 1 2 / 3 4 5, so t[2][0] is 2 and t[0][1] is 3.
+              ;; GETPTR2 walks the strides and is right about that; reading
+              ;; DATA[i * 2 + j] would answer 4 and 1 and never complain.
+              (check "t[2][0] through GETPTR2"
+                     (cof (cast (double *) (PyArray_GETPTR2 (arr t) 2 0))) 2.0)
+              (check "t[0][1] through GETPTR2"
+                     (cof (cast (double *) (PyArray_GETPTR2 (arr t) 0 1))) 3.0)
+              ;; asking for it contiguously copies, because it has to
+              (letin* ((c (cast (PyObject *) (PyArray_GETCONTIGUOUS (arr t)))
+                          py_decref))
+                (check "contiguous copy is contiguous"
+                       (cast double (PyArray_IS_C_CONTIGUOUS (arr c))) 1.0)))
+
+            ;; ---- 3. reductions ---------------------------------------
+            ;; NPY_RAVEL_AXIS is "over everything". NPY_MAXDIMS meant that
+            ;; under numpy 1 and is now just the dimension limit, 64.
+            (check "sum of 0..5"
+                   (take_double (PyArray_Sum (arr m) NPY_RAVEL_AXIS NPY_NOTYPE nil))
+                   15.0)
+            (check "mean of 0..5"
+                   (take_double (PyArray_Mean (arr m) NPY_RAVEL_AXIS NPY_NOTYPE nil))
+                   2.5)
+            (check "max"
+                   (take_double (PyArray_Max (arr m) NPY_RAVEL_AXIS nil)) 5.0)
+            (check "argmax"
+                   (take_double (PyArray_ArgMax (arr m) NPY_RAVEL_AXIS nil)) 5.0)
+            ;; per-column: 0+3, 1+4, 2+5 -> 3 5 7, and those sum to 15
+            (letin* ((cols (PyArray_Sum (arr m) 0 NPY_NOTYPE nil) py_decref))
+              (when (not cols) (block (PyErr_Print) (return 1)))
+              (check "column sums length"
+                     (cast double (PyArray_SIZE (arr cols))) 3.0)
+              (check "column sum [1]"
+                     (cof (cast (double *) (PyArray_GETPTR1 (arr cols) 1))) 5.0))
+
+            ;; ---- 4. arithmetic is the ufuncs -------------------------
+            ;; PyNumber_Add on two arrays is np.add, elementwise, in C
+            (letin* ((twice (PyNumber_Add m m) py_decref))
+              (when (not twice) (block (PyErr_Print) (return 1)))
+              (check "m + m sums to"
+                     (take_double (PyArray_Sum (arr twice) NPY_RAVEL_AXIS
+                                               NPY_NOTYPE nil))
+                     30.0))
+            ;; and against a scalar, which numpy broadcasts
+            (letin* ((ten (PyFloat_FromDouble 10.0) py_decref))
+              (letin* ((plus (PyNumber_Add m ten) py_decref))
+                (check "m + 10 sums to"
+                       (take_double (PyArray_Sum (arr plus) NPY_RAVEL_AXIS
+                                                 NPY_NOTYPE nil))
+                       75.0)))
+
+            ;; ---- 5. a slice is a view --------------------------------
+            ;; flat[1:4] = 100 -- written through the slice, seen through flat
+            (letin* ((lo (PyLong_FromLong 1) py_decref))
+              (letin* ((hi (PyLong_FromLong 4) py_decref))
+                (letin* ((sl (PySlice_New lo hi nil) py_decref))
+                  (when (not sl) (block (PyErr_Print) (return 1)))
+                  (letin* ((hundred (PyFloat_FromDouble 100.0) py_decref))
+                    (when (< (PyObject_SetItem flat sl hundred) 0)
+                      (block (PyErr_Print) (return 1))))
+                  ;; 0 + 100 + 100 + 100 + 4 + 5
+                  (check "sum after flat[1:4] = 100"
+                         (take_double (PyArray_Sum (arr flat) NPY_RAVEL_AXIS
+                                                   NPY_NOTYPE nil))
+                         309.0)
+                  ;; and m is a view of the same memory, so it changed too
+                  (check "m saw it"
+                         (cof (cast (double *) (PyArray_GETPTR2 (arr m) 0 1)))
+                         100.0)))))))
+
+      ;; ---- 6. taking an array from Python ---------------------------
+      ;; FROM_OTF converts whatever it was given -- here a list of Python
+      ;; floats -- into a contiguous array of the dtype asked for
+      (letin* ((l (PyList_New 0) py_decref))
+        (for ((int i . 0)) (< i 4) ((++ i))
+             ;; Append increfs, unlike PyList_SetItem, so the reference made
+             ;; here is still ours to drop
+             (letin* ((v (PyFloat_FromDouble (cast double (* (+ i 1) 3))) py_decref))
+               (PyList_Append l v)))
+        (letin* ((a (PyArray_FROM_OTF l NPY_FLOAT64 NPY_ARRAY_IN_ARRAY) py_decref))
+          (when (not a) (block (PyErr_Print) (return 1)))
+          (check "from a Python list, size"
+                 (cast double (PyArray_SIZE (arr a))) 4.0)
+          (check "from a Python list, contiguous"
+                 (cast double (PyArray_IS_C_CONTIGUOUS (arr a))) 1.0)
+          ;; 3 + 6 + 9 + 12
+          (check "from a Python list, sum"
+                 (take_double (PyArray_Sum (arr a) NPY_RAVEL_AXIS NPY_NOTYPE nil))
+                 30.0)))
+
+      ;; ---- 7. sorting, in place --------------------------------------
+      ;; Sort answers 0 or -1 and rewrites the array, which nothing else in
+      ;; this file does
+      (letin* ((u (PyArray_ZEROS 1 (npdims 5) NPY_FLOAT64 0) py_decref))
+        (when (not u) (block (PyErr_Print) (return 1)))
+        (let ((double * d . #'(cast (double *) (PyArray_DATA (arr u)))))
+          (set (nth 0 d) 4.0) (set (nth 1 d) 1.0) (set (nth 2 d) 3.0)
+          (set (nth 3 d) 5.0) (set (nth 4 d) 2.0)
+          (when (< (PyArray_Sort (arr u) -1 NPY_QUICKSORT) 0)
+            (block (PyErr_Print) (return 1)))
+          (check "sorted first"  (nth 0 d) 1.0)
+          (check "sorted last"   (nth 4 d) 5.0)))
+
+      ;; ---- 8. matrix product -----------------------------------------
+      ;; a 2x3 of ones times a 3x2 of twos is a 2x2 of sixes
+      (letin* ((x (PyArray_ZEROS 2 (npdims 2 3) NPY_FLOAT64 0) py_decref))
+        (letin* ((y (PyArray_ZEROS 2 (npdims 3 2) NPY_FLOAT64 0) py_decref))
+          (let ((double * xd . #'(cast (double *) (PyArray_DATA (arr x))))
+                (double * yd . #'(cast (double *) (PyArray_DATA (arr y)))))
+            (for ((int i . 0)) (< i 6) ((++ i))
+                 (block (set (nth i xd) 1.0) (set (nth i yd) 2.0)))
+            (letin* ((p (PyArray_MatrixProduct x y) py_decref))
+              (when (not p) (block (PyErr_Print) (return 1)))
+              (check "matmul rows" (cast double (PyArray_DIM (arr p) 0)) 2.0)
+              (check "matmul [0][0]"
+                     (cof (cast (double *) (PyArray_GETPTR2 (arr p) 0 0))) 6.0)
+              ;; four sixes
+              (check "matmul sum"
+                     (take_double (PyArray_Sum (arr p) NPY_RAVEL_AXIS
+                                               NPY_NOTYPE nil))
+                     24.0)))))
+
+      ;; ---- 9. calling numpy with keywords ----------------------------
+      ;; numpy.sum(x, axis=0) -- the same reduction as PyArray_Sum above, but
+      ;; through the module, which is how anything without a C entry point is
+      ;; reached
+      (letin* ((np (PyImport_ImportModule "numpy") py_decref))
+        (when (not np) (block (PyErr_Print) (return 1)))
+        (letin* ((fn (PyObject_GetAttrString np "sum") py_decref))
+          (letin* ((a (PyArray_Arange 0.0 6.0 1.0 NPY_FLOAT64) py_decref))
+            (letin* ((args (PyTuple_New 1) py_decref))
+              (Py_IncRef a)                        ; SetItem is about to steal
+              (PyTuple_SetItem args 0 a)
+              (letin* ((kw (PyDict_New) py_decref))
+                ;; SetItemString does NOT steal, so this reference is still
+                ;; ours -- the opposite of the tuple two lines up
+                (letin* ((zero (PyLong_FromLong 0) py_decref))
+                  (PyDict_SetItemString kw "axis" zero))
+                (letin* ((res (PyObject_Call fn args kw) py_decref))
+                  (when (not res) (block (PyErr_Print) (return 1)))
+                  ;; a 1-D array of one element, because a is 1-D
+                  (check "numpy.sum(a, axis=0)"
+                         (PyFloat_AsDouble res) 15.0)))))))
+
+      ;; ---- 10. one element, boxed ------------------------------------
+      ;; when the dtype is not known at compile time, GETITEM is the way in
+      (letin* ((a (PyArray_Arange 0.0 4.0 1.0 NPY_INT64) py_decref))
+        (when (not a) (block (PyErr_Print) (return 1)))
+        (letin* ((e (PyArray_GETITEM (arr a)
+                                     (cast (const char *) (PyArray_GETPTR1 (arr a) 2)))
+                    py_decref))
+          (when (not e) (block (PyErr_Print) (return 1)))
+          (check "GETITEM a[2]" (cast double (PyLong_AsLong e)) 2.0))
+        (check "int64 itemsize" (cast double (PyArray_ITEMSIZE (arr a))) 8.0))
+
+      (if (== bad 0)
+          (printf "numpy-ops: all ok\n")
+        (printf "numpy-ops: %d FAILED\n" bad))
+      (return bad))))
