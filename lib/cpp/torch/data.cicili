@@ -114,7 +114,12 @@
   `(progn
      (letin* ((x ,tn))
        (letin* ((tr (($ x narrow) 0 0 ,ntrain)))
-         (letin* ((m  (($ tr mean) (dims 0) #t))
+         ;; mean_t and not ($ tr mean): the axis-wise overload, reached through
+         ;; the dispatcher in tensor.cicili, which checks the receiver and hands
+         ;; back a typed result. Written as a bare `$' it resolved against the
+         ;; NO-ARGUMENT declaration and happened to be right only because both
+         ;; overloads answer a Tensor.
+         (letin* ((m  (mean_t tr 0))
                   (s0 (($ tr std) (dims 0) #f #t)))
            (letin* ((s (torch::where
                         (($ s0 lt) (cast torch::Scalar 0.000001))

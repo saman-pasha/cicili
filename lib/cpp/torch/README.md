@@ -344,9 +344,28 @@ Two shapes worth knowing:
   mistake compiles, links, and then asks the allocator for 1125615330997568 bytes — which
   is how it was found.
 
-**No overloading.** Cicili has one signature per name, so where libtorch overloads — and it
-overloads heavily — the most-used form is declared and the rest go through the undeclared
-path, working but without inference.
+**No overloading, so overloaded methods get a dispatcher.** Cicili has one signature per
+name. `Tensor::mean` has two forms — five call sites want the whole-tensor one and
+`standardise` wants the axis-wise one — and only the first can be declared.
+
+`mean_t` is the pattern for the rest:
+
+```lisp
+(mean_t X)         ; the mean of every element
+(mean_t X 0)       ; along axis 0, keeping the reduced dimension
+(mean_t X 0 #f)    ; and without keeping it
+```
+
+The no-argument form is declared and reached normally. The other goes through a `(code …)`
+escape, which emits verbatim and is therefore **not type-checked at all** — so the dispatcher
+does the checking itself, refusing a receiver that is not a `torch::Tensor` and a `keepdim`
+that is not `#t`/`#f`, at expansion and naming the form. It then `cast`s the result, because
+an escape has no type and `(($ (mean_t x 0) sqrt))` has to resolve.
+
+That is the bargain: the escape buys the call past Cicili's checker, and the dispatcher owes
+those checks back. Write one wherever libtorch overloads and you need more than one form;
+libtorch overloads heavily and most names here still carry only their most-used form, with
+the rest on the undeclared path — working, but with no return type to infer from.
 
 ---
 

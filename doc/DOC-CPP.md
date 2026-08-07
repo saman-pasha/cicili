@@ -719,7 +719,7 @@ reading them here.
 | limitation | detail |
 |---|---|
 | **No overloading** | Two `method`s with the same name collide — the second raises `inner exists`. One signature per name. A second signature is a second *name*: `(method (<> find int) …)` beside `(method (<> find str) …)`, with a macro reading `CICILI:INFER-TYPE` off the argument and expanding to the one it picked — `lib/std/vector.cicili` is the worked example, `test/cpp/specialise.cicili` the minimal one. This binds a **C++ overload set** only where you need one form's return type: `(<> mean dim)` emits `mean_dim`, so it names a function of your own, not libtorch's `mean`. For an external overload set, declare the form you call and let the others take the undeclared path. |
-| **`code` escapes have no type** | Anything reached through a raw `(code …)` cannot be resolved by `$` or `->`. This is why the constructs above are clauses and not escapes. |
+| **`code` escapes have no type** | Anything reached through a raw `(code …)` cannot be resolved by `$` or `->`. This is why the constructs above are clauses and not escapes. A **front-end dispatcher** macro is how that is paid for: it does the type inference and argument checking itself, emits the call through `code` — which is also how it reaches a C++ **overload** Cicili cannot declare — and `cast`s the result to what it knows the call answers, so `$` has something to resolve again. `mean_t` in [lib/cpp/torch/tensor.cicili](../lib/cpp/torch/tensor.cicili) is the worked example, covered in `test/cpp/torch.cicili`. The bargain is strict: an escape buys the call past Cicili's checker, and the dispatcher owes every one of those checks back. |
 | **No `mutable`, `friend` or `operator`** | Not yet expressible. Use a `(code …)` escape. |
 
 ---

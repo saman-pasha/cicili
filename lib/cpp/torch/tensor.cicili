@@ -40,6 +40,51 @@
                                 APPEND (IF (< i l) (LIST d ",") (LIST d)))))
             "}" }))
 
+;;; (mean_t X)         the mean of every element
+;;; (mean_t X 0)       the mean along axis 0, keeping the reduced dimension
+;;; (mean_t X 0 #f)    and without keeping it
+;;;
+;;; A FRONT-END DISPATCHER, which is how an overloaded C++ method is reached.
+;;; Cicili has no overloading -- one signature per name -- and Tensor::mean has
+;;; two forms that five call sites and `standardise' need respectively. The
+;;; no-argument one is declared below and reached normally. The axis-wise one
+;;; cannot be declared beside it, so it goes through a `code' escape, which
+;;; emits verbatim and is therefore not type-checked at all.
+;;;
+;;; SO THE CHECKING IS HERE. That is the whole bargain of the escape: it buys
+;;; the call past Cicili's checker, and the dispatcher owes the checks back.
+;;; This one reads the receiver's type and refuses anything that is not a
+;;; torch::Tensor, and refuses a keepdim that is not #t or #f -- both at
+;;; expansion, naming the form, rather than as a C++ error inside emitted text
+;;; the reader never wrote.
+;;;
+;;; AND THE RESULT IS CAST, because a `code' escape has no type: nothing
+;;; reached through one can be resolved by `$' or `->' (DOC-CPP.md, Known
+;;; Limitations). The dispatcher knows what the overload answers, so it says so,
+;;; and (($ (mean_t x 0) sqrt)) resolves. On torch::Tensor the cast is a
+;;; copy-construct, which is a refcount bump.
+(DEFMACRO mean_t (tn &OPTIONAL dim (keepdim 'true))
+  (LET ((type (CICILI:INFER-TYPE tn)))
+    ;; THE NAME AS A STRING, and not (KEY-EQ … 'torch::Tensor). Cicili's reader
+    ;; turns a::b into the qualified-name form ($$ a b), so that literal is a
+    ;; LIST here and the comparison is quietly always false -- which is how this
+    ;; was found: every call was rejected with a message saying the type it
+    ;; wanted was the type it had.
+    (UNLESS (AND (LISTP type) (SYMBOLP (CAR type))
+                 (STRING= (SYMBOL-NAME (CAR type)) "torch::Tensor"))
+      (ERROR (FORMAT NIL "mean_t wants a torch::Tensor, got ~A -- in (mean_t ~A ...)"
+                     type tn)))
+    (IF (NULL dim)
+        ;; the declared form. No escape, so Cicili checks it as it checks
+        ;; anything else -- an escape is for what cannot be declared, not a
+        ;; habit.
+        `(($ ,tn mean))
+      (PROGN
+        (UNLESS (OR (CICILI:KEY-EQ keepdim 'true) (CICILI:KEY-EQ keepdim 'false))
+          (ERROR (FORMAT NIL "mean_t keepdim is #t or #f, got ~A" keepdim)))
+        `(cast torch::Tensor
+               (code '{ "(" ,tn ")" ".mean(" (dims ,dim) ", " ,keepdim ")" }))))))
+
 (DEFMACRO init-macro ()
   `($$$
 

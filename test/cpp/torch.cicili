@@ -24,6 +24,10 @@
   ;; what a torch::Tensor is.
   (import "lib/cpp/torch/torch.cicili")
 
+  ;; the stub's fill helper -- see test/cpp/torch_stub.hpp. Declared, not
+  ;; defined: the header has it.
+  (decl) (func torch_stub_set ((torch::Tensor & t) (llong flat) (double v)))
+
   (var int bad . 0)
 
   (func check ((const char * what) (long got) (long want))
@@ -76,6 +80,45 @@
     (letin* ((g (torch::NoGradGuard)))
       (letin* ((t (torch::ones (dims 2))))
         (check "inside no_grad" (cast long (($ t numel))) 2)))
+
+    ;;; ---- the mean_t dispatcher ------------------------------------
+    ;;;
+    ;;; Tensor::mean is overloaded and Cicili has no overloading, so the
+    ;;; axis-wise form goes through a `code' escape -- which is not type-checked
+    ;;; -- behind a dispatcher that does the checking itself. What is asserted
+    ;;; here is that the escape picked the RIGHT overload, and that its result
+    ;;; carries a type.
+    ;;;
+    ;;; A 2x3 of 1..6, so the two overloads cannot agree by accident: over
+    ;;; everything the mean is 3.5 and one number, along axis 0 it is three
+    ;;; numbers and the first is 2.5.
+    (letin* ((mt (torch::zeros (dims 2 3))))
+      (for ((i64 r . 0)) (< r 2) ((++ r))
+           (for ((i64 c . 0)) (< c 3) ((++ c))
+                (torch_stub_set mt (+ (* r 3) c) (cast double (+ (* r 3) c 1)))))
+
+      ;; the declared, no-argument overload
+      (letin* ((whole (mean_t mt)))
+        (check "mean_t over everything is one number" (($ whole numel)) 1)
+        (check "and it is 3.5, scaled"
+               (cast long (* 10.0 (($ whole (t<> item float))))) 35))
+
+      ;; the escape's overload -- a different shape, which is what says the
+      ;; call resolved to the other one
+      (letin* ((cols (mean_t mt 0)))
+        (check "mean_t along axis 0 is one per column" (($ cols numel)) 3)
+        (check "keepdim kept the rank"                 (($ cols dim)) 2)
+        (check "and column 0 is (1+4)/2"
+               (cast long (* 10.0 (($ cols (t<> item float))))) 25))
+
+      ;; #f drops the reduced dimension, so the flag reaches the call
+      (letin* ((flat (mean_t mt 0 #f)))
+        (check "keepdim #f dropped it" (($ flat dim)) 1))
+
+      ;;; AND THE RESULT HAS A TYPE, which a bare `code' escape would not: this
+      ;;; only compiles if the dispatcher's cast gave `$' something to resolve.
+      (letin* ((chained (($ (mean_t mt 0) sqrt))))
+        (check "a method resolves off the escape's result" (($ chained numel)) 3)))
 
     (if (== bad 0)
         (printf "torch bindings: all ok\n")

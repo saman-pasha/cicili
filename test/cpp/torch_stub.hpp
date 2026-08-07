@@ -110,6 +110,32 @@ struct Tensor {
   }
   Tensor sum()  const { return reduce(0); }
   Tensor mean() const { Tensor r = reduce(0); if (!data.empty()) r.data[0] /= (double)data.size(); return r; }
+
+  /* THE AXIS-WISE OVERLOAD, which is why the stub carries two `mean's at all:
+   * lib/cpp/torch/tensor.cicili reaches this one through a dispatcher macro and
+   * a `code' escape, and a stub with only the no-argument form could not tell
+   * whether the escape had picked the right one.
+   *
+   * 2-D only, and only what standardise asks for -- a column mean over rows,
+   * keeping the reduced dimension. The arithmetic is a stand-in; what is being
+   * checked here is that the dispatcher emitted a call C++ resolves to THIS
+   * overload rather than the one above. A wrong emission does not compile,
+   * which is the point. */
+  Tensor mean(IntArrayRef dim, bool keepdim) const {
+    long long axis = dim.v.empty() ? 0 : dim.v[0];
+    if (shape.size() != 2 || axis != 0) return mean();
+    long long rows = shape[0], cols = shape[1];
+    Tensor r;
+    r.shape = keepdim ? std::vector<long long>{ 1, cols }
+                      : std::vector<long long>{ cols };
+    r.data.assign((size_t)cols, 0.0);
+    for (long long c = 0; c < cols; c++) {
+      double acc = 0;
+      for (long long i = 0; i < rows; i++) acc += data[(size_t)(i * cols + c)];
+      r.data[(size_t)c] = acc / (double)rows;
+    }
+    return r;
+  }
   Tensor max()  const { return reduce(0); }
   Tensor min()  const { return reduce(0); }
   Tensor unop(double (*f)(double)) const {
@@ -157,6 +183,7 @@ struct Tensor {
   void print() const { printf("Tensor(numel=%lld)\n", numel()); }
 };
 
+
 inline Tensor zeros(IntArrayRef s)  { return Tensor(s.v, 0.0); }
 inline Tensor ones(IntArrayRef s)   { return Tensor(s.v, 1.0); }
 inline Tensor empty(IntArrayRef s)  { return Tensor(s.v, 0.0); }
@@ -170,6 +197,7 @@ inline Tensor arange(Scalar end) {
   for (long long i = 0; i < n; i++) r.data.push_back((double)i);
   return r;
 }
+
 // The real from_blob does not copy; this one does, and the difference is not
 // observable to a caller that only reads the result. What it must NOT do is
 // return a tensor of zeros: a classifier fed a buffer it ignores answers the
@@ -285,3 +313,15 @@ template <typename T> void save(const T&, const char*) {}
 template <typename T> void load(const T&, const char*) {}
 
 } // namespace torch
+
+/* AT GLOBAL SCOPE, deliberately, and not beside Tensor inside `namespace
+ * torch'. Cicili emits its (decl) at global scope; declared in the namespace as
+ * well, ADL on a torch::Tensor argument finds both and the call is ambiguous --
+ * which is a link error the first time and a compile error the second, neither
+ * naming the real cause.
+ *
+ * Fills an element by flat index. The mean_t test needs a tensor whose columns
+ * differ, and a constant one cannot tell the two `mean' overloads apart. */
+inline void torch_stub_set(torch::Tensor& t, long long flat, double v) {
+  if (flat >= 0 && (size_t)flat < t.data.size()) t.data[(size_t)flat] = v;
+}
