@@ -9,10 +9,15 @@
 #   sh test/run.sh                  # every test under test/c, test/std and test/cpp
 #   sh test/run.sh test/c/control   # just one, by path without extension
 #
-# CICILI_FLAGS is passed through to the transpiler, so the whole suite can be
-# built either way -- no target carries its own optimisation flags any more:
+# CICILI_FLAGS is passed through to the transpiler. Note what it is NOT for:
 #
-#   CICILI_FLAGS=--release sh test/run.sh
+# --RELEASE IS A BENCHMARKING FLAG, NOT A SECOND WAY TO RUN THE SUITE. It is
+# what makes a measurement mean anything -- without it a target compiles at
+# -g -O0 and every number from it is noise, which is why benchmark/ targets
+# carry (release-only) and refuse to build any other way. The suite asks
+# whether the code is correct, and -O0 with symbols is the right build for
+# that: it compiles faster, and a failure is debuggable where an -O3 one is
+# not. Run the suite plain.
 #
 # test/haskell is skipped: the haskell prelude load is commented out in
 # cicili.lisp while std is the focus, so those cannot pass right now.
