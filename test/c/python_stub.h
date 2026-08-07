@@ -20,9 +20,10 @@
  * is that what Cicili emits is what a C compiler accepts and what the module
  * protocol expects.
  *
- * NOT COVERED: numpy. lib/python/numpy.cicili is 368 lines of declarations
- * against a second C API with its own import-time ritual, and stubbing it
- * convincingly is a separate job from this one. It remains untested.
+ * NUMPY IS A SEPARATE FILE, test/c/numpy_stub.h, which includes this one and
+ * layers the array API on top of it. Two things here exist for its sake: kind
+ * 5, which is what PyArray_Check looks for, and kind 6 with its own double,
+ * because a reduction's answer is not an integer.
  */
 
 #ifndef CICILI_PYTHON_STUB_H
@@ -47,26 +48,28 @@ typedef long Py_ssize_t;
  * number, ITEMS is the elements when it is a sequence. That is enough for a
  * method table to be walked and a method to be called through it. */
 typedef struct PyObject {
-  int   kind;                 /* 0 none, 1 long, 2 tuple, 3 str, 4 module */
+  int   kind;                 /* 0 none, 1 long, 2 tuple, 3 str, 4 module,
+                               * 5 array (numpy_stub.h), 6 float */
   long  val;
   int   refcnt;
   struct PyObject* items[8];
   int   n;
   const char* s;
+  double dval;                /* kind 6 only -- see PyFloat_FromDouble */
 } PyObject;
 
-static PyObject _py_none  = { 0, 0, 1, {0}, 0, 0 };
-static PyObject _py_true  = { 1, 1, 1, {0}, 0, 0 };
-static PyObject _py_false = { 1, 0, 1, {0}, 0, 0 };
+static PyObject _py_none  = { 0, 0, 1, {0}, 0, 0, 0.0 };
+static PyObject _py_true  = { 1, 1, 1, {0}, 0, 0, 0.0 };
+static PyObject _py_false = { 1, 0, 1, {0}, 0, 0, 0.0 };
 
 #define Py_None  (&_py_none)
 #define Py_True  (&_py_true)
 #define Py_False (&_py_false)
 
 /* the exception types, as distinct addresses -- only identity is used */
-static PyObject _py_exc_type = { 3, 0, 1, {0}, 0, "TypeError" };
-static PyObject _py_exc_val  = { 3, 0, 1, {0}, 0, "ValueError" };
-static PyObject _py_exc_rt   = { 3, 0, 1, {0}, 0, "RuntimeError" };
+static PyObject _py_exc_type = { 3, 0, 1, {0}, 0, "TypeError", 0.0 };
+static PyObject _py_exc_val  = { 3, 0, 1, {0}, 0, "ValueError", 0.0 };
+static PyObject _py_exc_rt   = { 3, 0, 1, {0}, 0, "RuntimeError", 0.0 };
 #define PyExc_TypeError    (&_py_exc_type)
 #define PyExc_ValueError   (&_py_exc_val)
 #define PyExc_RuntimeError (&_py_exc_rt)
@@ -84,6 +87,17 @@ static PyObject* _py_alloc(int kind, long val) {
 }
 
 static PyObject* PyLong_FromLong(long v)        { return _py_alloc(1, v); }
+
+/* Floats are kind 6 and keep their value in a double of their own, because a
+ * reduction's answer is not an integer and rounding it through `val' would make
+ * every mean look wrong for a reason that had nothing to do with the binding. */
+static PyObject* PyFloat_FromDouble(double v) {
+  PyObject* o = _py_alloc(6, 0); o->dval = v; return o;
+}
+static double PyFloat_AsDouble(PyObject* o) {
+  if (!o) return -1.0;
+  return (o->kind == 6) ? o->dval : (double)o->val;
+}
 static long      PyLong_AsLong(PyObject* o)     { return o ? o->val : -1; }
 static PyObject* PyUnicode_FromString(const char* s) {
   PyObject* o = _py_alloc(3, 0); o->s = s; return o;

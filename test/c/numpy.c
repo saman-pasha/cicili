@@ -107,6 +107,96 @@ int main () {
       }
     }
   }
+  { /* let312 */
+    npy_intp rdims [2];
+    // ----------
+    rdims [0] = 2;
+    rdims [1] = 3;
+    { /* let314 */
+      PyObject * ro  = PyArray_SimpleNew (2, rdims , NPY_DOUBLE );
+      // ----------
+      { /* let316 */
+        PyArrayObject * m  = npy_stub_as_array (ro );
+        // ----------
+        for (long r  = 0; (r  <  2 ); (++r )) {
+            for (long c  = 0; (c  <  3 ); (++c )) {
+                npy_stub_set_d (PyArray_GETPTR2 (m , r , c ), ((double)((r  *  3 ) +  c  +  1 )));
+            }
+        }
+        check_d ("Sum over everything", PyFloat_AsDouble (PyArray_Sum (m , NPY_RAVEL_AXIS , NPY_NOTYPE , NULL )), 21.0);
+        check_d ("Mean over everything", PyFloat_AsDouble (PyArray_Mean (m , NPY_RAVEL_AXIS , NPY_NOTYPE , NULL )), 3.5);
+        check_d ("Max over everything", PyFloat_AsDouble (PyArray_Max (m , NPY_RAVEL_AXIS , NULL )), 6.0);
+        check_d ("Min over everything", PyFloat_AsDouble (PyArray_Min (m , NPY_RAVEL_AXIS , NULL )), 1.0);
+        check ("ArgMax is an index, not a value", PyLong_AsLong (PyArray_ArgMax (m , NPY_RAVEL_AXIS , NULL )), 5);
+        check ("ArgMin is an index, not a value", PyLong_AsLong (PyArray_ArgMin (m , NPY_RAVEL_AXIS , NULL )), 0);
+        check_d ("Prod over everything", PyFloat_AsDouble (PyArray_Prod (m , NPY_RAVEL_AXIS , NPY_NOTYPE , NULL )), 720.0);
+        check_true ("NPY_MAXDIMS is not the same number", (NPY_MAXDIMS  !=  NPY_RAVEL_AXIS  ));
+        py_stub_last_exc  = NULL ;
+        check_true ("and passing it answers nothing", (PyArray_Sum (m , NPY_MAXDIMS , NPY_NOTYPE , NULL ) ==  NULL  ));
+        check_true ("having set an exception", (py_stub_last_exc  ==  PyExc_ValueError  ));
+        { /* let324 */
+          PyObject * c0  = PyArray_Sum (m , 0, NPY_NOTYPE , NULL );
+          // ----------
+          { /* let326 */
+            PyArrayObject * ca  = npy_stub_as_array (c0 );
+            // ----------
+            check ("axis 0 answers one per column", PyArray_SIZE (ca ), 3);
+            check_d ("column 0 is 1+4", npy_stub_data_at (ca , 0), 5.0);
+            check_d ("column 2 is 3+6", npy_stub_data_at (ca , 2), 9.0);
+          }
+        }
+        { /* let328 */
+          PyObject * c1  = PyArray_Sum (m , 1, NPY_NOTYPE , NULL );
+          // ----------
+          { /* let330 */
+            PyArrayObject * ra  = npy_stub_as_array (c1 );
+            // ----------
+            check ("axis 1 answers one per row", PyArray_SIZE (ra ), 2);
+            check_d ("row 0 is 1+2+3", npy_stub_data_at (ra , 0), 6.0);
+            check_d ("row 1 is 4+5+6", npy_stub_data_at (ra , 1), 15.0);
+          }
+        }
+        { /* let332 */
+          npy_intp odims [1];
+          // ----------
+          odims [0] = 3;
+          { /* let334 */
+            PyObject * oo  = PyArray_SimpleNew (1, odims , NPY_DOUBLE );
+            // ----------
+            { /* let336 */
+              PyArrayObject * oa  = npy_stub_as_array (oo );
+              // ----------
+              { /* let338 */
+                PyObject * back  = PyArray_Sum (m , 0, NPY_NOTYPE , oa );
+                // ----------
+                check_true ("an out array is answered back", (npy_stub_as_array (back ) ==  oa  ));
+                check_d ("and it was written into", npy_stub_data_at (oa , 1), 7.0);
+              }
+            }
+          }
+        }
+        { /* let340 */
+          double dev  = PyFloat_AsDouble (PyArray_Std (m , NPY_RAVEL_AXIS , NPY_NOTYPE , NULL , 0));
+          double var  = PyFloat_AsDouble (PyArray_Std (m , NPY_RAVEL_AXIS , NPY_NOTYPE , NULL , 1));
+          // ----------
+          check_d ("variance of 1..6", var , (35.0 /  12.0 ));
+          check_d ("and the deviation is its root", (dev  *  dev  ), var );
+          check_true ("so the flag changes the answer", (dev  !=  var  ));
+        }
+        { /* let342 */
+          PyObject * cs  = PyArray_CumSum (m , NPY_RAVEL_AXIS , NPY_NOTYPE , NULL );
+          // ----------
+          { /* let344 */
+            PyArrayObject * csa  = npy_stub_as_array (cs );
+            // ----------
+            check ("CumSum is as long as the input", PyArray_SIZE (csa ), 6);
+            check_d ("it ends at the total", npy_stub_data_at (csa , 5), 21.0);
+            check_d ("and starts at the first", npy_stub_data_at (csa , 0), 1.0);
+          }
+        }
+      }
+    }
+  }
   if (bad  ==  0 )
     printf ("\nnumpy: all checks passed\n");
   else

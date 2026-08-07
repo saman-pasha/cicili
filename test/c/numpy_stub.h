@@ -14,12 +14,16 @@
  * PyArray_GETPTR2 against real strides is the sharpest case and the reason
  * the strides here are computed rather than faked.
  *
- * WHAT IT DOES NOT COVER: the reductions (Sum, Mean, Std, ArgMax...), sorting,
- * casting, Concatenate, the FROM_OTF/FROMANY/FromAny converters, and the
- * descr machinery beyond DescrFromType. Those are declared in
- * lib/python/numpy.cicili and remain untested. A stub that pretended to
- * implement numpy's reductions would be asserting its own arithmetic, not the
- * binding.
+ * THE REDUCTIONS ARE HERE TOO -- Sum, Prod, Mean, Max, Min, ArgMax, ArgMin,
+ * Std, CumSum -- but read the note above them before believing the arithmetic.
+ * What they exist to make checkable is argument ORDER, the axis convention and
+ * `out' handling; a stub that pretended to implement numpy's mean would be
+ * asserting its own sum loop rather than the binding.
+ *
+ * WHAT IT DOES NOT COVER: sorting, casting, Concatenate, the
+ * FROM_OTF/FROMANY/FromAny converters, and the descr machinery beyond
+ * DescrFromType. Those are declared in lib/python/numpy.cicili and remain
+ * untested.
  *
  * Types are doubles and int64 only. Everything is C-contiguous.
  */
@@ -28,6 +32,7 @@
 #define CICILI_NUMPY_STUB_H
 
 #include "python_stub.h"
+#include <math.h>          /* PyArray_Std takes a square root */
 
 #ifdef __cplusplus
 extern "C" {
@@ -189,6 +194,179 @@ static void* PyArray_GETPTR3(PyArrayObject* a, npy_intp i, npy_intp j, npy_intp 
                              + k * a->strides[2]) : NULL;
 }
 
+/* ---- reductions --------------------------------------------------------
+ *
+ * WHAT THESE ARE FOR, because it is not the arithmetic. A stub that reimplements
+ * numpy's mean is asserting its own sum loop, which proves nothing about
+ * lib/python/numpy.cicili. What CAN be checked is the binding: that a call
+ * declared PyArray_Sum(a, axis, rtype, out) reaches the far side with those
+ * four things in that order, that the axis convention is the one numpy 2 uses,
+ * that `out' is written when given and allocated when not, and that the answer
+ * comes back as an OBJECT rather than a C double.
+ *
+ * So the arithmetic here is the simplest thing that makes those checkable, and
+ * the test asserts the wiring. Doubles only, one or two dimensions, C order.
+ *
+ * THE AXIS CONVENTION IS THE TRAP, and lib/python/numpy.cicili:271 already
+ * warns about it: "over everything" is NPY_RAVEL_AXIS, and it is NOT
+ * NPY_MAXDIMS -- that meant it under numpy 1 and is now just the dimension
+ * limit, 64, which is out of range and raises. The two are given different
+ * values here so a test can tell them apart, which is the whole point of
+ * having both.
+ *
+ * NPY_RAVEL_AXIS is INT_MIN in numpy 2. That is written from the
+ * documentation rather than checked against the header, which is this stub's
+ * standing limitation and not a new one.
+ */
+
+#define NPY_MAXDIMS      64
+#define NPY_RAVEL_AXIS   (-2147483647 - 1)   /* INT_MIN */
+#define NPY_NOTYPE       (-1)
+
+/* op codes for the one loop underneath all of them */
+#define _NPY_SUM 0
+#define _NPY_PROD 1
+#define _NPY_MAX 2
+#define _NPY_MIN 3
+#define _NPY_ARGMAX 4
+#define _NPY_ARGMIN 5
+#define _NPY_MEAN 6
+
+static double _npy_fold(const PyArrayObject* a, int op, npy_intp start,
+                        npy_intp stride, npy_intp n)
+{
+  const double* d = (const double*)(const void*)a->data;
+  npy_intp step = stride / (npy_intp)sizeof(double);
+  npy_intp i;
+  double acc = (op == _NPY_PROD) ? 1.0 : 0.0;
+  npy_intp best = 0;
+
+  if (n <= 0) return 0.0;
+
+  if (op == _NPY_MAX || op == _NPY_MIN || op == _NPY_ARGMAX || op == _NPY_ARGMIN) {
+    best = 0;
+    for (i = 1; i < n; i++) {
+      double v = d[start + i * step], b = d[start + best * step];
+      if ((op == _NPY_MAX || op == _NPY_ARGMAX) ? (v > b) : (v < b)) best = i;
+    }
+    if (op == _NPY_ARGMAX || op == _NPY_ARGMIN) return (double)best;
+    return d[start + best * step];
+  }
+
+  for (i = 0; i < n; i++) {
+    double v = d[start + i * step];
+    if (op == _NPY_PROD) acc *= v; else acc += v;
+  }
+  return (op == _NPY_MEAN) ? acc / (double)n : acc;
+}
+
+/* AXIS is honoured, which is what makes a wrong argument order visible: on a
+ * matrix that is not square, axis 0 and axis 1 give answers of different
+ * lengths, so a caller that passed rtype where axis belongs cannot match. */
+static PyObject* _npy_reduce(PyArrayObject* a, int axis, int op, PyArrayObject* out)
+{
+  npy_intp i;
+
+  if (!a) return NULL;
+
+  if (axis == NPY_RAVEL_AXIS || a->nd == 1) {
+    /* over everything: one number, and it comes back as an object */
+    npy_intp n = PyArray_SIZE(a);
+    double v = _npy_fold(a, op, 0, a->elsize, n);
+    if (out) { ((double*)(void*)out->data)[0] = v; }
+    return (op == _NPY_ARGMAX || op == _NPY_ARGMIN)
+             ? PyLong_FromLong((long)v) : PyFloat_FromDouble(v);
+  }
+
+  if (a->nd == 2 && (axis == 0 || axis == 1)) {
+    npy_intp keep = (axis == 0) ? a->dims[1] : a->dims[0];
+    npy_intp over = (axis == 0) ? a->dims[0] : a->dims[1];
+    npy_intp stride = (axis == 0) ? a->strides[0] : a->strides[1];
+    npy_intp step   = (axis == 0) ? a->strides[1] : a->strides[0];
+
+    PyArrayObject* result = out;
+    if (!result) {
+      npy_intp dims[1];
+      dims[0] = keep;
+      result = (PyArrayObject*)(void*)PyArray_SimpleNew(1, dims,
+                 (op == _NPY_ARGMAX || op == _NPY_ARGMIN) ? NPY_DOUBLE : NPY_DOUBLE);
+    }
+    for (i = 0; i < keep; i++) {
+      npy_intp start = (i * step) / (npy_intp)sizeof(double);
+      ((double*)(void*)result->data)[i] = _npy_fold(a, op, start, stride, over);
+    }
+    return (PyObject*)(void*)result;
+  }
+
+  PyErr_SetString(PyExc_ValueError, "axis out of range");
+  return NULL;
+}
+
+static PyObject* PyArray_Sum(PyArrayObject* a, int axis, int rtype, PyArrayObject* out)
+{ (void)rtype; return _npy_reduce(a, axis, _NPY_SUM, out); }
+static PyObject* PyArray_Prod(PyArrayObject* a, int axis, int rtype, PyArrayObject* out)
+{ (void)rtype; return _npy_reduce(a, axis, _NPY_PROD, out); }
+static PyObject* PyArray_Mean(PyArrayObject* a, int axis, int rtype, PyArrayObject* out)
+{ (void)rtype; return _npy_reduce(a, axis, _NPY_MEAN, out); }
+static PyObject* PyArray_Max(PyArrayObject* a, int axis, PyArrayObject* out)
+{ return _npy_reduce(a, axis, _NPY_MAX, out); }
+static PyObject* PyArray_Min(PyArrayObject* a, int axis, PyArrayObject* out)
+{ return _npy_reduce(a, axis, _NPY_MIN, out); }
+static PyObject* PyArray_ArgMax(PyArrayObject* a, int axis, PyArrayObject* out)
+{ return _npy_reduce(a, axis, _NPY_ARGMAX, out); }
+static PyObject* PyArray_ArgMin(PyArrayObject* a, int axis, PyArrayObject* out)
+{ return _npy_reduce(a, axis, _NPY_ARGMIN, out); }
+
+/* VARIANCE non-zero answers the variance instead of the deviation -- the one
+ * reduction with a fifth argument, and the one where a binding that dropped it
+ * would still compile and quietly answer the wrong thing. */
+static PyObject* PyArray_Std(PyArrayObject* a, int axis, int rtype,
+                             PyArrayObject* out, int variance)
+{
+  npy_intp n, i;
+  double mean = 0, acc = 0;
+  const double* d;
+
+  (void)rtype; (void)axis; (void)out;
+  if (!a) return NULL;
+
+  d = (const double*)(const void*)a->data;
+  n = PyArray_SIZE(a);
+  if (n <= 0) return PyFloat_FromDouble(0.0);
+
+  for (i = 0; i < n; i++) mean += d[i];
+  mean /= (double)n;
+  for (i = 0; i < n; i++) acc += (d[i] - mean) * (d[i] - mean);
+  acc /= (double)n;
+
+  return PyFloat_FromDouble(variance ? acc : sqrt(acc));
+}
+
+/* A running total, so the answer is an ARRAY the size of the input rather than
+ * one number -- the shape a caller has to get right. */
+static PyObject* PyArray_CumSum(PyArrayObject* a, int axis, int rtype, PyArrayObject* out)
+{
+  npy_intp n, i;
+  double acc = 0;
+  const double* d;
+  PyArrayObject* result;
+
+  (void)rtype; (void)axis;
+  if (!a) return NULL;
+
+  n = PyArray_SIZE(a);
+  d = (const double*)(const void*)a->data;
+
+  result = out;
+  if (!result) {
+    npy_intp dims[1];
+    dims[0] = n;
+    result = (PyArrayObject*)(void*)PyArray_SimpleNew(1, dims, NPY_DOUBLE);
+  }
+  for (i = 0; i < n; i++) { acc += d[i]; ((double*)(void*)result->data)[i] = acc; }
+  return (PyObject*)(void*)result;
+}
+
 /* ---- inspection, for the test only ------------------------------------
  * PyArrayObject is opaque to Cicili, as it should be, so a test cannot cast
  * a PyObject * to it. This is that cast, in C. */
@@ -197,7 +375,11 @@ static PyArrayObject* npy_stub_as_array(PyObject* o) {
 }
 static double npy_stub_get_d(void* p)            { return *(double*)p; }
 static void   npy_stub_set_d(void* p, double v)  { *(double*)p = v; }
+/* NULL-tolerant on purpose. A reduction that was handed the wrong argument
+ * answers NULL, and a test that segfaults on the way to reporting that says
+ * far less than one that prints which check failed. */
 static double npy_stub_data_at(PyArrayObject* a, npy_intp flat) {
+  if (!a) return -1.0;
   return ((double*)(void*)a->data)[flat];
 }
 
