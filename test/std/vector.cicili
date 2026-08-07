@@ -36,7 +36,7 @@
 
       ;; ---- construction ---------------------------------------------
       (letin ((v (new vector (cast (const int []) '{ 1 2 3 4 5 }))))
-        (+= bad (check "len after new"         (len^vector v) 5))
+        (+= bad (check "len after new"         (len_vector v) 5))
         (+= bad (check "nth 0"                 (at 0 (aof v)) 1))
         (+= bad (check "nth 4"                 (at 4 (aof v)) 5))
         (+= bad (check "nth past the end"      (at 5 (aof v)) -1))
@@ -44,23 +44,23 @@
 
         ;; ---- push, inside the capacity arraySize handed out ----------
         ;; 5 items ask for 16 cells, so these fit without reallocating
-        (+= bad (check "push returns the len"  (push^vector v 6) 6))
+        (+= bad (check "push returns the len"  (push_vector v 6) 6))
         (+= bad (check "pushed value"          (at 5 (aof v)) 6))
-        (push^vector v 7)
-        (+= bad (check "len after two pushes"  (len^vector v) 7))
+        (push_vector v 7)
+        (+= bad (check "len after two pushes"  (len_vector v) 7))
         (+= bad (check "checksum after push"   (total (aof v)) 28))
         (+= bad (check "old items intact"      (at 0 (aof v)) 1))
 
         ;; ---- append a brace list, counted by the front end -----------
-        (+= bad (check "append returns len"    (append^vector v '{ 8 9 10 }) 10))
+        (+= bad (check "append returns len"    (append_vector v '{ 8 9 10 }) 10))
         (+= bad (check "appended first"        (at 7 (aof v)) 8))
         (+= bad (check "appended last"         (at 9 (aof v)) 10))
         (+= bad (check "checksum after append" (total (aof v)) 55))
 
         ;; ---- growth: past 16 cells the buffer is replaced ------------
         (for ((int n . 11)) (<= n 40) ((++ n))
-             (push^vector v n))
-        (+= bad (check "len after growth"      (len^vector v) 40))
+             (push_vector v n))
+        (+= bad (check "len after growth"      (len_vector v) 40))
         (+= bad (check "first survived growth" (at 0 (aof v)) 1))
         (+= bad (check "last after growth"     (at 39 (aof v)) 40))
         (+= bad (check "checksum 1..40"        (total (aof v)) 820))
@@ -68,17 +68,17 @@
 
       ;; ---- a vector built empty, then filled ------------------------
       (letin ((e (new vector (cast (const int []) '{ 0 }) 0)))
-        (+= bad (check "len of an empty vector" (len^vector e) 0))
+        (+= bad (check "len of an empty vector" (len_vector e) 0))
         (+= bad (check "nth of an empty vector" (at 0 (aof e)) -1))
-        (+= bad (check "push onto empty"        (push^vector e 42) 1))
+        (+= bad (check "push onto empty"        (push_vector e 42) 1))
         (+= bad (check "the pushed value"       (at 0 (aof e)) 42))
-        (+= bad (check "append onto one"        (append^vector e '{ 43 44 }) 3))
+        (+= bad (check "append onto one"        (append_vector e '{ 43 44 }) 3))
         (+= bad (check "checksum of the three"  (total (aof e)) 129))
 
         ;; a second vector shares nothing with the first
         (letin ((o (new vector (cast (const int []) '{ 7 7 }))))
-          (push^vector o 7)
-          (+= bad (check "other vector len"     (len^vector o) 3))
+          (push_vector o 7)
+          (+= bad (check "other vector len"     (len_vector o) 3))
           (+= bad (check "other vector total"   (total (aof o)) 21))
           (+= bad (check "first is untouched"   (total (aof e)) 129))))
 

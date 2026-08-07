@@ -18,13 +18,13 @@
     (decl) (func __h_stack_push_func ((CStr func_name)))
     (decl) (func __h_stack_push_data ((CStr buffer)))
     (decl) (func __h_stack_push_separator ())
-    (decl-BoxedList BoxedList^__h_StackItem __h_StackItem)
-    (decl-BoxedList BoxedList^BoxedList^__h_StackItem BoxedList^__h_StackItem)
-    (decl) (func __h_stack_show_item ((BoxedList^__h_StackItem stack) (int counter)))
+    (decl-BoxedList BoxedList___h_StackItem __h_StackItem)
+    (decl-BoxedList BoxedList_BoxedList___h_StackItem BoxedList___h_StackItem)
+    (decl) (func __h_stack_show_item ((BoxedList___h_StackItem stack) (int counter)))
     (decl) (func __h_stack_show ())
-    (decl) (func __h_stack () (out BoxedList^BoxedList^__h_StackItem))
-    (decl) (func __h_stack_free ((BoxedList^BoxedList^__h_StackItem * pin)))
-    (decl) (func __h_stack_free_main ((BoxedList^BoxedList^__h_StackItem * pin)))
+    (decl) (func __h_stack () (out BoxedList_BoxedList___h_StackItem))
+    (decl) (func __h_stack_free ((BoxedList_BoxedList___h_StackItem * pin)))
+    (decl) (func __h_stack_free_main ((BoxedList_BoxedList___h_StackItem * pin)))
 
     (enum __h_DefaultCtor
       (__h___t))
@@ -39,30 +39,30 @@
     (decl-Maybe CStr)
     (decl-Maybe CFile)
     
-    (decl-List   List^Bool Bool)
-    (decl-List   List^int  int)
-    (decl-String List^char char)
+    (decl-List   List_Bool Bool)
+    (decl-List   List_int  int)
+    (decl-String List_char char)
 
     (decl-Vector Str       char T)
     (decl-Vector String    Char NIL)
 
-    (decl-Range Range^int  int  List^int)
-    (decl-Range Range^char char List^char)
+    (decl-Range Range_int  int  List_int)
+    (decl-Range Range_char char List_char)
 
-    (decl-List List^List^Bool List^Bool)
-    (decl-List List^List^int  List^int)
-    (decl-List List^List^char List^char)
-    ;; (decl-List List^String    String)
-    (decl-List List^CStr      CStr)
+    (decl-List List_List_Bool List_Bool)
+    (decl-List List_List_int  List_int)
+    (decl-List List_List_char List_char)
+    ;; (decl-List List_String    String)
+    (decl-List List_CStr      CStr)
 
-    (decl-Cell List^Bool)
-    (decl-Cell List^int)
-    (decl-Cell List^char)
+    (decl-Cell List_Bool)
+    (decl-Cell List_int)
+    (decl-Cell List_char)
     ;; (decl-Cell String)
 
-    (decl-Rc List^Bool)
-    (decl-Rc List^int)
-    (decl-Rc List^char)
+    (decl-Rc List_Bool)
+    (decl-Rc List_int)
+    (decl-Rc List_char)
     ;; (decl-Rc String)
     
     (decl-Monoid (<> All     Bool) Bool)
@@ -75,19 +75,19 @@
     (decl-Monoid (<> List   char) (<> List char))
     ;; (decl-Monoid (<> String Char) (<> List char))
 
-    (decl-Functor-List List^int^int   int  int)
-    (decl-Functor-List List^int^char  int  char)
-    (decl-Functor-List List^int^Bool  int  Bool)
-    (decl-Functor-List List^char^char char char)
-    (decl-Functor-List List^char^int  char int)
-    (decl-Functor-List List^char^Bool char Bool)
+    (decl-Functor-List List_int_int   int  int)
+    (decl-Functor-List List_int_char  int  char)
+    (decl-Functor-List List_int_Bool  int  Bool)
+    (decl-Functor-List List_char_char char char)
+    (decl-Functor-List List_char_int  char int)
+    (decl-Functor-List List_char_Bool char Bool)
 
-    (decl-Functor-Maybe Maybe^int^int   int  int)
-    (decl-Functor-Maybe Maybe^int^char  int  char)
-    (decl-Functor-Maybe Maybe^int^Bool  int  Bool)
-    (decl-Functor-Maybe Maybe^char^char char char)
-    (decl-Functor-Maybe Maybe^char^int  char int)
-    (decl-Functor-Maybe Maybe^char^Bool char Bool)
+    (decl-Functor-Maybe Maybe_int_int   int  int)
+    (decl-Functor-Maybe Maybe_int_char  int  char)
+    (decl-Functor-Maybe Maybe_int_Bool  int  Bool)
+    (decl-Functor-Maybe Maybe_char_char char char)
+    (decl-Functor-Maybe Maybe_char_int  char int)
+    (decl-Functor-Maybe Maybe_char_Bool char Bool)
     
     ) ; guard
   ) ; haskell.h
@@ -115,15 +115,15 @@
     ;; cicili analyzer stack types and functions
     ;; BOOM BOOM
     ;; will be initialized in the main function 
-    (static) (var BoxedList^BoxedList^__h_StackItem __h_stack_private)
-    (static) (var BoxedList^BoxedList^__h_StackItem __h_stack_realloc)
-    (static) (var BoxedList^__h_StackItem __h_stack_current)
+    (static) (var BoxedList_BoxedList___h_StackItem __h_stack_private)
+    (static) (var BoxedList_BoxedList___h_StackItem __h_stack_realloc)
+    (static) (var BoxedList___h_StackItem __h_stack_current)
     (static) (var bool __h_stack_initialized)
     (static) (var int __h_stack_level)
 
     (func __h_init_haskell ()
-          (set __h_stack_private ((<> BoxedNil BoxedList^__h_StackItem)))
-          (set __h_stack_realloc ((<> BoxedNil BoxedList^__h_StackItem)))
+          (set __h_stack_private ((<> BoxedNil BoxedList___h_StackItem)))
+          (set __h_stack_realloc ((<> BoxedNil BoxedList___h_StackItem)))
           (set __h_stack_current ((<> BoxedNil __h_StackItem)))
           (set __h_stack_initialized true)
           (set __h_stack_level 0))
@@ -153,7 +153,7 @@
             (set __h_stack_current ((<> BoxedCons __h_StackItem) (cast __h_StackItem '{ __h_stack_level 0 0 })
                                     __h_stack_current))))
 
-    (func __h_stack_show_item ((BoxedList^__h_StackItem stack) (int counter))
+    (func __h_stack_show_item ((BoxedList___h_StackItem stack) (int counter))
           (io# stack
             (* Cons head tail
                (io head
@@ -183,7 +183,7 @@
                             (__h_stack_show_item tail counter )))))))))
     
     (func __h_stack_show ()                
-          (func __h_stack_iter_ ((BoxedList^BoxedList^__h_StackItem stack) (int counter))
+          (func __h_stack_iter_ ((BoxedList_BoxedList___h_StackItem stack) (int counter))
                 (while true
                   (io# stack
                     (* Cons head tail
@@ -202,12 +202,12 @@
           ) ; __h_stack_show
 
     (func __h_stack ()
-          (out BoxedList^BoxedList^__h_StackItem)
+          (out BoxedList_BoxedList___h_StackItem)
           (return __h_stack_private))
     
     ;; check the stack by items        
-    (func __h_stack_free ((BoxedList^BoxedList^__h_StackItem * pin))
-          (func __h_stack_free_ ((BoxedList^__h_StackItem stack) (bool isAlive))
+    (func __h_stack_free ((BoxedList_BoxedList___h_StackItem * pin))
+          (func __h_stack_free_ ((BoxedList___h_StackItem stack) (bool isAlive))
                 (io# stack
                   (* Cons head tail
                      (io head
@@ -217,10 +217,10 @@
                               (* Cons _ ftail
                                  (if isAlive
                                      (block
-                                       (set __h_stack_current ((<> clone Box BoxedList^__h_StackItem) ftail)))
+                                       (set __h_stack_current ((<> clone Box BoxedList___h_StackItem) ftail)))
                                      (block
-                                       (letin* ((tmp ((<> clone Box BoxedList^__h_StackItem) ftail)))
-                                         ((<> free Box BoxedList^__h_StackItem) (aof __h_stack_current))
+                                       (letin* ((tmp ((<> clone Box BoxedList___h_StackItem) ftail)))
+                                         ((<> free Box BoxedList___h_StackItem) (aof __h_stack_current))
                                          ;; save root for next inner stack
                                          (set __h_stack_current tmp)
                                          ;; (set __h_stack_current ((<> BoxedNil __h_StackItem)))
@@ -229,19 +229,19 @@
                                 ;; alive
                                 (block
                                   (set __h_stack_private
-                                    ((<> BoxedCons BoxedList^__h_StackItem)
-                                     ((<> clone Box BoxedList^__h_StackItem) stack) __h_stack_private))
-                                  ((<> free Box BoxedList^__h_StackItem) (aof __h_stack_current))
+                                    ((<> BoxedCons BoxedList___h_StackItem)
+                                     ((<> clone Box BoxedList___h_StackItem) stack) __h_stack_private))
+                                  ((<> free Box BoxedList___h_StackItem) (aof __h_stack_current))
                                   (__h_stack_free_ tail true))
                                 ;; dead
                                 (block
-                                  (letin* ((tmp ((<> clone Box BoxedList^__h_StackItem) tail)))
-                                    ((<> free Box BoxedList^__h_StackItem) (aof __h_stack_current))
+                                  (letin* ((tmp ((<> clone Box BoxedList___h_StackItem) tail)))
+                                    ((<> free Box BoxedList___h_StackItem) (aof __h_stack_current))
                                     (set __h_stack_current tmp)
                                     (__h_stack_free_ tail false))))
                             ))))))
 
-          ;; (func __h_stack_check_ ((BoxedList^BoxedList^__h_StackItem stack))
+          ;; (func __h_stack_check_ ((BoxedList_BoxedList___h_StackItem stack))
           ;;       (io# stack
           ;;         (* Cons shead stail -># shead
           ;;            (* Cons head
@@ -254,7 +254,7 @@
           ;;                            (__h_stack_check_ stail))
           ;;                          (block
           
-          ;;                            (func __h_stack_check_any_ ((BoxedList^__h_StackItem inner_stack))
+          ;;                            (func __h_stack_check_any_ ((BoxedList___h_StackItem inner_stack))
           ;;                                  (out bool)
           ;;                                  (io# inner_stack
           ;;                                    (* Cons head tail
@@ -267,17 +267,17 @@
           
           ;;                            (letin* ((hasAny (__h_stack_check_any_ shead)))
           ;;                              (unless hasAny
-          ;;                                (letin* ((tmp ((<> delete BoxedList^BoxedList^__h_StackItem)
+          ;;                                (letin* ((tmp ((<> delete BoxedList_BoxedList___h_StackItem)
           ;;                                               __h_stack_private
           ;;                                               stack)))
           ;;                                  ;; realloc
           ;;                                  (set __h_stack_realloc
-          ;;                                    ((<> push BoxedList^BoxedList^__h_StackItem) shead __h_stack_realloc))
+          ;;                                    ((<> push BoxedList_BoxedList___h_StackItem) shead __h_stack_realloc))
 
-          ;;                                  ((<> free Box BoxedList^BoxedList^__h_StackItem) (aof __h_stack_private))
+          ;;                                  ((<> free Box BoxedList_BoxedList___h_StackItem) (aof __h_stack_private))
           ;;                                  (set __h_stack_private tmp)
           
-          ;;                                  ;; ((<> free Box BoxedList^__h_StackItem) (aof shead))
+          ;;                                  ;; ((<> free Box BoxedList___h_StackItem) (aof shead))
           
           ;;                                  (__h_stack_check_ stail)))))))))))))
           
@@ -289,8 +289,8 @@
           
           ) ; __h_stack_free
 
-    (func __h_stack_free_main ((BoxedList^BoxedList^__h_StackItem * pin))
-          (func __h_stack_show_ ((BoxedList^__h_StackItem stack) (int counter))
+    (func __h_stack_free_main ((BoxedList_BoxedList___h_StackItem * pin))
+          (func __h_stack_show_ ((BoxedList___h_StackItem stack) (int counter))
                 (out bool)
                 (io# stack
                   (* Cons head tail
@@ -322,14 +322,14 @@
                   (default (return false)))
                 (return true))
           
-          (func __h_stack_iter_ ((BoxedList^BoxedList^__h_StackItem stack) (int counter))
+          (func __h_stack_iter_ ((BoxedList_BoxedList___h_StackItem stack) (int counter))
                 (while true
                   (io# stack
                     (* Cons head tail
                        (block
                          (set stack tail)
                          (? (__h_stack_show_ head (++ counter)) counter (-- counter))
-                         ((<> free Box BoxedList^__h_StackItem) (aof head))))
+                         ((<> free Box BoxedList___h_StackItem) (aof head))))
                     (default (break)))))
 
           (when __h_stack_initialized
@@ -337,20 +337,20 @@
             (printf "--- [Cicili analyzer stack trace]:\n")
             (__h_stack_iter_ __h_stack_private 0)
             ;; (printf "--- [stack trace reallocated]:\n")
-            ;; (__h_stack_iter_ ((<> reverse BoxedList^BoxedList^__h_StackItem) __h_stack_realloc) 0)
+            ;; (__h_stack_iter_ ((<> reverse BoxedList_BoxedList___h_StackItem) __h_stack_realloc) 0)
             (printf "--- [stack trace end]\n"))
 
           ) ; __h_stack_free_main
 
-    (impl-BoxedList BoxedList^__h_StackItem __h_StackItem
+    (impl-BoxedList BoxedList___h_StackItem __h_StackItem
                     (\\ -f -v
                         (match -v
                           ((\, level pointer address)
                            (fprintf -f "%d, %p: %zu" level pointer address))
                           (default 0)))
                     "\n")
-    (impl-BoxedList BoxedList^BoxedList^__h_StackItem BoxedList^__h_StackItem
-                    (\\ -f -v ((<> show BoxedList^__h_StackItem) -f -v))
+    (impl-BoxedList BoxedList_BoxedList___h_StackItem BoxedList___h_StackItem
+                    (\\ -f -v ((<> show BoxedList___h_StackItem) -f -v))
                     "\n")
 
     (impl-Bool)
@@ -360,30 +360,30 @@
     (impl-Maybe CStr)
     (impl-Maybe CFile)
     
-    (impl-List   List^Bool Bool (\\ -f -v ((<> show Bool) -f -v)) " ")
-    (impl-List   List^int  int  (\\ -f -v (fprintf -f "%d" -v))   " ")
-    (impl-String List^char char (\\ -f -v (fprintf -f "%c" -v))   " ")
+    (impl-List   List_Bool Bool (\\ -f -v ((<> show Bool) -f -v)) " ")
+    (impl-List   List_int  int  (\\ -f -v (fprintf -f "%d" -v))   " ")
+    (impl-String List_char char (\\ -f -v (fprintf -f "%c" -v))   " ")
 
     (impl-Vector Str       char (\\ -f -v (fprintf -f "%c" -v))   "" T T)
     (impl-Vector String    Char (\\ -f -v (fprintf -f "%c" -v))   "" T NIL)
     
-    (impl-Range Range^int  int  List^int  (\\ -f -v (fprintf -f "%d" -v)) " ")
-    (impl-Range Range^char char List^char (\\ -f -v (fprintf -f "%c" -v)) " ")
+    (impl-Range Range_int  int  List_int  (\\ -f -v (fprintf -f "%d" -v)) " ")
+    (impl-Range Range_char char List_char (\\ -f -v (fprintf -f "%c" -v)) " ")
 
-    (impl-List List^List^Bool List^Bool (\\ -f -v ((<> show List^Bool) -f -v)) " ")
-    (impl-List List^List^int  List^int  (\\ -f -v ((<> show List^int)  -f -v)) " ")
-    (impl-List List^List^char List^char (\\ -f -v ((<> show List^char) -f -v)) " ")
-    ;; (impl-List List^String    String    (\\ -f -v ((<> show String)    -f -v)) " ")
-    (impl-List List^CStr      CStr      (\\ -f -v (fprintf -f "%s" -v))        " ")
+    (impl-List List_List_Bool List_Bool (\\ -f -v ((<> show List_Bool) -f -v)) " ")
+    (impl-List List_List_int  List_int  (\\ -f -v ((<> show List_int)  -f -v)) " ")
+    (impl-List List_List_char List_char (\\ -f -v ((<> show List_char) -f -v)) " ")
+    ;; (impl-List List_String    String    (\\ -f -v ((<> show String)    -f -v)) " ")
+    (impl-List List_CStr      CStr      (\\ -f -v (fprintf -f "%s" -v))        " ")
 
-    (impl-Cell List^Bool)
-    (impl-Cell List^int)
-    (impl-Cell List^char)
+    (impl-Cell List_Bool)
+    (impl-Cell List_int)
+    (impl-Cell List_char)
     ;; (impl-Cell String)
 
-    (impl-Rc List^Bool)
-    (impl-Rc List^int)
-    (impl-Rc List^char)
+    (impl-Rc List_Bool)
+    (impl-Rc List_int)
+    (impl-Rc List_char)
     ;; (impl-Rc String)
 
     (impl-Monoid (<> All     Bool) Bool (True)  and_Bool)
@@ -408,19 +408,19 @@
     ;;   ((<> Nil char))
     ;;   (<> append List char))
 
-    (impl-Functor-List List^int^int   int  int)
-    (impl-Functor-List List^int^char  int  char)
-    (impl-Functor-List List^int^Bool  int  Bool)
-    (impl-Functor-List List^char^char char char)
-    (impl-Functor-List List^char^int  char int)
-    (impl-Functor-List List^char^Bool char Bool)
+    (impl-Functor-List List_int_int   int  int)
+    (impl-Functor-List List_int_char  int  char)
+    (impl-Functor-List List_int_Bool  int  Bool)
+    (impl-Functor-List List_char_char char char)
+    (impl-Functor-List List_char_int  char int)
+    (impl-Functor-List List_char_Bool char Bool)
 
-    (impl-Functor-Maybe Maybe^int^int   int  int)
-    (impl-Functor-Maybe Maybe^int^char  int  char)
-    (impl-Functor-Maybe Maybe^int^Bool  int  Bool)
-    (impl-Functor-Maybe Maybe^char^char char char)
-    (impl-Functor-Maybe Maybe^char^int  char int)
-    (impl-Functor-Maybe Maybe^char^Bool char Bool)
+    (impl-Functor-Maybe Maybe_int_int   int  int)
+    (impl-Functor-Maybe Maybe_int_char  int  char)
+    (impl-Functor-Maybe Maybe_int_Bool  int  Bool)
+    (impl-Functor-Maybe Maybe_char_char char char)
+    (impl-Functor-Maybe Maybe_char_int  char int)
+    (impl-Functor-Maybe Maybe_char_Bool char Bool)
 
     ) ; guard
   ) ; haskell.c

@@ -318,7 +318,7 @@
           `((<> pure type) ,buf ,len)
           (IF (AND (LISTP buf) (EQUAL (CAR buf) 'QUOTE))
               `((<> pure type) (cast (const a []) ,buf) ,(LENGTH (CADR buf)))
-              (ERROR (FORMAT NIL "new^BoxedList len required for dynamic array input: ~A" buf))))))
+              (ERROR (FORMAT NIL "new_BoxedList len required for dynamic array input: ~A" buf))))))
 
   (import-Maybe type)
 

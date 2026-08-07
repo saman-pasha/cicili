@@ -566,7 +566,7 @@
                       `((<> Buffer a) ((<> MakeStringBuffer a) ,buf ,(LENGTH (CADR buf)) ,(LENGTH (CADR buf)) 0))
                       `(letn (((<> StringBuffer a) ,buf-name . (FUNCTION ((<> newCapacity StringBuffer a) ,(LENGTH (CADR buf)) 16))))
                          ((<> Buffer a) ((<> print StringBuffer a) ,buf-name (cast (const a []) ,buf) ,(LENGTH (CADR buf))))))
-                  (ERROR (FORMAT NIL "new^Vector len required for dynamic array input: ~A" buf)))))))
+                  (ERROR (FORMAT NIL "new_Vector len required for dynamic array input: ~A" buf)))))))
 
   (import-Maybe type)
   

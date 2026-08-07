@@ -160,7 +160,7 @@
                                 (while true
                                   ;; trace
                                   ;; (printf "\nStack: ")
-                                  ;; (show^List^DynamicType stdout stack)
+                                  ;; (show_List_DynamicType stdout stack)
                                   ;; (putchar #\Newline)
                                   
                                   (let ((DynamicType dt_item . #'(_parseJson file true)))
@@ -190,9 +190,9 @@
                                   (++ counter)
                                   ;; trace
                                   ;; (printf "\nStack Keys: ")
-                                  ;; (show^List^CStr stdout stackKeys)
+                                  ;; (show_List_CStr stdout stackKeys)
                                   ;; (printf "\nStack Vals: ")
-                                  ;; (show^List^DynamicType stdout stackVals)
+                                  ;; (show_List_DynamicType stdout stackVals)
                                   ;; (putchar #\Newline)
                                   
                                   (let ((DynamicType dt_item . #'(_parseJson file true)))
@@ -222,7 +222,7 @@
                                             (if (== (% counter 2) 1)
                                                 (io# dt_item
                                                   (* String key (set stackKeys ((<> Cons CStr)
-                                                                                ((<> toArray List char) (cast List^char key) #\Null)
+                                                                                ((<> toArray List char) (cast List_char key) #\Null)
                                                                                 stackKeys)))
                                                   (default (return (match sb
                                                                      (NullTerminated buffer
@@ -251,7 +251,7 @@
                               (NullTerminated buffer len
                                          (block (set sb new)
                                            (set in_string false)
-                                           (return ((<> Dynamic String) (pure^String buffer len)))))
+                                           (return ((<> Dynamic String) (pure_String buffer len)))))
                               (default (return ((<> Dynamic Error) (strdup "Parse Json: no buffer"))))))
                           (set in_string true)
                           (break))
@@ -346,7 +346,7 @@
           (return (match# dt
                     (dead (fprintf file "nothing"))
                     (* String  data (+ (fprintf file "\"")
-                                       (show^String file data)
+                                       (show_String file data)
                                        (fprintf file "\"")))
                     (* Integer data (fprintf file "%llu" data))
                     (* Float   data (fprintf file "%Lf" data))
@@ -393,7 +393,7 @@
                                   (dead 0)
                                   (* String data (+ (fprintf file "%s=" key)
                                                     (fprintf file "\"")
-                                                    (show^String file data)
+                                                    (show_String file data)
                                                     (fprintf file "\"")))
                                   (* List   0)
                                   (* Object 0)
@@ -427,7 +427,7 @@
                 (return (match# dt
                           (dead (fprintf file "nothing"))
                           (* String  data (+ (fprintf file "\"")
-                                             (show^String file data)
+                                             (show_String file data)
                                              (fprintf file "\"")))
                           (* Integer data (fprintf file "%llu" data))
                           (* Float   data (fprintf file "%Lf" data))
@@ -510,7 +510,7 @@
           (return (match# dt
                     (dead (fprintf file "nil"))
                     (* String  data (+ (fprintf file "\"")
-                                       (show^String file data)
+                                       (show_String file data)
                                        (fprintf file "\"")))
                     (* Integer data (fprintf file "%llu" data))
                     (* Float   data (fprintf file "%Lf" data))
@@ -527,7 +527,7 @@
 
     (free (syslog! (printf "DynamicType free!"))
       (io this
-        (* String data (free^String (aof data)))
+        (* String data (free_String (aof data)))
         (* List   data ((<> free List DynamicType) (aof data)))
         (* Object data ((<> free BTree CStr DynamicType) (aof data)))
         (* Error  data (free data))

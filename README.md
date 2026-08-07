@@ -13,10 +13,10 @@ Monads — **all with zero runtime overhead and no garbage collector**.
 (source "hello.c" (make :std #t :compile #t :link #t)
   (main
     (letin ((v (new vector (cast (const int []) '{ 1 2 3 4 5 }))))
-      (push^vector v 6)
+      (push_vector v 6)
       (printf "len %zu, last %d\n"
-              (len^vector v)
-              (matchn (nth^vector 5 v) (just x (cof x)) (nothing -1))))))
+              (len_vector v)
+              (matchn (nth_vector 5 v) (just x (cof x)) (nothing -1))))))
 ```
 
 That is a growable vector with bounds-checked access answering a `maybe` — carrying a
@@ -31,7 +31,7 @@ for that only then.
   Nothing is hidden in a runtime; a Cicili binary is a C binary.
 * **The macro layer does the thinking.** Cicili's compiler exposes its type inference to
   macros (`CICILI:TYPE-CHECK`, `CICILI:INFER-TYPE`). A macro can ask "what type is this
-  expression?" and expand accordingly — that is how `match` dispatches, how `free^cell`
+  expression?" and expand accordingly — that is how `match` dispatches, how `free_cell`
   finds the right destructor, and how `auto` works. `maybe` and `either` need no inference
   at all: their constructors are brace lists, typed by the slot they are written into.
 * **Front-end / back-end.** Every std-library feature is two parts: a *back-end* function
@@ -217,10 +217,10 @@ front-end macros. `(decl-vector int) (impl-vector int)` pulls in `maybe` and not
 |---|---|---|---|
 | [`maybe`](lib/std/maybe.cicili) | presence of a value, no sentinels | `just` / `nothing` build one without naming it; `match` / `matchn` open it | [maybe](test/std/maybe.cicili) |
 | [`either`](lib/std/either.cicili) | the answer, or why there isn't one | `right` / `left` build one without naming it; `match` / `matchn` open it | [either](test/std/either.cicili) |
-| [`array`](lib/std/array.cicili) | fixed contiguous buffer + length | `new`, `len^array`, `nth^array` (answers a `(<> Maybe ref a)` — a pointer *into* the buffer), `let^array` / `take^array` | [array](test/std/array.cicili) |
-| [`cell`](lib/std/cell.cicili) | owned heap value, freed exactly once | `new^cell`, `let^cell` / `letn^cell` (borrow), `take^cell` / `taken^cell` (consume) | [cell](test/std/cell.cicili) |
-| [`rc`](lib/std/rc.cicili) | a `cell` that counts its owners | `new^rc`, `clone^rc`, `let^rc` / `letn^rc` (borrow), `take^rc` / `taken^rc` (consume, last owner only) | [rc](test/std/rc.cicili) |
-| [`vector`](lib/std/vector.cicili) | an array that owns its headroom — unshared, wrap it in `rc` yourself | `push^vector`, `append^vector` (amortised power-of-two growth), `nth^vector`, `len^vector` | [vector](test/std/vector.cicili) |
+| [`array`](lib/std/array.cicili) | fixed contiguous buffer + length | `new`, `len_array`, `nth_array` (answers a `(<> Maybe ref a)` — a pointer *into* the buffer), `let_array` / `take_array` | [array](test/std/array.cicili) |
+| [`cell`](lib/std/cell.cicili) | owned heap value, freed exactly once | `new_cell`, `let_cell` / `letn_cell` (borrow), `take_cell` / `taken_cell` (consume) | [cell](test/std/cell.cicili) |
+| [`rc`](lib/std/rc.cicili) | a `cell` that counts its owners | `new_rc`, `clone_rc`, `let_rc` / `letn_rc` (borrow), `take_rc` / `taken_rc` (consume, last owner only) | [rc](test/std/rc.cicili) |
+| [`vector`](lib/std/vector.cicili) | an array that owns its headroom — unshared, wrap it in `rc` yourself | `push_vector`, `append_vector` (amortised power-of-two growth), `nth_vector`, `len_vector` | [vector](test/std/vector.cicili) |
 | [`btree`](lib/std/btree.cicili) | ordered map, logarithmic | `insert` / `delete` answer an `either`, `search` / `min` / `max` a `maybe`, `traverse` in key order | [btree](test/std/btree.cicili) |
 | [`pthread`](lib/std/pthread) | threads with captured context | `go`, `join`, `detach`, `cancel`, `exit-self` | [thread](test/std/thread.cicili) |
 

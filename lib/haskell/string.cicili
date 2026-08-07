@@ -37,6 +37,6 @@
               `((<> pure type) (cast (const a []) ,buf) ,(LENGTH (CADR buf)))
               (IF (STRINGP buf)
                   `((<> new type Const) ,buf)
-                  (ERROR (FORMAT NIL "new^String len required for dynamic array input: ~A" buf)))))))
+                  (ERROR (FORMAT NIL "new_String len required for dynamic array input: ~A" buf)))))))
 
   ) ; import-String

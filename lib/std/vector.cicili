@@ -14,10 +14,10 @@
 ;;; one the type makes for them:
 ;;;
 ;;;   (letin ((v (new vector (cast (const int []) '{ 1 2 3 }))))    ; owned
-;;;     (push^vector v 4))
+;;;     (push_vector v 4))
 ;;;
-;;;   (letin ((v (new^rc vector (cast (const int []) '{ 1 2 3 }) 3)))  ; shared
-;;;     (let^rc (vec v) (printf "%zu\n" (len^vector (cof vec)))))
+;;;   (letin ((v (new_rc vector (cast (const int []) '{ 1 2 3 }) 3)))  ; shared
+;;;     (let_rc (vec v) (printf "%zu\n" (len_vector (cof vec)))))
 ;;;
 ;;; That split is the point. The previous vector was a window over an rc'd
 ;;; array, so every read walked cell -> rc -> array before the bounds check and
@@ -69,7 +69,7 @@
   ;; makes room for `needed' cells if there is not room already
   (decl) (func (<> grow vector a) (((<> vector a) ref vector) (size_t needed)))
   ;; both grow the vector in place and hand back the new length, so
-  ;; `(push^vector v 6)' is a statement and there is nothing to re-bind or free
+  ;; `(push_vector v 6)' is a statement and there is nothing to re-bind or free
   (decl) (func (<> push vector a) (((<> vector a) ref vector) (a item)) (out size_t))
   (decl) (func (<> append vector a) (((<> vector a) ref vector) (const a * items) (size_t count))
                (out size_t))
@@ -180,12 +180,12 @@
 
 ;;; the vector's type name and the form to pass for it, as one step.
 ;;; The name comes from the ROOT of the typedef chain, not from the declared
-;;; type: a vector borrowed out of an rc arrives as (<> rc vector^int interior_t)
+;;; type: a vector borrowed out of an rc arrives as (<> rc vector_int interior_t)
 ;;; and (<> len rc_vector_int_interior_t) is not a function anybody defined.
 ;;; type-root answers origin-first, so its CAR is the struct the typedefs lead
-;;; to -- the same thing len^array does for a `ref' array.
+;;; to -- the same thing len_array does for a `ref' array.
 (DEFUN vector-call< (vector)
-  (MULTIPLE-VALUE-BIND (desc full-type root-type) (CICILI:TYPE-CHECK vector :TYPEOF :std^vector
+  (MULTIPLE-VALUE-BIND (desc full-type root-type) (CICILI:TYPE-CHECK vector :TYPEOF :std_vector
                                                                             :MODIFIER '(move ref nil))
     (DECLARE (IGNORE desc))
     (VALUES (CAR root-type)
@@ -193,7 +193,7 @@
 
 ;;; (new vector ITEMS [LEN]) -- LEN is inferred from a brace list or a string.
 ;;; The capacity is arraySize(LEN), so a vector always starts with headroom.
-(DEFMACRO new^vector (items &OPTIONAL len)
+(DEFMACRO new_vector (items &OPTIONAL len)
   (LET* ((items items)
          (type (CICILI:INFER-TYPE items))
          ;; a pointer to the element, however it is qualified: (T *),
@@ -219,34 +219,34 @@
                       (ERROR (FORMAT NIL "new vector can't infer length ~A" items))))))))
     (IF len
         `((<> new vector ,elem) ,items ,len)
-      (ERROR (FORMAT NIL "new^~A len required for dynamic array input: ~A" type items)))))
+      (ERROR (FORMAT NIL "new_~A len required for dynamic array input: ~A" type items)))))
 
-(DEFMACRO free^vector (vector)
+(DEFMACRO free_vector (vector)
   (LET ((vector vector))
     (MULTIPLE-VALUE-BIND (type-name self) (vector-call< vector)
       `((<> free ,type-name) ,self))))
 
-(DEFMACRO len^vector (vector)
+(DEFMACRO len_vector (vector)
   (LET ((vector vector))
     (MULTIPLE-VALUE-BIND (type-name self) (vector-call< vector)
       `((<> len ,type-name) ,self))))
 
-(DEFMACRO nth^vector (index vector &KEY unchecked)
+(DEFMACRO nth_vector (index vector &KEY unchecked)
   (LET ((index index) (vector vector) (unchecked unchecked))
     (MULTIPLE-VALUE-BIND (type-name self) (vector-call< vector)
       (IF unchecked
           `(nth ,index ($ ,vector arr))
         `((<> nth ,type-name) ,index ,self)))))
 
-(DEFMACRO push^vector (vector item)
+(DEFMACRO push_vector (vector item)
   (LET ((vector vector) (item item))
     (MULTIPLE-VALUE-BIND (type-name self) (vector-call< vector)
       `((<> push ,type-name) ,self ,item))))
 
-;;; (append^vector v '{ 6 7 8 })       -- a brace list, counted here
-;;; (append^vector v "abc")            -- a string, counted here
-;;; (append^vector v items count)      -- anything else needs its count
-(DEFMACRO append^vector (vector items &OPTIONAL count)
+;;; (append_vector v '{ 6 7 8 })       -- a brace list, counted here
+;;; (append_vector v "abc")            -- a string, counted here
+;;; (append_vector v items count)      -- anything else needs its count
+(DEFMACRO append_vector (vector items &OPTIONAL count)
   (LET* ((vector vector)
          (items items)
          (literal (OR (AND (LISTP items) (CICILI:KEY-EQ (CAR items) 'QUOTE)) (STRINGP items)))

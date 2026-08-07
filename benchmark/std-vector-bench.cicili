@@ -41,8 +41,8 @@
   (impl-vector int)
   ;; the rc'd rows below wrap the very same vector -- opting in, which is the
   ;; whole point of the vector no longer doing it for you
-  (decl-rc vector^int)
-  (impl-rc vector^int)
+  (decl-rc vector_int)
+  (impl-rc vector_int)
 
   (func ms_now ()
         (out llong)
@@ -68,7 +68,7 @@
           (let ((i64 sum . 0)
                 (llong t0 . #'(ms_now)))
             (for ((int i . 0)) (< i N) ((++ i))
-                 (match (nth^vector (% i 50) v)
+                 (match (nth_vector (% i 50) v)
                    (just val (+= sum (cof val)))))
             (let ((llong elapsed . #'(- (ms_now) t0)))
               (printf "  (nth checksum: %lld)\n" sum) ; after the timer -- forces liveness
@@ -82,7 +82,7 @@
         (let ((i64 sum . 0)
               (llong t0 . #'(ms_now)))
           (for ((int e . 0)) (< e (/ N STEP)) ((++ e))
-               (letin ((v (new^vector items STEP)))
+               (letin ((v (new_vector items STEP)))
                  (+= sum (cast i64 (cast size_t ($ v arr))))))
           (let ((llong elapsed . #'(- (ms_now) t0)))
             (printf "  (construct checksum: %lld)\n" sum)
@@ -98,7 +98,7 @@
           (for ((int e . 0)) (< e (/ N STEP)) ((++ e))
                (letin ((v (new vector (cast (const int []) '{ 0 }) 0)))
                  (for ((int i . 0)) (< i STEP) ((++ i))
-                      (push^vector v (+ (* e STEP) i)))
+                      (push_vector v (+ (* e STEP) i)))
                  (+= sum (cast i64 (cast size_t ($ v arr))))))
           (let ((llong elapsed . #'(- (ms_now) t0)))
             (printf "  (push checksum: %lld)\n" sum)
@@ -112,7 +112,7 @@
               (llong t0 . #'(ms_now)))
           (for ((int e . 0)) (< e (/ N STEP)) ((++ e))
                (letin ((v (new vector (cast (const int []) '{ 0 }) 0)))
-                 (append^vector v items STEP)
+                 (append_vector v items STEP)
                  (+= sum (cast i64 (cast size_t ($ v arr))))))
           (let ((llong elapsed . #'(- (ms_now) t0)))
             (printf "  (append checksum: %lld)\n" sum)
@@ -130,7 +130,7 @@
               (llong t0 . #'(ms_now)))
           (for ((int e . 0)) (< e (/ N STEP)) ((++ e))
                (letin ((r (new rc vector items STEP)))
-                 (+= sum (letn^rc (v r (cast i64 0)) (cast i64 (cast size_t (-> v arr)))))))
+                 (+= sum (letn_rc (v r (cast i64 0)) (cast i64 (cast size_t (-> v arr)))))))
           (let ((llong elapsed . #'(- (ms_now) t0)))
             (printf "  (construct rc checksum: %lld)\n" sum)
             (return elapsed))))
@@ -138,7 +138,7 @@
   ;; nth: the rc is borrowed ONCE and indexed inside, which is what Rust does
   ;; too -- `v.get(i % 50)' on an Rc<Vec<i32>> derefs by a constant offset and
   ;; LLVM hoists the Vec's ptr/len out of the loop. Borrowing per iteration
-  ;; would be a closure call per element and would measure letn^rc, not the rc.
+  ;; would be a closure call per element and would measure letn_rc, not the rc.
   (func bench_nth_rc ()
         (out long)
         (letin ((r (new rc vector (cast (const int []) '{
@@ -155,17 +155,17 @@
             ;; store through a pointer where the flat row keeps it in a
             ;; register, and measured 1293 ms against 594. That is the capture,
             ;; not the rc, and it would have been charged to the rc.
-            (set sum (letn^rc (v r (cast i64 0))
+            (set sum (letn_rc (v r (cast i64 0))
                        (letn ((i64 s . 0))
                          (for ((int i . 0)) (< i N) ((++ i))
-                              (match (nth^vector (% i 50) v)
+                              (match (nth_vector (% i 50) v)
                                 (just val (+= s (cof val)))))
                          s)))
             (let ((llong elapsed . #'(- (ms_now) t0)))
               (printf "  (nth rc checksum: %lld)\n" sum)
               (return elapsed)))))
 
-  ;; push: sole^rc before every write is Rc::get_mut before every push -- a
+  ;; push: sole_rc before every write is Rc::get_mut before every push -- a
   ;; shared payload belongs to the other owners too, and neither language
   ;; writes through one
   (func bench_push_rc ()
@@ -174,10 +174,10 @@
               (llong t0 . #'(ms_now)))
           (for ((int e . 0)) (< e (/ N STEP)) ((++ e))
                (letin ((r (new rc vector (cast (const int []) '{ 0 }) 0)))
-                 (let^rc (v r :e e)
+                 (let_rc (v r :e e)
                    (for ((int i . 0)) (< i STEP) ((++ i))
-                        (push^vector v (+ (* e STEP) i))))
-                 (+= sum (letn^rc (v r (cast i64 0)) (cast i64 (cast size_t (-> v arr)))))))
+                        (push_vector v (+ (* e STEP) i))))
+                 (+= sum (letn_rc (v r (cast i64 0)) (cast i64 (cast size_t (-> v arr)))))))
           (let ((llong elapsed . #'(- (ms_now) t0)))
             (printf "  (push rc checksum: %lld)\n" sum)
             (return elapsed))))
@@ -188,10 +188,10 @@
               (llong t0 . #'(ms_now)))
           (for ((int e . 0)) (< e (/ N STEP)) ((++ e))
                (letin ((r (new rc vector (cast (const int []) '{ 0 }) 0)))
-                 (when (sole^rc r)
-                   (let^rc (v r :items items)
-                     (append^vector v items STEP)))
-                 (+= sum (letn^rc (v r (cast i64 0)) (cast i64 (cast size_t (-> v arr)))))))
+                 (when (sole_rc r)
+                   (let_rc (v r :items items)
+                     (append_vector v items STEP)))
+                 (+= sum (letn_rc (v r (cast i64 0)) (cast i64 (cast size_t (-> v arr)))))))
           (let ((llong elapsed . #'(- (ms_now) t0)))
             (printf "  (append rc checksum: %lld)\n" sum)
             (return elapsed))))
@@ -203,7 +203,7 @@
       (for ((int i . 0)) (< i STEP) ((++ i))
            (set (nth i items) i))
 
-      (printf "  construct (new^vector, %d x %d): %ld ms\n" (/ N STEP) STEP (bench_construct items))
+      (printf "  construct (new_vector, %d x %d): %ld ms\n" (/ N STEP) STEP (bench_construct items))
       (printf "  nth (bounds-checked) %d times: %ld ms\n" N (bench_nth))
       (printf "  push %d elements (%d x %d epoch): %ld ms\n" N (/ N STEP) STEP (bench_push))
       (printf "  append %d elements (%d x %d epoch): %ld ms\n" N (/ N STEP) STEP (bench_append items))
@@ -256,7 +256,7 @@
 ;;;;
 ;;;; push rc is the one Cicili wins and it is worth knowing why: Rust checks
 ;;;; Rc::get_mut on every single push, Cicili borrows once per epoch with
-;;;; let^rc and pushes inside. Both are the idiomatic way to write it in each
+;;;; let_rc and pushes inside. Both are the idiomatic way to write it in each
 ;;;; language, so it is a fair row -- but it is an API-shape difference, not
 ;;;; codegen, and reading it as "Cicili's rc is faster" would be wrong.
 ;;;;
@@ -281,7 +281,7 @@
 ;;;; what the identical source says they should be. There was never a vector
 ;;;; penalty to explain.
 ;;;;
-;;;; Making the letn^rc closure `static inline' does NOT recover it (1663 ms),
+;;;; Making the letn_rc closure `static inline' does NOT recover it (1663 ms),
 ;;;; so it is not the function boundary either -- clang cannot track the length
 ;;;; through malloc + memcpy into the box however much it can see.
 ;;;;
@@ -320,7 +320,7 @@
 ;;;; nth went 1910 -> 505 and it was never a codegen problem. Three things, in
 ;;;; order of size:
 ;;;;
-;;;; 1. The rc'd nth called TWO weak functions per element. letn^cell passes the
+;;;; 1. The rc'd nth called TWO weak functions per element. letn_cell passes the
 ;;;;    default as a closure ARGUMENT, so nothing_int() ran on every call even
 ;;;;    when the element was found, and the found path called just_int(). Both
 ;;;;    carry (inline), which emits __attribute__((weak)) -- a symbol the
@@ -336,6 +336,6 @@
 ;;;; CALL a std constructor -- an argument slot, a closure return -- pays a
 ;;;; call that cannot be inlined. (inline) meaning weak is the reason.
 ;;;;
-;;;; Sharing was not removed, it was moved. (new^rc vector ...) puts the vector
+;;;; Sharing was not removed, it was moved. (new_rc vector ...) puts the vector
 ;;;; in an rc for callers who want one, and only they pay for it.
 ;;;; ---------------------------------------------------------------------

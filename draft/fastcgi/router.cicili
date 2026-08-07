@@ -49,11 +49,11 @@
           Route)
 
         ;; B-Tree dependency
-        (decl-List List^Route Route)
+        (decl-List List_Route Route)
         
         ;; a BTree which holds path to Routes
         ;; fast searchs huge amounts of routes
-        (decl-B-Tree BTree^CStr^Route
+        (decl-B-Tree BTree_CStr_Route
           ;;   item : (Tuple CStr Route)
           CStr      ; CStr  : key type, route path
           Route)    ; Route : value type
@@ -72,19 +72,19 @@
         (decl-data Router
           (= SimpleRouter MakeSimpleRouter
              (CStr socket)              ; "/path/to/fcgi.sock" or ":9000"
-             (BTree^CStr^Route routes)) ; stores routes
+             (BTree_CStr_Route routes)) ; stores routes
 
           ;; includes middleware processing
           (= DetailedRouter MakeDetailedRouter
              (CStr socket)                ; "/path/to/fcgi.sock" or ":9000"
-             (BTree^CStr^Route routes)    ; stores routes
+             (BTree_CStr_Route routes)    ; stores routes
              (int backlog)                ; 5
              (int maxContentLength)       ; 2097152, 2MB
              (RouteHandler beforeRequest) ; process before request handling
              (RouteHandler afterRequest)  ; process after request handling
              (Bool multiThreading))       ; false: serlializing
           
-          (func start ((Router router)) (out Either^RouterError^int)))
+          (func start ((Router router)) (out Either_RouterError_int)))
         
         ) ; router.h
 
@@ -187,7 +187,7 @@
               (default 0)))
 
         ;; B-Tree dependency
-        (impl-List List^Route
+        (impl-List List_Route
           Route
           (\\ -file -r
               (match -r
@@ -197,7 +197,7 @@
           "\n")
         
         ;; B-Tree item : (Tuple CStr Route)
-        (impl-B-Tree BTree^CStr^Route
+        (impl-B-Tree BTree_CStr_Route
           CStr       ; key type, route path
           Route      ; value type
           3          ; m : order (degree)
@@ -244,14 +244,14 @@
         ;; Process incoming requests based on routes
         (func processRoutes ((FCGX_Request * req)
                              (int maxContentLength)
-                             (BTree^CStr^Route routes)
+                             (BTree_CStr_Route routes)
                              (RouteHandler beforeRequest)
                              (RouteHandler afterRequest))
               (let ((CStr req_uri         . #'(FCGX_GetParam "REQUEST_URI"    (-> req envp)))
                     (CStr req_method      . #'(FCGX_GetParam "REQUEST_METHOD" (-> req envp)))
                     (CStr req_queryString . #'(FCGX_GetParam "QUERY_STRING"   (-> req envp))))
                 (info! (format #t "Request process begins: %d, %s, %s, %s\n" (-> req requestId) req_uri req_method req_queryString))
-                (io ((<> search BTree^CStr^Route) routes req_uri)
+                (io ((<> search BTree_CStr_Route) routes req_uri)
                   (Just (\, _ (\, _ methods handler)) ; (Just Tuple (path (Tuple uri methods handler)))
                     (block (warn! (format #t "registered path: %s, methods: %d, request method: %d\n"
                                           req_uri methods (CStrToRouteMethod req_method)))
@@ -273,11 +273,11 @@
         (func startWithArgs ((CStr socket)                ; ":9000"
                              (int backlog)                ; 5
                              (int maxContentLength)       ; 2097152, 2MB
-                             (BTree^CStr^Route routes)    ; stores routes
+                             (BTree_CStr_Route routes)    ; stores routes
                              (RouteHandler beforeRequest) ; process before request handling
                              (RouteHandler afterRequest)  ; process after request handling
                              (Bool multiThreading))       ; (False): serlializing
-              (out Either^RouterError^int)
+              (out Either_RouterError_int)
               (when (!= (FCGX_Init) 0) (return (left ((<> Router ERR_FASTCGI_LIB) errno (strerror errno)))))
               (let ((int server_fd . #'(FCGX_OpenSocket socket backlog)))
                 (when (== server_fd -1) (return (left ((<> Router ERR_FASTCGI_LIB) errno (strerror errno)))))
@@ -298,7 +298,7 @@
                             (if (== (FCGX_Accept_r request) 0)
                                 (detach ((FCGX_Request * request)
                                          (int maxContentLength)
-                                         (BTree^CStr^Route routes)
+                                         (BTree_CStr_Route routes)
                                          (RouteHandler beforeRequest)
                                          (RouteHandler afterRequest))
                                   (letin* ((request request releaseFCGXRequest)) ; release resources on both error and succeed
@@ -309,12 +309,12 @@
         (impl-data Router
           (= SimpleRouter MakeSimpleRouter
              (CStr socket)              ; ":9000"
-             (BTree^CStr^Route routes)) ; stores routes
+             (BTree_CStr_Route routes)) ; stores routes
 
           ;; includes middleware processing
           (= DetailedRouter MakeDetailedRouter
              (CStr socket)                ; ":9000"
-             (BTree^CStr^Route routes)    ; stores routes
+             (BTree_CStr_Route routes)    ; stores routes
              (int backlog)                ; 5
              (int maxContentLength)       ; 2097152, 2MB
              (RouteHandler beforeRequest) ; process before request handling
@@ -323,7 +323,7 @@
           
           ;; Start FastCGI Server
           (func start ((Router router))
-                (out Either^RouterError^int)
+                (out Either_RouterError_int)
 
                 (return (match router
                           (SimpleRouter socket routes (startWithArgs socket 5 2097152 routes nil nil (False)))

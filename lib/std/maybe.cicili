@@ -113,7 +113,7 @@
   ;; so it is the same registration whatever `a' is. emits nothing.
   ;; The tag is read, never the union's other arm, so a `just' payload is only
   ;; ever touched after JUST_CTOR has been seen.
-  (def-matchable std^maybe
+  (def-matchable std_maybe
     (just    (== ($ % ctor) JUST_CTOR)    ($ % data just value))
     (nothing (== ($ % ctor) NOTHING_CTOR) NIL))
 
@@ -210,7 +210,7 @@
 
   ;; `%' IS the pointer, so the test is the pointer and so is the accessor.
   ;; One branch, and nothing is loaded to take it.
-  (def-matchable std^refmaybe
+  (def-matchable std_refmaybe
     (just    %       %)
     (nothing (not %) NIL))
 

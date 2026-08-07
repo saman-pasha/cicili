@@ -79,8 +79,26 @@
          (__h_stack_push_separator))
       `($$$ )))
 
+;;; (<> free rc a) -> the symbol free_rc_a, which is the C name unchanged.
+;;;
+;;; SPECIALISATION IS HOW CICILI SPELLS AN OVERLOAD. There is no overloading: a
+;;; second signature is a second name, ((<> find int) …) beside
+;;; ((<> find str) …), and a macro reading CICILI:INFER-TYPE off the argument
+;;; picks between them. lib/std/vector.cicili is the worked example and
+;;; test/cpp/specialise.cicili the minimal one.
+;;;
+;;; THE SEPARATOR USED TO BE `^', FOLDED TO `_' ON THE WAY OUT, and one name
+;;; with two spellings is two chances to disagree. They did: a declaration went
+;;; through specify-decl-name< and folded, a `$' member access did not, so
+;;; ($ b (<> find int)) emitted `b . find^int' -- which no C compiler accepts --
+;;; and missed in the symbol table as well, leaving the member undeclared and
+;;; its return type unknown. Nothing noticed because lib/std reaches its
+;;; specialisations as FREE functions, where both halves folded and agreed.
+;;;
+;;; Joining with `_' here is the whole fix: there is now one spelling, so there
+;;; is nothing left to fold and nothing that can disagree.
 (DEFMACRO <> (&REST body)
-  (INTERN (FORMAT NIL "~{~A~^^~}"
+  (INTERN (FORMAT NIL "~{~A~^_~}"
                   (MAPCAR #'(LAMBDA (reso)
                               (IF (SYMBOLP reso)
                                   reso
@@ -497,7 +515,7 @@
 ;;;; whole dispatch is resolved at specification time.
 ;;;;
 ;;;; 'match is a statement, 'matchn is an expression that yields a value -- the
-;;;; same n-suffix convention as let / letn and take^cell / taken^cell.
+;;;; same n-suffix convention as let / letn and take_cell / taken_cell.
 ;;;; ------------------------------------------------------------------
 
 ;;; a macro file may only carry DEFUN / DEFMACRO / generic / import / cicili at
@@ -528,7 +546,7 @@
 ;;; substituted before anything is specified, so it never reaches C. The
 ;;; accessor is NIL for a case that carries no payload.
 ;;;
-;;;   (def-matchable std^maybe
+;;;   (def-matchable std_maybe
 ;;;     (just    ($ % present)       ($ % value))
 ;;;     (nothing (not ($ % present)) NIL))
 ;;;

@@ -11,11 +11,11 @@
      )) ; init-macro
 
 ;; a facility macro to create literal DynamicTypes
-(DEFMACRO new^DynamicType (payload)
+(DEFMACRO new_DynamicType (payload)
   (LET ((payload payload))
     (IF (ATOM payload)
         (COND
-          ((STRINGP payload) `((<> Dynamic String)  (new^String^Const ,payload)))
+          ((STRINGP payload) `((<> Dynamic String)  (new_String_Const ,payload)))
           ((FLOATP  payload) `((<> Dynamic Float)   ,payload))
           ((NUMBERP payload) `((<> Dynamic Integer) ,payload))
           ((SYMBOLP payload)
@@ -44,7 +44,7 @@
                     (args (IF has-name (CDDR args) args)))
                `((<> Dynamic List)
                  ((<> new List DynamicType)
-                  '( ,@(MAP 'LIST #'(LAMBDA (arg) `(new^DynamicType ,arg)) args)) )
+                  '( ,@(MAP 'LIST #'(LAMBDA (arg) `(new_DynamicType ,arg)) args)) )
                  ,xml-tag)))
             ((EQUAL ctor 'Object)
              `((<> Dynamic Object)
@@ -57,7 +57,7 @@
                                           (IF (STRINGP arg)
                                               arg
                                               (ERROR (FORMAT NIL "Dynamic Object keys should be string or symbol: ~%~A in ~A" arg args))))
-                                      `(new^DynamicType ,arg)))
+                                      `(new_DynamicType ,arg)))
                               (range-h (LENGTH args)) args))
                  (Right tree tree)
                  (Left err (error! (printf "DynamicType Object creation error: ")
@@ -69,4 +69,4 @@
             (T payload))))))
 
 (DEFMACRO lazy (fun &REST args)
-  `((<> Dynamic Thunk) (new^DynamicType (List ,@args)) ,fun))
+  `((<> Dynamic Thunk) (new_DynamicType (List ,@args)) ,fun))

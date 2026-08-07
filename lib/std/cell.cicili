@@ -19,7 +19,7 @@
   ) ; decl-cell
 
 
-;;; Reach a cell's interior through let^cell / take^cell, never free it
+;;; Reach a cell's interior through let_cell / take_cell, never free it
 ;;; yourself. This cannot be guarded by a (DEFMACRO (<> free a)): that name IS
 ;;; the back-end free of the celled type, so the guard shadows the function
 ;;; free_cell itself has to call.
@@ -40,15 +40,15 @@
 
   ) ; impl-cell
 
-(DEFMACRO free^cell (cell)
+(DEFMACRO free_cell (cell)
   (LET ((cell cell)
-        (full-type (NTH-VALUE 1 (CICILI:TYPE-CHECK cell :TYPEOF :std^cell :MODIFIER '(move ref)))))
+        (full-type (NTH-VALUE 1 (CICILI:TYPE-CHECK cell :TYPEOF :std_cell :MODIFIER '(move ref)))))
     (IF (CICILI:KEY-EQ (NTH 2 full-type) 'move)
         `((<> free ,(NTH 1 full-type)) (aof ,cell))
       `((<> free ,(NTH 1 full-type)) ,cell))))
 
 
-(DEFMACRO new^cell (type &REST args)
+(DEFMACRO new_cell (type &REST args)
   (LET* ((ctor `(<> new ,type))
          (args args)
          (a (CICILI:INFER-TYPE `(,ctor ,@args)))
@@ -62,11 +62,11 @@
        (cast (<> cell ,@a) '{ ,ptr-name }))))
 
 
-(DEFMACRO let^cell ((obj cell &REST captures) &REST body)
+(DEFMACRO let_cell ((obj cell &REST captures) &REST body)
   (LET ((obj obj)
         (cell cell))
     ;; full-type is list of inferred type details
-    (MULTIPLE-VALUE-BIND (_ full-type) (CICILI:TYPE-CHECK cell :TYPEOF :std^cell :MODIFIER :move)
+    (MULTIPLE-VALUE-BIND (_ full-type) (CICILI:TYPE-CHECK cell :TYPEOF :std_cell :MODIFIER :move)
       (LET ((type-name (NTH 1 full-type)))
         `(closure ((<> let ,type-name ,(GENSYM)) :cell (aof ,cell) ,@captures)
            (when (-> cell ptr)
@@ -74,12 +74,12 @@
                ,@body)))))))
 
 
-(DEFMACRO letn^cell ((obj cell default &REST captures) &REST body)
+(DEFMACRO letn_cell ((obj cell default &REST captures) &REST body)
   (LET ((obj obj)
         (cell cell)
         (default default))
     ;; full-type is list of inferred type details
-    (MULTIPLE-VALUE-BIND (_ full-type) (CICILI:TYPE-CHECK cell :TYPEOF :std^cell :MODIFIER :move)
+    (MULTIPLE-VALUE-BIND (_ full-type) (CICILI:TYPE-CHECK cell :TYPEOF :std_cell :MODIFIER :move)
       (LET ((type-name (NTH 1 full-type)))
         `(closure ((<> letn ,type-name ,(GENSYM)) :cell (aof ,cell) :default_value ,default ,@captures)
            (out auto)
@@ -89,11 +89,11 @@
                       default_value)))))))
 
 
-(DEFMACRO take^cell ((obj cell &REST captures) &REST body)
+(DEFMACRO take_cell ((obj cell &REST captures) &REST body)
   (LET ((obj obj)
         (cell cell))
     ;; full-type is list of inferred type details
-    (MULTIPLE-VALUE-BIND (_ full-type) (CICILI:TYPE-CHECK cell :TYPEOF :std^cell :MODIFIER :move)
+    (MULTIPLE-VALUE-BIND (_ full-type) (CICILI:TYPE-CHECK cell :TYPEOF :std_cell :MODIFIER :move)
       (LET* ((type-name (NTH 1 full-type)))
         `(closure ((<> take ,type-name ,(GENSYM)) :cell ,cell ,@captures)
            (when ($ cell ptr)
@@ -101,12 +101,12 @@
                ,@body)))))))
 
 
-(DEFMACRO taken^cell ((obj cell default &REST captures) &REST body)
+(DEFMACRO taken_cell ((obj cell default &REST captures) &REST body)
   (LET ((obj obj)
         (cell cell)
         (default default))
     ;; full-type is list of inferred type details
-    (MULTIPLE-VALUE-BIND (_ full-type) (CICILI:TYPE-CHECK cell :TYPEOF :std^cell :MODIFIER :move)
+    (MULTIPLE-VALUE-BIND (_ full-type) (CICILI:TYPE-CHECK cell :TYPEOF :std_cell :MODIFIER :move)
       (LET* ((type-name (NTH 1 full-type)))
         `(closure ((<> taken ,type-name ,(GENSYM)) :cell ,cell :default_value ,default ,@captures)
            (out auto)

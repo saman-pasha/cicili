@@ -280,7 +280,7 @@
           `((<> pure type) ,buf ,len)
           (IF (AND (LISTP buf) (EQUAL (CAR buf) 'QUOTE))
               `((<> pure type) (cast (const a []) ,buf) ,(LENGTH (CADR buf)))
-              (ERROR (FORMAT NIL "new^List len required for dynamic array input: ~A" buf))))))
+              (ERROR (FORMAT NIL "new_List len required for dynamic array input: ~A" buf))))))
 
   (import-Maybe type)
 

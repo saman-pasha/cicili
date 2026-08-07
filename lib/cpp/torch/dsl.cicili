@@ -340,9 +340,9 @@
 ;;; the metric a (metric …) clause selects: its form, and the word to print
 (DEFUN metric< (spec net x y)
   (LET ((which (IF spec (SYMBOL-NAME (CAR spec)) "accuracy")))
-    (COND ((STRING= which "accuracy") (VALUES `(accuracy^network ,net ,x ,y) "accuracy"))
-          ((STRING= which "rmse")     (VALUES `(rmse^network     ,net ,x ,y) "rmse"))
-          ((STRING= which "mae")      (VALUES `(mae^network      ,net ,x ,y) "mae"))
+    (COND ((STRING= which "accuracy") (VALUES `(accuracy_network ,net ,x ,y) "accuracy"))
+          ((STRING= which "rmse")     (VALUES `(rmse_network     ,net ,x ,y) "rmse"))
+          ((STRING= which "mae")      (VALUES `(mae_network      ,net ,x ,y) "mae"))
           (T (ERROR (FORMAT NIL "train: unknown metric '~A'.~%  known: accuracy rmse mae"
                             which))))))
 
@@ -388,7 +388,7 @@
          (let ((double ,t0 . 0.0) (double ,el . 0.0))
            (for ((int ,e . 0)) (< ,e ,epochs) ((++ ,e))
                 (let ((double ,total . 0.0) (int ,nb . 0))
-                  (set ,t0 (now^seconds))
+                  (set ,t0 (now_seconds))
                   ;; a fresh order each epoch, and the batch GATHERS through it,
                   ;; so only the batch is copied rather than the whole set.
                   ;; Without (shuffle) this is 0..n-1 and the gather is the
@@ -409,7 +409,7 @@
                                  (($ ,o step))
                                  (+= ,total (cast double (($ l (t<> item float)))))
                                  (++ ,nb)))))))
-                  (+= ,el (- (now^seconds) ,t0))
+                  (+= ,el (- (now_seconds) ,t0))
                   ;; the schedule steps once per EPOCH -- stepping it per batch
                   ;; is the classic way to decay a learning rate to nothing in
                   ;; a single pass
@@ -425,7 +425,7 @@
 
 ;;; Seconds on a monotonic clock. `train' reports how long the loop took,
 ;;; because "it trained" and "it trained in four seconds" are different claims.
-(DEFMACRO now^seconds ()
+(DEFMACRO now_seconds ()
   `(letn (((struct timespec) ts))
      (timespec_get (aof ts) TIME_UTC)
      (+ (cast double ($ ts tv_sec))
@@ -446,7 +446,7 @@
 ;;; half a point of accuracy before this line existed. `train #t' puts it back.
 
 ;;; accuracy: the share of rows whose argmax is the label
-(DEFMACRO accuracy^network (net x y)
+(DEFMACRO accuracy_network (net x y)
   `(progn
      (letin* ((g (torch::NoGradGuard)))
        (($ ,net eval))
@@ -459,7 +459,7 @@
 ;;; root mean squared error -- in the UNITS OF THE TARGET, which is the whole
 ;;; reason to prefer it to mse when reporting. The sqrt is not decoration: it
 ;;; was missing here at first and the metric printed mse under the name rmse.
-(DEFMACRO rmse^network (net x y)
+(DEFMACRO rmse_network (net x y)
   `(progn
      (letin* ((g (torch::NoGradGuard)))
        (($ ,net eval))
@@ -468,7 +468,7 @@
          (cast double (($ (($ (($ (($ d pow) 2.0) mean)) sqrt)) (t<> item float))))))))
 
 ;;; mean absolute error -- the same units, less swayed by one bad row
-(DEFMACRO mae^network (net x y)
+(DEFMACRO mae_network (net x y)
   `(progn
      (letin* ((g (torch::NoGradGuard)))
        (($ ,net eval))

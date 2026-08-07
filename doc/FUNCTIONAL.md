@@ -50,31 +50,31 @@ This code is a sample of Cicili's power, demonstrating how it builds high-level 
         
         ;; https://en.cppreference.com/w/c/io/fgets
         (func writeTmpFile ()
-              (out Either^String^cfile_t) ; Haskell error handling model in Cicili
+              (out Either_String_cfile_t) ; Haskell error handling model in Cicili
 
               (let ((FILE * tmpf . #'(tmpfile)))
 
                 (when (== tmpf nil)
-                  (Left^String^cfile_t (strerror errno))) ; on failure returns error number
+                  (Left_String_cfile_t (strerror errno))) ; on failure returns error number
                 
                 (fputs "Alan Turing\n"      tmpf)
                 (fputs "John von Neumann\n" tmpf)
                 (fputs "Alonzo Church\n"    tmpf)
 
-                ;; ((<> Right String^cfile_t) tmpf) ! Notice ^ works as (<>) clause
-                (return (Right^String^cfile_t tmpf)))) ; on success returns FILE*
+                ;; ((<> Right String_cfile_t) tmpf) ! Notice ^ works as (<>) clause
+                (return (Right_String_cfile_t tmpf)))) ; on success returns FILE*
 
         ;; a helper to safely read a file as List of String s
         (func safeReadFile ((FILE * file))
-              (out List^String) ; List^String defined in prelude
+              (out List_String) ; List_String defined in prelude
               (return
-                (case (== file nil) (Empty^String)
+                (case (== file nil) (Empty_String)
                       otherwise     (letn ((char buf [8]) ; letn returns last clause
                                            (size_t count . 0))
                                       (set count (fread buf (sizeof char) (sizeof buf) file))
-                                      (case (== count 0)           (Empty^String)
-                                            (< count (sizeof buf)) (Cons^String (new^String buf count) (Empty^String))
-                                            otherwise              (Cons^String (new^String buf count) (safeReadFile file)))
+                                      (case (== count 0)           (Empty_String)
+                                            (< count (sizeof buf)) (Cons_String (new_String buf count) (Empty_String))
+                                            otherwise              (Cons_String (new_String buf count) (safeReadFile file)))
                                       ))))
         
         ;; split by #\Space or #\Newline
@@ -87,17 +87,17 @@ This code is a sample of Cicili's power, demonstrating how it builds high-level 
                         (default 1)))) ; means Empty, but all matchs need default case
 
         ;; Iterate over list and Count words in each String
-        (func iter_words ((List^String list))
+        (func iter_words ((List_String list))
               (io list
                 (* Cons str tail
                    (progn
-                     (show^String str)
+                     (show_String str)
                      (printf " Word count: %d\n" (count_words str))
                      (iter_words tail)
-                     (free^String (aof str))))
+                     (free_String (aof str))))
                 ;; last element of a list is allocated too
                 ;; = in io and match makes an alias for whole object
-                (= empty_str default (free^String (aof empty_str)))))
+                (= empty_str default (free_String (aof empty_str)))))
 
         ;; to auto deferment file close
         (func file_close ((FILE ** file_ptr))
@@ -107,9 +107,9 @@ This code is a sample of Cicili's power, demonstrating how it builds high-level 
         (main
             (letin* ((tmpf (writeTmpFile)))
               (io tmpf
-                (Left  error (letin* ((error error free^String))
+                (Left  error (letin* ((error error free_String))
                                (printf "File opening error: ")
-                               (show^String error)
+                               (show_String error)
                                (putchar #\Newline)))
                 (Right file
                        (letin* ((file file file_close))
@@ -129,7 +129,7 @@ Here's a comprehensive breakdown of what this code does and the concepts it show
 This function is a perfect example of Cicili's philosophy.
 
   * **C Interop:** It directly calls C's `stdio.h` functions like `tmpfile()` and `fputs()`. It also uses `errno.h` and `strerror()` for C-level error reporting.
-  * **Haskell Semantics:** It wraps this unsafe C operation in a pure, functional interface. The return type `Either^String^cfile_t` is a **monadic type** that explicitly forces the caller (`main`) to handle both success (`Right file`) and failure (`Left error`). This gives it the safety of a Haskell/Rust `Result` type while operating on a raw C `FILE*`.
+  * **Haskell Semantics:** It wraps this unsafe C operation in a pure, functional interface. The return type `Either_String_cfile_t` is a **monadic type** that explicitly forces the caller (`main`) to handle both success (`Right file`) and failure (`Left error`). This gives it the safety of a Haskell/Rust `Result` type while operating on a raw C `FILE*`.
 
 ## RAII and File Management: `main` and `file_close`
 
@@ -144,16 +144,16 @@ The `main` function demonstrates a robust pattern for safe resource management i
 This function shows how to bridge C I/O with functional data structures.
 
   * **Chunked Reading:** It uses a fixed-size `(char buf [8])` to read the file in **8-byte chunks**. This is a realistic C-style approach to handling large files.
-  * **Recursive List Building:** It recursively calls itself, using `Cons^String` to build a `List^String` where each element of the list is one of the 8-byte (or smaller) chunks read from the file.
+  * **Recursive List Building:** It recursively calls itself, using `Cons_String` to build a `List_String` where each element of the list is one of the 8-byte (or smaller) chunks read from the file.
 
 ## List Iteration and Word Count: `iter_words` and `count_words`
 
 These functions showcase Cicili's functional list processing.
 
   * **`iter_words`:** This is a standard recursive function for iterating over a `List`.
-      * It calls `show^String` to print the chunk.
+      * It calls `show_String` to print the chunk.
       * It calls `count_words` on the chunk.
-      * **Destructive Iteration:** Crucially, it calls `(free^String (aof str))`. This means `iter_words` is a *destructive* operation that consumes and frees the list as it iterates, demonstrating fine-grained C-level memory control.
+      * **Destructive Iteration:** Crucially, it calls `(free_String (aof str))`. This means `iter_words` is a *destructive* operation that consumes and frees the list as it iterates, demonstrating fine-grained C-level memory control.
   * **`count_words`:** This function recursively counts "words" in a chunk.
       * The logic `(* Cons ch (= tail * Cons))` is a "lookahead" pattern that checks if the current character is not the last one in the chunk.
       * It counts a "word" by counting the separators (`     ` or `\n`) that are *not* at the very end of the string, and then adds `1` (for the `default 1` case). This logic is flawed for the last chunk ("ch\\n"), which it will count as 1 word, but it correctly processes the other chunks.

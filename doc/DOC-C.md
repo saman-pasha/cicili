@@ -157,8 +157,14 @@ applies to **the next clause only**. Several may be stacked: `(extern) (decl) (f
 A Cicili name must be a valid C identifier: it starts with a letter or `_` and continues
 with letters, digits or `_`. Two characters get special treatment before that check:
 
-* `^` becomes `_`. This is how generic names are built — `(<> free rc a)` is the symbol
-  `free^rc^a`, which reaches C as `free_rc_a`.
+* `_` joins the parts of a generic name. `(<> free rc a)` is the symbol `free_rc_a`, and
+  that is what reaches C unchanged.
+
+  It used to be `^`, folded to `_` on the way out. Two names for one thing is two chances
+  to disagree, and they did: a declaration folded while a `$` member access did not, so
+  `($ b (<> find int))` emitted `b . find_int` — which no C compiler accepts — and the
+  symbol-table lookup missed as well. Nothing noticed because `lib/std` only ever reached
+  its specialisations as free functions, where the folding happened to line up.
 
 Source is read with case preserved, so `Employee` and `employee` are different names, and
 Common Lisp forms inside macro files are conventionally written in upper case (`DEFMACRO`,
@@ -1404,7 +1410,7 @@ int main () {
 }
 ```
 
-`(<> toString Employee)` is the symbol `toString^Employee`, and `^` becomes `_` in C — see
+`(<> toString Employee)` is the symbol `toString_Employee`, and that is the C name — see
 [Macros](#macros). Inside a `generic` the type part is a parameter, which is how
 `lib/std/vector.cicili` writes one `free` that works for `(<> vector int)`,
 `(<> vector char)` and everything else:
@@ -2126,7 +2132,7 @@ printf ("%d\n", (21 * 2));
   (struct (<> box a)
           (member a value)))
 
-(decl-box int)     ; -> (struct box^int (member int value))
+(decl-box int)     ; -> (struct box_int (member int value))
 ```
 ```c
 typedef struct box_int {
@@ -2134,7 +2140,7 @@ typedef struct box_int {
 } box_int;
 ```
 
-`(<> box int)` is the symbol `box^int`, and `^` becomes `_` in C. Writing `box^int` by hand
+`(<> box int)` is the symbol `box_int`, which is the C name too. Writing `box_int` by hand
 is identical.
 
 * Macro files are loaded with `import`; `--macros` prints every macro a file defines, and
@@ -2191,8 +2197,8 @@ Under `:cpp #t`, `:std #t` emits `<string>` and `<iostream>` instead of the C he
   * [shared.cicili](../test/c/shared.cicili) — a `header` target included by a `source`
 * [test/std](../test/std) — the standard library in use, one runnable file per type:
   * [array.cicili](../test/std/array.cicili) — `array` + `maybe`, opened with `match` / `matchn`
-  * [cell.cicili](../test/std/cell.cicili) — owned heap values: `let^cell`, `take^cell`
-  * [rc.cicili](../test/std/rc.cicili) — shared ownership: `clone^rc` and the count
+  * [cell.cicili](../test/std/cell.cicili) — owned heap values: `let_cell`, `take_cell`
+  * [rc.cicili](../test/std/rc.cicili) — shared ownership: `clone_rc` and the count
   * [vector.cicili](../test/std/vector.cicili) — `push` / `append` and amortised growth
   * [defer.cicili](../test/std/defer.cicili) — the `defer` attribute and `defer*` together
   * [thread.cicili](../test/std/thread.cicili) — `go` / `join` / `detach` / `cancel` / `exit-self`

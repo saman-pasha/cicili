@@ -20,13 +20,13 @@
   (@define __Maybe_int__H_IMPL__)
   (@define __Maybe_char__H_IMPL__)
 
-  (decl-Vector Vector^int int NIL)
-  (impl-Vector Vector^int int (\\ -f -v (fprintf -f "%d" -v)) " " NIL NIL)
-  (import-Vector Vector^int int NIL new^Vector^int)
+  (decl-Vector Vector_int int NIL)
+  (impl-Vector Vector_int int (\\ -f -v (fprintf -f "%d" -v)) " " NIL NIL)
+  (import-Vector Vector_int int NIL new_Vector_int)
 
   (decl-Vector Str char T)
   (impl-Vector Str char (\\ -f -v (fprintf -f "%c" -v)) "" T T)
-  (import-Vector Str char T new^Str)
+  (import-Vector Str char T new_Str)
 
   ;; -------------------------------------------------------------------------
   ;; timer helpers
@@ -43,7 +43,7 @@
   (var int STEP  . 1000)    ; elements per epoch
 
   ;; -------------------------------------------------------------------------
-  ;; Benchmark A — Raw Vector^int, no live clones during mutation
+  ;; Benchmark A — Raw Vector_int, no live clones during mutation
   ;; mirrors Rust: plain Vec<i32>
   ;; -------------------------------------------------------------------------
 
@@ -53,9 +53,9 @@
         (out long)
         (let ((long t0 . #'(ms_now)))
           (for ((int epoch . 0)) (< epoch (/ N STEP)) ((++ epoch))
-               (letin ((v (pure^Vector^int STEP)))
+               (letin ((v (pure_Vector_int STEP)))
                  (for ((int i . 0)) (< i STEP) ((++ i))
-                      (set v (push^Vector^int (+ (* epoch STEP) i) v)))))
+                      (set v (push_Vector_int (+ (* epoch STEP) i) v)))))
           (return (- (ms_now) t0))))
 
   ;; A2: nth (bounds-checked indexed access) N times
@@ -63,7 +63,7 @@
   ;; Cicili — correct approach
   (func bench_a_nth ()
         (out long)
-        (letin ((v (new^Vector^int ... 50)))
+        (letin ((v (new_Vector_int ... 50)))
           (let ((long sum . 0)
                 (long t0 . #'(ms_now)))
             (for ((int i . 0)) (< i N) ((++ i))
@@ -80,15 +80,15 @@
   ;;       vs Rust &[T] which is compile-time zero cost
   (func bench_a_slice ()
         (out long)
-        (letin ((v (new^Vector^int (cast (const int [])
+        (letin ((v (new_Vector_int (cast (const int [])
                                         '{ 0 1 2 3 4 5 6 7 8 9
                                            10 11 12 13 14 15 16 17 18 19 })
                                    20)))
           (let ((long t0 . #'(ms_now))
                 (volatile long total_len . 0))
             (for ((int i . 0)) (< i N) ((++ i))
-                 (letin ((s (drop^Vector^int 2 v)))   ; Rc clone + Slice, O(1)
-                   (set total_len (+ total_len (len^Vector^int s)))))
+                 (letin ((s (drop_Vector_int 2 v)))   ; Rc clone + Slice, O(1)
+                   (set total_len (+ total_len (len_Vector_int s)))))
             (printf "  (slice checksum: %ld)\n" total_len)
             (return (- (ms_now) t0)))))
 
@@ -96,7 +96,7 @@
   ;; mirrors: bench_a_iterate using v.iter()
   (func bench_a_iterate ()
         (out long)
-        (letin ((v (new^Vector^int (cast (const int [])
+        (letin ((v (new_Vector_int (cast (const int [])
                                         '{ 0 1 2 3 4 5 6 7 8 9
                                            10 11 12 13 14 15 16 17 18 19 })
                                    20)))
@@ -112,7 +112,7 @@
   ;; mirrors: bench_a_iterate_reverse using v.iter().rev()
   (func bench_a_iterate_reverse ()
         (out long)
-        (letin ((v (new^Vector^int (cast (const int [])
+        (letin ((v (new_Vector_int (cast (const int [])
                                         '{ 0 1 2 3 4 5 6 7 8 9
                                            10 11 12 13 14 15 16 17 18 19 })
                                    20)))
@@ -129,19 +129,19 @@
   ;; Cicili: Slice → copySlice (alloc+memcpy) + push
   (func bench_a_cow_slice ()
         (out long)
-        (letin ((v (new^Vector^int (cast (const int [])
+        (letin ((v (new_Vector_int (cast (const int [])
                                         '{ 0 1 2 3 4 5 6 7 8 9
                                            10 11 12 13 14 15 16 17 18 19 })
                                    20)))
           (let ((long t0 . #'(ms_now)))
             (for ((int epoch . 0)) (< epoch (/ N STEP)) ((++ epoch))
-                 (letin ((s  (drop^Vector^int 2 v))      ; Slice (Rc clone, zero copy)
-                         (s2 (push^Vector^int epoch s)))  ; COW: copySlice + push
+                 (letin ((s  (drop_Vector_int 2 v))      ; Slice (Rc clone, zero copy)
+                         (s2 (push_Vector_int epoch s)))  ; COW: copySlice + push
                    (block)))
             (return (- (ms_now) t0)))))
 
   ;; -------------------------------------------------------------------------
-  ;; Benchmark B — Vector^int with live clones
+  ;; Benchmark B — Vector_int with live clones
   ;; mirrors Rust: Rc<RefCell<Vec<i32>>>
   ;; -------------------------------------------------------------------------
 
@@ -149,14 +149,14 @@
   ;; mirrors: bench_b_clone_and_get: Rc::clone + RefCell::borrow + get
   (func bench_b_clone_and_get ()
         (out long)
-        (letin ((v (new^Vector^int (cast (const int [])
+        (letin ((v (new_Vector_int (cast (const int [])
                                         '{ 0 1 2 3 4 5 6 7 8 9
                                            10 11 12 13 14 15 16 17 18 19 })
                                    20)))
           (let ((long t0 . #'(ms_now))
                 (volatile long sum . 0))
             (for ((int i . 0)) (< i N) ((++ i))
-                 (letin ((c (clone^Box^Vector^int v)))   ; Rc clone (count++)
+                 (letin ((c (clone_Box_Vector_int v)))   ; Rc clone (count++)
                    (io ((<> nth Vector int) (% i 20) c) ; liveness check + get
                      (Just val (set sum (+ sum val)))
                      (default (block)))))                ; count-- on scope exit
@@ -169,10 +169,10 @@
         (out long)
         (let ((long t0 . #'(ms_now)))
           (for ((int epoch . 0)) (< epoch (/ N STEP)) ((++ epoch))
-               (letin ((v (pure^Vector^int STEP)))
+               (letin ((v (pure_Vector_int STEP)))
                  (for ((int i . 0)) (< i STEP) ((++ i))
                       ;; count==1 here: push succeeds (exclusive guard passes)
-                      (set v (push^Vector^int (+ (* epoch STEP) i) v)))))
+                      (set v (push_Vector_int (+ (* epoch STEP) i) v)))))
           (return (- (ms_now) t0))))
 
   ;; B3: COW push with a live clone (count==2 → exclusive guard blocks → COW)
@@ -180,20 +180,20 @@
   ;;   Rc clone alive → get_mut fails → Vec::clone() + push
   (func bench_b_cow_with_live_clone ()
         (out long)
-        (letin ((v (new^Vector^int (cast (const int [])
+        (letin ((v (new_Vector_int (cast (const int [])
                                         '{ 0 1 2 3 4 5 6 7 8 9
                                            10 11 12 13 14 15 16 17 18 19 })
                                    20)))
           (let ((long t0 . #'(ms_now)))
             (for ((int epoch . 0)) (< epoch (/ N STEP)) ((++ epoch))
-                 (letin ((c  (clone^Box^Vector^int v))   ; live clone (count==2)
-                         (v2 (push^Vector^int epoch v))) ; exclusive guard fails →
+                 (letin ((c  (clone_Box_Vector_int v))   ; live clone (count==2)
+                         (v2 (push_Vector_int epoch v))) ; exclusive guard fails →
                                                          ; v is Buffer but count==2
                                                          ; returns None
                    ;; v2 is None because clone c is alive
                    ;; to actually COW: push on a Slice of v instead
-                   (letin ((s  (drop^Vector^int 0 v))    ; Slice (clone, count==3)
-                           (s2 (push^Vector^int epoch s)));COW: copySlice + push
+                   (letin ((s  (drop_Vector_int 0 v))    ; Slice (clone, count==3)
+                           (s2 (push_Vector_int epoch s)));COW: copySlice + push
                      (block))))                          ; c,s,s2 freed on exit
             (return (- (ms_now) t0)))))
 
@@ -209,16 +209,16 @@
         (let ((long t0 . #'(ms_now))
               (volatile long total_len . 0))
           (for ((int i . 0)) (< i N) ((++ i))
-               (letin ((cv  (new^Str "abcdefghijklmnopqrst"))  ; zero alloc wrap
-                       (cvs (drop^Str 2 cv)))                  ; zero alloc Slice
-                 (set total_len (+ total_len (len^Str cvs)))))
+               (letin ((cv  (new_Str "abcdefghijklmnopqrst"))  ; zero alloc wrap
+                       (cvs (drop_Str 2 cv)))                  ; zero alloc Slice
+                 (set total_len (+ total_len (len_Str cvs)))))
           (printf "  (slice checksum: %ld)\n" total_len)
           (return (- (ms_now) t0))))
 
   ;; C2: iterate over const Str
   (func bench_c_const_iterate ()
         (out long)
-        (letin ((cv (new^Str "abcdefghijklmnopqrst")))
+        (letin ((cv (new_Str "abcdefghijklmnopqrst")))
           (let ((long t0 . #'(ms_now))
                 (volatile long sum . 0))
             (for ((int epoch . 0)) (< epoch (/ N STEP)) ((++ epoch))
@@ -235,7 +235,7 @@
 
     (printf "Cicili Vector vs Rust Vec<T> — %d operations each\n\n" N)
 
-    (printf "=== Benchmark A: Vector^int (no live clones during mutation) ===\n")
+    (printf "=== Benchmark A: Vector_int (no live clones during mutation) ===\n")
     (printf "  (mirrors Rust: plain Vec<i32>)\n\n")
 
     (printf "  push %d elements (%d epochs of %d): %ld ms\n"
@@ -256,7 +256,7 @@
     (printf "  COW slice mutation (copySlice+push) %d times: %ld ms\n\n"
             (/ N STEP) (bench_a_cow_slice))
 
-    (printf "=== Benchmark B: Vector^int with live clones ===\n")
+    (printf "=== Benchmark B: Vector_int with live clones ===\n")
     (printf "  (mirrors Rust: Rc<RefCell<Vec<i32>>>)\n\n")
 
     (printf "  clone + nth (Rc liveness check) %d times: %ld ms\n"

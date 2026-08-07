@@ -718,7 +718,7 @@ reading them here.
 
 | limitation | detail |
 |---|---|
-| **No overloading** | Two `method`s or two `ctor`s with the same name collide — the second raises `inner exists`. One signature per name. |
+| **No overloading** | Two `method`s with the same name collide — the second raises `inner exists`. One signature per name. A second signature is a second *name*: `(method (<> find int) …)` beside `(method (<> find str) …)`, with a macro reading `CICILI:INFER-TYPE` off the argument and expanding to the one it picked — `lib/std/vector.cicili` is the worked example, `test/cpp/specialise.cicili` the minimal one. This binds a **C++ overload set** only where you need one form's return type: `(<> mean dim)` emits `mean_dim`, so it names a function of your own, not libtorch's `mean`. For an external overload set, declare the form you call and let the others take the undeclared path. |
 | **`code` escapes have no type** | Anything reached through a raw `(code …)` cannot be resolved by `$` or `->`. This is why the constructs above are clauses and not escapes. |
 | **No `mutable`, `friend` or `operator`** | Not yet expressible. Use a `(code …)` escape. |
 

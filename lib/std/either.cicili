@@ -124,7 +124,7 @@
   ;; teaches 'match how to take an either apart; keyed on the opaque super
   ;; type, so it is the same registration whatever `e' and `a' are. emits
   ;; nothing. The tag is read, never the union's other arm.
-  (def-matchable std^either
+  (def-matchable std_either
     (right (== ($ % ctor) RIGHT_CTOR) ($ % data right value))
     (left  (== ($ % ctor) LEFT_CTOR)  ($ % data left error)))
 

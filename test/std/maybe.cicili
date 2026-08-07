@@ -57,7 +57,7 @@
 
   (main
     (let ((int bad . 0))
-      (letin ((arr (new^array (cast (const int []) '{ 3 5 7 9 }))))
+      (letin ((arr (new_array (cast (const int []) '{ 3 5 7 9 }))))
 
         ;; ---- found / not found ------------------------------------------
         (+= bad (check "just, through match"

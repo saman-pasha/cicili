@@ -13,7 +13,7 @@
 ;;;;     smaller t would give Cicili deeper trees and more cache misses per
 ;;;;     lookup, and it would not be the data structure being compared.
 ;;;;   * THE SAME KEYS IN THE SAME ORDER. Both sides run the identical xorshift
-;;;;     and take (% 2^20), so both see the same sequence with the same
+;;;;     and take (% 2_20), so both see the same sequence with the same
 ;;;;     duplicates -- and duplicates matter, because they are the branch that
 ;;;;     makes insert fail.
 ;;;;   * Cicili's insert REFUSES a duplicate and says so; Rust's overwrites and
@@ -38,7 +38,7 @@
   (include <time.h>)
 
   (var int N    . 1000000)   ; operations per row
-  (var int MASK . 1048575)   ; keys are (% 2^20), so ~1M distinct
+  (var int MASK . 1048575)   ; keys are (% 2_20), so ~1M distinct
 
   (decl-btree int int 6)
   (impl-btree int int 6)

@@ -10,7 +10,7 @@
 ;;; (<> cell rc a context) -- a cell holding a pointer to a context holding a
 ;;; pointer to the payload -- so reaching the payload was three loads and every
 ;;; front end was one of cell's front ends with another layer wrapped round it:
-;;; let^rc expanded to let^cell expanded to a closure. The macros below are
+;;; let_rc expanded to let_cell expanded to a closure. The macros below are
 ;;; cell's macros with the count folded in, expanding once.
 ;;;
 ;;; `count' is shared between the copies; `ptr' is shared too. Freeing an rc
@@ -19,11 +19,11 @@
 ;;; a copy of the payload.
 ;;;
 ;;;   (letin ((r (new rc array (cast (const int []) '{ 1 2 3 }))))
-;;;     (let^rc (arr r) (printf "%zu\n" (len^array (cof arr))))   ; borrow
-;;;     (letin ((c (clone^rc r)))                                 ; share, count 2
-;;;       (take^rc (arr c) …)))                                   ; no-op, not sole
+;;;     (let_rc (arr r) (printf "%zu\n" (len_array (cof arr))))   ; borrow
+;;;     (letin ((c (clone_rc r)))                                 ; share, count 2
+;;;       (take_rc (arr c) …)))                                   ; no-op, not sole
 ;;;
-;;; Reach the payload through let^rc / letn^rc (borrow) or take^rc / taken^rc
+;;; Reach the payload through let_rc / letn_rc (borrow) or take_rc / taken_rc
 ;;; (consume, and only when this rc is the last owner). Never free it yourself.
 
 (generic decl-rc
@@ -93,16 +93,16 @@
 ;;;; round cell's, which is what made every rc borrow expand to two closures.
 ;;;; ------------------------------------------------------------------
 
-(DEFMACRO free^rc (rc)
+(DEFMACRO free_rc (rc)
   (LET ((rc rc)
-        (full-type (NTH-VALUE 1 (CICILI:TYPE-CHECK rc :TYPEOF :std^rc :MODIFIER '(move ref)))))
+        (full-type (NTH-VALUE 1 (CICILI:TYPE-CHECK rc :TYPEOF :std_rc :MODIFIER '(move ref)))))
     (IF (CICILI:KEY-EQ (NTH 2 full-type) 'move)
         `((<> free ,(NTH 1 full-type)) (aof ,rc))
       `((<> free ,(NTH 1 full-type)) ,rc))))
 
 
-;;; (new rc TYPE ARGS…) -- new^cell's body with a count alongside the box
-(DEFMACRO new^rc (type &REST args)
+;;; (new rc TYPE ARGS…) -- new_cell's body with a count alongside the box
+(DEFMACRO new_rc (type &REST args)
   (LET* ((ctor `(<> new ,type))
          (args args)
          (a (CICILI:INFER-TYPE `(,ctor ,@args)))
@@ -121,36 +121,36 @@
 
 ;;; Nothing but a type inferrer: works out which instantiation of
 ;;; (<> clone rc a) the given rc belongs to and calls it.
-(DEFMACRO clone^rc (rc)
+(DEFMACRO clone_rc (rc)
   (LET ((rc rc)
-        (full-type (NTH-VALUE 1 (CICILI:TYPE-CHECK rc :TYPEOF :std^rc :MODIFIER '(move ref)))))
+        (full-type (NTH-VALUE 1 (CICILI:TYPE-CHECK rc :TYPEOF :std_rc :MODIFIER '(move ref)))))
     (IF (CICILI:KEY-EQ (NTH 2 full-type) 'move)
         `((<> clone ,(NTH 1 full-type)) (aof ,rc))
       `((<> clone ,(NTH 1 full-type)) ,rc))))
 
 
-;;; (sole^rc rc) -- is this rc the only owner of its payload?
+;;; (sole_rc rc) -- is this rc the only owner of its payload?
 ;;;
-;;; The test take^rc makes before it hands the payload over, on its own, because
-;;; the two answers are wanted in different places. take^rc CONSUMES. A caller
+;;; The test take_rc makes before it hands the payload over, on its own, because
+;;; the two answers are wanted in different places. take_rc CONSUMES. A caller
 ;;; that wants to WRITE through a payload it still owns needs the question
-;;; answered without the consuming -- pair it with let^rc, and together they are
+;;; answered without the consuming -- pair it with let_rc, and together they are
 ;;; Rust's Rc::get_mut: mutate only while nobody else can see it.
 ;;;
 ;;; A dead or empty rc answers false, so this means "mine alone to write", not
 ;;; merely "count is one".
-(DEFMACRO sole^rc (rc)
+(DEFMACRO sole_rc (rc)
   (LET* ((rc rc)
-         (full-type (NTH-VALUE 1 (CICILI:TYPE-CHECK rc :TYPEOF :std^rc :MODIFIER '(move ref))))
+         (full-type (NTH-VALUE 1 (CICILI:TYPE-CHECK rc :TYPEOF :std_rc :MODIFIER '(move ref))))
          (self (IF (CICILI:KEY-EQ (NTH 2 full-type) 'ref) `(-> ,rc) `($ ,rc))))
     `(and (,@self ptr) (,@self count) (== (cof (,@self count)) 1))))
 
 
 ;;; borrow: the rc keeps owning the payload, the body sees it by reference
-(DEFMACRO let^rc ((obj rc &REST captures) &REST body)
+(DEFMACRO let_rc ((obj rc &REST captures) &REST body)
   (LET ((obj obj)
         (rc rc))
-    (MULTIPLE-VALUE-BIND (_ full-type) (CICILI:TYPE-CHECK rc :TYPEOF :std^rc :MODIFIER :move)
+    (MULTIPLE-VALUE-BIND (_ full-type) (CICILI:TYPE-CHECK rc :TYPEOF :std_rc :MODIFIER :move)
       (LET ((type-name (NTH 1 full-type)))
         `(closure ((<> let ,type-name ,(GENSYM)) :rc (aof ,rc) ,@captures)
            (when (-> rc ptr)
@@ -160,11 +160,11 @@
 
 ;;; borrow, as an expression: `default' is what a dead or empty rc answers, so
 ;;; it has to have the same type as the body
-(DEFMACRO letn^rc ((obj rc default &REST captures) &REST body)
+(DEFMACRO letn_rc ((obj rc default &REST captures) &REST body)
   (LET ((obj obj)
         (rc rc)
         (default default))
-    (MULTIPLE-VALUE-BIND (_ full-type) (CICILI:TYPE-CHECK rc :TYPEOF :std^rc :MODIFIER :move)
+    (MULTIPLE-VALUE-BIND (_ full-type) (CICILI:TYPE-CHECK rc :TYPEOF :std_rc :MODIFIER :move)
       (LET ((type-name (NTH 1 full-type)))
         `(closure ((<> letn ,type-name ,(GENSYM)) :rc (aof ,rc) :default_value ,default ,@captures)
            (out auto)
@@ -175,17 +175,17 @@
 
 
 ;;; consume, and only when this rc is the last owner -- a shared payload belongs
-;;; to the other owners too. The count is what take^cell has no reason to check
+;;; to the other owners too. The count is what take_cell has no reason to check
 ;;; and the only thing these add to it.
 ;;;
 ;;; `obj' is bound with `letin', so the payload's own destructor runs at the end
 ;;; of the body. The box and the count are freed here and both members zeroed,
 ;;; so the rc's own cleanup -- it arrived by `move' -- finds nothing left to do
 ;;; rather than freeing the payload a second time.
-(DEFMACRO take^rc ((obj rc &REST captures) &REST body)
+(DEFMACRO take_rc ((obj rc &REST captures) &REST body)
   (LET ((obj obj)
         (rc rc))
-    (MULTIPLE-VALUE-BIND (_ full-type) (CICILI:TYPE-CHECK rc :TYPEOF :std^rc :MODIFIER :move)
+    (MULTIPLE-VALUE-BIND (_ full-type) (CICILI:TYPE-CHECK rc :TYPEOF :std_rc :MODIFIER :move)
       (LET ((type-name (NTH 1 full-type)))
         `(closure ((<> take ,type-name ,(GENSYM)) :rc ,rc ,@captures)
            (when (and ($ rc ptr) ($ rc count) (== (cof ($ rc count)) 1))
@@ -198,11 +198,11 @@
 
 
 ;;; consume, as an expression: `default' answers a shared, dead or empty rc
-(DEFMACRO taken^rc ((obj rc default &REST captures) &REST body)
+(DEFMACRO taken_rc ((obj rc default &REST captures) &REST body)
   (LET ((obj obj)
         (rc rc)
         (default default))
-    (MULTIPLE-VALUE-BIND (_ full-type) (CICILI:TYPE-CHECK rc :TYPEOF :std^rc :MODIFIER :move)
+    (MULTIPLE-VALUE-BIND (_ full-type) (CICILI:TYPE-CHECK rc :TYPEOF :std_rc :MODIFIER :move)
       (LET ((type-name (NTH 1 full-type)))
         `(closure ((<> taken ,type-name ,(GENSYM)) :rc ,rc :default_value ,default ,@captures)
            (out auto)

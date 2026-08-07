@@ -25,35 +25,35 @@
         
         ;; https://en.cppreference.com/w/c/io/fgets
         (func writeTmpFile ()
-              (out Either^String^cfile_t) ; Haskell error handling model in Cicili
+              (out Either_String_cfile_t) ; Haskell error handling model in Cicili
               ;; uncomment to raise custom error
-              ;; (return (Left^String^cfile_t (new^String "some custom error!")))
+              ;; (return (Left_String_cfile_t (new_String "some custom error!")))
               
               (let ((FILE * tmpf . #'(tmpfile)))
 
                 (when (== tmpf nil)
                   (let ((auto err . #'(strerror errno)))
-                    (return (Left^String^cfile_t (new^String err (strlen err)))))) ; on failure returns error number
+                    (return (Left_String_cfile_t (new_String err (strlen err)))))) ; on failure returns error number
                 
                 (fputs "Alan Turing\n"      tmpf)
                 (fputs "John von Neumann\n" tmpf)
                 (fputs "Alonzo Church\n"    tmpf)
 
-                ;; ((<> Right String^cfile_t) tmpf) ! Notice ^ works as (<>) clause
-                (return (Right^String^cfile_t tmpf)))) ; on success returns FILE*
+                ;; ((<> Right String_cfile_t) tmpf) ! Notice ^ works as (<>) clause
+                (return (Right_String_cfile_t tmpf)))) ; on success returns FILE*
 
         ;; recursive
         ;; a helper to safely read a file as List of String s
         (func safeReadFile ((FILE * file))
-              (out List^String) ; List^String defined in prelude
+              (out List_String) ; List_String defined in prelude
               (return
-                (case (== file nil) (Nil^String)
+                (case (== file nil) (Nil_String)
                       otherwise     (letn ((char buf [8]) ; letn returns last clause
                                            (size_t count . 0))
                                       (set count (fread buf (sizeof char) (sizeof buf) file))
-                                      (case (== count 0)           (Nil^String)
-                                            (< count (sizeof buf)) (Cons^String (new^String buf count) (Nil^String))
-                                            otherwise              (Cons^String (new^String buf count) (safeReadFile file)))
+                                      (case (== count 0)           (Nil_String)
+                                            (< count (sizeof buf)) (Cons_String (new_String buf count) (Nil_String))
+                                            otherwise              (Cons_String (new_String buf count) (safeReadFile file)))
                                       ))))
         
         ;; split by #\Space or #\Newline
@@ -66,13 +66,13 @@
                         (default 1)))) ; means Empty, but all matchs need default case
 
         ;; Iterate over list and Count words in each String
-        (func iter_words ((List^String list))
+        (func iter_words ((List_String list))
               (io list
                 (* Cons str tail
-                   (block (info! (show^String str)
+                   (block (info! (show_String str)
                             (printf " Word count: %d\n" (count_words str)))
                      (iter_words tail)
-                     (free^String (aof str))))))
+                     (free_String (aof str))))))
 
         ;; for auto deferment file close
         (func file_close ((FILE ** file_ptr))
@@ -86,9 +86,9 @@
                    
                    (letin* ((tmpf (writeTmpFile)))
                      (io tmpf
-                       (Left error (letin* ((error error free^String))
+                       (Left error (letin* ((error error free_String))
                                      (error! (printf "File opening error: ")
-                                       (show^String error)
+                                       (show_String error)
                                        (putchar #\Newline))))
                        (Right file
                               (letin* ((file file file_close))

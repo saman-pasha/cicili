@@ -10,57 +10,57 @@
         ;; bind (<> Either String String) for name >>= User
         (decl-Monad-Either (<> Either String String User) String String User)
         (impl-Monad-Either (<> Either String String User) String String User
-                           ((<> Left String User) (Empty^char)))
+                           ((<> Left String User) (Empty_char)))
         
         ;; bind (<> Either String int) for id  >>= User
         (decl-Monad-Either (<> Either String int User) String int User)
         (impl-Monad-Either (<> Either String int User) String int User
-                           ((<> Left String User) (Empty^char)))
+                           ((<> Left String User) (Empty_char)))
 
         ;; --- Validation Functions ---
         ;; All functions return (Either ErrorString SuccessValue)
 
         (func validate_name ((String name))
-              (out Either^String^String)
+              (out Either_String_String)
               ;; (\.* len name) calls the 'len' method from the String's V-Table
               (if (>= ((\.* len name) name) 5)
-                  (return (Right^String^String name))
-                  (return (Left^String^String (new^String "Error: Name must be >= 5 chars")))))
+                  (return (Right_String_String name))
+                  (return (Left_String_String (new_String "Error: Name must be >= 5 chars")))))
 
         (func validate_id ((int id))
-              (out Either^String^int)
+              (out Either_String_int)
               (if (> id 100)
-                  (return (Right^String^int id))
-                  (return (Left^String^int (new^String "Error: ID must be > 100")))))
+                  (return (Right_String_int id))
+                  (return (Left_String_int (new_String "Error: ID must be > 100")))))
 
         ;; --- Main Execution ---
         (main
             (where ((run-pipeline (\\ name-str id-int
                                       ;; 'letin' ensures 'name_input' is auto-freed when this block ends
-                                      (letin ((* name_input (new^String name-str)))
+                                      (letin ((* name_input (new_String name-str)))
                                         
                                         ;; 'io' block will pattern match on the *final* result
                                         (io 
                                             ;; This is the monadic chain, like Haskell's 'do' notation.
-                                            ;; 'bind^Either^String^String^User' is the (>>=) operator.
-                                            ($> bind^Either^String^String^User valid_name (validate_name name_input)
-                                                ($> bind^Either^String^int^User valid_id (validate_id id-int)
-                                                    (Right^String^User (cast User '{ valid_name valid_id }))))
+                                            ;; 'bind_Either_String_String_User' is the (>>=) operator.
+                                            ($> bind_Either_String_String_User valid_name (validate_name name_input)
+                                                ($> bind_Either_String_int_User valid_id (validate_id id-int)
+                                                    (Right_String_User (cast User '{ valid_name valid_id }))))
                                           
                                           ;; --- Pattern match on the result of the *entire* chain ---
                                           (Right ((\, name id))
                                                  (progn
                                                    (printf "--- SUCCESS ---\nUser Name: ")
-                                                   (show^String name)
+                                                   (show_String name)
                                                    (printf "\nUser ID:   %d\n\n" id)))
                                           
                                           (Left err
                                                 (progn
                                                   (printf "--- FAILED ---\nError: ")
-                                                  (show^String err)
+                                                  (show_String err)
                                                   (printf "\n\n")
                                                   ;; We also manage the error string's memory
-                                                  (free^String (aof err))))
+                                                  (free_String (aof err))))
                                           )))))
               (progn
                 ;; Test 1: Success

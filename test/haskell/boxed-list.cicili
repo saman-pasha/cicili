@@ -4,9 +4,9 @@
 
   (@define __Maybe_int__H_IMPL__)
   
-  (decl-BoxedList   BoxedList^int int)
-  (impl-BoxedList   BoxedList^int int (\\ -f -v (fprintf -f "%d" -v)) " ")
-  (import-BoxedList BoxedList^int int new^BoxedList^int)
+  (decl-BoxedList   BoxedList_int int)
+  (impl-BoxedList   BoxedList_int int (\\ -f -v (fprintf -f "%d" -v)) " ")
+  (import-BoxedList BoxedList_int int new_BoxedList_int)
   
   (func main () (out int)
         ;; test BoxedList
@@ -41,7 +41,7 @@
                   (l24 ((<> deleteAt  lst) l23 5))
                   (l25 ((<> replaceAt lst) l24 9 5))
                   ) ; decls
-            (format #t "testing list operations over %s\n" (symbol-name BoxedList^int))
+            (format #t "testing list operations over %s\n" (symbol-name BoxedList_int))
             
             (printf "l01: ")
             (showl l01)
@@ -96,7 +96,7 @@
             ;; (io l01
             ;;   (Hold _ countPtr
             ;;         (printf "count after pushed with clone: %d\n" (cof countPtr))))
-            ;; ((<> free Box BoxedList^int) (aof l01))
+            ;; ((<> free Box BoxedList_int) (aof l01))
             ;; (io l01
             ;;   (Hold _ countPtr
             ;;         (printf "count after free origin list: %d\n" (cof countPtr))))
@@ -104,7 +104,7 @@
             (showl l12)
             (putchar #\Newline)
 
-            ;; ((<> free Box BoxedList^int) (aof l01))
+            ;; ((<> free Box BoxedList_int) (aof l01))
             (printf "append l06 to l01: ")
             (showl l13)
             (putchar #\Newline)
@@ -185,7 +185,7 @@
                   (* l24 ((<> deleteAt  lst) l23 5))
                   (* l25 ((<> replaceAt lst) l24 9 5))
                   ) ; decls
-            (format #t "testing list operations over %s\n" (symbol-name List^int))
+            (format #t "testing list operations over %s\n" (symbol-name List_int))
             
             (printf "l01: ")
             (showl l01)
@@ -240,7 +240,7 @@
             (showl l12)
             (putchar #\Newline)
 
-            ;; ((<> free List^int) (aof l01))
+            ;; ((<> free List_int) (aof l01))
             (printf "append l06 to l01: ")
             (showl l13)
             (putchar #\Newline)

@@ -1,0 +1,93 @@
+;;;; `<>' specialisation as a member, and a macro dispatching on the inferred type
+;;;
+;;; HOW CICILI SPELLS AN OVERLOAD. It does not have one. A second signature is a
+;;; second NAME -- ((<> find int) …) beside ((<> find str) …) -- and a macro
+;;; picks between them once it has inferred the argument. lib/std/vector.cicili
+;;; is the worked example: new_vector reads CICILI:INFER-TYPE off its items and
+;;; expands to ((<> new vector ELEM) …).
+;;;
+;;; WHAT THIS ADDS. That idiom did not work for METHODS. ($ b (<> value int))
+;;; formed `value_int', while the declaration went through specify-decl-name<,
+;;; which folds `^' to `_' -- so the entry was `value_int' and the lookup was
+;;; for `value_int'. They never met: the member resolved as undeclared, and the
+;;; emitted C read `b . value_int', which no C compiler accepts.
+;;;
+;;; It went unnoticed because lib/std reaches its specialisations as FREE
+;;; functions, and that path folds. A `<>' name had never been used as a member.
+;;;
+;;; So the checks below are in two halves: that a specialised method can be
+;;; CALLED at all, through both `$' and `->', and that a dispatching macro gets
+;;; the right RETURN TYPE from the entry it chose -- which is the half that
+;;; needs the lookup to land, and the half a test can most easily get wrong.
+
+(source "specialise.cpp"
+  (make :cpp #t
+        :compile ("-std=c++17" "-c" "specialise.cpp")
+        :link ("-lspecialise.o" "-o" "specialise_test"))
+
+  (include <cstdio>)
+
+  (var int bad . 0)
+
+  (func check ((const char * what) (long got) (long want))
+        (if (== got want)
+            (printf "ok   %-42s %ld\n" what got)
+          (block (printf "FAIL %-42s got %ld want %ld\n" what got want)
+                 (++ bad))))
+
+  ;;; Two specialisations of one idea. THEIR RETURN TYPES DIFFER on purpose: if
+  ;;; the dispatch picked the wrong entry, or if the lookup missed and the
+  ;;; member resolved as undeclared, the difference is what shows.
+  (struct Box
+          (member int seed)
+          (ctor ((int s)) (init (seed s)))
+
+          (method (<> scaled int)    ((int k))    (out int)
+                  (return (* ($ this seed) k)))
+          (method (<> scaled double) ((double k)) (out double)
+                  (return (* (cast double ($ this seed)) k)))
+
+          ;; a plain member, to show folding leaves ordinary names alone
+          (method plain () (out int) (return ($ this seed))))
+
+  ;;; THE DISPATCH. It reads the argument's type and names the entry -- which is
+  ;;; all "overloading" means here. An unknown type is an error at expansion
+  ;;; rather than a call to something that does not exist.
+  (DEFMACRO scaled_box (box k)
+    (LET ((type (CICILI:INFER-TYPE k)))
+      (COND ((CICILI:KEY-EQ (CAR type) 'int)    `(($ ,box (<> scaled int))    ,k))
+            ((CICILI:KEY-EQ (CAR type) 'double) `(($ ,box (<> scaled double)) ,k))
+            (T (ERROR (FORMAT NIL "scaled_box has no specialisation for ~A" type))))))
+
+  (main
+   (let ((Box b . #'(Box 10)))
+     ;;; ---- named directly -------------------------------------------
+     (check "a <> method through $"  (cast long (($ b (<> scaled int)) 3)) 30)
+     (check "an ordinary name still works" (cast long (($ b plain))) 10)
+
+     (let ((Box * p . #'(aof b)))
+       (check "and through ->" (cast long ((-> p (<> scaled int)) 4)) 40))
+
+     ;;; ---- through the macro ----------------------------------------
+     (let ((int    i . 3)
+           (double d . 0.25))
+       (check "the macro picked the int one"
+              (cast long (scaled_box b i)) 30)
+
+       ;;; THE ONE THAT NEEDS THE ENTRY TO BE FOUND. Every check above would
+       ;;; pass on the emitted name alone. This one binds the answer through
+       ;;; letin*, which types it by inference -- so `v' is a double only if
+       ;;; the lookup landed on the double specialisation. Under the int entry,
+       ;;; or under no entry at all, the fraction is truncated away.
+       ;;;
+       ;;; 0.25 AND NOT 0.5, deliberately: 10 * 0.5 is 5.0, which survives
+       ;;; truncation and would pass either way. 10 * 0.25 is 2.5, which does
+       ;;; not -- 10 against 8.
+       (letin* ((v (scaled_box b d)))
+         (check "and the double one, with its own type"
+                (cast long (* v 4.0)) 10))))
+
+   (if (== bad 0)
+       (printf "\nspecialise: all checks passed\n")
+     (printf "\nspecialise: %d check(s) failed\n" bad))
+   (return bad)))

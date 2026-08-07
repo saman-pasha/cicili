@@ -5,7 +5,7 @@ struct Classifier : public torch::nn::Module {
   Classifier () : layer1((this -> register_module)("layer1", torch::nn::Linear (784, 256))), layer2((this -> register_module)("layer2", torch::nn::Linear (256, 128))), layer3((this -> register_module)("layer3", torch::nn::Linear (128, 10))) {
   }
   torch::Tensor forward (const torch::Tensor & x ) {
-    ({ /* letn232 */
+    ({ /* letn233 */
       torch::Tensor h1  = torch::relu (((this -> layer1)-> forward)(x ));
       torch::Tensor h2  = torch::relu (((this -> layer2)-> forward)(h1 ));
       // ----------
@@ -17,11 +17,11 @@ long net_inputs () {
   return 784;
 }
 std::shared_ptr<Classifier> net_load (const char * path ) {
-  ({ /* letn237 */
+  ({ /* letn238 */
     std::shared_ptr<Classifier> net  = std::shared_ptr<Classifier> (new Classifier () );
     // ----------
     if (path  &&  (path [0] !=  '\0' ) )
-      { /* block244 */
+      { /* block245 */
         torch::load (net , path );
       }
     ((*(net . get)()). eval)();
@@ -30,16 +30,16 @@ std::shared_ptr<Classifier> net_load (const char * path ) {
 }
 long net_predict (const std::shared_ptr<Classifier> & n , const float * pixels , long count ) {
   if (count  !=  net_inputs () )
-    { /* block250 */
+    { /* block251 */
       return -1;
     }
-  ({ /* letn253 */
+  ({ /* letn254 */
     torch::NoGradGuard guard  = torch::NoGradGuard ();
     // ----------
-    ({ /* letn256 */
+    ({ /* letn257 */
       torch::Tensor x  = torch::from_blob (((void *)pixels ), { 1 , 784 } , (torch::TensorOptions (). dtype)(torch::kFloat32 ));
       // ----------
-      ({ /* letn262 */
+      ({ /* letn263 */
         auto y  = ((*(n . get)()). forward)(x );
         // ----------
         return ((long)((y . argmax)(1). item<int64_t>)());
@@ -48,27 +48,27 @@ long net_predict (const std::shared_ptr<Classifier> & n , const float * pixels ,
   });
 }
 long net_predict_idx (const std::shared_ptr<Classifier> & n , const char * images , long index ) {
-  { /* let265 */
+  { /* let266 */
     FILE * f  = fopen (images , "rb");
     // ----------
     if (!f )
-      { /* block270 */
+      { /* block271 */
         return -1;
       }
     if (fseek (f , (16 +  (index  *  784 ) ), SEEK_SET ) !=  0 )
-      { /* block275 */
-        { /* block277 */
+      { /* block276 */
+        { /* block278 */
           fclose (f );
           return -1;
         }
       }
-    { /* let279 */
+    { /* let280 */
       unsigned char raw [784];
       float px [784];
       // ----------
       if (fread (raw , 1, 784, f ) !=  784 )
-        { /* block284 */
-          { /* block286 */
+        { /* block285 */
+          { /* block287 */
             fclose (f );
             return -1;
           }
@@ -82,33 +82,33 @@ long net_predict_idx (const std::shared_ptr<Classifier> & n , const char * image
   }
 }
 const char * mnist_dir () {
-  { /* let292 */
+  { /* let293 */
     const char * d  = getenv ("MNIST_DIR");
     // ----------
     return ((d ) ? d  : "");
   }
 }
 long idx_label (const char * labels , long index ) {
-  { /* let295 */
+  { /* let296 */
     FILE * f  = fopen (labels , "rb");
     // ----------
     if (!f )
-      { /* block300 */
+      { /* block301 */
         return -1;
       }
     if (fseek (f , (8 +  index  ), SEEK_SET ) !=  0 )
-      { /* block305 */
-        { /* block307 */
+      { /* block306 */
+        { /* block308 */
           fclose (f );
           return -1;
         }
       }
-    { /* let309 */
+    { /* let310 */
       unsigned char b  = 0;
       // ----------
       if (fread ((&b ), 1, 1, f ) !=  1 )
-        { /* block314 */
-          { /* block316 */
+        { /* block315 */
+          { /* block317 */
             fclose (f );
             return -1;
           }
@@ -120,16 +120,16 @@ long idx_label (const char * labels , long index ) {
 }
 long net_score (const std::shared_ptr<Classifier> & n , const float * pixels , long count ) {
   if (count  !=  net_inputs () )
-    { /* block322 */
+    { /* block323 */
       return 0;
     }
-  ({ /* letn325 */
+  ({ /* letn326 */
     torch::NoGradGuard guard  = torch::NoGradGuard ();
     // ----------
-    ({ /* letn328 */
+    ({ /* letn329 */
       torch::Tensor x  = torch::from_blob (((void *)pixels ), { 1 , 784 } , (torch::TensorOptions (). dtype)(torch::kFloat32 ));
       // ----------
-      ({ /* letn334 */
+      ({ /* letn335 */
         auto y  = ((*(n . get)()). forward)(x );
         // ----------
         return ((long)(((double)((y . max)(). item<float>)()) *  1000000.0 ));

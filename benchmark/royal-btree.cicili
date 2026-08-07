@@ -36,7 +36,7 @@
         ((\, wname salary)
          (match ((<> get Cell String) wname)
            (Just name (+ (fprintf -file "('")
-                         (show^String -file name)
+                         (show_String -file name)
                          (fprintf -file "', %d)" salary)))
            (default (fprintf -file "item is deleted in another version!"))))
         (default 0)))
@@ -45,23 +45,23 @@
       (match -item
         ((\, id (\, wname salary)) (match ((<> get Cell String) wname)
                                      (Just name (+ (fprintf -file "(%d, '" id)
-                                                   (show^String -file name)
+                                                   (show_String -file name)
                                                    (fprintf -file "', %d)" salary)))
                                      (default (fprintf -file "%d, but item is deleted in another version!" id))))
         (default 0)))
 
-  (decl-List List^User User)
-  (impl-List List^User User showValue " ")
+  (decl-List List_User User)
+  (impl-List List_User User showValue " ")
 
   (generic tree-type
-    (3t) ; 3t is BTree^int^User type
+    (3t) ; 3t is BTree_int_User type
     
-    (decl-B-Tree 3t ; 3t is BTree^int^User type
+    (decl-B-Tree 3t ; 3t is BTree_int_User type
       ;;   item : (Tuple int User)
       int       ; int  : key type, user id
       User)     ; User : value type
     
-    (impl-B-Tree 3t ; 3t is BTree^int^User type
+    (impl-B-Tree 3t ; 3t is BTree_int_User type
       ;;    item : (Tuple int User)
       int        ; int  : key type, user id
       User       ; User : value type
@@ -74,14 +74,14 @@
           (let ((char keyStr [10]))
             (for ((int i . from)) (<= i to) ((++ i))
                  (sprintf keyStr "%d" i)
-                 (let ((String name . #'(letin ((* r1 (new^String^Const "User "))
-                                                (* r2 (new^String^Const keyStr)))
-                                          (append^String r1 r2))))
+                 (let ((String name . #'(letin ((* r1 (new_String_Const "User "))
+                                                (* r2 (new_String_Const keyStr)))
+                                          (append_String r1 r2))))
                    
                    (io ((<> insert 3t) (cof pwtree) i (cast User '{ ((<> new Cell String) name) (+ i 2000) }))
                      (Right new_tree (block
                                        ;; (format #t "Inserted: %d, " i)
-                                       ;; (show^String stdout name)
+                                       ;; (show_String stdout name)
                                        ;; (putchar #\Newline)
                                        ((<> free 3t) pwtree)
                                        (set (cof pwtree) new_tree)))
@@ -101,7 +101,7 @@
                                               (block
                                                 ;; (printf "Deleted: %d, " key)
                                                 ;; (io ((<> get Cell String) wname)
-                                                ;;   (Just name (show^String stdout name)))
+                                                ;;   (Just name (show_String stdout name)))
                                                 ;;  (putchar #\Newline)
                                                 ((<> free Cell String) (aof wname))))))))
             
@@ -167,6 +167,6 @@
     
     ) ; tree-type
   
-  (tree-type (<> BTree int User)) ; use 3t to avoid using BTree^int^User type name too many times
+  (tree-type (<> BTree int User)) ; use 3t to avoid using BTree_int_User type name too many times
   
   ) ; btree.c

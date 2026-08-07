@@ -165,8 +165,8 @@
 ;; measured. Every other macro here that needs its argument more than once
 ;; binds it first; this one did not.
 (DEFMACRO tail (tn n)
-  `(letin* ((t^tail ,tn) (n^tail ,n))
-     (($ t^tail narrow) 0 n^tail (- (($ t^tail size) 0) n^tail))))
+  `(letin* ((t_tail ,tn) (n_tail ,n))
+     (($ t_tail narrow) 0 n_tail (- (($ t_tail size) 0) n_tail))))
 
 ;;; where to cut, as a share: (split-point 20640 0.8) is 16512. Rounded down,
 ;;; so the training half never ends up one row longer than asked for.

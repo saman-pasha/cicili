@@ -168,6 +168,15 @@
   (maphash #'(lambda (k v) (print-specifier v lvl)) table))
 
 (defun specify-decl-name< (name)
+  ;; `^' TO `_' IS A COMPATIBILITY FOLD AND NOTHING GENERATES ONE ANY MORE. The
+  ;; `<>' macro in builtins.cicili joined generic names with `^' and this folded
+  ;; it on the way out, so one name had two spellings -- and they disagreed:
+  ;; a declaration folded, a `$' member access did not, so ($ b (<> find int))
+  ;; emitted `b . find^int', which no C compiler accepts, and missed in the
+  ;; symbol table too. `<>' joins with `_' now and the two spellings are one.
+  ;;
+  ;; The fold stays so that a hand-written `box^int' -- which the docs used to
+  ;; say was identical to (<> box int) -- still means what it did.
   (let ((name (intern (substitute #\_ #\^ (symbol-name name)))))
     (if (is-decl-name name) name
         (error (format nil "wrong declaration name ~S" name)))))
@@ -928,6 +937,7 @@
                               (*pop* catch-var)))))
       try-var)))
 
+
 (defun specify-$-expr (def)
   (set-ast-obj def
     (let ((len (length def))
@@ -949,7 +959,8 @@
   (set-ast-obj def
     (let* ((struct (specify-expr (expand-macros (nth 1 def))))
            (storage (deep-storageof "" struct))
-           ;; as in specify-$-expr: a template-id is one member name
+           ;; as in specify-$-expr: a template-id is one member name, and a
+           ;; `<>' specialisation folds to the name the declaration registered
            (member (name-form< (expand-macros (nth 2 def)))))
       (unless storage (error (format nil "pointer storage not found: ~A~%  in: ~A~%" struct def)))
       (unless (is-symbol member) (error (format nil "wrong access member name: ~A" def)))

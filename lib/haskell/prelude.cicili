@@ -29,18 +29,18 @@
            (-show file -obj)
            buffer))
 
-     (import-List   List^Bool Bool new^List^Bool)
-     (import-List   List^int  int  new^List^int)
-     (import-List   List^char char new^List^char)
+     (import-List   List_Bool Bool new_List_Bool)
+     (import-List   List_int  int  new_List_int)
+     (import-List   List_char char new_List_char)
 
-     (import-Vector Str       char T   new^Str)
-     (import-Vector String    Char NIL new^String)
+     (import-Vector Str       char T   new_Str)
+     (import-Vector String    Char NIL new_String)
      
-     (import-Range  Range^int int)
+     (import-Range  Range_int int)
 
-     (import-List List^List^int  List^int  new^List^List^int)
-     (import-List List^List^char List^char new^List^List^char)
-     ;; (import-List List^String    String    new^List^String)
+     (import-List List_List_int  List_int  new_List_List_int)
+     (import-List List_List_char List_char new_List_List_char)
+     ;; (import-List List_String    String    new_List_String)
 
      (import-Monoid (<> All     Bool) Bool)
      (import-Monoid (<> Any     Bool) Bool)
@@ -52,12 +52,12 @@
      (import-Monoid (<> List   char) (<> List char))
      ;; (import-Monoid (<> String char) (<> List char))
 
-     (import-Functor-List List^int^int   int  int)
-     (import-Functor-List List^int^char  int  char)
-     (import-Functor-List List^int^Bool  int  Bool)
-     (import-Functor-List List^char^char char char)
-     (import-Functor-List List^char^int  char int)
-     (import-Functor-List List^char^Bool char Bool)
+     (import-Functor-List List_int_int   int  int)
+     (import-Functor-List List_int_char  int  char)
+     (import-Functor-List List_int_Bool  int  Bool)
+     (import-Functor-List List_char_char char char)
+     (import-Functor-List List_char_int  char int)
+     (import-Functor-List List_char_Bool char Bool)
      
      )
   ) ; init-macro

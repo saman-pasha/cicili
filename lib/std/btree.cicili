@@ -608,58 +608,58 @@
 ;;;; ------------------------------------------------------------------
 
 (DEFUN btree-call< (tree)
-  (MULTIPLE-VALUE-BIND (desc full-type root-type) (CICILI:TYPE-CHECK tree :TYPEOF :std^btree
+  (MULTIPLE-VALUE-BIND (desc full-type root-type) (CICILI:TYPE-CHECK tree :TYPEOF :std_btree
                                                                           :MODIFIER '(move ref nil))
     (DECLARE (IGNORE desc))
     (VALUES (CAR root-type)
             (IF (CICILI:KEY-EQ (NTH 2 full-type) 'ref) tree `(aof ,tree)))))
 
-(DEFMACRO free^btree (tree)
+(DEFMACRO free_btree (tree)
   (LET ((tree tree))
     (MULTIPLE-VALUE-BIND (type-name self) (btree-call< tree)
       `((<> free ,type-name) ,self))))
 
-(DEFMACRO len^btree (tree)
+(DEFMACRO len_btree (tree)
   (LET ((tree tree))
     (MULTIPLE-VALUE-BIND (type-name self) (btree-call< tree)
       `((<> len ,type-name) ,self))))
 
-(DEFMACRO height^btree (tree)
+(DEFMACRO height_btree (tree)
   (LET ((tree tree))
     (MULTIPLE-VALUE-BIND (type-name self) (btree-call< tree)
       `((<> height ,type-name) ,self))))
 
-(DEFMACRO balanced^btree (tree)
+(DEFMACRO balanced_btree (tree)
   (LET ((tree tree))
     (MULTIPLE-VALUE-BIND (type-name self) (btree-call< tree)
       `((<> balanced ,type-name) ,self))))
 
-(DEFMACRO search^btree (tree key)
+(DEFMACRO search_btree (tree key)
   (LET ((tree tree) (key key))
     (MULTIPLE-VALUE-BIND (type-name self) (btree-call< tree)
       `((<> search ,type-name) ,self ,key))))
 
-(DEFMACRO insert^btree (tree key val)
+(DEFMACRO insert_btree (tree key val)
   (LET ((tree tree) (key key) (val val))
     (MULTIPLE-VALUE-BIND (type-name self) (btree-call< tree)
       `((<> insert ,type-name) ,self ,key ,val))))
 
-(DEFMACRO delete^btree (tree key)
+(DEFMACRO delete_btree (tree key)
   (LET ((tree tree) (key key))
     (MULTIPLE-VALUE-BIND (type-name self) (btree-call< tree)
       `((<> delete ,type-name) ,self ,key))))
 
-(DEFMACRO min^btree (tree)
+(DEFMACRO min_btree (tree)
   (LET ((tree tree))
     (MULTIPLE-VALUE-BIND (type-name self) (btree-call< tree)
       `((<> min ,type-name) ,self))))
 
-(DEFMACRO max^btree (tree)
+(DEFMACRO max_btree (tree)
   (LET ((tree tree))
     (MULTIPLE-VALUE-BIND (type-name self) (btree-call< tree)
       `((<> max ,type-name) ,self))))
 
-(DEFMACRO traverse^btree (tree callback)
+(DEFMACRO traverse_btree (tree callback)
   (LET ((tree tree) (callback callback))
     (MULTIPLE-VALUE-BIND (type-name self) (btree-call< tree)
       `((<> traverse ,type-name) ,self ,callback))))

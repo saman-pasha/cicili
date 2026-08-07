@@ -22,7 +22,7 @@
 
   (func range ((i64 from) (i64 to) (i64 step))
         (out DynamicType)
-        (return (new^DynamicType (List ((<> Dynamic Integer) from)
+        (return (new_DynamicType (List ((<> Dynamic Integer) from)
                                        ((<> Dynamic Integer) to)
                                        ((<> Dynamic Integer) step)))))
 
@@ -32,36 +32,36 @@
                   (dead ((<> Dynamic Error) (strdup "take dead args")))
                   (* List (\: count range _) -># range
                      (dead ((<> Dynamic Error) (strdup "take dead range")))
-                     (* List (\: from to step _) (new^DynamicType (List count to step from))) ; do something
+                     (* List (\: from to step _) (new_DynamicType (List count to step from))) ; do something
                      (default ((<> Dynamic Error) (strdup "take wrong range"))))
                   (default ((<> Dynamic Error) (strdup "take wrong args"))))))
   
   ;; Entry Point
   (func main () (out int)
 
-        (letin ((dt0  (new^DynamicType "pi number is: "))
-                (dt1  (new^DynamicType 12))
-                (dt2  (new^DynamicType 3.14))
-                (dt3  (new^DynamicType true))
-                (dt4  (new^DynamicType #t))
-                (dt5  (new^DynamicType false))
-                (dt6  (new^DynamicType #f))
-                (dt7  (new^DynamicType nil))
-                (dt8  (new^DynamicType 17.18L))
-                (dt9  (new^DynamicType 17L))
-                (dt10 (new^DynamicType 12l))
+        (letin ((dt0  (new_DynamicType "pi number is: "))
+                (dt1  (new_DynamicType 12))
+                (dt2  (new_DynamicType 3.14))
+                (dt3  (new_DynamicType true))
+                (dt4  (new_DynamicType #t))
+                (dt5  (new_DynamicType false))
+                (dt6  (new_DynamicType #f))
+                (dt7  (new_DynamicType nil))
+                (dt8  (new_DynamicType 17.18L))
+                (dt9  (new_DynamicType 17L))
+                (dt10 (new_DynamicType 12l))
                 ;; optional :xml-tag lets to change default '<item>' tag only for List toXml
-                (dt12 (new^DynamicType (List :xml-tag "basic" "a string, a float, an integer, a boolean and null"
+                (dt12 (new_DynamicType (List :xml-tag "basic" "a string, a float, an integer, a boolean and null"
                                              2.71828
                                              9223372036854775807l
                                              #t
                                              nil)))
-                (dt13 (new^DynamicType (Object "id"      12
+                (dt13 (new_DynamicType (Object "id"      12
                                                "name"    "Saman"
                                                "roles"   (List "Founder" "Developer" "Backend")
                                                "data"    dt12
                                                "friends" (List))))
-                (dt14 (new^DynamicType (Object :id       22
+                (dt14 (new_DynamicType (Object :id       22
                                                :name     "Saman's Friend"
                                                :roles    (List :xml-tag "role" "CoFounder" "Developer" "Frontend")
                                                :data     (Object :basics (List dt0 dt1 dt2)
@@ -69,7 +69,7 @@
                                                :friends  (List :xml-tag "friend" dt13))))
 
                 (range01 (range 0 1000000 1))
-                (thunk02 ((<> Dynamic Thunk) (new^DynamicType (List 5 range01)) take))
+                (thunk02 ((<> Dynamic Thunk) (new_DynamicType (List 5 range01)) take))
                 (thunk03 (lazy take 5 range01))
                 ) ; letin
           
