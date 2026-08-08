@@ -2,7 +2,7 @@
 ;;;;
 ;;;; WHAT THIS ASSERTS IS THE TEXT. Everything here is a file the transpiler
 ;;;; writes and another compiler reads, so "it transpiled" proves nothing: the
-;;;; question is whether the bytes in demo.parsi are the Parsi that was meant.
+;;;; question is whether the bytes in emit.parsi are the Parsi that was meant.
 ;;;; So the targets below emit, and the last one is a program that opens what
 ;;;; they wrote and checks it.
 ;;;;
@@ -14,7 +14,7 @@
 ;;;;
 ;;;; Run:  sh test/run.sh test/cpp/parsi-emit
 
-(import "lib/parsi/parsi.cicili" :parsi "demo")
+(import "lib/parsi/parsi.cicili" :parsi "emit")
 
 ;;; ---- the objects ------------------------------------------------------
 ;;;
@@ -34,7 +34,7 @@
 (DEFPARAMETER *add-book*
   (parsi.PROCEDURE add_book ((title String) (year Int)) Long
     (REQUIRES books books_seq)
-    (DECLARE id AS Long = (call demo::books_seq::NEXT))
+    (DECLARE id AS Long = (call emit::books_seq::NEXT))
     (INSERT books (id title year))
     (RETURN id)))
 
@@ -54,16 +54,16 @@
 
 ;;; ---- what they emit ---------------------------------------------------
 ;;;
-;;; The fragment names follow from the page's own name: demo::report lifts into
-;;; demo_report.hpp and demo_report.cpp, which is what its two blocks include.
+;;; The fragment names follow from the page's own name: emit::report lifts into
+;;; emit_report.hpp and emit_report.cpp, which is what its two blocks include.
 
-(header "demo_report.hpp" (make :cpp #t) (parsi.HPP *report*))
-(source "demo_report.cpp" (make :cpp #t) (parsi.CPP *report*))
+(header "emit_report.hpp" (make :cpp #t) (parsi.HPP *report*))
+(source "emit_report.cpp" (make :cpp #t) (parsi.CPP *report*))
 
 ;;; One file, one clause, and the objects in the order they are written here --
 ;;; a table before the procedure that INSERTs into it, because parsi compiles a
 ;;; file in order and a REQUIRES cannot name an object that does not exist yet.
-(header "demo.parsi" (make :cpp #t)
+(header "emit.parsi" (make :cpp #t)
   (parsi.FILE *books* *books-seq* *add-book* *report*))
 
 ;;; ---- the checks -------------------------------------------------------
@@ -105,32 +105,32 @@
 
   (main
     (let ((int bad . 0))
-      (if (== 0 (slurp "demo.parsi"       page_text 262144)) (return 1))
-      (if (== 0 (slurp "demo_report.hpp"  head_text 262144)) (return 1))
-      (if (== 0 (slurp "demo_report.cpp"  body_text 262144)) (return 1))
+      (if (== 0 (slurp "emit.parsi"       page_text 262144)) (return 1))
+      (if (== 0 (slurp "emit_report.hpp"  head_text 262144)) (return 1))
+      (if (== 0 (slurp "emit_report.cpp"  body_text 262144)) (return 1))
 
       ;; the four objects, each carrying the namespace the import supplied
-      (+= bad (has page_text "TABLE demo::books"        "TABLE emitted"))
-      (+= bad (has page_text "SEQUENCE demo::books_seq" "SEQUENCE emitted"))
-      (+= bad (has page_text "PROCEDURE demo::add_book" "PROCEDURE emitted"))
-      (+= bad (has page_text "PAGE demo::report"        "PAGE emitted"))
+      (+= bad (has page_text "TABLE emit::books"        "TABLE emitted"))
+      (+= bad (has page_text "SEQUENCE emit::books_seq" "SEQUENCE emitted"))
+      (+= bad (has page_text "PROCEDURE emit::add_book" "PROCEDURE emitted"))
+      (+= bad (has page_text "PAGE emit::report"        "PAGE emitted"))
 
       ;; the clauses that make each of them mean anything
       (+= bad (has page_text "COLUMN id AS Long PRIMARY KEY;" "COLUMN with its key"))
       (+= bad (has page_text "RETURNS Long"                   "PROCEDURE return type"))
-      (+= bad (has page_text "REQUIRES demo::books, demo::books_seq" "REQUIRES qualified"))
-      (+= bad (has page_text "INSERT INTO demo::books VALUES" "INSERT emitted"))
+      (+= bad (has page_text "REQUIRES emit::books, emit::books_seq" "REQUIRES qualified"))
+      (+= bad (has page_text "INSERT INTO emit::books VALUES" "INSERT emitted"))
       (+= bad (has page_text "OVERRIDE FUNCTION PAGE_LOAD() RETURNS Void"
                              "PAGE_LOAD override"))
-      (+= bad (has page_text "FROM demo::books"               "SELECT cursor"))
+      (+= bad (has page_text "FROM emit::books"               "SELECT cursor"))
 
       ;; a string literal crosses into Parsi's quoting, not C's
       (+= bad (has page_text "ECHO '<h1>Books</h1>';" "string as a Parsi literal"))
 
       ;; THE ESCAPE HATCH, in all three files at once: a call in the page, a
       ;; prototype in the header, a definition in the source.
-      (+= bad (has page_text "`demo_report_e1()"              "lifted call in the page"))
-      (+= bad (has head_text "std::string demo_report_e1 ();" "lifted prototype in the .hpp"))
+      (+= bad (has page_text "`emit_report_e1()"              "lifted call in the page"))
+      (+= bad (has head_text "std::string emit_report_e1 ();" "lifted prototype in the .hpp"))
       ;; parenthesised, because a spliced expression is compiled as the
       ;; expression it is rather than pasted in as text -- which is what keeps
       ;; precedence right when the escape wraps it in a call
@@ -140,16 +140,16 @@
 
       ;; and the two blocks that reach them, named after the page
       (+= bad (has page_text "BEGIN HPP"                "HPP block"))
-      (+= bad (has page_text "#include \"demo_report.hpp\"" "HPP block includes the fragment"))
+      (+= bad (has page_text "#include \"emit_report.hpp\"" "HPP block includes the fragment"))
       (+= bad (has page_text "BEGIN CPP"                "CPP block"))
-      (+= bad (has page_text "#include \"demo_report.cpp\"" "CPP block includes the fragment"))
+      (+= bad (has page_text "#include \"emit_report.cpp\"" "CPP block includes the fragment"))
 
       ;; written order, which is the whole ordering contract
-      (+= bad (before page_text "TABLE demo::books" "SEQUENCE demo::books_seq"
+      (+= bad (before page_text "TABLE emit::books" "SEQUENCE emit::books_seq"
                       "table before sequence"))
-      (+= bad (before page_text "SEQUENCE demo::books_seq" "PROCEDURE demo::add_book"
+      (+= bad (before page_text "SEQUENCE emit::books_seq" "PROCEDURE emit::add_book"
                       "sequence before procedure"))
-      (+= bad (before page_text "PROCEDURE demo::add_book" "PAGE demo::report"
+      (+= bad (before page_text "PROCEDURE emit::add_book" "PAGE emit::report"
                       "procedure before page"))
 
       (if (== bad 0)

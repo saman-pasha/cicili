@@ -345,6 +345,11 @@
        (FORMAT NIL "~AINCLUDE ~A;" i (pstr (SECOND form))))
       ((head-is form "LINK")
        (FORMAT NIL "~ALINK ~A;" i (pstr (SECOND form))))
+      ;; Flags for THIS object's C++ compile -- -std=c++17 and the -I paths a
+      ;; model's headers want. Not interchangeable with LINK, which reaches the
+      ;; linker and puts a -I after the object file where it does nothing.
+      ((head-is form "COMPILE")
+       (FORMAT NIL "~ACOMPILE ~A;" i (pstr (SECOND form))))
 
       ;; The two verbatim blocks. Their contents reach the generated C++ byte for
       ;; byte, so unescape has to run over them for the same reason it runs over
