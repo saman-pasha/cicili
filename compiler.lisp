@@ -356,6 +356,30 @@
                   ;; above honoured it for the definitions -- nothing left to do
                   ((key-eq tname '|IN-PACKAGE|) t)
 
+                  ;; Likewise already done by the CL:LOAD, which reads and
+                  ;; evaluates one form at a time -- so a SHADOW takes effect for
+                  ;; everything below it in the same file.
+                  ;;
+                  ;; SHADOW is what lets a namespace name a macro after a Common
+                  ;; Lisp symbol. The package a macro file lives in inherits
+                  ;; COMMON-LISP (see above), so (DEFMACRO CLASS …) is a lock
+                  ;; violation on CL:CLASS however it is prefixed -- the prefix is
+                  ;; applied to the REGISTERED name below, not to the symbol the
+                  ;; file defines. lib/parsi/parsi.cicili needs CLASS, TYPE and
+                  ;; SEQUENCE, which are three of Parsi's seven object kinds.
+                  ;;
+                  ;; Note the shadow does NOT reach `targets': read-file read the
+                  ;; whole file before the CL:LOAD ran, so a macro BODY mentioning
+                  ;; a shadowed name still holds Common Lisp's symbol. Only the
+                  ;; definitions are affected, which is all this is for.
+                  ((key-eq tname '|SHADOW|) t)
+
+                  ;; State a macro file keeps between calls -- a namespace, a
+                  ;; counter. Evaluated by the CL:LOAD like everything else.
+                  ((or (key-eq tname '|DEFVAR|)
+                       (key-eq tname '|DEFPARAMETER|)
+                       (key-eq tname '|DEFCONSTANT|)) t)
+
                   (t (error (format nil "unknown form ~A" tname))))))))))
 
 (set-dispatch-macro-character

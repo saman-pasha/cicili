@@ -1,0 +1,43 @@
+TABLE demo::books
+BEGIN
+	COLUMN id AS Long PRIMARY KEY;
+	COLUMN title AS String NOT NULL;
+	COLUMN year AS Int;
+END
+
+SEQUENCE demo::books_seq
+BEGIN
+	FROM 1;
+	TO Long::MAX;
+	STEP 1;
+END
+
+PROCEDURE demo::add_book(title AS String, year AS Int)
+RETURNS Long
+REQUIRES demo::books, demo::books_seq
+BEGIN
+	DECLARE id AS Long = demo::books_seq::NEXT();
+	INSERT INTO demo::books VALUES (id, title, year);
+	RETURN id;
+END
+
+PAGE demo::report
+REQUIRES demo::books
+BEGIN
+	BEGIN HPP
+	#include "demo_report.hpp"
+	END
+	BEGIN CPP
+	#include "demo_report.cpp"
+	END
+PUBLIC:
+	OVERRIDE FUNCTION PAGE_LOAD() RETURNS Void
+	BEGIN
+		ECHO '<h1>Books</h1>';
+		ECHO '<p>answer = ', `demo_report_e1(), '</p>';
+		ECHO '<ul>';
+		SELECT '<li>', title, ' (', year, ')</li>'
+		FROM demo::books;
+		ECHO '</ul>';
+	END
+END 

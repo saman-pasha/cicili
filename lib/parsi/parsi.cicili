@@ -1,0 +1,628 @@
+;;;; Parsi objects, written from Cicili.
+;;;;
+;;;; ZiguratIP's language, Parsi, has seven top-level objects -- the whole of
+;;;; its SUITE rule in home/etc/patterns.conf:
+;;;;
+;;;;     INCLUDE / LINK, then
+;;;;     TABLE | PROCEDURE | CLASS | PAGE | TYPE | ENUM | SEQUENCE
+;;;;
+;;;; This file gives each of them a Cicili macro, so a Cicili program can WRITE
+;;;; one instead of a developer pasting C++ into one by hand.
+;;;;
+;;;;     (import "lib/parsi/parsi.cicili" :parsi "demo")
+;;;;
+;;;;     (DEFPARAMETER *greet*
+;;;;       (parsi.PAGE greet
+;;;;         (PAGE_LOAD
+;;;;           (ECHO "<h1>hello</h1>"))))
+;;;;
+;;;;     (header "greet.parsi" (make :cpp #t) (parsi.FILE *greet*))
+;;;;
+;;;; THE PREFIX IS WHAT MAKES THIS POSSIBLE. import's second argument names a
+;;;; package, and compiler.lisp registers each macro under the string
+;;;; "<pack>.<name>" -- so PAGE, IF and RETURN here are `parsi.PAGE',
+;;;; `parsi.IF' and `parsi.RETURN', and none of them can collide with Common
+;;;; Lisp's own uppercase symbols. Without it a file of Parsi clause macros
+;;;; would shadow IF and LET for every Cicili macro in the process.
+;;;;
+;;;; WHY THE RENDERERS ARE FUNCTIONS AND THE MACROS ARE THIN. An object is a
+;;;; VALUE here -- a plist carrying its text and its lifted C++ -- so a plain
+;;;; Lisp function can return a whole CLASS or PAGE:
+;;;;
+;;;;     (DEFUN network-page (name in out) (parsi.PAGE ...))
+;;;;
+;;;; That is the one thing a single body-walking macro cannot do, and it is why
+;;;; this is shaped like SXQL rather than like CL-WHO. The top level is macros;
+;;;; the inside of a body is data, walked by render-stmt, because a statement is
+;;;; not something anyone composes.
+;;;;
+;;;; WHY A TARGET LINE IS STILL WRITTEN BY HAND. compile-ast's macro branch
+;;;; (compiler.lisp:260) routes a top-level macro's expansion to specify-expr,
+;;;; never back into compile-ast -- so a macro CANNOT expand into a `header' or
+;;;; `source' target. The three target lines are the developer's; the macros
+;;;; fill their bodies. Which is the shape example/parsi-fragment.cicili already
+;;;; had.
+
+(IN-PACKAGE :parsi)
+
+;;; Three of Parsi's seven object kinds are also Common Lisp symbols, and the
+;;; package a macro file lives in inherits COMMON-LISP -- so (DEFMACRO CLASS …)
+;;; below is a lock violation on CL:CLASS unless the name is this package's own
+;;; first. The prefix protects the CICILI namespace, where the macro is
+;;; registered as "parsi.CLASS"; it does nothing for the LISP one, and this is
+;;; the other half.
+;;;
+;;; It has to be here, above the definitions, because the CL:LOAD that evaluates
+;;; them reads one form at a time.
+(SHADOW '("CLASS" "TYPE" "SEQUENCE"))
+
+;;; Called once at import time with the import form's trailing arguments. The
+;;; namespace an object belongs to is the useful thing to pass, so a page can be
+;;; named `greet' rather than `demo::greet' at every mention.
+(DEFVAR *namespace* NIL)
+
+(DEFUN init (args)
+  (SETF *namespace* (COND ((NULL args) NIL)
+                          ((STRINGP args) args)
+                          ((SYMBOLP args) (SYMBOL-NAME args))
+                          ((CONSP args) (STRING (FIRST args)))
+                          (T NIL))))
+
+;;;; ------------------------------------------------------------------
+;;;; Names and literals
+;;;; ------------------------------------------------------------------
+
+;;; Cicili's reader folds `a::b' into ($$ a b) before anything sees it --
+;;; core.lisp's qualify-source<, so that `::' is never read as a Lisp package
+;;; qualifier. Parsi spells the same name the way it was written, so this folds
+;;; it back.
+(DEFUN qname (x)
+  (COND ((STRINGP x) x)
+        ((SYMBOLP x) (SYMBOL-NAME x))
+        ((AND (CONSP x) (SYMBOLP (CAR x)) (STRING= (SYMBOL-NAME (CAR x)) "$$"))
+         (FORMAT NIL "~{~A~^::~}" (MAPCAR #'qname (CDR x))))
+        (T (FORMAT NIL "~A" x))))
+
+;;; An object's name, with the import's namespace put in front when the name
+;;; carries none of its own. (parsi.PAGE greet ...) under :parsi "demo" is
+;;; demo::greet; (parsi.PAGE other::greet ...) is left alone.
+(DEFUN oname (x)
+  (LET ((n (qname x)))
+    (IF (AND *namespace* (NOT (SEARCH "::" n)))
+        (CONCATENATE 'STRING *namespace* "::" n)
+        n)))
+
+;;; THE TWO LANGUAGES ESCAPE DIFFERENTLY, and a string written in one has to
+;;; arrive in the other meaning the same thing.
+;;;
+;;; Cicili replaces the reader's " with one that copies bytes VERBATIM
+;;; (compiler.lisp:424): it consults a backslash only to find where the string
+;;; ends, and writes it through. So `"charset=\"UTF-8\""' is read as the eleven
+;;; characters charset=\"UTF-8\" -- backslashes and all. That is right for
+;;; Cicili, whose strings become C string literals where \" is the escape.
+;;;
+;;; Parsi's tokenizer escapes nothing but the quote that would end the string
+;;; (Compiler/tokenizer.cpp:60), so a \" copied straight through would be sent
+;;; to the browser as two characters.
+;;;
+;;; This undoes exactly the two escapes the Cicili reader forced and nothing
+;;; else. A backslash before anything else -- \n, \t -- is two characters in
+;;; Cicili too, and stays two here.
+(DEFUN unescape (s)
+  (WITH-OUTPUT-TO-STRING (out)
+    (LET ((i 0) (n (LENGTH s)))
+      (LOOP WHILE (< i n)
+            DO (LET ((c (CHAR s i)))
+                 (IF (AND (CHAR= c #\\) (< (1+ i) n)
+                          (OR (CHAR= (CHAR s (1+ i)) #\")
+                              (CHAR= (CHAR s (1+ i)) #\\)))
+                     (PROGN (WRITE-CHAR (CHAR s (1+ i)) out) (INCF i 2))
+                     (PROGN (WRITE-CHAR c out) (INCF i))))))))
+
+;;; A Parsi string literal. The tokenizer opens one at ' and closes at the next
+;;; ' that is not preceded by a backslash (Compiler/tokenizer.cpp:55-65), so a
+;;; quote in the text is escaped and nothing else is.
+;;;
+;;; Newlines are LEFT IN. Parsi strings run across lines on purpose --
+;;; System/catalog_pages.parsi keeps a whole HTML table in one -- and every byte
+;;; is data the server will send, so breaking one into fragments would change
+;;; what arrives.
+(DEFUN pstr (s)
+  (WITH-OUTPUT-TO-STRING (out)
+    (WRITE-CHAR #\' out)
+    (LOOP FOR c ACROSS (unescape s)
+          DO (PROGN (WHEN (CHAR= c #\') (WRITE-CHAR #\\ out))
+                    (WRITE-CHAR c out)))
+    (WRITE-CHAR #\' out)))
+
+(DEFUN tabs (n) (MAKE-STRING n :INITIAL-ELEMENT #\Tab))
+
+;;; Is FORM a clause of this name? Clause heads are read with the case preserved
+;;; (core.lisp:491), so ECHO and echo are different symbols and this is an exact
+;;; match rather than a fold.
+(DEFUN head-is (form name)
+  (AND (CONSP form) (SYMBOLP (CAR form)) (STRING= (SYMBOL-NAME (CAR form)) name)))
+
+(DEFUN head-name (form)
+  (IF (AND (CONSP form) (SYMBOLP (CAR form))) (SYMBOL-NAME (CAR form)) NIL))
+
+;;;; ------------------------------------------------------------------
+;;;; The escape to Cicili
+;;;; ------------------------------------------------------------------
+;;;;
+;;;; (cicili <expr>) anywhere a Parsi value is wanted lifts <expr> out of the
+;;;; body into a function of its own, and leaves a call behind:
+;;;;
+;;;;     (ECHO "mean = " (cicili (mean_t t 0)))
+;;;;
+;;;;   greet.hpp    std::string demo_greet_e1 ();
+;;;;   greet.cpp    std::string demo_greet_e1 () { return parsi_str( ... ); }
+;;;;   greet.parsi  ECHO 'mean = ', `demo_greet_e1();
+;;;;
+;;;; This is the point of the whole file. The C++ is written by the compiler
+;;;; that understands numpy and libtorch, and the page contract by the one that
+;;;; understands Zeytun, and neither is pasted into the other by hand.
+;;;;
+;;;; THE EXPRESSION IS TYPE-CHECKED, and by the strongest means available: it
+;;;; becomes the body of a real Cicili function, so it goes through the same
+;;;; inference every other function body does. A macro-time INFER-TYPE probe
+;;;; would be weaker -- it cannot see locals the body will introduce.
+;;;;
+;;;; WHY IT RETURNS A STRING RATHER THAN ITS OWN TYPE. Parsi hands an ECHOed
+;;;; value to Utility::echo_escaped, which renders it into a Zigurat::textstream
+;;;; -- a std::stringstream (StreamIO/textstream.hpp:9) -- so anything with an
+;;;; operator<< arrives correctly and a std::string certainly does. Returning
+;;;; the value's own type instead would need that type named in the .hpp, and a
+;;;; torch::Tensor in a page's header is exactly what the two-block split exists
+;;;; to prevent.
+;;;;
+;;;; parsi_str does the rendering, and it is a template, so the expression's
+;;;; type never has to be written down anywhere.
+
+(DEFVAR *lifted-decls* NIL)
+(DEFVAR *lifted-defs*  NIL)
+(DEFVAR *lift-count*   0)
+(DEFVAR *lift-base*    "parsi")
+
+;;; A C identifier made from an object's name: demo::greet -> demo_greet. It is
+;;; also the base of the two fragment filenames, so the blocks a lifting object
+;;; emits name files the target lines have to agree with.
+(DEFUN base-name (name)
+  (WITH-OUTPUT-TO-STRING (out)
+    (LET ((i 0) (n (LENGTH name)))
+      (LOOP WHILE (< i n)
+            DO (LET ((c (CHAR name i)))
+                 (COND ((AND (CHAR= c #\:) (< (1+ i) n) (CHAR= (CHAR name (1+ i)) #\:))
+                        (WRITE-CHAR #\_ out) (INCF i 2))
+                       (T (WRITE-CHAR (CHAR-DOWNCASE c) out) (INCF i))))))))
+
+;;; Lift one expression and answer the Parsi text that calls it. The backtick is
+;;; Parsi's escape to a raw C++ name; it cannot be written in Cicili source,
+;;; where a backtick is quasiquote, which is the other reason the escape is a
+;;; clause rather than something the developer spells out.
+;;; std::string as the reader would have folded it: qualify-source< turns a::b
+;;; into ($$ a b) before anything is specified, so a form built here has to be
+;;; built the same way rather than as one symbol with colons in its name.
+(DEFUN std-string ()
+  (LIST (INTERN "$$") (INTERN "std") (INTERN "string")))
+
+(DEFUN lift (expr)
+  (LET ((name (INTERN (FORMAT NIL "~A_e~D" *lift-base* (INCF *lift-count*)))))
+    (SETF *lifted-decls*
+          (APPEND *lifted-decls*
+                  (LIST (LIST (INTERN "decl"))
+                        `(,(INTERN "func") ,name () (,(INTERN "out") ,(std-string))))))
+    (SETF *lifted-defs*
+          (APPEND *lifted-defs*
+                  (LIST `(,(INTERN "func") ,name () (,(INTERN "out") ,(std-string))
+                          (,(INTERN "return")
+                           (,(INTERN "code") (QUOTE ("parsi_str(" ,expr ")"))))))))
+    (FORMAT NIL "`~A()" name)))
+
+;;;; ------------------------------------------------------------------
+;;;; Expressions
+;;;; ------------------------------------------------------------------
+
+;;; One item of an ECHO, a RETURN, a SET or an argument list.
+;;;
+;;; A STRING is a Parsi string literal and a number is a number. A symbol is
+;;; passed through, which is what makes `this._net' work with nothing special
+;;; here: `.' is not an identifier character to qualify-source<, so the reader
+;;; hands over one symbol whose name is exactly what was written.
+;;;
+;;; (cpp f a b) is Parsi's backtick escape to a raw C++ name. It cannot be
+;;; spelled with a backtick in Cicili source, because there the backtick is
+;;; quasiquote.
+(DEFUN render-expr (x)
+  (COND ((STRINGP x) (pstr x))
+        ((NUMBERP x) (FORMAT NIL "~A" x))
+        ((SYMBOLP x) (SYMBOL-NAME x))
+        ((head-is x "$$") (qname x))
+        ((head-is x "cpp")
+         (FORMAT NIL "`~A(~{~A~^, ~})" (qname (SECOND x))
+                 (MAPCAR #'render-expr (CDDR x))))
+        ((head-is x "call")
+         (FORMAT NIL "~A(~{~A~^, ~})" (qname (SECOND x))
+                 (MAPCAR #'render-expr (CDDR x))))
+        ((head-is x "op")
+         (FORMAT NIL "~A ~A ~A" (render-expr (THIRD x))
+                 (qname (SECOND x)) (render-expr (FOURTH x))))
+        ((head-is x "text") (SECOND x))
+        ((head-is x "cicili") (lift (SECOND x)))
+        (T (ERROR "parsi: not an expression: ~S" x))))
+
+;;;; ------------------------------------------------------------------
+;;;; Statements
+;;;; ------------------------------------------------------------------
+
+;;; One statement of a body, at indentation LVL. The vocabulary is Parsi's, not
+;;; Cicili's, and anything outside it is an error rather than a guess -- a
+;;; wrongly emitted statement would surface as a syntax error in a file the
+;;; developer did not write, which is the one failure this whole arrangement has
+;;; to avoid.
+(DEFUN render-stmt (form lvl)
+  (LET ((i (tabs lvl)))
+    (COND
+      ((head-is form "ECHO")
+       (FORMAT NIL "~AECHO ~{~A~^, ~};" i (MAPCAR #'render-expr (CDR form))))
+
+      ((head-is form "CALL")
+       (FORMAT NIL "~ACALL ~A;" i (render-expr (IF (CDDR form)
+                                                   (LIST* (INTERN "call") (CDR form))
+                                                   (SECOND form)))))
+
+      ((head-is form "RETURN")
+       (IF (CDR form)
+           (FORMAT NIL "~ARETURN ~A;" i (render-expr (SECOND form)))
+           (FORMAT NIL "~ARETURN;" i)))
+
+      ;; (DECLARE n AS Long) and (DECLARE n AS Long = 0)
+      ((head-is form "DECLARE")
+       (LET ((name (qname (SECOND form)))
+             (type (qname (FOURTH form)))
+             (init (NTHCDR 4 form)))
+         (UNLESS (STRING= (SYMBOL-NAME (THIRD form)) "AS")
+           (ERROR "parsi: DECLARE wants `name AS Type', got ~S" form))
+         (IF init
+             (FORMAT NIL "~ADECLARE ~A AS ~A = ~A;" i name type
+                     (render-expr (SECOND init)))
+             (FORMAT NIL "~ADECLARE ~A AS ~A;" i name type))))
+
+      ((head-is form "SET")
+       (FORMAT NIL "~ASET ~A = ~A;" i (qname (SECOND form))
+               (render-expr (THIRD form))))
+
+      ;; (INSERT demo::authors (id name country))
+      ((head-is form "INSERT")
+       (FORMAT NIL "~AINSERT INTO ~A VALUES (~{~A~^, ~});" i (oname (SECOND form))
+               (MAPCAR #'render-expr (THIRD form))))
+
+      ;; A SELECT IS A CURSOR, not a result set: everything listed runs once per
+      ;; row. So the row's markup goes in the SELECT and the table's around it,
+      ;; and a count is an assignment that runs per row rather than a COUNT().
+      ;;
+      ;;     (SELECT ("<li>" title "</li>") FROM demo::books WHERE (op > year 1950))
+      ((head-is form "SELECT")
+       (LET* ((rest (CDDR form))
+              (from (SECOND (MEMBER "FROM" rest :TEST #'clause-word)))
+              (where (SECOND (MEMBER "WHERE" rest :TEST #'clause-word))))
+         (UNLESS from (ERROR "parsi: SELECT wants FROM: ~S" form))
+         (FORMAT NIL "~ASELECT ~{~A~^, ~}~%~AFROM ~A~A;" i
+                 (MAPCAR #'render-expr (SECOND form)) i (oname from)
+                 (IF where (FORMAT NIL " WHERE ~A" (render-expr where)) ""))))
+
+      ;; A line of Parsi written out as it stands. The way out when the clause
+      ;; wanted is one this file does not render yet -- TRANSACTION, UPDATE, an
+      ;; ORDER BY -- without having to wait for it.
+      ((head-is form "TEXT")
+       (FORMAT NIL "~A~A" i (SECOND form)))
+
+      (T (ERROR "parsi: not a statement: ~S" form)))))
+
+;;; MEMBER's test, for finding a bare keyword in a clause's tail.
+(DEFUN clause-word (word x)
+  (AND (SYMBOLP x) (STRING= (SYMBOL-NAME x) word)))
+
+(DEFUN render-body (forms lvl)
+  (FORMAT NIL "~{~A~^~%~}" (MAPCAR (LAMBDA (f) (render-stmt f lvl)) forms)))
+
+;;;; ------------------------------------------------------------------
+;;;; The clauses of a CLASS or a PAGE
+;;;; ------------------------------------------------------------------
+
+;;; patterns.conf's CLASS rule is one LOOP over these, in any order, so they are
+;;; emitted in the order they were WRITTEN. A generated file that matches its
+;;; source line for line is worth more than a tidied one, because a diagnostic
+;;; from parsi points into the generated text.
+(DEFUN render-member (form lvl)
+  (LET ((i (tabs lvl)))
+    (COND
+      ((head-is form "PUBLIC")    "PUBLIC:")
+      ((head-is form "PRIVATE")   "PRIVATE:")
+      ((head-is form "PROTECTED") "PROTECTED:")
+
+      ((head-is form "INCLUDE")
+       (FORMAT NIL "~AINCLUDE ~A;" i (pstr (SECOND form))))
+      ((head-is form "LINK")
+       (FORMAT NIL "~ALINK ~A;" i (pstr (SECOND form))))
+
+      ;; The two verbatim blocks. Their contents reach the generated C++ byte for
+      ;; byte, so unescape has to run over them for the same reason it runs over
+      ;; a string: `#include \"x.hpp\"' is what the Cicili reader hands over, and
+      ;; the C++ wants real quotes.
+      ((head-is form "HPP")
+       (FORMAT NIL "~ABEGIN HPP~%~{~A~%~}~AEND" i (block-lines (CDR form) i) i))
+      ((head-is form "CPP")
+       (FORMAT NIL "~ABEGIN CPP~%~{~A~%~}~AEND" i (block-lines (CDR form) i) i))
+
+      ((head-is form "DECLARE")
+       (render-stmt form lvl))
+
+      ((head-is form "CONSTRUCTOR")
+       (FORMAT NIL "~ACONSTRUCTOR(~{~A~^, ~})~%~ABEGIN~%~A~%~AEND"
+               i (MAPCAR #'render-param (SECOND form))
+               i (render-body (CDDR form) (1+ lvl)) i))
+
+      ;; (FUNCTION name ((x Long)) Void body...)
+      ((head-is form "FUNCTION")
+       (FORMAT NIL "~AFUNCTION ~A(~{~A~^, ~}) RETURNS ~A~%~ABEGIN~%~A~%~AEND"
+               i (qname (SECOND form)) (MAPCAR #'render-param (THIRD form))
+               (qname (FOURTH form))
+               i (render-body (NTHCDR 4 form) (1+ lvl)) i))
+
+      ;; The one clause that makes an object a page Zeytun can serve. It is an
+      ;; OVERRIDE because BasePage::PAGE_LOAD is virtual -- loadzeytun.cpp never
+      ;; looks the symbol up, it calls the method through the base class.
+      ((head-is form "PAGE_LOAD")
+       (FORMAT NIL "~AOVERRIDE FUNCTION PAGE_LOAD() RETURNS Void~%~ABEGIN~%~A~%~AEND"
+               i i (render-body (CDR form) (1+ lvl)) i))
+
+      ((head-is form "TEXT")
+       (FORMAT NIL "~A~A" i (SECOND form)))
+
+      (T (ERROR "parsi: not a class member: ~S" form)))))
+
+;;; The lines of a verbatim block, unescaped and given the object's indentation.
+;;; The indent is whitespace in C++ and buys a generated file that reads like
+;;; the hand-written ones -- Test/ai/classifier.parsi indents its blocks too.
+(DEFUN block-lines (lines i)
+  (MAPCAR (LAMBDA (l) (FORMAT NIL "~A~A" i (unescape l))) lines))
+
+(DEFUN render-param (p)
+  (FORMAT NIL "~A AS ~A" (qname (FIRST p)) (qname (SECOND p))))
+
+;;;; ------------------------------------------------------------------
+;;;; The objects
+;;;; ------------------------------------------------------------------
+
+;;; An object is a plist, not a string, because it carries three things: the
+;;; Parsi text, and the C++ declarations and definitions lifted out of its body.
+;;; parsi.FILE renders the first, parsi.HPP and parsi.CPP splice the other two.
+(DEFUN make-object (kind name text &KEY decls defs)
+  (LIST :kind kind :name name :text text :decls decls :defs defs))
+
+(DEFUN object-text  (o) (GETF o :text))
+(DEFUN object-decls (o) (GETF o :decls))
+(DEFUN object-defs  (o) (GETF o :defs))
+
+;;; CLASS and PAGE share one grammar rule and, on the other side, one function --
+;;; Compiler/compilerddl.cpp's _class(ast, is_page). So they share one renderer
+;;; and a flag here too.
+(DEFUN render-class (kind name clauses)
+  (LET ((*lifted-decls* '()) (*lifted-defs* '()) (*lift-count* 0)
+        (*lift-base* (base-name name))
+        (head '()) (members '()) (has-hpp NIL) (has-cpp NIL))
+    (DOLIST (c clauses)
+      (COND ((head-is c "BASE")
+             (PUSH (FORMAT NIL "BASE ~{~A~^, ~}" (MAPCAR #'qname (CDR c))) head))
+            ((head-is c "INHERITS")
+             (PUSH (FORMAT NIL "INHERITS ~{~A~^, ~}" (MAPCAR #'qname (CDR c))) head))
+            ((head-is c "REQUIRES")
+             (PUSH (FORMAT NIL "REQUIRES ~{~A~^, ~}" (MAPCAR #'oname (CDR c))) head))
+            (T (WHEN (head-is c "HPP") (SETF has-hpp T))
+               (WHEN (head-is c "CPP") (SETF has-cpp T))
+               (PUSH (render-member c 1) members))))
+
+    (SETF members (NREVERSE members))
+
+    ;; An object that lifted something needs the two fragments in its two
+    ;; blocks, and the names follow from the object's own: demo::greet lifts
+    ;; into demo_greet.hpp and demo_greet.cpp, which is what the header and
+    ;; source targets have to be called. Written blocks are left alone -- an
+    ;; object with its own (HPP …) is saying it knows where its C++ is.
+    ;;
+    ;; They go FIRST, above every member, which is where Test/ai/classifier.parsi
+    ;; puts the same two by hand: the blocks are emitted above the object's own
+    ;; header, and a header they needed would not have been read yet.
+    ;;
+    ;; THE SPLIT MATTERS AND IS NOT COSMETIC. Everything that REQUIREs this
+    ;; object includes its header, so the declarations go in HPP and stay a few
+    ;; lines, while the definitions -- and whatever torch or numpy header they
+    ;; drag behind them -- stay in this object's own translation unit.
+    (WHEN *lifted-defs*
+      (UNLESS has-cpp
+        (PUSH (render-member (LIST (INTERN "CPP")
+                                   (FORMAT NIL "#include \"~A.cpp\"" *lift-base*)) 1)
+              members))
+      (UNLESS has-hpp
+        (PUSH (render-member (LIST (INTERN "HPP")
+                                   (FORMAT NIL "#include \"~A.hpp\"" *lift-base*)) 1)
+              members)))
+
+    (make-object kind name
+      (FORMAT NIL "~A ~A~%~{~A~%~}BEGIN~%~{~A~%~}END"
+              (STRING-UPCASE (SYMBOL-NAME kind)) name
+              (NREVERSE head) members)
+      :decls *lifted-decls* :defs *lifted-defs*)))
+
+;;; A PROCEDURE is a standalone routine with its own .so, and it is NOT a class:
+;;; it has no members, so nothing it computes survives the call. That is the
+;;; whole difference from a CLASS, and it is why a model belongs in one and not
+;;; the other -- a procedure holding weights would read the checkpoint off disk
+;;; on every request.
+(DEFUN render-procedure (name params returns clauses)
+  (LET ((*lifted-decls* '()) (*lifted-defs* '()) (*lift-count* 0)
+        (*lift-base* (base-name name))
+        (requires NIL) (blocks '()) (body '()))
+    (DOLIST (c clauses)
+      (COND ((head-is c "REQUIRES")
+             (SETF requires (FORMAT NIL "REQUIRES ~{~A~^, ~}" (MAPCAR #'oname (CDR c)))))
+            ((OR (head-is c "INCLUDE") (head-is c "LINK")
+                 (head-is c "HPP") (head-is c "CPP"))
+             (PUSH (render-member c 1) blocks))
+            (T (PUSH c body))))
+    (SETF blocks (NREVERSE blocks) body (NREVERSE body))
+    ;; The body is rendered before the blocks are finished, because rendering is
+    ;; what fills *lifted-defs* and so decides whether the two default blocks
+    ;; are needed at all.
+    (LET ((text (render-body body 1)))
+      (WHEN *lifted-defs*
+        (SETF blocks
+              (APPEND (LIST (render-member (LIST (INTERN "HPP")
+                                                 (FORMAT NIL "#include \"~A.hpp\"" *lift-base*)) 1)
+                            (render-member (LIST (INTERN "CPP")
+                                                 (FORMAT NIL "#include \"~A.cpp\"" *lift-base*)) 1))
+                      blocks)))
+      (make-object :procedure name
+        (FORMAT NIL "PROCEDURE ~A(~{~A~^, ~})~%RETURNS ~A~%~@[~A~%~]~{~A~%~}BEGIN~%~A~%END"
+                name (MAPCAR #'render-param params) (qname returns) requires blocks text)
+        :decls *lifted-decls* :defs *lifted-defs*))))
+
+;;; A COLUMN of a TABLE. The key words are Parsi's own and are passed through as
+;;; written: (COLUMN id Long PRIMARY KEY), (COLUMN name String UNIQUE KEY NOT NULL).
+(DEFUN render-column (c)
+  (FORMAT NIL "~ACOLUMN ~A AS ~A~{ ~A~};" (tabs 1) (qname (SECOND c)) (qname (THIRD c))
+          (MAPCAR #'qname (CDDDR c))))
+
+(DEFUN render-table (name clauses)
+  (LET ((requires NIL) (rows '()))
+    (DOLIST (c clauses)
+      (COND ((head-is c "REQUIRES")
+             (SETF requires (FORMAT NIL "REQUIRES ~{~A~^, ~}" (MAPCAR #'oname (CDR c)))))
+            ((head-is c "COLUMN") (PUSH (render-column c) rows))
+            ;; PRIMARY / UNIQUE / INDEX over more than one column
+            ((OR (head-is c "PRIMARY") (head-is c "UNIQUE") (head-is c "INDEX"))
+             (PUSH (FORMAT NIL "~A~A KEY ~A(~{~A~^, ~});" (tabs 1) (head-name c)
+                           (IF (SYMBOLP (SECOND c)) (FORMAT NIL "~A " (qname (SECOND c))) "")
+                           (MAPCAR #'qname (CAR (LAST c)))) rows))
+            (T (PUSH (render-stmt c 1) rows))))
+    (make-object :table name
+      (FORMAT NIL "TABLE ~A~%~@[~A~%~]BEGIN~%~{~A~%~}END" name requires (NREVERSE rows)))))
+
+;;; A sequence is declared rather than implied by a primary key, and becomes a
+;;; catalogue object of its own -- which is why a table that numbers itself needs
+;;; two objects and two REQUIRES.
+(DEFUN render-sequence (name from to step)
+  (make-object :sequence name
+    (FORMAT NIL "SEQUENCE ~A~%BEGIN~%~AFROM ~A;~%~ATO ~A;~%~ASTEP ~A;~%END"
+            name (tabs 1) (render-expr from) (tabs 1) (render-expr to)
+            (tabs 1) (render-expr step))))
+
+(DEFUN render-type (name as)
+  (make-object :type name (FORMAT NIL "TYPE ~A AS ~A;" name (qname as))))
+
+(DEFUN render-enum (name values)
+  (make-object :enum name
+    (FORMAT NIL "ENUM ~A~%BEGIN~%~{~A~^,~%~}~%END" name
+            (MAPCAR (LAMBDA (v) (FORMAT NIL "~A~A" (tabs 1) (qname v))) values))))
+
+;;;; ------------------------------------------------------------------
+;;;; The macros -- one per name in patterns.conf's SUITE rule
+;;;; ------------------------------------------------------------------
+
+;;; Each expands to the object as a literal, because everything it needs is
+;;; known while the macro runs. Nothing is deferred to the C++ side.
+
+;;; A PAGE IS REACHED BY ITS NAME, so the namespace is part of the URL: a page
+;;; called demo::greet is served at /demo/greet.zt, because Zeytun splits the
+;;; path on / and joins the parts with :: (ziguratip/loadzeytun.cpp:173-180).
+;;; An unqualified page -- (parsi.PAGE greet …) imported with no namespace -- is
+;;; at /greet.zt.
+(DEFMACRO PAGE (name &REST clauses)
+  `(QUOTE ,(render-class :page (oname name) clauses)))
+
+(DEFMACRO CLASS (name &REST clauses)
+  `(QUOTE ,(render-class :class (oname name) clauses)))
+
+(DEFMACRO PROCEDURE (name params returns &REST clauses)
+  `(QUOTE ,(render-procedure (oname name) params returns clauses)))
+
+(DEFMACRO TABLE (name &REST clauses)
+  `(QUOTE ,(render-table (oname name) clauses)))
+
+(DEFMACRO SEQUENCE (name from to &OPTIONAL (step 1))
+  `(QUOTE ,(render-sequence (oname name) from to step)))
+
+(DEFMACRO TYPE (name as)
+  `(QUOTE ,(render-type (oname name) as)))
+
+(DEFMACRO ENUM (name &REST values)
+  `(QUOTE ,(render-enum (oname name) values)))
+
+;;; The two file-level clauses. They are not objects and carry no name, so they
+;;; stand at the top of the file and apply to everything below.
+(DEFMACRO INCLUDE (header)
+  `(QUOTE ,(make-object :include NIL (FORMAT NIL "INCLUDE ~A;" (pstr header)))))
+
+(DEFMACRO LINK (flag)
+  `(QUOTE ,(make-object :link NIL (FORMAT NIL "LINK ~A;" (pstr flag)))))
+
+;;;; ------------------------------------------------------------------
+;;;; Rendering an object into a target
+;;;; ------------------------------------------------------------------
+
+;;; The objects are EVALuated here rather than expanded, so a file can name them
+;;; through a variable or build them with a function:
+;;;
+;;;     (DEFPARAMETER *greet* (parsi.PAGE greet ...))
+;;;     (header "greet.parsi" (make :cpp #t) (parsi.FILE *greet*))
+;;;
+;;; compile-ast walks a file's targets in order and evaluates a DEFPARAMETER
+;;; through its (t (eval target)) branch, so the variable is bound by the time
+;;; this macro runs.
+(DEFUN objects-of (forms) (MAPCAR #'EVAL forms))
+
+;;; The whole file, as ONE code clause.
+;;;
+;;; One, not one per object, because a target's inner forms live in a hash table
+;;; walked with maphash -- their order is whatever the table gives. Parsi is
+;;; order-dependent, so the order has to be held inside a single clause.
+;;;
+;;; In a :cpp #t target a top-level (code ...) is emitted verbatim followed by a
+;;; newline and no semicolon (body.lisp:348), which is exactly a line of Parsi.
+(DEFMACRO FILE (&REST objects)
+  (LET ((objs (objects-of objects)))
+    `(code ,(FORMAT NIL "~{~A~^~%~%~}" (MAPCAR #'object-text objs)))))
+
+;;; The declarations and the definitions the objects' bodies lifted out. Both
+;;; are empty until a body uses the (cicili ...) escape, and an empty one emits
+;;; an empty file rather than failing -- a page with no Cicili in it is a page,
+;;; and its two targets can stay in the file unused.
+;;;
+;;; Neither is a translation unit: they are fragments, complete C++ but not
+;;; standalone, which is what a Parsi block wants. A `header' target, and a
+;;; `source' target with no :compile, are both written and never handed to a
+;;; compiler (target.lisp:157) -- so Parsi compiles them, once, as part of the
+;;; object, with the object's own flags. example/parsi-fragment.cicili makes the
+;;; same point at more length.
+(DEFMACRO HPP (&REST objects)
+  (LET ((decls (MAPCAN (LAMBDA (o) (COPY-LIST (object-decls o))) (objects-of objects))))
+    `($$$ ,@(WHEN decls (LIST (LIST (INTERN "code") "#include <string>")))
+          ,@decls)))
+
+;;; parsi_str is why a lifted expression never has to name its own type. It is a
+;;; template, so `o << v' picks up whatever operator<< the value has -- long,
+;;; double, torch::Tensor -- and the .hpp says std::string for all of them.
+;;;
+;;; static, because every page's fragment defines one and two pages loaded into
+;;; the same server would otherwise be two definitions of one external symbol.
+(DEFMACRO CPP (&REST objects)
+  (LET ((defs (MAPCAN (LAMBDA (o) (COPY-LIST (object-defs o))) (objects-of objects))))
+    `($$$ ,@(WHEN defs
+              (LIST (LIST (INTERN "code") "#include <sstream>")
+                    (LIST (INTERN "code") "#include <string>")
+                    (LIST (INTERN "code")
+                          "template <typename T> static std::string parsi_str(const T& v)")
+                    (LIST (INTERN "code")
+                          "{ std::ostringstream o; o << v; return o.str(); }")))
+          ,@defs)))

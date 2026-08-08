@@ -1,0 +1,83 @@
+;;;; A Zeytun page, written in Cicili
+;;;;
+;;;; THE ROUTINE THIS REPLACES. To put a Cicili computation on a ZiguratIP web
+;;;; page you used to: run cicili, copy the emitted .hpp and .cpp into the
+;;;; server's home tree, hand-write a .parsi wrapping them in BEGIN HPP and
+;;;; BEGIN CPP blocks, hand-write a PAGE that calls into them, and compile. Six
+;;;; steps, of which the copying is the one that silently goes wrong -- a stale
+;;;; copy in home/tmp is the one that gets compiled, and a suite has gone green
+;;;; on a deliberately broken stub that way.
+;;;;
+;;;; Now the .parsi is emitted too, from the same file as the C++, so the two
+;;;; cannot disagree.
+;;;;
+;;;;   sbcl --script cicili.lisp example/zeytun-greet.cicili
+;;;;
+;;;;   cp example/demo_greet.hpp example/demo_greet.cpp $ZIGURATIP_HOME/ld/
+;;;;   rm -f $ZIGURATIP_HOME/tmp/demo_greet.hpp $ZIGURATIP_HOME/tmp/demo_greet.cpp
+;;;;   parsi example/demo.parsi
+;;;;
+;;;; then http://localhost:2190/demo/greet.zt. A page's name IS its URL: Zeytun
+;;;; splits the path on / and joins the parts with ::, so demo::greet is at
+;;;; /demo/greet.zt and an unqualified page would be at /greet.zt.
+
+;;; The third argument is the namespace, so an object below can be called
+;;; `greet' rather than `demo::greet' at every mention. A name that already
+;;; carries a :: is left alone.
+(import "lib/parsi/parsi.cicili" :parsi "demo")
+
+;;; ---- the page ---------------------------------------------------------
+;;;
+;;; A page is a VALUE, not a form spliced into a target -- which is what lets a
+;;; Lisp function return one. A file that serves the same page for eight models
+;;; writes the function once and calls it eight times.
+;;;
+;;; The clause names are Parsi's, and they are the ones patterns.conf accepts
+;;; inside a PAGE: REQUIRES, INCLUDE, LINK, the two verbatim blocks, the access
+;;; markers, DECLARE, CONSTRUCTOR, FUNCTION -- and PAGE_LOAD, which is the
+;;; override Zeytun calls. They cannot collide with Common Lisp's own IF and
+;;; RETURN, because the import prefix makes this macro parsi.PAGE and the words
+;;; inside its body are data rather than macros.
+
+(DEFPARAMETER *greet*
+  (parsi.PAGE greet
+    (PUBLIC)
+    (PAGE_LOAD
+      (ECHO "<!DOCTYPE html><html><head><meta charset=\"UTF-8\">")
+      (ECHO "<title>Cicili on Zeytun</title>")
+      (ECHO "<style>body{font-family:system-ui,sans-serif;margin:3em auto;max-width:34em}")
+      (ECHO "code{background:#f0f0f0;padding:.1em .35em;border-radius:3px}</style>")
+      (ECHO "</head><body>")
+
+      (ECHO "<h1>Hello from Cicili</h1>")
+
+      ;; THE ESCAPE HATCH, and the reason the file exists. Everything inside
+      ;; (cicili …) is compiled by Cicili -- inference, macros, the numpy and
+      ;; torch front ends -- lifted into a function of its own in demo_greet.cpp,
+      ;; and left here as a call. Nothing is pasted between the two languages.
+      (ECHO "<p>20 + 22 = <code>" (cicili (+ 20 22)) "</code></p>")
+      (ECHO "<p>355/113 = <code>" (cicili (/ 355.0 113.0)) "</code></p>")
+
+      ;; It is an expression, so it composes: a macro is expanded, a declared
+      ;; function is type-checked, and the result is rendered by whatever
+      ;; operator<< the value has.
+      (ECHO "<p>|-7| = <code>" (cicili (abs -7)) "</code></p>")
+
+      (ECHO "</body></html>"))))
+
+;;; ---- what it emits ----------------------------------------------------
+;;;
+;;; Three files, and the two fragments are named after the page: demo::greet
+;;; lifts into demo_greet.hpp and demo_greet.cpp, which is what the page's own
+;;; blocks include. Rename these targets and the page will not find its C++.
+;;;
+;;; NEITHER FRAGMENT IS COMPILED HERE. A `header' target, and a `source' target
+;;; with no :compile, are written and Cicili stops -- parsi compiles them, as
+;;; part of the object, with the object's own flags. That is also why they are
+;;; fragments rather than translation units, which is exactly what a Parsi
+;;; verbatim block wants. See example/parsi-fragment.cicili for the same split
+;;; done by hand.
+
+(header "demo_greet.hpp" (make :cpp #t) (parsi.HPP  *greet*))
+(source "demo_greet.cpp" (make :cpp #t) (parsi.CPP  *greet*))
+(header "demo.parsi"     (make :cpp #t) (parsi.FILE *greet*))

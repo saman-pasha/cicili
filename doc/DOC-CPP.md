@@ -821,6 +821,49 @@ including what the Parsi side looks like.
 [lib/cpp/memory.cicili](../lib/cpp/memory.cicili) declares it — one instantiation at a
 time, since Cicili has one signature per name.
 
+## Emitting the Parsi Too
+
+The fragments above still leave a `.parsi` to be written by hand, and a hand-written
+wrapper can disagree with the C++ it wraps. [lib/parsi/parsi.cicili](../lib/parsi/parsi.cicili)
+closes that: it gives every one of Parsi's seven top-level objects a macro, so the wrapper
+is emitted from the same file.
+
+```lisp
+(import "lib/parsi/parsi.cicili" :parsi "demo")
+
+(DEFPARAMETER *greet*
+  (parsi.PAGE greet
+    (PUBLIC)
+    (PAGE_LOAD
+      (ECHO "<h1>hello</h1>")
+      (ECHO "<p>mean = " (cicili (mean_t t 0)) "</p>"))))
+
+(header "demo_greet.hpp" (make :cpp #t) (parsi.HPP  *greet*))
+(source "demo_greet.cpp" (make :cpp #t) (parsi.CPP  *greet*))
+(header "demo.parsi"     (make :cpp #t) (parsi.FILE *greet*))
+```
+
+`(cicili …)` is the point of it. What is inside is compiled by Cicili — inference, macros,
+the numpy and libtorch front ends — lifted into a function of its own in the `.cpp`, and
+left in the page as a call to that function. Nothing is pasted between the two languages.
+
+Three things make it work and are worth knowing:
+
+* **The import prefix.** `import`'s second argument names a package and each macro is
+  registered as `<pack>.<name>` (`compiler.lisp:336`), so `parsi.CLASS` and `parsi.IF`
+  cannot collide with Common Lisp's `CLASS` and `IF`. The macro file also has to `SHADOW`
+  the three object names that are Common Lisp symbols — `CLASS`, `TYPE`, `SEQUENCE`.
+* **A top-level macro cannot expand into a target** — `compile-ast` routes a macro's
+  expansion to `specify-expr`, not back into itself. So the three target lines are
+  written by hand and the macros fill their bodies.
+* **The whole file is one `code` clause**, because a target's inner forms live in a hash
+  table walked with `maphash` and Parsi is order-dependent.
+
+The objects are values, so a Lisp function can return one — which is what a file serving
+the same page for eight models is written with.
+[example/zeytun-greet.cicili](../example/zeytun-greet.cicili) is the worked example and
+[test/cpp/parsi-emit.cicili](../test/cpp/parsi-emit.cicili) asserts the emitted text.
+
 ---
 
 ## See also

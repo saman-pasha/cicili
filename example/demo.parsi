@@ -1,0 +1,23 @@
+PAGE demo::greet
+BEGIN
+	BEGIN HPP
+	#include "demo_greet.hpp"
+	END
+	BEGIN CPP
+	#include "demo_greet.cpp"
+	END
+PUBLIC:
+	OVERRIDE FUNCTION PAGE_LOAD() RETURNS Void
+	BEGIN
+		ECHO '<!DOCTYPE html><html><head><meta charset="UTF-8">';
+		ECHO '<title>Cicili on Zeytun</title>';
+		ECHO '<style>body{font-family:system-ui,sans-serif;margin:3em auto;max-width:34em}';
+		ECHO 'code{background:#f0f0f0;padding:.1em .35em;border-radius:3px}</style>';
+		ECHO '</head><body>';
+		ECHO '<h1>Hello from Cicili</h1>';
+		ECHO '<p>20 + 22 = <code>', `demo_greet_e1(), '</code></p>';
+		ECHO '<p>355/113 = <code>', `demo_greet_e2(), '</code></p>';
+		ECHO '<p>|-7| = <code>', `demo_greet_e3(), '</code></p>';
+		ECHO '</body></html>';
+	END
+END 

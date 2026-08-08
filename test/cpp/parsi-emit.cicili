@@ -1,0 +1,161 @@
+;;;; Parsi objects emitted from Cicili -- lib/parsi/parsi.cicili
+;;;;
+;;;; WHAT THIS ASSERTS IS THE TEXT. Everything here is a file the transpiler
+;;;; writes and another compiler reads, so "it transpiled" proves nothing: the
+;;;; question is whether the bytes in demo.parsi are the Parsi that was meant.
+;;;; So the targets below emit, and the last one is a program that opens what
+;;;; they wrote and checks it.
+;;;;
+;;;; WHAT IT DELIBERATELY DOES NOT DO. It never runs `parsi'. That would need a
+;;;; ZiguratIP checkout, a configured home tree and a C++ compiler with the
+;;;; server's headers on its path -- none of which belong in this repository's
+;;;; suite. ZiguratIP's own Test/ has the end-to-end half; this has the half
+;;;; that can fail here, which is the emission.
+;;;;
+;;;; Run:  sh test/run.sh test/cpp/parsi-emit
+
+(import "lib/parsi/parsi.cicili" :parsi "demo")
+
+;;; ---- the objects ------------------------------------------------------
+;;;
+;;; Each is a VALUE, which is the point of the SXQL shape: a Lisp function
+;;; could have returned any of them, and numbered-column tables or a page per
+;;; model would be written that way.
+
+(DEFPARAMETER *books*
+  (parsi.TABLE books
+    (COLUMN id     Long   PRIMARY KEY)
+    (COLUMN title  String NOT NULL)
+    (COLUMN year   Int)))
+
+(DEFPARAMETER *books-seq*
+  (parsi.SEQUENCE books_seq 1 Long::MAX 1))
+
+(DEFPARAMETER *add-book*
+  (parsi.PROCEDURE add_book ((title String) (year Int)) Long
+    (REQUIRES books books_seq)
+    (DECLARE id AS Long = (call demo::books_seq::NEXT))
+    (INSERT books (id title year))
+    (RETURN id)))
+
+;;; The page, and the reason the whole file exists: (cicili …) inside an ECHO
+;;; is lifted into a function of its own in the two fragments, and the page is
+;;; left with a call to it.
+(DEFPARAMETER *report*
+  (parsi.PAGE report
+    (REQUIRES books)
+    (PUBLIC)
+    (PAGE_LOAD
+      (ECHO "<h1>Books</h1>")
+      (ECHO "<p>answer = " (cicili (+ 20 22)) "</p>")
+      (ECHO "<ul>")
+      (SELECT ("<li>" title " (" year ")</li>") FROM books)
+      (ECHO "</ul>"))))
+
+;;; ---- what they emit ---------------------------------------------------
+;;;
+;;; The fragment names follow from the page's own name: demo::report lifts into
+;;; demo_report.hpp and demo_report.cpp, which is what its two blocks include.
+
+(header "demo_report.hpp" (make :cpp #t) (parsi.HPP *report*))
+(source "demo_report.cpp" (make :cpp #t) (parsi.CPP *report*))
+
+;;; One file, one clause, and the objects in the order they are written here --
+;;; a table before the procedure that INSERTs into it, because parsi compiles a
+;;; file in order and a REQUIRES cannot name an object that does not exist yet.
+(header "demo.parsi" (make :cpp #t)
+  (parsi.FILE *books* *books-seq* *add-book* *report*))
+
+;;; ---- the checks -------------------------------------------------------
+;;;
+;;; Ordinary C, and ordinary Cicili -- NOT a (code …) block. A code clause is
+;;; passed through byte for byte and Cicili's reader keeps a \" as two
+;;; characters, so C string literals cannot be written inside one. Cicili's own
+;;; strings become C string literals, which is what this needs.
+
+(source "parsi_emit.c" (make :std #t :compile #t :link ("-lparsi_emit.o" "-o" "parsi_emit_test"))
+  (var char page_text  [262144])
+  (var char head_text  [262144])
+  (var char body_text  [262144])
+
+  (static) (func slurp ((const char * path) (char * buf) (size_t cap)) (out int)
+    (let ((FILE * f . #'(fopen path "rb")))
+      (if (== f nil)
+          (block (printf "FAIL cannot open %s\n" path) (return 0)))
+      (let ((size_t n . #'(fread buf 1 (- cap 1) f)))
+        (set (nth n buf) 0)
+        (fclose f)
+        (return 1))))
+
+  (static) (func has ((const char * hay) (const char * needle) (const char * what)) (out int)
+    (if (!= (strstr hay needle) nil)
+        (block (printf "ok   %s\n" what) (return 0))
+      (block (printf "FAIL %s -- no '%s'\n" what needle) (return 1))))
+
+  ;; Order is a claim worth checking, and the reason is mechanical: a target's
+  ;; inner forms live in a hash table walked with maphash, so every containment
+  ;; assertion above would still pass on a file parsi would refuse to compile.
+  (static) (func before ((const char * hay) (const char * a) (const char * b)
+                         (const char * what)) (out int)
+    (let ((const char * pa . #'(strstr hay a))
+          (const char * pb . #'(strstr hay b)))
+      (if (and (!= pa nil) (and (!= pb nil) (< pa pb)))
+          (block (printf "ok   %s\n" what) (return 0))
+        (block (printf "FAIL %s\n" what) (return 1)))))
+
+  (main
+    (let ((int bad . 0))
+      (if (== 0 (slurp "demo.parsi"       page_text 262144)) (return 1))
+      (if (== 0 (slurp "demo_report.hpp"  head_text 262144)) (return 1))
+      (if (== 0 (slurp "demo_report.cpp"  body_text 262144)) (return 1))
+
+      ;; the four objects, each carrying the namespace the import supplied
+      (+= bad (has page_text "TABLE demo::books"        "TABLE emitted"))
+      (+= bad (has page_text "SEQUENCE demo::books_seq" "SEQUENCE emitted"))
+      (+= bad (has page_text "PROCEDURE demo::add_book" "PROCEDURE emitted"))
+      (+= bad (has page_text "PAGE demo::report"        "PAGE emitted"))
+
+      ;; the clauses that make each of them mean anything
+      (+= bad (has page_text "COLUMN id AS Long PRIMARY KEY;" "COLUMN with its key"))
+      (+= bad (has page_text "RETURNS Long"                   "PROCEDURE return type"))
+      (+= bad (has page_text "REQUIRES demo::books, demo::books_seq" "REQUIRES qualified"))
+      (+= bad (has page_text "INSERT INTO demo::books VALUES" "INSERT emitted"))
+      (+= bad (has page_text "OVERRIDE FUNCTION PAGE_LOAD() RETURNS Void"
+                             "PAGE_LOAD override"))
+      (+= bad (has page_text "FROM demo::books"               "SELECT cursor"))
+
+      ;; a string literal crosses into Parsi's quoting, not C's
+      (+= bad (has page_text "ECHO '<h1>Books</h1>';" "string as a Parsi literal"))
+
+      ;; THE ESCAPE HATCH, in all three files at once: a call in the page, a
+      ;; prototype in the header, a definition in the source.
+      (+= bad (has page_text "`demo_report_e1()"              "lifted call in the page"))
+      (+= bad (has head_text "std::string demo_report_e1 ();" "lifted prototype in the .hpp"))
+      ;; parenthesised, because a spliced expression is compiled as the
+      ;; expression it is rather than pasted in as text -- which is what keeps
+      ;; precedence right when the escape wraps it in a call
+      (+= bad (has body_text "parsi_str( (20 +  22 ) )"        "lifted body in the .cpp"))
+      (+= bad (has body_text "template <typename T> static std::string parsi_str"
+                             "parsi_str emitted once"))
+
+      ;; and the two blocks that reach them, named after the page
+      (+= bad (has page_text "BEGIN HPP"                "HPP block"))
+      (+= bad (has page_text "#include \"demo_report.hpp\"" "HPP block includes the fragment"))
+      (+= bad (has page_text "BEGIN CPP"                "CPP block"))
+      (+= bad (has page_text "#include \"demo_report.cpp\"" "CPP block includes the fragment"))
+
+      ;; written order, which is the whole ordering contract
+      (+= bad (before page_text "TABLE demo::books" "SEQUENCE demo::books_seq"
+                      "table before sequence"))
+      (+= bad (before page_text "SEQUENCE demo::books_seq" "PROCEDURE demo::add_book"
+                      "sequence before procedure"))
+      (+= bad (before page_text "PROCEDURE demo::add_book" "PAGE demo::report"
+                      "procedure before page"))
+
+      (if (== bad 0)
+          (printf "parsi-emit: all ok\n")
+        (printf "parsi-emit: %d FAILED\n" bad))
+      (return bad))))
+
+;; sbcl --script cicili.lisp ./test/cpp/parsi-emit.cicili
+;; ./test/cpp/parsi_emit_test

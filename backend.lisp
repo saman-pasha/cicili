@@ -178,9 +178,20 @@
            (output " "))
           ((atom content)
            (set-ast-line (output "~A " content)))
+          ;; The SAME dispatch as above, per item -- and it has to be, because a
+          ;; specifier in an escape's list is not a code specifier and does not
+          ;; keep its payload where one does. A @CALL holds its callee in `name'
+          ;; and its arguments in `default', so recursing into compile-code
+          ;; printed the arguments and dropped the function: (code '("(" (abs -7)
+          ;; ")")) came out as "( -7 )", and every wrapper built on an escape --
+          ;; new*, and lib/parsi's lifted expressions -- silently lost any call
+          ;; nested in it. Operators survived, which is why it went unnoticed:
+          ;; they are rendered from their operands.
           ((listp content)
            (dolist (item content)
-             (compile-code item lvl globals spec)))
+             (if (and (typep item 'sp) (not (eql (construct item) '|@CODE|)))
+                 (progn (compile-form item lvl globals spec) (output " "))
+                 (compile-code item lvl globals spec))))
           (t (error (format nil "wrong code clause list item ~A" content))))))
 
 (defun compile-list (spec lvl globals parent-spec)
