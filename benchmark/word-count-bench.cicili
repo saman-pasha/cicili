@@ -5,7 +5,7 @@
 ;;; iterate over all parts
 ;;; count the words in each part separated by space or newline character
 (source "word_count_bench.c" (:std #t :compile #t
-                                   :link "-L{$CCL} -lhaskell.o -L{$CWD} word_count_bench.o -o word_count_bench")
+                                   :link "-L{$CWD} word_count_bench.o -o word_count_bench")
 
         ;; no flags of its own, so WITHOUT --release this builds at -g -O0 and
         ;; every second it prints is meaningless. Refuse, rather than measure.
@@ -13,8 +13,6 @@
         ;; were taken at `gcc -O', which is neither of today's two flag sets.
         (import "benchmark/release-only.cicili")
         (release-only)
-
-        (include "../haskell.h")
         (include <errno.h>)
         (include <time.h>)
         

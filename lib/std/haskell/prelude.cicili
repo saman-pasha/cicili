@@ -17,21 +17,31 @@
 (import "./either.cicili")
 (import "./class.cicili")
 (import "./match.cicili")
-(import "./rc.cicili")
-(import "./box.cicili")
+
+;;; What is left of the old rc.cicili: the Arc that carries a mutex and
+;;; hands the payload to a callback under it. Cell and Rc are lib/std's
+;;; now, and lib/std/rc.cicili has an atomically-counted `arc' beside them
+;;; -- a different guarantee, kept separately on purpose.
+(import "./arc.cicili")
 (import "./list.cicili")
-(import "./boxed-list.cicili")
-(import "./string.cicili")
 (import "./range.cicili")
 (import "./monoid.cicili")
 (import "./functor.cicili")
 (import "./applicative.cicili")
 (import "./monad.cicili")
-(import "./vector.cicili")
 (import "./haskell.cicili")
 
 (DEFMACRO init-macro ()
-  `($$$ (fn identity (-input) -input)
+  `($$$
+     ;; These three were haskell.h's, and haskell.h is gone with the target that
+     ;; wrote it. They are one-liners the layer's own signatures use -- `show'
+     ;; takes a CFile throughout -- so they belong to the layer rather than to a
+     ;; prebuilt object every user had to link against.
+     (typedef char * CStr)
+     (typedef FILE * CFile)
+     (typedef void * CVoid)
+
+     (fn identity (-input) -input)
 
      (fn showAsString -show -obj
          (letn ((char * buffer . #'(cast (char *) (calloc 1024 (sizeof char))))
@@ -43,9 +53,6 @@
      (import-List   List_Bool Bool new_List_Bool)
      (import-List   List_int  int  new_List_int)
      (import-List   List_char char new_List_char)
-
-     (import-Vector Str       char T   new_Str)
-     (import-Vector String    Char NIL new_String)
      
      (import-Range  Range_int int)
 

@@ -4,8 +4,7 @@
 ;;; stores them in a list of strings
 ;;; iterate over all parts
 ;;; count the words in each part separated by space or newline character
-(source "word_count.c" (:std #t :compile #t :link "-L{$CCL} -lhaskell.o -L{$CWD} word_count.o -o word_count")
-        (include "../../haskell.h")
+(source "word_count.c" (:std #t :compile #t :link "-L{$CWD} word_count.o -o word_count")
         (include <errno.h>)
 
         (typedef char * cstr_t)

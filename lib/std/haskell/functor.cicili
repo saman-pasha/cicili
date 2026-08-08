@@ -102,97 +102,13 @@
   ) ; import-Functor-List
 
 
-;; BoxedList Functor
-(generic decl-Functor-BoxedList
-  (type a b)
-
-  (decl-Functor type List a b)
-
-  ) ; decl-Functor-BoxedList
-
-;; a_b function is available
-;; input variable is the head of each Cons and the expression should return wrapped b type
-(generic impl-Functor-BoxedList
-  (type a b)
-
-  (impl-Functor type List a b
-                (match# input
-                  (dead ((<> BoxedNil b)))
-                  (* Cons head tail    ; extract   f a
-                     ((<> BoxedCons b) ; construct f b
-                      ($> a_b $ head)
-                      ((<> fmap Functor type) a_b tail)))
-                  (default ((<> BoxedNil b)))))
-
-  ) ; impl-Functor-BoxedList
-
-(generic import-Functor-BoxedList
-  (type a b)
-
-  (import-Functor type List a b)
-
-  ) ; import-Functor-BoxedList
+;; The BoxedList functor is gone with BoxedList. decl-Functor-List, which
+;; draft/collection/persistent-btree.cicili uses, is untouched.
 
 
-;; Vector Functor
-(generic decl-Functor-Vector
-  (type a b)
-
-  (decl-Functor type Vector a b)
-
-  ) ; decl-Functor-Vector
-
-;; a_b function is available
-;; input variable is the head of each Cons and the expression should return wrapped b type
-(generic impl-Functor-Vector
-  (type a b)
-
-  (impl-Functor type Vector a b
-                (match# input
-                  (dead ((<> None b)))
-                  (* Buffer sbi -> sbi
-                     (Buffered bufferA cursor _size step
-                               (letn (((<> Vector b) output . #'((<> pureCapacity Vector b) cursor step)))
-                                 (match# output
-                                   (dead ((<> None b)))
-                                   (* Buffer sbo -> sbo
-                                      (Buffered bufferB
-                                                (progn
-                                                  (for ((size_t counter . 0)) (< counter cursor) ((++ counter))
-                                                       (set (cof (+ bufferB counter)) ($> a_b $ (cof (+ bufferA counter)))))
-                                                  output))
-                                      (default ((<> None b))))
-                                   (default ((<> None b))))))
-                     (default ((<> None b))))
-                  (* Slice vec cur -># vec
-                     (dead ((<> None b)))
-                     (* Buffer sbsi -> sbsi                
-                        (Buffered bufferA cursor _size step
-                                  (letn (((<> Vector b) output . #'((<> pureCapacity Vector b) (- cursor cur) step)))
-                                    (match# output
-                                      (dead ((<> None b)))
-                                      (* Buffer sbo -> sbo
-                                         (Buffered bufferB
-                                                   (progn
-                                                     (for ((size_t counter . cur)) (< counter cursor) ((++ counter))
-                                                          (set (cof (+ bufferB (- counter cur))) ($> a_b $ (cof (+ bufferA counter)))))
-                                                     output))
-                                         (default ((<> None b))))
-                                      (default ((<> None b))))))
-                        (default ((<> None b))))
-                     (* Slice vec ((<> fmap Functor type) a_b vec)) ; E
-                     (default ((<> None b))))
-                  (default ((<> None b)))))
-
-  ) ; impl-Functor-Vector
-
-(generic import-Functor-Vector
-  (type a b)
-
-  (import-Functor type Vector a b)
-
-  ) ; import-Functor-Vector
-
+;; The Vector Functor is gone with the Vector -- fmap over a boxed buffer was
+;; the one instance that needed the box mechanic. decl-Functor-List is the one
+;; draft/collection/persistent-btree.cicili uses and it is untouched.
 
 ;; Maybe Functor
 (generic decl-Functor-Maybe

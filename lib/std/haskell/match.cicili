@@ -264,11 +264,10 @@
 
 (DEFMACRO match*-case (data case cases is-io &OPTIONAL prev-args)
   (LET ((->found (POSITION '-> case))) ; inner match application operator
-    (IF ->found
-        (SETQ case `(,@(SUBSEQ case 0 ->found) (,(IF is-io 'io 'match) ,@(CDR (SUBSEQ case ->found)))))
-        (LET ((->#found (POSITION '-># case)))
-          (WHEN ->#found
-            (SETQ case `(,@(SUBSEQ case 0 ->#found) (,(IF is-io 'io# 'match#) ,@(CDR (SUBSEQ case ->#found))))))))
+    ;; `->#' went with match#/io#: it was this same inner-match operator for a
+    ;; scrutinee that had to be unboxed first, and nothing is boxed now.
+    (WHEN ->found
+      (SETQ case `(,@(SUBSEQ case 0 ->found) (,(IF is-io 'io 'match) ,@(CDR (SUBSEQ case ->found))))))
     
     (MULTIPLE-VALUE-BIND (case-type data-name symb tail defs assigns args conds dos)
         (match-case-h-details data case)
@@ -344,32 +343,18 @@
 (DEFMACRO io (data &REST cases)
   `(match* ,data ,cases T))
 
-;; match box with required default value or void and required dead case
-;; first case should be dead case
-(DEFMACRO match# (data &REST cases)
-  (LET* ((data data)
-         (cases cases)
-         (dead (LET ((first (CAR cases)))
-                 (IF (CICILI:KEY-EQ (CAR first) 'dead) (CADR first) NIL))))
-    (IF dead
-        `(letin* ((__h_matchbox ,data))
-           (match (\. get __h_matchbox __h_matchbox)
-             (Just unboxed (match unboxed ,@(CDR cases)))
-             (default ,dead)))
-        (ERROR "match box dead case is required"))))
-
-;; match box with optional default case and optional dead case
-;; first case should be dead case
-(DEFMACRO io# (data &REST cases)
-  (LET* ((data data)
-         (cases cases)
-         (dead (LET ((first (CAR cases)))
-                 (IF (CICILI:KEY-EQ (CAR first) 'dead) (CADR first) NIL))))
-    (IF dead
-        `(letin* ((__h_matchbox ,data))
-           (io (\. get __h_matchbox __h_matchbox)
-             (Just unboxed (io unboxed ,@(CDR cases)))
-             (Nothing ,dead)))
-        `(letin* ((__h_matchbox ,data))
-           (io (\. get __h_matchbox __h_matchbox)
-             (Just unboxed (io unboxed ,@cases)))))))
+;;;; `match#' AND `io#' ARE GONE, with the box mechanic they unwrapped.
+;;;;
+;;;; They expanded to a two-level match -- get the payload out of the box, then
+;;;; match THAT -- because a boxed value was an Rc round a class pointer and the
+;;;; thing being matched was one indirection down. Nothing is boxed now: a
+;;;; `data' or a `class' is matched by `match' directly, and a value behind a
+;;;; reference count is opened with lib/std/rc.cicili's `get', which answers a
+;;;; maybe that plain `match' understands:
+;;;;
+;;;;   (match ((<> get rc T) (aof r))
+;;;;     (just v  …)
+;;;;     (nothing …))
+;;;;
+;;;; That is the same two levels, written where they happen instead of hidden in
+;;;; a macro whose name differed from `match' by one character.

@@ -20,8 +20,6 @@
   ;; millisecond it prints is meaningless. Refuse, rather than measure.
   (import "benchmark/release-only.cicili")
   (release-only)
-
-  (include "haskell.h")
   (include <pthread.h>)
   (include <unistd.h>)
   

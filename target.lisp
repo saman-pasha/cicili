@@ -146,11 +146,21 @@
                                    (set-ast-line (output "~&#include ")) (set-ast-line (output "<string.h>~%"))
                                    (set-ast-line (output "~&#include ")) (set-ast-line (output "<stdbool.h>~%"))
                                    ))))
+                         ;; `:haskell #t' no longer emits an include. It used to
+                         ;; pull in "haskell.h", a header built by
+                         ;; lib/std/haskell/c.cicili along with a haskell.o that
+                         ;; every user of the layer linked against. That file is
+                         ;; deleted: the layer is generics now, instantiated per
+                         ;; target the way lib/std is, so a target declares what
+                         ;; it uses and there is no prebuilt object to find.
+                         ;;
+                         ;; The flag still sets has-haskell, which is what puts
+                         ;; -I{$CCL} on the compile line below -- that is where
+                         ;; the layer's own sources live.
                          (when (key-eq (nth i args) ':|haskell|)
 		                   (let ((custom (nth (+ i 1) args)))
 		                     (when (key-eq custom '|true|)
-                               (setq has-haskell t)
-                               (set-ast-line (output "~&#include ")) (set-ast-line (output "\"haskell.h\"~%"))))))))
+                               (setq has-haskell t)))))))
                  (compile-body-map (inners spec) 0 globals spec)
 	             (close *output*))
                (when header (return-from compile-target t))

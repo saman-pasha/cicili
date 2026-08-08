@@ -1,8 +1,7 @@
 
 ;;; gemini sample
 ;;; --- Monadic Data Validation in Cicili ---
-(source "sample.c" (:std #t :compile #t :link "-L{$CCL} -lhaskell.o -L{$CWD} sample.o -o main")
-        (include "../../haskell.h")
+(source "sample.c" (:std #t :compile #t :link "-L{$CWD} sample.o -o main")
 
         ;; Define a simple User type
         (typedef (Tuple String int) User)

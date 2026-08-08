@@ -63,21 +63,24 @@
      ,@body
      (set stdout tmp_stdout)))
 
+;;; --analyze is inert: the stack it pushed to is gone.
+;;;
+;;; Both of these emitted calls to __h_stack_push and friends, which lived in
+;;; haskell.h -- a header and object built by lib/std/haskell/c.cicili, which
+;;; every user of the layer had to link against. That file is deleted, so the
+;;; layer is generics and nothing else, instantiated per target like lib/std.
+;;;
+;;; They are kept rather than removed because they appear at call sites through
+;;; the tree and are meant to vanish when --analyze is off, which is what they
+;;; now do unconditionally. `analyze!' still hands back its pointer, so an
+;;; expression wrapped in one is unchanged either way.
 (DEFMACRO analyze! (name pointer)
-  (IF (AND CICILI::*DEBUG-ANALYZE*
-        (NOT (STR:CONTAINSP"__h_StackItem" (SYMBOL-NAME name))))
-      `(__h_stack_push ,pointer)
-      pointer))
+  (DECLARE (IGNORE name))
+  pointer)
 
 (DEFMACRO analyze-data! (&REST body)
-  (IF CICILI::*DEBUG-ANALYZE*
-      `(let ((char * __h_stack_buffer . #'(calloc 2048 (sizeof char)))
-             (CFile __h_stack_out . #'(fmemopen __h_stack_buffer 2048 "w+")))
-         ,@body
-         (fclose __h_stack_out)
-         (__h_stack_push_data __h_stack_buffer)
-         (__h_stack_push_separator))
-      `($$$ )))
+  (DECLARE (IGNORE body))
+  `($$$ ))
 
 ;;; MACROEXPAND, dispatched by NAME rather than by symbol identity.
 ;;;

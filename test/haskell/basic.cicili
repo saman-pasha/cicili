@@ -1,6 +1,5 @@
 
-(source "basic.c" (:std #t :compile #t :link "-L{$CCL} -lhaskell.o -L{$CWD} basic.o -o main")
-        (include "../../haskell.h")
+(source "basic.c" (:std #t :compile #t :link "-L{$CWD} basic.o -o main")
         (include "math.h")
         
         ;; \ lambda calculus

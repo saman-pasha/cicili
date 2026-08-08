@@ -1,0 +1,167 @@
+;;;; Cicili haskell Arc -- shared ownership across threads, with the lock
+;;;;
+;;;; NOT lib/std/rc.cicili's `arc', and the difference is the whole point of
+;;;; keeping both. std `arc' is an rc whose COUNT is atomic: safe to clone and
+;;;; drop from any thread, and it says nothing at all about the payload. This
+;;;; one carries a pthread mutex in the box and hands the payload to a callback
+;;;; while holding it:
+;;;;
+;;;;   ((<> lock Arc T) arc
+;;;;     '(closure ((T value)) …)    ; alive: runs under the mutex
+;;;;     '(closure () …))            ; dead:  the value is already gone
+;;;;
+;;;; So std `arc' guards the refcount and this guards the VALUE. A single-writer
+;;;; multi-reader structure wants the second -- benchmark/concurrent-btree.cicili
+;;;; is written against it.
+;;;;
+;;;; It was the last third of lib/std/haskell/rc.cicili, which held Cell and Rc
+;;;; besides; those two are gone, replaced by lib/std/cell.cicili and
+;;;; lib/std/rc.cicili. Arc came out here rather than going with them.
+;;; This file is part of the :std library and shares its package. A library
+;;; owns its namespace instead of borrowing the import prefix's; the full
+;;; explanation is in doc/DOC-C.md, under "A library's package".
+(DEFPACKAGE :std
+  (:USE :COMMON-LISP)
+  (:IMPORT-FROM :COMMON-LISP-USER "import" "generic" "cicili"
+                                  "find-subseq" "expand-form<"))
+
+(IN-PACKAGE :std)
+
+;;; `pthread_mutex_t' itself arrives through c/posix in the std prelude, but the
+;;; `lock' macro does not -- so a caller that wants to hold the mutex outside a
+;;; callback imports this the way concurrent-btree does. The dependency is named
+;;; here rather than left as the two commented-out lines it used to be.
+(import "../pthread/pthread.cicili")
+
+
+;; Atomic Reference Counting
+;; Multi-thread multiple ownership
+;; 'a' could be an object or a pointer
+;; Keeps Cicili types where declared by 'decl-class'
+;; source dependencies
+;; (import "lib/std/pthread/pthread.cicili")
+;; (include <pthread.h>)
+(generic decl-Arc
+  (a)
+
+  ;; dependencies
+  (decl-Maybe a)
+  
+  (decl-data (Rc (<> Arc a))
+    (= Hold (<> __h_AtomicHold a)
+       (a * pointer) ; shared variable between instances should be a pointer
+       (int * count)
+       (size_t address)
+       (pthread_mutex_t * mutex))
+    (= Gone (<> AtomicGone a))
+    
+    (func get   (((<> Arc a) arc)) (out (<> Maybe a)))
+    (func take  (((<> Arc a) * this)) (out (<> Maybe a)))
+    (func clone (((<> Arc a) arc)) (out (<> Arc a)))
+    (func new   ((a pointer) (pthread_mutex_t * mutex)) (out (<> Arc a)))
+    (func lock  (((<> Arc a) arc)
+                 (func alive_callback ((a pointer)))
+                 (func dead_callback  ()))))
+  
+  ) ; decl-Arc
+
+(generic impl-Arc
+  (a)
+
+  ;; dependencies
+  (impl-Maybe a)
+  
+  (impl-data (Rc (<> Arc a))
+    (= Hold (<> __h_AtomicHold a)
+       (a * pointer)
+       (int * count)
+       (size_t address)
+       (pthread_mutex_t * mutex))
+    (= Gone (<> AtomicGone a))
+
+    (func get (((<> Arc a) arc))
+          (out (<> Maybe a))
+          (return (match arc
+                    (Hold pointer count address mutex
+                          (lockn mutex
+                                 (case (and pointer (== (cast size_t (cof pointer)) address) (> (cof count) 0))
+                                       ((<> Just a) (cof pointer))
+                                       otherwise ((<> Nothing a)))))
+                    (default ((<> Nothing a))))))
+    
+    (func take (((<> Arc a) * this))
+          (out (<> Maybe a))
+          (return (match this
+                    (* Hold pointer count address mutex
+                       (lockn mutex
+                              (case (and pointer (== (cast size_t (cof pointer)) address) (== (cof count) 1))
+                                    (letin* ((result ((<> Just a) (cof pointer))))
+                                      (syslog! (printf "take Arc: %p\n" (cof pointer)))
+                                      (set (cof count) 0)
+                                      (set (cof pointer) nil)
+                                      result)
+                                    otherwise ((<> Nothing a)))))
+                    (default ((<> Nothing a))))))
+
+    (func clone (((<> Arc a) arc))
+          (out (<> Arc a))
+          (return (match arc
+                    (Hold pointer count address mutex
+                          (lockn mutex
+                                 (case (and pointer (== (cast size_t (cof pointer)) address))
+                                       (progn
+                                         (++ (cof count))
+                                         ((<> __h_AtomicHold a) pointer count address mutex))
+                                       otherwise ((<> AtomicGone a)))))
+                    (default ((<> AtomicGone a))))))
+
+    ;; needs recursive mutex
+    (func new ((a pointer) (pthread_mutex_t * mutex))
+          (out (<> Arc a))
+          (return (letn ((auto count . #'(cast (int *) (malloc (sizeof int))))
+                         (auto holder . #'(cast (a *) (malloc (sizeof a *)))))
+                    (set (cof count) 1)
+                    (set (cof holder) pointer)
+                    ((<> __h_AtomicHold a) holder count (cast size_t pointer) mutex))))
+
+    (func lock (((<> Arc a) arc)
+                (func alive_callback ((a pointer)))
+                (func dead_callback  ()))
+          (io arc
+            (Hold pointer count address mutex
+                  (lock mutex
+                        (if (and pointer (== (cast size_t (cof pointer)) address) (> (cof count) 0))
+                            (alive_callback (cof pointer))
+                            (dead_callback))))
+            (Gone (dead_callback))))
+    
+    (free (syslog! (printf "free Arc: %p\n" this))
+          (io this
+            (* Hold pointer count address mutex
+               (lock mutex
+                     (if (and (== (cof count) 0) (== (cof pointer) nil))
+                         (block
+                           (syslog! (printf "free Hold Arc taken Rc %s: %p, %p, %d, %zx\n"
+                                      (symbol-name a) this (cof pointer) (cof count) address))
+                           (free (cast (void *) count))
+                           (free (cast (void *) pointer))
+                           (set (cof this) ((<> AtomicGone a))))
+                         (when (and pointer (== (cast size_t (cof pointer)) address))
+                           (if (== (cof count) 1)
+                               (block
+                                 (syslog! (printf "free Hold Arc %s: %p, %p, %zx\n" (symbol-name a) this (cof pointer) address))
+                                 ((<> free a) pointer)
+                                 (set (cof count) 0)
+                                 (free (cast (void *) count))
+                                 (set (cof pointer) nil)
+                                 (free (cast (void *) pointer))
+                                 (set (cof this) ((<> AtomicGone a))))
+                               (-- (cof count)))))))
+            (* Gone (syslog! (printf "free Gone Arc: %p\n" this))))))
+  
+  ) ; impl-Arc
+
+(generic import-Arc
+  (a)
+
+  ) ; import-Arc
