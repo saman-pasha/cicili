@@ -1,0 +1,62 @@
+;;;; Importing lib/parsi/parsi.cicili WITH a prefix
+;;;;
+;;;; Its pair is example/parsi-unprefixed.cicili, which is the same page written
+;;;; the other way. The two are deliberately alike: the difference between them
+;;;; is one line, and it is the whole lesson.
+;;;;
+;;;; THE SECOND ARGUMENT IS THE PREFIX. Every macro in the file is registered as
+;;;; <prefix>.<name>, so these are parsi.PAGE and parsi.CLASS. The third is the
+;;;; namespace an object gets when its own name carries none.
+;;;;
+;;;; USE THE PREFIX WHEN THE FILE HAS A CLASS, TYPE, SEQUENCE OR ENUM -- which
+;;;; is most files that hold a model, because a model belongs in a CLASS. Those
+;;;; four names are owned by COMMON-LISP and SB-ALIEN, and an object is built by
+;;;; a form Common Lisp evaluates: a DEFPARAMETER, or a DEFUN returning one.
+;;;; CL:EVAL resolves a name by symbol identity rather than through the table
+;;;; Cicili dispatches a target's forms through, and those four cannot be
+;;;; interned here to be found. Unprefixed, this file would not compile.
+;;;;
+;;;; A PAGE'S NAME IS ITS URL. Zeytun splits the request path on / and joins the
+;;;; parts with :: (ziguratip/loadzeytun.cpp:173-180), so demo::hello is served
+;;;; at /demo/hello.zt.
+;;;;
+;;;; Run:
+;;;;   sbcl --script cicili.lisp example/parsi-prefixed.cicili
+;;;;   cp example/demo_hello.hpp example/demo_hello.cpp $ZIGURATIP_HOME/ld/
+;;;;   rm -f $ZIGURATIP_HOME/tmp/demo_hello.hpp $ZIGURATIP_HOME/tmp/demo_hello.cpp
+;;;;   parsi example/hello-prefixed.parsi
+;;;; then http://localhost:2190/demo/hello.zt
+
+(import "lib/parsi/parsi.cicili" :parsi "demo")
+
+;;; A CLASS, which is the reason this file needs the prefix at all.
+(DEFPARAMETER *holder*
+  (parsi.CLASS holder
+    (PUBLIC)
+    (FUNCTION answer () Long
+      (RETURN 42))))
+
+;;; And a PAGE that REQUIREs it. REQUIRES takes the namespace from the import,
+;;; so `holder' here is demo::holder; a name written with its own :: is left
+;;; alone.
+(DEFPARAMETER *hello*
+  (parsi.PAGE hello
+    (REQUIRES holder)
+    (PUBLIC)
+    (PAGE_LOAD
+      (ECHO "<h1>prefixed</h1>")
+      (DECLARE model AS demo::holder)
+      (ECHO "<p>from the class: " (call model.answer) "</p>")
+
+      ;; the escape to Cicili -- lifted into demo_hello.cpp and called from here
+      (ECHO "<p>from Cicili: " (cicili (+ 20 22)) "</p>"))))
+
+;;; The two fragment names follow the PAGE's own name -- demo::hello lifts into
+;;; demo_hello.hpp and demo_hello.cpp, which is what its blocks include -- so
+;;; these target names are not free to change.
+;;;
+;;; The class comes first in the file because parsi compiles a file in order and
+;;; the page REQUIREs it.
+(header "demo_hello.hpp"       (make :cpp #t) (parsi.HPP  *hello*))
+(source "demo_hello.cpp"       (make :cpp #t) (parsi.CPP  *hello*))
+(header "hello-prefixed.parsi" (make :cpp #t) (parsi.FILE *holder* *hello*))

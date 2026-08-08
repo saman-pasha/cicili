@@ -901,6 +901,18 @@ both work.
 The other reason to use one is hygiene: unprefixed names are registered globally and
 apply to every file compiled in the same process.
 
+The prefix and the namespace are independent, so `nil` in the second position means
+"namespace, no prefix":
+
+```cicili
+(import "lib/parsi/parsi.cicili" :parsi "demo")   ; -> (parsi.PAGE …), demo::hello
+(import "lib/parsi/parsi.cicili" nil    "site")   ; -> (PAGE …),       site::hello
+```
+
+[example/parsi-prefixed.cicili](../example/parsi-prefixed.cicili) and
+[example/parsi-unprefixed.cicili](../example/parsi-unprefixed.cicili) are the same page
+written both ways.
+
 ### Guard
 > tested in [`test/c/shared.cicili`](../test/c/shared.cicili)
 

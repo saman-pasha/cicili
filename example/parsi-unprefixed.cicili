@@ -1,0 +1,62 @@
+;;;; Importing lib/parsi/parsi.cicili WITHOUT a prefix
+;;;;
+;;;; Its pair is example/parsi-prefixed.cicili -- the same page, one line
+;;;; different:
+;;;;
+;;;;   (import "lib/parsi/parsi.cicili" :parsi "demo")   ->  (parsi.PAGE …)
+;;;;   (import "lib/parsi/parsi.cicili" nil    "site")   ->  (PAGE …)
+;;;;
+;;;; NIL IS HOW YOU SAY "NAMESPACE, NO PREFIX". The second argument is the
+;;;; prefix and the third is the namespace, and they are independent -- so a
+;;;; file can have the plain names and still have its objects qualified. Leave
+;;;; the third out as well and the page is simply `hello', served at /hello.zt.
+;;;;
+;;;; This works because the library declares its own package rather than taking
+;;;; the one an importer would have made for it, and read-file evaluates that
+;;;; DEFPACKAGE as it reads. Without it, an unprefixed import had nowhere to put
+;;;; the definitions.
+;;;;
+;;;; WHAT IT COSTS, and it is worth knowing before choosing this form:
+;;;;
+;;;; 1. FOUR MACROS ARE UNREACHABLE. CLASS, TYPE and SEQUENCE belong to
+;;;;    COMMON-LISP and ENUM to SB-ALIEN. An object is built by a form Common
+;;;;    Lisp evaluates, and CL:EVAL resolves a name by symbol identity rather
+;;;;    than through the name-keyed table Cicili dispatches a target's forms
+;;;;    through -- so those four cannot be interned here to be found. Written
+;;;;    unprefixed,
+;;;;
+;;;;        (DEFPARAMETER *c* (CLASS holder (PUBLIC)))
+;;;;
+;;;;    stops with `The variable holder is unbound', because CLASS was read as
+;;;;    Common Lisp's own symbol and the form was taken for a function call.
+;;;;    A file with a CLASS in it wants the prefixed form. This one has none.
+;;;;
+;;;; 2. THE NAMES ARE GLOBAL. Registered bare, PAGE, TABLE and SELECT are these
+;;;;    macros for every Cicili file compiled in the same process.
+;;;;
+;;;; So: this form for a file of pages, the prefixed form for anything holding a
+;;;; model.
+;;;;
+;;;; Run:
+;;;;   sbcl --script cicili.lisp example/parsi-unprefixed.cicili
+;;;;   cp example/site_hello.hpp example/site_hello.cpp $ZIGURATIP_HOME/ld/
+;;;;   rm -f $ZIGURATIP_HOME/tmp/site_hello.hpp $ZIGURATIP_HOME/tmp/site_hello.cpp
+;;;;   parsi example/hello-bare.parsi
+;;;; then http://localhost:2190/site/hello.zt
+
+(import "lib/parsi/parsi.cicili" nil "site")
+
+(DEFPARAMETER *hello*
+  (PAGE hello
+    (PUBLIC)
+    (PAGE_LOAD
+      (ECHO "<h1>no prefix</h1>")
+
+      ;; the escape to Cicili -- lifted into site_hello.cpp and called from here
+      (ECHO "<p>from Cicili: " (cicili (+ 20 22)) "</p>"))))
+
+;;; Named after the page, the same as in the prefixed file: site::hello lifts
+;;; into site_hello.hpp and site_hello.cpp.
+(header "site_hello.hpp"  (make :cpp #t) (HPP  *hello*))
+(source "site_hello.cpp"  (make :cpp #t) (CPP  *hello*))
+(header "hello-bare.parsi" (make :cpp #t) (FILE *hello*))

@@ -1,0 +1,27 @@
+CLASS demo::holder
+BEGIN
+PUBLIC:
+	FUNCTION answer() RETURNS Long
+	BEGIN
+		RETURN 42;
+	END
+END
+
+PAGE demo::hello
+REQUIRES demo::holder
+BEGIN
+	BEGIN HPP
+	#include "demo_hello.hpp"
+	END
+	BEGIN CPP
+	#include "demo_hello.cpp"
+	END
+PUBLIC:
+	OVERRIDE FUNCTION PAGE_LOAD() RETURNS Void
+	BEGIN
+		ECHO '<h1>prefixed</h1>';
+		DECLARE model AS demo::holder;
+		ECHO '<p>from the class: ', model.answer(), '</p>';
+		ECHO '<p>from Cicili: ', `demo_hello_e1(), '</p>';
+	END
+END 

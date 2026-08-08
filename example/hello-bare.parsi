@@ -1,0 +1,15 @@
+PAGE site::hello
+BEGIN
+	BEGIN HPP
+	#include "site_hello.hpp"
+	END
+	BEGIN CPP
+	#include "site_hello.cpp"
+	END
+PUBLIC:
+	OVERRIDE FUNCTION PAGE_LOAD() RETURNS Void
+	BEGIN
+		ECHO '<h1>no prefix</h1>';
+		ECHO '<p>from Cicili: ', `site_hello_e1(), '</p>';
+	END
+END 
