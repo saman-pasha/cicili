@@ -1,0 +1,140 @@
+;;;; lib/db/postgres.cicili, against a real PostgreSQL server
+;;;;
+;;;; NO STUB, for the same reason as test/c/sqlite.cicili: libpq is one .so and
+;;;; every distribution packages it, so building against the real header proves
+;;;; the declared signatures are the library's, which a stub cannot.
+;;;;
+;;;; IT NEEDS A SERVER, and that is the difference from the SQLite test. Set
+;;;; PGDATABASE, or rely on the local socket and the current user; the test
+;;;; SKIPS rather than fails when it cannot connect, because "no server here"
+;;;; is not the same finding as "the binding is wrong" and a suite that
+;;;; conflated them would be red on every machine without postgres.
+;;;;
+;;;; EVERYTHING IS IN A TEMPORARY TABLE, so the test leaves nothing behind and
+;;;; two runs cannot see each other's rows -- a temp table dies with the
+;;;; connection.
+;;;;
+;;;; Run:  sh test/run.sh test/c/postgres
+;;;;   or: PGDATABASE=postgres sh test/run.sh test/c/postgres
+
+(source "postgres.c"
+  (make :std #t :compile "-I/usr/include/postgresql -c postgres.c"
+        :link ("-lpostgres.o" "-lpq" "-o" "postgres_test"))
+
+  (include <libpq-fe.h>)
+  (import "lib/db/postgres.cicili")
+
+  (var int bad . 0)
+
+  (func check ((const char * what) (llong got) (llong want))
+        (if (== got want)
+            (printf "ok   %-38s %lld\n" what got)
+          (block (printf "FAIL %-38s got %lld want %lld\n" what got want)
+                 (++ bad))))
+
+  (func check_str ((const char * what) (const char * got) (const char * want))
+        (if (== 0 (strcmp got want))
+            (printf "ok   %-38s %s\n" what got)
+          (block (printf "FAIL %-38s got '%s' want '%s'\n" what got want)
+                 (++ bad))))
+
+  (main
+    (let ((PGconn * db . nil))
+
+      ;; ---- connect, or say why not ------------------------------------
+      ;; An empty conninfo takes everything from the environment and the
+      ;; defaults, which is what a local socket connection wants.
+      (if (!= (pg-open db "") CONNECTION_OK)
+          (block
+            (printf "SKIP no PostgreSQL server: %s\n" (pg-error db))
+            (PQfinish db)
+            (return 0)))
+
+      (check "connected"        (cast llong (== (PQstatus db) CONNECTION_OK)) 1)
+      (check "server version"   (cast llong (> (PQserverVersion db) 0)) 1)
+
+      ;; ---- DDL --------------------------------------------------------
+      ;; TEMPORARY, so it dies with the connection and two runs cannot collide.
+      (check "create table"
+             (pg-exec db "CREATE TEMPORARY TABLE t (id serial PRIMARY KEY, name text, score real)")
+             PGRES_COMMAND_OK)
+
+      ;; ---- inserts, through parameters --------------------------------
+      ;; $1 and $2, sent as text; the server converts each to the column's
+      ;; type. Nothing in a value is parsed as SQL, which is the whole reason
+      ;; to send it this way.
+      (check "insert ada"   (pg-run db "INSERT INTO t (name, score) VALUES ($1, $2)"
+                                    "ada" "99.5") PGRES_COMMAND_OK)
+      (check "insert grace" (pg-run db "INSERT INTO t (name, score) VALUES ($1, $2)"
+                                    "grace" "98.25") PGRES_COMMAND_OK)
+      (check "insert null"  (pg-run db "INSERT INTO t (name, score) VALUES (NULL, $1)"
+                                    "0") PGRES_COMMAND_OK)
+
+      ;; A value that would end the literal if it were concatenated. It comes
+      ;; back as itself, which is the parameter doing its job.
+      (check "insert a quote"
+             (pg-run db "INSERT INTO t (name, score) VALUES ($1, $2)"
+                     "o'brien'); DROP TABLE t; --" "1") PGRES_COMMAND_OK)
+
+      ;; ---- reading ----------------------------------------------------
+      (let ((int rows . 0) (llong id_sum . 0) (double score_sum . 0.0))
+        (check "query ran"
+               (pg-query db "SELECT id, name, score FROM t WHERE id <= $1 ORDER BY id" "2"
+                         (row (id (pg-int 0)) (name (pg-text 1)) (score (pg-real 2)))
+                         (++ rows)
+                         (+= id_sum id)
+                         (+= score_sum score)
+                         (if (== rows 1) (check_str "first row name" name "ada")))
+               PGRES_TUPLES_OK)
+        (check "two rows matched"   rows 2)
+        (check "ids summed"         id_sum 3)
+        (check "scores summed x100" (cast llong (+ 0.5 (* 100.0 score_sum))) 19775))
+
+      ;; the table is still there, which it would not be if the parameter had
+      ;; been parsed as SQL
+      (let ((int total . 0))
+        (pg-query db "SELECT count(*) FROM t" (row (n (pg-int 0))) (set total n))
+        (check "four rows, table intact" total 4))
+
+      ;; the quoted name survived exactly
+      (let ((int found . 0))
+        (pg-query db "SELECT name FROM t WHERE name LIKE $1" "o'brien%"
+                  (row (name (pg-text 0)))
+                  (++ found)
+                  (check_str "the quote came back whole" name "o'brien'); DROP TABLE t; --"))
+        (check "and matched once" found 1))
+
+      ;; ---- NULL is not the empty string -------------------------------
+      ;; PQgetvalue answers "" for both, so PQgetisnull is the only way to tell
+      ;; them apart -- which is why pg-null? exists.
+      (let ((int nulls . 0) (int empties . 0))
+        (pg-query db "SELECT name FROM t ORDER BY id"
+                  (row (name (pg-text 0)) (isnull (pg-null? 0)))
+                  (if isnull (++ nulls))
+                  (if (and (not isnull) (== 0 (strlen name))) (++ empties)))
+        (check "one name was NULL"        nulls 1)
+        (check "and none were empty text" empties 0))
+
+      ;; ---- the error paths ---------------------------------------------
+      ;; A statement that does not parse answers a status and the result is
+      ;; still cleared, which is what the macro is for.
+      (check "syntax error is a status"
+             (cast llong (!= (pg-exec db "SELECT FROM WHERE") PGRES_TUPLES_OK)) 1)
+      (check "and the message says so"
+             (cast llong (> (strlen (pg-error db)) 0)) 1)
+
+      ;; a SELECT answers TUPLES_OK and a command COMMAND_OK; taking either for
+      ;; the other is the commonest libpq mistake
+      (check "select is TUPLES_OK"  (pg-exec db "SELECT 1") PGRES_TUPLES_OK)
+      (check "command is COMMAND_OK" (pg-exec db "CREATE TEMPORARY TABLE t2 (a int)")
+             PGRES_COMMAND_OK)
+
+      (pg-close db))
+
+    (if (== bad 0)
+        (printf "postgres: all ok\n")
+      (printf "postgres: %d FAILED\n" bad))
+    (return bad)))
+
+;; sbcl --script cicili.lisp ./test/c/postgres.cicili
+;; ./test/c/postgres_test

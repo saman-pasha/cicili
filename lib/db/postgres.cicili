@@ -1,0 +1,228 @@
+;;;; Cicili declarations for PostgreSQL's libpq, and a front end over them
+;;;;
+;;;; Requires in target: (include <libpq-fe.h>) and -lpq on the link line. The
+;;;; header is not on the default include path on Debian and Ubuntu -- it is in
+;;;; /usr/include/postgresql -- so a target usually wants
+;;;; -I/usr/include/postgresql too, and `pg_config --includedir' is the portable
+;;;; way to find it.
+;;;;
+;;;; NOTHING IN THE DECLARATIONS EMITS C, the same as lib/db/sqlite.cicili and
+;;;; lib/std/c: they exist so type inference knows what a PGconn and a PGresult
+;;;; are, and the real declarations come from the real header.
+;;;;
+;;;; WHAT THE FRONT END IS FOR, and it is a different problem from SQLite's.
+;;;; libpq has no statement handle and no step loop: a query answers a PGresult
+;;;; holding EVERY row, read by (row, column) index, and every one of those
+;;;; results must be PQclear'd. So the shape here is not a cursor but a table,
+;;;; and what the macros buy is that the clear happens.
+;;;;
+;;;;     (let ((PGconn * db . nil))
+;;;;       (pg-open db "host=/var/run/postgresql dbname=app")
+;;;;       (pg-exec db "CREATE TABLE t (id serial PRIMARY KEY, name text)")
+;;;;       (pg-run  db "INSERT INTO t (name) VALUES ($1)" "ada")
+;;;;       (pg-query db "SELECT id, name FROM t WHERE id > $1" "0"
+;;;;         (row (id (pg-int 0)) (name (pg-text 1)))
+;;;;         (printf "%d %s\n" id name))
+;;;;       (pg-close db))
+;;;;
+;;;; PARAMETERS ARE $1, $2 …, NOT `?', and they are all sent as TEXT. That is
+;;;; libpq's own protocol: PQexecParams takes an array of char*, and the server
+;;;; converts each to the column's type. A caller passing a number therefore
+;;;; passes it as a string -- which is why the bound values here are plain
+;;;; strings rather than the typed forms lib/db/sqlite.cicili has, and pretending
+;;;; otherwise would mean building a type-OID array nobody asked for.
+;;;;
+;;;; PARAMETERS ARE ALSO THE INJECTION DEFENCE. A value sent as a parameter is
+;;;; never parsed as SQL, so nothing in it can end the literal it sits in.
+;;;; Anything a page or a request supplies belongs in $1, not in a string being
+;;;; concatenated -- pg-exec is for SQL a program wrote and pg-run for SQL with
+;;;; values in it.
+
+;;; ------------------------------------------------------------------
+;;; the declarations
+;;; ------------------------------------------------------------------
+
+(DEFMACRO init-macro ()
+  `($$$
+
+     ;;; ---- the two handles, both opaque -----------------------------
+     ;;; A PGconn is a connection; a PGresult is the whole answer to one query,
+     ;;; rows and metadata together.
+     (decl) (struct PGconn)
+     (decl) (struct PGresult)
+
+     ;;; ---- the two status enums --------------------------------------
+     ;;; Declared as ints rather than as enums: Cicili needs a type to compare
+     ;;; against and the values come from the real header. Only the members a
+     ;;; caller branches on are here -- the rest of ConnStatusType is for
+     ;;; non-blocking connection, which this front end does not do.
+     (decl) (var int CONNECTION_OK)
+     (decl) (var int CONNECTION_BAD)
+
+     ;;; PGRES_COMMAND_OK is what a statement returning no rows answers, and
+     ;;; PGRES_TUPLES_OK what a SELECT answers. Treating either as "the other
+     ;;; one failed" is the commonest libpq mistake, so both are declared.
+     (decl) (var int PGRES_EMPTY_QUERY)
+     (decl) (var int PGRES_COMMAND_OK)
+     (decl) (var int PGRES_TUPLES_OK)
+     (decl) (var int PGRES_BAD_RESPONSE)
+     (decl) (var int PGRES_NONFATAL_ERROR)
+     (decl) (var int PGRES_FATAL_ERROR)
+
+     ;;; ---- connection --------------------------------------------------
+     ;;; PQconnectdb ALWAYS answers a pointer, even when it failed -- the
+     ;;; failure is in PQstatus, and a null answer means out of memory. That is
+     ;;; why pg-open checks the status rather than the pointer.
+     (decl) (func PQconnectdb    ((const char * conninfo)) (out (PGconn *)))
+     (decl) (func PQfinish       ((PGconn * conn)))
+     (decl) (func PQreset        ((PGconn * conn)))
+     (decl) (func PQstatus       ((const PGconn * conn)) (out int))
+     (decl) (func PQerrorMessage ((const PGconn * conn)) (out (char *)))
+     (decl) (func PQdb           ((const PGconn * conn)) (out (char *)))
+     (decl) (func PQserverVersion ((const PGconn * conn)) (out int))
+
+     ;;; ---- running a query ----------------------------------------------
+     ;;; PQexecParams' three array arguments -- lengths, formats, and the type
+     ;;; OIDs -- are all declared void* so a caller may pass null, which is what
+     ;;; "everything is a NUL-terminated text parameter" means. resultFormat 0
+     ;;; is text; 1 would be binary, and then every value would need decoding.
+     ;;;
+     ;;; paramValues is `const char **' and the real header says
+     ;;; `const char * const *'. Cicili's type descriptor does not carry a const
+     ;;; on the pointer ITSELF, only on what it points at, and the difference is
+     ;;; invisible to the call: C converts the argument, and the real prototype
+     ;;; is the one the compiler checks against.
+     (decl) (func PQexec       ((PGconn * conn) (const char * query)) (out (PGresult *)))
+     (decl) (func PQexecParams ((PGconn * conn) (const char * command) (int nParams)
+                                (const void * paramTypes) (const char ** paramValues)
+                                (const void * paramLengths) (const void * paramFormats)
+                                (int resultFormat)) (out (PGresult *)))
+
+     ;;; ---- the answer -----------------------------------------------------
+     ;;; EVERY PGresult must be PQclear'd, including a failed one. That is the
+     ;;; single thing this file's macros exist to guarantee.
+     (decl) (func PQresultStatus       ((const PGresult * res)) (out int))
+     (decl) (func PQresultErrorMessage ((const PGresult * res)) (out (char *)))
+     (decl) (func PQclear              ((PGresult * res)))
+     (decl) (func PQntuples            ((const PGresult * res)) (out int))
+     (decl) (func PQnfields            ((const PGresult * res)) (out int))
+     (decl) (func PQfname              ((const PGresult * res) (int field_num)) (out (char *)))
+     (decl) (func PQcmdTuples          ((PGresult * res)) (out (char *)))
+
+     ;;; PQgetvalue answers a pointer owned by the PGresult: it dies with the
+     ;;; PQclear, so anything kept past the loop has to be copied. A NULL column
+     ;;; answers the empty string, NOT a null pointer, which is why PQgetisnull
+     ;;; exists and why it is the only way to tell '' from NULL.
+     (decl) (func PQgetvalue  ((const PGresult * res) (int tup_num) (int field_num)) (out (char *)))
+     (decl) (func PQgetisnull ((const PGresult * res) (int tup_num) (int field_num)) (out int))
+     (decl) (func PQgetlength ((const PGresult * res) (int tup_num) (int field_num)) (out int))
+
+     ;;; ---- escaping, for the cases a parameter cannot reach ---------------
+     ;;; An identifier -- a table or column name -- cannot be a parameter, so a
+     ;;; program that builds one from input needs PQescapeIdentifier. Both
+     ;;; answer memory the CALLER frees with PQfreemem.
+     (decl) (func PQescapeLiteral    ((PGconn * conn) (const char * str) (size_t len)) (out (char *)))
+     (decl) (func PQescapeIdentifier ((PGconn * conn) (const char * str) (size_t len)) (out (char *)))
+     (decl) (func PQfreemem          ((void * ptr)))
+     ))
+
+;;; ------------------------------------------------------------------
+;;; the front end
+;;; ------------------------------------------------------------------
+
+;;; (pg-open db "host=/var/run/postgresql dbname=app")
+;;;
+;;; Answers CONNECTION_OK or CONNECTION_BAD, which is PQstatus rather than the
+;;; pointer: PQconnectdb answers a non-null PGconn even when the connection
+;;; failed, and a caller testing the pointer would take every failure for a
+;;; success. A null answer means out of memory, and is CONNECTION_BAD here too.
+(DEFMACRO pg-open (name conninfo)
+  `(progn
+     (set ,name (PQconnectdb ,conninfo))
+     (? (== ,name nil) CONNECTION_BAD (PQstatus ,name))))
+
+(DEFMACRO pg-close (db) `(PQfinish ,db))
+(DEFMACRO pg-error (db) `(PQerrorMessage ,db))
+
+;;; SQL a program wrote, with no values in it: DDL, and a fixed statement.
+;;; Answers the ExecStatusType, and clears the result before doing so.
+;;;
+;;; ANYTHING WITH A VALUE IN IT BELONGS IN pg-run. Building SQL by concatenating
+;;; a value is how injection happens, and this macro cannot tell the difference.
+(DEFMACRO pg-exec (db sql)
+  (LET ((r (GENSYM "pg_res_")) (st (GENSYM "pg_st_")))
+    `(progn
+       (letn ((PGresult * ,r . #'(PQexec ,db ,sql))
+              (int ,st . 0))
+         (set ,st (PQresultStatus ,r))
+         (PQclear ,r)
+         ,st))))
+
+;;; (pg-run db "INSERT INTO t (name) VALUES ($1)" "ada")
+;;;
+;;; The values are sent as parameters, so nothing in them is parsed as SQL.
+;;; Answers the ExecStatusType and clears the result.
+(DEFMACRO pg-run (db sql &REST params)
+  (LET ((r (GENSYM "pg_res_")) (st (GENSYM "pg_st_")) (v (GENSYM "pg_vals_")))
+    `(progn
+       (letn ((int ,st . 0))
+         (let ((const char * ,v [] . '{ ,@params ,@(WHEN (NULL params) (LIST 'nil)) }))
+           (letn ((PGresult * ,r . #'(PQexecParams ,db ,sql ,(LENGTH params)
+                                                   nil ,v nil nil 0)))
+             (set ,st (PQresultStatus ,r))
+             (PQclear ,r)))
+         ,st))))
+
+;;; ---- reading a column ---------------------------------------------
+;;;
+;;; 0-based in both directions, which is libpq's own numbering, and taken from
+;;; the CURRENT row -- pg-query binds that index for the body. pg-int and
+;;; pg-real convert, because every value arrives as text.
+(DEFUN pg-col-binding (res tup name form)
+  (UNLESS (AND (CONSP form) (SYMBOLP (CAR form)) (= (LENGTH form) 2))
+    (ERROR "a row column wants (pg-... index), got ~S" form))
+  (LET ((k (SYMBOL-NAME (CAR form))) (i (SECOND form)))
+    (COND ((STRING= k "pg-text") `(const char * ,name . #'(PQgetvalue ,res ,tup ,i)))
+          ((STRING= k "pg-int")  `(int    ,name . #'(atoi (PQgetvalue ,res ,tup ,i))))
+          ((STRING= k "pg-i64")  `(llong  ,name . #'(atoll (PQgetvalue ,res ,tup ,i))))
+          ((STRING= k "pg-real") `(double ,name . #'(atof (PQgetvalue ,res ,tup ,i))))
+          ((STRING= k "pg-null?") `(int   ,name . #'(PQgetisnull ,res ,tup ,i)))
+          (T (ERROR "not a column reader: ~S" form)))))
+
+;;; (pg-query db "SELECT id, name FROM t WHERE id > $1" "0"
+;;;   (row (id (pg-int 0)) (name (pg-text 1)))
+;;;   (printf "%d %s\n" id name))
+;;;
+;;; A libpq result is a TABLE, not a cursor: the rows are all here already, so
+;;; this is an ordinary loop over PQntuples rather than a step. The body runs
+;;; once per row with the row clause's names bound.
+;;;
+;;; Answers PGRES_TUPLES_OK when the query ran, and the failing status
+;;; otherwise -- and clears the result either way, which is the reason to use
+;;; this rather than write the loop out.
+(DEFMACRO pg-query (db sql &REST rest)
+  (LET* ((params (LOOP FOR f IN rest WHILE (STRINGP f) COLLECT f))
+         (tail   (NTHCDR (LENGTH params) rest))
+         (row    (FIRST tail))
+         (body   (REST tail))
+         (r      (GENSYM "pg_res_"))
+         (st     (GENSYM "pg_st_"))
+         (i      (GENSYM "pg_row_"))
+         (n      (GENSYM "pg_n_"))
+         (v      (GENSYM "pg_vals_")))
+    (UNLESS (AND (CONSP row) (SYMBOLP (CAR row)) (STRING= (SYMBOL-NAME (CAR row)) "row"))
+      (ERROR "pg-query wants a (row (name (pg-... i)) …) clause, got ~S" row))
+    `(progn
+       (letn ((int ,st . 0))
+         (let ((const char * ,v [] . '{ ,@params ,@(WHEN (NULL params) (LIST 'nil)) }))
+           (letn ((PGresult * ,r . #'(PQexecParams ,db ,sql ,(LENGTH params)
+                                                   nil ,v nil nil 0)))
+             (set ,st (PQresultStatus ,r))
+             (if (== ,st PGRES_TUPLES_OK)
+                 (let ((int ,n . #'(PQntuples ,r)))
+                   (for ((int ,i . 0)) (< ,i ,n) ((++ ,i))
+                        (let ,(LOOP FOR c IN (CDR row)
+                                    COLLECT (pg-col-binding r i (FIRST c) (SECOND c)))
+                          ,@body))))
+             (PQclear ,r)))
+         ,st))))
