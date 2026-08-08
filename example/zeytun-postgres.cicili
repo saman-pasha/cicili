@@ -41,7 +41,7 @@
 ;;; ------------------------------------------------------------------
 
 (DEFPARAMETER *page*
-  (parsi.PAGE pgpage
+  (parsi.page pgpage
 
     ;; The object's own flags. Neither reaches the server's ziguratip.conf, and
     ;; nothing else compiled on this server sees them.
@@ -96,7 +96,7 @@
   (decl) (func pg_setup  () (out std::string))
   (decl) (func pg_insert ((const char * who)) (out std::string))
   (decl) (func pg_rows   () (out std::string))
-  (parsi.HPP *page*))
+  (parsi.hpp *page*))
 
 ;;; ------------------------------------------------------------------
 ;;; the source: the database work
@@ -169,6 +169,6 @@
           (if (== n 0) (return (cast std::string "none yet")))
           (return (($ out str)))))))
 
-  (parsi.CPP *page*))
+  (parsi.cpp *page*))
 
-(header "pgpage.parsi" (make :cpp #t) (parsi.FILE *page*))
+(header "pgpage.parsi" (make :cpp #t) (parsi.file *page*))

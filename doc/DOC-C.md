@@ -889,14 +889,18 @@ The options are upper case and the package name is not: a macro file is read wit
 case preserved, so `:use` would read as `:|use|` and `DEFPACKAGE` would reject it, while
 the name has to match the `:parsi` an import writes.
 
-**Two things a bare name cannot do.** Cicili dispatches a target's forms through a table
-keyed by symbol *name*, so an unprefixed macro is found inside a target whatever package
-holds it — including one named `CLASS`. A form Common Lisp evaluates is different:
+**Name a macro in lower case.** Cicili dispatches a target's forms through a table keyed
+by symbol *name*, so an unprefixed macro is found inside a target whatever package holds
+it — including one called `CLASS`. A form Common Lisp evaluates is different:
 `compile-ast` hands a top-level form it does not recognise to `CL:EVAL`, which resolves by
 symbol identity, and a name owned by `COMMON-LISP` or `SB-ALIEN` cannot be interned in the
-importing file's package to be found there. So `CLASS`, `TYPE`, `SEQUENCE` and `ENUM`
-work unprefixed inside a target and not from a `DEFPARAMETER`. Import with a prefix and
-both work.
+importing file's package to be found there. An upper-case `CLASS`, `TYPE`, `SEQUENCE` or
+`ENUM` therefore needs a `:shadow` to define at all, and even then works only inside a
+target — not from a `DEFPARAMETER`.
+
+A macro file is read with the case **preserved**, so lower case avoids all of it:
+`class` is simply not `CL:CLASS`, and `lib/parsi/parsi.cicili` names its twelve object
+macros that way for exactly this reason. Import them with a prefix or without; both work.
 
 The other reason to use one is hygiene: unprefixed names are registered globally and
 apply to every file compiled in the same process.

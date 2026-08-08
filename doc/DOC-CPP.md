@@ -849,13 +849,16 @@ left in the page as a call to that function. Nothing is pasted between the two l
 
 Three things make it work and are worth knowing:
 
-* **The import prefix.** `import`'s second argument names a package and each macro is
-  registered as `<pack>.<name>`, so `parsi.CLASS` and `parsi.IF` cannot collide with
-  Common Lisp's `CLASS` and `IF`. The library declares its own namespace with a
-  `DEFPACKAGE` shadowing the three object names Common Lisp owns — `CLASS`, `TYPE`,
-  `SEQUENCE` — which also makes the prefix optional. Prefer it anyway: an object is built
-  by a form Common Lisp evaluates, and those four names (`ENUM` too, from `SB-ALIEN`)
-  cannot be reached that way unprefixed. See **Import** in [DOC-C.md](DOC-C.md).
+* **Lower-case names, and a prefix you choose.** The twelve object macros are `page`,
+  `class`, `table` … in lower case, which is what keeps them out of Common Lisp's way: a
+  macro file is read with the case preserved, so `class` is not `CL:CLASS` and needs no
+  shadowing. `import`'s second argument then decides what they are called at the call
+  site — `parsi.page`, `db.page`, or nothing at all. A prefix is still worth using,
+  because unprefixed `include` is one of Cicili's own clauses. See **Import** in
+  [DOC-C.md](DOC-C.md).
+* **The body vocabulary stays upper case** — `ECHO`, `REQUIRES`, `PAGE_LOAD`, `SELECT`.
+  Those words are never looked up in any namespace, so they shadow nothing, and their
+  case is what tells `(select)` the HTML element from `SELECT` the Parsi clause.
 * **A top-level macro cannot expand into a target** — `compile-ast` routes a macro's
   expansion to `specify-expr`, not back into itself. So the three target lines are
   written by hand and the macros fill their bodies.

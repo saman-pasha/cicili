@@ -36,11 +36,11 @@
 ;;; inside a PAGE: REQUIRES, INCLUDE, LINK, the two verbatim blocks, the access
 ;;; markers, DECLARE, CONSTRUCTOR, FUNCTION -- and PAGE_LOAD, which is the
 ;;; override Zeytun calls. They cannot collide with Common Lisp's own IF and
-;;; RETURN, because the import prefix makes this macro parsi.PAGE and the words
+;;; RETURN, because the import prefix makes this macro parsi.page and the words
 ;;; inside its body are data rather than macros.
 
 (DEFPARAMETER *greet*
-  (parsi.PAGE greet
+  (parsi.page greet
     (PUBLIC)
     (PAGE_LOAD
       (ECHO "<!DOCTYPE html><html><head><meta charset=\"UTF-8\">")
@@ -78,6 +78,6 @@
 ;;; verbatim block wants. See example/parsi-fragment.cicili for the same split
 ;;; done by hand.
 
-(header "demo_greet.hpp" (make :cpp #t) (parsi.HPP  *greet*))
-(source "demo_greet.cpp" (make :cpp #t) (parsi.CPP  *greet*))
-(header "demo.parsi"     (make :cpp #t) (parsi.FILE *greet*))
+(header "demo_greet.hpp" (make :cpp #t) (parsi.hpp  *greet*))
+(source "demo_greet.cpp" (make :cpp #t) (parsi.cpp  *greet*))
+(header "demo.parsi"     (make :cpp #t) (parsi.file *greet*))

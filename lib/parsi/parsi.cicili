@@ -12,15 +12,15 @@
 ;;;;     (import "lib/parsi/parsi.cicili" :parsi "demo")
 ;;;;
 ;;;;     (DEFPARAMETER *greet*
-;;;;       (parsi.PAGE greet
+;;;;       (parsi.page greet
 ;;;;         (PAGE_LOAD
 ;;;;           (ECHO "<h1>hello</h1>"))))
 ;;;;
-;;;;     (header "greet.parsi" (make :cpp #t) (parsi.FILE *greet*))
+;;;;     (header "greet.parsi" (make :cpp #t) (parsi.file *greet*))
 ;;;;
 ;;;; THE PREFIX IS WHAT MAKES THIS POSSIBLE. import's second argument names a
 ;;;; package, and compiler.lisp registers each macro under the string
-;;;; "<pack>.<name>" -- so PAGE, IF and RETURN here are `parsi.PAGE',
+;;;; "<pack>.<name>" -- so PAGE, IF and RETURN here are `parsi.page',
 ;;;; `parsi.IF' and `parsi.RETURN', and none of them can collide with Common
 ;;;; Lisp's own uppercase symbols. Without it a file of Parsi clause macros
 ;;;; would shadow IF and LET for every Cicili macro in the process.
@@ -29,7 +29,7 @@
 ;;;; VALUE here -- a plist carrying its text and its lifted C++ -- so a plain
 ;;;; Lisp function can return a whole CLASS or PAGE:
 ;;;;
-;;;;     (DEFUN network-page (name in out) (parsi.PAGE ...))
+;;;;     (DEFUN network-page (name in out) (parsi.page ...))
 ;;;;
 ;;;; That is the one thing a single body-walking macro cannot do, and it is why
 ;;;; this is shaped like SXQL rather than like CL-WHO. The top level is macros;
@@ -44,47 +44,51 @@
 ;;;; had.
 
 ;;; THE LIBRARY DECLARES ITS OWN NAMESPACE rather than taking the one the
-;;; importer would have made for it. Two things follow from that, and both are
-;;; the reason this file has a DEFPACKAGE at all.
+;;; importer would have made for it, so its renderer helpers are not added to
+;;; CL-USER and an unprefixed import has a namespace to enter.
 ;;;
-;;; CLASS, TYPE and SEQUENCE are three of Parsi's seven object kinds and all
-;;; three are also Common Lisp symbols. A macro file's package inherits
-;;; COMMON-LISP -- it has to, or DEFUN and FORMAT read as fresh symbols of its
-;;; own -- so (DEFMACRO CLASS …) below is a lock violation on CL:CLASS unless
-;;; the name is this package's first. :shadow settles that in one declaration.
+;;; THE OBJECT MACROS ARE LOWER CASE, and that is what keeps them out of Common
+;;; Lisp's way. CLASS, TYPE and SEQUENCE are Common Lisp symbols and ENUM is
+;;; SB-ALIEN's, so an upper-case definition of any of them is a lock violation
+;;; and needed a :shadow to write at all -- and even shadowed it could not be
+;;; reached from a form Common Lisp evaluates, because CL:EVAL resolves a name
+;;; by symbol identity. Written `class', none of that applies: a macro file is
+;;; read with the case PRESERVED, so `class' is simply not CL:CLASS, no shadow
+;;; is needed, and every macro here works prefixed or not.
+;;;
+;;; ONLY THE OBJECT MACROS MOVE. The words inside a body -- ECHO, REQUIRES,
+;;; PAGE_LOAD, SELECT -- stay upper case, and must: they are never looked up in
+;;; any namespace, so they can shadow nothing, and their case is what tells
+;;; (select) the HTML element from SELECT the Parsi clause.
 ;;;
 ;;; And it makes the import prefix OPTIONAL. read-file evaluates this form as it
 ;;; reads, so the IN-PACKAGE under it has a package to enter whether or not the
 ;;; importer named one:
 ;;;
-;;;     (import "lib/parsi/parsi.cicili" :parsi "demo")   ->   (parsi.PAGE …)
-;;;     (import "lib/parsi/parsi.cicili")                 ->   (PAGE …)
+;;;     (import "lib/parsi/parsi.cicili" :parsi "demo")   ->   (parsi.page …)
+;;;     (import "lib/parsi/parsi.cicili" nil    "site")   ->   (page …)
 ;;;
-;;; USE THE PREFIX ANYWAY, and here is the part that is not a matter of taste.
+;;; ALL TWELVE WORK EITHER WAY now that the names are lower case, class, type,
+;;; sequence and enum included. While they were upper case those four were
+;;; reachable inside a target and nowhere else -- an object is built by a form
+;;; Common Lisp EVALUATES, CL:EVAL resolves by symbol identity rather than
+;;; through the name-keyed table, and a name COMMON-LISP or SB-ALIEN owns
+;;; cannot be interned in the importing file's package to be found there. Lower
+;;; case, they are nobody else's symbols and the whole problem is gone.
 ;;;
-;;; An object is built by a form that Common Lisp evaluates -- a DEFPARAMETER,
-;;; or a DEFUN that returns one -- and CL:EVAL resolves a name by SYMBOL, not by
-;;; the name-keyed table Cicili dispatches a target's forms through. So an
-;;; unprefixed macro is reachable from Lisp only if its symbol could be interned
-;;; in the importing file's package, and CLASS, TYPE, SEQUENCE and ENUM cannot
-;;; be: they belong to COMMON-LISP and SB-ALIEN, which are locked. Unprefixed,
-;;; those four work inside a target and nowhere else -- which is nowhere useful
-;;; here, since every macro in this file returns a value rather than a form.
-;;;
-;;;     (import "lib/parsi/parsi.cicili")
-;;;     (DEFPARAMETER *c* (CLASS holder …))   ->   the variable holder is unbound
-;;;
-;;; The other reason is ordinary hygiene: unprefixed, every name here is
-;;; registered bare, and PAGE, TABLE and SELECT become these macros for every
-;;; Cicili file compiled in the same process.
-;;; The OPTIONS are upper case and the NAME is not, and both matter. A macro
+;;; A PREFIX IS STILL WORTH USING, for ordinary hygiene: unprefixed, every name
+;;; here is registered bare, and `include' in particular is one of Cicili's own
+;;; clauses. A target's own include wins -- specify-target tests for it before
+;;; it reaches the macro table -- but relying on that is not a habit worth
+;;; forming.
+
+;;; The DEFPACKAGE's OPTIONS are upper case and its NAME is not, and both matter. A macro
 ;;; file is read with the case preserved (core.lisp:491), so :use would read as
 ;;; the keyword :|use| and DEFPACKAGE would answer "bogus DEFPACKAGE option";
 ;;; the package's own name has to stay lower case to match the :parsi an import
 ;;; writes, which is read the same way.
 (DEFPACKAGE :parsi
-  (:USE :COMMON-LISP)
-  (:SHADOW "CLASS" "TYPE" "SEQUENCE"))
+  (:USE :COMMON-LISP))
 
 (IN-PACKAGE :parsi)
 
@@ -116,8 +120,8 @@
         (T (FORMAT NIL "~A" x))))
 
 ;;; An object's name, with the import's namespace put in front when the name
-;;; carries none of its own. (parsi.PAGE greet ...) under :parsi "demo" is
-;;; demo::greet; (parsi.PAGE other::greet ...) is left alone.
+;;; carries none of its own. (parsi.page greet ...) under :parsi "demo" is
+;;; demo::greet; (parsi.page other::greet ...) is left alone.
 (DEFUN oname (x)
   (LET ((n (qname x)))
     (IF (AND *namespace* (NOT (SEARCH "::" n)))
@@ -614,7 +618,7 @@
 
 ;;; An object is a plist, not a string, because it carries three things: the
 ;;; Parsi text, and the C++ declarations and definitions lifted out of its body.
-;;; parsi.FILE renders the first, parsi.HPP and parsi.CPP splice the other two.
+;;; parsi.file renders the first, parsi.hpp and parsi.cpp splice the other two.
 (DEFUN make-object (kind name text &KEY decls defs)
   (LIST :kind kind :name name :text text :decls decls :defs defs))
 
@@ -753,35 +757,35 @@
 ;;; A PAGE IS REACHED BY ITS NAME, so the namespace is part of the URL: a page
 ;;; called demo::greet is served at /demo/greet.zt, because Zeytun splits the
 ;;; path on / and joins the parts with :: (ziguratip/loadzeytun.cpp:173-180).
-;;; An unqualified page -- (parsi.PAGE greet …) imported with no namespace -- is
+;;; An unqualified page -- (parsi.page greet …) imported with no namespace -- is
 ;;; at /greet.zt.
-(DEFMACRO PAGE (name &REST clauses)
+(DEFMACRO page (name &REST clauses)
   `(QUOTE ,(render-class :page (oname name) clauses)))
 
-(DEFMACRO CLASS (name &REST clauses)
+(DEFMACRO class (name &REST clauses)
   `(QUOTE ,(render-class :class (oname name) clauses)))
 
-(DEFMACRO PROCEDURE (name params returns &REST clauses)
+(DEFMACRO procedure (name params returns &REST clauses)
   `(QUOTE ,(render-procedure (oname name) params returns clauses)))
 
-(DEFMACRO TABLE (name &REST clauses)
+(DEFMACRO table (name &REST clauses)
   `(QUOTE ,(render-table (oname name) clauses)))
 
-(DEFMACRO SEQUENCE (name from to &OPTIONAL (step 1))
+(DEFMACRO sequence (name from to &OPTIONAL (step 1))
   `(QUOTE ,(render-sequence (oname name) from to step)))
 
-(DEFMACRO TYPE (name as)
+(DEFMACRO type (name as)
   `(QUOTE ,(render-type (oname name) as)))
 
-(DEFMACRO ENUM (name &REST values)
+(DEFMACRO enum (name &REST values)
   `(QUOTE ,(render-enum (oname name) values)))
 
 ;;; The two file-level clauses. They are not objects and carry no name, so they
 ;;; stand at the top of the file and apply to everything below.
-(DEFMACRO INCLUDE (header)
+(DEFMACRO include (header)
   `(QUOTE ,(make-object :include NIL (FORMAT NIL "INCLUDE ~A;" (pstr header)))))
 
-(DEFMACRO LINK (flag)
+(DEFMACRO link (flag)
   `(QUOTE ,(make-object :link NIL (FORMAT NIL "LINK ~A;" (pstr flag)))))
 
 ;;;; ------------------------------------------------------------------
@@ -791,8 +795,8 @@
 ;;; The objects are EVALuated here rather than expanded, so a file can name them
 ;;; through a variable or build them with a function:
 ;;;
-;;;     (DEFPARAMETER *greet* (parsi.PAGE greet ...))
-;;;     (header "greet.parsi" (make :cpp #t) (parsi.FILE *greet*))
+;;;     (DEFPARAMETER *greet* (parsi.page greet ...))
+;;;     (header "greet.parsi" (make :cpp #t) (parsi.file *greet*))
 ;;;
 ;;; compile-ast walks a file's targets in order and evaluates a DEFPARAMETER
 ;;; through its (t (eval target)) branch, so the variable is bound by the time
@@ -807,7 +811,7 @@
 ;;;
 ;;; In a :cpp #t target a top-level (code ...) is emitted verbatim followed by a
 ;;; newline and no semicolon (body.lisp:348), which is exactly a line of Parsi.
-(DEFMACRO FILE (&REST objects)
+(DEFMACRO file (&REST objects)
   (LET ((objs (objects-of objects)))
     `(code ,(FORMAT NIL "~{~A~^~%~%~}" (MAPCAR #'object-text objs)))))
 
@@ -822,7 +826,7 @@
 ;;; compiler (target.lisp:157) -- so Parsi compiles them, once, as part of the
 ;;; object, with the object's own flags. example/parsi-fragment.cicili makes the
 ;;; same point at more length.
-(DEFMACRO HPP (&REST objects)
+(DEFMACRO hpp (&REST objects)
   (LET ((decls (MAPCAN (LAMBDA (o) (COPY-LIST (object-decls o))) (objects-of objects))))
     `($$$ ,@(WHEN decls (LIST (LIST (INTERN "code") "#include <string>")))
           ,@decls)))
@@ -833,7 +837,7 @@
 ;;;
 ;;; static, because every page's fragment defines one and two pages loaded into
 ;;; the same server would otherwise be two definitions of one external symbol.
-(DEFMACRO CPP (&REST objects)
+(DEFMACRO cpp (&REST objects)
   (LET ((defs (MAPCAN (LAMBDA (o) (COPY-LIST (object-defs o))) (objects-of objects))))
     `($$$ ,@(WHEN defs
               (LIST (LIST (INTERN "code") "#include <sstream>")

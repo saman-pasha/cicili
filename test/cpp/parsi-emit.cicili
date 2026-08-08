@@ -23,16 +23,16 @@
 ;;; model would be written that way.
 
 (DEFPARAMETER *books*
-  (parsi.TABLE books
+  (parsi.table books
     (COLUMN id     Long   PRIMARY KEY)
     (COLUMN title  String NOT NULL)
     (COLUMN year   Int)))
 
 (DEFPARAMETER *books-seq*
-  (parsi.SEQUENCE books_seq 1 Long::MAX 1))
+  (parsi.sequence books_seq 1 Long::MAX 1))
 
 (DEFPARAMETER *add-book*
-  (parsi.PROCEDURE add_book ((title String) (year Int)) Long
+  (parsi.procedure add_book ((title String) (year Int)) Long
     (REQUIRES books books_seq)
     (DECLARE id AS Long = (call emit::books_seq::NEXT))
     (INSERT books (id title year))
@@ -42,7 +42,7 @@
 ;;; is lifted into a function of its own in the two fragments, and the page is
 ;;; left with a call to it.
 (DEFPARAMETER *report*
-  (parsi.PAGE report
+  (parsi.page report
     (REQUIRES books)
     (PUBLIC)
     (PAGE_LOAD
@@ -73,14 +73,14 @@
 ;;; The fragment names follow from the page's own name: emit::report lifts into
 ;;; emit_report.hpp and emit_report.cpp, which is what its two blocks include.
 
-(header "emit_report.hpp" (make :cpp #t) (parsi.HPP *report*))
-(source "emit_report.cpp" (make :cpp #t) (parsi.CPP *report*))
+(header "emit_report.hpp" (make :cpp #t) (parsi.hpp *report*))
+(source "emit_report.cpp" (make :cpp #t) (parsi.cpp *report*))
 
 ;;; One file, one clause, and the objects in the order they are written here --
 ;;; a table before the procedure that INSERTs into it, because parsi compiles a
 ;;; file in order and a REQUIRES cannot name an object that does not exist yet.
 (header "emit.parsi" (make :cpp #t)
-  (parsi.FILE *books* *books-seq* *add-book* *report*))
+  (parsi.file *books* *books-seq* *add-book* *report*))
 
 ;;; ---- the checks -------------------------------------------------------
 ;;;

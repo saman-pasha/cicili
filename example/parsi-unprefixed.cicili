@@ -3,8 +3,8 @@
 ;;;; Its pair is example/parsi-prefixed.cicili -- the same page, one line
 ;;;; different:
 ;;;;
-;;;;   (import "lib/parsi/parsi.cicili" :parsi "demo")   ->  (parsi.PAGE …)
-;;;;   (import "lib/parsi/parsi.cicili" nil    "site")   ->  (PAGE …)
+;;;;   (import "lib/parsi/parsi.cicili" :parsi "demo")   ->  (parsi.page …)
+;;;;   (import "lib/parsi/parsi.cicili" nil    "site")   ->  (page …)
 ;;;;
 ;;;; NIL IS HOW YOU SAY "NAMESPACE, NO PREFIX". The second argument is the
 ;;;; prefix and the third is the namespace, and they are independent -- so a
@@ -16,26 +16,23 @@
 ;;;; DEFPACKAGE as it reads. Without it, an unprefixed import had nowhere to put
 ;;;; the definitions.
 ;;;;
-;;;; WHAT IT COSTS, and it is worth knowing before choosing this form:
+;;;; ALL TWELVE WORK THIS WAY, class, type, sequence and enum included. That is
+;;;; what the lower-case names buy: while they were upper case those four were
+;;;; Common Lisp's and SB-ALIEN's symbols, could only be defined behind a
+;;;; :shadow, and could not be reached from a DEFPARAMETER at all -- an object
+;;;; is built by a form Common Lisp EVALUATES, and CL:EVAL resolves by symbol
+;;;; identity rather than through the name-keyed table a target's forms go
+;;;; through. Written `class', none of that applies.
 ;;;;
-;;;; 1. FOUR MACROS ARE UNREACHABLE. CLASS, TYPE and SEQUENCE belong to
-;;;;    COMMON-LISP and ENUM to SB-ALIEN. An object is built by a form Common
-;;;;    Lisp evaluates, and CL:EVAL resolves a name by symbol identity rather
-;;;;    than through the name-keyed table Cicili dispatches a target's forms
-;;;;    through -- so those four cannot be interned here to be found. Written
-;;;;    unprefixed,
+;;;; WHAT IT STILL COSTS. The names are registered GLOBALLY: bare, `page',
+;;;; `table' and `include' are these macros for every Cicili file compiled in
+;;;; the same process -- and `include' is one of Cicili's own clauses. A
+;;;; target's own include wins, because specify-target tests for it before it
+;;;; reaches the macro table, but that is a detail to know rather than to lean
+;;;; on.
 ;;;;
-;;;;        (DEFPARAMETER *c* (CLASS holder (PUBLIC)))
-;;;;
-;;;;    stops with `The variable holder is unbound', because CLASS was read as
-;;;;    Common Lisp's own symbol and the form was taken for a function call.
-;;;;    A file with a CLASS in it wants the prefixed form. This one has none.
-;;;;
-;;;; 2. THE NAMES ARE GLOBAL. Registered bare, PAGE, TABLE and SELECT are these
-;;;;    macros for every Cicili file compiled in the same process.
-;;;;
-;;;; So: this form for a file of pages, the prefixed form for anything holding a
-;;;; model.
+;;;; So: this form for a file of your own, the prefixed form for anything a
+;;;; second library will be imported beside.
 ;;;;
 ;;;; MARKUP IS WRITTEN AS FORMS here too, and it is where the case rule earns
 ;;;; its keep: (title) and (select) are HTML elements while TITLE and SELECT
@@ -51,7 +48,7 @@
 (import "lib/parsi/parsi.cicili" nil "site")
 
 (DEFPARAMETER *hello*
-  (PAGE hello
+  (page hello
     (PUBLIC)
     (PAGE_LOAD
       ;; MARKUP AS FORMS, and note which words these are: the elements are
@@ -69,6 +66,6 @@
 
 ;;; Named after the page, the same as in the prefixed file: site::hello lifts
 ;;; into site_hello.hpp and site_hello.cpp.
-(header "site_hello.hpp"  (make :cpp #t) (HPP  *hello*))
-(source "site_hello.cpp"  (make :cpp #t) (CPP  *hello*))
-(header "hello-bare.parsi" (make :cpp #t) (FILE *hello*))
+(header "site_hello.hpp"  (make :cpp #t) (hpp  *hello*))
+(source "site_hello.cpp"  (make :cpp #t) (cpp  *hello*))
+(header "hello-bare.parsi" (make :cpp #t) (file *hello*))

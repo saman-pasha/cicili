@@ -5,7 +5,7 @@
 ;;;; is one line, and it is the whole lesson.
 ;;;;
 ;;;; THE SECOND ARGUMENT IS THE PREFIX. Every macro in the file is registered as
-;;;; <prefix>.<name>, so these are parsi.PAGE and parsi.CLASS. The third is the
+;;;; <prefix>.<name>, so these are parsi.page and parsi.class. The third is the
 ;;;; namespace an object gets when its own name carries none.
 ;;;;
 ;;;; USE THE PREFIX WHEN THE FILE HAS A CLASS, TYPE, SEQUENCE OR ENUM -- which
@@ -36,7 +36,7 @@
 
 ;;; A CLASS, which is the reason this file needs the prefix at all.
 (DEFPARAMETER *holder*
-  (parsi.CLASS holder
+  (parsi.class holder
     (PUBLIC)
     (FUNCTION answer () Long
       (RETURN 42))))
@@ -45,7 +45,7 @@
 ;;; so `holder' here is demo::holder; a name written with its own :: is left
 ;;; alone.
 (DEFPARAMETER *hello*
-  (parsi.PAGE hello
+  (parsi.page hello
     (REQUIRES holder)
     (PUBLIC)
     (PAGE_LOAD
@@ -74,6 +74,6 @@
 ;;;
 ;;; The class comes first in the file because parsi compiles a file in order and
 ;;; the page REQUIREs it.
-(header "demo_hello.hpp"       (make :cpp #t) (parsi.HPP  *hello*))
-(source "demo_hello.cpp"       (make :cpp #t) (parsi.CPP  *hello*))
-(header "hello-prefixed.parsi" (make :cpp #t) (parsi.FILE *holder* *hello*))
+(header "demo_hello.hpp"       (make :cpp #t) (parsi.hpp  *hello*))
+(source "demo_hello.cpp"       (make :cpp #t) (parsi.cpp  *hello*))
+(header "hello-prefixed.parsi" (make :cpp #t) (parsi.file *holder* *hello*))
