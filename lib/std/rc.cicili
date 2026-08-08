@@ -38,6 +38,11 @@
 (generic decl-rc
   (a)
 
+  ;; `get' hands back a borrow of the payload, so the maybe it answers with
+  ;; carries the rc's own pointer rather than a copy -- see the note on the
+  ;; implementation below.
+  (decl-maybe ref a)
+
   (non-copy)
   (struct (<> rc a)
           (member a ref ptr)
@@ -56,11 +61,36 @@
   ;; takes a reference to an rc, hands back a new one sharing the payload
   (decl) (func (<> clone rc a) (((<> rc a) ref rc)) (out (<> rc a)))
 
+  ;; Is the payload still there, and if so what.
+  ;;
+  ;; An rc that has been moved out of, or was never filled, is empty -- and that
+  ;; is a case rather than a null check, which is the argument
+  ;; lib/std/maybe.cicili makes. `let_rc' and `take_rc' below open an rc for a
+  ;; BLOCK; this answers for one expression, so an rc can be matched, bound or
+  ;; returned like any other value.
+  (decl) (func (<> get rc a) (((<> rc a) ref rc)) (out (<> Maybe ref a)))
+
   ) ; decl-rc
 
 
 (generic impl-rc
   (a)
+
+  (impl-maybe ref a)
+
+  ;; The maybe is (decl-maybe ref a), so the payload is the rc's own pointer
+  ;; rather than a copy of what it holds -- `match' hands out an `a ref' to
+  ;; deref, and it is the SHARED payload, which is the point of an rc. Exactly
+  ;; vector's `nth' (lib/std/vector.cicili:152), for exactly that reason.
+  ;;
+  ;; The count is checked as well as the pointer: an rc whose count has run out
+  ;; is dead, and `clone' already refuses to resurrect one. Reading through a
+  ;; dead rc would be a use-after-free, so it answers `nothing'.
+  (func (<> get rc a) (((<> rc a) ref rc))
+        (out (<> Maybe ref a))
+        (if (and (-> rc ptr) (-> rc count) (>= (cof (-> rc count)) 1))
+            (return (just (-> rc ptr)))
+          (return (nothing))))
 
   ;; the last owner frees the payload, the count and the box; everyone else
   ;; just drops the count. A dead or empty rc is a no-op, so double freeing is

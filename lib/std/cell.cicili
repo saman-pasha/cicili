@@ -12,6 +12,11 @@
 (generic decl-cell
   (a)
 
+  ;; `get' hands back a borrow of the interior, so the maybe it answers with
+  ;; carries a POINTER INTO the cell rather than a copy -- see the note on the
+  ;; implementation below.
+  (decl-maybe ref a)
+
   (non-copy)
   (struct (<> cell a)
           (member a ref ptr))
@@ -26,6 +31,19 @@
   (decl) (func (<> free cell a) (((<> cell a) * cell)))          ; needed for letin
   (decl) (func (<> free cell a pointer) (((<> cell a) ** cell))) ; needed for pass move to function
 
+  ;; Is there anything in the cell, and if so what.
+  ;;
+  ;; A cell is empty or it is not, and that is a case rather than a null check --
+  ;; which is the whole argument lib/std/maybe.cicili makes. The `let_cell' and
+  ;; `take_cell' macros below open a cell for a BLOCK; this answers for one
+  ;; expression, so a cell can be matched, bound or returned like any other
+  ;; value:
+  ;;
+  ;;   (match ((<> get cell String) name)
+  ;;     (just s  (show_string stdout (cof s)))
+  ;;     (nothing (fputs "<gone>" stdout)))
+  (decl) (func (<> get cell a) (((<> cell a) ref cell)) (out (<> Maybe ref a)))
+
   ) ; decl-cell
 
 
@@ -36,6 +54,22 @@
 
 (generic impl-cell
   (a)
+
+  (impl-maybe ref a)
+
+  ;; The maybe is (decl-maybe ref a), so the payload is the cell's own pointer
+  ;; rather than a copy of what it holds -- `match' hands out an `a ref' to
+  ;; deref, and writing through it writes the cell. Exactly vector's `nth'
+  ;; (lib/std/vector.cicili:152), for exactly that reason.
+  ;;
+  ;; `just' and `nothing' are the front ends, so this is a struct literal and no
+  ;; call. The back-end constructors carry (inline), which emits
+  ;; __attribute__((weak)), and a weak symbol is one the compiler may not inline.
+  (func (<> get cell a) (((<> cell a) ref cell))
+        (out (<> Maybe ref a))
+        (if (-> cell ptr)
+            (return (just (-> cell ptr)))
+          (return (nothing))))
 
   (inline)
   (func (<> free cell a) (((<> cell a) * cell))
