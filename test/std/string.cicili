@@ -63,6 +63,15 @@
                      (cast long (== ($ e arr) nil)) 1))
       (+= bad (check_str "and c_str still answers" (c_str_string (aof e)) "")))
 
+    ;; ---- the counted constructor, for buffers that are not terminated ----
+    (let ((char raw [4]))
+      (set (nth 0 raw) #\a (nth 1 raw) #\b (nth 2 raw) #\c (nth 3 raw) #\d)
+      (letin ((n (new_string_bytes raw 3)))
+        (+= bad (check "new_string_bytes takes a count"
+                       (cast long (len_vector n)) 3))
+        (+= bad (check_str "and terminates what it copied"
+                           (c_str_string (aof n)) "abc"))))
+
     (if (== bad 0)
         (printf "string: all ok\n")
       (printf "string: %d FAILED\n" bad))

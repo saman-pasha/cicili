@@ -51,6 +51,10 @@
   ;; and the empty string allocates nothing, both as vector's `new' does.
   (decl) (func (<> new string) ((const char * buf)) (out string))
 
+  ;; from a counted buffer that need not be terminated -- what `fread' and
+  ;; `recv' hand back. `new' is this with strlen called for you.
+  (decl) (func (<> new string bytes) ((const char * buf) (size_t len)) (out string))
+
   ;; joins RHS onto LHS in place and answers with the new length
   (decl) (func (<> append string) ((string ref lhs) (string ref rhs)) (out size_t))
 
@@ -97,10 +101,14 @@
         ;; trailing letn is a STATEMENT: its value is computed and dropped, the
         ;; function falls off the end, and what comes back is whatever was in
         ;; the return register. vector's own `new' wraps it for this reason.
-        (return (letn ((const size_t len . #'(strlen buf))
-                       (const size_t cap . #'((<> arraySize vector char) (+ len 1)))
+        (return ((<> new string bytes) buf (strlen buf))))
+
+  (func (<> new string bytes) ((const char * buf) (size_t len))
+        (out string)
+        (when (or (== buf nil) (== len 0))
+          (return (cast string '{ nil 0 0 })))
+        (return (letn ((const size_t cap . #'((<> arraySize vector char) (+ len 1)))
                        (char ref arr . #'(malloc cap)))
-                  (syslog! (printf "NEW STR: %p %zu of %zu\n" arr len cap))
                   (memcpy arr buf len)
                   (set (nth len arr) #\Null)
                   (cast string '{ arr cap len }))))

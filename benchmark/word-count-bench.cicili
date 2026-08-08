@@ -1,7 +1,7 @@
 ;;; sample code
 ;;; writes many sentences to a temporary file
 ;;; reads file part by part
-;;; stores them in a list of strings
+;;; stores them in a list of std strings
 ;;; iterate over all parts
 ;;; count the words in each part separated by space or newline character
 (source "word_count_bench.c" (:std #t :compile #t
@@ -20,59 +20,81 @@
         
         (typedef FILE * cfile_t)
 
-        (decl-Either String cfile_t) ; for header file
-        (impl-Either String cfile_t) ; for source file
+        ;; std string, and a List of them. These used to come out of haskell.h,
+        ;; which declared String as a Vector of Char and List_String beside it.
+        ;; A std string is instantiated where it is used, like every other std
+        ;; generic.
+        (decl-string)
+        (impl-string)
+        (decl-List List_string string)
+        (impl-List List_string string (\\ -f -v (show_string -f (aof -v))) " ")
+
+        (decl-Either string cfile_t) ; for header file
+        (impl-Either string cfile_t) ; for source file
         
         ;; https://en.cppreference.com/w/c/io/fgets
         (func writeTmpFile ()
-              (out Either_String_cfile_t) ; Haskell error handling model in Cicili
+              (out Either_string_cfile_t) ; Haskell error handling model in Cicili
               ;; uncomment to raise custom error
-              ;; (return (Left_String_cfile_t (new_String "some custom error!")))
+              ;; (return (Left_string_cfile_t (new_string "some custom error!")))
               
               (let ((FILE * tmpf . #'(tmpfile)))
 
                 (when (== tmpf nil)
                   (let ((auto err . #'(strerror errno)))
-                    (return (Left_String_cfile_t (new_String err (strlen err)))))) ; on failure returns error number
+                    (return (Left_string_cfile_t (new_string err))))) ; on failure returns error number
                 
                 (fputs "Alan Turing\n"      tmpf)
                 (fputs "John von Neumann\n" tmpf)
                 (fputs "Alonzo Church\n"    tmpf)
 
-                ;; ((<> Right String_cfile_t) tmpf) ! Notice ^ works as (<>) clause
-                (return (Right_String_cfile_t tmpf)))) ; on success returns FILE*
+                ;; ((<> Right string_cfile_t) tmpf) ! Notice ^ works as (<>) clause
+                (return (Right_string_cfile_t tmpf)))) ; on success returns FILE*
 
         ;; recursive
-        ;; a helper to safely read a file as List of String s
+        ;; a helper to safely read a file as a List of std strings
         (func safeReadFile ((FILE * file))
-              (out List_String) ; List_String defined in prelude
+              (out List_string) ; List_string defined in prelude
               (return
-                (case (== file nil) (Nil_String)
+                (case (== file nil) (Nil_string)
                       otherwise     (letn ((char buf [8]) ; letn returns last clause
                                            (size_t count . 0))
                                       (set count (fread buf (sizeof char) (sizeof buf) file))
-                                      (case (== count 0)           (Nil_String)
-                                            (< count (sizeof buf)) (Cons_String (new_String buf count) (Nil_String))
-                                            otherwise              (Cons_String (new_String buf count) (safeReadFile file)))
+                                      (case (== count 0)           (Nil_string)
+                                            (< count (sizeof buf)) (Cons_string (new_string_bytes buf count) (Nil_string))
+                                            otherwise              (Cons_string (new_string_bytes buf count) (safeReadFile file)))
                                       ))))
         
         ;; split by #\Space or #\Newline
-        (func count_words ((String text))
+        ;;
+        ;; AN INDEX WALK, NOT A CONS WALK. This used to match (* Cons ch tail)
+        ;; down a linked list of characters, because the old String was one. A
+        ;; std string is a vector -- one allocation, characters adjacent -- so
+        ;; counting them is a loop over an index.
+        ;;
+        ;; That changes what the benchmark measures, and changes it toward the
+        ;; thing being compared: word_count.hs reads with Data.ByteString, which
+        ;; is a packed byte array. Cons-walking a cell per character was never
+        ;; the same shape of work.
+        (func count_words ((string ref text))
               (out int)
-              (return (match text
-                        (* Cons ch (= tail * Cons) ; if there is another character
-                           (case (or (== ch #\Space) (== ch #\Newline)) (+ 1 (count_words tail))
-                                 otherwise (count_words tail)))
-                        (default 1)))) ; means Empty, but all matchs need default case
+              (let ((int words . 1)
+                    (size_t i . 0))
+                (while (< i (-> text len))
+                  (let ((const char ch . #'(nth i (-> text arr))))
+                    (when (or (== ch #\Space) (== ch #\Newline))
+                      (++ words)))
+                  (++ i))
+                (return words)))
 
-        ;; Iterate over list and Count words in each String
-        (func iter_words ((List_String list))
+        ;; Iterate over the list and count words in each string
+        (func iter_words ((List_string list))
               (io list
                 (* Cons str tail
-                   (block (info! (show_String str)
-                            (printf " Word count: %d\n" (count_words str)))
+                   (block (info! (show_string stdout (aof str))
+                            (printf " Word count: %d\n" (count_words (aof str))))
                      (iter_words tail)
-                     (free_String (aof str))))))
+                     (free_string (aof str))))))
 
         ;; for auto deferment file close
         (func file_close ((FILE ** file_ptr))
@@ -86,9 +108,9 @@
                    
                    (letin* ((tmpf (writeTmpFile)))
                      (io tmpf
-                       (Left error (letin* ((error error free_String))
+                       (Left error (letin* ((error error free_string))
                                      (error! (printf "File opening error: ")
-                                       (show_String error)
+                                       (show_string stdout (aof error))
                                        (putchar #\Newline))))
                        (Right file
                               (letin* ((file file file_close))

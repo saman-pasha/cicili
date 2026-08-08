@@ -55,6 +55,7 @@ typedef vector_char string ;
 void free_string (string * restrict str );
 void free_string_pointer (string ** str );
 string new_string (const char * buf );
+string new_string_bytes (const char * buf , size_t len );
 size_t append_string (string * restrict lhs , string * restrict rhs );
 size_t show_string (FILE * file , string * restrict str );
 const char * c_str_string (string * restrict str );
@@ -74,7 +75,7 @@ __attribute__((weak)) void free_vector_char_pointer (vector_char ** vector ) {
   free_vector_char ((*vector ));
 }
 size_t arraySize_vector_char (size_t size ) {
-  { /* let194 */
+  { /* let196 */
     size_t two_pow  = 0x10;
     // ----------
     while ((two_pow  <  size  )) {
@@ -85,10 +86,10 @@ size_t arraySize_vector_char (size_t size ) {
 }
 vector_char new_vector_char (const char * items , size_t len ) {
   if (len  ==  0 )
-    { /* block204 */
+    { /* block206 */
       return ((vector_char){ NULL , 0, 0});
     }
-  return ({ /* letn207 */
+  return ({ /* letn209 */
       const size_t cap  = arraySize_vector_char (len );
       char * restrict arr  = malloc ((cap  *  sizeof(char) ));
       // ----------
@@ -110,8 +111,8 @@ Maybe_ref_char nth_vector_char (size_t index , vector_char * restrict vector ) {
 }
 void grow_vector_char (vector_char * restrict vector , size_t needed ) {
   if (needed  >  (vector -> cap) )
-    { /* block234 */
-      { /* let236 */
+    { /* block236 */
+      { /* let238 */
         const size_t cap  = arraySize_vector_char (needed );
         // ----------
         (vector -> arr) = realloc ((vector -> arr), (cap  *  sizeof(char) ));
@@ -139,11 +140,17 @@ __attribute__((weak)) void free_string_pointer (string ** str ) {
 }
 string new_string (const char * buf ) {
   if ((buf  ==  NULL  ) ||  ((*buf ) ==  '\0' ) )
-    { /* block260 */
+    { /* block262 */
       return ((string){ NULL , 0, 0});
     }
-  return ({ /* letn262 */
-      const size_t len  = strlen (buf );
+  return new_string_bytes (buf , strlen (buf ));
+}
+string new_string_bytes (const char * buf , size_t len ) {
+  if ((buf  ==  NULL  ) ||  (len  ==  0 ) )
+    { /* block270 */
+      return ((string){ NULL , 0, 0});
+    }
+  return ({ /* letn272 */
       const size_t cap  = arraySize_vector_char ((len  +  1 ));
       char * restrict arr  = malloc (cap );
       // ----------
@@ -154,7 +161,7 @@ string new_string (const char * buf ) {
 }
 size_t append_string (string * restrict lhs , string * restrict rhs ) {
   if ((rhs -> len))
-    { /* block272 */
+    { /* block280 */
       append_vector_char (lhs , (rhs -> arr), (rhs -> len));
       (lhs -> arr)[(lhs -> len)] = '\0';
     }
@@ -162,14 +169,14 @@ size_t append_string (string * restrict lhs , string * restrict rhs ) {
 }
 size_t show_string (FILE * file , string * restrict str ) {
   if ((str -> len) ==  0 )
-    { /* block280 */
+    { /* block288 */
       return 0;
     }
   return fwrite ((str -> arr), sizeof(char), (str -> len), file );
 }
 const char * c_str_string (string * restrict str ) {
   if ((str -> arr) ==  NULL  )
-    { /* block287 */
+    { /* block295 */
       return "";
     }
   grow_vector_char (str , ((str -> len) +  1 ));
@@ -179,36 +186,36 @@ const char * c_str_string (string * restrict str ) {
 static int bad  = 0;
 int check (const char * what , long got , long want ) {
   if (got  ==  want  )
-    { /* block293 */
+    { /* block301 */
       printf ("ok   %-38s %ld\n", what , got );
       return 0;
     }
   else
-    { /* block296 */
+    { /* block304 */
       printf ("FAIL %-38s got %ld want %ld\n", what , got , want );
       return 1;
     }
 }
 int check_str (const char * what , const char * got , const char * want ) {
   if (strcmp (got , want ) ==  0 )
-    { /* block301 */
+    { /* block309 */
       printf ("ok   %-38s \"%s\"\n", what , got );
       return 0;
     }
   else
-    { /* block304 */
+    { /* block312 */
       printf ("FAIL %-38s got \"%s\" want \"%s\"\n", what , got , want );
       return 1;
     }
 }
 int main () {
-  ({ /* letn309 */
+  ({ /* letn317 */
     string s  __attribute__((__cleanup__(free_string ))) = new_string ("hello");
     // ----------
     bad  += check ("len counts characters, not the NUL", ((long)len_vector_char ((&s ))), 5) ;
     bad  += check_str ("c_str is NUL terminated", c_str_string ((&s )), "hello") ;
     bad  += check ("a NUL sits at index len", ((long)(s . arr)[5]), 0) ;
-    ({ /* letn315 */
+    ({ /* letn323 */
       string t  __attribute__((__cleanup__(free_string ))) = new_string (", world");
       // ----------
       append_string ((&s ), (&t ));
@@ -216,17 +223,17 @@ int main () {
       bad  += check_str ("and re-terminates", c_str_string ((&s )), "hello, world") ;
     });
   });
-  ({ /* letn321 */
+  ({ /* letn329 */
     string v  __attribute__((__cleanup__(free_string ))) = new_string ("abc");
     // ----------
-    bad  += check ("nth_vector reads a character", ((long)({ /* letn328 */
-          Maybe_ref_char matchn327  = nth_vector_char (1, (&v ));
+    bad  += check ("nth_vector reads a character", ((long)({ /* letn336 */
+          Maybe_ref_char matchn335  = nth_vector_char (1, (&v ));
           // ----------
-          ((((matchn327 . ctor) ==  JUST_CTOR  )) ? ({ /* letn330 */
-              char * restrict c  = (((matchn327 . data). just). value);
+          ((((matchn335 . ctor) ==  JUST_CTOR  )) ? ({ /* letn338 */
+              char * restrict c  = (((matchn335 . data). just). value);
               // ----------
               ((long)(*c ));
-            }) : ({ /* progn332 */
+            }) : ({ /* progn340 */
               -1;
             }));
         })), ((long)'b')) ;
@@ -234,12 +241,26 @@ int main () {
     bad  += check ("push_vector extends a string", ((long)len_vector_char ((&v ))), 4) ;
     bad  += check_str ("c_str terminates after a raw push", c_str_string ((&v )), "abcd") ;
   });
-  ({ /* letn339 */
+  ({ /* letn347 */
     string e  __attribute__((__cleanup__(free_string ))) = new_string ("");
     // ----------
     bad  += check ("the empty string allocates nothing", ((long)((e . arr) ==  NULL  )), 1) ;
     bad  += check_str ("and c_str still answers", c_str_string ((&e )), "") ;
   });
+  { /* let350 */
+    char raw [4];
+    // ----------
+    raw [0] = 'a';
+    raw [1] = 'b';
+    raw [2] = 'c';
+    raw [3] = 'd';
+    ({ /* letn353 */
+      string n  __attribute__((__cleanup__(free_string ))) = new_string_bytes (raw , 3);
+      // ----------
+      bad  += check ("new_string_bytes takes a count", ((long)len_vector_char ((&n ))), 3) ;
+      bad  += check_str ("and terminates what it copied", c_str_string ((&n )), "abc") ;
+    });
+  }
   if (bad  ==  0 )
     printf ("string: all ok\n");
   else
