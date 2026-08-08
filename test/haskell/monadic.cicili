@@ -22,7 +22,7 @@
             (where ((validate-id (\\ id (case (and (> id 0) (< id 100)) (Right_String_int id)
                                               otherwise (Left_String_int (new_String "wrong id!")))))
                     
-                    (validate-name (\\ name (letin* ((len ((\.+ len String) name)))
+                    (validate-name (\\ name (letin* ((len (\.+ len String name)))
                                               (case (and (> len 5) (< len 15)) (Right_String_String name)
                                                     otherwise (Left_String_String (new_String "wrong name!"))))))
 
@@ -32,15 +32,15 @@
               ;; complex monadic computation
               (letin* ((name (new_String "Jon Doe") free_String) ; letin* takes destructure function
                        (messi (get_Monad_Either_String_String_Employee)))
-                (io ((\. bind messi) (validate-name name)
+                (io (\. bind messi (validate-name name)
                      '(closure ((String wName))
                        (out (<> Either_String_Employee))
                        (letin* ((mesii (get_Monad_Either_String_int_Employee)))
-                         (return ((\. bind mesii) (validate-id 10)
+                         (return (\. bind mesii (validate-id 10)
                                   '(closure ((int wId))
                                     (out (<> Either_String_Employee))
                                     (letin* ((mesie (get_Monad_Either_String_int_Employee)))
-                                      (return ((\. bind mesie) (validate-salary 3000)
+                                      (return (\. bind mesie (validate-salary 3000)
                                                '(closure ((int wSalary))
                                                  (out (<> Either_String_Employee))
                                                  (return (Right_String_Employee
@@ -58,15 +58,15 @@
                               (show_String err)
                               (putchar #\Newline))))
 
-                (io ((\. bind messi) (validate-name name)
+                (io (\. bind messi (validate-name name)
                      '(closure ((String wName))
                        (out (<> Either_String_Employee))
                        (letin* ((mesii (get_Monad_Either_String_int_Employee)))
-                         (return ((\. bind mesii) (validate-id 10)
+                         (return (\. bind mesii (validate-id 10)
                                   '(closure ((int wId))
                                     (out (<> Either_String_Employee))
                                     (letin* ((mesie (get_Monad_Either_String_int_Employee)))
-                                      (return ((\. bind mesie) (validate-salary 6000)
+                                      (return (\. bind mesie (validate-salary 6000)
                                                '(closure ((int wSalary))
                                                  (out (<> Either_String_Employee))
                                                  (return (Right_String_Employee

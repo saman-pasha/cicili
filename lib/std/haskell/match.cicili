@@ -109,7 +109,7 @@
 
             ((AND (LISTP symb) (CICILI:KEY-EQ (CAR symb) '\:)) ; list \:
              (SETQ case-type 2)
-             (SETQ conds `(== ((\.* hasLen ,data-name) ,data-name ,(1- (LENGTH (CDR symb)))) ,(1- (LENGTH (CDR symb)))))
+             (SETQ conds `(== (\.* hasLen ,data-name ,data-name ,(1- (LENGTH (CDR symb)))) ,(1- (LENGTH (CDR symb)))))
              (DOTIMES (i (- (LENGTH symb) 1))
                (LET ((prev-arg (make-match-h-item-name match-id (- i 1)))
                      (curr-arg (make-match-h-item-name match-id i))
@@ -353,7 +353,7 @@
                  (IF (CICILI:KEY-EQ (CAR first) 'dead) (CADR first) NIL))))
     (IF dead
         `(letin* ((__h_matchbox ,data))
-           (match ((\. get __h_matchbox) __h_matchbox)
+           (match (\. get __h_matchbox __h_matchbox)
              (Just unboxed (match unboxed ,@(CDR cases)))
              (default ,dead)))
         (ERROR "match box dead case is required"))))
@@ -367,9 +367,9 @@
                  (IF (CICILI:KEY-EQ (CAR first) 'dead) (CADR first) NIL))))
     (IF dead
         `(letin* ((__h_matchbox ,data))
-           (io ((\. get __h_matchbox) __h_matchbox)
+           (io (\. get __h_matchbox __h_matchbox)
              (Just unboxed (io unboxed ,@(CDR cases)))
              (Nothing ,dead)))
         `(letin* ((__h_matchbox ,data))
-           (io ((\. get __h_matchbox) __h_matchbox)
+           (io (\. get __h_matchbox __h_matchbox)
              (Just unboxed (io unboxed ,@cases)))))))

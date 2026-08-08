@@ -139,6 +139,35 @@
 
 ;; deeply traverse spec tree to find lexeme id for a type
 ;; type inference back-end
+;; The function typedef behind a callee, or NIL when it is not one.
+;;
+;; A CALL THROUGH A FUNCTION POINTER IS NOT A CALL TO A FUNCTION. Calling a name
+;; resolves to the @FUNC, whose `typeof' is already the return type. Calling a
+;; variable, or a struct member holding a pointer, resolves to the thing that
+;; HOLDS the pointer -- and its type is the pointer's typedef, which is what
+;; (let ((auto r . #'(g 7)))) used to infer where it meant `long'.
+;;
+;; The test is on SHAPE, not on construct, because the same function-pointer
+;; type arrives wearing three different ones: as the @TYPEDEF itself, as a
+;; struct member that carries the typedef expanded inline, and as a variable
+;; merely typed by it. Anything whose `typeof' is func and whose array-def holds
+;; an @FUNC is one, whatever declared it -- and that @FUNC carries the return
+;; type. Requiring @TYPEDEF here answered correctly for a function-pointer
+;; VARIABLE and still wrongly for a table of them, which is the case that
+;; matters: every haskell data type reaches its functions through one.
+(defun func-typedef-of< (callee)
+  (flet ((fn-shaped-p (s)
+           (and s
+                (not (eql (construct s) '|@FUNC|))
+                (key-eq (typeof s) '|func|)
+                (let ((inner (car (array-def s))))
+                  (and (typep inner 'sp) (eql (construct inner) '|@FUNC|))))))
+    (cond ((null callee) nil)
+          ((eql (construct callee) '|@FUNC|) nil)
+          ((fn-shaped-p callee) callee)
+          (t (let ((c (*gets* (peel-type-tag< (typeof callee)))))
+               (when (fn-shaped-p c) c))))))
+
 (defun deep-typeof (id &optional spec too-deep)
   (let ((deep-res 
             (let* ((id (if (and (listp id) (key-eq (car id) '|struct|)) (cadr id) id))
@@ -167,22 +196,7 @@
                              ;; A function typedef is `typeof' func with the
                              ;; @FUNC in its array-def, and that @FUNC carries
                              ;; the return type. One more step is the whole fix.
-                             ;; The callee may BE that typedef -- reaching a
-                             ;; member through `-->' resolves to it directly --
-                             ;; or merely be typed by it, as a variable holding
-                             ;; one is. Both spellings, or the answer is right
-                             ;; for a function-pointer variable and still wrong
-                             ;; for a table of them.
-                             (let ((td (cond ((null callee) nil)
-                                             ((and (eql (construct callee) '|@TYPEDEF|)
-                                                   (key-eq (typeof callee) '|func|))
-                                              callee)
-                                             ((eql (construct callee) '|@FUNC|) nil)
-                                             (t (let ((c (*gets* (peel-type-tag< (typeof callee)))))
-                                                  (when (and c
-                                                             (eql (construct c) '|@TYPEDEF|)
-                                                             (key-eq (typeof c) '|func|))
-                                                    c))))))
+                             (let ((td (func-typedef-of< callee)))
                                (if (and td (car (array-def td)))
                                    (or (deep-typeof (typeof (car (array-def td)))) callee)
                                    callee))))
@@ -213,14 +227,38 @@
                           ;; with no type at all. The layer that needs it is
                           ;; lib/std/haskell, where (\. f d) NAMES a function
                           ;; for the call site to call.
+                          ;; `=>' joins them too, and then takes one more step.
+                          ;; All four reach a member of an aggregate and resolve
+                          ;; to its declaration; `=>' additionally CALLS what it
+                          ;; found, so where the others answer with the member,
+                          ;; it answers with what the member returns. That is
+                          ;; the whole difference, and it is why (=> obj m a b)
+                          ;; had no type at all before: this branch knew @$ and
+                          ;; @-> only, so a member holding a function could be
+                          ;; called but never bound, inferred or returned.
                           ((or (eql const-val '|@$|)
                                (eql const-val '|@->|)
-                               (eql const-val '|@-->|))
+                               (eql const-val '|@-->|)
+                               (eql const-val '|@=>|))
                            (let ((struct (deep-typeof id (name spec))))
                              (when struct
                                (let ((end-type (deep-typeof (typeof struct))))
                                  (unless end-type (error "unknown struct type: ~A~%  accessed in: ~A~%" (typeof struct) spec))
-                                 (*gets* (intern (format nil "~A/~A"  (default spec) (typeof end-type))))))))
+                                 ;; `=>' keeps its member as a SPECIFIED
+                                 ;; expression rather than a bare symbol -- it
+                                 ;; is resolved inside the receiver's scope
+                                 ;; (specifier.lisp:993) -- so the name has to
+                                 ;; be taken back out of it. The other three
+                                 ;; hold the symbol itself.
+                                 (let* ((mem (default spec))
+                                        (mem-name (if (typep mem 'sp) (default mem) mem))
+                                        (member-spec (*gets* (intern (format nil "~A/~A" mem-name (typeof end-type))))))
+                                   (if (eql const-val '|@=>|)
+                                       (let ((td (func-typedef-of< member-spec)))
+                                         (if (and td (car (array-def td)))
+                                             (or (deep-typeof (typeof (car (array-def td)))) member-spec)
+                                             member-spec))
+                                       member-spec))))))
                           ((eql const-val '|@TYPEDEF|)
                            ;; Deliberately DISCARDS the typedef's own modifier.
                            ;; Combining it here instead -- the commented line --

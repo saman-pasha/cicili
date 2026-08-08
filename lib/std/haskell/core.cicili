@@ -136,40 +136,33 @@
 (DEFMACRO case (fcond fpath otherwise elsepath &REST guards)
   `(function-h-guard ,fcond ,fpath ,otherwise ,elsepath ,@guards))
 
-;; a way to access functions inside Table by data instance
+;; THE THREE TABLE ACCESSORS, all of them a call.
 ;;
-;; `.' to reach the table and `->' to reach the function through it, which is
-;; what the C says: data.__h_table->f(). It used to take the address first and
-;; go through twice -- (-> (aof data) __h_table f), (&data)->__h_table->f() --
-;; and that is the same C but not the same question for the specifier, which
-;; resolves `->' by finding the storage behind its left side and answers NIL for
-;; an address-of by design (authority.lisp:47). So every `\.' on a value died
-;; with "pointer storage not found: #<(@UNARY (n: &) …)>". A member access has
-;; the storage of the thing it is a member of, and asks nothing of the analysis.
-;; ALL THREE NAME A FUNCTION, they do not call it: (\. get d) is written as
-;; ((\. get d) d), so the call belongs to the call site and these hand back the
-;; pointer. `-->' is the access-only operator; `->' accesses AND CALLS with
-;; whatever follows the member, so with `->' the call site was calling the
-;; RESULT of a no-argument call, and an `auto' binding over it inferred `func *'
-;; instead of the function's return type -- "unknown struct type: func".
+;; A haskell value carries a pointer to its type's table of function pointers,
+;; and these reach into it: (\. show d stdout d) is d.__h_table->show(stdout, d).
+;; `=>' is the form for exactly that -- "call a function stored in a member" --
+;; and it reaches the member with `.', so a pointer to the table is opened with
+;; `cof' first, which is what its own documentation says to do (backend.lisp
+;; :1129).
 ;;
-;; `-->' used to exhaust the control stack here, because a data type had no
-;; origin: deep-typeof walked the value into its table, out through a member
-;; typed back as the value, and round again with nothing to terminate on. The
-;; `type_t' typedef decl-data now emits is that terminator.
-(DEFMACRO \. (function data)
-  `(--> ($ ,data __h_table) ,function))
+;; THEY USED TO NAME THE FUNCTION AND LEAVE THE CALL TO THE CALL SITE, written
+;; ((\. show d) stdout d), over `->'. That stopped working when `->' was reduced
+;; to member access only: the call site was calling the result of a member
+;; access rather than the member, and `auto' over it inferred the function
+;; POINTER's type instead of what the function returns. `=>' does both halves
+;; at once and has to be given the arguments, so the outer parentheses are gone
+;; from every call site.
+(DEFMACRO \. (function data &REST args)
+  `(=> (cof ($ ,data __h_table)) ,function ,@args))
 
-;; a way to access functions inside Table by class instance
-;;
-;; Left as it was. A nested (--> (--> class __h_table) f) sends DEEP-TYPEOF into
-;; unbounded recursion, and this one is not in the way of anything yet.
-(DEFMACRO \.* (function class)
-  `(-> ,class __h_table ,function))
+;; a way to access functions inside Table by class instance -- a class instance
+;; is already a pointer, so its table is reached with `->' rather than `.'
+(DEFMACRO \.* (function class &REST args)
+  `(=> (cof (-> ,class __h_table)) ,function ,@args))
 
 ;; a way to access functions inside Table by getTable
-(DEFMACRO \.+ (function type)
-  `(--> ((<> get ,type _H_Table)) ,function))
+(DEFMACRO \.+ (function type &REST args)
+  `(=> (cof ((<> get ,type _H_Table))) ,function ,@args))
 
 ;; helpers
 (DEFUN make-data-h-type-name (ct)
