@@ -1,0 +1,174 @@
+;;;; A Zeytun page backed by PostgreSQL, written in Cicili
+;;;;
+;;;; This is the two halves of this repository meeting: lib/parsi writes the
+;;;; Parsi object, lib/db/postgres writes the C++ inside it, and ZiguratIP is
+;;;; not modified in any way to accept the result.
+;;;;
+;;;; WHY NO CHANGE IS NEEDED ON THE ZIGURAT SIDE, which is the claim worth
+;;;; checking rather than believing. A Parsi object already carries everything
+;;;; this needs:
+;;;;
+;;;;   COMPILE   puts -I/usr/include/postgresql on THIS object's compile line
+;;;;   LINK      puts -lpq on THIS object's link line
+;;;;   BEGIN CPP holds the C++, in this object's own translation unit
+;;;;
+;;;; so the page reaches libpq exactly the way Test/ai/classifier.parsi reaches
+;;;; libtorch. Zeytun loads a .so and calls PAGE_LOAD; what that .so links
+;;;; against is the object's business and was never the server's.
+;;;;
+;;;; THE C++ RETURNS DATA AND PARSI WRITES THE MARKUP, and that split is not
+;;;; stylistic. ECHO escapes every value it interpolates, so a C++ function
+;;;; returning "<tr>…" would arrive as &lt;tr&gt; -- correctly, because a value
+;;;; from a database is exactly what escaping is for. Markup therefore stays on
+;;;; the Parsi side, where the author's own literals pass through untouched.
+;;;;
+;;;; THE QUERY PARAMETER IS A BOUND PARAMETER. ?who= is whatever a visitor
+;;;; typed; it reaches the server as $1 and is never parsed as SQL.
+;;;;
+;;;; Run:
+;;;;   sbcl --script cicili.lisp example/zeytun-postgres.cicili
+;;;;
+;;;;   cp example/demo_pgpage.hpp example/demo_pgpage.cpp $ZIGURATIP_HOME/ld/
+;;;;   rm -f $ZIGURATIP_HOME/tmp/demo_pgpage.hpp $ZIGURATIP_HOME/tmp/demo_pgpage.cpp
+;;;;   parsi example/pgpage.parsi
+;;;;
+;;;; then http://localhost:2190/demo/pgpage.zt?who=ada
+
+(import "lib/parsi/parsi.cicili" :parsi "demo")
+
+;;; ------------------------------------------------------------------
+;;; the page
+;;; ------------------------------------------------------------------
+
+(DEFPARAMETER *page*
+  (parsi.PAGE pgpage
+
+    ;; The object's own flags. Neither reaches the server's ziguratip.conf, and
+    ;; nothing else compiled on this server sees them.
+    (COMPILE "-I/usr/include/postgresql")
+    (LINK "-lpq")
+
+    ;; request.query() needs HTTPRequest's declaration, and an object INCLUDE
+    ;; lands in this object's header where the generated PAGE_LOAD can see it.
+    (INCLUDE "\"httprequest.hpp\"")
+
+    ;; The two blocks, written out because this page calls its C++ by name
+    ;; rather than through the (cicili …) escape -- the escape is what adds
+    ;; them by itself, and there is none here. Declarations in the header,
+    ;; definitions in this object's own translation unit, which is what keeps
+    ;; libpq's header out of every object that REQUIREs this one.
+    (HPP "#include \"demo_pgpage.hpp\"")
+    (CPP "#include \"demo_pgpage.cpp\"")
+
+    (PUBLIC)
+    (PAGE_LOAD
+      (ECHO (doctype) (html) (head)
+            (title) "Cicili, Parsi and PostgreSQL" (/title)
+            (/head) (body))
+      (ECHO (h1) "A page with a database behind it" (/h1))
+
+      ;; Each of these is a C++ function this file also writes -- declared in
+      ;; demo_pgpage.hpp, defined in demo_pgpage.cpp, both emitted below.
+      (ECHO (p) "schema: " (cpp pg_setup) (/p))
+
+      (DECLARE who AS String = (call request.query "who"))
+      (IF (op == who "")
+          ((ECHO (p) "Add a row: append " (code) "?who=yourname" (/code)
+                 " to the URL." (/p)))
+        ;; `value() is the std::string inside a Parsi String, and `c_str() the
+        ;; char* libpq wants -- the same crossing Test/ai/classifier.parsi makes.
+        ((ECHO (p) "stored: "
+               (cpp pg_insert (text "who.`value().`c_str()")) (/p))))
+
+      (ECHO (p) "rows: " (cpp pg_rows) (/p))
+      (ECHO (/body) (/html)))))
+
+;;; ------------------------------------------------------------------
+;;; the header: what the page can see
+;;; ------------------------------------------------------------------
+;;;
+;;; Three prototypes and nothing else -- no libpq type appears here, so a page
+;;; that REQUIREs this object inherits three names rather than PostgreSQL's
+;;; whole header. That is the two-block split doing its job.
+
+(header "demo_pgpage.hpp" (make :cpp #t)
+  (code "#include <string>")
+  (decl) (func pg_setup  () (out std::string))
+  (decl) (func pg_insert ((const char * who)) (out std::string))
+  (decl) (func pg_rows   () (out std::string))
+  (parsi.HPP *page*))
+
+;;; ------------------------------------------------------------------
+;;; the source: the database work
+;;; ------------------------------------------------------------------
+;;;
+;;; lib/db/postgres is imported INSIDE the target, so its declarations are read
+;;; with this target's settings in effect -- which is what target-level import
+;;; is for.
+
+(source "demo_pgpage.cpp" (make :cpp #t)
+  (import "lib/db/postgres.cicili")
+
+  (code "#include <libpq-fe.h>")
+  (code "#include <string>")
+  (code "#include <sstream>")
+
+  ;; ONE CONNECTION PER CALL, which is a deliberate simplification rather than
+  ;; a recommendation. A page is constructed per request, so a connection
+  ;; opened here lives for one request; a real deployment wants a pool, the way
+  ;; Library/modelpool.cpp keeps a model alive. What this example shows is that
+  ;; the object reaches libpq at all.
+  ;;
+  ;; An empty conninfo takes host, user and database from the environment,
+  ;; which is what a local socket connection wants.
+  (static) (func pg_open_conn () (out PGconn *)
+    (let ((PGconn * db . nil))
+      (if (!= (pg-open db "") CONNECTION_OK)
+          (block (if (!= db nil) (pg-close db))
+                 (return nil)))
+      (return db)))
+
+  ;; CREATE TABLE IF NOT EXISTS, so the page works on a database that has never
+  ;; seen it and on one that has.
+  (func pg_setup () (out std::string)
+    (let ((PGconn * db . #'(pg_open_conn)))
+      (if (== db nil) (return (cast std::string "no database")))
+      (let ((int st . #'(pg-exec db "CREATE TABLE IF NOT EXISTS demo_greetings (id serial PRIMARY KEY, who text NOT NULL)")))
+        (pg-close db)
+        (return (cast std::string (? (== st PGRES_COMMAND_OK) "ready" "failed"))))))
+
+  ;; $1, not concatenation. WHO is whatever the URL carried.
+  (func pg_insert ((const char * who)) (out std::string)
+    (let ((PGconn * db . #'(pg_open_conn)))
+      (if (== db nil) (return (cast std::string "no database")))
+      (let ((int st . #'(pg-run db "INSERT INTO demo_greetings (who) VALUES ($1)" who)))
+        (pg-close db)
+        (return (cast std::string (? (== st PGRES_COMMAND_OK) who "failed"))))))
+
+  ;; The rows as TEXT, not as markup -- see the note at the top. ECHO escapes
+  ;; what it interpolates, so a row holding <script> arrives as text on the
+  ;; page, which is what a value out of a database should do.
+  (func pg_rows () (out std::string)
+    (let ((PGconn * db . #'(pg_open_conn)))
+      (if (== db nil) (return (cast std::string "no database")))
+      (letin* ((out (std::ostringstream)))
+        (let ((int n . 0))
+          (pg-query db "SELECT id, who FROM demo_greetings ORDER BY id"
+                    (row (id (pg-int 0)) (who (pg-text 1)))
+                    ;; Cicili's << and Cicili's own strings, NOT a code
+                    ;; escape: a code clause is passed through byte for byte
+                    ;; and this file is read by a reader that keeps \" as two
+                    ;; characters, so a C++ string literal cannot be written
+                    ;; inside one. A Cicili string becomes a C++ literal.
+                    (if (> n 0) (<< out " | "))
+                    (<< out id)
+                    (<< out ": ")
+                    (<< out who)
+                    (++ n))
+          (pg-close db)
+          (if (== n 0) (return (cast std::string "none yet")))
+          (return (($ out str)))))))
+
+  (parsi.CPP *page*))
+
+(header "pgpage.parsi" (make :cpp #t) (parsi.FILE *page*))

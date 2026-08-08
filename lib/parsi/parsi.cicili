@@ -483,6 +483,27 @@
        (FORMAT NIL "~ASET ~A = ~A;" i (qname (SECOND form))
                (render-expr (THIRD form))))
 
+      ;; (IF cond (then …) (else …)) -- the branches are LISTS of statements,
+      ;; so the shape on the page is the shape in the source, and an empty
+      ;; else is simply left out. Parsi's own spelling is
+      ;; `IF cond BEGIN … END ELSE BEGIN … END'.
+      ((head-is form "IF")
+       (LET ((cond-text (render-expr (SECOND form)))
+             (then (THIRD form))
+             (else (FOURTH form)))
+         (UNLESS (LISTP then)
+           (ERROR "parsi: IF wants a list of statements for its branch: ~S" form))
+         (IF else
+             (FORMAT NIL "~AIF ~A BEGIN~%~A~%~AEND ELSE BEGIN~%~A~%~AEND"
+                     i cond-text (render-body then (1+ lvl)) i
+                     (render-body else (1+ lvl)) i)
+             (FORMAT NIL "~AIF ~A BEGIN~%~A~%~AEND"
+                     i cond-text (render-body then (1+ lvl)) i))))
+
+      ((head-is form "WHILE")
+       (FORMAT NIL "~AWHILE ~A BEGIN~%~A~%~AEND"
+               i (render-expr (SECOND form)) (render-body (CDDR form) (1+ lvl)) i))
+
       ;; (INSERT demo::authors (id name country))
       ((head-is form "INSERT")
        (FORMAT NIL "~AINSERT INTO ~A VALUES (~{~A~^, ~});" i (oname (SECOND form))

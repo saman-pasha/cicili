@@ -1,0 +1,27 @@
+PAGE demo::pgpage
+BEGIN
+	COMPILE '-I/usr/include/postgresql';
+	LINK '-lpq';
+	INCLUDE '"httprequest.hpp"';
+	BEGIN HPP
+	#include "demo_pgpage.hpp"
+	END
+	BEGIN CPP
+	#include "demo_pgpage.cpp"
+	END
+PUBLIC:
+	OVERRIDE FUNCTION PAGE_LOAD() RETURNS Void
+	BEGIN
+		ECHO '<!DOCTYPE html><html><head><title>Cicili, Parsi and PostgreSQL</title></head><body>';
+		ECHO '<h1>A page with a database behind it</h1>';
+		ECHO '<p>schema: ', `pg_setup(), '</p>';
+		DECLARE who AS String = request.query('who');
+		IF who == '' BEGIN
+			ECHO '<p>Add a row: append <code>?who=yourname</code> to the URL.</p>';
+		END ELSE BEGIN
+			ECHO '<p>stored: ', `pg_insert(who.`value().`c_str()), '</p>';
+		END
+		ECHO '<p>rows: ', `pg_rows(), '</p>';
+		ECHO '</body></html>';
+	END
+END 

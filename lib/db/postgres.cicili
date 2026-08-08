@@ -73,12 +73,12 @@
      ;;; PQconnectdb ALWAYS answers a pointer, even when it failed -- the
      ;;; failure is in PQstatus, and a null answer means out of memory. That is
      ;;; why pg-open checks the status rather than the pointer.
-     (decl) (func PQconnectdb    ((const char * conninfo)) (out (PGconn *)))
+     (decl) (func PQconnectdb    ((const char * conninfo)) (out PGconn *))
      (decl) (func PQfinish       ((PGconn * conn)))
      (decl) (func PQreset        ((PGconn * conn)))
      (decl) (func PQstatus       ((const PGconn * conn)) (out int))
-     (decl) (func PQerrorMessage ((const PGconn * conn)) (out (char *)))
-     (decl) (func PQdb           ((const PGconn * conn)) (out (char *)))
+     (decl) (func PQerrorMessage ((const PGconn * conn)) (out char *))
+     (decl) (func PQdb           ((const PGconn * conn)) (out char *))
      (decl) (func PQserverVersion ((const PGconn * conn)) (out int))
 
      ;;; ---- running a query ----------------------------------------------
@@ -92,28 +92,28 @@
      ;;; on the pointer ITSELF, only on what it points at, and the difference is
      ;;; invisible to the call: C converts the argument, and the real prototype
      ;;; is the one the compiler checks against.
-     (decl) (func PQexec       ((PGconn * conn) (const char * query)) (out (PGresult *)))
+     (decl) (func PQexec       ((PGconn * conn) (const char * query)) (out PGresult *))
      (decl) (func PQexecParams ((PGconn * conn) (const char * command) (int nParams)
                                 (const void * paramTypes) (const char ** paramValues)
                                 (const void * paramLengths) (const void * paramFormats)
-                                (int resultFormat)) (out (PGresult *)))
+                                (int resultFormat)) (out PGresult *))
 
      ;;; ---- the answer -----------------------------------------------------
      ;;; EVERY PGresult must be PQclear'd, including a failed one. That is the
      ;;; single thing this file's macros exist to guarantee.
      (decl) (func PQresultStatus       ((const PGresult * res)) (out int))
-     (decl) (func PQresultErrorMessage ((const PGresult * res)) (out (char *)))
+     (decl) (func PQresultErrorMessage ((const PGresult * res)) (out char *))
      (decl) (func PQclear              ((PGresult * res)))
      (decl) (func PQntuples            ((const PGresult * res)) (out int))
      (decl) (func PQnfields            ((const PGresult * res)) (out int))
-     (decl) (func PQfname              ((const PGresult * res) (int field_num)) (out (char *)))
-     (decl) (func PQcmdTuples          ((PGresult * res)) (out (char *)))
+     (decl) (func PQfname              ((const PGresult * res) (int field_num)) (out char *))
+     (decl) (func PQcmdTuples          ((PGresult * res)) (out char *))
 
      ;;; PQgetvalue answers a pointer owned by the PGresult: it dies with the
      ;;; PQclear, so anything kept past the loop has to be copied. A NULL column
      ;;; answers the empty string, NOT a null pointer, which is why PQgetisnull
      ;;; exists and why it is the only way to tell '' from NULL.
-     (decl) (func PQgetvalue  ((const PGresult * res) (int tup_num) (int field_num)) (out (char *)))
+     (decl) (func PQgetvalue  ((const PGresult * res) (int tup_num) (int field_num)) (out char *))
      (decl) (func PQgetisnull ((const PGresult * res) (int tup_num) (int field_num)) (out int))
      (decl) (func PQgetlength ((const PGresult * res) (int tup_num) (int field_num)) (out int))
 
@@ -121,8 +121,8 @@
      ;;; An identifier -- a table or column name -- cannot be a parameter, so a
      ;;; program that builds one from input needs PQescapeIdentifier. Both
      ;;; answer memory the CALLER frees with PQfreemem.
-     (decl) (func PQescapeLiteral    ((PGconn * conn) (const char * str) (size_t len)) (out (char *)))
-     (decl) (func PQescapeIdentifier ((PGconn * conn) (const char * str) (size_t len)) (out (char *)))
+     (decl) (func PQescapeLiteral    ((PGconn * conn) (const char * str) (size_t len)) (out char *))
+     (decl) (func PQescapeIdentifier ((PGconn * conn) (const char * str) (size_t len)) (out char *))
      (decl) (func PQfreemem          ((void * ptr)))
      ))
 

@@ -83,9 +83,9 @@
                                      (int flags) (const char * zVfs)) (out int))
      (decl) (func sqlite3_close     ((sqlite3 * db)) (out int))
      (decl) (func sqlite3_close_v2  ((sqlite3 * db)) (out int))
-     (decl) (func sqlite3_errmsg    ((sqlite3 * db)) (out (const char *)))
+     (decl) (func sqlite3_errmsg    ((sqlite3 * db)) (out const char *))
      (decl) (func sqlite3_errcode   ((sqlite3 * db)) (out int))
-     (decl) (func sqlite3_errstr    ((int rc)) (out (const char *)))
+     (decl) (func sqlite3_errstr    ((int rc)) (out const char *))
 
      ;;; The all-in-one. The callback and its argument are declared void* so a
      ;;; caller that wants one can cast; sq-exec passes null for both, which is
@@ -125,15 +125,15 @@
      (decl) (func sqlite3_column_int    ((sqlite3_stmt * s) (int i)) (out int))
      (decl) (func sqlite3_column_int64  ((sqlite3_stmt * s) (int i)) (out llong))
      (decl) (func sqlite3_column_double ((sqlite3_stmt * s) (int i)) (out double))
-     (decl) (func sqlite3_column_text   ((sqlite3_stmt * s) (int i)) (out (const uchar *)))
-     (decl) (func sqlite3_column_blob   ((sqlite3_stmt * s) (int i)) (out (const void *)))
+     (decl) (func sqlite3_column_text   ((sqlite3_stmt * s) (int i)) (out const uchar *))
+     (decl) (func sqlite3_column_blob   ((sqlite3_stmt * s) (int i)) (out const void *))
      (decl) (func sqlite3_column_bytes  ((sqlite3_stmt * s) (int i)) (out int))
-     (decl) (func sqlite3_column_name   ((sqlite3_stmt * s) (int i)) (out (const char *)))
+     (decl) (func sqlite3_column_name   ((sqlite3_stmt * s) (int i)) (out const char *))
 
      ;;; ---- the rest a caller usually wants ------------------------------
      (decl) (func sqlite3_last_insert_rowid ((sqlite3 * db)) (out llong))
      (decl) (func sqlite3_changes           ((sqlite3 * db)) (out int))
-     (decl) (func sqlite3_libversion        () (out (const char *)))
+     (decl) (func sqlite3_libversion        () (out const char *))
      ))
 
 ;;; ------------------------------------------------------------------
