@@ -146,10 +146,21 @@
 ;; an address-of by design (authority.lisp:47). So every `\.' on a value died
 ;; with "pointer storage not found: #<(@UNARY (n: &) …)>". A member access has
 ;; the storage of the thing it is a member of, and asks nothing of the analysis.
+;; `-->', the access-only operator, is the form these three ought to use: they
+;; NAME a function and the call is at the call site, ((\. get d) d). It cannot be
+;; used yet -- (--> ($ d __h_table) f) sends DEEP-TYPEOF into unbounded recursion
+;; and exhausts the control stack, because the table a data value points at holds
+;; a member typed back as that value. Until that cycle is broken these keep `->',
+;; which accesses and calls; the call site then calls the RESULT, and an `auto'
+;; binding over it infers `func *' rather than the function's return type. That
+;; is the "unknown struct type: func" still standing between here and haskell.c.
 (DEFMACRO \. (function data)
   `(-> ($ ,data __h_table) ,function))
 
 ;; a way to access functions inside Table by class instance
+;;
+;; Left as it was. A nested (--> (--> class __h_table) f) sends DEEP-TYPEOF into
+;; unbounded recursion, and this one is not in the way of anything yet.
 (DEFMACRO \.* (function class)
   `(-> ,class __h_table ,function))
 

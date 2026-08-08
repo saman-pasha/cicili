@@ -540,7 +540,7 @@
 ;;;; no tag byte, no v-table, no allocation. What is left in C is the `if' you
 ;;;; would have written by hand.
 ;;;;
-;;;; This is not the Haskell layer's 'match (lib/haskell/match.cicili), which
+;;;; This is not the Haskell layer's 'match (lib/std/haskell/match.cicili), which
 ;;;; walks a constructor tag at run time. Here the type does the talking, so the
 ;;;; whole dispatch is resolved at specification time.
 ;;;;

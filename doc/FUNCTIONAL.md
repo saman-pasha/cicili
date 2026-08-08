@@ -198,7 +198,7 @@ It's a practical showcase of how these high-level abstractions are implemented a
 The [monadic.cicili](../test/haskell/monadic.cicili) file is a powerful, practical demonstration of monadic computation in Cicili, specifically showcasing the Either monad for robust error handling.
 Its entire purpose is to safely validate and construct an Employee object ((Tuple String int int)) by chaining together a series of operations that can each fail.
 ### Definitions
-The [lib/haskell](../lib/haskell) folder contains all Cicili's Haskell definitions. review them to fully understand how they are developed by Cicili's C core clauses. Follow Cicili Standard definition model by using generics `decl-`, `impl-`, `import-`.
+The [lib/std/haskell](../lib/std/haskell) folder contains all Cicili's Haskell definitions. review them to fully understand how they are developed by Cicili's C core clauses. Follow Cicili Standard definition model by using generics `decl-`, `impl-`, `import-`.
 ### C core
 Cicili's C core clauses are described in another doc [here](DOC-C.md).
 

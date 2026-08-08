@@ -145,7 +145,7 @@ your.cicili ──read──► forms ──specify──► typed IR (sp tree, 
   | builtins | `builtins.cicili`, `cpp.cicili` | `main`, `letin`, `closure`, `match`, `defer*`, `new`, `import`, … |
   | C declarations | `lib/std/c/` | the C standard library and POSIX, as typed Cicili declarations |
   | std | `lib/std/` | `maybe`, `either`, `array`, `cell`, `rc`, `vector`, `pthread` |
-  | functional | `lib/haskell/` | ADTs, type classes, Functors, Monads — see [doc/FUNCTIONAL.md](doc/FUNCTIONAL.md) |
+  | functional | `lib/std/haskell/` | ADTs, type classes, Functors, Monads — see [doc/FUNCTIONAL.md](doc/FUNCTIONAL.md) |
 
 * **Toolchain.** `config.lisp` drives clang (macOS) or gcc (Linux) through GNU libtool,
   with `-Werror -Wall`, in a debug (`-g -O0`) or a `--release` (`-O3 -falign-loops=32`)
@@ -391,7 +391,7 @@ cpp.cicili         the C++ macro layer    doc/test.md       the test suite
 lib/cpp/torch      libtorch bindings + DSL  test/c, test/std the suite (sh test/run.sh)
 lib/python/        CPython + numpy bindings example/        runnable examples
 lib/std/           the standard library
-lib/haskell/       the functional layer   test/cpp          the C++ suite
+lib/std/haskell/   the functional layer   test/cpp          the C++ suite
 emacs/             cicili-mode
 ```
 
