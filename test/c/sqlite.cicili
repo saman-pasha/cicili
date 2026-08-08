@@ -1,0 +1,114 @@
+;;;; lib/db/sqlite.cicili, against the real libsqlite3
+;;;;
+;;;; NO STUB HERE, and that is the difference from test/c/python.cicili and
+;;;; test/cpp/torch.cicili. Those two stand in for a library that is a hundred
+;;;; megabytes and an interpreter; SQLite is one .so that every distribution
+;;;; already ships, so a test against the real thing costs nothing and proves
+;;;; what a stub cannot -- that the declared signatures are the library's.
+;;;;
+;;;; IT WRITES TO :memory:, so it leaves nothing behind and cannot be affected
+;;;; by what an earlier run left. A file database would have made the row counts
+;;;; below depend on history.
+;;;;
+;;;; Run:  sh test/run.sh test/c/sqlite
+
+(source "sqlite.c"
+  (make :std #t :compile #t :link ("-lsqlite.o" "-lsqlite3" "-o" "sqlite_test"))
+
+  (include <sqlite3.h>)
+  (import "lib/db/sqlite.cicili")
+
+  (var int bad . 0)
+
+  (func check ((const char * what) (llong got) (llong want))
+        (if (== got want)
+            (printf "ok   %-38s %lld\n" what got)
+          (block (printf "FAIL %-38s got %lld want %lld\n" what got want)
+                 (++ bad))))
+
+  (func check_str ((const char * what) (const char * got) (const char * want))
+        (if (== 0 (strcmp got want))
+            (printf "ok   %-38s %s\n" what got)
+          (block (printf "FAIL %-38s got '%s' want '%s'\n" what got want)
+                 (++ bad))))
+
+  (main
+    ;; the declarations resolve against the real header: a version string is
+    ;; the cheapest call that proves the link line reached the library
+    (check "libversion is not empty"
+           (cast llong (> (strlen (sqlite3_libversion)) 0)) 1)
+
+    ;; ---- open ---------------------------------------------------------
+    ;; The caller declares the handle and the macro opens it, so the line that
+    ;; says where the database is also says what happened.
+    (let ((sqlite3 * db . nil))
+      (check "opened" (sq-open db ":memory:") SQLITE_OK)
+      (check "handle is not null" (cast llong (!= db nil)) 1)
+
+    ;; ---- DDL, through the all-in-one ----------------------------------
+    (check "create table"
+           (sq-exec db "CREATE TABLE t (id INTEGER PRIMARY KEY, name TEXT, score REAL)")
+           SQLITE_OK)
+
+    ;; ---- bound inserts -------------------------------------------------
+    ;; Parameters are numbered by position, so nobody writes an index; the
+    ;; 1-based counting is the macro's business.
+    (check "insert ada"    (sq-run db "INSERT INTO t (name, score) VALUES (?, ?)"
+                                   (sq-text "ada") (sq-real 99.5)) SQLITE_OK)
+    (check "insert grace"  (sq-run db "INSERT INTO t (name, score) VALUES (?, ?)"
+                                   (sq-text "grace") (sq-real 98.25)) SQLITE_OK)
+    (check "insert nobody" (sq-run db "INSERT INTO t (name, score) VALUES (?, ?)"
+                                   (sq-null) (sq-real 0.0)) SQLITE_OK)
+
+    (check "three rows inserted" (sqlite3_last_insert_rowid db) 3)
+
+    ;; ---- reading, by name rather than by index -------------------------
+    (let ((int rows . 0)
+          (llong id_sum . 0)
+          (double score_sum . 0.0))
+      (check "query ran"
+             (sq-query db "SELECT id, name, score FROM t WHERE id <= ? ORDER BY id"
+                       (sq-int 2)
+                       (row (id (sq-col-i64 0)) (name (sq-col-text 1)) (score (sq-col-real 2)))
+                       (++ rows)
+                       (+= id_sum id)
+                       (+= score_sum score)
+                       ;; the name is in scope as a name, which is the whole
+                       ;; point of the row clause
+                       (if (== rows 1) (check_str "first row name" name "ada")))
+             SQLITE_OK)
+      (check "two rows matched"   rows 2)
+      (check "ids summed"         id_sum 3)
+      (check "scores summed x100" (cast llong (+ 0.5 (* 100.0 score_sum))) 19775))
+
+    ;; ---- a NULL column is asked about, not guessed ---------------------
+    (let ((int nulls . 0))
+      (sq-query db "SELECT name FROM t ORDER BY id"
+                (row (name (sq-col-text 0)))
+                (if (== name nil) (++ nulls)))
+      (check "one name was NULL" nulls 1))
+
+    ;; ---- the error paths -----------------------------------------------
+    ;; A statement that does not compile answers a code and does NOT leak the
+    ;; statement -- sq-run finalizes on every path, which is the reason it is a
+    ;; macro rather than a pattern to copy.
+    (check "syntax error is a code"
+           (cast llong (!= (sq-run db "SELECT FROM WHERE") SQLITE_OK)) 1)
+    (check "and the message says so"
+           (cast llong (> (strlen (sq-error db)) 0)) 1)
+
+    ;; a bound value that violates the schema comes back as a code too
+    (check "constraint is a code"
+           (cast llong (!= (sq-run db "INSERT INTO t (id, name) VALUES (?, ?)"
+                                   (sq-int 1) (sq-text "duplicate")) SQLITE_OK)) 1)
+
+      ;; ---- close --------------------------------------------------------
+      (check "closed" (sq-close db) SQLITE_OK))
+
+    (if (== bad 0)
+        (printf "sqlite: all ok\n")
+      (printf "sqlite: %d FAILED\n" bad))
+    (return bad)))
+
+;; sbcl --script cicili.lisp ./test/c/sqlite.cicili
+;; ./test/c/sqlite_test

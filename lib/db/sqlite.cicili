@@ -1,0 +1,294 @@
+;;;; Cicili declarations for SQLite3, and a front end over them
+;;;;
+;;;; Requires in target: (include <sqlite3.h>) and -lsqlite3 on the link line.
+;;;;
+;;;; NOTHING IN THE DECLARATIONS EMITS C. They exist so Cicili's type inference
+;;;; knows what a sqlite3 and a sqlite3_stmt are and what each entry point
+;;;; returns; the real declarations still come from the real header. This is the
+;;;; arrangement lib/std/c has with libc and lib/cpp/torch has with libtorch.
+;;;;
+;;;; WHAT THE FRONT END IS FOR. SQLite's C API is a state machine: prepare,
+;;;; bind by 1-based index, step until SQLITE_DONE, read columns by 0-based
+;;;; index, finalize -- and every one of those returns a code nobody checks
+;;;; until it matters. Written out, the shortest useful query is a dozen lines
+;;;; in which the interesting part is two of them.
+;;;;
+;;;;     (let ((sqlite3 * db . nil))
+;;;;       (sq-open db "app.db")
+;;;;       (sq-exec db "CREATE TABLE t (id INTEGER PRIMARY KEY, name TEXT)")
+;;;;       (sq-run  db "INSERT INTO t (name) VALUES (?)" (sq-text "ada"))
+;;;;       (sq-query db "SELECT id, name FROM t WHERE id > ?" (sq-int 0)
+;;;;         (row (id (sq-col-i64 0)) (name (sq-col-text 1)))
+;;;;         (printf "%lld %s\n" id name))
+;;;;       (sq-close db))
+;;;;
+;;;; THE INDEXES DISAGREE ON PURPOSE, and it is SQLite's disagreement rather
+;;;; than this file's: a bound parameter is 1-based and a result column is
+;;;; 0-based. Hiding that would make every reader who knows sqlite3 wrong, so
+;;;; the numbers here are the numbers the C API uses and this note is the whole
+;;;; of the warning.
+;;;;
+;;;; ERRORS ARE NOT HIDDEN EITHER. Every macro answers what its C call answers,
+;;;; so a caller checks a return code or ignores one exactly as it would in C.
+;;;; sq-query is the exception -- it is a loop, so it answers the code that
+;;;; ENDED the loop: SQLITE_DONE when the rows ran out, an error code when one
+;;;; stopped it early.
+
+;;; ------------------------------------------------------------------
+;;; the declarations
+;;; ------------------------------------------------------------------
+
+(DEFMACRO init-macro ()
+  `($$$
+
+     ;;; ---- the two handles, both opaque -----------------------------
+     ;;; A sqlite3 is a connection and a sqlite3_stmt is one compiled
+     ;;; statement. Their layouts are SQLite's business; Cicili needs the names
+     ;;; to type things with.
+     (decl) (struct sqlite3)
+     (decl) (struct sqlite3_stmt)
+
+     ;;; ---- result codes ---------------------------------------------
+     ;;; The ones a caller actually branches on. SQLITE_ROW and SQLITE_DONE are
+     ;;; the two that come back from sqlite3_step and are the reason a step
+     ;;; loop is written the way it is.
+     (decl) (var int SQLITE_OK)
+     (decl) (var int SQLITE_ERROR)
+     (decl) (var int SQLITE_BUSY)
+     (decl) (var int SQLITE_MISUSE)
+     (decl) (var int SQLITE_ROW)
+     (decl) (var int SQLITE_DONE)
+
+     ;;; ---- open flags ------------------------------------------------
+     (decl) (var int SQLITE_OPEN_READONLY)
+     (decl) (var int SQLITE_OPEN_READWRITE)
+     (decl) (var int SQLITE_OPEN_CREATE)
+
+     ;;; ---- column types, for sqlite3_column_type ---------------------
+     (decl) (var int SQLITE_INTEGER)
+     (decl) (var int SQLITE_FLOAT)
+     (decl) (var int SQLITE_TEXT)
+     (decl) (var int SQLITE_BLOB)
+     (decl) (var int SQLITE_NULL)
+
+     ;;; SQLITE_STATIC and SQLITE_TRANSIENT are casts of 0 and -1 to a function
+     ;;; pointer type, so they cannot be declared as variables. sq-text and
+     ;;; sq-blob below emit SQLITE_TRANSIENT through a code escape, which is
+     ;;; what a macro that cannot be declared is reached with everywhere else in
+     ;;; this tree -- see lib/cpp/torch/tensor.cicili and `dims'.
+
+     ;;; ---- connection ------------------------------------------------
+     (decl) (func sqlite3_open      ((const char * filename) (sqlite3 ** ppDb)) (out int))
+     (decl) (func sqlite3_open_v2   ((const char * filename) (sqlite3 ** ppDb)
+                                     (int flags) (const char * zVfs)) (out int))
+     (decl) (func sqlite3_close     ((sqlite3 * db)) (out int))
+     (decl) (func sqlite3_close_v2  ((sqlite3 * db)) (out int))
+     (decl) (func sqlite3_errmsg    ((sqlite3 * db)) (out (const char *)))
+     (decl) (func sqlite3_errcode   ((sqlite3 * db)) (out int))
+     (decl) (func sqlite3_errstr    ((int rc)) (out (const char *)))
+
+     ;;; The all-in-one. The callback and its argument are declared void* so a
+     ;;; caller that wants one can cast; sq-exec passes null for both, which is
+     ;;; the form that runs DDL and DML and returns a code.
+     (decl) (func sqlite3_exec      ((sqlite3 * db) (const char * sql) (void * callback)
+                                     (void * arg) (char ** errmsg)) (out int))
+     (decl) (func sqlite3_free      ((void * p)))
+
+     ;;; ---- statements -------------------------------------------------
+     (decl) (func sqlite3_prepare_v2 ((sqlite3 * db) (const char * sql) (int nByte)
+                                      (sqlite3_stmt ** ppStmt) (const char ** pzTail)) (out int))
+     (decl) (func sqlite3_step       ((sqlite3_stmt * s)) (out int))
+     (decl) (func sqlite3_reset      ((sqlite3_stmt * s)) (out int))
+     (decl) (func sqlite3_finalize   ((sqlite3_stmt * s)) (out int))
+     (decl) (func sqlite3_clear_bindings ((sqlite3_stmt * s)) (out int))
+
+     ;;; ---- binding, 1-BASED -------------------------------------------
+     ;;; The destructor argument of bind_text and bind_blob is the one place
+     ;;; the API is easy to get wrong: SQLITE_STATIC promises the bytes outlive
+     ;;; the statement, SQLITE_TRANSIENT asks SQLite to copy them. The front end
+     ;;; always says TRANSIENT, which is right for anything on the stack.
+     (decl) (func sqlite3_bind_int    ((sqlite3_stmt * s) (int i) (int v)) (out int))
+     (decl) (func sqlite3_bind_int64  ((sqlite3_stmt * s) (int i) (llong v)) (out int))
+     (decl) (func sqlite3_bind_double ((sqlite3_stmt * s) (int i) (double v)) (out int))
+     (decl) (func sqlite3_bind_text   ((sqlite3_stmt * s) (int i) (const char * v)
+                                       (int n) (void * destructor)) (out int))
+     (decl) (func sqlite3_bind_blob   ((sqlite3_stmt * s) (int i) (const void * v)
+                                       (int n) (void * destructor)) (out int))
+     (decl) (func sqlite3_bind_null   ((sqlite3_stmt * s) (int i)) (out int))
+     (decl) (func sqlite3_bind_parameter_count ((sqlite3_stmt * s)) (out int))
+
+     ;;; ---- reading, 0-BASED --------------------------------------------
+     ;;; column_text answers a pointer owned by the statement: it is valid until
+     ;;; the next step, reset or finalize, and copying it is the caller's job.
+     (decl) (func sqlite3_column_count  ((sqlite3_stmt * s)) (out int))
+     (decl) (func sqlite3_column_type   ((sqlite3_stmt * s) (int i)) (out int))
+     (decl) (func sqlite3_column_int    ((sqlite3_stmt * s) (int i)) (out int))
+     (decl) (func sqlite3_column_int64  ((sqlite3_stmt * s) (int i)) (out llong))
+     (decl) (func sqlite3_column_double ((sqlite3_stmt * s) (int i)) (out double))
+     (decl) (func sqlite3_column_text   ((sqlite3_stmt * s) (int i)) (out (const uchar *)))
+     (decl) (func sqlite3_column_blob   ((sqlite3_stmt * s) (int i)) (out (const void *)))
+     (decl) (func sqlite3_column_bytes  ((sqlite3_stmt * s) (int i)) (out int))
+     (decl) (func sqlite3_column_name   ((sqlite3_stmt * s) (int i)) (out (const char *)))
+
+     ;;; ---- the rest a caller usually wants ------------------------------
+     (decl) (func sqlite3_last_insert_rowid ((sqlite3 * db)) (out llong))
+     (decl) (func sqlite3_changes           ((sqlite3 * db)) (out int))
+     (decl) (func sqlite3_libversion        () (out (const char *)))
+     ))
+
+;;; ------------------------------------------------------------------
+;;; the front end
+;;; ------------------------------------------------------------------
+
+;;; (sq-open db "app.db") -- opens DB, which the caller has declared:
+;;;
+;;;     (let ((sqlite3 * db . nil))
+;;;       (if (!= (sq-open db "app.db") SQLITE_OK) (return 1))
+;;;       …
+;;;       (sq-close db))
+;;;
+;;; AN EXPRESSION, not a declaration. A macro that declared the handle as well
+;;; would have to expand to a `let' wrapping everything after it, or to a `var',
+;;; which is a global; and it would hide the one line a reader most wants to
+;;; see, which is where the connection is opened and what happened. The result
+;;; code is the return value, so it is checked exactly as in C.
+(DEFMACRO sq-open (name path) `(sqlite3_open ,path (aof ,name)))
+
+;;; With flags: (sq-open-v2 db "app.db" (bitor SQLITE_OPEN_READWRITE SQLITE_OPEN_CREATE))
+(DEFMACRO sq-open-v2 (name path flags) `(sqlite3_open_v2 ,path (aof ,name) ,flags nil))
+
+(DEFMACRO sq-close (db) `(sqlite3_close_v2 ,db))
+(DEFMACRO sq-error (db) `(sqlite3_errmsg ,db))
+
+;;; Statements with no parameters and no rows -- DDL, and DML a caller does not
+;;; need to bind. The error string is not asked for, because sqlite3_errmsg on
+;;; the connection answers the same thing without a buffer to free.
+(DEFMACRO sq-exec (db sql) `(sqlite3_exec ,db ,sql nil nil nil))
+
+;;; ---- bound values -------------------------------------------------
+;;;
+;;; (sq-run db "INSERT …" (sq-int 1) (sq-text "ada")) -- each one is a form the
+;;; run/query macros turn into a bind call, numbering them 1, 2, 3 … so nobody
+;;; writes the index. They are not expressions and mean nothing outside those
+;;; two macros, which is why they error clearly when expanded anywhere else.
+(DEFMACRO sq-int   (v) (ERROR "sq-int is a bound value; it belongs in sq-run or sq-query: ~S" v))
+(DEFMACRO sq-i64   (v) (ERROR "sq-i64 is a bound value; it belongs in sq-run or sq-query: ~S" v))
+(DEFMACRO sq-real  (v) (ERROR "sq-real is a bound value; it belongs in sq-run or sq-query: ~S" v))
+(DEFMACRO sq-text  (v) (ERROR "sq-text is a bound value; it belongs in sq-run or sq-query: ~S" v))
+(DEFMACRO sq-null  ()  (ERROR "sq-null is a bound value; it belongs in sq-run or sq-query"))
+
+;;; one bind call for one bound value, at 1-based index I
+(DEFUN sq-bind-form (stmt i v)
+  (UNLESS (AND (CONSP v) (SYMBOLP (CAR v)))
+    (ERROR "not a bound value: ~S -- write (sq-int x), (sq-text s), …" v))
+  (LET ((k (SYMBOL-NAME (CAR v))))
+    (COND ((STRING= k "sq-int")  `(sqlite3_bind_int    ,stmt ,i ,(SECOND v)))
+          ((STRING= k "sq-i64")  `(sqlite3_bind_int64  ,stmt ,i ,(SECOND v)))
+          ((STRING= k "sq-real") `(sqlite3_bind_double ,stmt ,i ,(SECOND v)))
+          ((STRING= k "sq-null") `(sqlite3_bind_null   ,stmt ,i))
+          ;; -1 for the length is "up to the NUL", and TRANSIENT asks SQLite to
+          ;; copy -- the safe pairing for a string that may be on the stack.
+          ((STRING= k "sq-text")
+           `(sqlite3_bind_text ,stmt ,i ,(SECOND v) -1
+                               (code "SQLITE_TRANSIENT")))
+          (T (ERROR "not a bound value: ~S" v)))))
+
+;;; ---- read a column ------------------------------------------------
+;;;
+;;; 0-based, and named for what they answer rather than for the C entry point,
+;;; so a row clause reads as the shape of the row. sq-col-text casts away the
+;;; unsigned char SQLite answers with, because every caller wants a char*.
+(DEFMACRO sq-col-int  (s i) `(sqlite3_column_int    ,s ,i))
+(DEFMACRO sq-col-i64  (s i) `(sqlite3_column_int64  ,s ,i))
+(DEFMACRO sq-col-real (s i) `(sqlite3_column_double ,s ,i))
+(DEFMACRO sq-col-text (s i) `(cast (const char *) (sqlite3_column_text ,s ,i)))
+(DEFMACRO sq-col-null? (s i) `(== (sqlite3_column_type ,s ,i) SQLITE_NULL))
+
+;;; (sq-run db "INSERT INTO t (name) VALUES (?)" (sq-text "ada"))
+;;;
+;;; Prepare, bind, step once, finalize -- and answer the code. FINALIZE RUNS ON
+;;; EVERY PATH, including the one where prepare failed, because finalizing a
+;;; null statement is defined and returns SQLITE_OK. That is what keeps a
+;;; failed statement from leaking, and it is the reason this is a macro rather
+;;; than a pattern to copy.
+(DEFMACRO sq-run (db sql &REST binds)
+  (LET ((s (GENSYM "sq_stmt_")) (rc (GENSYM "sq_rc_")))
+    ;; letn inside progn, not let: progn is ({ … }) and takes the value of its
+    ;; last statement, and only letn is the form that has one. With a plain let
+    ;; the expansion compiles and answers nothing usable.
+    `(progn
+       (letn ((sqlite3_stmt * ,s . nil)
+              (int ,rc . 0))
+         (set ,rc (sqlite3_prepare_v2 ,db ,sql -1 (aof ,s) nil))
+         (if (== ,rc SQLITE_OK)
+             (block
+               ,@(LOOP FOR b IN binds FOR i FROM 1 COLLECT (sq-bind-form s i b))
+               (set ,rc (sqlite3_step ,s))
+               ;; a statement that returns no rows answers DONE; anything else
+               ;; is the caller's to look at
+               (if (== ,rc SQLITE_DONE) (set ,rc SQLITE_OK))))
+         (sqlite3_finalize ,s)
+         ,rc))))
+
+;;; One binding of the row clause. The column form carries only the INDEX --
+;;; (sq-col-int 0) -- and the statement is put in here, because the statement is
+;;; sq-query's own gensym and naming it at every column would be asking the
+;;; caller for something only the macro knows.
+(DEFUN sq-col-binding (stmt name form)
+  (UNLESS (AND (CONSP form) (SYMBOLP (CAR form)) (= (LENGTH form) 2))
+    (ERROR "a row column wants (sq-col-... index), got ~S" form))
+  (LET ((k (SYMBOL-NAME (CAR form))) (i (SECOND form)))
+    (COND ((STRING= k "sq-col-int")  `(int    ,name . #'(sqlite3_column_int    ,stmt ,i)))
+          ((STRING= k "sq-col-i64")  `(llong  ,name . #'(sqlite3_column_int64  ,stmt ,i)))
+          ((STRING= k "sq-col-real") `(double ,name . #'(sqlite3_column_double ,stmt ,i)))
+          ((STRING= k "sq-col-text")
+           `(const char * ,name . #'(cast (const char *) (sqlite3_column_text ,stmt ,i))))
+          (T (ERROR "not a column reader: ~S" form)))))
+
+;;; (sq-query db "SELECT id, name FROM t WHERE id > ?" (sq-int 0)
+;;;   (row (id (sq-col-int 0)) (name (sq-col-text 1)))
+;;;   (printf "%d %s\n" id name))
+;;;
+;;; The row clause names what each column is, so the body reads in names rather
+;;; than in indexes -- and the index appears once, where the column is taken,
+;;; instead of at every use.
+;;;
+;;; ANSWERS THE CODE THAT ENDED THE LOOP: SQLITE_OK when the rows ran out
+;;; normally, and the error code when one stopped it. A loop that answered
+;;; nothing would make a query that failed halfway look like a query that found
+;;; nothing, which is the failure this whole shape exists to avoid.
+(DEFMACRO sq-query (db sql &REST rest)
+  (LET* ((binds (LOOP FOR f IN rest
+                      WHILE (AND (CONSP f) (SYMBOLP (CAR f))
+                                 (LET ((k (SYMBOL-NAME (CAR f))))
+                                   (OR (STRING= k "sq-int")  (STRING= k "sq-i64")
+                                       (STRING= k "sq-real") (STRING= k "sq-text")
+                                       (STRING= k "sq-null"))))
+                      COLLECT f))
+         (tail (NTHCDR (LENGTH binds) rest))
+         (row  (FIRST tail))
+         (body (REST tail))
+         (s    (GENSYM "sq_stmt_"))
+         (rc   (GENSYM "sq_rc_")))
+    (UNLESS (AND (CONSP row) (SYMBOLP (CAR row)) (STRING= (SYMBOL-NAME (CAR row)) "row"))
+      (ERROR "sq-query wants a (row (name (sq-col-… i)) …) clause, got ~S" row))
+    `(progn
+       (letn ((sqlite3_stmt * ,s . nil)
+              (int ,rc . 0))
+         (set ,rc (sqlite3_prepare_v2 ,db ,sql -1 (aof ,s) nil))
+         (if (== ,rc SQLITE_OK)
+             (block
+               ,@(LOOP FOR b IN binds FOR i FROM 1 COLLECT (sq-bind-form s i b))
+               ;; `while 1' with a break rather than the C idiom
+               ;; `while ((rc = step(s)) == SQLITE_ROW)': Cicili's set is a
+               ;; STATEMENT, not an expression, so an assignment cannot be
+               ;; tested in place.
+               (while 1
+                 (set ,rc (sqlite3_step ,s))
+                 (if (!= ,rc SQLITE_ROW) (break))
+                 (let ,(LOOP FOR c IN (CDR row)
+                             COLLECT (sq-col-binding s (FIRST c) (SECOND c)))
+                   ,@body))
+               (if (== ,rc SQLITE_DONE) (set ,rc SQLITE_OK))))
+         (sqlite3_finalize ,s)
+         ,rc))))
