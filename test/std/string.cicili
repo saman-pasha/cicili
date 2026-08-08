@@ -1,0 +1,69 @@
+;;; test Cicili std string -- a vector of char under a second name
+;;;
+;;; Two claims worth checking, and they pull in opposite directions. A string
+;;; must BE a vector -- vector's own front ends have to work on one, or the
+;;; typedef is a lie -- and it must carry a NUL that `len' does not count, or
+;;; c_str hands the C library something that runs off the end.
+(source "string.c"
+  (make :std #t
+        :compile #t :link ("-lstring.o" "-o" "string_test"))
+
+  (decl-string)
+  (impl-string)
+
+  (static) (var int bad . 0)
+
+  (func check ((const char * what) (long got) (long want)) (out int)
+    (if (== got want)
+        (block (printf "ok   %-38s %ld\n" what got) (return 0))
+      (block (printf "FAIL %-38s got %ld want %ld\n" what got want) (return 1))))
+
+  (func check_str ((const char * what) (const char * got) (const char * want)) (out int)
+    (if (== (strcmp got want) 0)
+        (block (printf "ok   %-38s \"%s\"\n" what got) (return 0))
+      (block (printf "FAIL %-38s got \"%s\" want \"%s\"\n" what got want) (return 1))))
+
+  (main
+    ;; ---- it is a string ---------------------------------------------
+    (letin ((s (new_string "hello")))
+      (+= bad (check "len counts characters, not the NUL"
+                     (cast long (len_vector s)) 5))
+      (+= bad (check_str "c_str is NUL terminated"
+                         (c_str_string (aof s)) "hello"))
+
+      ;; the terminator is reachable at index len, and len never moved
+      (+= bad (check "a NUL sits at index len"
+                     (cast long (nth 5 ($ s arr))) 0))
+
+      (letin ((t (new_string ", world")))
+        (append_string (aof s) (aof t))
+        (+= bad (check "append adds the right count"
+                       (cast long (len_vector s)) 12))
+        (+= bad (check_str "and re-terminates"
+                           (c_str_string (aof s)) "hello, world"))))
+
+    ;; ---- and it is a vector -----------------------------------------
+    ;;
+    ;; The point of the typedef: vector's own macros dispatch on a string,
+    ;; because CICILI:TYPE-ORIGIN answers std_vector for it.
+    (letin ((v (new_string "abc")))
+      (+= bad (check "nth_vector reads a character"
+                     (cast long (matchn (nth_vector 1 v) (just c (cast long (cof c))) (nothing -1)))
+                     (cast long #\b)))
+      (push_vector v #\d)
+      (+= bad (check "push_vector extends a string"
+                     (cast long (len_vector v)) 4))
+      ;; push does not maintain the NUL -- c_str is what puts one there
+      (+= bad (check_str "c_str terminates after a raw push"
+                         (c_str_string (aof v)) "abcd")))
+
+    ;; ---- the empty and null edges -----------------------------------
+    (letin ((e (new_string "")))
+      (+= bad (check "the empty string allocates nothing"
+                     (cast long (== ($ e arr) nil)) 1))
+      (+= bad (check_str "and c_str still answers" (c_str_string (aof e)) "")))
+
+    (if (== bad 0)
+        (printf "string: all ok\n")
+      (printf "string: %d FAILED\n" bad))
+    (return bad)))

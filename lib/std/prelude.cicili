@@ -23,6 +23,11 @@
 (import "./cell.cicili")
 (import "./rc.cicili")
 (import "./vector.cicili")
+
+;;; A vector of char under a second name -- see the file. It comes after
+;;; vector because it IS one.
+(import "./string.cicili")
+
 (import "./btree.cicili")
 
 ;;; The algebraic layer: `data' and `class' and the types built on them --
