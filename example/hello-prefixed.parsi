@@ -19,9 +19,12 @@ BEGIN
 PUBLIC:
 	OVERRIDE FUNCTION PAGE_LOAD() RETURNS Void
 	BEGIN
+		ECHO '<!DOCTYPE html><html><head><title>prefixed</title></head><body>';
 		ECHO '<h1>prefixed</h1>';
 		DECLARE model AS demo::holder;
 		ECHO '<p>from the class: ', model.answer(), '</p>';
 		ECHO '<p>from Cicili: ', `demo_hello_e1(), '</p>';
+		ECHO '<p><a href="/site/hello.zt">the unprefixed one</a></p>';
+		ECHO '</body></html>';
 	END
 END 

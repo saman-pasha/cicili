@@ -9,7 +9,10 @@ BEGIN
 PUBLIC:
 	OVERRIDE FUNCTION PAGE_LOAD() RETURNS Void
 	BEGIN
+		ECHO '<!DOCTYPE html><html><head><title>no prefix</title></head><body>';
 		ECHO '<h1>no prefix</h1>';
 		ECHO '<p>from Cicili: ', `site_hello_e1(), '</p>';
+		ECHO '<p><a href="/demo/hello.zt">the prefixed one</a></p>';
+		ECHO '</body></html>';
 	END
 END 

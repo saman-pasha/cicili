@@ -20,6 +20,11 @@
 ;;;; parts with :: (ziguratip/loadzeytun.cpp:173-180), so demo::hello is served
 ;;;; at /demo/hello.zt.
 ;;;;
+;;;; MARKUP IS WRITTEN AS FORMS here rather than as quoted angle brackets --
+;;;; (h1) "x" (/h1) rather than "<h1>x</h1>". Opening and closing are separate
+;;;; items, adjacent markup merges into one Parsi string, and the element list
+;;;; is closed so a typo is an error rather than markup emitted on faith.
+;;;;
 ;;;; Run:
 ;;;;   sbcl --script cicili.lisp example/parsi-prefixed.cicili
 ;;;;   cp example/demo_hello.hpp example/demo_hello.cpp $ZIGURATIP_HOME/ld/
@@ -44,12 +49,24 @@
     (REQUIRES holder)
     (PUBLIC)
     (PAGE_LOAD
-      (ECHO "<h1>prefixed</h1>")
+      ;; MARKUP AS FORMS. An opening and a closing tag are separate items, so
+      ;; whatever goes between them is an ordinary item -- a string, a value, a
+      ;; column. Adjacent markup merges into one Parsi string, so this line
+      ;; emits `<!DOCTYPE html><html><head><title>prefixed</title></head><body>'
+      ;; rather than six fragments.
+      (ECHO (doctype) (html) (head) (title) "prefixed" (/title) (/head) (body))
+      (ECHO (h1) "prefixed" (/h1))
+
       (DECLARE model AS demo::holder)
-      (ECHO "<p>from the class: " (call model.answer) "</p>")
+      (ECHO (p) "from the class: " (call model.answer) (/p))
 
       ;; the escape to Cicili -- lifted into demo_hello.cpp and called from here
-      (ECHO "<p>from Cicili: " (cicili (+ 20 22)) "</p>"))))
+      (ECHO (p) "from Cicili: " (cicili (+ 20 22)) (/p))
+
+      ;; an attribute with a literal value; one with a column or a variable
+      ;; breaks the string so the server escapes what it interpolates
+      (ECHO (p) (a :href "/site/hello.zt") "the unprefixed one" (/a) (/p))
+      (ECHO (/body) (/html)))))
 
 ;;; The two fragment names follow the PAGE's own name -- demo::hello lifts into
 ;;; demo_hello.hpp and demo_hello.cpp, which is what its blocks include -- so

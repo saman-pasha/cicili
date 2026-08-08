@@ -37,6 +37,10 @@
 ;;;; So: this form for a file of pages, the prefixed form for anything holding a
 ;;;; model.
 ;;;;
+;;;; MARKUP IS WRITTEN AS FORMS here too, and it is where the case rule earns
+;;;; its keep: (title) and (select) are HTML elements while TITLE and SELECT
+;;;; are Parsi's, told apart by nothing but case.
+;;;;
 ;;;; Run:
 ;;;;   sbcl --script cicili.lisp example/parsi-unprefixed.cicili
 ;;;;   cp example/site_hello.hpp example/site_hello.cpp $ZIGURATIP_HOME/ld/
@@ -50,10 +54,18 @@
   (PAGE hello
     (PUBLIC)
     (PAGE_LOAD
-      (ECHO "<h1>no prefix</h1>")
+      ;; MARKUP AS FORMS, and note which words these are: the elements are
+      ;; lower case and Parsi's clauses are upper case, which is the whole
+      ;; reason (title) and (select) can be elements while TITLE and SELECT
+      ;; belong to the language. A macro file is read with the case preserved.
+      (ECHO (doctype) (html) (head) (title) "no prefix" (/title) (/head) (body))
+      (ECHO (h1) "no prefix" (/h1))
 
       ;; the escape to Cicili -- lifted into site_hello.cpp and called from here
-      (ECHO "<p>from Cicili: " (cicili (+ 20 22)) "</p>"))))
+      (ECHO (p) "from Cicili: " (cicili (+ 20 22)) (/p))
+
+      (ECHO (p) (a :href "/demo/hello.zt") "the prefixed one" (/a) (/p))
+      (ECHO (/body) (/html)))))
 
 ;;; Named after the page, the same as in the prefixed file: site::hello lifts
 ;;; into site_hello.hpp and site_hello.cpp.
