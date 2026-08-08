@@ -128,6 +128,135 @@
 
 
 ;;;; ------------------------------------------------------------------
+;;;; arc -- an rc whose count is moved atomically
+;;;;
+;;;; Same struct, same five functions, one difference: the count is incremented
+;;;; and decremented with the compiler's atomic builtins, so two threads may
+;;;; hold clones of the same arc and drop them in any order without racing on
+;;;; the count. Nothing else about it is thread safe. The PAYLOAD is shared and
+;;;; unguarded, exactly as an rc's is -- an arc says "this refcount is safe to
+;;;; share", not "this value is".
+;;;;
+;;;; THE BUILTINS ARE THE __sync_ ONES, which are full barriers. __atomic_ with
+;;;; RELAXED on the clone and ACQ_REL on the release is the tighter pairing and
+;;;; would be the one to reach for if a refcount ever showed up in a profile --
+;;;; but those take a memory-order argument, and the __ATOMIC_* orders are
+;;;; preprocessor macros rather than symbols Cicili can be told about. A full
+;;;; barrier on a refcount is a real cost and an invisible one; correctness
+;;;; first, and the note is here for whoever measures.
+;;;;
+;;;; For a shared value that also needs its CONTENTS guarded, use a mutex
+;;;; alongside -- lib/std/pthread/pthread.cicili's `lock', or the haskell layer's
+;;;; Arc, which carries the mutex in the box and takes a callback per case.
+;;;; ------------------------------------------------------------------
+
+(generic decl-arc
+  (a)
+
+  (decl-maybe ref a)
+
+  (non-copy)
+  (struct (<> arc a)
+          (member a ref ptr)
+          (member size_t * count))
+
+  (typedef a (<> arc a interior_t))
+
+  ;; The same super type rc declares, and the same guard, so whichever of the
+  ;; two is instantiated first emits it and the second does not repeat it. An
+  ;; arc used without any rc in the program still needs it: the typedef below
+  ;; names it -- so it is declared HERE, above the typedef, not after it.
+  (guard __RC_TYPE_H_
+    (decl) (struct (<> std rc)))
+
+  ;; THE SUPER TYPE IS `std rc' AND NOT ONE OF ITS OWN, deliberately. An arc IS
+  ;; an rc -- same members, same ownership rule, a different instruction for
+  ;; moving the count -- so it answers to rc's origin, and every front end below
+  ;; (free_rc, clone_rc, let_rc, take_rc …) works on an arc unchanged. They
+  ;; dispatch on the origin to find the instantiation and then name the concrete
+  ;; type, so (free_rc a) on an arc_int resolves free_arc_int. Giving arc an
+  ;; origin of its own would have meant a second copy of all eight of them.
+  (typedef (<> std rc) (<> arc a type_t))
+
+  ;; THE COUNT MOVES THROUGH THESE TWO AND NOWHERE ELSE.
+  ;;
+  ;; They wrap __sync_add_and_fetch and __sync_sub_and_fetch, which are compiler
+  ;; builtins rather than functions. Declaring a builtin is not an option --
+  ;; they are type-generic, and a concrete prototype earns "conflicting types
+  ;; for built-in function ... expected 'void()'" -- so the call goes through a
+  ;; `code' escape and what Cicili sees is an ordinary function with a type.
+  ;;
+  ;; Guarded, so one definition serves every instantiation.
+  (guard __ARC_ATOMIC_H_
+    (decl) (func __cicili_arc_incr ((size_t * p)) (out size_t))
+    (decl) (func __cicili_arc_decr ((size_t * p)) (out size_t)))
+
+  (decl) (func (<> free arc a) (((<> arc a) * arc)))
+  (decl) (func (<> free arc a pointer) (((<> arc a) ** arc)))
+  (decl) (func (<> clone arc a) (((<> arc a) ref arc)) (out (<> arc a)))
+  (decl) (func (<> get arc a) (((<> arc a) ref arc)) (out (<> Maybe ref a)))
+
+  ) ; decl-arc
+
+
+(generic impl-arc
+  (a)
+
+  (impl-maybe ref a)
+
+  (guard __ARC_ATOMIC_IMPL_H_
+    (inline)
+    (func __cicili_arc_incr ((size_t * p)) (out size_t)
+          (code "return __sync_add_and_fetch(p, 1);"))
+    (inline)
+    (func __cicili_arc_decr ((size_t * p)) (out size_t)
+          (code "return __sync_sub_and_fetch(p, 1);")))
+
+  ;; __sync_sub_and_fetch answers with the count AFTER the decrement, so the
+  ;; thread that sees zero is the one that took it there -- exactly one thread,
+  ;; whatever the interleaving. rc reads the count and then decrements, which is
+  ;; two steps and a race between them; that gap is the whole reason arc exists.
+  (inline)
+  (func (<> free arc a) (((<> arc a) * arc))
+        (syslog! (printf "FREE ARC: %p\n" (-> arc ptr)))
+        (when (and (-> arc ptr) (-> arc count))
+          (if (== (__cicili_arc_decr (-> arc count)) 0)
+              (block
+                ((<> free a) (-> arc ptr))
+                (free (-> arc count))
+                (free (-> arc ptr))))))
+
+  (inline)
+  (func (<> free arc a pointer) (((<> arc a) ** arc))
+        ((<> free arc a) (cof arc)))
+
+  ;; A dead or empty arc clones to an empty one rather than resurrecting itself,
+  ;; as rc's does. The test is on the value the increment RETURNED and not on a
+  ;; separate read: two threads cloning a dying arc could otherwise both read a
+  ;; live count, and both decide they were the survivor.
+  (func (<> clone arc a) (((<> arc a) ref arc))
+        (out (<> arc a))
+        (when (and (-> arc ptr) (-> arc count))
+          (when (> (__cicili_arc_incr (-> arc count)) 1)
+            (syslog! (printf "CLONE ARC: %p\n" (-> arc ptr)))
+            (return (cast (<> arc a) '{ (-> arc ptr) (-> arc count) })))
+          ;; it was zero before the increment: already dead, put it back
+          (__cicili_arc_decr (-> arc count)))
+        (return (cast (<> arc a) '{ nil nil })))
+
+  ;; A plain read is enough to answer "is anyone still holding this". The caller
+  ;; holds a reference itself, so the answer cannot turn to no while it looks --
+  ;; and if it holds none, no atomic would have saved it.
+  (func (<> get arc a) (((<> arc a) ref arc))
+        (out (<> Maybe ref a))
+        (if (and (-> arc ptr) (-> arc count) (>= (cof (-> arc count)) 1))
+            (return (just (-> arc ptr)))
+          (return (nothing))))
+
+  ) ; impl-arc
+
+
+;;;; ------------------------------------------------------------------
 ;;;; front ends. These are cell's, with the count folded in -- not wrappers
 ;;;; round cell's, which is what made every rc borrow expand to two closures.
 ;;;; ------------------------------------------------------------------
@@ -156,6 +285,31 @@
        (memcpy ,ptr-name (aof ,obj-name) (sizeof ,obj-name))
        (set (cof ,count-name) 1)
        (cast (<> rc ,@a) '{ ,ptr-name ,count-name }))))
+
+
+;;; (new arc TYPE ARGS…) -- new_rc's body, boxing the payload with a count of
+;;; one. Separate from new_rc because the two name different structs; everything
+;;; AFTER construction is shared, since an arc answers to rc's origin.
+;;;
+;;; It is a macro and not a function for the reason new_rc is: the payload is
+;;; constructed here and moved into the box in one form. As a function taking
+;;; (a move obj) the parameter carries a __cleanup__, so the payload would be
+;;; freed on return while the box still pointed at it.
+(DEFMACRO new_arc (type &REST args)
+  (LET* ((ctor `(<> new ,type))
+         (args args)
+         (a (CICILI:INFER-TYPE `(,ctor ,@args)))
+         (ptr-name   (GENSYM (FORMAT NIL "~A_ptr"   (SYMBOL-NAME (CAR a)))))
+         (obj-name   (GENSYM (FORMAT NIL "~A_obj"   (SYMBOL-NAME (CAR a)))))
+         (count-name (GENSYM (FORMAT NIL "~A_count" (SYMBOL-NAME (CAR a))))))
+    (WHEN (> (LENGTH a) 1) (ERROR (FORMAT NIL "new arc got invalid type ~A for ~A" a ctor)))
+    `(letn ((,@a ref ,ptr-name . (FUNCTION (malloc (sizeof ,@a))))
+            (,@a move ,obj-name . (FUNCTION (,ctor ,@args)))
+            (size_t * ,count-name . (FUNCTION (malloc (sizeof size_t)))))
+       (syslog! (printf "NEW ARC: %p\n" ,ptr-name))
+       (memcpy ,ptr-name (aof ,obj-name) (sizeof ,obj-name))
+       (set (cof ,count-name) 1)
+       (cast (<> arc ,@a) '{ ,ptr-name ,count-name }))))
 
 
 ;;; Nothing but a type inferrer: works out which instantiation of
