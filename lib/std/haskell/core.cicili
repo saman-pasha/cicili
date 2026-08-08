@@ -137,8 +137,17 @@
   `(function-h-guard ,fcond ,fpath ,otherwise ,elsepath ,@guards))
 
 ;; a way to access functions inside Table by data instance
+;;
+;; `.' to reach the table and `->' to reach the function through it, which is
+;; what the C says: data.__h_table->f(). It used to take the address first and
+;; go through twice -- (-> (aof data) __h_table f), (&data)->__h_table->f() --
+;; and that is the same C but not the same question for the specifier, which
+;; resolves `->' by finding the storage behind its left side and answers NIL for
+;; an address-of by design (authority.lisp:47). So every `\.' on a value died
+;; with "pointer storage not found: #<(@UNARY (n: &) …)>". A member access has
+;; the storage of the thing it is a member of, and asks nothing of the analysis.
 (DEFMACRO \. (function data)
-  `(-> (aof ,data) __h_table ,function))
+  `(-> ($ ,data __h_table) ,function))
 
 ;; a way to access functions inside Table by class instance
 (DEFMACRO \.* (function class)

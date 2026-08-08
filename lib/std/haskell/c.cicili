@@ -1,12 +1,14 @@
-;;; This file is part of the :std library and shares its package. A library
-;;; owns its namespace instead of borrowing the import prefix's; the full
-;;; explanation is in doc/DOC-C.md, under "A library's package".
-(DEFPACKAGE :std
-  (:USE :COMMON-LISP)
-  (:IMPORT-FROM :COMMON-LISP-USER "import" "generic" "cicili"
-                                  "find-subseq" "expand-form<"))
-
-(IN-PACKAGE :std)
+;;; NO DEFPACKAGE HERE, unlike every other file in this directory. This one is
+;;; not a macro file: it is a TARGET file, the one that writes haskell.h and
+;;; haskell.o at the repository root, and it is compiled the way a program is --
+;;;
+;;;     sbcl --script cicili.lisp lib/std/haskell/c.cicili
+;;;
+;;; A target file is read into forms and handed to compile-ast, which knows
+;;; `header', `source', `import' and IN-PACKAGE and nothing else, so a top-level
+;;; DEFPACKAGE reaches the specifier as a statement and dies on the EVAL-WHEN
+;;; its expansion begins with. It has no package to declare in any case: it
+;;; defines no macros, it uses them.
 
 
 (header "../../../haskell.h"

@@ -238,7 +238,14 @@
       (IF (mod-slot< ty)
           (IF (modifier-arg< (CAR args))
               (PUSH (POP args) filled)
-              (PUSH NIL filled))
+              ;; A MARKER, NOT NIL. An unfilled modifier slot is deleted from
+              ;; the body by `generic' below, and an argument written as NIL is
+              ;; substituted like any other -- (decl-Vector String Char NIL)
+              ;; means is-const is false, not that is-const is not there. Both
+              ;; used to arrive here as NIL, so the false one deleted its
+              ;; parameter and (decl-StringBuffer a is-const) went out one
+              ;; argument short: "missing generic argument for is-const".
+              (PUSH '@OMITTED filled))
           (IF args
               (PUSH (POP args) filled)
               (ERROR (FORMAT NIL "missing generic argument for ~A in: ~A" ty macro)))))
@@ -254,7 +261,7 @@
        (DOTIMES (i (LENGTH types))
          (LET ((arg (NTH i args)))
            (SETQ body
-                 (IF (NULL arg)
+                 (IF (CICILI:KEY-EQ arg '@OMITTED)
                      (subst-out< (NTH i types) body)
                      (SUBST (IF (AND (LISTP arg) (CICILI:KEY-EQ (CAR arg) '<>)) (expand-form< arg) arg)
                             (NTH i types) body)))))
