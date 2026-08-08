@@ -43,18 +43,50 @@
 ;;;; fill their bodies. Which is the shape example/parsi-fragment.cicili already
 ;;;; had.
 
-(IN-PACKAGE :parsi)
-
-;;; Three of Parsi's seven object kinds are also Common Lisp symbols, and the
-;;; package a macro file lives in inherits COMMON-LISP -- so (DEFMACRO CLASS …)
-;;; below is a lock violation on CL:CLASS unless the name is this package's own
-;;; first. The prefix protects the CICILI namespace, where the macro is
-;;; registered as "parsi.CLASS"; it does nothing for the LISP one, and this is
-;;; the other half.
+;;; THE LIBRARY DECLARES ITS OWN NAMESPACE rather than taking the one the
+;;; importer would have made for it. Two things follow from that, and both are
+;;; the reason this file has a DEFPACKAGE at all.
 ;;;
-;;; It has to be here, above the definitions, because the CL:LOAD that evaluates
-;;; them reads one form at a time.
-(SHADOW '("CLASS" "TYPE" "SEQUENCE"))
+;;; CLASS, TYPE and SEQUENCE are three of Parsi's seven object kinds and all
+;;; three are also Common Lisp symbols. A macro file's package inherits
+;;; COMMON-LISP -- it has to, or DEFUN and FORMAT read as fresh symbols of its
+;;; own -- so (DEFMACRO CLASS …) below is a lock violation on CL:CLASS unless
+;;; the name is this package's first. :shadow settles that in one declaration.
+;;;
+;;; And it makes the import prefix OPTIONAL. read-file evaluates this form as it
+;;; reads, so the IN-PACKAGE under it has a package to enter whether or not the
+;;; importer named one:
+;;;
+;;;     (import "lib/parsi/parsi.cicili" :parsi "demo")   ->   (parsi.PAGE …)
+;;;     (import "lib/parsi/parsi.cicili")                 ->   (PAGE …)
+;;;
+;;; USE THE PREFIX ANYWAY, and here is the part that is not a matter of taste.
+;;;
+;;; An object is built by a form that Common Lisp evaluates -- a DEFPARAMETER,
+;;; or a DEFUN that returns one -- and CL:EVAL resolves a name by SYMBOL, not by
+;;; the name-keyed table Cicili dispatches a target's forms through. So an
+;;; unprefixed macro is reachable from Lisp only if its symbol could be interned
+;;; in the importing file's package, and CLASS, TYPE, SEQUENCE and ENUM cannot
+;;; be: they belong to COMMON-LISP and SB-ALIEN, which are locked. Unprefixed,
+;;; those four work inside a target and nowhere else -- which is nowhere useful
+;;; here, since every macro in this file returns a value rather than a form.
+;;;
+;;;     (import "lib/parsi/parsi.cicili")
+;;;     (DEFPARAMETER *c* (CLASS holder …))   ->   the variable holder is unbound
+;;;
+;;; The other reason is ordinary hygiene: unprefixed, every name here is
+;;; registered bare, and PAGE, TABLE and SELECT become these macros for every
+;;; Cicili file compiled in the same process.
+;;; The OPTIONS are upper case and the NAME is not, and both matter. A macro
+;;; file is read with the case preserved (core.lisp:491), so :use would read as
+;;; the keyword :|use| and DEFPACKAGE would answer "bogus DEFPACKAGE option";
+;;; the package's own name has to stay lower case to match the :parsi an import
+;;; writes, which is read the same way.
+(DEFPACKAGE :parsi
+  (:USE :COMMON-LISP)
+  (:SHADOW "CLASS" "TYPE" "SEQUENCE"))
+
+(IN-PACKAGE :parsi)
 
 ;;; Called once at import time with the import form's trailing arguments. The
 ;;; namespace an object belongs to is the useful thing to pass, so a page can be

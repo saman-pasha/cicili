@@ -850,9 +850,12 @@ left in the page as a call to that function. Nothing is pasted between the two l
 Three things make it work and are worth knowing:
 
 * **The import prefix.** `import`'s second argument names a package and each macro is
-  registered as `<pack>.<name>` (`compiler.lisp:336`), so `parsi.CLASS` and `parsi.IF`
-  cannot collide with Common Lisp's `CLASS` and `IF`. The macro file also has to `SHADOW`
-  the three object names that are Common Lisp symbols — `CLASS`, `TYPE`, `SEQUENCE`.
+  registered as `<pack>.<name>`, so `parsi.CLASS` and `parsi.IF` cannot collide with
+  Common Lisp's `CLASS` and `IF`. The library declares its own namespace with a
+  `DEFPACKAGE` shadowing the three object names Common Lisp owns — `CLASS`, `TYPE`,
+  `SEQUENCE` — which also makes the prefix optional. Prefer it anyway: an object is built
+  by a form Common Lisp evaluates, and those four names (`ENUM` too, from `SB-ALIEN`)
+  cannot be reached that way unprefixed. See **Import** in [DOC-C.md](DOC-C.md).
 * **A top-level macro cannot expand into a target** — `compile-ast` routes a macro's
   expansion to `specify-expr`, not back into itself. So the three target lines are
   written by hand and the macros fill their bodies.

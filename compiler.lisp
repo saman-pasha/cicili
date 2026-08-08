@@ -298,7 +298,21 @@
       ;; It inherits COMMON-LISP. Without a use list a file that switches into
       ;; this package reads DEFUN, FORMAT and T as fresh symbols of its own, and
       ;; the first definition dies with "the variable init is unbound".
-      (unless (find-package pack) (make-package pack :use '("COMMON-LISP")))
+      ;;
+      ;; A LIBRARY MAY DECLARE ITS OWN INSTEAD, with a top-level DEFPACKAGE that
+      ;; read-file evaluates as it reads. That is the only way to name a macro
+      ;; after a Common Lisp symbol -- CLASS, TYPE and SEQUENCE are three of
+      ;; Parsi's seven object kinds -- because the package made here inherits
+      ;; COMMON-LISP and (DEFMACRO CLASS …) in it is a lock violation on
+      ;; CL:CLASS. A DEFPACKAGE carrying (:shadow "CLASS") settles it in one
+      ;; declaration, and it applies to a package already made here.
+      ;;
+      ;; NIL is not a namespace. An import with no prefix registers its macros
+      ;; under their bare names and wants no package of its own; making one
+      ;; produced a package literally called "NIL", and a library declaring its
+      ;; own could not be imported unprefixed at all.
+      (when (and pack (not (find-package pack)))
+        (make-package pack :use '("COMMON-LISP")))
       (let ((targets (read-file (file-namestring file-name))))
         (when *debug-macros*
           (format t "macro file: ~A imported inside: '~A' package, from file: ~A, with init args: ~A~%"
@@ -340,7 +354,33 @@
                                (specify-body (cdr bd))
                                (specify-call-expr bd)))
                          (progn
-                           (setf (nth 1 target) (intern m-name))
+                           ;; Interned HERE, in the importing file's package,
+                           ;; which is what makes a macro reachable from plain
+                           ;; Lisp: compile-ast evaluates a top-level form it
+                           ;; does not recognise, and CL:EVAL resolves a name by
+                           ;; symbol identity rather than through *macros*.
+                           ;;
+                           ;; The exception is a bare name Common Lisp already
+                           ;; owns. An UNPREFIXED import registers names as they
+                           ;; are written, and (DEFMACRO CLASS …) in CL-USER is
+                           ;; a lock violation on CL:CLASS -- so those go to the
+                           ;; library's own package, which shadowed them. They
+                           ;; are still reachable inside a target, where dispatch
+                           ;; is by symbol NAME and the package never mattered;
+                           ;; they are not reachable from a bare Lisp form.
+                           ;; Import with a prefix to get those.
+                           ;; :inherited is the test, rather than a list of
+                           ;; package names. CLASS comes from COMMON-LISP and
+                           ;; ENUM from SB-ALIEN -- CL-USER inherits from
+                           ;; several implementation packages, and all of them
+                           ;; are locked. Asking whether the name arrived from
+                           ;; somewhere else catches every one without naming
+                           ;; any.
+                           (setf (nth 1 target)
+                                 (multiple-value-bind (symb status) (intern m-name)
+                                   (if (eq status :inherited)
+                                       (intern m-name (or (symbol-package s-name) *package*))
+                                       symb)))
                            (let ((symb (eval (macroexpand target))))
                              (add-macro (symbol-name symb) symb))))))
                   
@@ -356,22 +396,23 @@
                   ;; above honoured it for the definitions -- nothing left to do
                   ((key-eq tname '|IN-PACKAGE|) t)
 
-                  ;; Likewise already done by the CL:LOAD, which reads and
-                  ;; evaluates one form at a time -- so a SHADOW takes effect for
-                  ;; everything below it in the same file.
+                  ;; A library declaring its own namespace: what it uses, and
+                  ;; what it shadows. read-file evaluated it while reading, so
+                  ;; the IN-PACKAGE below it had a package to enter; the CL:LOAD
+                  ;; evaluated it again on its own pass. Nothing left to do.
                   ;;
-                  ;; SHADOW is what lets a namespace name a macro after a Common
-                  ;; Lisp symbol. The package a macro file lives in inherits
-                  ;; COMMON-LISP (see above), so (DEFMACRO CLASS …) is a lock
-                  ;; violation on CL:CLASS however it is prefixed -- the prefix is
-                  ;; applied to the REGISTERED name below, not to the symbol the
-                  ;; file defines. lib/parsi/parsi.cicili needs CLASS, TYPE and
-                  ;; SEQUENCE, which are three of Parsi's seven object kinds.
-                  ;;
-                  ;; Note the shadow does NOT reach `targets': read-file read the
-                  ;; whole file before the CL:LOAD ran, so a macro BODY mentioning
-                  ;; a shadowed name still holds Common Lisp's symbol. Only the
-                  ;; definitions are affected, which is all this is for.
+                  ;; (:shadow "CLASS" …) is what lets a namespace name a macro
+                  ;; after a Common Lisp symbol. A macro file's package inherits
+                  ;; COMMON-LISP (see above), so (DEFMACRO CLASS …) in it is a
+                  ;; lock violation on CL:CLASS however the macro is prefixed --
+                  ;; the prefix is applied to the REGISTERED name below, not to
+                  ;; the symbol the file defines.
+                  ((key-eq tname '|DEFPACKAGE|) t)
+
+                  ;; The imperative form of the same thing, for a file that has
+                  ;; no DEFPACKAGE. Already run by the CL:LOAD, which reads and
+                  ;; evaluates one form at a time, so it took effect for
+                  ;; everything below it.
                   ((key-eq tname '|SHADOW|) t)
 
                   ;; State a macro file keeps between calls -- a namespace, a

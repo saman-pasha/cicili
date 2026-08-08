@@ -1,0 +1,36 @@
+;;;; a macro file that declares its OWN package, imported with no prefix
+;;;;
+;;;; The point is the name. CLASS belongs to COMMON-LISP, and a macro file's
+;;;; package inherits COMMON-LISP -- it has to, or DEFUN and FORMAT would read
+;;;; as fresh symbols of its own -- so (DEFMACRO CLASS …) below is a lock
+;;;; violation on CL:CLASS unless this package shadows the name first.
+;;;;
+;;;; A DEFPACKAGE settles that in one declaration, and read-file evaluates it as
+;;;; the file is read, so the IN-PACKAGE under it has a package to enter whether
+;;;; or not the importer named one. That is what makes the import prefix
+;;;; optional, and lib/parsi/parsi.cicili is the library it was written for --
+;;;; three of Parsi's seven object kinds are Common Lisp symbols.
+;;;;
+;;;; THE OPTIONS ARE UPPER CASE AND THE NAME IS NOT. A macro file is read with
+;;;; the case preserved, so :use would read as :|use| and DEFPACKAGE would
+;;;; answer "bogus DEFPACKAGE option".
+
+(DEFPACKAGE :shadowed
+  (:USE :COMMON-LISP)
+  (:SHADOW "CLASS"))
+
+(IN-PACKAGE :shadowed)
+
+(DEFUN init (args)
+  (WHEN CICILI:*DEBUG-MACROS*
+    (FORMAT T "shadowed.cicili loaded with: ~A~%" args)))
+
+;;; The name Common Lisp owns. Unprefixed it is registered as "CLASS" and found
+;;; inside a target the same way any other macro is -- by name.
+(DEFMACRO CLASS (x)
+  `(* 3 ,x))
+
+;;; And an ordinary one beside it, so the test can tell "the shadow worked" from
+;;; "the import worked at all".
+(DEFMACRO tripled (x)
+  `(* 3 ,x))

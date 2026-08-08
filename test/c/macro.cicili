@@ -8,6 +8,11 @@
 ;;; receives the trailing arguments at import time
 (import "./helpers.cicili" :util "from macro test")
 
+;;; the same thing with NO prefix, from a file that declares its own package.
+;;; Its macros are registered under their bare names -- including CLASS, which
+;;; belongs to Common Lisp and is only definable because that file shadows it.
+(import "./shadowed.cicili")
+
 (source "macro.c"
   (make :std #t :compile #t :link ("-lmacro.o" "-o" "macro_test"))
 
@@ -81,6 +86,21 @@
       ;; ---- import: macros from another file, namespaced ------------
       (+= bad (check "imported macro"        (util.half 84) 42))
       (+= bad (check "imported macro nests"  (util.clamp (util.half 200) 0 42) 42))
+
+      ;; ---- import with no prefix, from a self-declaring package -----
+      ;; Registered bare, so the call site writes the name as the library
+      ;; spells it.
+      (+= bad (check "unprefixed import" (tripled 14) 42))
+
+      ;; AND A NAME COMMON LISP OWNS. Dispatch inside a target is by symbol
+      ;; NAME, so which package holds CLASS never mattered to finding it --
+      ;; what mattered was that the library could define it at all, which is
+      ;; what its DEFPACKAGE's (:SHADOW "CLASS") buys.
+      ;;
+      ;; Only inside a target. A form Common Lisp evaluates -- a DEFPARAMETER
+      ;; at top level -- resolves by symbol identity instead, and CL:CLASS
+      ;; cannot be interned here to be found. Those want the prefix.
+      (+= bad (check "unprefixed CL-owned name" (CLASS 14) 42))
 
       ;; ---- macrolet: macros for one body only ----------------------
       (macrolet ((thrice (x) `(* 3 ,x)))

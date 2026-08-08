@@ -863,6 +863,44 @@ Path resolution is decided by the first character: `.` means relative to the imp
 `/` means an absolute path, anything else is resolved against the Cicili installation
 directory.
 
+#### A prefix, and a library's own namespace
+
+A second argument names the import, and each macro in the file is then registered as
+`<prefix>.<name>`:
+
+```cicili
+(import "./helpers.cicili" :util "from macro test")   ; -> (util.half 84)
+```
+
+The third argument is passed to the file's `init` function at import time. Without a
+prefix the macros are registered under their bare names.
+
+A macro file may declare **its own package**, with a top-level `DEFPACKAGE` that is
+evaluated as the file is read. That is how a library names a macro after a Common Lisp
+symbol — a package inherits `COMMON-LISP`, so `(DEFMACRO CLASS …)` in it is a lock
+violation on `CL:CLASS` unless the library shadows the name first:
+
+```cicili
+(DEFPACKAGE :parsi (:USE :COMMON-LISP) (:SHADOW "CLASS" "TYPE" "SEQUENCE"))
+(IN-PACKAGE :parsi)
+```
+
+The options are upper case and the package name is not: a macro file is read with the
+case preserved, so `:use` would read as `:|use|` and `DEFPACKAGE` would reject it, while
+the name has to match the `:parsi` an import writes.
+
+**Two things a bare name cannot do.** Cicili dispatches a target's forms through a table
+keyed by symbol *name*, so an unprefixed macro is found inside a target whatever package
+holds it — including one named `CLASS`. A form Common Lisp evaluates is different:
+`compile-ast` hands a top-level form it does not recognise to `CL:EVAL`, which resolves by
+symbol identity, and a name owned by `COMMON-LISP` or `SB-ALIEN` cannot be interned in the
+importing file's package to be found there. So `CLASS`, `TYPE`, `SEQUENCE` and `ENUM`
+work unprefixed inside a target and not from a `DEFPARAMETER`. Import with a prefix and
+both work.
+
+The other reason to use one is hygiene: unprefixed names are registered globally and
+apply to every file compiled in the same process.
+
 ### Guard
 > tested in [`test/c/shared.cicili`](../test/c/shared.cicili)
 

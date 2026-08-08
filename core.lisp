@@ -491,6 +491,15 @@
 		(setf (readtable-case *readtable*) :preserve)
 		(DO ((target (READ file NIL NIL) (READ file NIL NIL)))
 			((NULL target) T)
+          ;; DEFPACKAGE is EVALUATED as it is read, and it has to be, for the
+          ;; same reason IN-PACKAGE is honoured here: the IN-PACKAGE that
+          ;; follows it in the same file needs the package to exist by the time
+          ;; that line is read, and reading the whole file first would be too
+          ;; late. It is how a library declares its own namespace -- what it
+          ;; uses, and what it shadows -- instead of taking the one
+          ;; load-macro-file would have made for it.
+          (when (and (listp target) (key-eq (car target) '|DEFPACKAGE|))
+            (eval target))
           (let ((pack (in-package-form< target)))
             (when pack (setq *package* pack)))
 		  (PUSH target targets))))

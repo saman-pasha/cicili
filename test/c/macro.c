@@ -56,13 +56,15 @@ int main () {
     bad  += check ("symbol-name of a generic", strlen ("box_int"), 7) ;
     bad  += check ("imported macro", (84 /  2 ), 42) ;
     bad  += check ("imported macro nests", ((((200 /  2 ) <  0 )) ? 0 : ((((200 /  2 ) >  42 )) ? 42 : (200 /  2 ))), 42) ;
+    bad  += check ("unprefixed import", (3 *  14 ), 42) ;
+    bad  += check ("unprefixed CL-owned name", (3 *  14 ), 42) ;
     bad  += check ("macrolet", (3 *  14 ), 42) ;
-    { /* let165 */
+    { /* let167 */
       box_int bi  = make_box_int (42);
       // ----------
       bad  += check ("generic int box", get_box_int ((&bi )), 42) ;
     }
-    { /* let170 */
+    { /* let172 */
       box_double bd  = make_box_double (2.5);
       // ----------
       bad  += check ("generic double box", ((int)(get_box_double ((&bd )) *  4 )), 10) ;
