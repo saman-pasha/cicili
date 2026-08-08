@@ -31,7 +31,12 @@ typedef enum __h_Maybe_ctor_t {
   __h_Just_t = 1
 } __h_Maybe_ctor_t;
 #endif /* __H___h_Maybe_ctor_t__ */ 
+#ifndef __H_STD_DATA_
+#define __H_STD_DATA_
+typedef struct std_data std_data ;
+#endif /* __H_STD_DATA_ */ 
 typedef struct Maybe___h_StackItem Maybe___h_StackItem ;
+typedef std_data Maybe___h_StackItem_type_t ;
 typedef void (*free_Maybe___h_StackItem_t) (Maybe___h_StackItem * this );
 typedef struct Maybe___h_StackItem__H_Table {
   free_Maybe___h_StackItem_t freeData ;
@@ -39,11 +44,11 @@ typedef struct Maybe___h_StackItem__H_Table {
 typedef struct Maybe___h_StackItem {
   const Maybe___h_StackItem__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion123 */
-    struct { /* ciciliStruct124 */
+  union { /* ciciliUnion126 */
+    struct { /* ciciliStruct127 */
       __h_StackItem __h_0_mem ;
     } Just , _1 ;
-    struct { /* ciciliStruct125 */
+    struct { /* ciciliStruct128 */
     } Nothing , _ ;
   } __h_data ;
 } Maybe___h_StackItem;
@@ -64,8 +69,13 @@ typedef enum __h_List_ctor_t {
   __h_Cons_t = 1
 } __h_List_ctor_t;
 #endif /* __H___h_List_ctor_t__ */ 
+#ifndef __H_STD_BOX_
+#define __H_STD_BOX_
+typedef struct std_box std_box ;
+#endif /* __H_STD_BOX_ */ 
 typedef struct class_BoxedList___h_StackItem class_BoxedList___h_StackItem ;
 typedef class_BoxedList___h_StackItem * BoxedList___h_StackItem_x ;
+typedef std_box BoxedList___h_StackItem_x_type_t ;
 #ifndef __Maybe_BoxedList___h_StackItem_x__H_DECL__
 #define __Maybe_BoxedList___h_StackItem_x__H_DECL__
 #ifndef __H___h_Maybe_ctor_t__
@@ -75,7 +85,12 @@ typedef enum __h_Maybe_ctor_t {
   __h_Just_t = 1
 } __h_Maybe_ctor_t;
 #endif /* __H___h_Maybe_ctor_t__ */ 
+#ifndef __H_STD_DATA_
+#define __H_STD_DATA_
+typedef struct std_data std_data ;
+#endif /* __H_STD_DATA_ */ 
 typedef struct Maybe_BoxedList___h_StackItem_x Maybe_BoxedList___h_StackItem_x ;
+typedef std_data Maybe_BoxedList___h_StackItem_x_type_t ;
 typedef void (*free_Maybe_BoxedList___h_StackItem_x_t) (Maybe_BoxedList___h_StackItem_x * this );
 typedef struct Maybe_BoxedList___h_StackItem_x__H_Table {
   free_Maybe_BoxedList___h_StackItem_x_t freeData ;
@@ -83,11 +98,11 @@ typedef struct Maybe_BoxedList___h_StackItem_x__H_Table {
 typedef struct Maybe_BoxedList___h_StackItem_x {
   const Maybe_BoxedList___h_StackItem_x__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion156 */
-    struct { /* ciciliStruct157 */
+  union { /* ciciliUnion163 */
+    struct { /* ciciliStruct164 */
       BoxedList___h_StackItem_x __h_0_mem ;
     } Just , _1 ;
-    struct { /* ciciliStruct158 */
+    struct { /* ciciliStruct165 */
     } Nothing , _ ;
   } __h_data ;
 } Maybe_BoxedList___h_StackItem_x;
@@ -108,7 +123,12 @@ typedef enum __h_Rc_ctor_t {
   __h_Hold_t = 1
 } __h_Rc_ctor_t;
 #endif /* __H___h_Rc_ctor_t__ */ 
+#ifndef __H_STD_DATA_
+#define __H_STD_DATA_
+typedef struct std_data std_data ;
+#endif /* __H_STD_DATA_ */ 
 typedef struct Box_BoxedList___h_StackItem Box_BoxedList___h_StackItem ;
+typedef std_data Box_BoxedList___h_StackItem_type_t ;
 typedef void (*free_Box_BoxedList___h_StackItem_t) (Box_BoxedList___h_StackItem * this );
 typedef struct Box_BoxedList___h_StackItem__H_Table {
   free_Box_BoxedList___h_StackItem_t freeData ;
@@ -120,13 +140,13 @@ typedef struct Box_BoxedList___h_StackItem__H_Table {
 typedef struct Box_BoxedList___h_StackItem {
   const Box_BoxedList___h_StackItem__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion188 */
-    struct { /* ciciliStruct189 */
+  union { /* ciciliUnion196 */
+    struct { /* ciciliStruct197 */
       BoxedList___h_StackItem_x * __h_0_mem ;
       int * __h_1_mem ;
       size_t __h_2_mem ;
     } Hold , _1 ;
-    struct { /* ciciliStruct190 */
+    struct { /* ciciliStruct198 */
     } Gone , _ ;
   } __h_data ;
 } Box_BoxedList___h_StackItem;
@@ -174,12 +194,12 @@ typedef struct BoxedList___h_StackItem__H_Table {
 typedef struct class_BoxedList___h_StackItem {
   const BoxedList___h_StackItem__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion250 */
-    struct { /* ciciliStruct251 */
+  union { /* ciciliUnion258 */
+    struct { /* ciciliStruct259 */
       __h_StackItem __h_0_mem ;
       BoxedList___h_StackItem __h_1_mem ;
     } Cons , _1 ;
-    struct { /* ciciliStruct252 */
+    struct { /* ciciliStruct260 */
     } Nil , _ ;
   } __h_data ;
 } class_BoxedList___h_StackItem;
@@ -224,7 +244,12 @@ typedef enum __h_Maybe_ctor_t {
   __h_Just_t = 1
 } __h_Maybe_ctor_t;
 #endif /* __H___h_Maybe_ctor_t__ */ 
+#ifndef __H_STD_DATA_
+#define __H_STD_DATA_
+typedef struct std_data std_data ;
+#endif /* __H_STD_DATA_ */ 
 typedef struct Maybe_BoxedList___h_StackItem Maybe_BoxedList___h_StackItem ;
+typedef std_data Maybe_BoxedList___h_StackItem_type_t ;
 typedef void (*free_Maybe_BoxedList___h_StackItem_t) (Maybe_BoxedList___h_StackItem * this );
 typedef struct Maybe_BoxedList___h_StackItem__H_Table {
   free_Maybe_BoxedList___h_StackItem_t freeData ;
@@ -232,11 +257,11 @@ typedef struct Maybe_BoxedList___h_StackItem__H_Table {
 typedef struct Maybe_BoxedList___h_StackItem {
   const Maybe_BoxedList___h_StackItem__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion350 */
-    struct { /* ciciliStruct351 */
+  union { /* ciciliUnion359 */
+    struct { /* ciciliStruct360 */
       BoxedList___h_StackItem __h_0_mem ;
     } Just , _1 ;
-    struct { /* ciciliStruct352 */
+    struct { /* ciciliStruct361 */
     } Nothing , _ ;
   } __h_data ;
 } Maybe_BoxedList___h_StackItem;
@@ -257,7 +282,12 @@ typedef enum __h_Maybe_ctor_t {
   __h_Just_t = 1
 } __h_Maybe_ctor_t;
 #endif /* __H___h_Maybe_ctor_t__ */ 
+#ifndef __H_STD_DATA_
+#define __H_STD_DATA_
+typedef struct std_data std_data ;
+#endif /* __H_STD_DATA_ */ 
 typedef struct Maybe_BoxedList___h_StackItem Maybe_BoxedList___h_StackItem ;
+typedef std_data Maybe_BoxedList___h_StackItem_type_t ;
 typedef void (*free_Maybe_BoxedList___h_StackItem_t) (Maybe_BoxedList___h_StackItem * this );
 typedef struct Maybe_BoxedList___h_StackItem__H_Table {
   free_Maybe_BoxedList___h_StackItem_t freeData ;
@@ -265,11 +295,11 @@ typedef struct Maybe_BoxedList___h_StackItem__H_Table {
 typedef struct Maybe_BoxedList___h_StackItem {
   const Maybe_BoxedList___h_StackItem__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion380 */
-    struct { /* ciciliStruct381 */
+  union { /* ciciliUnion390 */
+    struct { /* ciciliStruct391 */
       BoxedList___h_StackItem __h_0_mem ;
     } Just , _1 ;
-    struct { /* ciciliStruct382 */
+    struct { /* ciciliStruct392 */
     } Nothing , _ ;
   } __h_data ;
 } Maybe_BoxedList___h_StackItem;
@@ -290,8 +320,13 @@ typedef enum __h_List_ctor_t {
   __h_Cons_t = 1
 } __h_List_ctor_t;
 #endif /* __H___h_List_ctor_t__ */ 
+#ifndef __H_STD_BOX_
+#define __H_STD_BOX_
+typedef struct std_box std_box ;
+#endif /* __H_STD_BOX_ */ 
 typedef struct class_BoxedList_BoxedList___h_StackItem class_BoxedList_BoxedList___h_StackItem ;
 typedef class_BoxedList_BoxedList___h_StackItem * BoxedList_BoxedList___h_StackItem_x ;
+typedef std_box BoxedList_BoxedList___h_StackItem_x_type_t ;
 #ifndef __Maybe_BoxedList_BoxedList___h_StackItem_x__H_DECL__
 #define __Maybe_BoxedList_BoxedList___h_StackItem_x__H_DECL__
 #ifndef __H___h_Maybe_ctor_t__
@@ -301,7 +336,12 @@ typedef enum __h_Maybe_ctor_t {
   __h_Just_t = 1
 } __h_Maybe_ctor_t;
 #endif /* __H___h_Maybe_ctor_t__ */ 
+#ifndef __H_STD_DATA_
+#define __H_STD_DATA_
+typedef struct std_data std_data ;
+#endif /* __H_STD_DATA_ */ 
 typedef struct Maybe_BoxedList_BoxedList___h_StackItem_x Maybe_BoxedList_BoxedList___h_StackItem_x ;
+typedef std_data Maybe_BoxedList_BoxedList___h_StackItem_x_type_t ;
 typedef void (*free_Maybe_BoxedList_BoxedList___h_StackItem_x_t) (Maybe_BoxedList_BoxedList___h_StackItem_x * this );
 typedef struct Maybe_BoxedList_BoxedList___h_StackItem_x__H_Table {
   free_Maybe_BoxedList_BoxedList___h_StackItem_x_t freeData ;
@@ -309,11 +349,11 @@ typedef struct Maybe_BoxedList_BoxedList___h_StackItem_x__H_Table {
 typedef struct Maybe_BoxedList_BoxedList___h_StackItem_x {
   const Maybe_BoxedList_BoxedList___h_StackItem_x__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion413 */
-    struct { /* ciciliStruct414 */
+  union { /* ciciliUnion425 */
+    struct { /* ciciliStruct426 */
       BoxedList_BoxedList___h_StackItem_x __h_0_mem ;
     } Just , _1 ;
-    struct { /* ciciliStruct415 */
+    struct { /* ciciliStruct427 */
     } Nothing , _ ;
   } __h_data ;
 } Maybe_BoxedList_BoxedList___h_StackItem_x;
@@ -334,7 +374,12 @@ typedef enum __h_Rc_ctor_t {
   __h_Hold_t = 1
 } __h_Rc_ctor_t;
 #endif /* __H___h_Rc_ctor_t__ */ 
+#ifndef __H_STD_DATA_
+#define __H_STD_DATA_
+typedef struct std_data std_data ;
+#endif /* __H_STD_DATA_ */ 
 typedef struct Box_BoxedList_BoxedList___h_StackItem Box_BoxedList_BoxedList___h_StackItem ;
+typedef std_data Box_BoxedList_BoxedList___h_StackItem_type_t ;
 typedef void (*free_Box_BoxedList_BoxedList___h_StackItem_t) (Box_BoxedList_BoxedList___h_StackItem * this );
 typedef struct Box_BoxedList_BoxedList___h_StackItem__H_Table {
   free_Box_BoxedList_BoxedList___h_StackItem_t freeData ;
@@ -346,13 +391,13 @@ typedef struct Box_BoxedList_BoxedList___h_StackItem__H_Table {
 typedef struct Box_BoxedList_BoxedList___h_StackItem {
   const Box_BoxedList_BoxedList___h_StackItem__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion445 */
-    struct { /* ciciliStruct446 */
+  union { /* ciciliUnion458 */
+    struct { /* ciciliStruct459 */
       BoxedList_BoxedList___h_StackItem_x * __h_0_mem ;
       int * __h_1_mem ;
       size_t __h_2_mem ;
     } Hold , _1 ;
-    struct { /* ciciliStruct447 */
+    struct { /* ciciliStruct460 */
     } Gone , _ ;
   } __h_data ;
 } Box_BoxedList_BoxedList___h_StackItem;
@@ -400,12 +445,12 @@ typedef struct BoxedList_BoxedList___h_StackItem__H_Table {
 typedef struct class_BoxedList_BoxedList___h_StackItem {
   const BoxedList_BoxedList___h_StackItem__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion507 */
-    struct { /* ciciliStruct508 */
+  union { /* ciciliUnion520 */
+    struct { /* ciciliStruct521 */
       BoxedList___h_StackItem __h_0_mem ;
       BoxedList_BoxedList___h_StackItem __h_1_mem ;
     } Cons , _1 ;
-    struct { /* ciciliStruct509 */
+    struct { /* ciciliStruct522 */
     } Nil , _ ;
   } __h_data ;
 } class_BoxedList_BoxedList___h_StackItem;
@@ -450,7 +495,12 @@ typedef enum __h_Maybe_ctor_t {
   __h_Just_t = 1
 } __h_Maybe_ctor_t;
 #endif /* __H___h_Maybe_ctor_t__ */ 
+#ifndef __H_STD_DATA_
+#define __H_STD_DATA_
+typedef struct std_data std_data ;
+#endif /* __H_STD_DATA_ */ 
 typedef struct Maybe_BoxedList_BoxedList___h_StackItem Maybe_BoxedList_BoxedList___h_StackItem ;
+typedef std_data Maybe_BoxedList_BoxedList___h_StackItem_type_t ;
 typedef void (*free_Maybe_BoxedList_BoxedList___h_StackItem_t) (Maybe_BoxedList_BoxedList___h_StackItem * this );
 typedef struct Maybe_BoxedList_BoxedList___h_StackItem__H_Table {
   free_Maybe_BoxedList_BoxedList___h_StackItem_t freeData ;
@@ -458,11 +508,11 @@ typedef struct Maybe_BoxedList_BoxedList___h_StackItem__H_Table {
 typedef struct Maybe_BoxedList_BoxedList___h_StackItem {
   const Maybe_BoxedList_BoxedList___h_StackItem__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion607 */
-    struct { /* ciciliStruct608 */
+  union { /* ciciliUnion621 */
+    struct { /* ciciliStruct622 */
       BoxedList_BoxedList___h_StackItem __h_0_mem ;
     } Just , _1 ;
-    struct { /* ciciliStruct609 */
+    struct { /* ciciliStruct623 */
     } Nothing , _ ;
   } __h_data ;
 } Maybe_BoxedList_BoxedList___h_StackItem;
@@ -491,7 +541,12 @@ typedef enum __h_Bool_ctor_t {
   __h_True_t = 1
 } __h_Bool_ctor_t;
 #endif /* __H___h_Bool_ctor_t__ */ 
+#ifndef __H_STD_DATA_
+#define __H_STD_DATA_
+typedef struct std_data std_data ;
+#endif /* __H_STD_DATA_ */ 
 typedef struct Bool Bool ;
+typedef std_data Bool_type_t ;
 typedef void (*free_Bool_t) (Bool * this );
 typedef struct Bool__H_Table {
   free_Bool_t freeData ;
@@ -502,10 +557,10 @@ typedef struct Bool__H_Table {
 typedef struct Bool {
   const Bool__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion641 */
-    struct { /* ciciliStruct642 */
+  union { /* ciciliUnion656 */
+    struct { /* ciciliStruct657 */
     } True , _1 ;
-    struct { /* ciciliStruct643 */
+    struct { /* ciciliStruct658 */
     } False , _ ;
   } __h_data ;
 } Bool;
@@ -530,7 +585,12 @@ typedef enum __h_Ordering_ctor_t {
   __h_LT_t = 2
 } __h_Ordering_ctor_t;
 #endif /* __H___h_Ordering_ctor_t__ */ 
+#ifndef __H_STD_DATA_
+#define __H_STD_DATA_
+typedef struct std_data std_data ;
+#endif /* __H_STD_DATA_ */ 
 typedef struct Ordering Ordering ;
+typedef std_data Ordering_type_t ;
 typedef void (*free_Ordering_t) (Ordering * this );
 typedef struct Ordering__H_Table {
   free_Ordering_t freeData ;
@@ -538,12 +598,12 @@ typedef struct Ordering__H_Table {
 typedef struct Ordering {
   const Ordering__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion673 */
-    struct { /* ciciliStruct674 */
+  union { /* ciciliUnion689 */
+    struct { /* ciciliStruct690 */
     } LT , _2 ;
-    struct { /* ciciliStruct675 */
+    struct { /* ciciliStruct691 */
     } EQ , _1 ;
-    struct { /* ciciliStruct676 */
+    struct { /* ciciliStruct692 */
     } GT , _ ;
   } __h_data ;
 } Ordering;
@@ -566,7 +626,12 @@ typedef enum __h_Maybe_ctor_t {
   __h_Just_t = 1
 } __h_Maybe_ctor_t;
 #endif /* __H___h_Maybe_ctor_t__ */ 
+#ifndef __H_STD_DATA_
+#define __H_STD_DATA_
+typedef struct std_data std_data ;
+#endif /* __H_STD_DATA_ */ 
 typedef struct Maybe_CStr Maybe_CStr ;
+typedef std_data Maybe_CStr_type_t ;
 typedef void (*free_Maybe_CStr_t) (Maybe_CStr * this );
 typedef struct Maybe_CStr__H_Table {
   free_Maybe_CStr_t freeData ;
@@ -574,11 +639,11 @@ typedef struct Maybe_CStr__H_Table {
 typedef struct Maybe_CStr {
   const Maybe_CStr__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion701 */
-    struct { /* ciciliStruct702 */
+  union { /* ciciliUnion718 */
+    struct { /* ciciliStruct719 */
       CStr __h_0_mem ;
     } Just , _1 ;
-    struct { /* ciciliStruct703 */
+    struct { /* ciciliStruct720 */
     } Nothing , _ ;
   } __h_data ;
 } Maybe_CStr;
@@ -599,7 +664,12 @@ typedef enum __h_Maybe_ctor_t {
   __h_Just_t = 1
 } __h_Maybe_ctor_t;
 #endif /* __H___h_Maybe_ctor_t__ */ 
+#ifndef __H_STD_DATA_
+#define __H_STD_DATA_
+typedef struct std_data std_data ;
+#endif /* __H_STD_DATA_ */ 
 typedef struct Maybe_CFile Maybe_CFile ;
+typedef std_data Maybe_CFile_type_t ;
 typedef void (*free_Maybe_CFile_t) (Maybe_CFile * this );
 typedef struct Maybe_CFile__H_Table {
   free_Maybe_CFile_t freeData ;
@@ -607,11 +677,11 @@ typedef struct Maybe_CFile__H_Table {
 typedef struct Maybe_CFile {
   const Maybe_CFile__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion729 */
-    struct { /* ciciliStruct730 */
+  union { /* ciciliUnion747 */
+    struct { /* ciciliStruct748 */
       CFile __h_0_mem ;
     } Just , _1 ;
-    struct { /* ciciliStruct731 */
+    struct { /* ciciliStruct749 */
     } Nothing , _ ;
   } __h_data ;
 } Maybe_CFile;
@@ -632,7 +702,12 @@ typedef enum __h_Maybe_ctor_t {
   __h_Just_t = 1
 } __h_Maybe_ctor_t;
 #endif /* __H___h_Maybe_ctor_t__ */ 
+#ifndef __H_STD_DATA_
+#define __H_STD_DATA_
+typedef struct std_data std_data ;
+#endif /* __H_STD_DATA_ */ 
 typedef struct Maybe_Bool Maybe_Bool ;
+typedef std_data Maybe_Bool_type_t ;
 typedef void (*free_Maybe_Bool_t) (Maybe_Bool * this );
 typedef struct Maybe_Bool__H_Table {
   free_Maybe_Bool_t freeData ;
@@ -640,11 +715,11 @@ typedef struct Maybe_Bool__H_Table {
 typedef struct Maybe_Bool {
   const Maybe_Bool__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion759 */
-    struct { /* ciciliStruct760 */
+  union { /* ciciliUnion778 */
+    struct { /* ciciliStruct779 */
       Bool __h_0_mem ;
     } Just , _1 ;
-    struct { /* ciciliStruct761 */
+    struct { /* ciciliStruct780 */
     } Nothing , _ ;
   } __h_data ;
 } Maybe_Bool;
@@ -665,8 +740,13 @@ typedef enum __h_List_ctor_t {
   __h_Cons_t = 1
 } __h_List_ctor_t;
 #endif /* __H___h_List_ctor_t__ */ 
+#ifndef __H_STD_CLASS_
+#define __H_STD_CLASS_
+typedef struct std_class std_class ;
+#endif /* __H_STD_CLASS_ */ 
 typedef struct class_List_Bool class_List_Bool ;
 typedef class_List_Bool * List_Bool ;
+typedef std_class List_Bool_type_t ;
 typedef void (*free_List_Bool_t) (List_Bool * this_ptr );
 typedef struct List_Bool__H_Table {
   free_List_Bool_t freeClass ;
@@ -698,12 +778,12 @@ typedef struct List_Bool__H_Table {
 typedef struct class_List_Bool {
   const List_Bool__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion811 */
-    struct { /* ciciliStruct812 */
+  union { /* ciciliUnion833 */
+    struct { /* ciciliStruct834 */
       Bool __h_0_mem ;
       List_Bool __h_1_mem ;
     } Cons , _1 ;
-    struct { /* ciciliStruct813 */
+    struct { /* ciciliStruct835 */
     } Nil , _ ;
   } __h_data ;
 } class_List_Bool;
@@ -748,7 +828,12 @@ typedef enum __h_Maybe_ctor_t {
   __h_Just_t = 1
 } __h_Maybe_ctor_t;
 #endif /* __H___h_Maybe_ctor_t__ */ 
+#ifndef __H_STD_DATA_
+#define __H_STD_DATA_
+typedef struct std_data std_data ;
+#endif /* __H_STD_DATA_ */ 
 typedef struct Maybe_List_Bool Maybe_List_Bool ;
+typedef std_data Maybe_List_Bool_type_t ;
 typedef void (*free_Maybe_List_Bool_t) (Maybe_List_Bool * this );
 typedef struct Maybe_List_Bool__H_Table {
   free_Maybe_List_Bool_t freeData ;
@@ -756,11 +841,11 @@ typedef struct Maybe_List_Bool__H_Table {
 typedef struct Maybe_List_Bool {
   const Maybe_List_Bool__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion911 */
-    struct { /* ciciliStruct912 */
+  union { /* ciciliUnion934 */
+    struct { /* ciciliStruct935 */
       List_Bool __h_0_mem ;
     } Just , _1 ;
-    struct { /* ciciliStruct913 */
+    struct { /* ciciliStruct936 */
     } Nothing , _ ;
   } __h_data ;
 } Maybe_List_Bool;
@@ -781,7 +866,12 @@ typedef enum __h_Maybe_ctor_t {
   __h_Just_t = 1
 } __h_Maybe_ctor_t;
 #endif /* __H___h_Maybe_ctor_t__ */ 
+#ifndef __H_STD_DATA_
+#define __H_STD_DATA_
+typedef struct std_data std_data ;
+#endif /* __H_STD_DATA_ */ 
 typedef struct Maybe_int Maybe_int ;
+typedef std_data Maybe_int_type_t ;
 typedef void (*free_Maybe_int_t) (Maybe_int * this );
 typedef struct Maybe_int__H_Table {
   free_Maybe_int_t freeData ;
@@ -789,11 +879,11 @@ typedef struct Maybe_int__H_Table {
 typedef struct Maybe_int {
   const Maybe_int__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion941 */
-    struct { /* ciciliStruct942 */
+  union { /* ciciliUnion965 */
+    struct { /* ciciliStruct966 */
       int __h_0_mem ;
     } Just , _1 ;
-    struct { /* ciciliStruct943 */
+    struct { /* ciciliStruct967 */
     } Nothing , _ ;
   } __h_data ;
 } Maybe_int;
@@ -814,8 +904,13 @@ typedef enum __h_List_ctor_t {
   __h_Cons_t = 1
 } __h_List_ctor_t;
 #endif /* __H___h_List_ctor_t__ */ 
+#ifndef __H_STD_CLASS_
+#define __H_STD_CLASS_
+typedef struct std_class std_class ;
+#endif /* __H_STD_CLASS_ */ 
 typedef struct class_List_int class_List_int ;
 typedef class_List_int * List_int ;
+typedef std_class List_int_type_t ;
 typedef void (*free_List_int_t) (List_int * this_ptr );
 typedef struct List_int__H_Table {
   free_List_int_t freeClass ;
@@ -847,12 +942,12 @@ typedef struct List_int__H_Table {
 typedef struct class_List_int {
   const List_int__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion993 */
-    struct { /* ciciliStruct994 */
+  union { /* ciciliUnion1018 */
+    struct { /* ciciliStruct1019 */
       int __h_0_mem ;
       List_int __h_1_mem ;
     } Cons , _1 ;
-    struct { /* ciciliStruct995 */
+    struct { /* ciciliStruct1020 */
     } Nil , _ ;
   } __h_data ;
 } class_List_int;
@@ -897,7 +992,12 @@ typedef enum __h_Maybe_ctor_t {
   __h_Just_t = 1
 } __h_Maybe_ctor_t;
 #endif /* __H___h_Maybe_ctor_t__ */ 
+#ifndef __H_STD_DATA_
+#define __H_STD_DATA_
+typedef struct std_data std_data ;
+#endif /* __H_STD_DATA_ */ 
 typedef struct Maybe_List_int Maybe_List_int ;
+typedef std_data Maybe_List_int_type_t ;
 typedef void (*free_Maybe_List_int_t) (Maybe_List_int * this );
 typedef struct Maybe_List_int__H_Table {
   free_Maybe_List_int_t freeData ;
@@ -905,11 +1005,11 @@ typedef struct Maybe_List_int__H_Table {
 typedef struct Maybe_List_int {
   const Maybe_List_int__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion1093 */
-    struct { /* ciciliStruct1094 */
+  union { /* ciciliUnion1119 */
+    struct { /* ciciliStruct1120 */
       List_int __h_0_mem ;
     } Just , _1 ;
-    struct { /* ciciliStruct1095 */
+    struct { /* ciciliStruct1121 */
     } Nothing , _ ;
   } __h_data ;
 } Maybe_List_int;
@@ -930,7 +1030,12 @@ typedef enum __h_Maybe_ctor_t {
   __h_Just_t = 1
 } __h_Maybe_ctor_t;
 #endif /* __H___h_Maybe_ctor_t__ */ 
+#ifndef __H_STD_DATA_
+#define __H_STD_DATA_
+typedef struct std_data std_data ;
+#endif /* __H_STD_DATA_ */ 
 typedef struct Maybe_char Maybe_char ;
+typedef std_data Maybe_char_type_t ;
 typedef void (*free_Maybe_char_t) (Maybe_char * this );
 typedef struct Maybe_char__H_Table {
   free_Maybe_char_t freeData ;
@@ -938,11 +1043,11 @@ typedef struct Maybe_char__H_Table {
 typedef struct Maybe_char {
   const Maybe_char__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion1125 */
-    struct { /* ciciliStruct1126 */
+  union { /* ciciliUnion1152 */
+    struct { /* ciciliStruct1153 */
       char __h_0_mem ;
     } Just , _1 ;
-    struct { /* ciciliStruct1127 */
+    struct { /* ciciliStruct1154 */
     } Nothing , _ ;
   } __h_data ;
 } Maybe_char;
@@ -963,8 +1068,13 @@ typedef enum __h_List_ctor_t {
   __h_Cons_t = 1
 } __h_List_ctor_t;
 #endif /* __H___h_List_ctor_t__ */ 
+#ifndef __H_STD_CLASS_
+#define __H_STD_CLASS_
+typedef struct std_class std_class ;
+#endif /* __H_STD_CLASS_ */ 
 typedef struct class_List_char class_List_char ;
 typedef class_List_char * List_char ;
+typedef std_class List_char_type_t ;
 typedef void (*free_List_char_t) (List_char * this_ptr );
 typedef struct List_char__H_Table {
   free_List_char_t freeClass ;
@@ -996,12 +1106,12 @@ typedef struct List_char__H_Table {
 typedef struct class_List_char {
   const List_char__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion1177 */
-    struct { /* ciciliStruct1178 */
+  union { /* ciciliUnion1205 */
+    struct { /* ciciliStruct1206 */
       char __h_0_mem ;
       List_char __h_1_mem ;
     } Cons , _1 ;
-    struct { /* ciciliStruct1179 */
+    struct { /* ciciliStruct1207 */
     } Nil , _ ;
   } __h_data ;
 } class_List_char;
@@ -1046,7 +1156,12 @@ typedef enum __h_Maybe_ctor_t {
   __h_Just_t = 1
 } __h_Maybe_ctor_t;
 #endif /* __H___h_Maybe_ctor_t__ */ 
+#ifndef __H_STD_DATA_
+#define __H_STD_DATA_
+typedef struct std_data std_data ;
+#endif /* __H_STD_DATA_ */ 
 typedef struct Maybe_List_char Maybe_List_char ;
+typedef std_data Maybe_List_char_type_t ;
 typedef void (*free_Maybe_List_char_t) (Maybe_List_char * this );
 typedef struct Maybe_List_char__H_Table {
   free_Maybe_List_char_t freeData ;
@@ -1054,11 +1169,11 @@ typedef struct Maybe_List_char__H_Table {
 typedef struct Maybe_List_char {
   const Maybe_List_char__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion1277 */
-    struct { /* ciciliStruct1278 */
+  union { /* ciciliUnion1306 */
+    struct { /* ciciliStruct1307 */
       List_char __h_0_mem ;
     } Just , _1 ;
-    struct { /* ciciliStruct1279 */
+    struct { /* ciciliStruct1308 */
     } Nothing , _ ;
   } __h_data ;
 } Maybe_List_char;
@@ -1080,7 +1195,12 @@ typedef enum __h_Maybe_ctor_t {
   __h_Just_t = 1
 } __h_Maybe_ctor_t;
 #endif /* __H___h_Maybe_ctor_t__ */ 
+#ifndef __H_STD_DATA_
+#define __H_STD_DATA_
+typedef struct std_data std_data ;
+#endif /* __H_STD_DATA_ */ 
 typedef struct Maybe_char Maybe_char ;
+typedef std_data Maybe_char_type_t ;
 typedef void (*free_Maybe_char_t) (Maybe_char * this );
 typedef struct Maybe_char__H_Table {
   free_Maybe_char_t freeData ;
@@ -1088,11 +1208,11 @@ typedef struct Maybe_char__H_Table {
 typedef struct Maybe_char {
   const Maybe_char__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion1309 */
-    struct { /* ciciliStruct1310 */
+  union { /* ciciliUnion1339 */
+    struct { /* ciciliStruct1340 */
       char __h_0_mem ;
     } Just , _1 ;
-    struct { /* ciciliStruct1311 */
+    struct { /* ciciliStruct1341 */
     } Nothing , _ ;
   } __h_data ;
 } Maybe_char;
@@ -1113,7 +1233,12 @@ typedef enum __h_StringBuffer_ctor_t {
   __h_Buffered_t = 1
 } __h_StringBuffer_ctor_t;
 #endif /* __H___h_StringBuffer_ctor_t__ */ 
+#ifndef __H_STD_DATA_
+#define __H_STD_DATA_
+typedef struct std_data std_data ;
+#endif /* __H_STD_DATA_ */ 
 typedef struct StringBuffer_char StringBuffer_char ;
+typedef std_data StringBuffer_char_type_t ;
 typedef void (*free_StringBuffer_char_t) (StringBuffer_char * this );
 typedef struct StringBuffer_char__H_Table {
   free_StringBuffer_char_t freeData ;
@@ -1129,14 +1254,14 @@ typedef struct StringBuffer_char__H_Table {
 typedef struct StringBuffer_char {
   const StringBuffer_char__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion1359 */
-    struct { /* ciciliStruct1360 */
+  union { /* ciciliUnion1390 */
+    struct { /* ciciliStruct1391 */
       const char * __h_0_mem ;
       size_t __h_1_mem ;
       size_t __h_2_mem ;
       size_t __h_3_mem ;
     } Buffered , _1 ;
-    struct { /* ciciliStruct1361 */
+    struct { /* ciciliStruct1392 */
     } Freed , _ ;
   } __h_data ;
 } StringBuffer_char;
@@ -1157,11 +1282,11 @@ const StringBuffer_char__H_Table * const get_StringBuffer_char__H_Table ();
 void free_StringBuffer_char (StringBuffer_char * this );
 #endif /* __StringBuffer_char__H_DECL__ */ 
 typedef const char * Str_ptr_t ;
-typedef struct cicililE9XeAooi5n_AJvMavz6_BCtwDw_ {
+typedef struct cicilih7opICZG_KYY244H8EE6eZ74Mow_ {
   Str_ptr_t __h_0_mem ;
   Str_ptr_t __h_1_mem ;
-} cicililE9XeAooi5n_AJvMavz6_BCtwDw_;
-typedef cicililE9XeAooi5n_AJvMavz6_BCtwDw_ Str_iter_t ;
+} cicilih7opICZG_KYY244H8EE6eZ74Mow_;
+typedef cicilih7opICZG_KYY244H8EE6eZ74Mow_ Str_iter_t ;
 #ifndef __Str__H_DECL__
 #define __Str__H_DECL__
 #ifndef __H___h_Vector_ctor_t__
@@ -1172,8 +1297,13 @@ typedef enum __h_Vector_ctor_t {
   __h_Buffer_t = 2
 } __h_Vector_ctor_t;
 #endif /* __H___h_Vector_ctor_t__ */ 
+#ifndef __H_STD_BOX_
+#define __H_STD_BOX_
+typedef struct std_box std_box ;
+#endif /* __H_STD_BOX_ */ 
 typedef struct class_Str class_Str ;
 typedef class_Str * Str_x ;
+typedef std_box Str_x_type_t ;
 #ifndef __Maybe_Str_x__H_DECL__
 #define __Maybe_Str_x__H_DECL__
 #ifndef __H___h_Maybe_ctor_t__
@@ -1183,7 +1313,12 @@ typedef enum __h_Maybe_ctor_t {
   __h_Just_t = 1
 } __h_Maybe_ctor_t;
 #endif /* __H___h_Maybe_ctor_t__ */ 
+#ifndef __H_STD_DATA_
+#define __H_STD_DATA_
+typedef struct std_data std_data ;
+#endif /* __H_STD_DATA_ */ 
 typedef struct Maybe_Str_x Maybe_Str_x ;
+typedef std_data Maybe_Str_x_type_t ;
 typedef void (*free_Maybe_Str_x_t) (Maybe_Str_x * this );
 typedef struct Maybe_Str_x__H_Table {
   free_Maybe_Str_x_t freeData ;
@@ -1191,11 +1326,11 @@ typedef struct Maybe_Str_x__H_Table {
 typedef struct Maybe_Str_x {
   const Maybe_Str_x__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion1423 */
-    struct { /* ciciliStruct1424 */
+  union { /* ciciliUnion1456 */
+    struct { /* ciciliStruct1457 */
       Str_x __h_0_mem ;
     } Just , _1 ;
-    struct { /* ciciliStruct1425 */
+    struct { /* ciciliStruct1458 */
     } Nothing , _ ;
   } __h_data ;
 } Maybe_Str_x;
@@ -1216,7 +1351,12 @@ typedef enum __h_Rc_ctor_t {
   __h_Hold_t = 1
 } __h_Rc_ctor_t;
 #endif /* __H___h_Rc_ctor_t__ */ 
+#ifndef __H_STD_DATA_
+#define __H_STD_DATA_
+typedef struct std_data std_data ;
+#endif /* __H_STD_DATA_ */ 
 typedef struct Box_Str Box_Str ;
+typedef std_data Box_Str_type_t ;
 typedef void (*free_Box_Str_t) (Box_Str * this );
 typedef struct Box_Str__H_Table {
   free_Box_Str_t freeData ;
@@ -1228,13 +1368,13 @@ typedef struct Box_Str__H_Table {
 typedef struct Box_Str {
   const Box_Str__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion1455 */
-    struct { /* ciciliStruct1456 */
+  union { /* ciciliUnion1489 */
+    struct { /* ciciliStruct1490 */
       Str_x * __h_0_mem ;
       int * __h_1_mem ;
       size_t __h_2_mem ;
     } Hold , _1 ;
-    struct { /* ciciliStruct1457 */
+    struct { /* ciciliStruct1491 */
     } Gone , _ ;
   } __h_data ;
 } Box_Str;
@@ -1283,16 +1423,16 @@ typedef struct Str__H_Table {
 typedef struct class_Str {
   const Str__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion1521 */
-    struct { /* ciciliStruct1522 */
+  union { /* ciciliUnion1555 */
+    struct { /* ciciliStruct1556 */
       StringBuffer_char __h_0_mem ;
     } Buffer , _2 ;
-    struct { /* ciciliStruct1523 */
+    struct { /* ciciliStruct1557 */
       Str __h_0_mem ;
       size_t __h_1_mem ;
       size_t __h_2_mem ;
     } Slice , _1 ;
-    struct { /* ciciliStruct1524 */
+    struct { /* ciciliStruct1558 */
     } None , _ ;
   } __h_data ;
 } class_Str;
@@ -1339,7 +1479,12 @@ typedef enum __h_Maybe_ctor_t {
   __h_Just_t = 1
 } __h_Maybe_ctor_t;
 #endif /* __H___h_Maybe_ctor_t__ */ 
+#ifndef __H_STD_DATA_
+#define __H_STD_DATA_
+typedef struct std_data std_data ;
+#endif /* __H_STD_DATA_ */ 
 typedef struct Maybe_Str Maybe_Str ;
+typedef std_data Maybe_Str_type_t ;
 typedef void (*free_Maybe_Str_t) (Maybe_Str * this );
 typedef struct Maybe_Str__H_Table {
   free_Maybe_Str_t freeData ;
@@ -1347,11 +1492,11 @@ typedef struct Maybe_Str__H_Table {
 typedef struct Maybe_Str {
   const Maybe_Str__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion1628 */
-    struct { /* ciciliStruct1629 */
+  union { /* ciciliUnion1663 */
+    struct { /* ciciliStruct1664 */
       Str __h_0_mem ;
     } Just , _1 ;
-    struct { /* ciciliStruct1630 */
+    struct { /* ciciliStruct1665 */
     } Nothing , _ ;
   } __h_data ;
 } Maybe_Str;
@@ -1372,7 +1517,12 @@ typedef enum __h_Maybe_ctor_t {
   __h_Just_t = 1
 } __h_Maybe_ctor_t;
 #endif /* __H___h_Maybe_ctor_t__ */ 
+#ifndef __H_STD_DATA_
+#define __H_STD_DATA_
+typedef struct std_data std_data ;
+#endif /* __H_STD_DATA_ */ 
 typedef struct Maybe_Char Maybe_Char ;
+typedef std_data Maybe_Char_type_t ;
 typedef void (*free_Maybe_Char_t) (Maybe_Char * this );
 typedef struct Maybe_Char__H_Table {
   free_Maybe_Char_t freeData ;
@@ -1380,11 +1530,11 @@ typedef struct Maybe_Char__H_Table {
 typedef struct Maybe_Char {
   const Maybe_Char__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion1658 */
-    struct { /* ciciliStruct1659 */
+  union { /* ciciliUnion1694 */
+    struct { /* ciciliStruct1695 */
       Char __h_0_mem ;
     } Just , _1 ;
-    struct { /* ciciliStruct1660 */
+    struct { /* ciciliStruct1696 */
     } Nothing , _ ;
   } __h_data ;
 } Maybe_Char;
@@ -1405,7 +1555,12 @@ typedef enum __h_StringBuffer_ctor_t {
   __h_Buffered_t = 1
 } __h_StringBuffer_ctor_t;
 #endif /* __H___h_StringBuffer_ctor_t__ */ 
+#ifndef __H_STD_DATA_
+#define __H_STD_DATA_
+typedef struct std_data std_data ;
+#endif /* __H_STD_DATA_ */ 
 typedef struct StringBuffer_Char StringBuffer_Char ;
+typedef std_data StringBuffer_Char_type_t ;
 typedef void (*free_StringBuffer_Char_t) (StringBuffer_Char * this );
 typedef struct StringBuffer_Char__H_Table {
   free_StringBuffer_Char_t freeData ;
@@ -1421,14 +1576,14 @@ typedef struct StringBuffer_Char__H_Table {
 typedef struct StringBuffer_Char {
   const StringBuffer_Char__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion1708 */
-    struct { /* ciciliStruct1709 */
+  union { /* ciciliUnion1745 */
+    struct { /* ciciliStruct1746 */
       Char * __h_0_mem ;
       size_t __h_1_mem ;
       size_t __h_2_mem ;
       size_t __h_3_mem ;
     } Buffered , _1 ;
-    struct { /* ciciliStruct1710 */
+    struct { /* ciciliStruct1747 */
     } Freed , _ ;
   } __h_data ;
 } StringBuffer_Char;
@@ -1449,11 +1604,11 @@ const StringBuffer_Char__H_Table * const get_StringBuffer_Char__H_Table ();
 void free_StringBuffer_Char (StringBuffer_Char * this );
 #endif /* __StringBuffer_Char__H_DECL__ */ 
 typedef Char * String_ptr_t ;
-typedef struct cicili6fiDQ_wuZcNpYUcriOguesPFbS4_ {
+typedef struct cicili18oQ1m1s5tbKKMgpHeLD_kLG9gU_ {
   String_ptr_t __h_0_mem ;
   String_ptr_t __h_1_mem ;
-} cicili6fiDQ_wuZcNpYUcriOguesPFbS4_;
-typedef cicili6fiDQ_wuZcNpYUcriOguesPFbS4_ String_iter_t ;
+} cicili18oQ1m1s5tbKKMgpHeLD_kLG9gU_;
+typedef cicili18oQ1m1s5tbKKMgpHeLD_kLG9gU_ String_iter_t ;
 #ifndef __String__H_DECL__
 #define __String__H_DECL__
 #ifndef __H___h_Vector_ctor_t__
@@ -1464,8 +1619,13 @@ typedef enum __h_Vector_ctor_t {
   __h_Buffer_t = 2
 } __h_Vector_ctor_t;
 #endif /* __H___h_Vector_ctor_t__ */ 
+#ifndef __H_STD_BOX_
+#define __H_STD_BOX_
+typedef struct std_box std_box ;
+#endif /* __H_STD_BOX_ */ 
 typedef struct class_String class_String ;
 typedef class_String * String_x ;
+typedef std_box String_x_type_t ;
 #ifndef __Maybe_String_x__H_DECL__
 #define __Maybe_String_x__H_DECL__
 #ifndef __H___h_Maybe_ctor_t__
@@ -1475,7 +1635,12 @@ typedef enum __h_Maybe_ctor_t {
   __h_Just_t = 1
 } __h_Maybe_ctor_t;
 #endif /* __H___h_Maybe_ctor_t__ */ 
+#ifndef __H_STD_DATA_
+#define __H_STD_DATA_
+typedef struct std_data std_data ;
+#endif /* __H_STD_DATA_ */ 
 typedef struct Maybe_String_x Maybe_String_x ;
+typedef std_data Maybe_String_x_type_t ;
 typedef void (*free_Maybe_String_x_t) (Maybe_String_x * this );
 typedef struct Maybe_String_x__H_Table {
   free_Maybe_String_x_t freeData ;
@@ -1483,11 +1648,11 @@ typedef struct Maybe_String_x__H_Table {
 typedef struct Maybe_String_x {
   const Maybe_String_x__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion1772 */
-    struct { /* ciciliStruct1773 */
+  union { /* ciciliUnion1811 */
+    struct { /* ciciliStruct1812 */
       String_x __h_0_mem ;
     } Just , _1 ;
-    struct { /* ciciliStruct1774 */
+    struct { /* ciciliStruct1813 */
     } Nothing , _ ;
   } __h_data ;
 } Maybe_String_x;
@@ -1508,7 +1673,12 @@ typedef enum __h_Rc_ctor_t {
   __h_Hold_t = 1
 } __h_Rc_ctor_t;
 #endif /* __H___h_Rc_ctor_t__ */ 
+#ifndef __H_STD_DATA_
+#define __H_STD_DATA_
+typedef struct std_data std_data ;
+#endif /* __H_STD_DATA_ */ 
 typedef struct Box_String Box_String ;
+typedef std_data Box_String_type_t ;
 typedef void (*free_Box_String_t) (Box_String * this );
 typedef struct Box_String__H_Table {
   free_Box_String_t freeData ;
@@ -1520,13 +1690,13 @@ typedef struct Box_String__H_Table {
 typedef struct Box_String {
   const Box_String__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion1804 */
-    struct { /* ciciliStruct1805 */
+  union { /* ciciliUnion1844 */
+    struct { /* ciciliStruct1845 */
       String_x * __h_0_mem ;
       int * __h_1_mem ;
       size_t __h_2_mem ;
     } Hold , _1 ;
-    struct { /* ciciliStruct1806 */
+    struct { /* ciciliStruct1846 */
     } Gone , _ ;
   } __h_data ;
 } Box_String;
@@ -1575,16 +1745,16 @@ typedef struct String__H_Table {
 typedef struct class_String {
   const String__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion1870 */
-    struct { /* ciciliStruct1871 */
+  union { /* ciciliUnion1910 */
+    struct { /* ciciliStruct1911 */
       StringBuffer_Char __h_0_mem ;
     } Buffer , _2 ;
-    struct { /* ciciliStruct1872 */
+    struct { /* ciciliStruct1912 */
       String __h_0_mem ;
       size_t __h_1_mem ;
       size_t __h_2_mem ;
     } Slice , _1 ;
-    struct { /* ciciliStruct1873 */
+    struct { /* ciciliStruct1913 */
     } None , _ ;
   } __h_data ;
 } class_String;
@@ -1631,7 +1801,12 @@ typedef enum __h_Maybe_ctor_t {
   __h_Just_t = 1
 } __h_Maybe_ctor_t;
 #endif /* __H___h_Maybe_ctor_t__ */ 
+#ifndef __H_STD_DATA_
+#define __H_STD_DATA_
+typedef struct std_data std_data ;
+#endif /* __H_STD_DATA_ */ 
 typedef struct Maybe_String Maybe_String ;
+typedef std_data Maybe_String_type_t ;
 typedef void (*free_Maybe_String_t) (Maybe_String * this );
 typedef struct Maybe_String__H_Table {
   free_Maybe_String_t freeData ;
@@ -1639,11 +1814,11 @@ typedef struct Maybe_String__H_Table {
 typedef struct Maybe_String {
   const Maybe_String__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion1977 */
-    struct { /* ciciliStruct1978 */
+  union { /* ciciliUnion2018 */
+    struct { /* ciciliStruct2019 */
       String __h_0_mem ;
     } Just , _1 ;
-    struct { /* ciciliStruct1979 */
+    struct { /* ciciliStruct2020 */
     } Nothing , _ ;
   } __h_data ;
 } Maybe_String;
@@ -1664,8 +1839,13 @@ typedef enum __h_List_ctor_t {
   __h_Cons_t = 1
 } __h_List_ctor_t;
 #endif /* __H___h_List_ctor_t__ */ 
+#ifndef __H_STD_CLASS_
+#define __H_STD_CLASS_
+typedef struct std_class std_class ;
+#endif /* __H_STD_CLASS_ */ 
 typedef struct class_Range_int class_Range_int ;
 typedef class_Range_int * Range_int ;
+typedef std_class Range_int_type_t ;
 typedef void (*free_Range_int_t) (Range_int * this_ptr );
 typedef struct Range_int__H_Table {
   free_Range_int_t freeClass ;
@@ -1677,13 +1857,13 @@ typedef struct Range_int__H_Table {
 typedef struct class_Range_int {
   const Range_int__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion2009 */
-    struct { /* ciciliStruct2010 */
+  union { /* ciciliUnion2051 */
+    struct { /* ciciliStruct2052 */
       int __h_0_mem ;
       int __h_1_mem ;
       int __h_2_mem ;
     } Cons , _1 ;
-    struct { /* ciciliStruct2011 */
+    struct { /* ciciliStruct2053 */
     } Nil , _ ;
   } __h_data ;
 } class_Range_int;
@@ -1709,8 +1889,13 @@ typedef enum __h_List_ctor_t {
   __h_Cons_t = 1
 } __h_List_ctor_t;
 #endif /* __H___h_List_ctor_t__ */ 
+#ifndef __H_STD_CLASS_
+#define __H_STD_CLASS_
+typedef struct std_class std_class ;
+#endif /* __H_STD_CLASS_ */ 
 typedef struct class_Range_char class_Range_char ;
 typedef class_Range_char * Range_char ;
+typedef std_class Range_char_type_t ;
 typedef void (*free_Range_char_t) (Range_char * this_ptr );
 typedef struct Range_char__H_Table {
   free_Range_char_t freeClass ;
@@ -1722,13 +1907,13 @@ typedef struct Range_char__H_Table {
 typedef struct class_Range_char {
   const Range_char__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion2055 */
-    struct { /* ciciliStruct2056 */
+  union { /* ciciliUnion2098 */
+    struct { /* ciciliStruct2099 */
       char __h_0_mem ;
       char __h_1_mem ;
       char __h_2_mem ;
     } Cons , _1 ;
-    struct { /* ciciliStruct2057 */
+    struct { /* ciciliStruct2100 */
     } Nil , _ ;
   } __h_data ;
 } class_Range_char;
@@ -1754,7 +1939,12 @@ typedef enum __h_Maybe_ctor_t {
   __h_Just_t = 1
 } __h_Maybe_ctor_t;
 #endif /* __H___h_Maybe_ctor_t__ */ 
+#ifndef __H_STD_DATA_
+#define __H_STD_DATA_
+typedef struct std_data std_data ;
+#endif /* __H_STD_DATA_ */ 
 typedef struct Maybe_List_Bool Maybe_List_Bool ;
+typedef std_data Maybe_List_Bool_type_t ;
 typedef void (*free_Maybe_List_Bool_t) (Maybe_List_Bool * this );
 typedef struct Maybe_List_Bool__H_Table {
   free_Maybe_List_Bool_t freeData ;
@@ -1762,11 +1952,11 @@ typedef struct Maybe_List_Bool__H_Table {
 typedef struct Maybe_List_Bool {
   const Maybe_List_Bool__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion2099 */
-    struct { /* ciciliStruct2100 */
+  union { /* ciciliUnion2143 */
+    struct { /* ciciliStruct2144 */
       List_Bool __h_0_mem ;
     } Just , _1 ;
-    struct { /* ciciliStruct2101 */
+    struct { /* ciciliStruct2145 */
     } Nothing , _ ;
   } __h_data ;
 } Maybe_List_Bool;
@@ -1787,8 +1977,13 @@ typedef enum __h_List_ctor_t {
   __h_Cons_t = 1
 } __h_List_ctor_t;
 #endif /* __H___h_List_ctor_t__ */ 
+#ifndef __H_STD_CLASS_
+#define __H_STD_CLASS_
+typedef struct std_class std_class ;
+#endif /* __H_STD_CLASS_ */ 
 typedef struct class_List_List_Bool class_List_List_Bool ;
 typedef class_List_List_Bool * List_List_Bool ;
+typedef std_class List_List_Bool_type_t ;
 typedef void (*free_List_List_Bool_t) (List_List_Bool * this_ptr );
 typedef struct List_List_Bool__H_Table {
   free_List_List_Bool_t freeClass ;
@@ -1820,12 +2015,12 @@ typedef struct List_List_Bool__H_Table {
 typedef struct class_List_List_Bool {
   const List_List_Bool__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion2151 */
-    struct { /* ciciliStruct2152 */
+  union { /* ciciliUnion2196 */
+    struct { /* ciciliStruct2197 */
       List_Bool __h_0_mem ;
       List_List_Bool __h_1_mem ;
     } Cons , _1 ;
-    struct { /* ciciliStruct2153 */
+    struct { /* ciciliStruct2198 */
     } Nil , _ ;
   } __h_data ;
 } class_List_List_Bool;
@@ -1870,7 +2065,12 @@ typedef enum __h_Maybe_ctor_t {
   __h_Just_t = 1
 } __h_Maybe_ctor_t;
 #endif /* __H___h_Maybe_ctor_t__ */ 
+#ifndef __H_STD_DATA_
+#define __H_STD_DATA_
+typedef struct std_data std_data ;
+#endif /* __H_STD_DATA_ */ 
 typedef struct Maybe_List_List_Bool Maybe_List_List_Bool ;
+typedef std_data Maybe_List_List_Bool_type_t ;
 typedef void (*free_Maybe_List_List_Bool_t) (Maybe_List_List_Bool * this );
 typedef struct Maybe_List_List_Bool__H_Table {
   free_Maybe_List_List_Bool_t freeData ;
@@ -1878,11 +2078,11 @@ typedef struct Maybe_List_List_Bool__H_Table {
 typedef struct Maybe_List_List_Bool {
   const Maybe_List_List_Bool__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion2251 */
-    struct { /* ciciliStruct2252 */
+  union { /* ciciliUnion2297 */
+    struct { /* ciciliStruct2298 */
       List_List_Bool __h_0_mem ;
     } Just , _1 ;
-    struct { /* ciciliStruct2253 */
+    struct { /* ciciliStruct2299 */
     } Nothing , _ ;
   } __h_data ;
 } Maybe_List_List_Bool;
@@ -1903,7 +2103,12 @@ typedef enum __h_Maybe_ctor_t {
   __h_Just_t = 1
 } __h_Maybe_ctor_t;
 #endif /* __H___h_Maybe_ctor_t__ */ 
+#ifndef __H_STD_DATA_
+#define __H_STD_DATA_
+typedef struct std_data std_data ;
+#endif /* __H_STD_DATA_ */ 
 typedef struct Maybe_List_int Maybe_List_int ;
+typedef std_data Maybe_List_int_type_t ;
 typedef void (*free_Maybe_List_int_t) (Maybe_List_int * this );
 typedef struct Maybe_List_int__H_Table {
   free_Maybe_List_int_t freeData ;
@@ -1911,11 +2116,11 @@ typedef struct Maybe_List_int__H_Table {
 typedef struct Maybe_List_int {
   const Maybe_List_int__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion2281 */
-    struct { /* ciciliStruct2282 */
+  union { /* ciciliUnion2328 */
+    struct { /* ciciliStruct2329 */
       List_int __h_0_mem ;
     } Just , _1 ;
-    struct { /* ciciliStruct2283 */
+    struct { /* ciciliStruct2330 */
     } Nothing , _ ;
   } __h_data ;
 } Maybe_List_int;
@@ -1936,8 +2141,13 @@ typedef enum __h_List_ctor_t {
   __h_Cons_t = 1
 } __h_List_ctor_t;
 #endif /* __H___h_List_ctor_t__ */ 
+#ifndef __H_STD_CLASS_
+#define __H_STD_CLASS_
+typedef struct std_class std_class ;
+#endif /* __H_STD_CLASS_ */ 
 typedef struct class_List_List_int class_List_List_int ;
 typedef class_List_List_int * List_List_int ;
+typedef std_class List_List_int_type_t ;
 typedef void (*free_List_List_int_t) (List_List_int * this_ptr );
 typedef struct List_List_int__H_Table {
   free_List_List_int_t freeClass ;
@@ -1969,12 +2179,12 @@ typedef struct List_List_int__H_Table {
 typedef struct class_List_List_int {
   const List_List_int__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion2333 */
-    struct { /* ciciliStruct2334 */
+  union { /* ciciliUnion2381 */
+    struct { /* ciciliStruct2382 */
       List_int __h_0_mem ;
       List_List_int __h_1_mem ;
     } Cons , _1 ;
-    struct { /* ciciliStruct2335 */
+    struct { /* ciciliStruct2383 */
     } Nil , _ ;
   } __h_data ;
 } class_List_List_int;
@@ -2019,7 +2229,12 @@ typedef enum __h_Maybe_ctor_t {
   __h_Just_t = 1
 } __h_Maybe_ctor_t;
 #endif /* __H___h_Maybe_ctor_t__ */ 
+#ifndef __H_STD_DATA_
+#define __H_STD_DATA_
+typedef struct std_data std_data ;
+#endif /* __H_STD_DATA_ */ 
 typedef struct Maybe_List_List_int Maybe_List_List_int ;
+typedef std_data Maybe_List_List_int_type_t ;
 typedef void (*free_Maybe_List_List_int_t) (Maybe_List_List_int * this );
 typedef struct Maybe_List_List_int__H_Table {
   free_Maybe_List_List_int_t freeData ;
@@ -2027,11 +2242,11 @@ typedef struct Maybe_List_List_int__H_Table {
 typedef struct Maybe_List_List_int {
   const Maybe_List_List_int__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion2433 */
-    struct { /* ciciliStruct2434 */
+  union { /* ciciliUnion2482 */
+    struct { /* ciciliStruct2483 */
       List_List_int __h_0_mem ;
     } Just , _1 ;
-    struct { /* ciciliStruct2435 */
+    struct { /* ciciliStruct2484 */
     } Nothing , _ ;
   } __h_data ;
 } Maybe_List_List_int;
@@ -2052,7 +2267,12 @@ typedef enum __h_Maybe_ctor_t {
   __h_Just_t = 1
 } __h_Maybe_ctor_t;
 #endif /* __H___h_Maybe_ctor_t__ */ 
+#ifndef __H_STD_DATA_
+#define __H_STD_DATA_
+typedef struct std_data std_data ;
+#endif /* __H_STD_DATA_ */ 
 typedef struct Maybe_List_char Maybe_List_char ;
+typedef std_data Maybe_List_char_type_t ;
 typedef void (*free_Maybe_List_char_t) (Maybe_List_char * this );
 typedef struct Maybe_List_char__H_Table {
   free_Maybe_List_char_t freeData ;
@@ -2060,11 +2280,11 @@ typedef struct Maybe_List_char__H_Table {
 typedef struct Maybe_List_char {
   const Maybe_List_char__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion2463 */
-    struct { /* ciciliStruct2464 */
+  union { /* ciciliUnion2513 */
+    struct { /* ciciliStruct2514 */
       List_char __h_0_mem ;
     } Just , _1 ;
-    struct { /* ciciliStruct2465 */
+    struct { /* ciciliStruct2515 */
     } Nothing , _ ;
   } __h_data ;
 } Maybe_List_char;
@@ -2085,8 +2305,13 @@ typedef enum __h_List_ctor_t {
   __h_Cons_t = 1
 } __h_List_ctor_t;
 #endif /* __H___h_List_ctor_t__ */ 
+#ifndef __H_STD_CLASS_
+#define __H_STD_CLASS_
+typedef struct std_class std_class ;
+#endif /* __H_STD_CLASS_ */ 
 typedef struct class_List_List_char class_List_List_char ;
 typedef class_List_List_char * List_List_char ;
+typedef std_class List_List_char_type_t ;
 typedef void (*free_List_List_char_t) (List_List_char * this_ptr );
 typedef struct List_List_char__H_Table {
   free_List_List_char_t freeClass ;
@@ -2118,12 +2343,12 @@ typedef struct List_List_char__H_Table {
 typedef struct class_List_List_char {
   const List_List_char__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion2515 */
-    struct { /* ciciliStruct2516 */
+  union { /* ciciliUnion2566 */
+    struct { /* ciciliStruct2567 */
       List_char __h_0_mem ;
       List_List_char __h_1_mem ;
     } Cons , _1 ;
-    struct { /* ciciliStruct2517 */
+    struct { /* ciciliStruct2568 */
     } Nil , _ ;
   } __h_data ;
 } class_List_List_char;
@@ -2168,7 +2393,12 @@ typedef enum __h_Maybe_ctor_t {
   __h_Just_t = 1
 } __h_Maybe_ctor_t;
 #endif /* __H___h_Maybe_ctor_t__ */ 
+#ifndef __H_STD_DATA_
+#define __H_STD_DATA_
+typedef struct std_data std_data ;
+#endif /* __H_STD_DATA_ */ 
 typedef struct Maybe_List_List_char Maybe_List_List_char ;
+typedef std_data Maybe_List_List_char_type_t ;
 typedef void (*free_Maybe_List_List_char_t) (Maybe_List_List_char * this );
 typedef struct Maybe_List_List_char__H_Table {
   free_Maybe_List_List_char_t freeData ;
@@ -2176,11 +2406,11 @@ typedef struct Maybe_List_List_char__H_Table {
 typedef struct Maybe_List_List_char {
   const Maybe_List_List_char__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion2615 */
-    struct { /* ciciliStruct2616 */
+  union { /* ciciliUnion2667 */
+    struct { /* ciciliStruct2668 */
       List_List_char __h_0_mem ;
     } Just , _1 ;
-    struct { /* ciciliStruct2617 */
+    struct { /* ciciliStruct2669 */
     } Nothing , _ ;
   } __h_data ;
 } Maybe_List_List_char;
@@ -2201,7 +2431,12 @@ typedef enum __h_Maybe_ctor_t {
   __h_Just_t = 1
 } __h_Maybe_ctor_t;
 #endif /* __H___h_Maybe_ctor_t__ */ 
+#ifndef __H_STD_DATA_
+#define __H_STD_DATA_
+typedef struct std_data std_data ;
+#endif /* __H_STD_DATA_ */ 
 typedef struct Maybe_CStr Maybe_CStr ;
+typedef std_data Maybe_CStr_type_t ;
 typedef void (*free_Maybe_CStr_t) (Maybe_CStr * this );
 typedef struct Maybe_CStr__H_Table {
   free_Maybe_CStr_t freeData ;
@@ -2209,11 +2444,11 @@ typedef struct Maybe_CStr__H_Table {
 typedef struct Maybe_CStr {
   const Maybe_CStr__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion2645 */
-    struct { /* ciciliStruct2646 */
+  union { /* ciciliUnion2698 */
+    struct { /* ciciliStruct2699 */
       CStr __h_0_mem ;
     } Just , _1 ;
-    struct { /* ciciliStruct2647 */
+    struct { /* ciciliStruct2700 */
     } Nothing , _ ;
   } __h_data ;
 } Maybe_CStr;
@@ -2234,8 +2469,13 @@ typedef enum __h_List_ctor_t {
   __h_Cons_t = 1
 } __h_List_ctor_t;
 #endif /* __H___h_List_ctor_t__ */ 
+#ifndef __H_STD_CLASS_
+#define __H_STD_CLASS_
+typedef struct std_class std_class ;
+#endif /* __H_STD_CLASS_ */ 
 typedef struct class_List_CStr class_List_CStr ;
 typedef class_List_CStr * List_CStr ;
+typedef std_class List_CStr_type_t ;
 typedef void (*free_List_CStr_t) (List_CStr * this_ptr );
 typedef struct List_CStr__H_Table {
   free_List_CStr_t freeClass ;
@@ -2267,12 +2507,12 @@ typedef struct List_CStr__H_Table {
 typedef struct class_List_CStr {
   const List_CStr__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion2697 */
-    struct { /* ciciliStruct2698 */
+  union { /* ciciliUnion2751 */
+    struct { /* ciciliStruct2752 */
       CStr __h_0_mem ;
       List_CStr __h_1_mem ;
     } Cons , _1 ;
-    struct { /* ciciliStruct2699 */
+    struct { /* ciciliStruct2753 */
     } Nil , _ ;
   } __h_data ;
 } class_List_CStr;
@@ -2317,7 +2557,12 @@ typedef enum __h_Maybe_ctor_t {
   __h_Just_t = 1
 } __h_Maybe_ctor_t;
 #endif /* __H___h_Maybe_ctor_t__ */ 
+#ifndef __H_STD_DATA_
+#define __H_STD_DATA_
+typedef struct std_data std_data ;
+#endif /* __H_STD_DATA_ */ 
 typedef struct Maybe_List_CStr Maybe_List_CStr ;
+typedef std_data Maybe_List_CStr_type_t ;
 typedef void (*free_Maybe_List_CStr_t) (Maybe_List_CStr * this );
 typedef struct Maybe_List_CStr__H_Table {
   free_Maybe_List_CStr_t freeData ;
@@ -2325,11 +2570,11 @@ typedef struct Maybe_List_CStr__H_Table {
 typedef struct Maybe_List_CStr {
   const Maybe_List_CStr__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion2797 */
-    struct { /* ciciliStruct2798 */
+  union { /* ciciliUnion2852 */
+    struct { /* ciciliStruct2853 */
       List_CStr __h_0_mem ;
     } Just , _1 ;
-    struct { /* ciciliStruct2799 */
+    struct { /* ciciliStruct2854 */
     } Nothing , _ ;
   } __h_data ;
 } Maybe_List_CStr;
@@ -2350,7 +2595,12 @@ typedef enum __h_Maybe_ctor_t {
   __h_Just_t = 1
 } __h_Maybe_ctor_t;
 #endif /* __H___h_Maybe_ctor_t__ */ 
+#ifndef __H_STD_DATA_
+#define __H_STD_DATA_
+typedef struct std_data std_data ;
+#endif /* __H_STD_DATA_ */ 
 typedef struct Maybe_List_Bool Maybe_List_Bool ;
+typedef std_data Maybe_List_Bool_type_t ;
 typedef void (*free_Maybe_List_Bool_t) (Maybe_List_Bool * this );
 typedef struct Maybe_List_Bool__H_Table {
   free_Maybe_List_Bool_t freeData ;
@@ -2358,11 +2608,11 @@ typedef struct Maybe_List_Bool__H_Table {
 typedef struct Maybe_List_Bool {
   const Maybe_List_Bool__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion2829 */
-    struct { /* ciciliStruct2830 */
+  union { /* ciciliUnion2885 */
+    struct { /* ciciliStruct2886 */
       List_Bool __h_0_mem ;
     } Just , _1 ;
-    struct { /* ciciliStruct2831 */
+    struct { /* ciciliStruct2887 */
     } Nothing , _ ;
   } __h_data ;
 } Maybe_List_Bool;
@@ -2383,7 +2633,12 @@ typedef enum __h_Cell_ctor_t {
   __h_Alive_t = 1
 } __h_Cell_ctor_t;
 #endif /* __H___h_Cell_ctor_t__ */ 
+#ifndef __H_STD_DATA_
+#define __H_STD_DATA_
+typedef struct std_data std_data ;
+#endif /* __H_STD_DATA_ */ 
 typedef struct Cell_List_Bool Cell_List_Bool ;
+typedef std_data Cell_List_Bool_type_t ;
 typedef void (*free_Cell_List_Bool_t) (Cell_List_Bool * this );
 typedef struct Cell_List_Bool__H_Table {
   free_Cell_List_Bool_t freeData ;
@@ -2394,12 +2649,12 @@ typedef struct Cell_List_Bool__H_Table {
 typedef struct Cell_List_Bool {
   const Cell_List_Bool__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion2860 */
-    struct { /* ciciliStruct2861 */
+  union { /* ciciliUnion2917 */
+    struct { /* ciciliStruct2918 */
       List_Bool * __h_0_mem ;
       size_t __h_1_mem ;
     } Alive , _1 ;
-    struct { /* ciciliStruct2862 */
+    struct { /* ciciliStruct2919 */
     } Dead , _ ;
   } __h_data ;
 } Cell_List_Bool;
@@ -2423,7 +2678,12 @@ typedef enum __h_Maybe_ctor_t {
   __h_Just_t = 1
 } __h_Maybe_ctor_t;
 #endif /* __H___h_Maybe_ctor_t__ */ 
+#ifndef __H_STD_DATA_
+#define __H_STD_DATA_
+typedef struct std_data std_data ;
+#endif /* __H_STD_DATA_ */ 
 typedef struct Maybe_List_int Maybe_List_int ;
+typedef std_data Maybe_List_int_type_t ;
 typedef void (*free_Maybe_List_int_t) (Maybe_List_int * this );
 typedef struct Maybe_List_int__H_Table {
   free_Maybe_List_int_t freeData ;
@@ -2431,11 +2691,11 @@ typedef struct Maybe_List_int__H_Table {
 typedef struct Maybe_List_int {
   const Maybe_List_int__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion2901 */
-    struct { /* ciciliStruct2902 */
+  union { /* ciciliUnion2959 */
+    struct { /* ciciliStruct2960 */
       List_int __h_0_mem ;
     } Just , _1 ;
-    struct { /* ciciliStruct2903 */
+    struct { /* ciciliStruct2961 */
     } Nothing , _ ;
   } __h_data ;
 } Maybe_List_int;
@@ -2456,7 +2716,12 @@ typedef enum __h_Cell_ctor_t {
   __h_Alive_t = 1
 } __h_Cell_ctor_t;
 #endif /* __H___h_Cell_ctor_t__ */ 
+#ifndef __H_STD_DATA_
+#define __H_STD_DATA_
+typedef struct std_data std_data ;
+#endif /* __H_STD_DATA_ */ 
 typedef struct Cell_List_int Cell_List_int ;
+typedef std_data Cell_List_int_type_t ;
 typedef void (*free_Cell_List_int_t) (Cell_List_int * this );
 typedef struct Cell_List_int__H_Table {
   free_Cell_List_int_t freeData ;
@@ -2467,12 +2732,12 @@ typedef struct Cell_List_int__H_Table {
 typedef struct Cell_List_int {
   const Cell_List_int__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion2932 */
-    struct { /* ciciliStruct2933 */
+  union { /* ciciliUnion2991 */
+    struct { /* ciciliStruct2992 */
       List_int * __h_0_mem ;
       size_t __h_1_mem ;
     } Alive , _1 ;
-    struct { /* ciciliStruct2934 */
+    struct { /* ciciliStruct2993 */
     } Dead , _ ;
   } __h_data ;
 } Cell_List_int;
@@ -2496,7 +2761,12 @@ typedef enum __h_Maybe_ctor_t {
   __h_Just_t = 1
 } __h_Maybe_ctor_t;
 #endif /* __H___h_Maybe_ctor_t__ */ 
+#ifndef __H_STD_DATA_
+#define __H_STD_DATA_
+typedef struct std_data std_data ;
+#endif /* __H_STD_DATA_ */ 
 typedef struct Maybe_List_char Maybe_List_char ;
+typedef std_data Maybe_List_char_type_t ;
 typedef void (*free_Maybe_List_char_t) (Maybe_List_char * this );
 typedef struct Maybe_List_char__H_Table {
   free_Maybe_List_char_t freeData ;
@@ -2504,11 +2774,11 @@ typedef struct Maybe_List_char__H_Table {
 typedef struct Maybe_List_char {
   const Maybe_List_char__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion2973 */
-    struct { /* ciciliStruct2974 */
+  union { /* ciciliUnion3033 */
+    struct { /* ciciliStruct3034 */
       List_char __h_0_mem ;
     } Just , _1 ;
-    struct { /* ciciliStruct2975 */
+    struct { /* ciciliStruct3035 */
     } Nothing , _ ;
   } __h_data ;
 } Maybe_List_char;
@@ -2529,7 +2799,12 @@ typedef enum __h_Cell_ctor_t {
   __h_Alive_t = 1
 } __h_Cell_ctor_t;
 #endif /* __H___h_Cell_ctor_t__ */ 
+#ifndef __H_STD_DATA_
+#define __H_STD_DATA_
+typedef struct std_data std_data ;
+#endif /* __H_STD_DATA_ */ 
 typedef struct Cell_List_char Cell_List_char ;
+typedef std_data Cell_List_char_type_t ;
 typedef void (*free_Cell_List_char_t) (Cell_List_char * this );
 typedef struct Cell_List_char__H_Table {
   free_Cell_List_char_t freeData ;
@@ -2540,12 +2815,12 @@ typedef struct Cell_List_char__H_Table {
 typedef struct Cell_List_char {
   const Cell_List_char__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion3004 */
-    struct { /* ciciliStruct3005 */
+  union { /* ciciliUnion3065 */
+    struct { /* ciciliStruct3066 */
       List_char * __h_0_mem ;
       size_t __h_1_mem ;
     } Alive , _1 ;
-    struct { /* ciciliStruct3006 */
+    struct { /* ciciliStruct3067 */
     } Dead , _ ;
   } __h_data ;
 } Cell_List_char;
@@ -2569,7 +2844,12 @@ typedef enum __h_Maybe_ctor_t {
   __h_Just_t = 1
 } __h_Maybe_ctor_t;
 #endif /* __H___h_Maybe_ctor_t__ */ 
+#ifndef __H_STD_DATA_
+#define __H_STD_DATA_
+typedef struct std_data std_data ;
+#endif /* __H_STD_DATA_ */ 
 typedef struct Maybe_List_Bool Maybe_List_Bool ;
+typedef std_data Maybe_List_Bool_type_t ;
 typedef void (*free_Maybe_List_Bool_t) (Maybe_List_Bool * this );
 typedef struct Maybe_List_Bool__H_Table {
   free_Maybe_List_Bool_t freeData ;
@@ -2577,11 +2857,11 @@ typedef struct Maybe_List_Bool__H_Table {
 typedef struct Maybe_List_Bool {
   const Maybe_List_Bool__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion3045 */
-    struct { /* ciciliStruct3046 */
+  union { /* ciciliUnion3107 */
+    struct { /* ciciliStruct3108 */
       List_Bool __h_0_mem ;
     } Just , _1 ;
-    struct { /* ciciliStruct3047 */
+    struct { /* ciciliStruct3109 */
     } Nothing , _ ;
   } __h_data ;
 } Maybe_List_Bool;
@@ -2602,7 +2882,12 @@ typedef enum __h_Rc_ctor_t {
   __h_Hold_t = 1
 } __h_Rc_ctor_t;
 #endif /* __H___h_Rc_ctor_t__ */ 
+#ifndef __H_STD_DATA_
+#define __H_STD_DATA_
+typedef struct std_data std_data ;
+#endif /* __H_STD_DATA_ */ 
 typedef struct Rc_List_Bool Rc_List_Bool ;
+typedef std_data Rc_List_Bool_type_t ;
 typedef void (*free_Rc_List_Bool_t) (Rc_List_Bool * this );
 typedef struct Rc_List_Bool__H_Table {
   free_Rc_List_Bool_t freeData ;
@@ -2614,13 +2899,13 @@ typedef struct Rc_List_Bool__H_Table {
 typedef struct Rc_List_Bool {
   const Rc_List_Bool__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion3077 */
-    struct { /* ciciliStruct3078 */
+  union { /* ciciliUnion3140 */
+    struct { /* ciciliStruct3141 */
       List_Bool * __h_0_mem ;
       int * __h_1_mem ;
       size_t __h_2_mem ;
     } Hold , _1 ;
-    struct { /* ciciliStruct3079 */
+    struct { /* ciciliStruct3142 */
     } Gone , _ ;
   } __h_data ;
 } Rc_List_Bool;
@@ -2645,7 +2930,12 @@ typedef enum __h_Maybe_ctor_t {
   __h_Just_t = 1
 } __h_Maybe_ctor_t;
 #endif /* __H___h_Maybe_ctor_t__ */ 
+#ifndef __H_STD_DATA_
+#define __H_STD_DATA_
+typedef struct std_data std_data ;
+#endif /* __H_STD_DATA_ */ 
 typedef struct Maybe_List_int Maybe_List_int ;
+typedef std_data Maybe_List_int_type_t ;
 typedef void (*free_Maybe_List_int_t) (Maybe_List_int * this );
 typedef struct Maybe_List_int__H_Table {
   free_Maybe_List_int_t freeData ;
@@ -2653,11 +2943,11 @@ typedef struct Maybe_List_int__H_Table {
 typedef struct Maybe_List_int {
   const Maybe_List_int__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion3121 */
-    struct { /* ciciliStruct3122 */
+  union { /* ciciliUnion3185 */
+    struct { /* ciciliStruct3186 */
       List_int __h_0_mem ;
     } Just , _1 ;
-    struct { /* ciciliStruct3123 */
+    struct { /* ciciliStruct3187 */
     } Nothing , _ ;
   } __h_data ;
 } Maybe_List_int;
@@ -2678,7 +2968,12 @@ typedef enum __h_Rc_ctor_t {
   __h_Hold_t = 1
 } __h_Rc_ctor_t;
 #endif /* __H___h_Rc_ctor_t__ */ 
+#ifndef __H_STD_DATA_
+#define __H_STD_DATA_
+typedef struct std_data std_data ;
+#endif /* __H_STD_DATA_ */ 
 typedef struct Rc_List_int Rc_List_int ;
+typedef std_data Rc_List_int_type_t ;
 typedef void (*free_Rc_List_int_t) (Rc_List_int * this );
 typedef struct Rc_List_int__H_Table {
   free_Rc_List_int_t freeData ;
@@ -2690,13 +2985,13 @@ typedef struct Rc_List_int__H_Table {
 typedef struct Rc_List_int {
   const Rc_List_int__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion3153 */
-    struct { /* ciciliStruct3154 */
+  union { /* ciciliUnion3218 */
+    struct { /* ciciliStruct3219 */
       List_int * __h_0_mem ;
       int * __h_1_mem ;
       size_t __h_2_mem ;
     } Hold , _1 ;
-    struct { /* ciciliStruct3155 */
+    struct { /* ciciliStruct3220 */
     } Gone , _ ;
   } __h_data ;
 } Rc_List_int;
@@ -2721,7 +3016,12 @@ typedef enum __h_Maybe_ctor_t {
   __h_Just_t = 1
 } __h_Maybe_ctor_t;
 #endif /* __H___h_Maybe_ctor_t__ */ 
+#ifndef __H_STD_DATA_
+#define __H_STD_DATA_
+typedef struct std_data std_data ;
+#endif /* __H_STD_DATA_ */ 
 typedef struct Maybe_List_char Maybe_List_char ;
+typedef std_data Maybe_List_char_type_t ;
 typedef void (*free_Maybe_List_char_t) (Maybe_List_char * this );
 typedef struct Maybe_List_char__H_Table {
   free_Maybe_List_char_t freeData ;
@@ -2729,11 +3029,11 @@ typedef struct Maybe_List_char__H_Table {
 typedef struct Maybe_List_char {
   const Maybe_List_char__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion3197 */
-    struct { /* ciciliStruct3198 */
+  union { /* ciciliUnion3263 */
+    struct { /* ciciliStruct3264 */
       List_char __h_0_mem ;
     } Just , _1 ;
-    struct { /* ciciliStruct3199 */
+    struct { /* ciciliStruct3265 */
     } Nothing , _ ;
   } __h_data ;
 } Maybe_List_char;
@@ -2754,7 +3054,12 @@ typedef enum __h_Rc_ctor_t {
   __h_Hold_t = 1
 } __h_Rc_ctor_t;
 #endif /* __H___h_Rc_ctor_t__ */ 
+#ifndef __H_STD_DATA_
+#define __H_STD_DATA_
+typedef struct std_data std_data ;
+#endif /* __H_STD_DATA_ */ 
 typedef struct Rc_List_char Rc_List_char ;
+typedef std_data Rc_List_char_type_t ;
 typedef void (*free_Rc_List_char_t) (Rc_List_char * this );
 typedef struct Rc_List_char__H_Table {
   free_Rc_List_char_t freeData ;
@@ -2766,13 +3071,13 @@ typedef struct Rc_List_char__H_Table {
 typedef struct Rc_List_char {
   const Rc_List_char__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion3229 */
-    struct { /* ciciliStruct3230 */
+  union { /* ciciliUnion3296 */
+    struct { /* ciciliStruct3297 */
       List_char * __h_0_mem ;
       int * __h_1_mem ;
       size_t __h_2_mem ;
     } Hold , _1 ;
-    struct { /* ciciliStruct3231 */
+    struct { /* ciciliStruct3298 */
     } Gone , _ ;
   } __h_data ;
 } Rc_List_char;
@@ -2802,7 +3107,12 @@ typedef enum __h_Monoid_ctor_t {
   __h_Monoid_t = 0
 } __h_Monoid_ctor_t;
 #endif /* __H___h_Monoid_ctor_t__ */ 
+#ifndef __H_STD_DATA_
+#define __H_STD_DATA_
+typedef struct std_data std_data ;
+#endif /* __H_STD_DATA_ */ 
 typedef struct Monoid_All_Bool Monoid_All_Bool ;
+typedef std_data Monoid_All_Bool_type_t ;
 typedef void (*free_Monoid_All_Bool_t) (Monoid_All_Bool * this );
 typedef struct Monoid_All_Bool__H_Table {
   free_Monoid_All_Bool_t freeData ;
@@ -2810,8 +3120,8 @@ typedef struct Monoid_All_Bool__H_Table {
 typedef struct Monoid_All_Bool {
   const Monoid_All_Bool__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion3285 */
-    struct { /* ciciliStruct3286 */
+  union { /* ciciliUnion3353 */
+    struct { /* ciciliStruct3354 */
       Monoid_All_Bool_mappend_t __h_0_mem ;
       Bool __h_1_mem ;
       Monoid_All_Bool_mconcat_t __h_2_mem ;
@@ -2833,7 +3143,12 @@ typedef enum __h_Semigroup_ctor_t {
   __h_Semigroup_t = 0
 } __h_Semigroup_ctor_t;
 #endif /* __H___h_Semigroup_ctor_t__ */ 
+#ifndef __H_STD_DATA_
+#define __H_STD_DATA_
+typedef struct std_data std_data ;
+#endif /* __H_STD_DATA_ */ 
 typedef struct Semigroup_All_Bool Semigroup_All_Bool ;
+typedef std_data Semigroup_All_Bool_type_t ;
 typedef void (*free_Semigroup_All_Bool_t) (Semigroup_All_Bool * this );
 typedef struct Semigroup_All_Bool__H_Table {
   free_Semigroup_All_Bool_t freeData ;
@@ -2841,8 +3156,8 @@ typedef struct Semigroup_All_Bool__H_Table {
 typedef struct Semigroup_All_Bool {
   const Semigroup_All_Bool__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion3308 */
-    struct { /* ciciliStruct3309 */
+  union { /* ciciliUnion3377 */
+    struct { /* ciciliStruct3378 */
       Monoid_All_Bool_mappend_t __h_0_mem ;
     } Semigroup , _ ;
   } __h_data ;
@@ -2873,7 +3188,12 @@ typedef enum __h_Monoid_ctor_t {
   __h_Monoid_t = 0
 } __h_Monoid_ctor_t;
 #endif /* __H___h_Monoid_ctor_t__ */ 
+#ifndef __H_STD_DATA_
+#define __H_STD_DATA_
+typedef struct std_data std_data ;
+#endif /* __H_STD_DATA_ */ 
 typedef struct Monoid_Any_Bool Monoid_Any_Bool ;
+typedef std_data Monoid_Any_Bool_type_t ;
 typedef void (*free_Monoid_Any_Bool_t) (Monoid_Any_Bool * this );
 typedef struct Monoid_Any_Bool__H_Table {
   free_Monoid_Any_Bool_t freeData ;
@@ -2881,8 +3201,8 @@ typedef struct Monoid_Any_Bool__H_Table {
 typedef struct Monoid_Any_Bool {
   const Monoid_Any_Bool__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion3361 */
-    struct { /* ciciliStruct3362 */
+  union { /* ciciliUnion3431 */
+    struct { /* ciciliStruct3432 */
       Monoid_Any_Bool_mappend_t __h_0_mem ;
       Bool __h_1_mem ;
       Monoid_Any_Bool_mconcat_t __h_2_mem ;
@@ -2904,7 +3224,12 @@ typedef enum __h_Semigroup_ctor_t {
   __h_Semigroup_t = 0
 } __h_Semigroup_ctor_t;
 #endif /* __H___h_Semigroup_ctor_t__ */ 
+#ifndef __H_STD_DATA_
+#define __H_STD_DATA_
+typedef struct std_data std_data ;
+#endif /* __H_STD_DATA_ */ 
 typedef struct Semigroup_Any_Bool Semigroup_Any_Bool ;
+typedef std_data Semigroup_Any_Bool_type_t ;
 typedef void (*free_Semigroup_Any_Bool_t) (Semigroup_Any_Bool * this );
 typedef struct Semigroup_Any_Bool__H_Table {
   free_Semigroup_Any_Bool_t freeData ;
@@ -2912,8 +3237,8 @@ typedef struct Semigroup_Any_Bool__H_Table {
 typedef struct Semigroup_Any_Bool {
   const Semigroup_Any_Bool__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion3384 */
-    struct { /* ciciliStruct3385 */
+  union { /* ciciliUnion3455 */
+    struct { /* ciciliStruct3456 */
       Monoid_Any_Bool_mappend_t __h_0_mem ;
     } Semigroup , _ ;
   } __h_data ;
@@ -2944,7 +3269,12 @@ typedef enum __h_Monoid_ctor_t {
   __h_Monoid_t = 0
 } __h_Monoid_ctor_t;
 #endif /* __H___h_Monoid_ctor_t__ */ 
+#ifndef __H_STD_DATA_
+#define __H_STD_DATA_
+typedef struct std_data std_data ;
+#endif /* __H_STD_DATA_ */ 
 typedef struct Monoid_Sum_int Monoid_Sum_int ;
+typedef std_data Monoid_Sum_int_type_t ;
 typedef void (*free_Monoid_Sum_int_t) (Monoid_Sum_int * this );
 typedef struct Monoid_Sum_int__H_Table {
   free_Monoid_Sum_int_t freeData ;
@@ -2952,8 +3282,8 @@ typedef struct Monoid_Sum_int__H_Table {
 typedef struct Monoid_Sum_int {
   const Monoid_Sum_int__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion3437 */
-    struct { /* ciciliStruct3438 */
+  union { /* ciciliUnion3509 */
+    struct { /* ciciliStruct3510 */
       Monoid_Sum_int_mappend_t __h_0_mem ;
       int __h_1_mem ;
       Monoid_Sum_int_mconcat_t __h_2_mem ;
@@ -2975,7 +3305,12 @@ typedef enum __h_Semigroup_ctor_t {
   __h_Semigroup_t = 0
 } __h_Semigroup_ctor_t;
 #endif /* __H___h_Semigroup_ctor_t__ */ 
+#ifndef __H_STD_DATA_
+#define __H_STD_DATA_
+typedef struct std_data std_data ;
+#endif /* __H_STD_DATA_ */ 
 typedef struct Semigroup_Sum_int Semigroup_Sum_int ;
+typedef std_data Semigroup_Sum_int_type_t ;
 typedef void (*free_Semigroup_Sum_int_t) (Semigroup_Sum_int * this );
 typedef struct Semigroup_Sum_int__H_Table {
   free_Semigroup_Sum_int_t freeData ;
@@ -2983,8 +3318,8 @@ typedef struct Semigroup_Sum_int__H_Table {
 typedef struct Semigroup_Sum_int {
   const Semigroup_Sum_int__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion3460 */
-    struct { /* ciciliStruct3461 */
+  union { /* ciciliUnion3533 */
+    struct { /* ciciliStruct3534 */
       Monoid_Sum_int_mappend_t __h_0_mem ;
     } Semigroup , _ ;
   } __h_data ;
@@ -3015,7 +3350,12 @@ typedef enum __h_Monoid_ctor_t {
   __h_Monoid_t = 0
 } __h_Monoid_ctor_t;
 #endif /* __H___h_Monoid_ctor_t__ */ 
+#ifndef __H_STD_DATA_
+#define __H_STD_DATA_
+typedef struct std_data std_data ;
+#endif /* __H_STD_DATA_ */ 
 typedef struct Monoid_Product_int Monoid_Product_int ;
+typedef std_data Monoid_Product_int_type_t ;
 typedef void (*free_Monoid_Product_int_t) (Monoid_Product_int * this );
 typedef struct Monoid_Product_int__H_Table {
   free_Monoid_Product_int_t freeData ;
@@ -3023,8 +3363,8 @@ typedef struct Monoid_Product_int__H_Table {
 typedef struct Monoid_Product_int {
   const Monoid_Product_int__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion3513 */
-    struct { /* ciciliStruct3514 */
+  union { /* ciciliUnion3587 */
+    struct { /* ciciliStruct3588 */
       Monoid_Product_int_mappend_t __h_0_mem ;
       int __h_1_mem ;
       Monoid_Product_int_mconcat_t __h_2_mem ;
@@ -3046,7 +3386,12 @@ typedef enum __h_Semigroup_ctor_t {
   __h_Semigroup_t = 0
 } __h_Semigroup_ctor_t;
 #endif /* __H___h_Semigroup_ctor_t__ */ 
+#ifndef __H_STD_DATA_
+#define __H_STD_DATA_
+typedef struct std_data std_data ;
+#endif /* __H_STD_DATA_ */ 
 typedef struct Semigroup_Product_int Semigroup_Product_int ;
+typedef std_data Semigroup_Product_int_type_t ;
 typedef void (*free_Semigroup_Product_int_t) (Semigroup_Product_int * this );
 typedef struct Semigroup_Product_int__H_Table {
   free_Semigroup_Product_int_t freeData ;
@@ -3054,8 +3399,8 @@ typedef struct Semigroup_Product_int__H_Table {
 typedef struct Semigroup_Product_int {
   const Semigroup_Product_int__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion3536 */
-    struct { /* ciciliStruct3537 */
+  union { /* ciciliUnion3611 */
+    struct { /* ciciliStruct3612 */
       Monoid_Product_int_mappend_t __h_0_mem ;
     } Semigroup , _ ;
   } __h_data ;
@@ -3086,7 +3431,12 @@ typedef enum __h_Monoid_ctor_t {
   __h_Monoid_t = 0
 } __h_Monoid_ctor_t;
 #endif /* __H___h_Monoid_ctor_t__ */ 
+#ifndef __H_STD_DATA_
+#define __H_STD_DATA_
+typedef struct std_data std_data ;
+#endif /* __H_STD_DATA_ */ 
 typedef struct Monoid_List_Bool Monoid_List_Bool ;
+typedef std_data Monoid_List_Bool_type_t ;
 typedef void (*free_Monoid_List_Bool_t) (Monoid_List_Bool * this );
 typedef struct Monoid_List_Bool__H_Table {
   free_Monoid_List_Bool_t freeData ;
@@ -3094,8 +3444,8 @@ typedef struct Monoid_List_Bool__H_Table {
 typedef struct Monoid_List_Bool {
   const Monoid_List_Bool__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion3589 */
-    struct { /* ciciliStruct3590 */
+  union { /* ciciliUnion3665 */
+    struct { /* ciciliStruct3666 */
       Monoid_List_Bool_mappend_t __h_0_mem ;
       List_Bool __h_1_mem ;
       Monoid_List_Bool_mconcat_t __h_2_mem ;
@@ -3117,7 +3467,12 @@ typedef enum __h_Semigroup_ctor_t {
   __h_Semigroup_t = 0
 } __h_Semigroup_ctor_t;
 #endif /* __H___h_Semigroup_ctor_t__ */ 
+#ifndef __H_STD_DATA_
+#define __H_STD_DATA_
+typedef struct std_data std_data ;
+#endif /* __H_STD_DATA_ */ 
 typedef struct Semigroup_List_Bool Semigroup_List_Bool ;
+typedef std_data Semigroup_List_Bool_type_t ;
 typedef void (*free_Semigroup_List_Bool_t) (Semigroup_List_Bool * this );
 typedef struct Semigroup_List_Bool__H_Table {
   free_Semigroup_List_Bool_t freeData ;
@@ -3125,8 +3480,8 @@ typedef struct Semigroup_List_Bool__H_Table {
 typedef struct Semigroup_List_Bool {
   const Semigroup_List_Bool__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion3612 */
-    struct { /* ciciliStruct3613 */
+  union { /* ciciliUnion3689 */
+    struct { /* ciciliStruct3690 */
       Monoid_List_Bool_mappend_t __h_0_mem ;
     } Semigroup , _ ;
   } __h_data ;
@@ -3157,7 +3512,12 @@ typedef enum __h_Monoid_ctor_t {
   __h_Monoid_t = 0
 } __h_Monoid_ctor_t;
 #endif /* __H___h_Monoid_ctor_t__ */ 
+#ifndef __H_STD_DATA_
+#define __H_STD_DATA_
+typedef struct std_data std_data ;
+#endif /* __H_STD_DATA_ */ 
 typedef struct Monoid_List_int Monoid_List_int ;
+typedef std_data Monoid_List_int_type_t ;
 typedef void (*free_Monoid_List_int_t) (Monoid_List_int * this );
 typedef struct Monoid_List_int__H_Table {
   free_Monoid_List_int_t freeData ;
@@ -3165,8 +3525,8 @@ typedef struct Monoid_List_int__H_Table {
 typedef struct Monoid_List_int {
   const Monoid_List_int__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion3665 */
-    struct { /* ciciliStruct3666 */
+  union { /* ciciliUnion3743 */
+    struct { /* ciciliStruct3744 */
       Monoid_List_int_mappend_t __h_0_mem ;
       List_int __h_1_mem ;
       Monoid_List_int_mconcat_t __h_2_mem ;
@@ -3188,7 +3548,12 @@ typedef enum __h_Semigroup_ctor_t {
   __h_Semigroup_t = 0
 } __h_Semigroup_ctor_t;
 #endif /* __H___h_Semigroup_ctor_t__ */ 
+#ifndef __H_STD_DATA_
+#define __H_STD_DATA_
+typedef struct std_data std_data ;
+#endif /* __H_STD_DATA_ */ 
 typedef struct Semigroup_List_int Semigroup_List_int ;
+typedef std_data Semigroup_List_int_type_t ;
 typedef void (*free_Semigroup_List_int_t) (Semigroup_List_int * this );
 typedef struct Semigroup_List_int__H_Table {
   free_Semigroup_List_int_t freeData ;
@@ -3196,8 +3561,8 @@ typedef struct Semigroup_List_int__H_Table {
 typedef struct Semigroup_List_int {
   const Semigroup_List_int__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion3688 */
-    struct { /* ciciliStruct3689 */
+  union { /* ciciliUnion3767 */
+    struct { /* ciciliStruct3768 */
       Monoid_List_int_mappend_t __h_0_mem ;
     } Semigroup , _ ;
   } __h_data ;
@@ -3228,7 +3593,12 @@ typedef enum __h_Monoid_ctor_t {
   __h_Monoid_t = 0
 } __h_Monoid_ctor_t;
 #endif /* __H___h_Monoid_ctor_t__ */ 
+#ifndef __H_STD_DATA_
+#define __H_STD_DATA_
+typedef struct std_data std_data ;
+#endif /* __H_STD_DATA_ */ 
 typedef struct Monoid_List_char Monoid_List_char ;
+typedef std_data Monoid_List_char_type_t ;
 typedef void (*free_Monoid_List_char_t) (Monoid_List_char * this );
 typedef struct Monoid_List_char__H_Table {
   free_Monoid_List_char_t freeData ;
@@ -3236,8 +3606,8 @@ typedef struct Monoid_List_char__H_Table {
 typedef struct Monoid_List_char {
   const Monoid_List_char__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion3741 */
-    struct { /* ciciliStruct3742 */
+  union { /* ciciliUnion3821 */
+    struct { /* ciciliStruct3822 */
       Monoid_List_char_mappend_t __h_0_mem ;
       List_char __h_1_mem ;
       Monoid_List_char_mconcat_t __h_2_mem ;
@@ -3259,7 +3629,12 @@ typedef enum __h_Semigroup_ctor_t {
   __h_Semigroup_t = 0
 } __h_Semigroup_ctor_t;
 #endif /* __H___h_Semigroup_ctor_t__ */ 
+#ifndef __H_STD_DATA_
+#define __H_STD_DATA_
+typedef struct std_data std_data ;
+#endif /* __H_STD_DATA_ */ 
 typedef struct Semigroup_List_char Semigroup_List_char ;
+typedef std_data Semigroup_List_char_type_t ;
 typedef void (*free_Semigroup_List_char_t) (Semigroup_List_char * this );
 typedef struct Semigroup_List_char__H_Table {
   free_Semigroup_List_char_t freeData ;
@@ -3267,8 +3642,8 @@ typedef struct Semigroup_List_char__H_Table {
 typedef struct Semigroup_List_char {
   const Semigroup_List_char__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion3764 */
-    struct { /* ciciliStruct3765 */
+  union { /* ciciliUnion3845 */
+    struct { /* ciciliStruct3846 */
       Monoid_List_char_mappend_t __h_0_mem ;
     } Semigroup , _ ;
   } __h_data ;
@@ -3294,7 +3669,12 @@ typedef enum __h_Functor_ctor_t {
   __h_Functor_t = 0
 } __h_Functor_ctor_t;
 #endif /* __H___h_Functor_ctor_t__ */ 
+#ifndef __H_STD_DATA_
+#define __H_STD_DATA_
+typedef struct std_data std_data ;
+#endif /* __H_STD_DATA_ */ 
 typedef struct Functor_List_int_int Functor_List_int_int ;
+typedef std_data Functor_List_int_int_type_t ;
 typedef void (*free_Functor_List_int_int_t) (Functor_List_int_int * this );
 typedef struct Functor_List_int_int__H_Table {
   free_Functor_List_int_int_t freeData ;
@@ -3303,8 +3683,8 @@ typedef struct Functor_List_int_int__H_Table {
 typedef struct Functor_List_int_int {
   const Functor_List_int_int__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion3810 */
-    struct { /* ciciliStruct3811 */
+  union { /* ciciliUnion3892 */
+    struct { /* ciciliStruct3893 */
     } Functor , _ ;
   } __h_data ;
 } Functor_List_int_int;
@@ -3326,7 +3706,12 @@ typedef enum __h_Functor_ctor_t {
   __h_Functor_t = 0
 } __h_Functor_ctor_t;
 #endif /* __H___h_Functor_ctor_t__ */ 
+#ifndef __H_STD_DATA_
+#define __H_STD_DATA_
+typedef struct std_data std_data ;
+#endif /* __H_STD_DATA_ */ 
 typedef struct Functor_List_int_char Functor_List_int_char ;
+typedef std_data Functor_List_int_char_type_t ;
 typedef void (*free_Functor_List_int_char_t) (Functor_List_int_char * this );
 typedef struct Functor_List_int_char__H_Table {
   free_Functor_List_int_char_t freeData ;
@@ -3335,8 +3720,8 @@ typedef struct Functor_List_int_char__H_Table {
 typedef struct Functor_List_int_char {
   const Functor_List_int_char__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion3850 */
-    struct { /* ciciliStruct3851 */
+  union { /* ciciliUnion3933 */
+    struct { /* ciciliStruct3934 */
     } Functor , _ ;
   } __h_data ;
 } Functor_List_int_char;
@@ -3358,7 +3743,12 @@ typedef enum __h_Functor_ctor_t {
   __h_Functor_t = 0
 } __h_Functor_ctor_t;
 #endif /* __H___h_Functor_ctor_t__ */ 
+#ifndef __H_STD_DATA_
+#define __H_STD_DATA_
+typedef struct std_data std_data ;
+#endif /* __H_STD_DATA_ */ 
 typedef struct Functor_List_int_Bool Functor_List_int_Bool ;
+typedef std_data Functor_List_int_Bool_type_t ;
 typedef void (*free_Functor_List_int_Bool_t) (Functor_List_int_Bool * this );
 typedef struct Functor_List_int_Bool__H_Table {
   free_Functor_List_int_Bool_t freeData ;
@@ -3367,8 +3757,8 @@ typedef struct Functor_List_int_Bool__H_Table {
 typedef struct Functor_List_int_Bool {
   const Functor_List_int_Bool__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion3890 */
-    struct { /* ciciliStruct3891 */
+  union { /* ciciliUnion3974 */
+    struct { /* ciciliStruct3975 */
     } Functor , _ ;
   } __h_data ;
 } Functor_List_int_Bool;
@@ -3390,7 +3780,12 @@ typedef enum __h_Functor_ctor_t {
   __h_Functor_t = 0
 } __h_Functor_ctor_t;
 #endif /* __H___h_Functor_ctor_t__ */ 
+#ifndef __H_STD_DATA_
+#define __H_STD_DATA_
+typedef struct std_data std_data ;
+#endif /* __H_STD_DATA_ */ 
 typedef struct Functor_List_char_char Functor_List_char_char ;
+typedef std_data Functor_List_char_char_type_t ;
 typedef void (*free_Functor_List_char_char_t) (Functor_List_char_char * this );
 typedef struct Functor_List_char_char__H_Table {
   free_Functor_List_char_char_t freeData ;
@@ -3399,8 +3794,8 @@ typedef struct Functor_List_char_char__H_Table {
 typedef struct Functor_List_char_char {
   const Functor_List_char_char__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion3930 */
-    struct { /* ciciliStruct3931 */
+  union { /* ciciliUnion4015 */
+    struct { /* ciciliStruct4016 */
     } Functor , _ ;
   } __h_data ;
 } Functor_List_char_char;
@@ -3422,7 +3817,12 @@ typedef enum __h_Functor_ctor_t {
   __h_Functor_t = 0
 } __h_Functor_ctor_t;
 #endif /* __H___h_Functor_ctor_t__ */ 
+#ifndef __H_STD_DATA_
+#define __H_STD_DATA_
+typedef struct std_data std_data ;
+#endif /* __H_STD_DATA_ */ 
 typedef struct Functor_List_char_int Functor_List_char_int ;
+typedef std_data Functor_List_char_int_type_t ;
 typedef void (*free_Functor_List_char_int_t) (Functor_List_char_int * this );
 typedef struct Functor_List_char_int__H_Table {
   free_Functor_List_char_int_t freeData ;
@@ -3431,8 +3831,8 @@ typedef struct Functor_List_char_int__H_Table {
 typedef struct Functor_List_char_int {
   const Functor_List_char_int__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion3970 */
-    struct { /* ciciliStruct3971 */
+  union { /* ciciliUnion4056 */
+    struct { /* ciciliStruct4057 */
     } Functor , _ ;
   } __h_data ;
 } Functor_List_char_int;
@@ -3454,7 +3854,12 @@ typedef enum __h_Functor_ctor_t {
   __h_Functor_t = 0
 } __h_Functor_ctor_t;
 #endif /* __H___h_Functor_ctor_t__ */ 
+#ifndef __H_STD_DATA_
+#define __H_STD_DATA_
+typedef struct std_data std_data ;
+#endif /* __H_STD_DATA_ */ 
 typedef struct Functor_List_char_Bool Functor_List_char_Bool ;
+typedef std_data Functor_List_char_Bool_type_t ;
 typedef void (*free_Functor_List_char_Bool_t) (Functor_List_char_Bool * this );
 typedef struct Functor_List_char_Bool__H_Table {
   free_Functor_List_char_Bool_t freeData ;
@@ -3463,8 +3868,8 @@ typedef struct Functor_List_char_Bool__H_Table {
 typedef struct Functor_List_char_Bool {
   const Functor_List_char_Bool__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion4010 */
-    struct { /* ciciliStruct4011 */
+  union { /* ciciliUnion4097 */
+    struct { /* ciciliStruct4098 */
     } Functor , _ ;
   } __h_data ;
 } Functor_List_char_Bool;
@@ -3486,7 +3891,12 @@ typedef enum __h_Functor_ctor_t {
   __h_Functor_t = 0
 } __h_Functor_ctor_t;
 #endif /* __H___h_Functor_ctor_t__ */ 
+#ifndef __H_STD_DATA_
+#define __H_STD_DATA_
+typedef struct std_data std_data ;
+#endif /* __H_STD_DATA_ */ 
 typedef struct Functor_Maybe_int_int Functor_Maybe_int_int ;
+typedef std_data Functor_Maybe_int_int_type_t ;
 typedef void (*free_Functor_Maybe_int_int_t) (Functor_Maybe_int_int * this );
 typedef struct Functor_Maybe_int_int__H_Table {
   free_Functor_Maybe_int_int_t freeData ;
@@ -3495,8 +3905,8 @@ typedef struct Functor_Maybe_int_int__H_Table {
 typedef struct Functor_Maybe_int_int {
   const Functor_Maybe_int_int__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion4050 */
-    struct { /* ciciliStruct4051 */
+  union { /* ciciliUnion4138 */
+    struct { /* ciciliStruct4139 */
     } Functor , _ ;
   } __h_data ;
 } Functor_Maybe_int_int;
@@ -3518,7 +3928,12 @@ typedef enum __h_Functor_ctor_t {
   __h_Functor_t = 0
 } __h_Functor_ctor_t;
 #endif /* __H___h_Functor_ctor_t__ */ 
+#ifndef __H_STD_DATA_
+#define __H_STD_DATA_
+typedef struct std_data std_data ;
+#endif /* __H_STD_DATA_ */ 
 typedef struct Functor_Maybe_int_char Functor_Maybe_int_char ;
+typedef std_data Functor_Maybe_int_char_type_t ;
 typedef void (*free_Functor_Maybe_int_char_t) (Functor_Maybe_int_char * this );
 typedef struct Functor_Maybe_int_char__H_Table {
   free_Functor_Maybe_int_char_t freeData ;
@@ -3527,8 +3942,8 @@ typedef struct Functor_Maybe_int_char__H_Table {
 typedef struct Functor_Maybe_int_char {
   const Functor_Maybe_int_char__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion4090 */
-    struct { /* ciciliStruct4091 */
+  union { /* ciciliUnion4179 */
+    struct { /* ciciliStruct4180 */
     } Functor , _ ;
   } __h_data ;
 } Functor_Maybe_int_char;
@@ -3550,7 +3965,12 @@ typedef enum __h_Functor_ctor_t {
   __h_Functor_t = 0
 } __h_Functor_ctor_t;
 #endif /* __H___h_Functor_ctor_t__ */ 
+#ifndef __H_STD_DATA_
+#define __H_STD_DATA_
+typedef struct std_data std_data ;
+#endif /* __H_STD_DATA_ */ 
 typedef struct Functor_Maybe_int_Bool Functor_Maybe_int_Bool ;
+typedef std_data Functor_Maybe_int_Bool_type_t ;
 typedef void (*free_Functor_Maybe_int_Bool_t) (Functor_Maybe_int_Bool * this );
 typedef struct Functor_Maybe_int_Bool__H_Table {
   free_Functor_Maybe_int_Bool_t freeData ;
@@ -3559,8 +3979,8 @@ typedef struct Functor_Maybe_int_Bool__H_Table {
 typedef struct Functor_Maybe_int_Bool {
   const Functor_Maybe_int_Bool__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion4130 */
-    struct { /* ciciliStruct4131 */
+  union { /* ciciliUnion4220 */
+    struct { /* ciciliStruct4221 */
     } Functor , _ ;
   } __h_data ;
 } Functor_Maybe_int_Bool;
@@ -3582,7 +4002,12 @@ typedef enum __h_Functor_ctor_t {
   __h_Functor_t = 0
 } __h_Functor_ctor_t;
 #endif /* __H___h_Functor_ctor_t__ */ 
+#ifndef __H_STD_DATA_
+#define __H_STD_DATA_
+typedef struct std_data std_data ;
+#endif /* __H_STD_DATA_ */ 
 typedef struct Functor_Maybe_char_char Functor_Maybe_char_char ;
+typedef std_data Functor_Maybe_char_char_type_t ;
 typedef void (*free_Functor_Maybe_char_char_t) (Functor_Maybe_char_char * this );
 typedef struct Functor_Maybe_char_char__H_Table {
   free_Functor_Maybe_char_char_t freeData ;
@@ -3591,8 +4016,8 @@ typedef struct Functor_Maybe_char_char__H_Table {
 typedef struct Functor_Maybe_char_char {
   const Functor_Maybe_char_char__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion4170 */
-    struct { /* ciciliStruct4171 */
+  union { /* ciciliUnion4261 */
+    struct { /* ciciliStruct4262 */
     } Functor , _ ;
   } __h_data ;
 } Functor_Maybe_char_char;
@@ -3614,7 +4039,12 @@ typedef enum __h_Functor_ctor_t {
   __h_Functor_t = 0
 } __h_Functor_ctor_t;
 #endif /* __H___h_Functor_ctor_t__ */ 
+#ifndef __H_STD_DATA_
+#define __H_STD_DATA_
+typedef struct std_data std_data ;
+#endif /* __H_STD_DATA_ */ 
 typedef struct Functor_Maybe_char_int Functor_Maybe_char_int ;
+typedef std_data Functor_Maybe_char_int_type_t ;
 typedef void (*free_Functor_Maybe_char_int_t) (Functor_Maybe_char_int * this );
 typedef struct Functor_Maybe_char_int__H_Table {
   free_Functor_Maybe_char_int_t freeData ;
@@ -3623,8 +4053,8 @@ typedef struct Functor_Maybe_char_int__H_Table {
 typedef struct Functor_Maybe_char_int {
   const Functor_Maybe_char_int__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion4210 */
-    struct { /* ciciliStruct4211 */
+  union { /* ciciliUnion4302 */
+    struct { /* ciciliStruct4303 */
     } Functor , _ ;
   } __h_data ;
 } Functor_Maybe_char_int;
@@ -3646,7 +4076,12 @@ typedef enum __h_Functor_ctor_t {
   __h_Functor_t = 0
 } __h_Functor_ctor_t;
 #endif /* __H___h_Functor_ctor_t__ */ 
+#ifndef __H_STD_DATA_
+#define __H_STD_DATA_
+typedef struct std_data std_data ;
+#endif /* __H_STD_DATA_ */ 
 typedef struct Functor_Maybe_char_Bool Functor_Maybe_char_Bool ;
+typedef std_data Functor_Maybe_char_Bool_type_t ;
 typedef void (*free_Functor_Maybe_char_Bool_t) (Functor_Maybe_char_Bool * this );
 typedef struct Functor_Maybe_char_Bool__H_Table {
   free_Functor_Maybe_char_Bool_t freeData ;
@@ -3655,8 +4090,8 @@ typedef struct Functor_Maybe_char_Bool__H_Table {
 typedef struct Functor_Maybe_char_Bool {
   const Functor_Maybe_char_Bool__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion4250 */
-    struct { /* ciciliStruct4251 */
+  union { /* ciciliUnion4343 */
+    struct { /* ciciliStruct4344 */
     } Functor , _ ;
   } __h_data ;
 } Functor_Maybe_char_Bool;

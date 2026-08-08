@@ -57,9 +57,29 @@
            ,@(MAPCAR #'(LAMBDA (i ct) (CONS (make-data-h-type-name (CAAR ct)) (+ i 1)))
                      (range-h (LENGTH ctors)) (CDR (REVERSE ctors)))))
 
+
+       ;; THE OPAQUE SUPER TYPE, and the `type_t' typedef that points at it.
+       ;;
+       ;; Every std type carries this pair -- lib/std/maybe.cicili:95 and :115
+       ;; are the model -- and no haskell type did. type-origin (authority.lisp
+       ;; :295) walks a type's chain looking for a `<name>_type_t' typedef and
+       ;; answers with what it aliases, so without one an ADT has no origin at
+       ;; all: nothing above it in the type lattice, and nothing for the type
+       ;; resolution to terminate on. That is what let deep-typeof walk a data
+       ;; type into its own table, out through the member typed back as the
+       ;; data type, and round again until the control stack was gone.
+       ;;
+       ;; The super is declared, never defined -- an incomplete struct is the
+       ;; point. It names the family without giving it a layout, so a data type
+       ;; can be recognised as one without anything being able to hold it.
+       (guard __H_STD_BOX_
+         (decl) (struct (<> std box)))
+
        (decl) (struct ,(make-class-h-base-name name))
 
        (typedef ,(make-class-h-base-name name) * ,(make-box-h-base-name name))
+
+       (typedef (<> std box) (<> ,(make-box-h-base-name name) type_t))
 
        ;; dependencies
        (decl-pure-Rc (<> Box ,name) ,(make-box-h-base-name name))

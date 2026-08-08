@@ -148,8 +148,44 @@
                     (cond ((eql const-val '|@ATOM|) spec)
                           ((key-eq (typeof spec) '|auto|) (deep-typeof id (default spec))) ; var or param
                           ((eql const-val '|@CALL|)
-                           (let ((name-val (name spec)))
-                             (if (typep name-val 'sp) (deep-typeof id name-val) (*gets* name-val))))
+                           (let* ((name-val (name spec))
+                                  (callee (if (typep name-val 'sp)
+                                              (deep-typeof id name-val)
+                                              (*gets* name-val))))
+                             ;; A CALL THROUGH A FUNCTION POINTER IS NOT A CALL
+                             ;; TO A FUNCTION. Calling a name resolves to the
+                             ;; @FUNC, whose `typeof' is already the return
+                             ;; type. Calling a variable or a struct member
+                             ;; resolves to the thing that HOLDS the pointer,
+                             ;; and its type is the pointer's typedef -- so
+                             ;; (let ((auto r . #'(g 7)))) inferred `getter_t'
+                             ;; where it meant `long', and a table of function
+                             ;; pointers -- which is what every haskell data
+                             ;; type carries -- could not be called at all:
+                             ;; "unknown struct type: func".
+                             ;;
+                             ;; A function typedef is `typeof' func with the
+                             ;; @FUNC in its array-def, and that @FUNC carries
+                             ;; the return type. One more step is the whole fix.
+                             ;; The callee may BE that typedef -- reaching a
+                             ;; member through `-->' resolves to it directly --
+                             ;; or merely be typed by it, as a variable holding
+                             ;; one is. Both spellings, or the answer is right
+                             ;; for a function-pointer variable and still wrong
+                             ;; for a table of them.
+                             (let ((td (cond ((null callee) nil)
+                                             ((and (eql (construct callee) '|@TYPEDEF|)
+                                                   (key-eq (typeof callee) '|func|))
+                                              callee)
+                                             ((eql (construct callee) '|@FUNC|) nil)
+                                             (t (let ((c (*gets* (peel-type-tag< (typeof callee)))))
+                                                  (when (and c
+                                                             (eql (construct c) '|@TYPEDEF|)
+                                                             (key-eq (typeof c) '|func|))
+                                                    c))))))
+                               (if (and td (car (array-def td)))
+                                   (or (deep-typeof (typeof (car (array-def td)))) callee)
+                                   callee))))
                           ((eql const-val '|@VAR|) spec)
                           ((eql const-val '|@PARAM|) spec)
                           ((eql const-val '|@FUNC|) spec)
@@ -170,7 +206,16 @@
                                        (t ty))
                                  nil)))
                           ((eql const-val '|@OPR|) (deep-typeof id (car (default spec))))
-                          ((or (eql const-val '|@$|) (eql const-val '|@->|))
+                          ;; `-->' joins them. It reaches a member exactly as
+                          ;; `->' does and only declines to call it, so the
+                          ;; member's declaration is the answer for both -- and
+                          ;; it was missing here, which left every (--> x m)
+                          ;; with no type at all. The layer that needs it is
+                          ;; lib/std/haskell, where (\. f d) NAMES a function
+                          ;; for the call site to call.
+                          ((or (eql const-val '|@$|)
+                               (eql const-val '|@->|)
+                               (eql const-val '|@-->|))
                            (let ((struct (deep-typeof id (name spec))))
                              (when struct
                                (let ((end-type (deep-typeof (typeof struct))))

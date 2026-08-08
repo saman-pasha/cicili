@@ -146,16 +146,19 @@
 ;; an address-of by design (authority.lisp:47). So every `\.' on a value died
 ;; with "pointer storage not found: #<(@UNARY (n: &) …)>". A member access has
 ;; the storage of the thing it is a member of, and asks nothing of the analysis.
-;; `-->', the access-only operator, is the form these three ought to use: they
-;; NAME a function and the call is at the call site, ((\. get d) d). It cannot be
-;; used yet -- (--> ($ d __h_table) f) sends DEEP-TYPEOF into unbounded recursion
-;; and exhausts the control stack, because the table a data value points at holds
-;; a member typed back as that value. Until that cycle is broken these keep `->',
-;; which accesses and calls; the call site then calls the RESULT, and an `auto'
-;; binding over it infers `func *' rather than the function's return type. That
-;; is the "unknown struct type: func" still standing between here and haskell.c.
+;; ALL THREE NAME A FUNCTION, they do not call it: (\. get d) is written as
+;; ((\. get d) d), so the call belongs to the call site and these hand back the
+;; pointer. `-->' is the access-only operator; `->' accesses AND CALLS with
+;; whatever follows the member, so with `->' the call site was calling the
+;; RESULT of a no-argument call, and an `auto' binding over it inferred `func *'
+;; instead of the function's return type -- "unknown struct type: func".
+;;
+;; `-->' used to exhaust the control stack here, because a data type had no
+;; origin: deep-typeof walked the value into its table, out through a member
+;; typed back as the value, and round again with nothing to terminate on. The
+;; `type_t' typedef decl-data now emits is that terminator.
 (DEFMACRO \. (function data)
-  `(-> ($ ,data __h_table) ,function))
+  `(--> ($ ,data __h_table) ,function))
 
 ;; a way to access functions inside Table by class instance
 ;;
@@ -166,7 +169,7 @@
 
 ;; a way to access functions inside Table by getTable
 (DEFMACRO \.+ (function type)
-  `(-> ((<> get ,type _H_Table)) ,function))
+  `(--> ((<> get ,type _H_Table)) ,function))
 
 ;; helpers
 (DEFUN make-data-h-type-name (ct)
