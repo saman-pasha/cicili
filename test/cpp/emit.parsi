@@ -39,5 +39,13 @@ PUBLIC:
 		SELECT '<li>', title, ' (', year, ')</li>'
 		FROM emit::books;
 		ECHO '</ul>';
+		ECHO '<table>';
+		SELECT '<tr><td>', id, '</td><td>', title, '</td></tr>'
+		FROM emit::books;
+		ECHO '</table>';
+		ECHO '<ul>';
+		SELECT '<li><a href="', title, '" class="row">', title, '</a><br></li>'
+		FROM emit::books;
+		ECHO '</ul>';
 	END
 END 

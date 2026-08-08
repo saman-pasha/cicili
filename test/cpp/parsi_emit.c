@@ -79,6 +79,10 @@ int main () {
     bad  += has (head_text , "std::string emit_report_e1 ();", "lifted prototype in the .hpp") ;
     bad  += has (body_text , "parsi_str( (20 +  22 ) )", "lifted body in the .cpp") ;
     bad  += has (body_text , "template <typename T> static std::string parsi_str", "parsi_str emitted once") ;
+    bad  += has (page_text , "SELECT '<tr><td>', id, '</td><td>', title, '</td></tr>'", "tag forms become one merged string") ;
+    bad  += has (page_text , "ECHO '<table>';", "an opening tag alone") ;
+    bad  += has (page_text , "ECHO '</table>';", "a closing tag alone") ;
+    bad  += has (page_text , "'<li><a href=\"', title, '\" class=\"row\">', title, '</a><br></li>'", "attributes, interpolated and literal") ;
     bad  += has (page_text , "BEGIN HPP", "HPP block") ;
     bad  += has (page_text , "#include \"emit_report.hpp\"", "HPP block includes the fragment") ;
     bad  += has (page_text , "BEGIN CPP", "CPP block") ;

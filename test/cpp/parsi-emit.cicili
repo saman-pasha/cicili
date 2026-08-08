@@ -50,7 +50,23 @@
       (ECHO "<p>answer = " (cicili (+ 20 22)) "</p>")
       (ECHO "<ul>")
       (SELECT ("<li>" title " (" year ")</li>") FROM books)
-      (ECHO "</ul>"))))
+      (ECHO "</ul>")
+
+      ;; the same markup as forms rather than as quoted angle brackets. An
+      ;; opening and a closing tag are separate items because a SELECT is a
+      ;; cursor -- its list runs once per row, so a row's markup interleaves
+      ;; with the row's columns rather than nesting around them.
+      (ECHO (table))
+      (SELECT ((tr) (td) id (/td) (td) title (/td) (/tr)) FROM books)
+      (ECHO (/table))
+
+      ;; an attribute whose value is a column has to break the string, and the
+      ;; server escapes what it interpolates; a literal one is escaped here.
+      ;; INSIDE THE SELECT, because a column is only in scope in its own cursor
+      ;; -- the same ECHO written outside one is a C++ "TITLE was not declared".
+      (ECHO (ul))
+      (SELECT ((li) (a :href title :class "row") title (/a) (br) (/li)) FROM books)
+      (ECHO (/ul)))))
 
 ;;; ---- what they emit ---------------------------------------------------
 ;;;
@@ -137,6 +153,20 @@
       (+= bad (has body_text "parsi_str( (20 +  22 ) )"        "lifted body in the .cpp"))
       (+= bad (has body_text "template <typename T> static std::string parsi_str"
                              "parsi_str emitted once"))
+
+      ;; ---- HTML as forms -------------------------------------------
+      ;; adjacent markup MERGES into one Parsi string, so the generated file
+      ;; reads like the hand-written pages beside it rather than as a comma
+      ;; list of one-tag fragments
+      (+= bad (has page_text "SELECT '<tr><td>', id, '</td><td>', title, '</td></tr>'"
+                             "tag forms become one merged string"))
+      (+= bad (has page_text "ECHO '<table>';" "an opening tag alone"))
+      (+= bad (has page_text "ECHO '</table>';" "a closing tag alone"))
+
+      ;; an interpolated attribute breaks the string; a literal one does not,
+      ;; and a void element gets no closing tag
+      (+= bad (has page_text "'<li><a href=\"', title, '\" class=\"row\">', title, '</a><br></li>'"
+                             "attributes, interpolated and literal"))
 
       ;; and the two blocks that reach them, named after the page
       (+= bad (has page_text "BEGIN HPP"                "HPP block"))

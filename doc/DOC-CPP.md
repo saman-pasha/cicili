@@ -862,6 +862,46 @@ Three things make it work and are worth knowing:
 * **The whole file is one `code` clause**, because a target's inner forms live in a hash
   table walked with `maphash` and Parsi is order-dependent.
 
+### Markup as forms
+
+Inside an `ECHO` or a `SELECT`, an HTML element can be written as a form instead of as
+quoted angle brackets:
+
+```lisp
+(ECHO (table))
+(SELECT ((tr) (td) id (/td) (td) title (/td) (/tr)) FROM books)
+(ECHO (/table))
+```
+
+```
+ECHO '<table>';
+SELECT '<tr><td>', id, '</td><td>', title, '</td></tr>'
+FROM demo::books;
+ECHO '</table>';
+```
+
+**Opening and closing are separate forms**, which is not how a Lisp HTML library usually
+works and is right here: a `SELECT` is a cursor, so a row's markup has to interleave with
+the row's columns rather than nest around them. `(/td)` reads as one symbol without any
+help — `/` is neither an identifier character nor a macro character — and has nothing to
+do with the division operator.
+
+Adjacent markup merges into a single Parsi string, so the generated file reads like the
+hand-written pages beside it. Attributes are keywords, and a value that is not a literal
+breaks the string so the server escapes it:
+
+```lisp
+(a :href title :class "row")   ->   '<a href="', title, '" class="row">'
+```
+
+Void elements — `br`, `img`, `input`, `hr` and the rest — take no closing form, and
+`(/br)` says so. `(doctype)` is `<!DOCTYPE html>`.
+
+**Tags are lower case and Parsi's clauses are upper case**, which is what keeps the two
+vocabularies apart where they collide — `select`, `table`, `option`, `output`, `label`,
+`form`, `data`, `time` and `summary` are all HTML elements. The element list is closed, so
+`(/tabel)` is an error naming the form rather than markup emitted on faith.
+
 The objects are values, so a Lisp function can return one — which is what a file serving
 the same page for eight models is written with.
 [example/zeytun-greet.cicili](../example/zeytun-greet.cicili) is the worked example and

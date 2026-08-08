@@ -159,13 +159,18 @@
 ;;; System/catalog_pages.parsi keeps a whole HTML table in one -- and every byte
 ;;; is data the server will send, so breaking one into fragments would change
 ;;; what arrives.
-(DEFUN pstr (s)
+;;; pquote takes text that is ALREADY the bytes wanted and only quotes it, which
+;;; is what a run of markup assembled here needs; pstr is the same thing for a
+;;; string written in Cicili source, undoing that reader's escapes first.
+(DEFUN pquote (s)
   (WITH-OUTPUT-TO-STRING (out)
     (WRITE-CHAR #\' out)
-    (LOOP FOR c ACROSS (unescape s)
+    (LOOP FOR c ACROSS s
           DO (PROGN (WHEN (CHAR= c #\') (WRITE-CHAR #\\ out))
                     (WRITE-CHAR c out)))
     (WRITE-CHAR #\' out)))
+
+(DEFUN pstr (s) (pquote (unescape s)))
 
 (DEFUN tabs (n) (MAKE-STRING n :INITIAL-ELEMENT #\Tab))
 
@@ -284,6 +289,160 @@
         (T (ERROR "parsi: not an expression: ~S" x))))
 
 ;;;; ------------------------------------------------------------------
+;;;; HTML
+;;;; ------------------------------------------------------------------
+;;;;
+;;;; Markup as forms rather than as quoted angle brackets:
+;;;;
+;;;;     (SELECT (tr) (td) id (/td) (td) title (/td) (/tr) FROM books)
+;;;;
+;;;;     SELECT '<tr><td>', id, '</td><td>', title, '</td></tr>'
+;;;;     FROM demo::books;
+;;;;
+;;;; OPEN AND CLOSE ARE SEPARATE FORMS, which is not the shape a Lisp HTML
+;;;; library usually takes -- and it is the right one here. A SELECT is a
+;;;; CURSOR: what it lists runs once per row, as a flat comma list, so a row's
+;;;; markup has to interleave with the row's columns rather than nest around
+;;;; them. `(td)' opens and `(/td)' closes, and whatever is written between them
+;;;; is an ordinary item.
+;;;;
+;;;; A closing form reads as one symbol with no help: `/' is not an identifier
+;;;; character to qualify-source<, and it is not a macro character in this
+;;;; readtable, so (/td) arrives as a list whose head is named "/td". It has
+;;;; nothing to do with the division operator, which is the symbol named "/".
+;;;;
+;;;; TAGS ARE LOWER CASE AND PARSI'S CLAUSES ARE UPPER CASE, which is what keeps
+;;;; the two vocabularies apart where they collide -- and they collide hard:
+;;;; select, table, option, output, label, form, data, time, source and summary
+;;;; are all HTML elements. A macro file is read with the case preserved, so
+;;;; (select) is the element and (SELECT …) is the clause, and neither can be
+;;;; mistaken for the other. An upper-case tag is not accepted for that reason.
+;;;;
+;;;; THE LIST IS CLOSED. An unknown name is an error naming the form, not a tag
+;;;; emitted on faith -- (/tabel) is a typo, and finding it in generated markup
+;;;; in a browser is the expensive way.
+
+;;; Void elements: no content, no closing tag. HTML5 has exactly these.
+(DEFPARAMETER *html-void*
+  '("area" "base" "br" "col" "embed" "hr" "img" "input" "link" "meta"
+    "source" "track" "wbr"))
+
+;;; The elements of the HTML5 living standard, the void ones included.
+(DEFPARAMETER *html-tags*
+  '("a" "abbr" "address" "area" "article" "aside" "audio" "b" "base" "bdi"
+    "bdo" "blockquote" "body" "br" "button" "canvas" "caption" "cite" "code"
+    "col" "colgroup" "data" "datalist" "dd" "del" "details" "dfn" "dialog"
+    "div" "dl" "dt" "em" "embed" "fieldset" "figcaption" "figure" "footer"
+    "form" "h1" "h2" "h3" "h4" "h5" "h6" "head" "header" "hgroup" "hr" "html"
+    "i" "iframe" "img" "input" "ins" "kbd" "label" "legend" "li" "link" "main"
+    "map" "mark" "menu" "meta" "meter" "nav" "noscript" "object" "ol"
+    "optgroup" "option" "output" "p" "picture" "pre" "progress" "q" "rp" "rt"
+    "ruby" "s" "samp" "script" "search" "section" "select" "small" "source"
+    "span" "strong" "style" "sub" "summary" "sup" "table" "tbody" "td"
+    "template" "textarea" "tfoot" "th" "thead" "time" "title" "tr" "track"
+    "u" "ul" "var" "video" "wbr"))
+
+(DEFUN html-tag-p  (name) (MEMBER name *html-tags* :TEST #'STRING=))
+(DEFUN html-void-p (name) (MEMBER name *html-void*  :TEST #'STRING=))
+
+;;;; A PIECE is how one item is carried before it is written out: (:lit . text)
+;;;; is markup, (:val . expr) is a Parsi expression. Keeping them apart is what
+;;;; lets a run of adjacent markup be merged into ONE Parsi string, so
+;;;; (tr) (td) emits '<tr><td>' rather than '<tr>', '<td>' -- the emitted file
+;;;; then reads like the hand-written pages it sits beside.
+;;;;
+;;;; The two are not interchangeable to the server either: Parsi emits a string
+;;;; literal as it stands and puts everything else through escape_html
+;;;; (Compiler/compiler.cpp:489), so a value carrying <script> arrives as text
+;;;; while the markup around it stays markup.
+
+(DEFUN lit (text) (CONS :lit text))
+(DEFUN val (text) (CONS :val text))
+
+;;; " inside a "-quoted attribute would end it, so a literal value is
+;;; HTML-escaped here. An interpolated one is escaped by the server, which
+;;; escapes the quote characters too (Core/utility.cpp:412).
+(DEFUN attr-escape (s)
+  (WITH-OUTPUT-TO-STRING (out)
+    (LOOP FOR c ACROSS s
+          DO (COND ((CHAR= c #\") (WRITE-STRING "&quot;" out))
+                   ((CHAR= c #\&) (WRITE-STRING "&amp;" out))
+                   (T (WRITE-CHAR c out))))))
+
+;;; (a :href "x.zt") and (a :href url) -- a literal value goes into the tag, and
+;;; anything else becomes a value of its own, so the string is broken around it:
+;;;
+;;;     '<a href="', url, '">'
+(DEFUN attr-pieces (attrs)
+  (LET ((out '()))
+    (LOOP WHILE attrs
+          DO (LET ((k (POP attrs)))
+               (UNLESS (KEYWORDP k)
+                 (ERROR "parsi: an attribute wants :name value, got ~S" k))
+               (WHEN (NULL attrs)
+                 (ERROR "parsi: attribute ~S has no value" k))
+               (LET ((v (POP attrs))
+                     (name (STRING-DOWNCASE (SYMBOL-NAME k))))
+                 ;; ~C with the character rather than a \" inside a string:
+                 ;; this file is read by Cicili's own reader, which copies a
+                 ;; string's bytes verbatim, so "\"" is the two characters
+                 ;; backslash-quote and they would reach the browser as such.
+                 (PUSH (lit (FORMAT NIL " ~A=~C" name #\")) out)
+                 (IF (STRINGP v)
+                     (PUSH (lit (attr-escape (unescape v))) out)
+                     (PUSH (val (render-expr v)) out))
+                 (PUSH (lit (STRING #\")) out))))
+    (NREVERSE out)))
+
+;;; The pieces a tag form contributes, or NIL when the form is not one.
+(DEFUN tag-pieces (x)
+  (LET ((name (head-name x)))
+    (WHEN name
+      (COND
+        ;; <!DOCTYPE html>, which every page starts with and nobody enjoys
+        ;; typing inside a string
+        ((AND (STRING= name "doctype") (NULL (CDR x)))
+         (LIST (lit "<!DOCTYPE html>")))
+
+        ((AND (> (LENGTH name) 1) (CHAR= (CHAR name 0) #\/))
+         (LET ((tag (SUBSEQ name 1)))
+           (COND ;; a leading / says "closing tag" and nothing else does, so an
+                 ;; unknown one is a typo rather than something else's form
+                 ((NOT (html-tag-p tag))
+                  (ERROR "parsi: no HTML element named ~S: ~S" tag x))
+                 ((html-void-p tag)
+                  (ERROR "parsi: <~A> is a void element and has no closing tag: ~S" tag x))
+                 ((CDR x)
+                  (ERROR "parsi: a closing tag takes nothing: ~S" x))
+                 (T (LIST (lit (FORMAT NIL "</~A>" tag)))))))
+
+        ((html-tag-p name)
+         (APPEND (LIST (lit (FORMAT NIL "<~A" name)))
+                 (attr-pieces (CDR x))
+                 (LIST (lit ">"))))
+
+        (T NIL)))))
+
+;;; One item of an ECHO or a SELECT, as pieces.
+(DEFUN item-pieces (x)
+  (COND ((STRINGP x) (LIST (lit (unescape x))))
+        ((CONSP x) (OR (tag-pieces x) (LIST (val (render-expr x)))))
+        (T (LIST (val (render-expr x))))))
+
+;;; A comma list, with adjacent markup merged into single strings.
+(DEFUN render-items (items)
+  (LET ((pieces '()))
+    (DOLIST (x items) (SETF pieces (APPEND pieces (item-pieces x))))
+    (LET ((out '()) (run NIL))
+      (DOLIST (p pieces)
+        (IF (EQ (CAR p) :lit)
+            (SETF run (IF run (CONCATENATE 'STRING run (CDR p)) (CDR p)))
+            (PROGN (WHEN run (PUSH (pquote run) out) (SETF run NIL))
+                   (PUSH (CDR p) out))))
+      (WHEN run (PUSH (pquote run) out))
+      (NREVERSE out))))
+
+;;;; ------------------------------------------------------------------
 ;;;; Statements
 ;;;; ------------------------------------------------------------------
 
@@ -296,7 +455,7 @@
   (LET ((i (tabs lvl)))
     (COND
       ((head-is form "ECHO")
-       (FORMAT NIL "~AECHO ~{~A~^, ~};" i (MAPCAR #'render-expr (CDR form))))
+       (FORMAT NIL "~AECHO ~{~A~^, ~};" i (render-items (CDR form))))
 
       ((head-is form "CALL")
        (FORMAT NIL "~ACALL ~A;" i (render-expr (IF (CDDR form)
@@ -340,7 +499,7 @@
               (where (SECOND (MEMBER "WHERE" rest :TEST #'clause-word))))
          (UNLESS from (ERROR "parsi: SELECT wants FROM: ~S" form))
          (FORMAT NIL "~ASELECT ~{~A~^, ~}~%~AFROM ~A~A;" i
-                 (MAPCAR #'render-expr (SECOND form)) i (oname from)
+                 (render-items (SECOND form)) i (oname from)
                  (IF where (FORMAT NIL " WHERE ~A" (render-expr where)) ""))))
 
       ;; A line of Parsi written out as it stands. The way out when the clause
