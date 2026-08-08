@@ -228,7 +228,7 @@
                                     (set (cof instance)
                                       (cast ,(make-class-h-base-name name) '{
                                             ((<> get ,name _H_Table))
-                                            ,(make-data-h-type-name (IF (= i (1- (LENGTH ctors))) '_ (CAAR ct)))
+                                            ,(make-data-h-type-name (CAAR ct))
                                             }))
                                     (return ((<> new Box ,name) (analyze! ,name instance)))))
                            `(func ,ct-name ,real-params
@@ -237,7 +237,7 @@
                                     (set (cof instance)
                                       (cast ,(make-class-h-base-name name) '{
                                             ((<> get ,name _H_Table))
-                                            ,(make-data-h-type-name (IF (= i (1- (LENGTH ctors))) '_ (CAAR ct)))
+                                            ,(make-data-h-type-name (CAAR ct))
                                             ,(INTERN (FORMAT NIL "$__h_data$~A"
                                                              (IF (= i (1- (LENGTH ctors))) '_ (CAAR ct))))
                                             '{ ,@(MAPCAR #'(LAMBDA (param) (NTH 4 param)) params) }
