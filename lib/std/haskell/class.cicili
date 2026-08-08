@@ -1,23 +1,23 @@
-;;; This file is part of the :haskell library and shares its package. A library
+;;; This file is part of the :std library and shares its package. A library
 ;;; owns its namespace instead of borrowing the import prefix's; the full
 ;;; explanation is in doc/DOC-C.md, under "A library's package".
-(DEFPACKAGE :haskell
+(DEFPACKAGE :std
   (:USE :COMMON-LISP)
   (:IMPORT-FROM :COMMON-LISP-USER "import" "generic" "cicili"
-                                 "find-subseq" "expand-form<"))
+                                  "find-subseq" "expand-form<"))
 
-(IN-PACKAGE :haskell)
+(IN-PACKAGE :std)
 
 
 ;; Data Constructor
 ;; data Mood = Blah | Woot
 ;; (data TestT NoArg (WithArg (type x) (type y)))
-;; for value type and copy on assignment types
-;; suggestion: no member pointer and no self member reference
+;; for pointer type and copy reference on assignment types
+;; suggestion: some member pointer or self member reference
 ;; (match alias, data type name) designed for generic types
 ;; the data type name and each ctor can have an alias for ease of use in matches
-;; shared alias for generic data types lets them to cast to each other
-(DEFMACRO decl-data (name ctor &REST ctors)
+;; shared alias for generic classes lets them to cast to each other
+(DEFMACRO decl-class (name ctor &REST ctors)
   (SETQ name (expand-form< name))
   (SETQ name (IF (SYMBOLP name)
                  (LIST name name)
@@ -40,7 +40,7 @@
                                                 (IF (CICILI:KEY-EQ (CAR ct) '=)
                                                     (SETQ ct (CDR ct))
                                                     (SETQ ct (CONS (CAR ct) ct)))))
-                                   
+
                                    (WHEN (OR (CICILI:KEY-EQ (CAR ct) 'free) (CICILI:KEY-EQ (CADR ct) 'free))
                                      (ERROR (FORMAT NIL "use 'free' destructor only inside definition: ~A" ct)))
                                    
@@ -56,48 +56,51 @@
                          (CONS ctor ctors)))))
     
     `(guard (<> _ ,name _H_DECL__)
-
+       
        (guard (<> __H ,enum-name _)
          (enum ,enum-name
            (,(make-data-h-type-name (CAAR (CAR (REVERSE ctors)))) . 0)
            ,@(MAPCAR #'(LAMBDA (i ct) (CONS (make-data-h-type-name (CAAR ct)) (+ i 1)))
                      (range-h (LENGTH ctors)) (CDR (REVERSE ctors)))))
 
-       (decl) (struct ,name)
+       (decl) (struct ,(make-class-h-base-name name))
 
-       (typedef func (<> free ,name t) ((,name * this)))  
+       (typedef ,(make-class-h-base-name name) * ,name)
+
+       (typedef func (<> free ,name t) ((,name * this_ptr)))  
 
        (struct (<> ,name _H_Table)
-         (member (<> free ,name t) freeData)
+         (member (<> free ,name t) freeClass)
          ,@(MAPCAR #'(LAMBDA (f)
                        (WHEN (CICILI:KEY-EQ (CAR f) 'func)
                          (CONS 'member f)))
                    fns))
-       
-       (struct ,name
+
+       (struct ,(make-class-h-base-name name)
          (member const (<> ,name _H_Table) * __h_table)
          (member char __h_ctor)
-         (union ,@(MAPCAR #'(LAMBDA (i ct)
-                              (LET ((ct-name (CAAR ct))
-                                    (params (CADR ct))
-                                    (real-params (CADDR ct))
-                                    (mem-counter -1))
-                                `(struct
-                                     ,@(MAPCAR #'(LAMBDA (param rp)
-                                                   (SETQ mem-counter (1+ mem-counter))
-                                                   (IF (CICILI:KEY-EQ (NTH 1 param) 'func)
-                                                       (LET ((cp-rp (COPY-LIST rp)))
-                                                         (SETF (NTH 1 cp-rp) (make-data-h-member-name mem-counter))
-                                                         `(member ,@cp-rp))
-                                                       (LET ((cp-param (COPY-LIST param)))
-                                                         (SETF (NTH 4 cp-param) (make-data-h-member-name mem-counter))
-                                                         `(member ,@(REMOVE NIL cp-param)))))
-                                               params real-params)
-                                   (declare ,ct-name)
-                                   ,(LIST 'declare (IF (= i (1- (LENGTH ctors))) ; default ctor case
-                                                       '_
-                                                       (INTERN (FORMAT NIL "_~A" (- (LENGTH ctors) i 1))))))))
-                          (range-h (LENGTH ctors)) ctors)
+         (union 
+             ,@(MAPCAR #'(LAMBDA (i ct)
+                           (LET ((ct-name (CAAR ct))
+                                 (params (CADR ct))
+                                 (real-params (CADDR ct))
+                                 (mem-counter -1))
+                             `(struct
+                                  ,@(MAPCAR #'(LAMBDA (param rp)
+                                                (SETQ mem-counter (1+ mem-counter))
+                                                (IF (CICILI:KEY-EQ (NTH 1 param) 'func)
+                                                    (LET ((cp-rp (COPY-LIST rp)))
+                                                      (SETF (NTH 1 cp-rp) (make-data-h-member-name mem-counter))
+                                                      `(member ,@cp-rp))
+                                                    (LET ((cp-param (COPY-LIST param)))
+                                                      (SETF (NTH 4 cp-param) (make-data-h-member-name mem-counter))
+                                                      `(member ,@(REMOVE NIL cp-param)))))
+                                            params real-params)
+                                (declare ,ct-name)
+                                ,(LIST 'declare (IF (= i (1- (LENGTH ctors)))
+                                                    '_
+                                                    (INTERN (FORMAT NIL "_~A" (- (LENGTH ctors) i 1))))))))
+                       (range-h (LENGTH ctors)) ctors)
            (declare __h_data)))
        
        ,@(MAPCAR #'(LAMBDA (i ct)
@@ -130,14 +133,13 @@
                  fns)
 
        ;; Table initializer
-       (decl) (func (<> get ,name _H_Table) () (out const (<> ,name _H_Table) * const))
-
+       (decl) (func (<> get ,name _H_Table) () (out (<> ,name _H_Table) * const))
+       
        ;; destructor
-       (decl) (func (<> free ,name) ((,name * this)))
-       ))
-  ) ; decl-data
+       (decl) (func (<> free ,name) ((,name * this_ptr)))
+       )))
 
-(DEFMACRO impl-data (name ctor &REST ctors)
+(DEFMACRO impl-class (name ctor &REST ctors)
   (SETQ name (expand-form< name))
   (SETQ name (IF (SYMBOLP name)
                  (LIST name name)
@@ -181,7 +183,7 @@
                                         ;; real param defs
                                         (CDDR ct))))))
                          (range-h (1+ (LENGTH ctors))) (CONS ctor ctors)))))
-
+    
     `(guard (<> _ ,name _H_IMPL__)
 
        ;; funcs decl
@@ -191,22 +193,23 @@
                        fP))
                  fns)
        
-       ;; destructor
-       (func (<> free ,name) ((,name * this))
-             ,@(CDDR free-def))
-       
+       ;; destructor, both variables this_ptr and this are available for class's free functions
+       (func (<> free ,name) ((,name * this_ptr))
+             (let ((auto this . #'(cof this_ptr)))
+               ,@(CDDR free-def)))
+
        ;; Table initializer
        (func (<> get ,name _H_Table) ()
-             (out const (<> ,name _H_Table) * const)
+             (out (<> ,name _H_Table) * const)
              (static)
-             (var const (<> ,name _H_Table) table . '{
+             (var (<> ,name _H_Table) table . '{
                   (<> free ,name)
                   ,@(MAPCAR #'(LAMBDA (f)
                                 (expand-form< `(<> ,(CADR f) ,name)))
                             fns)
                   })
              (return (aof table)))
-
+       
        ;; constructors
        ,@(MAPCAR #'(LAMBDA (i ct)
                      (LET ((ct-name (CADAR ct))
@@ -214,28 +217,32 @@
                            (real-params (CADDR ct)))
 
                        (WHEN (EQUAL name ct-name) (ERROR (FORMAT NIL "data type and ctor having same name: ~A" name)))
-
+                       
                        (IF (NULL params)
                            `(func ,ct-name ()
                                   (out ,name)
-                                  (let ((,name instance . #'(cast ,name '{
-                                                                  ((<> get ,name _H_Table))
-                                                                  ,(make-data-h-type-name (CAAR ct))
-                                                                  })))
-                                    (return instance)))
+                                  (let ((,name instance . #'(malloc (sizeof ,(make-class-h-base-name name)))))
+                                    (set (cof instance)
+                                      (cast ,(make-class-h-base-name name) '{
+                                            ((<> get ,name _H_Table))
+                                            ,(make-data-h-type-name (CAAR ct))
+                                            }))
+                                    (return (analyze! ,name instance))))
                            `(func ,ct-name ,real-params
                                   (out ,name)
-                                  (let ((,name instance . #'(cast ,name '{
-                                                                  ((<> get ,name _H_Table))
-                                                                  ,(make-data-h-type-name (CAAR ct))
-                                                                  ,(INTERN (FORMAT NIL "$__h_data$~A"
-                                                                                   (IF (= i (1- (LENGTH ctors))) '_ (CAAR ct))))
-                                                                  '{ ,@(MAPCAR #'(LAMBDA (param) (NTH 4 param)) params) }
-                                                                  })))
-                                    (return instance))))))
+                                  (let ((,name instance . #'(malloc (sizeof ,(make-class-h-base-name name)))))
+                                    (set (cof instance)
+                                      (cast ,(make-class-h-base-name name) '{
+                                            ((<> get ,name _H_Table))
+                                            ,(make-data-h-type-name (CAAR ct))
+                                            ,(INTERN (FORMAT NIL "$__h_data$~A"
+                                                             (IF (= i (1- (LENGTH ctors))) '_ (CAAR ct))))
+                                            '{ ,@(MAPCAR #'(LAMBDA (param) (NTH 4 param)) params) }
+                                            }))
+                                    (return (analyze! ,name instance)))))))
                  (range-h (LENGTH ctors)) ctors)))
-  ) ; impl-data
+  ) ; impl-class
 
-(DEFMACRO import-data (name ctor &REST ctors)
-  
-  ) ; import-data
+(DEFMACRO import-class (name ctor &REST ctors)
+
+  ) ; import-class

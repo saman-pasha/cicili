@@ -1,5 +1,15 @@
+;;; This file is part of the :std library and shares its package. A library
+;;; owns its namespace instead of borrowing the import prefix's; the full
+;;; explanation is in doc/DOC-C.md, under "A library's package".
+(DEFPACKAGE :std
+  (:USE :COMMON-LISP)
+  (:IMPORT-FROM :COMMON-LISP-USER "import" "generic" "cicili"
+                                  "find-subseq" "expand-form<"))
+
+(IN-PACKAGE :std)
+
 ;;;; Vector Safe
-(import "draft/io/stringbuffer.cicili")
+(import "./stringbuffer.cicili")
 
 ;; each Vector must be defined by this generic
 (generic decl-Vector

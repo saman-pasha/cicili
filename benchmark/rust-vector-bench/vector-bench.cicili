@@ -1,4 +1,4 @@
-(import "draft/collection/vector.cicili")
+(import "lib/std/haskell/vector.cicili")
 
 (source "vec_bench.c"
   (make :std #t

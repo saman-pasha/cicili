@@ -1,12 +1,12 @@
-;;; This file is part of the :haskell library and shares its package. A library
+;;; This file is part of the :std library and shares its package. A library
 ;;; owns its namespace instead of borrowing the import prefix's; the full
 ;;; explanation is in doc/DOC-C.md, under "A library's package".
-(DEFPACKAGE :haskell
+(DEFPACKAGE :std
   (:USE :COMMON-LISP)
   (:IMPORT-FROM :COMMON-LISP-USER "import" "generic" "cicili"
-                                 "find-subseq" "expand-form<"))
+                                  "find-subseq" "expand-form<"))
 
-(IN-PACKAGE :haskell)
+(IN-PACKAGE :std)
 
 
 ;; pattern matching
@@ -331,9 +331,14 @@
             `(match*-case ,data ,case ,(CDR cases) ,is-io ,prev-args))
         ))) ; match*
 
-;; match with required default value or void
-(DEFMACRO match (data &REST cases)
-  `(match* ,data ,cases NIL))
+;; `match' itself lives in builtins.cicili and is not defined here.
+;;
+;; It used to be, as (DEFMACRO match (data &REST cases) `(match* ,data ,cases NIL))
+;; -- exactly what builtins' `match' now falls through to when the scrutinee is
+;; not registered with def-matchable. Defining it here as well only decided,
+;; by load order, which of the two kinds of matchable thing the name would
+;; serve, and that is why this layer could not be loaded beside lib/std at all.
+;; `match*' below is the whole haskell side, and builtins reaches it by name.
 
 ;; match with optional default case
 (DEFMACRO io (data &REST cases)

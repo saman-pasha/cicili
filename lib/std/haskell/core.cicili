@@ -1,13 +1,13 @@
 ;;;; Haskell Thinking Model Implementation for Cicili
-;;; This file is part of the :haskell library and shares its package. A library
+;;; This file is part of the :std library and shares its package. A library
 ;;; owns its namespace instead of borrowing the import prefix's; the full
 ;;; explanation is in doc/DOC-C.md, under "A library's package".
-(DEFPACKAGE :haskell
+(DEFPACKAGE :std
   (:USE :COMMON-LISP)
   (:IMPORT-FROM :COMMON-LISP-USER "import" "generic" "cicili"
-                                 "find-subseq" "expand-form<"))
+                                  "find-subseq" "expand-form<"))
 
-(IN-PACKAGE :haskell)
+(IN-PACKAGE :std)
 
 
 ;; lambda calculus
@@ -173,5 +173,17 @@
 (DEFUN make-haslen-h-name (id)
   (INTERN (FORMAT NIL "__h_has_len_~A" id)))
 
-(DEFMACRO static-cast (type value)
+;;; Read a value as a structurally identical sibling type: List_char as String,
+;;; List_int as a Str. Not a conversion -- the same bytes, a different name --
+;;; which is why it goes through a pointer.
+;;;
+;;; It was called `static-cast' and could not keep that name once this layer
+;;; became part of the prelude. C++'s static_cast is a documented Cicili form
+;;; with that exact spelling (doc/DOC-CPP.md, Casts) and a different meaning: it
+;;; CONVERTS, so (static-cast int 3.9) is 3, where this one would reinterpret
+;;; the bits of a double as an int. The two were never the same operation and
+;;; the collision was silent -- test/cpp/syntax.cicili started emitting
+;;; ((int)(*((int *)(&3.9)))), which C++ rejects for taking the address of a
+;;; temporary. That rejection is the only reason it was caught.
+(DEFMACRO coerce (type value)
   `(cast ,type (cof (cast (,type *) (aof ,value)))))

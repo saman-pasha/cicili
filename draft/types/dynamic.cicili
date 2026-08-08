@@ -1,6 +1,6 @@
 
 (import "draft/collection/btree.cicili")
-(import "draft/io/stringbuffer.cicili")
+(import "lib/std/haskell/stringbuffer.cicili")
 
 (header "dynamic.h"
   ()

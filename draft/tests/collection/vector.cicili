@@ -1,5 +1,5 @@
 
-(import "draft/collection/vector.cicili")
+(import "lib/std/haskell/vector.cicili")
 
 (source "vector.c"
   (make :std #t
@@ -466,7 +466,7 @@
                                (putchar #\Newline)))
                 (default (exit-status -184)))
               )
-            (show_Str stdout (static-cast Str v222)) ; for functions which need read-only strings
+            (show_Str stdout (coerce Str v222)) ; for functions which need read-only strings
             (putchar #\Newline)
             
             ) ; letin

@@ -25,6 +25,25 @@
 (import "./vector.cicili")
 (import "./btree.cicili")
 
+;;; The algebraic layer: `data' and `class' and the types built on them --
+;;; Maybe, Either, Bool, List, String, Rc -- plus the pattern matching, the
+;;; functor/applicative/monad instances and the lambda calculus forms.
+;;;
+;;; LAST, and that is not arbitrary. It reads the C declarations above at
+;;; specification time the way the rest of std does, and `match' has to be in
+;;; place before anything can be matched with it.
+;;;
+;;; It is imported here rather than being an optional layer because these are
+;;; Cicili's own facilities, not an alternative to them: the `data' machinery is
+;;; what draft/collection/persistent-btree.cicili is written in, and until this
+;;; line existed nothing could compile that file at all.
+;;;
+;;; The two names that look duplicated are not. `Maybe' is the ADT and `maybe'
+;;; the tagged union above; case tells them apart under the :preserve readtable,
+;;; and `match' answers for both -- see builtins.cicili, which dispatches on
+;;; whether the scrutinee registered itself with def-matchable.
+(import "./haskell/prelude.cicili")
+
 
 (DEFMACRO init-macro ()
   `($$$

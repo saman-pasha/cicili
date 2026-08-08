@@ -1,15 +1,15 @@
-;;; This file is part of the :haskell library and shares its package. A library
+;;; This file is part of the :std library and shares its package. A library
 ;;; owns its namespace instead of borrowing the import prefix's; the full
 ;;; explanation is in doc/DOC-C.md, under "A library's package".
-(DEFPACKAGE :haskell
+(DEFPACKAGE :std
   (:USE :COMMON-LISP)
   (:IMPORT-FROM :COMMON-LISP-USER "import" "generic" "cicili"
-                                 "find-subseq" "expand-form<"))
+                                  "find-subseq" "expand-form<"))
 
-(IN-PACKAGE :haskell)
+(IN-PACKAGE :std)
 
 
-(header "../../haskell.h"
+(header "../../../haskell.h"
   (make :std #t)
 
   (guard __CICILI_HASKELL_H_DECL__
@@ -106,8 +106,8 @@
   `(PROGN ,@body))
 
 (source "haskell.c"
-  (make :compile ("-c" "haskell.c" "-o" `(IF CICILI:*DEBUG-ANALYZE* "../../haskell_analyze.o" "../../haskell.o")) :link #f)
-  (include "../../haskell.h")
+  (make :compile ("-c" "haskell.c" "-o" `(IF CICILI:*DEBUG-ANALYZE* "../../../haskell_analyze.o" "../../../haskell.o")) :link #f)
+  (include "../../../haskell.h")
 
   (guard __CICILI_HASKELL_H_IMPL__
     

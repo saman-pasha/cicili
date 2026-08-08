@@ -647,23 +647,50 @@
 (DEFUN match-body< (bind body)
   (IF bind `(letn (,bind) ,@body) `(progn ,@body)))
 
+;;; The cases registered for a scrutinee, or NIL if it has none.
+;;;
+;;; match-cases-of< above raises instead, which is right where a matchable type
+;;; is the only thing that can appear; `match' below has a second answer for the
+;;; ones that are not, and needs to ask without being stopped. TYPE-CHECK itself
+;;; can raise on a type it cannot resolve, so the whole question is guarded.
+(DEFUN matchable-cases-for< (value)
+  (IGNORE-ERRORS (matchable-cases< (NTH-VALUE 3 (CICILI:TYPE-CHECK value)))))
+
 ;;; (match m (just v ...) (nothing ...))  -- a statement, expands to a cond
 ;;; Partial is fine: an unlisted case simply does nothing, like `when'.
+;;;
+;;; TWO KINDS OF MATCHABLE THING SHARE THIS NAME, and which one is in hand is
+;;; decided here rather than by the author. A type registered with
+;;; def-matchable -- lib/std's `maybe', `either', `cell', `rc' -- is taken apart
+;;; by the tag test and accessor it registered, and expands to the `cond' below.
+;;; A haskell ADT declared with decl-data is taken apart by its constructor tag
+;;; and its __h_data union, which match* in lib/std/haskell/match.cicili knows
+;;; how to do and this does not -- along with the nested patterns, guards and
+;;; tuple destructuring that go with it.
+;;;
+;;; They used to be two macros with one name, which is why the haskell layer
+;;; could not be loaded: whichever was read second won, and loading it beside
+;;; std turned (match m (just …) (nothing …)) into a search for `__h_just_t'.
+;;; Dispatching on the scrutinee is what lets both spellings mean what they say,
+;;; with no call site in either half changed.
 (DEFMACRO match (value &REST clauses)
-  (LET* ((value value)
-         (cases (match-cases-of< "match" value))
-         (box (GENSYM "match")))
-    (MULTIPLE-VALUE-BIND (parsed seen default) (match-parse< "match" value clauses cases box)
-      (DECLARE (IGNORE seen))
-      `(let ((auto ,box . (FUNCTION ,value)))
-         (cond ,@(MAP 'LIST
-                      #'(LAMBDA (p)
-                          (LET ((bind (NTH 1 p)) (body (NTH 2 p)))
-                            (IF bind
-                                (LIST (NTH 0 p) `(let (,bind) ,@body))
-                                (CONS (NTH 0 p) body))))
-                      parsed)
-               ,@(WHEN default (LIST (CONS '#t default))))))))
+  (LET ((value value)
+        (cases (matchable-cases-for< value))
+        (box   (GENSYM "match")))
+    (IF (NULL cases)
+        ;; not registered: a haskell ADT, or an error match* will name better
+        `(match* ,value ,clauses NIL)
+        (MULTIPLE-VALUE-BIND (parsed seen default) (match-parse< "match" value clauses cases box)
+          (DECLARE (IGNORE seen))
+          `(let ((auto ,box . (FUNCTION ,value)))
+             (cond ,@(MAP 'LIST
+                          #'(LAMBDA (p)
+                              (LET ((bind (NTH 1 p)) (body (NTH 2 p)))
+                                (IF bind
+                                    (LIST (NTH 0 p) `(let (,bind) ,@body))
+                                    (CONS (NTH 0 p) body))))
+                          parsed)
+                   ,@(WHEN default (LIST (CONS '#t default)))))))))
 
 ;;; (matchn m (just v ...) (nothing ...))  -- an expression, nested ?
 ;;; Must cover every case or carry a default, checked at expansion time.

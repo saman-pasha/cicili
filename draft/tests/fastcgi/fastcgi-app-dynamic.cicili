@@ -1,7 +1,7 @@
 
 (import "draft/fastcgi/macros.cicili")
 (import "draft/types/dynamic-macros.cicili")
-(import "draft/io/stringbuffer.cicili")
+(import "lib/std/haskell/stringbuffer.cicili")
 
 (source "fastcgi_app_dynamic.c"
   (make :std #t

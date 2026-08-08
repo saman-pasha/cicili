@@ -1,23 +1,17 @@
-;;; This file is part of the :haskell library and shares its package. A library
+;;; This file is part of the :std library and shares its package. A library
 ;;; owns its namespace instead of borrowing the import prefix's; the full
 ;;; explanation is in doc/DOC-C.md, under "A library's package".
-(DEFPACKAGE :haskell
+(DEFPACKAGE :std
   (:USE :COMMON-LISP)
   (:IMPORT-FROM :COMMON-LISP-USER "import" "generic" "cicili"
-                                 "find-subseq" "expand-form<"))
+                                  "find-subseq" "expand-form<"))
 
-(IN-PACKAGE :haskell)
+(IN-PACKAGE :std)
 
 
-;; Data Constructor
-;; data Mood = Blah | Woot
-;; (data TestT NoArg (WithArg (type x) (type y)))
-;; for pointer type and copy reference on assignment types
-;; suggestion: some member pointer or self member reference
-;; (match alias, data type name) designed for generic types
-;; the data type name and each ctor can have an alias for ease of use in matches
-;; shared alias for generic classes lets them to cast to each other
-(DEFMACRO decl-class (name ctor &REST ctors)
+;; Box
+;; Sandbox facilitates putting a pointer inside a Rc
+(DEFMACRO decl-box (name ctor &REST ctors)
   (SETQ name (expand-form< name))
   (SETQ name (IF (SYMBOLP name)
                  (LIST name name)
@@ -65,12 +59,17 @@
 
        (decl) (struct ,(make-class-h-base-name name))
 
-       (typedef ,(make-class-h-base-name name) * ,name)
+       (typedef ,(make-class-h-base-name name) * ,(make-box-h-base-name name))
 
-       (typedef func (<> free ,name t) ((,name * this_ptr)))  
+       ;; dependencies
+       (decl-pure-Rc (<> Box ,name) ,(make-box-h-base-name name))
+
+       (typedef (<> Box ,name) ,name)
+  
+       (typedef func (<> free ,name t) ((,(make-box-h-base-name name) * this)))  
 
        (struct (<> ,name _H_Table)
-         (member (<> free ,name t) freeClass)
+         (member (<> free ,name t) freeData)
          ,@(MAPCAR #'(LAMBDA (f)
                        (WHEN (CICILI:KEY-EQ (CAR f) 'func)
                          (CONS 'member f)))
@@ -136,10 +135,11 @@
        (decl) (func (<> get ,name _H_Table) () (out (<> ,name _H_Table) * const))
        
        ;; destructor
-       (decl) (func (<> free ,name) ((,name * this_ptr)))
-       )))
+       (decl) (func (<> free ,(make-box-h-base-name name)) ((,(make-box-h-base-name name) * this)))
+       ))
+  ) ; decl-box
 
-(DEFMACRO impl-class (name ctor &REST ctors)
+(DEFMACRO impl-box (name ctor &REST ctors)
   (SETQ name (expand-form< name))
   (SETQ name (IF (SYMBOLP name)
                  (LIST name name)
@@ -186,6 +186,9 @@
     
     `(guard (<> _ ,name _H_IMPL__)
 
+       ;; dependencies
+       (impl-pure-Rc (<> Box ,name) ,(make-box-h-base-name name))
+
        ;; funcs decl
        ,@(MAPCAR #'(LAMBDA (f)
                      (LET ((fP (COPY-LIST f)))
@@ -194,7 +197,7 @@
                  fns)
        
        ;; destructor, both variables this_ptr and this are available for class's free functions
-       (func (<> free ,name) ((,name * this_ptr))
+       (func (<> free ,(make-box-h-base-name name)) ((,(make-box-h-base-name name) * this_ptr))
              (let ((auto this . #'(cof this_ptr)))
                ,@(CDDR free-def)))
 
@@ -203,7 +206,7 @@
              (out (<> ,name _H_Table) * const)
              (static)
              (var (<> ,name _H_Table) table . '{
-                  (<> free ,name)
+                  (<> free ,(make-box-h-base-name name))
                   ,@(MAPCAR #'(LAMBDA (f)
                                 (expand-form< `(<> ,(CADR f) ,name)))
                             fns)
@@ -221,16 +224,16 @@
                        (IF (NULL params)
                            `(func ,ct-name ()
                                   (out ,name)
-                                  (let ((,name instance . #'(malloc (sizeof ,(make-class-h-base-name name)))))
+                                  (let ((,(make-box-h-base-name name) instance . #'(malloc (sizeof ,(make-class-h-base-name name)))))
                                     (set (cof instance)
                                       (cast ,(make-class-h-base-name name) '{
                                             ((<> get ,name _H_Table))
                                             ,(make-data-h-type-name (CAAR ct))
                                             }))
-                                    (return (analyze! ,name instance))))
+                                    (return ((<> new Box ,name) (analyze! ,name instance)))))
                            `(func ,ct-name ,real-params
                                   (out ,name)
-                                  (let ((,name instance . #'(malloc (sizeof ,(make-class-h-base-name name)))))
+                                  (let ((,(make-box-h-base-name name) instance . #'(malloc (sizeof ,(make-class-h-base-name name)))))
                                     (set (cof instance)
                                       (cast ,(make-class-h-base-name name) '{
                                             ((<> get ,name _H_Table))
@@ -239,10 +242,10 @@
                                                              (IF (= i (1- (LENGTH ctors))) '_ (CAAR ct))))
                                             '{ ,@(MAPCAR #'(LAMBDA (param) (NTH 4 param)) params) }
                                             }))
-                                    (return (analyze! ,name instance)))))))
+                                    (return ((<> new Box ,name) (analyze! ,name instance))))))))
                  (range-h (LENGTH ctors)) ctors)))
-  ) ; impl-class
+  ) ; impl-box
 
-(DEFMACRO import-class (name ctor &REST ctors)
+(DEFMACRO import-box (name ctor &REST ctors)
 
-  ) ; import-class
+  ) ; import-box

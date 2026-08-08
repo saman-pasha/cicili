@@ -1,4 +1,4 @@
-(import "draft/io/stringbuffer.cicili")
+(import "lib/std/haskell/stringbuffer.cicili")
 
 (source "stringbuffer.c"
   (make :std #t

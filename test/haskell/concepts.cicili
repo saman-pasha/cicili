@@ -102,7 +102,7 @@
 
             (show_String chrlst)
             (putchar #\Newline)
-            (reduce_List_char (static-cast List_char chrlst))
+            (reduce_List_char (coerce List_char chrlst))
             (putchar #\Newline)
             
             (io m0
@@ -154,7 +154,7 @@
                        (s2 ((<> new List_char) "Cicili!" 7)))
                 (letin ((* result (mappend s1 s2))) ; frees all at once because of using append they are chained together
                   (format #t "Concat of Strings (mappend Semigroup) of 'Hello ' and 'Cicili' is:\n")
-                  (show_String (static-cast String result))
+                  (show_String (coerce String result))
                   (putchar #\Newline)))))
 
           ;; using Functor datatype or fmap directly
