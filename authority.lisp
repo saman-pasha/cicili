@@ -171,7 +171,22 @@
 (defun deep-typeof (id &optional spec too-deep)
   (let ((deep-res 
             (let* ((id (if (and (listp id) (key-eq (car id) '|struct|)) (cadr id) id))
-                   (spec (if spec spec (*gets* id))))
+                   ;; A TYPE SLOT MAY HOLD A SPECIFIER RATHER THAN A NAME, and
+                   ;; every caller here passes a `typeof' straight back in. A
+                   ;; variable declared (typeof X) carries an @TYPEOF in that
+                   ;; slot -- lib/std/haskell/match.cicili declares its
+                   ;; destructured bindings that way, ((typeof (\$ d __h_data
+                   ;; Just __h_0_mem)) arg) -- and peel-type-tag< says so in as
+                   ;; many words: a specifier is handed back untouched for the
+                   ;; caller to resolve further. This was the one caller that
+                   ;; did not, and looked it up instead: (*gets* <specifier>)
+                   ;; asks SYMBOL-NAME of it and dies "is not of type SYMBOL".
+                   ;;
+                   ;; Resolving it is just recognising it -- the @TYPEOF branch
+                   ;; below already knows what to do with one.
+                   (spec (cond (spec spec)
+                               ((typep id 'sp) id)
+                               (t (*gets* id)))))
               (if spec
                   (let ((const-val (construct spec)))
                     (cond ((eql const-val '|@ATOM|) spec)
@@ -252,7 +267,41 @@
                                  ;; hold the symbol itself.
                                  (let* ((mem (default spec))
                                         (mem-name (if (typep mem 'sp) (default mem) mem))
-                                        (member-spec (*gets* (intern (format nil "~A/~A" mem-name (typeof end-type))))))
+                                        ;; THE FIRST TYPE REACHED IS NOT ALWAYS
+                                        ;; THE ONE HOLDING THE MEMBER. Members
+                                        ;; are keyed `member/Type', and the type
+                                        ;; a receiver resolves to may be a
+                                        ;; typedef standing in front of the
+                                        ;; struct that declares them -- a
+                                        ;; haskell class is `X' typedef'd to
+                                        ;; `class_X *', and every member lives
+                                        ;; on class_X. One lookup answered for
+                                        ;; the receivers that land on the struct
+                                        ;; directly and silently returned NIL
+                                        ;; for the rest, which is how a whole
+                                        ;; member chain came back untyped with
+                                        ;; nothing said about why.
+                                        ;;
+                                        ;; deep-storageof has walked the chain
+                                        ;; like this all along (see its `t'
+                                        ;; branch); this is the same walk. The
+                                        ;; step count is a backstop against a
+                                        ;; typedef cycle, not a real limit --
+                                        ;; nothing legitimate is eight typedefs
+                                        ;; deep.
+                                        (member-spec
+                                         (let ((ty (typeof end-type)))
+                                           (loop repeat 8
+                                                 for key = (peel-type-tag< ty)
+                                                 for hit = (unless (typep key 'sp)
+                                                             (*gets* (intern (format nil "~A/~A" mem-name key))))
+                                                 when hit return hit
+                                                 do (let ((next (if (typep key 'sp)
+                                                                    (deep-typeof "" key)
+                                                                    (deep-typeof key))))
+                                                      (when (or (null next) (equal (typeof next) ty))
+                                                        (return nil))
+                                                      (setq ty (typeof next)))))))
                                    (if (eql const-val '|@=>|)
                                        (let ((td (func-typedef-of< member-spec)))
                                          (if (and td (car (array-def td)))
