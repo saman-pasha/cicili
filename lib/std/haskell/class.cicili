@@ -214,8 +214,17 @@
                  fns)
        
        ;; destructor, both variables this_ptr and this are available for class's free functions
+       ;; `,name' rather than `auto'. A class instance IS a pointer -- the
+       ;; typedef carries the star -- so this_ptr is one level further and
+       ;; (cof this_ptr) is exactly a ,name. `auto' over a dereference keeps the
+       ;; POINTER's type, and the free emitted
+       ;;
+       ;;   List_char * this = *this_ptr;
+       ;;
+       ;; which the C compiler rejects as an incompatible pointer type. Writing
+       ;; the type is both correct and clearer about what a class value is.
        (func (<> free ,name) ((,name * this_ptr))
-             (let ((auto this . #'(cof this_ptr)))
+             (let ((,name this . #'(cof this_ptr)))
                ,@(CDDR free-def)))
 
        ;; Table initializer

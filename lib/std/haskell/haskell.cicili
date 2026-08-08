@@ -40,23 +40,10 @@
 ;;                       var-list))
 ;;      ,@body))
 
-;; Rc works like letin but with reference counting and needs Rc type at second argument
-;; each var will be wrapped inside a Rc
-;; all var initializers should be a Rc ctor
-;; * means rc contains a pointer
-(DEFMACRO rc (var-list &REST body)
-  `(letn ,(APPLY 'APPEND
-                 (MAP 'LIST #'(LAMBDA (var)
+;;; The `rc' macro is gone with the haskell Rc it wrapped values in. It also
+;;; deferred to __h_free_data_router, which lived in haskell.h. lib/std's `rc'
+;;; and its let_rc / take_rc front ends are the replacement.
 
-                                (UNLESS (= (LENGTH var) 3)
-                                  (ERROR (FORMAT NIL "wrong rc variable definition: ~A" var)))
-
-                                `((defer () __h_free_data_router)
-                                  (auto ,(CAR var)
-                                    . (FUNCTION ((<> new ,(CADR var))
-                                                 (--h-only-haskell-obj ,T ,(CAR var) ,(CADDR var)))))))
-                      var-list))
-     ,@body))
 
 
 ;; (DEFMACRO new (obj)

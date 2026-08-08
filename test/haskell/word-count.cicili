@@ -1,88 +1,71 @@
 ;;; sample code
-;;; writes many sentences to a temporary file
-;;; reads file part by part
-;;; stores them in a list of strings
-;;; iterate over all parts
-;;; count the words in each part separated by space or newline character
+;;; writes a few sentences to a temporary file
+;;; reads the file into a List of char
+;;; counts the words, separated by a space or a newline
+;;;
+;;; A LIST OF CHAR, NOT A LIST OF STRINGS. The haskell List stores its payload
+;;; BY VALUE, and a std string is (non-copy) because it owns a heap buffer -- so
+;;; a List_string cannot hold one. The old String got away with it by being a
+;;; box: an Rc round a class pointer, copyable because the pointer was. That
+;;; mechanic is gone, and a char needs none of it.
+;;;
+;;; The error side is a CStr for the same reason, and a better one: `strerror'
+;;; hands back a pointer it owns, so there is nothing here to take ownership of.
 (source "word_count.c" (:std #t :compile #t :link "-L{$CWD} word_count.o -o word_count")
         (include <errno.h>)
 
-        (typedef char * cstr_t)
         (typedef FILE * cfile_t)
 
-        (decl-Either String cfile_t) ; for header file
-        (impl-Either String cfile_t) ; for source file
-        
-        ;; https://en.cppreference.com/w/c/io/fgets
+        (decl-List List_char char)
+        (impl-List List_char char (\\ -f -v (fprintf -f "%c" -v)) "")
+
+        (decl-Either CStr cfile_t)
+        (impl-Either CStr cfile_t)
+
         (func writeTmpFile ()
-              (out Either_String_cfile_t) ; Haskell error handling model in Cicili
+              (out Either_CStr_cfile_t) ; Haskell error handling model in Cicili
 
               (let ((FILE * tmpf . #'(tmpfile)))
 
                 (when (== tmpf nil)
-                  (let ((auto err . #'(strerror errno)))
-                    (return (Left_String_cfile_t (new_String err (strlen err)))))) ; on failure returns error number
-                
+                  (return (Left_CStr_cfile_t (strerror errno)))) ; on failure, the reason
+
                 (fputs "Alan Turing\n"      tmpf)
                 (fputs "John von Neumann\n" tmpf)
                 (fputs "Alonzo Church\n"    tmpf)
 
-                ;; ((<> Right String_cfile_t) tmpf) ! Notice ^ works as (<>) clause
-                (return (Right_String_cfile_t tmpf)))) ; on success returns FILE*
+                (return (Right_CStr_cfile_t tmpf)))) ; on success returns FILE*
 
-        ;; a helper to safely read a file as List of String s
+        ;; the whole file as a List of char, one cell per character
         (func safeReadFile ((FILE * file))
-              (out List_String) ; List_String defined in prelude
-              (return
-                (case (== file nil) (Empty_String)
-                      otherwise     (letn ((char buf [8]) ; letn returns last clause
-                                           (size_t count . 0))
-                                      (set count (fread buf (sizeof char) (sizeof buf) file))
-                                      (case (== count 0)           (Empty_String)
-                                            (< count (sizeof buf)) (Cons_String (new_String buf count) (Empty_String))
-                                            otherwise              (Cons_String (new_String buf count) (safeReadFile file)))
-                                      ))))
-        
-        ;; split by #\Space or #\Newline
-        (func count_words ((String text))
+              (out List_char)
+              (when (== file nil)
+                (return ((<> Nil char))))
+              (let ((int c . #'(fgetc file)))
+                (when (== c EOF)
+                  (return ((<> Nil char))))
+                (return ((<> Cons char) (cast char c) (safeReadFile file)))))
+
+        ;; split on #\Space or #\Newline
+        (func count_words ((List_char text))
               (out int)
               (return (match text
-                        (* Cons ch (= tail * Cons) ; if there is another character
+                        (* Cons ch tail
                            (case (or (== ch #\Space) (== ch #\Newline)) (+ 1 (count_words tail))
                                  otherwise (count_words tail)))
-                        (default 1)))) ; means Empty, but all matchs need default case
+                        (default 1)))) ; Nil: the last word has no separator after it
 
-        ;; Iterate over list and Count words in each String
-        (func iter_words ((List_String list))
-              (io list
-                (* Cons str tail
-                   (progn
-                     (show_String str)
-                     (printf " Word count: %d\n" (count_words str))
-                     (iter_words tail)
-                     (free_String (aof str))))
-                ;; last element of a list is allocated too
-                ;; = in io and match makes an alias for whole object
-                (= empty_str default (free_List_String (aof empty_str)))))
-
-        ;; to auto deferment file close
         (func file_close ((FILE ** file_ptr))
-              (printf "file closed deferred\n")
               (fclose (cof file_ptr)))
-        
+
         (main
             (letin* ((tmpf (writeTmpFile)))
               (io tmpf
-                (Left  error (letin* ((error error free_String))
-                               (printf "File opening error: ")
-                               (show_String error)
-                               (putchar #\Newline)))
+                (Left error (block (fprintf stderr "File opening error: %s\n" error)
+                                   (return 1)))
                 (Right file
                        (letin* ((file file file_close))
                          (rewind file)
-                         (io (safeReadFile file)
-                           (* Empty (printf "Error: nothing to read\n"))
-                           (= first_cons * Cons
-                              (progn
-                                (printf "File loaded successfully!\n")
-                                (iter_words first_cons))))))))))
+                         (letin* ((text (safeReadFile file) (<> free List_char)))
+                           (printf "Word count: %d\n" (count_words text)))))))
+            (return 0)))
