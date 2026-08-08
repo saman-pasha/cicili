@@ -107,7 +107,7 @@
 ;;; is for.
 
 (source "demo_pgpage.cpp" (make :cpp #t)
-  (import "lib/db/postgres.cicili")
+  (import "lib/db/postgres.cicili" :pg)
 
   (code "#include <libpq-fe.h>")
   (code "#include <string>")
@@ -123,8 +123,8 @@
   ;; which is what a local socket connection wants.
   (static) (func pg_open_conn () (out PGconn *)
     (let ((PGconn * db . nil))
-      (if (!= (pg-open db "") CONNECTION_OK)
-          (block (if (!= db nil) (pg-close db))
+      (if (!= (pg.open db "") CONNECTION_OK)
+          (block (if (!= db nil) (pg.close db))
                  (return nil)))
       (return db)))
 
@@ -133,16 +133,16 @@
   (func pg_setup () (out std::string)
     (let ((PGconn * db . #'(pg_open_conn)))
       (if (== db nil) (return (cast std::string "no database")))
-      (let ((int st . #'(pg-exec db "CREATE TABLE IF NOT EXISTS demo_greetings (id serial PRIMARY KEY, who text NOT NULL)")))
-        (pg-close db)
+      (let ((int st . #'(pg.exec db "CREATE TABLE IF NOT EXISTS demo_greetings (id serial PRIMARY KEY, who text NOT NULL)")))
+        (pg.close db)
         (return (cast std::string (? (== st PGRES_COMMAND_OK) "ready" "failed"))))))
 
   ;; $1, not concatenation. WHO is whatever the URL carried.
   (func pg_insert ((const char * who)) (out std::string)
     (let ((PGconn * db . #'(pg_open_conn)))
       (if (== db nil) (return (cast std::string "no database")))
-      (let ((int st . #'(pg-run db "INSERT INTO demo_greetings (who) VALUES ($1)" who)))
-        (pg-close db)
+      (let ((int st . #'(pg.run db "INSERT INTO demo_greetings (who) VALUES ($1)" who)))
+        (pg.close db)
         (return (cast std::string (? (== st PGRES_COMMAND_OK) who "failed"))))))
 
   ;; The rows as TEXT, not as markup -- see the note at the top. ECHO escapes
@@ -153,8 +153,8 @@
       (if (== db nil) (return (cast std::string "no database")))
       (letin* ((out (std::ostringstream)))
         (let ((int n . 0))
-          (pg-query db "SELECT id, who FROM demo_greetings ORDER BY id"
-                    (row (id (pg-int 0)) (who (pg-text 1)))
+          (pg.query db "SELECT id, who FROM demo_greetings ORDER BY id"
+                    (row (id (int 0)) (who (text 1)))
                     ;; Cicili's << and Cicili's own strings, NOT a code
                     ;; escape: a code clause is passed through byte for byte
                     ;; and this file is read by a reader that keeps \" as two
@@ -165,7 +165,7 @@
                     (<< out ": ")
                     (<< out who)
                     (++ n))
-          (pg-close db)
+          (pg.close db)
           (if (== n 0) (return (cast std::string "none yet")))
           (return (($ out str)))))))
 

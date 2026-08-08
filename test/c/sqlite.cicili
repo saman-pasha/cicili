@@ -16,7 +16,7 @@
   (make :std #t :compile #t :link ("-lsqlite.o" "-lsqlite3" "-o" "sqlite_test"))
 
   (include <sqlite3.h>)
-  (import "lib/db/sqlite.cicili")
+  (import "lib/db/sqlite.cicili" :sq)
 
   (var int bad . 0)
 
@@ -42,23 +42,23 @@
     ;; The caller declares the handle and the macro opens it, so the line that
     ;; says where the database is also says what happened.
     (let ((sqlite3 * db . nil))
-      (check "opened" (sq-open db ":memory:") SQLITE_OK)
+      (check "opened" (sq.open db ":memory:") SQLITE_OK)
       (check "handle is not null" (cast llong (!= db nil)) 1)
 
     ;; ---- DDL, through the all-in-one ----------------------------------
     (check "create table"
-           (sq-exec db "CREATE TABLE t (id INTEGER PRIMARY KEY, name TEXT, score REAL)")
+           (sq.exec db "CREATE TABLE t (id INTEGER PRIMARY KEY, name TEXT, score REAL)")
            SQLITE_OK)
 
     ;; ---- bound inserts -------------------------------------------------
     ;; Parameters are numbered by position, so nobody writes an index; the
     ;; 1-based counting is the macro's business.
-    (check "insert ada"    (sq-run db "INSERT INTO t (name, score) VALUES (?, ?)"
-                                   (sq-text "ada") (sq-real 99.5)) SQLITE_OK)
-    (check "insert grace"  (sq-run db "INSERT INTO t (name, score) VALUES (?, ?)"
-                                   (sq-text "grace") (sq-real 98.25)) SQLITE_OK)
-    (check "insert nobody" (sq-run db "INSERT INTO t (name, score) VALUES (?, ?)"
-                                   (sq-null) (sq-real 0.0)) SQLITE_OK)
+    (check "insert ada"    (sq.run db "INSERT INTO t (name, score) VALUES (?, ?)"
+                                   (text "ada") (real 99.5)) SQLITE_OK)
+    (check "insert grace"  (sq.run db "INSERT INTO t (name, score) VALUES (?, ?)"
+                                   (text "grace") (real 98.25)) SQLITE_OK)
+    (check "insert nobody" (sq.run db "INSERT INTO t (name, score) VALUES (?, ?)"
+                                   (null) (real 0.0)) SQLITE_OK)
 
     (check "three rows inserted" (sqlite3_last_insert_rowid db) 3)
 
@@ -67,9 +67,9 @@
           (llong id_sum . 0)
           (double score_sum . 0.0))
       (check "query ran"
-             (sq-query db "SELECT id, name, score FROM t WHERE id <= ? ORDER BY id"
-                       (sq-int 2)
-                       (row (id (sq-col-i64 0)) (name (sq-col-text 1)) (score (sq-col-real 2)))
+             (sq.query db "SELECT id, name, score FROM t WHERE id <= ? ORDER BY id"
+                       (int 2)
+                       (row (id (i64 0)) (name (text 1)) (score (real 2)))
                        (++ rows)
                        (+= id_sum id)
                        (+= score_sum score)
@@ -83,8 +83,8 @@
 
     ;; ---- a NULL column is asked about, not guessed ---------------------
     (let ((int nulls . 0))
-      (sq-query db "SELECT name FROM t ORDER BY id"
-                (row (name (sq-col-text 0)))
+      (sq.query db "SELECT name FROM t ORDER BY id"
+                (row (name (text 0)))
                 (if (== name nil) (++ nulls)))
       (check "one name was NULL" nulls 1))
 
@@ -93,17 +93,17 @@
     ;; statement -- sq-run finalizes on every path, which is the reason it is a
     ;; macro rather than a pattern to copy.
     (check "syntax error is a code"
-           (cast llong (!= (sq-run db "SELECT FROM WHERE") SQLITE_OK)) 1)
+           (cast llong (!= (sq.run db "SELECT FROM WHERE") SQLITE_OK)) 1)
     (check "and the message says so"
-           (cast llong (> (strlen (sq-error db)) 0)) 1)
+           (cast llong (> (strlen (sq.error db)) 0)) 1)
 
     ;; a bound value that violates the schema comes back as a code too
     (check "constraint is a code"
-           (cast llong (!= (sq-run db "INSERT INTO t (id, name) VALUES (?, ?)"
-                                   (sq-int 1) (sq-text "duplicate")) SQLITE_OK)) 1)
+           (cast llong (!= (sq.run db "INSERT INTO t (id, name) VALUES (?, ?)"
+                                   (int 1) (text "duplicate")) SQLITE_OK)) 1)
 
       ;; ---- close --------------------------------------------------------
-      (check "closed" (sq-close db) SQLITE_OK))
+      (check "closed" (sq.close db) SQLITE_OK))
 
     (if (== bad 0)
         (printf "sqlite: all ok\n")

@@ -1,5 +1,18 @@
 ;;;; Cicili declarations for PostgreSQL's libpq, and a front end over them
 ;;;;
+;;;; THE PREFIX IS YOURS, NOT THIS FILE'S. Nothing here is named pg-anything:
+;;;; the macros are `open', `exec', `run', `query' and `close', and import's
+;;;; second argument decides what they are called at the call site.
+;;;;
+;;;;     (import "lib/db/postgres.cicili" :pg)    ->  (pg.open db …)
+;;;;     (import "lib/db/postgres.cicili" :db)    ->  (db.open db …)
+;;;;
+;;;; USE ONE. Imported with no prefix these register as `open', `close' and
+;;;; `error' for every Cicili file in the process -- and `open' and `close' are
+;;;; POSIX functions lib/std/c/posix declares. That is the developer's call to
+;;;; make, which is the point, but it is a real collision rather than a
+;;;; theoretical one.
+;;;;
 ;;;; Requires in target: (include <libpq-fe.h>) and -lpq on the link line. The
 ;;;; header is not on the default include path on Debian and Ubuntu -- it is in
 ;;;; /usr/include/postgresql -- so a target usually wants
@@ -17,13 +30,13 @@
 ;;;; and what the macros buy is that the clear happens.
 ;;;;
 ;;;;     (let ((PGconn * db . nil))
-;;;;       (pg-open db "host=/var/run/postgresql dbname=app")
-;;;;       (pg-exec db "CREATE TABLE t (id serial PRIMARY KEY, name text)")
-;;;;       (pg-run  db "INSERT INTO t (name) VALUES ($1)" "ada")
-;;;;       (pg-query db "SELECT id, name FROM t WHERE id > $1" "0"
-;;;;         (row (id (pg-int 0)) (name (pg-text 1)))
+;;;;       (pg.open db "host=/var/run/postgresql dbname=app")
+;;;;       (pg.exec db "CREATE TABLE t (id serial PRIMARY KEY, name text)")
+;;;;       (pg.run  db "INSERT INTO t (name) VALUES ($1)" "ada")
+;;;;       (pg.query db "SELECT id, name FROM t WHERE id > $1" "0"
+;;;;         (row (id (int 0)) (name (text 1)))
 ;;;;         (printf "%d %s\n" id name))
-;;;;       (pg-close db))
+;;;;       (pg.close db))
 ;;;;
 ;;;; PARAMETERS ARE $1, $2 …, NOT `?', and they are all sent as TEXT. That is
 ;;;; libpq's own protocol: PQexecParams takes an array of char*, and the server
@@ -35,8 +48,16 @@
 ;;;; PARAMETERS ARE ALSO THE INJECTION DEFENCE. A value sent as a parameter is
 ;;;; never parsed as SQL, so nothing in it can end the literal it sits in.
 ;;;; Anything a page or a request supplies belongs in $1, not in a string being
-;;;; concatenated -- pg-exec is for SQL a program wrote and pg-run for SQL with
+;;;; concatenated -- exec is for SQL a program wrote and run for SQL with
 ;;;; values in it.
+
+;;; A package of its own, so the renderer helpers below are not added to
+;;; CL-USER and an unprefixed import has a namespace to enter. No :shadow is
+;;; needed: a macro file is read with the case PRESERVED, so `open' and `close'
+;;; here are not Common Lisp's OPEN and CLOSE.
+(DEFPACKAGE :pgsql (:USE :COMMON-LISP))
+
+(IN-PACKAGE :pgsql)
 
 ;;; ------------------------------------------------------------------
 ;;; the declarations
@@ -72,7 +93,7 @@
      ;;; ---- connection --------------------------------------------------
      ;;; PQconnectdb ALWAYS answers a pointer, even when it failed -- the
      ;;; failure is in PQstatus, and a null answer means out of memory. That is
-     ;;; why pg-open checks the status rather than the pointer.
+     ;;; why open checks the status rather than the pointer.
      (decl) (func PQconnectdb    ((const char * conninfo)) (out PGconn *))
      (decl) (func PQfinish       ((PGconn * conn)))
      (decl) (func PQreset        ((PGconn * conn)))
@@ -130,26 +151,26 @@
 ;;; the front end
 ;;; ------------------------------------------------------------------
 
-;;; (pg-open db "host=/var/run/postgresql dbname=app")
+;;; (pg.open db "host=/var/run/postgresql dbname=app")
 ;;;
 ;;; Answers CONNECTION_OK or CONNECTION_BAD, which is PQstatus rather than the
 ;;; pointer: PQconnectdb answers a non-null PGconn even when the connection
 ;;; failed, and a caller testing the pointer would take every failure for a
 ;;; success. A null answer means out of memory, and is CONNECTION_BAD here too.
-(DEFMACRO pg-open (name conninfo)
+(DEFMACRO open (name conninfo)
   `(progn
      (set ,name (PQconnectdb ,conninfo))
      (? (== ,name nil) CONNECTION_BAD (PQstatus ,name))))
 
-(DEFMACRO pg-close (db) `(PQfinish ,db))
-(DEFMACRO pg-error (db) `(PQerrorMessage ,db))
+(DEFMACRO close (db) `(PQfinish ,db))
+(DEFMACRO error (db) `(PQerrorMessage ,db))
 
 ;;; SQL a program wrote, with no values in it: DDL, and a fixed statement.
 ;;; Answers the ExecStatusType, and clears the result before doing so.
 ;;;
-;;; ANYTHING WITH A VALUE IN IT BELONGS IN pg-run. Building SQL by concatenating
+;;; ANYTHING WITH A VALUE IN IT BELONGS IN run. Building SQL by concatenating
 ;;; a value is how injection happens, and this macro cannot tell the difference.
-(DEFMACRO pg-exec (db sql)
+(DEFMACRO exec (db sql)
   (LET ((r (GENSYM "pg_res_")) (st (GENSYM "pg_st_")))
     `(progn
        (letn ((PGresult * ,r . #'(PQexec ,db ,sql))
@@ -158,11 +179,11 @@
          (PQclear ,r)
          ,st))))
 
-;;; (pg-run db "INSERT INTO t (name) VALUES ($1)" "ada")
+;;; (pg.run db "INSERT INTO t (name) VALUES ($1)" "ada")
 ;;;
 ;;; The values are sent as parameters, so nothing in them is parsed as SQL.
 ;;; Answers the ExecStatusType and clears the result.
-(DEFMACRO pg-run (db sql &REST params)
+(DEFMACRO run (db sql &REST params)
   (LET ((r (GENSYM "pg_res_")) (st (GENSYM "pg_st_")) (v (GENSYM "pg_vals_")))
     `(progn
        (letn ((int ,st . 0))
@@ -176,21 +197,21 @@
 ;;; ---- reading a column ---------------------------------------------
 ;;;
 ;;; 0-based in both directions, which is libpq's own numbering, and taken from
-;;; the CURRENT row -- pg-query binds that index for the body. pg-int and
-;;; pg-real convert, because every value arrives as text.
+;;; the CURRENT row -- query binds that index for the body. int and
+;;; real convert, because every value arrives as text.
 (DEFUN pg-col-binding (res tup name form)
   (UNLESS (AND (CONSP form) (SYMBOLP (CAR form)) (= (LENGTH form) 2))
     (ERROR "a row column wants (pg-... index), got ~S" form))
   (LET ((k (SYMBOL-NAME (CAR form))) (i (SECOND form)))
-    (COND ((STRING= k "pg-text") `(const char * ,name . #'(PQgetvalue ,res ,tup ,i)))
-          ((STRING= k "pg-int")  `(int    ,name . #'(atoi (PQgetvalue ,res ,tup ,i))))
-          ((STRING= k "pg-i64")  `(llong  ,name . #'(atoll (PQgetvalue ,res ,tup ,i))))
-          ((STRING= k "pg-real") `(double ,name . #'(atof (PQgetvalue ,res ,tup ,i))))
-          ((STRING= k "pg-null?") `(int   ,name . #'(PQgetisnull ,res ,tup ,i)))
+    (COND ((STRING= k "text") `(const char * ,name . #'(PQgetvalue ,res ,tup ,i)))
+          ((STRING= k "int")  `(int    ,name . #'(atoi (PQgetvalue ,res ,tup ,i))))
+          ((STRING= k "i64")  `(llong  ,name . #'(atoll (PQgetvalue ,res ,tup ,i))))
+          ((STRING= k "real") `(double ,name . #'(atof (PQgetvalue ,res ,tup ,i))))
+          ((STRING= k "null?") `(int   ,name . #'(PQgetisnull ,res ,tup ,i)))
           (T (ERROR "not a column reader: ~S" form)))))
 
-;;; (pg-query db "SELECT id, name FROM t WHERE id > $1" "0"
-;;;   (row (id (pg-int 0)) (name (pg-text 1)))
+;;; (pg.query db "SELECT id, name FROM t WHERE id > $1" "0"
+;;;   (row (id (int 0)) (name (text 1)))
 ;;;   (printf "%d %s\n" id name))
 ;;;
 ;;; A libpq result is a TABLE, not a cursor: the rows are all here already, so
@@ -200,7 +221,7 @@
 ;;; Answers PGRES_TUPLES_OK when the query ran, and the failing status
 ;;; otherwise -- and clears the result either way, which is the reason to use
 ;;; this rather than write the loop out.
-(DEFMACRO pg-query (db sql &REST rest)
+(DEFMACRO query (db sql &REST rest)
   (LET* ((params (LOOP FOR f IN rest WHILE (STRINGP f) COLLECT f))
          (tail   (NTHCDR (LENGTH params) rest))
          (row    (FIRST tail))
@@ -211,7 +232,7 @@
          (n      (GENSYM "pg_n_"))
          (v      (GENSYM "pg_vals_")))
     (UNLESS (AND (CONSP row) (SYMBOLP (CAR row)) (STRING= (SYMBOL-NAME (CAR row)) "row"))
-      (ERROR "pg-query wants a (row (name (pg-... i)) …) clause, got ~S" row))
+      (ERROR "query wants a (row (name (pg-... i)) …) clause, got ~S" row))
     `(progn
        (letn ((int ,st . 0))
          (let ((const char * ,v [] . '{ ,@params ,@(WHEN (NULL params) (LIST 'nil)) }))
