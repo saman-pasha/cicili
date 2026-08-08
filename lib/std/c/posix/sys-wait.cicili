@@ -4,6 +4,15 @@
 ;;;;
 ;;;; pid_t and id_t are declared by sys-types.cicili and are only used
 ;;;; (not repeated) here.
+;;; This file is part of the :std library and shares its package. A library
+;;; owns its namespace instead of borrowing the import prefix's; the full
+;;; explanation is in doc/DOC-C.md, under "A library's package".
+(DEFPACKAGE :std
+  (:USE :COMMON-LISP)
+  (:IMPORT-FROM :COMMON-LISP-USER "import" "generic" "cicili"))
+
+(IN-PACKAGE :std)
+
 
 (DEFMACRO init-macro ()
   `($$$

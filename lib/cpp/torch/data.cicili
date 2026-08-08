@@ -49,6 +49,15 @@
 ;;; ------------------------------------------------------------------
 ;;; raw memory -> tensors
 ;;; ------------------------------------------------------------------
+;;; This file is part of the :torch library and shares its package. A library
+;;; owns its namespace instead of borrowing the import prefix's; the full
+;;; explanation is in doc/DOC-C.md, under "A library's package".
+(DEFPACKAGE :torch
+  (:USE :COMMON-LISP)
+  (:IMPORT-FROM :COMMON-LISP-USER "import" "generic" "cicili"))
+
+(IN-PACKAGE :torch)
+
 
 ;;; a design matrix: ROWS examples of COLS features each
 (DEFMACRO features (buf rows cols)

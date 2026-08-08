@@ -96,6 +96,15 @@
 ;;; The win grows with the tree, which is what a footprint win looks like: at
 ;;; twenty thousand keys everything is in cache and there is nothing to save,
 ;;; and search is a hair slower there for the level counter.
+;;; This file is part of the :std library and shares its package. A library
+;;; owns its namespace instead of borrowing the import prefix's; the full
+;;; explanation is in doc/DOC-C.md, under "A library's package".
+(DEFPACKAGE :std
+  (:USE :COMMON-LISP)
+  (:IMPORT-FROM :COMMON-LISP-USER "import" "generic" "cicili"))
+
+(IN-PACKAGE :std)
+
 
 (generic decl-btree
   (k v t)

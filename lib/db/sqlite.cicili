@@ -51,7 +51,9 @@
 ;;; CL-USER and an unprefixed import has a namespace to enter. No :shadow is
 ;;; needed: a macro file is read with the case PRESERVED, so `open' and `close'
 ;;; here are not Common Lisp's OPEN and CLOSE.
-(DEFPACKAGE :sqlite (:USE :COMMON-LISP))
+(DEFPACKAGE :sqlite
+  (:USE :COMMON-LISP)
+  (:IMPORT-FROM :COMMON-LISP-USER "import" "generic" "cicili"))
 
 (IN-PACKAGE :sqlite)
 

@@ -78,6 +78,15 @@
 ;;;     (matchn ((<> parse either int long) "42")
 ;;;       (right n   n)
 ;;;       (left  err (cast long (- err)))))
+;;; This file is part of the :std library and shares its package. A library
+;;; owns its namespace instead of borrowing the import prefix's; the full
+;;; explanation is in doc/DOC-C.md, under "A library's package".
+(DEFPACKAGE :std
+  (:USE :COMMON-LISP)
+  (:IMPORT-FROM :COMMON-LISP-USER "import" "generic" "cicili"))
+
+(IN-PACKAGE :std)
+
 
 (generic decl-either
   (mod-e e mod-a a)

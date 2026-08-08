@@ -61,6 +61,15 @@
 ;;;; (return-none) below, which is Py_RETURN_NONE -- the incref matters,
 ;;;; because returning Py_None without it is a reference the interpreter will
 ;;;; eventually drop one time too many.
+;;; This file is part of the :python library and shares its package. A library
+;;; owns its namespace instead of borrowing the import prefix's; the full
+;;; explanation is in doc/DOC-C.md, under "A library's package".
+(DEFPACKAGE :python
+  (:USE :COMMON-LISP)
+  (:IMPORT-FROM :COMMON-LISP-USER "import" "generic" "cicili"))
+
+(IN-PACKAGE :python)
+
 
 ;;; ------------------------------------------------------------------
 ;;; (return-none) / (return-true) / (return-false)

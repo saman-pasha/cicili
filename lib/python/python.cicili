@@ -26,6 +26,15 @@
 ;;;; two overlap almost entirely; only the entry point differs.
 ;;;;
 ;;;; cpython first: numpy's declarations are expressed in terms of PyObject.
+;;; This file is part of the :python library and shares its package. A library
+;;; owns its namespace instead of borrowing the import prefix's; the full
+;;; explanation is in doc/DOC-C.md, under "A library's package".
+(DEFPACKAGE :python
+  (:USE :COMMON-LISP)
+  (:IMPORT-FROM :COMMON-LISP-USER "import" "generic" "cicili"))
+
+(IN-PACKAGE :python)
+
 
 (import "./cpython.cicili")
 (import "./numpy.cicili")

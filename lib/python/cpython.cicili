@@ -23,6 +23,15 @@
 ;;;;   NEW      you own it and must Py_DecRef it
 ;;;;   BORROWED you must NOT decref it; it dies with its owner
 ;;;;   STEALS   the callee takes your reference; do not decref it yourself
+;;; This file is part of the :python library and shares its package. A library
+;;; owns its namespace instead of borrowing the import prefix's; the full
+;;; explanation is in doc/DOC-C.md, under "A library's package".
+(DEFPACKAGE :python
+  (:USE :COMMON-LISP)
+  (:IMPORT-FROM :COMMON-LISP-USER "import" "generic" "cicili"))
+
+(IN-PACKAGE :python)
+
 
 ;;; ------------------------------------------------------------------
 ;;; (python-support) -- emit the two functions that make letin* work

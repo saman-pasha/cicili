@@ -1,4 +1,14 @@
 ;;; Safe List Processing (LisP) Solution in C using Haskell thinking model
+;;; This file is part of the :haskell library and shares its package. A library
+;;; owns its namespace instead of borrowing the import prefix's; the full
+;;; explanation is in doc/DOC-C.md, under "A library's package".
+(DEFPACKAGE :haskell
+  (:USE :COMMON-LISP)
+  (:IMPORT-FROM :COMMON-LISP-USER "import" "generic" "cicili"
+                                 "find-subseq" "expand-form<"))
+
+(IN-PACKAGE :haskell)
+
 
 ;; each BoxedList must be defined by this generic
 (generic decl-BoxedList
@@ -316,7 +326,7 @@
     (LET ((len len))
       (IF len
           `((<> pure type) ,buf ,len)
-          (IF (AND (LISTP buf) (EQUAL (CAR buf) 'QUOTE))
+          (IF (AND (LISTP buf) (CICILI:KEY-EQ (CAR buf) 'QUOTE))
               `((<> pure type) (cast (const a []) ,buf) ,(LENGTH (CADR buf)))
               (ERROR (FORMAT NIL "new_BoxedList len required for dynamic array input: ~A" buf))))))
 

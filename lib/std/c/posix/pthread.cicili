@@ -10,6 +10,15 @@
 ;;;; All pthread_*_t types have a real C typedef (to an opaque struct,
 ;;;; union or scalar, platform-dependent), so they are referenced bare,
 ;;;; matching real C usage, the same way FILE and DIR are elsewhere.
+;;; This file is part of the :std library and shares its package. A library
+;;; owns its namespace instead of borrowing the import prefix's; the full
+;;; explanation is in doc/DOC-C.md, under "A library's package".
+(DEFPACKAGE :std
+  (:USE :COMMON-LISP)
+  (:IMPORT-FROM :COMMON-LISP-USER "import" "generic" "cicili"))
+
+(IN-PACKAGE :std)
+
 
 (DEFMACRO init-macro ()
   `($$$

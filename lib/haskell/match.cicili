@@ -1,3 +1,13 @@
+;;; This file is part of the :haskell library and shares its package. A library
+;;; owns its namespace instead of borrowing the import prefix's; the full
+;;; explanation is in doc/DOC-C.md, under "A library's package".
+(DEFPACKAGE :haskell
+  (:USE :COMMON-LISP)
+  (:IMPORT-FROM :COMMON-LISP-USER "import" "generic" "cicili"
+                                 "find-subseq" "expand-form<"))
+
+(IN-PACKAGE :haskell)
+
 
 ;; pattern matching
 ;; data type and arguments expansion
@@ -16,12 +26,12 @@
          (result (REDUCE #'(LAMBDA (x y)
                              (APPEND
                                  (REVERSE (CDR (REVERSE x)))
-                               (LIST (MACROEXPAND `(<> ,(CAR (LAST x)) ,(CAR y))))
+                               (LIST (expand-form< `(<> ,(CAR (LAST x)) ,(CAR y))))
                                (CDR y)))
                    parts))) ;; to mix names separated with ^
     (SETQ case result)
     
-    (LET* ((has-alias (AND (LISTP case) (EQUAL (CAR case) '=)))
+    (LET* ((has-alias (AND (LISTP case) (CICILI:KEY-EQ (CAR case) '=)))
            (data-name (IF has-alias (CADR case) (IF (LISTP data) match-id data)))
            (case (IF has-alias (CDDR case) case))
            (symb (CICILI:EXPAND-MACROS (CAR case)))
@@ -36,8 +46,8 @@
            (is-dptr NIL)
            (case-type 0))
 
-      (WHEN (AND (ATOM symb) (OR (EQUAL symb '*) (EQUAL symb '**)))
-        (WHEN (EQUAL symb '**) (SETQ is-dptr T))
+      (WHEN (AND (ATOM symb) (OR (CICILI:KEY-EQ symb '*) (CICILI:KEY-EQ symb '**)))
+        (WHEN (CICILI:KEY-EQ symb '**) (SETQ is-dptr T))
         (SETQ is-ptr T)
         (SETQ case (CDR case))
         (SETQ symb (CICILI:EXPAND-MACROS (CAR case)))
@@ -54,11 +64,11 @@
               )
             (PUSH `(auto ,data-name . (FUNCTION ,data)) defs)))
       
-      (COND ((AND (LISTP symb) (EQUAL (CAR symb) '\,)) ; tuple \,
+      (COND ((AND (LISTP symb) (CICILI:KEY-EQ (CAR symb) '\,)) ; tuple \,
              (SETQ case-type 1)
              (DOTIMES (i (1- (LENGTH symb))) 
-               (LET ((arg (MACROEXPAND (NTH (1+ i) symb))))
-                 (UNLESS (OR (EQUAL arg '_) (AND (SYMBOLP arg) (EQUAL (CHAR (SYMBOL-NAME arg) 0) #\_)))
+               (LET ((arg (expand-form< (NTH (1+ i) symb))))
+                 (UNLESS (OR (CICILI:KEY-EQ arg '_) (AND (SYMBOLP arg) (EQUAL (CHAR (SYMBOL-NAME arg) 0) #\_)))
                    (LET ((arg-name (make-match-h-arg-name match-id i))
                          (mem-name (LIST '$ data-name (make-data-h-member-name i))))
                      (IF (ATOM arg)
@@ -83,7 +93,7 @@
                                            `(progn (= ,arg-name ,mem-name) true))); assigns
                            (MULTIPLE-VALUE-BIND (in-case-type in-data-name in-symb in-tail in-defs in-assigns in-args in-conds in-dos)
                                (match-case-h-details arg-name
-                                 (IF (OR (EQUAL (CAR arg) '\,) (EQUAL (CAR arg) '\:))
+                                 (IF (OR (CICILI:KEY-EQ (CAR arg) '\,) (CICILI:KEY-EQ (CAR arg) '\:))
                                      (APPEND (LIST arg) (LIST NIL)) (APPEND arg (LIST NIL)))
                                  T)
                              (SETQ defs (APPEND in-defs defs))
@@ -91,22 +101,22 @@
                              (SETQ args (APPEND in-args args))
                              (SETQ dos (APPEND in-dos dos))
                              (WHEN in-conds (SETQ conds (IF conds `(and ,conds ,in-conds) in-conds))))))))))
-             (IF (EQUAL (CAR tail) '<!>)
+             (IF (CICILI:KEY-EQ (CAR tail) '<!>)
                  (PROGN
                    (SETQ <!>found T)
                    (SETQ conds (IF conds `(and ,conds ,(NTH 1 tail)) (NTH 1 tail))))
                  (SETQ conds (IF conds conds 'true))))
 
-            ((AND (LISTP symb) (EQUAL (CAR symb) '\:)) ; list \:
+            ((AND (LISTP symb) (CICILI:KEY-EQ (CAR symb) '\:)) ; list \:
              (SETQ case-type 2)
              (SETQ conds `(== ((\.* hasLen ,data-name) ,data-name ,(1- (LENGTH (CDR symb)))) ,(1- (LENGTH (CDR symb)))))
              (DOTIMES (i (- (LENGTH symb) 1))
                (LET ((prev-arg (make-match-h-item-name match-id (- i 1)))
                      (curr-arg (make-match-h-item-name match-id i))
-                     (arg      (MACROEXPAND (NTH (+ i 1) symb))))
-                 (IF (AND (< i (- (LENGTH symb) 2)) (OR (EQUAL arg '_) (AND (SYMBOLP arg) (EQUAL (CHAR (SYMBOL-NAME arg) 0) #\_))))
+                     (arg      (expand-form< (NTH (+ i 1) symb))))
+                 (IF (AND (< i (- (LENGTH symb) 2)) (OR (CICILI:KEY-EQ arg '_) (AND (SYMBOLP arg) (EQUAL (CHAR (SYMBOL-NAME arg) 0) #\_))))
                      (ERROR (FORMAT NIL "list match destructuring does not support arg ignoring by '_' but last:~%  ~A" case))
-                     (UNLESS (OR (EQUAL arg '_) (AND (SYMBOLP arg) (EQUAL (CHAR (SYMBOL-NAME arg) 0) #\_)))
+                     (UNLESS (OR (CICILI:KEY-EQ arg '_) (AND (SYMBOLP arg) (EQUAL (CHAR (SYMBOL-NAME arg) 0) #\_)))
                        (LET* ((item-name (IF (= i 0)
                                              data-name
                                              (LIST '$ (LIST '-> prev-arg '__h_data) 'Cons
@@ -161,7 +171,7 @@
                                      ))
                                (MULTIPLE-VALUE-BIND (in-case-type in-data-name in-symb in-tail in-defs in-assigns in-args in-conds in-dos)
                                    (match-case-h-details arg-name
-                                     (IF (OR (EQUAL (CAR arg) '\,) (EQUAL (CAR arg) '\:))
+                                     (IF (OR (CICILI:KEY-EQ (CAR arg) '\,) (CICILI:KEY-EQ (CAR arg) '\:))
                                          (APPEND (LIST arg) (LIST NIL)) (APPEND arg (LIST NIL)))
                                      T)
                                  (SETQ defs (APPEND in-defs defs))
@@ -169,7 +179,7 @@
                                  (SETQ args (APPEND in-args args))
                                  (SETQ dos (APPEND  in-dos dos))
                                  (WHEN in-conds (SETQ conds (IF conds `(and ,conds ,in-conds) in-conds)))))))))))
-             (IF (EQUAL (CAR tail) '<!>)
+             (IF (CICILI:KEY-EQ (CAR tail) '<!>)
                  (PROGN
                    (SETQ <!>found T)
                    (SETQ conds (IF conds `(and ,conds ,(NTH 1 tail)) (NTH 1 tail))))
@@ -177,13 +187,13 @@
 
             (T (SETQ case-type 3)
                (DOTIMES (i (1- (LENGTH tail))) ; data type
-                 (LET ((arg (MACROEXPAND (NTH (1+ i) case))))
+                 (LET ((arg (expand-form< (NTH (1+ i) case))))
                    (UNLESS <!>found
-                     (IF (EQUAL arg '<!>)
+                     (IF (CICILI:KEY-EQ arg '<!>)
                          (PROGN
                            (SETQ <!>found T)
                            (SETQ conds (IF conds `(and ,conds ,(NTH (+ i 2) case)) (NTH (+ i 2) case))))
-                         (UNLESS (OR (EQUAL arg '_) (AND (SYMBOLP arg) (EQUAL (CHAR (SYMBOL-NAME arg) 0) #\_)))
+                         (UNLESS (OR (CICILI:KEY-EQ arg '_) (AND (SYMBOLP arg) (EQUAL (CHAR (SYMBOL-NAME arg) 0) #\_)))
                            (LET ((mem-name (LIST '$
                                                  (LIST (IF is-ptr '-> '$) (IF is-dptr (LIST 'cof data-name) data-name) '__h_data)
                                                  symb
@@ -211,7 +221,7 @@
                                    (MULTIPLE-VALUE-BIND (in-case-type in-data-name in-symb in-tail in-defs in-assigns
                                                                       in-args in-conds in-dos)
                                        (match-case-h-details arg-name
-                                         (IF (OR (EQUAL (CAR arg) '\,) (EQUAL (CAR arg) '\:))
+                                         (IF (OR (CICILI:KEY-EQ (CAR arg) '\,) (CICILI:KEY-EQ (CAR arg) '\:))
                                              (APPEND (LIST arg) (LIST NIL)) (APPEND arg (LIST NIL)))
                                          T)
                                      
@@ -232,8 +242,8 @@
               (AND (NULL <!>found) (ATOM symb) (< (LENGTH case) 2)))
         (ERROR (FORMAT NIL "match case wrong definition: ~A -> ~A" case symb)))
 
-      (UNLESS (EQUAL symb 'default)
-        (SETQ conds (IF (AND conds (EQUAL conds 'true))
+      (UNLESS (CICILI:KEY-EQ symb 'default)
+        (SETQ conds (IF (AND conds (CICILI:KEY-EQ conds 'true))
                         (IF (ATOM symb)
                             `(and true (== (,(IF is-ptr '-> '$)
                                              ,(IF is-dptr (LIST 'cof data-name) data-name) __h_ctor)
@@ -246,7 +256,7 @@
                                              ,conds))
                                 `(and true (== (,(IF is-ptr '-> '$) ,(IF is-dptr (LIST 'cof data-name) data-name) __h_ctor)
                                              ,(make-data-h-type-name symb))))
-                            (IF (AND (LISTP symb) (EQUAL (CAR symb) '\:))
+                            (IF (AND (LISTP symb) (CICILI:KEY-EQ (CAR symb) '\:))
                                 conds                   ; list
                                 `(and true ,conds)))))) ; tuple
 
@@ -280,20 +290,20 @@
       
       `(,(IF is-io 'let 'letn) ,(REVERSE defs)
 
-         ,(WHEN (AND conds (LISTP conds) (> (LENGTH conds) 1) (NOT (EQUAL (CADR conds) 'true)))
+         ,(WHEN (AND conds (LISTP conds) (> (LENGTH conds) 1) (NOT (CICILI:KEY-EQ (CADR conds) 'true)))
             (IF (AND assigns conds)
                 (LET ((ctor-cond (AND (LISTP conds) (CAR conds))))
-                  (IF (AND (SYMBOLP ctor-cond) (EQUAL ctor-cond 'and))
+                  (IF (AND (SYMBOLP ctor-cond) (CICILI:KEY-EQ ctor-cond 'and))
                       `(if ,(CADR conds) (block ,@(REVERSE assigns)))
                       `(if ,conds (block ,@(REVERSE assigns)))))
                 `(block ,@(REVERSE assigns))))
 
          ,(IF conds
               `(letn ((bool __h_case_result . (FUNCTION ,conds)))                 
-                 ,(WHEN (AND conds (LISTP conds) (> (LENGTH conds) 1) (EQUAL (CADR conds) 'true))
+                 ,(WHEN (AND conds (LISTP conds) (> (LENGTH conds) 1) (CICILI:KEY-EQ (CADR conds) 'true))
                     (IF (AND assigns conds)
                         (LET ((ctor-cond (AND (LISTP conds) (CAR conds))))
-                          (IF (AND (SYMBOLP ctor-cond) (EQUAL ctor-cond 'and))
+                          (IF (AND (SYMBOLP ctor-cond) (CICILI:KEY-EQ ctor-cond 'and))
                               `(if ,(CADR conds) (block ,@(REVERSE assigns)))
                               `(if ,conds (block ,@(REVERSE assigns)))))
                         `(block ,@(REVERSE assigns))))
@@ -335,7 +345,7 @@
   (LET* ((data data)
          (cases cases)
          (dead (LET ((first (CAR cases)))
-                 (IF (EQUAL (CAR first) 'dead) (CADR first) NIL))))
+                 (IF (CICILI:KEY-EQ (CAR first) 'dead) (CADR first) NIL))))
     (IF dead
         `(letin* ((__h_matchbox ,data))
            (match ((\. get __h_matchbox) __h_matchbox)
@@ -349,7 +359,7 @@
   (LET* ((data data)
          (cases cases)
          (dead (LET ((first (CAR cases)))
-                 (IF (EQUAL (CAR first) 'dead) (CADR first) NIL))))
+                 (IF (CICILI:KEY-EQ (CAR first) 'dead) (CADR first) NIL))))
     (IF dead
         `(letin* ((__h_matchbox ,data))
            (io ((\. get __h_matchbox) __h_matchbox)

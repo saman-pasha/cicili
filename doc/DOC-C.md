@@ -875,19 +875,59 @@ A second argument names the import, and each macro in the file is then registere
 The third argument is passed to the file's `init` function at import time. Without a
 prefix the macros are registered under their bare names.
 
-A macro file may declare **its own package**, with a top-level `DEFPACKAGE` that is
-evaluated as the file is read. That is how a library names a macro after a Common Lisp
-symbol — a package inherits `COMMON-LISP`, so `(DEFMACRO CLASS …)` in it is a lock
-violation on `CL:CLASS` unless the library shadows the name first:
+#### A library's package
+
+**Every library under `lib/` declares its own package**, and a library that spans several
+files shares one across all of them:
 
 ```cicili
-(DEFPACKAGE :parsi (:USE :COMMON-LISP) (:SHADOW "CLASS" "TYPE" "SEQUENCE"))
-(IN-PACKAGE :parsi)
+(DEFPACKAGE :std
+  (:USE :COMMON-LISP)
+  (:IMPORT-FROM :COMMON-LISP-USER "import" "generic" "cicili"))
+
+(IN-PACKAGE :std)
 ```
 
-The options are upper case and the package name is not: a macro file is read with the
-case preserved, so `:use` would read as `:|use|` and `DEFPACKAGE` would reject it, while
-the name has to match the `:parsi` an import writes.
+The `DEFPACKAGE` is evaluated *as the file is read*, so the `IN-PACKAGE` below it has a
+package to enter. The options are upper case and the package name is not: a macro file is
+read with the case preserved, so `:use` would read as `:|use|` and `DEFPACKAGE` would
+reject it.
+
+`:IMPORT-FROM` is not decoration. `import`, `generic` and `cicili` are Lisp definitions
+`builtins.cicili` makes in `CL-USER`, and a macro file is also `CL:LOAD`ed — so a file
+that has entered a package of its own and then writes `(import "./other.cicili")` reads
+`import` as a fresh symbol of its own and dies on an undefined function. Every library
+carries the same clause whether or not it uses one today.
+
+**What the package is for, and what it is not.** It owns the library's *Lisp* definitions
+— its helper `DEFUN`s, its parameters — so two libraries with a helper of the same name no
+longer overwrite each other in `CL-USER`. It does **not** hide the library's macros:
+those are registered in a table keyed by symbol *name* and reached that way from any
+package, which is what lets a prefix be applied to the registered name rather than to the
+symbol.
+
+**The prefix is the importer's, not the library's.** A library that declares `:parsi` can
+still be imported as `:zz`, `:p`, or with no prefix at all; the package name and the
+prefix are unrelated.
+
+**A library may export a Lisp function** for the importer to call — `lib/cpp/memory.cicili`
+exports `shared-ptr<` so a target's `init-macro` can splice declarations. An import that
+takes **no prefix** copies each exported definition onto the importing package's own
+symbol of the same name, so the function is callable unqualified. An import that takes a
+prefix leaves it where it is, and reaches it as `memory:shared-ptr<`. Macro names are
+never exported: they arrive through the prefix mechanism instead.
+
+**Compare symbols by name inside a library.** `CICILI:KEY-EQ` compares two symbols by
+`SYMBOL-NAME`; `EQL` compares identity. A library that inspects a form its *caller* wrote
+— `(IF (EQL (CAAR body) 'out) …)` — is comparing the caller's `out` with its own, and once
+the library has a package of its own those are two symbols with one name. Use `KEY-EQ`.
+For the same reason, expanding a form the caller wrote goes through
+`expand-form<` rather than `CL:MACROEXPAND`, which asks for the macro function of the
+symbol in hand.
+
+A package also lets a library name a macro after a Common Lisp symbol, by shadowing it
+first — `(DEFPACKAGE :parsi (:USE :COMMON-LISP) (:SHADOW "CLASS"))`. Lower-case names
+avoid the question entirely and are what `lib/parsi` uses; see below.
 
 **Name a macro in lower case.** Cicili dispatches a target's forms through a table keyed
 by symbol *name*, so an unprefixed macro is found inside a target whatever package holds

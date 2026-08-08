@@ -1,4 +1,13 @@
 ;;;; macors easing use of pthread in Cicili
+;;; This file is part of the :std library and shares its package. A library
+;;; owns its namespace instead of borrowing the import prefix's; the full
+;;; explanation is in doc/DOC-C.md, under "A library's package".
+(DEFPACKAGE :std
+  (:USE :COMMON-LISP)
+  (:IMPORT-FROM :COMMON-LISP-USER "import" "generic" "cicili"))
+
+(IN-PACKAGE :std)
+
 
 ;;; creates a new thread
 ;;; closure style pthread functionalities
@@ -6,7 +15,11 @@
 (DEFMACRO go* (tid var-list detach &REST body)
   (LET* ((cls (GENSYM "closure"))
          (body body)
-         (out (IF (AND (LISTP (CAR body)) (EQL (CAAR body) 'out)) (LIST (CAR body)) (LIST))))
+         ;; KEY-EQ, not EQL: BODY was written in the calling file and this file
+         ;; has a package of its own, so the caller's `out' and the `out' quoted
+         ;; here are two symbols with one name. Every comparison the compiler
+         ;; makes on Cicili vocabulary is by name for exactly this reason.
+         (out (IF (AND (LISTP (CAR body)) (CICILI:KEY-EQ (CAAR body) 'out)) (LIST (CAR body)) (LIST))))
     (SETQ body (IF (NULL out) body (CDR body)))
     `(letn ((auto ,cls . #'(def-closure ,var-list
                              '(lambda () ,@out

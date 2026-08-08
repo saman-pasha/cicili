@@ -1,4 +1,14 @@
 ;;;; Haskell Thinking Model Implementation for Cicili
+;;; This file is part of the :haskell library and shares its package. A library
+;;; owns its namespace instead of borrowing the import prefix's; the full
+;;; explanation is in doc/DOC-C.md, under "A library's package".
+(DEFPACKAGE :haskell
+  (:USE :COMMON-LISP)
+  (:IMPORT-FROM :COMMON-LISP-USER "import" "generic" "cicili"
+                                 "find-subseq" "expand-form<"))
+
+(IN-PACKAGE :haskell)
+
 
 ;; lambda calculus
 ;; reducible
@@ -17,7 +27,7 @@
 ;; ((f m) n)
 ;; reducible function
 (DEFMACRO fn (macro param &REST body)
-  (LET ((macro (MACROEXPAND macro)))
+  (LET ((macro (expand-form< macro)))
     (WHEN (NULL body) (ERROR (FORMAT NIL "fn without any parameter or body: (~A ~A)" macro param)))
     (LET* ((params (REVERSE (CDR (REVERSE (APPEND (LIST param) body)))))
            (body (CAR (LAST body)))
@@ -100,12 +110,12 @@
 ;; in every step 'in' type is input and 'out' is output
 ;; no >>= can handle more than one bind with two different input or output
 (DEFMACRO >>= (bind in out &REST steps)
-  (LET ((bind  (MACROEXPAND bind))
-        (out   (MACROEXPAND out))
+  (LET ((bind  (expand-form< bind))
+        (out   (expand-form< out))
         (var   (CAR steps))
         (there (CDR steps)))
     (IF there
-        (IF (EQUAL (CAR there) '<-)
+        (IF (CICILI:KEY-EQ (CAR there) '<-)
             `(,bind ,(CADR there)
                     '(closure ((,in ,var))
                       (out ,out)
@@ -118,7 +128,7 @@
 (DEFMACRO function-h-guard (fcond fpath otherwise elsepath &REST guards)
   `(? ,fcond ,fpath ,(IF guards
                          `(function-h-guard ,otherwise ,elsepath ,@guards)
-                         (IF (AND (ATOM otherwise) (EQUAL otherwise 'otherwise))
+                         (IF (AND (ATOM otherwise) (CICILI:KEY-EQ otherwise 'otherwise))
                              elsepath
                              (ERROR (FORMAT NIL "case guards without otherwise"))))))
 
@@ -140,10 +150,10 @@
 
 ;; helpers
 (DEFUN make-data-h-type-name (ct)
-  (INTERN (FORMAT NIL "__h_~A_t" (MACROEXPAND ct))))
+  (INTERN (FORMAT NIL "__h_~A_t" (expand-form< ct))))
 
 (DEFUN make-data-h-ctor-name (ct)
-  (INTERN (FORMAT NIL "__h_~A_ctor" (MACROEXPAND ct))))
+  (INTERN (FORMAT NIL "__h_~A_ctor" (expand-form< ct))))
 
 (DEFUN make-data-h-member-name (number)
   (INTERN (FORMAT NIL "__h_~A_mem" number)))
@@ -155,10 +165,10 @@
   (INTERN (FORMAT NIL "__h_~A_~A_item" id number)))
 
 (DEFUN make-class-h-base-name (ct)
-  (INTERN (FORMAT NIL "class_~A" (MACROEXPAND ct))))
+  (INTERN (FORMAT NIL "class_~A" (expand-form< ct))))
 
 (DEFUN make-box-h-base-name (ct)
-  (INTERN (FORMAT NIL "~A_x" (MACROEXPAND ct))))
+  (INTERN (FORMAT NIL "~A_x" (expand-form< ct))))
 
 (DEFUN make-haslen-h-name (id)
   (INTERN (FORMAT NIL "__h_has_len_~A" id)))

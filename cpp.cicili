@@ -76,7 +76,10 @@
   (COND ((CICILI::QUALIFIED-FORM< ty) (CICILI::QUALIFIED-NAME< (CDR ty)))
         ((AND (LISTP ty) (SYMBOLP (CAR ty))
               (MEMBER (SYMBOL-NAME (CAR ty)) '("t<>" "code") :TEST #'STRING=))
-         (MACROEXPAND ty))
+         ;; expand-form< rather than MACROEXPAND: the name is already matched by
+         ;; SYMBOL-NAME here, and the expansion has to be looked up the same way
+         ;; -- a library with a package of its own writes its own `t<>'.
+         (expand-form< ty))
         ((LISTP ty) `(code ',ty))
         (T ty)))
 

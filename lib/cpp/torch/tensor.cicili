@@ -20,6 +20,15 @@
 ;;;; one signature per name, so where libtorch overloads -- and it overloads
 ;;;; heavily -- the most common form is declared and the others are reached the
 ;;;; same way an undeclared name is. See DOC-CPP.md, Known Limitations.
+;;; This file is part of the :torch library and shares its package. A library
+;;; owns its namespace instead of borrowing the import prefix's; the full
+;;; explanation is in doc/DOC-C.md, under "A library's package".
+(DEFPACKAGE :torch
+  (:USE :COMMON-LISP)
+  (:IMPORT-FROM :COMMON-LISP-USER "import" "generic" "cicili"))
+
+(IN-PACKAGE :torch)
+
 
 ;;; (dims 2 3) -> {2, 3}
 ;;;

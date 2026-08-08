@@ -60,6 +60,15 @@
 ;;; ------------------------------------------------------------------
 ;;; activations
 ;;; ------------------------------------------------------------------
+;;; This file is part of the :torch library and shares its package. A library
+;;; owns its namespace instead of borrowing the import prefix's; the full
+;;; explanation is in doc/DOC-C.md, under "A library's package".
+(DEFPACKAGE :torch
+  (:USE :COMMON-LISP)
+  (:IMPORT-FROM :COMMON-LISP-USER "import" "generic" "cicili"))
+
+(IN-PACKAGE :torch)
+
 
 ;;; Wrap EXPR in the activation named by A. `none' and NIL leave it alone.
 (DEFUN activation< (a expr layer)

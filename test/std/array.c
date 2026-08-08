@@ -224,7 +224,7 @@ void __ciciliL_324 (int ** iarr ) {
   free (((void *)(*iarr )));
 }
 int64_t letn_array_int_G437 (array_int * restrict array , int64_t * sum ) {
-  return ({ /* letn440 */
+  return ({ /* letn441 */
       array_int_item_t * arr  = (array -> arr);
       size_t len  = (array -> len);
       // ----------
@@ -235,9 +235,9 @@ int64_t letn_array_int_G437 (array_int * restrict array , int64_t * sum ) {
       (*sum );
     });
 }
-void take_array_int_G447 (array_int array , int64_t * sum ) {
+void take_array_int_G448 (array_int array , int64_t * sum ) {
   array_int * __moved_array __attribute__((__cleanup__( free_array_int_pointer))) = (& array) ;
-  { /* let451 */
+  { /* let453 */
     array_int_item_t * arr  = (array . arr);
     size_t len  = (array . len);
     // ----------
@@ -367,11 +367,11 @@ int main () {
         int64_t sum  = 0;
         // ----------
         printf ("letn sum1: %lld\n", letn_array_int_G437 ((&arr01 ), (&sum )));
-        take_array_int_G447 (((array_int   )({ /* letnmove458 */
-            array_int moved_var457  = arr01 ;
+        take_array_int_G448 (((array_int   )({ /* letnmove460 */
+            array_int moved_var459  = arr01 ;
             // ----------
             memset ((&arr01 ), 0, sizeof(arr01 ));
-            moved_var457 ;
+            moved_var459 ;
           })), (&sum ));
       }
     });

@@ -23,6 +23,33 @@
 ;;;; output and `struct std::shared_ptr<Net>;' lands in the generated file,
 ;;;; which is not a thing C++ will accept.
 
+;;; THE LIBRARY'S OWN NAMESPACE. Every Cicili library declares one, so the two
+;;; functions below belong to this file rather than to whatever package happened
+;;; to import it. The options are upper case and the name is not: a macro file is
+;;; read with the case preserved (core.lisp:491), so :use would read as :|use|
+;;; and DEFPACKAGE would answer "bogus DEFPACKAGE option", while the name has to
+;;; stay lower case to match the :memory an import writes.
+;;;
+;;; :IMPORT-FROM is what keeps `import', `generic' and `cicili' meaning what they
+;;; mean. Those three are Lisp definitions builtins.cicili makes in CL-USER, and
+;;; a macro file is CL:LOADed -- so a file that switches into its own package and
+;;; then writes (import "./other.cicili") would read `import' as a fresh symbol
+;;; of its own and die on an undefined function. This file writes none of them;
+;;; the clause is here because every library carries the same one, and a library
+;;; that grows an import later should not have to discover this.
+;;;
+;;; :EXPORT is the file's Lisp API, and it is deliberately just these two. An
+;;; import that takes no prefix uses this package in the importing file
+;;; (compiler.lisp), so anything exported here lands in the importer's namespace
+;;; under its bare name -- which is the right trade for a function the importer
+;;; is meant to call, and the wrong one for anything else.
+(DEFPACKAGE :memory
+  (:USE :COMMON-LISP)
+  (:IMPORT-FROM :COMMON-LISP-USER "import" "generic" "cicili")
+  (:EXPORT "shared-ptr<" "make-shared<"))
+
+(IN-PACKAGE :memory)
+
 ;;; The declarations for ONE instantiation of std::shared_ptr.
 ;;;
 ;;; `get' rather than operator-> or operator*, because Cicili reaches a member

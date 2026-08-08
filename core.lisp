@@ -409,6 +409,29 @@
        (char= (char text (1+ i)) #\:)
        (ident-start< (char text (+ i 2)))))
 
+;; The packages Cicili source declared for itself, by name.
+;;
+;; qualify-source< below tells a C++ qualified name from a Lisp one by looking
+;; the prefix up with FIND-PACKAGE: `CICILI::EXPAND-MACROS' is the reader's
+;; business, `torch::nn::Linear' is a name to fold. That test was decisive only
+;; while no Lisp package was named after a C++ namespace -- and a library that
+;; owns a package is named after exactly the thing it binds. Declare :torch and
+;; every `torch::nn::Linear' read afterwards goes to the Lisp reader instead,
+;; which answers "too many colons in nn"; declare :std and the same happens to
+;; every `std::string' in the program.
+;;
+;; A LIBRARY PACKAGE IS NEVER WRITTEN AS A `::' QUALIFIER, which is what makes
+;; remembering them enough. Macros arrive through the import prefix, and the
+;; rare exported function is reached with a single colon (`memory:shared-ptr<'),
+;; which this pass does not touch at all. So a name that a .cicili file declared
+;; is a C++ namespace here and nothing else.
+(defvar *library-packages* (make-hash-table :test #'equal))
+
+(defun library-package< (name) (gethash name *library-packages*))
+
+(defun note-library-package< (designator)
+  (setf (gethash (string designator) *library-packages*) t))
+
 (defun qualify-source< (text)
   (let ((n (length text)))
     (with-output-to-string (out)
@@ -455,7 +478,9 @@
                      ;; characters (`-', `*', `<') that a C++ name never does,
                      ;; so the run is taken to the next delimiter rather than
                      ;; scanned as identifiers.
-                     ((and (qualifier-at< text i n) (find-package head))
+                     ((and (qualifier-at< text i n)
+                           (find-package head)
+                           (not (library-package< head)))
                       (write-string head out)
                       (loop while (and (< i n)
                                        (not (find (char text i) " ()'`,;\"" :test #'char=))
@@ -499,7 +524,10 @@
           ;; uses, and what it shadows -- instead of taking the one
           ;; load-macro-file would have made for it.
           (when (and (listp target) (key-eq (car target) '|DEFPACKAGE|))
-            (eval target))
+            (eval target)
+            ;; and remembered, so qualify-source< above does not mistake the
+            ;; C++ namespace of the same name for a Lisp package qualifier
+            (note-library-package< (cadr target)))
           (let ((pack (in-package-form< target)))
             (when pack (setq *package* pack)))
 		  (PUSH target targets))))

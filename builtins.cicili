@@ -79,6 +79,29 @@
          (__h_stack_push_separator))
       `($$$ )))
 
+;;; MACROEXPAND, dispatched by NAME rather than by symbol identity.
+;;;
+;;; The compiler itself dispatches by name -- *macros* is keyed on SYMBOL-NAME,
+;;; and every comparison in the specifier goes through KEY-EQ -- precisely so a
+;;; form can be built in one package and understood in another. CL:MACROEXPAND
+;;; does not: it asks for the MACRO-FUNCTION of the symbol in hand. So a library
+;;; with a package of its own writes (<> pair int int) as std::|<>|, which has
+;;; no macro function, and MACROEXPAND hands the list straight back --
+;;; `__MAYBE__ref_(<> pair int int)__H_' reaching the back end as a declaration
+;;; name is what that looks like when it fails.
+;;;
+;;; The macro's own package first, CL-USER's second: a library's own macro is
+;;; already the symbol it was defined on, and only a name it borrowed from
+;;; builtins.cicili has to be looked up where builtins defined it.
+(DEFUN expand-form< (form)
+  (IF (AND (CONSP form) (CAR form) (SYMBOLP (CAR form)))
+      (LET ((symb (IF (MACRO-FUNCTION (CAR form))
+                      (CAR form)
+                      (LET ((other (FIND-SYMBOL (SYMBOL-NAME (CAR form)) :COMMON-LISP-USER)))
+                        (AND other (MACRO-FUNCTION other) other)))))
+        (IF symb (MACROEXPAND (CONS symb (CDR form))) form))
+      form))
+
 ;;; (<> free rc a) -> the symbol free_rc_a, which is the C name unchanged.
 ;;;
 ;;; SPECIALISATION IS HOW CICILI SPELLS AN OVERLOAD. There is no overloading: a
@@ -102,7 +125,7 @@
                   (MAPCAR #'(LAMBDA (reso)
                               (IF (SYMBOLP reso)
                                   reso
-                                  (MACROEXPAND reso)))
+                                  (expand-form< reso)))
                           body))))
 
 ;;; letin* -- for values whose destruction is NOT (<> free TYPE).
@@ -233,7 +256,7 @@
            (SETQ body
                  (IF (NULL arg)
                      (subst-out< (NTH i types) body)
-                     (SUBST (IF (AND (LISTP arg) (EQUAL (CAR arg) '<>)) (MACROEXPAND arg) arg)
+                     (SUBST (IF (AND (LISTP arg) (CICILI:KEY-EQ (CAR arg) '<>)) (expand-form< arg) arg)
                             (NTH i types) body)))))
        `($$$ ,@body)))) ; $$$ for replace extracted
 
@@ -242,7 +265,7 @@
     (DOLIST (arg args)
       (LET ((dst (CAR arg))
             (src (CADR arg)))
-        (SETQ body (SUBST (IF (AND (LISTP src) (EQUAL (CAR src) '<>)) (MACROEXPAND src) src) dst body))))
+        (SETQ body (SUBST (IF (AND (LISTP src) (CICILI:KEY-EQ (CAR src) '<>)) (expand-form< src) src) dst body))))
     body))
 
 (DEFMACRO shared-func-name (struct method)
@@ -356,12 +379,12 @@
                                     `(member ,@(REMOVE NIL (LIST const type modifier const-ptr variable array-def)))))
                         captures))
          (body     (LET ((lm (CADR lambda)))
-                     (IF (EQL (CAADDR lm) 'out)
+                     (IF (CICILI:KEY-EQ (CAADDR lm) 'out)
                          (APPEND (LIST (CADDR lm)) vars (CDDDR lm))
                          (APPEND vars (CDDR lm))))))
     `'(def-closure* (struct ,sname
                             (member func routine (((struct ,sname) * context) ,@(CADADR lambda))
-                                    ,(IF (EQL (CAR (CAR body)) 'out) (CAR body) (LIST 'out 'void)))
+                                    ,(IF (CICILI:KEY-EQ (CAR (CAR body)) 'out) (CAR body) (LIST 'out 'void)))
                             (struct ,@members (declare context)))
        (cast (struct ,sname) '{ '(lambda* (<> ,sname ,lname)
                                   (((struct ,sname) * context) ,@(CADADR lambda)) ,@body)
@@ -558,9 +581,27 @@
   (matchable-put< origin cases)
   `($$$ ))
 
+;;; The scrutinee placeholder, replaced by NAME rather than by identity.
+;;;
+;;; `%' is written in one file and substituted in another: def-matchable stores
+;;; the cases as the declaring library wrote them, and this expands them where
+;;; `match' was called. SUBST compares with EQL, which made the two `%' the same
+;;; object only while every macro file shared CL-USER. A library with a package
+;;; of its own writes std::|%|, the substitution silently matched nothing, and
+;;; the placeholder reached the specifier as a symbol -- "unknown struct type:
+;;; NIL, accessed in ($ % data)". Everything else about a matchable is already
+;;; compared by name (KEY-EQ on the case names, SYMBOL-NAME on the origin); this
+;;; was the one place left comparing objects.
+(DEFUN subst-scrutinee< (box tree)
+  (LABELS ((walk (node)
+             (COND ((AND node (SYMBOLP node) (CICILI:KEY-EQ node '%)) box)
+                   ((CONSP node) (CONS (walk (CAR node)) (walk (CDR node))))
+                   (T node))))
+    (walk tree)))
+
 ;;; one written clause -> (test binding body); the payload binds with 'auto
 (DEFUN match-clause< (who spec clause box)
-  (LET ((test (SUBST box '% (NTH 1 spec)))
+  (LET ((test (subst-scrutinee< box (NTH 1 spec)))
         (acc  (NTH 2 spec))
         (name (CAR clause)))
     (IF acc
@@ -568,7 +609,7 @@
           (UNLESS (AND var (SYMBOLP var))
             (ERROR (FORMAT NIL "~A: case ~A carries a value, it needs a binding name: ~A"
                            who name clause)))
-          (LIST test `(auto ,var . (FUNCTION ,(SUBST box '% acc))) (CDDR clause)))
+          (LIST test `(auto ,var . (FUNCTION ,(subst-scrutinee< box acc))) (CDDR clause)))
         (LIST test NIL (CDR clause)))))
 
 ;;; walks the clause list once, checking names and collecting coverage

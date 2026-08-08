@@ -44,6 +44,15 @@
 ;;;; that the docs get wrong or leave stale: PyArray_Zeros and PyArray_FromAny
 ;;;; take a PyArray_Descr *, not a PyObject *, and steal it; and PyArray_Cast
 ;;;; no longer exists in numpy 2 -- use PyArray_CastToType or PyArray_FROM_OTF.
+;;; This file is part of the :python library and shares its package. A library
+;;; owns its namespace instead of borrowing the import prefix's; the full
+;;; explanation is in doc/DOC-C.md, under "A library's package".
+(DEFPACKAGE :python
+  (:USE :COMMON-LISP)
+  (:IMPORT-FROM :COMMON-LISP-USER "import" "generic" "cicili"))
+
+(IN-PACKAGE :python)
+
 
 ;;; (npdims 2 3) -> ((npy_intp[]){2, 3})
 ;;;

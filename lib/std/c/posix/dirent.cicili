@@ -6,6 +6,15 @@
 ;;;; (not repeated) here. `struct dirent` has no C typedef, so it is
 ;;;; referenced as `struct dirent` at use sites, matching real C usage.
 ;;;; DIR has a real C typedef, so it is referenced bare.
+;;; This file is part of the :std library and shares its package. A library
+;;; owns its namespace instead of borrowing the import prefix's; the full
+;;; explanation is in doc/DOC-C.md, under "A library's package".
+(DEFPACKAGE :std
+  (:USE :COMMON-LISP)
+  (:IMPORT-FROM :COMMON-LISP-USER "import" "generic" "cicili"))
+
+(IN-PACKAGE :std)
+
 
 (DEFMACRO init-macro ()
   `($$$

@@ -1,31 +1,41 @@
+;;; This file is part of the :haskell library and shares its package. A library
+;;; owns its namespace instead of borrowing the import prefix's; the full
+;;; explanation is in doc/DOC-C.md, under "A library's package".
+(DEFPACKAGE :haskell
+  (:USE :COMMON-LISP)
+  (:IMPORT-FROM :COMMON-LISP-USER "import" "generic" "cicili"
+                                 "find-subseq" "expand-form<"))
+
+(IN-PACKAGE :haskell)
+
 
 ;; Box
 ;; Sandbox facilitates putting a pointer inside a Rc
 (DEFMACRO decl-box (name ctor &REST ctors)
-  (SETQ name (MACROEXPAND name))
+  (SETQ name (expand-form< name))
   (SETQ name (IF (SYMBOLP name)
                  (LIST name name)
                  (IF (= 2 (LENGTH name))
                      name
                      (ERROR (FORMAT NIL "only match alias and name allowed in data name: ~A" name)))))
   
-  (LET* ((alias (MACROEXPAND (CAR name)))
-         (name (MACROEXPAND (CADR name)))
+  (LET* ((alias (expand-form< (CAR name)))
+         (name (expand-form< (CADR name)))
          (enum-name (INTERN (FORMAT NIL "__h_~A_ctor_t" alias)))
          (fns '())
          (ctors (REMOVE
                  NIL
                  (MAPCAR #'(LAMBDA (ct)
-                             (IF (AND (LISTP ct) (EQUAL (CAR ct) 'func))
+                             (IF (AND (LISTP ct) (CICILI:KEY-EQ (CAR ct) 'func))
                                  (PROGN (PUSH ct fns) NIL)
-                                 (LET ((ct (MACROEXPAND ct)))
+                                 (LET ((ct (expand-form< ct)))
                                    (SETQ ct (IF (SYMBOLP ct)
                                                 (LIST ct ct)
-                                                (IF (EQUAL (CAR ct) '=)
+                                                (IF (CICILI:KEY-EQ (CAR ct) '=)
                                                     (SETQ ct (CDR ct))
                                                     (SETQ ct (CONS (CAR ct) ct)))))
 
-                                   (WHEN (OR (EQUAL (CAR ct) 'free) (EQUAL (CADR ct) 'free))
+                                   (WHEN (OR (CICILI:KEY-EQ (CAR ct) 'free) (CICILI:KEY-EQ (CADR ct) 'free))
                                      (ERROR (FORMAT NIL "use 'free' destructor only inside definition: ~A" ct)))
                                    
                                    (LIST
@@ -61,7 +71,7 @@
        (struct (<> ,name _H_Table)
          (member (<> free ,name t) freeData)
          ,@(MAPCAR #'(LAMBDA (f)
-                       (WHEN (EQUAL (CAR f) 'func)
+                       (WHEN (CICILI:KEY-EQ (CAR f) 'func)
                          (CONS 'member f)))
                    fns))
 
@@ -77,7 +87,7 @@
                              `(struct
                                   ,@(MAPCAR #'(LAMBDA (param rp)
                                                 (SETQ mem-counter (1+ mem-counter))
-                                                (IF (EQUAL (NTH 1 param) 'func)
+                                                (IF (CICILI:KEY-EQ (NTH 1 param) 'func)
                                                     (LET ((cp-rp (COPY-LIST rp)))
                                                       (SETF (NTH 1 cp-rp) (make-data-h-member-name mem-counter))
                                                       `(member ,@cp-rp))
@@ -130,30 +140,30 @@
   ) ; decl-box
 
 (DEFMACRO impl-box (name ctor &REST ctors)
-  (SETQ name (MACROEXPAND name))
+  (SETQ name (expand-form< name))
   (SETQ name (IF (SYMBOLP name)
                  (LIST name name)
                  (IF (= 2 (LENGTH name))
                      name
                      (ERROR (FORMAT NIL "only match alias and name allowed in data name: ~A" name)))))
   
-  (LET* ((alias (MACROEXPAND (CAR name)))
-         (name (MACROEXPAND (CADR name)))
+  (LET* ((alias (expand-form< (CAR name)))
+         (name (expand-form< (CADR name)))
          (free-def NIL)
          (fns '())
          (ctors (REMOVE
                  NIL
                  (MAPCAR #'(LAMBDA (i ct)
-                             (IF (AND (LISTP ct) (EQUAL (CAR ct) 'func))
+                             (IF (AND (LISTP ct) (CICILI:KEY-EQ (CAR ct) 'func))
                                  (PROGN (PUSH ct fns) NIL)
-                                 (LET ((ct (MACROEXPAND ct)))
+                                 (LET ((ct (expand-form< ct)))
                                    (SETQ ct (IF (SYMBOLP ct)
                                                 (LIST ct ct)
-                                                (IF (EQUAL (CAR ct) '=)
+                                                (IF (CICILI:KEY-EQ (CAR ct) '=)
                                                     (SETQ ct (CDR ct))
                                                     (SETQ ct (CONS (CAR ct) ct)))))
                                    
-                                   (WHEN (OR (EQUAL (CAR ct) 'free) (EQUAL (CADR ct) 'free))
+                                   (WHEN (OR (CICILI:KEY-EQ (CAR ct) 'free) (CICILI:KEY-EQ (CADR ct) 'free))
                                      (IF free-def
                                          (ERROR (FORMAT NIL "'free' is defined twice: ~A" ct))
                                          (SETQ free-def ct)))
@@ -198,7 +208,7 @@
              (var (<> ,name _H_Table) table . '{
                   (<> free ,(make-box-h-base-name name))
                   ,@(MAPCAR #'(LAMBDA (f)
-                                (MACROEXPAND `(<> ,(CADR f) ,name)))
+                                (expand-form< `(<> ,(CADR f) ,name)))
                             fns)
                   })
              (return (aof table)))

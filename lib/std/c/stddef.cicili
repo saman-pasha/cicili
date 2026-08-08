@@ -6,6 +6,15 @@
 ;;;; offsetof is a function-like macro that takes a *type* argument
 ;;;; (offsetof(type, member)); Cicili's declaration grammar has no way to
 ;;;; express a type-argument macro, so it is deliberately skipped.
+;;; This file is part of the :std library and shares its package. A library
+;;; owns its namespace instead of borrowing the import prefix's; the full
+;;; explanation is in doc/DOC-C.md, under "A library's package".
+(DEFPACKAGE :std
+  (:USE :COMMON-LISP)
+  (:IMPORT-FROM :COMMON-LISP-USER "import" "generic" "cicili"))
+
+(IN-PACKAGE :std)
+
 
 (DEFMACRO init-macro ()
   `($$$

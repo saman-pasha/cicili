@@ -9,6 +9,15 @@
 ;;;; 8-bit fast types stay 8-bit. The INTN_C()/UINTN_C()/INTMAX_C()/UINTMAX_C()
 ;;;; value-pasting macros take a literal argument and cannot be expressed as
 ;;;; a typedef, so they are deliberately skipped.
+;;; This file is part of the :std library and shares its package. A library
+;;; owns its namespace instead of borrowing the import prefix's; the full
+;;; explanation is in doc/DOC-C.md, under "A library's package".
+(DEFPACKAGE :std
+  (:USE :COMMON-LISP)
+  (:IMPORT-FROM :COMMON-LISP-USER "import" "generic" "cicili"))
+
+(IN-PACKAGE :std)
+
 
 (DEFMACRO init-macro ()
   `($$$

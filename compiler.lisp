@@ -318,8 +318,15 @@
           (format t "macro file: ~A imported inside: '~A' package, from file: ~A, with init args: ~A~%"
                   file-name pack ast-file-name init-args))
         
-        (let ((package *package*))
-          (use-package pack)
+        ;; The CL:LOAD honours the file's own IN-PACKAGE, so the definitions
+        ;; land where the file said they should. There used to be a
+        ;; (use-package pack) around this and a (use-package *package*) after
+        ;; it; both were inert -- a prefix package is made empty here and never
+        ;; exports anything, and the second used the current package in itself.
+        ;; Once a library entered a package of its own the second one started
+        ;; announcing "std also uses the following packages: (std)" on every
+        ;; import, which is how it was noticed.
+        (progn
           (multiple-value-bind (function non-terminating-p)
               (get-macro-character #\| rt)
             (set-macro-character #\| nil nil)
@@ -330,18 +337,69 @@
               ;; `::' in it would be read as a package qualifier
               (with-input-from-string (src (read-source-text< (file-namestring file-name)))
                 (CL:LOAD src)))
-            (set-macro-character #\| function non-terminating-p))
-          (use-package package))
-        
+            (set-macro-character #\| function non-terminating-p)))
+
+        ;; A LIBRARY'S OWN LISP API, brought in by an import that took no
+        ;; prefix. Macros need none of this -- they are registered by name and
+        ;; interned into the importing file's package below -- but a library
+        ;; may also export a plain function for the importer to call, the way
+        ;; lib/cpp/memory exports (shared-ptr< 'Net) for an init-macro to
+        ;; splice. Now that a library owns a package, that function lives in
+        ;; it, and an importer in CL-USER cannot see it without being told.
+        ;;
+        ;; NO PREFIX IS THE CONDITION, and it is the whole distinction: an
+        ;; import that names one is asking for the library's names to stay
+        ;; behind it, and can still reach the function as `memory:shared-ptr<'.
+        ;; An import that names none is asking for them bare, and takes on
+        ;; whatever a bare name collides with -- which is why a library exports
+        ;; its Lisp API and not its macro names.
+        ;;
+        ;; THE DEFINITION IS COPIED ONTO THE IMPORTER'S OWN SYMBOL, rather than
+        ;; the package being USE-PACKAGEd, and the reading order is what forces
+        ;; that. A file is read whole before any of it runs, so by the time this
+        ;; import is reached the importer's (shared-ptr< 'Net) has ALREADY
+        ;; interned |shared-ptr<| in the importing package -- and the forms in
+        ;; hand hold that symbol, not the library's. USE-PACKAGE fails outright
+        ;; on it ("causes name-conflicts"), and SHADOWING-IMPORT would succeed
+        ;; while changing nothing, because the symbol already read is the symbol
+        ;; that will be called. Defining the function on it is the one move that
+        ;; reaches the form that exists.
+        (when (null pack)
+          (let ((own (some #'in-package-form< targets)))
+            (when (and own (not (eq own *package*)))
+              (do-external-symbols (s own)
+                (let ((here (intern (symbol-name s) *package*)))
+                  (unless (eq here s)
+                    (cond ((macro-function s)
+                           (setf (macro-function here) (macro-function s)))
+                          ((fboundp s)
+                           (setf (symbol-function here) (symbol-function s))))
+                    (when (boundp s)
+                      (setf (symbol-value here) (symbol-value s)))))))))
+
         (dolist (target targets)
           (let ((tname (car target)))
             
             (cond ((key-eq tname '|DEFUN|)
                    (when (key-eq (cadr target) '|init|)
-                     (funcall (if (null pack)
-                                  (cadr target)
-                                  (intern (symbol-name (cadr target)) pack))
-                              init-args)))
+                     ;; THE SYMBOL AS READ FIRST, and the prefix's only as a
+                     ;; fallback. The CL:LOAD above defined `init' on whatever
+                     ;; symbol the file's own package gave it, so the symbol
+                     ;; sitting in `target' is the one that is fbound -- always,
+                     ;; and whatever prefix the importing file chose.
+                     ;;
+                     ;; Interning the name in the prefix package instead was
+                     ;; right only while a library had no package of its own,
+                     ;; where the two coincided. A library that declares one and
+                     ;; is imported under any other prefix -- (import "…" :zz)
+                     ;; against a file in :parsi -- died with "the function
+                     ;; |zz|::|init| is undefined", which made the prefix a name
+                     ;; the library dictated rather than one the importer picks.
+                     (let* ((s-name (cadr target))
+                            (fn (if (fboundp s-name)
+                                    s-name
+                                    (and pack (intern (symbol-name s-name) pack)))))
+                       (when fn (funcall fn init-args)))))
                   
                   ((key-eq tname '|DEFMACRO|)
                    (let* ((s-name (nth 1 target))
@@ -390,7 +448,28 @@
                   ((key-eq tname '|import|) t)
                   ;; (load-macro-file (cadr target) (caddr target) (cadddr target) (file-namestring file-name)))
                   
-                  ((key-eq tname '|generic|) t)
+                  ;; A generic expands into a DEFMACRO, which the CL:LOAD above
+                  ;; already evaluated -- on the symbol the LIBRARY'S package
+                  ;; gave it. Registering that symbol under the macro's name is
+                  ;; what makes it reachable from a file that does not share the
+                  ;; package, and every other macro is already reached that way.
+                  ;;
+                  ;; It used to need no registration at all, because a macro
+                  ;; file had no package and (generic decl-vector …) defined
+                  ;; CL-USER's `decl-vector' -- the same symbol the importing
+                  ;; file read. A library with a package of its own defines its
+                  ;; own, and without this the importer died with "unknown
+                  ;; symbol: decl-vector".
+                  ;;
+                  ;; The prefix is applied to the registered NAME, exactly as it
+                  ;; is for DEFMACRO, so (import "…" :std) reaches this one as
+                  ;; `std.decl-vector'.
+                  ((key-eq tname '|generic|)
+                   (let ((s-name (nth 1 target)))
+                     (add-macro (if (null pack)
+                                    (symbol-name s-name)
+                                    (format nil "~A.~A" pack (symbol-name s-name)))
+                                s-name)))
 
                   ;; read-file honoured it while reading `targets', and the CL:LOAD
                   ;; above honoured it for the definitions -- nothing left to do
