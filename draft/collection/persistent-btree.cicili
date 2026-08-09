@@ -74,6 +74,25 @@
   ;; After the List, whose type it names.
   (decl) (func (<> cloneAll Rc type) (((<> List (<> Rc type)) children))
                (out (<> List (<> Rc type))))
+  ;; CHILDREN WITH ONE OF THEM REPLACED, and every box in the answer made here.
+  ;;
+  ;; A LIST DOES NOT OWN ITS ELEMENTS -- its free walks the cells and leaves
+  ;; each payload to whoever put it there. So the obvious spelling,
+  ;;
+  ;;   (letin ((r1   ((<> new Rc type) nchild))
+  ;;           (* r2 ((<> replaceAt List Rc type) children r1 index)))
+  ;;     ((<> cloneAll Rc type) r2))
+  ;;
+  ;; leaks twice over: r1 is moved into r2, so its own cleanup is defeated, and
+  ;; r2's cleanup frees only the cells -- so the box r1 made and the box it
+  ;; displaced are both dropped on the floor, each dragging its subtree. That is
+  ;; the leak valgrind found in the delete path, at seven sites of one shape.
+  ;;
+  ;; Building the list in one pass avoids the intermediate nobody owns.
+  (decl) (func (<> replaceChild Rc type) (((<> List (<> Rc type)) children)
+                                          (type nchild)
+                                          (size_t index))
+               (out (<> List (<> Rc type))))
 
   (decl-class (BTree type)
               (= Branch (<> Branch type) ; Branch is used when split occures
@@ -144,6 +163,23 @@
   (func (<> cloneAll Rc type) (((<> List (<> Rc type)) children))
         (out (<> List (<> Rc type)))
         (return (((<> fmap List Rc type) (<> clone Rc type)) children)))
+
+  ;; Past the end the new child has nowhere to go and is dropped, which leaks
+  ;; it. That is a caller passing an index it has no child for, and leaking is
+  ;; how it says so -- appending would silently reshape the tree instead.
+  (func (<> replaceChild Rc type) (((<> List (<> Rc type)) children)
+                                   (type nchild)
+                                   (size_t index))
+        (out (<> List (<> Rc type)))
+        (return (match children
+                  (* Cons head tail
+                     (case (== index 0)
+                           ((<> Cons (<> Rc type)) ((<> new Rc type) nchild)
+                            ((<> cloneAll Rc type) tail))
+                           otherwise
+                           ((<> Cons (<> Rc type)) ((<> clone Rc type) head)
+                            ((<> replaceChild Rc type) tail nchild (- index 1)))))
+                  (default ((<> Nil (<> Rc type)))))))
   (impl-List (<> List (<> Rc type)) (<> Rc type)
              (\\ -f -wChild (match ((<> deref Rc type) -wChild)
                               (Just child ((<> show type) -f child))
@@ -487,9 +523,7 @@
                               (bt-right
                                (internal
                                 ((<> copy List type pair_t) items)
-                                (letin ((r1   ((<> new Rc type) nchild))
-                                        (* r2 ((<> replaceAt List Rc type) children r1 index)))
-                                  ((<> cloneAll Rc type) r2))))
+                                ((<> replaceChild Rc type) children nchild index)))
                               ;; hasn't got minimum keys
                               otherwise (letin ((* nchild_spent nchild))
                                           (borrowLeft child_items))))
@@ -554,9 +588,7 @@
                                                 (bt-right
                                                  (internal
                                                   ((<> replace List type pair_t) items min current)
-                                                  (letin ((r1   ((<> new Rc type) nchild))
-                                                          (* r2 ((<> replaceAt List Rc type) children r1 (+ index 1))))
-                                                    ((<> cloneAll Rc type) r2)))))
+                                                  ((<> replaceChild Rc type) children nchild (+ index 1)))))
                                               (= passthru default passthru))
                                         (default (bt-left ((<> type ERR_CANT_BORROW) "borrowRI 1"))))
                                       
@@ -626,9 +658,7 @@
                                                 (bt-right
                                                  (internal
                                                   ((<> replace List type pair_t) items min current)
-                                                  (letin ((r1   ((<> new Rc type) nchild))
-                                                          (* r2 ((<> replaceAt List Rc type) children r1 (+ index 1))))
-                                                    ((<> cloneAll Rc type) r2)))))
+                                                  ((<> replaceChild Rc type) children nchild (+ index 1)))))
                                               (= passthru default passthru))
                                         (default (bt-left ((<> type ERR_CANT_BORROW) "borrowRI 8"))))
                                       ;; merge parent down
@@ -664,9 +694,7 @@
                                                     (bt-right
                                                      (internal
                                                       ((<> replace List type pair_t) items max current)
-                                                      (letin ((r1   ((<> new Rc type) nchild))
-                                                              (* r2 ((<> replaceAt List Rc type) children r1 index)))
-                                                        ((<> cloneAll Rc type) r2)))))
+                                                      ((<> replaceChild Rc type) children nchild index))))
                                                   (= passthru default passthru))
                                             (default (bt-left ((<> type ERR_CANT_BORROW) "borrowRI 12"))))
                                           ;; try right
@@ -680,9 +708,7 @@
                                                     (bt-right
                                                      (internal
                                                       ((<> replace List type pair_t) items max current)
-                                                      (letin ((r1   ((<> new Rc type) nchild))
-                                                              (* r2 ((<> replaceAt List Rc type) children r1 index)))
-                                                        ((<> cloneAll Rc type) r2)))))
+                                                      ((<> replaceChild Rc type) children nchild index))))
                                                   (= passthru default passthru))
                                             (default (bt-left ((<> type ERR_CANT_BORROW) "borrowRI 13"))))
                                           ;; try right
@@ -799,9 +825,7 @@
                                                  (default (bt-right
                                                            (internal
                                                             ((<> copy List type pair_t) items)
-                                                            (letin ((r1   ((<> new Rc type) nchild))
-                                                                    (* r2 ((<> replaceAt List Rc type) children r1 index)))
-                                                              ((<> cloneAll Rc type) r2))))))
+                                                            ((<> replaceChild Rc type) children nchild index)))))
                                           (= passthru default passthru))
                                        (default -> ((<> deleteWithParent type) tree
                                                     (? (> index 0) (- index 1) index)
@@ -868,9 +892,7 @@
                                                      (default (bt-right
                                                                (internal
                                                                 ((<> copy List type pair_t) items)
-                                                                (letin ((r1   ((<> new Rc type) nchild))
-                                                                        (* r2 ((<> replaceAt List Rc type) children r1 index)))
-                                                                  ((<> cloneAll Rc type) r2))))))
+                                                                ((<> replaceChild Rc type) children nchild index)))))
                                               (= passthru default passthru))
                                            (default -> ((<> deleteWithParent type) tree (- index 1) index tr skey callback)
                                                     ;; successful deletion in child
