@@ -17,12 +17,12 @@
 ;;; time, and nothing is freed under anyone -- which is the whole claim the
 ;;; refcount makes.
 ;;;
-;;; THE PAYLOAD IS A PAIR OF ints, not a string. A haskell Tuple stores its
-;;; fields BY VALUE and a std string is (non-copy), so a (Tuple string int)
-;;; cannot be built at all -- the same refusal test/haskell/word-count ran into
-;;; with List_string. The old test got away with it because String was a box.
-;;; What is under test here is the refcount on the spine, and an int pair
-;;; exercises that exactly as well.
+;;; THE PAYLOAD IS A PAIR OF ints, and not because a string could not go there.
+;;; A (Tuple string int) builds and runs through this tree; what is still
+;;; refused is the List API that would carry one -- push, insert, replace and
+;;; wrap take their item by value, and a non-copy item cannot be a by-value
+;;; parameter. What is under test here is the refcount on the spine, and an int
+;;; pair exercises that exactly as well.
 (import "../../draft/collection/persistent-btree.cicili")
 
 (source "btree_persistent.c"
