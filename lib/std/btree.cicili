@@ -1,7 +1,7 @@
 ;;;; Cicili std btree
 ;;; an ordered map -- keys sorted, every operation logarithmic
 ;;;
-;;; The API is draft/collection/persistent-btree.cicili's, brought over to the
+;;; The API is lib/std/haskell/persistent-btree.cicili's, brought over to the
 ;;; std idiom. Two things changed on the way:
 ;;;
 ;;;   * that one is PERSISTENT -- insert returns a new tree sharing structure

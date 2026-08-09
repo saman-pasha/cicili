@@ -40,7 +40,7 @@
 ;;;
 ;;; It is imported here rather than being an optional layer because these are
 ;;; Cicili's own facilities, not an alternative to them: the `data' machinery is
-;;; what draft/collection/persistent-btree.cicili is written in, and until this
+;;; what lib/std/haskell/persistent-btree.cicili is written in, and until this
 ;;; line existed nothing could compile that file at all.
 ;;;
 ;;; The two names that look duplicated are not. `Maybe' is the ADT and `maybe'

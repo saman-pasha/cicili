@@ -181,7 +181,7 @@
 ;; whichever it is, so the distinction the marker drew no longer exists.
 ;;
 ;; Dropping it rather than rejecting it is what keeps the corpus that predates
-;; the change readable: draft/collection/persistent-btree alone writes it 36
+;; the change readable: lib/std/haskell/persistent-btree alone writes it 36
 ;; times, and the haskell tests and benchmarks throughout.
 (DEFMACRO letin (var-list &REST body)
   `(letn ,(APPLY 'APPEND

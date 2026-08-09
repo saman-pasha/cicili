@@ -29,6 +29,10 @@
 ;; borrow. The header of the file says why it is not the same generic.
 (import "./ownlist.cicili")
 (import "./range.cicili")
+;; the persistent B-Tree: a haskell class whose children are shared subtrees
+;; held behind std rc. It was a draft until it compiled, ran and came back clean
+;; under valgrind, which it now does -- test/std/btree-persistent.
+(import "./persistent-btree.cicili")
 (import "./monoid.cicili")
 (import "./functor.cicili")
 (import "./applicative.cicili")

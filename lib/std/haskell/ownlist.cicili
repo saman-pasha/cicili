@@ -14,7 +14,7 @@
 ;;;;
 ;;;; The List next door does not own what it holds. Its free walks the cells and
 ;;;; leaves each payload to whoever put it there, and that is right for what
-;;;; uses it: draft/collection/persistent-btree holds its children in one and
+;;;; uses it: lib/std/haskell/persistent-btree holds its children in one and
 ;;;; frees them itself, and is valgrind-clean.
 ;;;;
 ;;;; Making that List own its elements is not a matter of freeing them in the

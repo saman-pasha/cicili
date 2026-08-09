@@ -18,12 +18,11 @@
 ;;; so merging them with 2>&1 interleaves them mid-token and loses lines to the
 ;;; naked eye. Redirect them separately when counting anything.
 ;;;
-;;; It builds on draft/collection/persistent-btree now. The btree it used to
+;;; It builds on lib/std/haskell/persistent-btree now. The btree it used to
 ;;; import is gone, along with the haskell Cell and String its payload was made
 ;;; of; what survived is the haskell Arc, which is the whole point of this file
 ;;; -- a refcount behind a mutex, handing the payload to a callback under it.
 
-(import "draft/collection/persistent-btree.cicili")
 (import "lib/std/pthread/pthread.cicili")
 
 (source "concurrent_btree.c"

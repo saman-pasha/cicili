@@ -103,12 +103,12 @@
 
 
 ;; The BoxedList functor is gone with BoxedList. decl-Functor-List, which
-;; draft/collection/persistent-btree.cicili uses, is untouched.
+;; lib/std/haskell/persistent-btree.cicili uses, is untouched.
 
 
 ;; The Vector Functor is gone with the Vector -- fmap over a boxed buffer was
 ;; the one instance that needed the box mechanic. decl-Functor-List is the one
-;; draft/collection/persistent-btree.cicili uses and it is untouched.
+;; lib/std/haskell/persistent-btree.cicili uses and it is untouched.
 
 ;; Maybe Functor
 (generic decl-Functor-Maybe

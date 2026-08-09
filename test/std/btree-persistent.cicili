@@ -1,4 +1,4 @@
-;;; test draft/collection/persistent-btree.cicili on std rc
+;;; test lib/std/haskell/persistent-btree.cicili on std rc
 ;;;
 ;;; A PERSISTENT tree shares subtrees between versions: an insert copies the
 ;;; path it touches and leaves the rest alone, so one node belongs to several
@@ -23,7 +23,6 @@
 ;;; wrap take their item by value, and a non-copy item cannot be a by-value
 ;;; parameter. What is under test here is the refcount on the spine, and an int
 ;;; pair exercises that exactly as well.
-(import "../../draft/collection/persistent-btree.cicili")
 
 (source "btree_persistent.c"
   ;; no :haskell -- that flag linked haskell.o, and the layer is part of std now

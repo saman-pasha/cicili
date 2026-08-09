@@ -954,9 +954,21 @@
                                                                      ;; SHRINK: the tree becomes its only child. The clone
                                                      ;; is what keeps that child alive past the parent's
                                                      ;; free -- `deref' only borrows, so the count has to
-                                                     ;; be bumped before the payload is handed on. The
-                                                     ;; clone's own box is not freed here; whether that
-                                                     ;; matters is what the valgrind run answers.
+                                                     ;; be bumped before the payload is handed on.
+                                                     ;;
+                                                     ;; THE CLONE'S BOX LEAKS, 32 bytes a shrink, and the
+                                                     ;; concurrent benchmark is where that shows: eight
+                                                     ;; boxes over two thousand operations. The SUBTREE
+                                                     ;; does not leak -- the caller owns chtr and frees it
+                                                     ;; -- so what is lost is the box and its count cell.
+                                                     ;;
+                                                     ;; It cannot be freed here: free_Rc drops the count
+                                                     ;; with it, and the count is the only thing holding
+                                                     ;; the child up while the parent goes. Closing it
+                                                     ;; wants a `take' on rcbox -- hand the payload out
+                                                     ;; and empty the box without destroying what it held
+                                                     ;; -- which is sound exactly when the box is sole,
+                                                     ;; and here it is.
                                                      (* Cons head -> ((<> deref Rc type) ((<> clone Rc type) head))
                                                                         (Just chtr (letin ((* ntr_spent ntr))
                                                                                      (bt-right chtr)))
