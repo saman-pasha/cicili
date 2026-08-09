@@ -1,0 +1,207 @@
+;;;; lib/net/curl.cicili over a REAL TLS connection
+;;;;
+;;;; test/c/curl.cicili proves the binding against file:// URLs, which reach
+;;;; every part of the easy handle except the one that makes https different:
+;;;; the handshake, and the decision about whether to trust who answered. This
+;;;; one covers that, and it needs a server to do it -- so it starts one.
+;;;;
+;;;; A SELF-SIGNED CERTIFICATE IS THE WHOLE POINT rather than a shortcut. The
+;;;; interesting behaviour of a TLS client is what it does with a certificate
+;;;; it has no reason to trust, and a self-signed one is the cheapest way to
+;;;; have both answers available: with the certificate named as the CA the
+;;;; connection must succeed, without it the same connection must fail with
+;;;; CURLE_PEER_FAILED_VERIFICATION. A test against a real public host can
+;;;; only ever show the first.
+;;;;
+;;;; IT SKIPS RATHER THAN FAILS when openssl or python3 is missing, or when the
+;;;; port is taken -- those are facts about the machine, not about the binding,
+;;;; and a suite that goes red for them teaches people to ignore it.
+;;;;
+;;;; Run:  sh test/run.sh test/c/curl-tls
+
+(source "curl-tls.c"
+  (make :std #t :compile #t :link ("-lcurl-tls.o" "-lcurl" "-o" "curl_tls_test"))
+
+  (include <curl/curl.h>)
+  (import "lib/net/curl.cicili" :cu)
+
+  (cu.impl-buffer)
+
+  (var int bad . 0)
+  (var const char * DIR   . "/tmp/cicili-curl-tls")
+  (var const char * CERT  . "/tmp/cicili-curl-tls/cert.pem")
+  (var const char * URL   . "https://localhost:18443/payload")
+  (var const char * BODY  . "tls payload\n")
+
+  (func check ((const char * what) (llong got) (llong want))
+        (if (== got want)
+            (printf "ok   %-46s %lld\n" what got)
+          (block (printf "FAIL %-46s got %lld want %lld\n" what got want) (++ bad))))
+
+  (func check_str ((const char * what) (const char * got) (const char * want))
+        (if (and (!= got nil) (== 0 (strcmp got want)))
+            (printf "ok   %-46s %s\n" what what)
+          (block (printf "FAIL %-46s got '%s' want '%s'\n" what
+                         (? (== got nil) "(null)" got) want)
+                 (++ bad))))
+
+  ;;; ------------------------------------------------------------------
+  ;;; the server
+  ;;; ------------------------------------------------------------------
+
+  ;;; A key, a self-signed certificate for localhost, and the file to serve.
+  ;;; The SAN matters: without it libcurl's host check fails for a reason that
+  ;;; has nothing to do with the CA, and the two failures would be
+  ;;; indistinguishable below.
+  (func make_cert () (out int)
+        (let ((char cmd [1024]))
+          (snprintf cmd (sizeof cmd) "mkdir -p %s 2>/dev/null" DIR)
+          (if (!= 0 (system cmd)) (return 0))
+          ;; ONE STRING, NOT THREE. C concatenates adjacent literals; Cicili
+          ;; emits an argument list, so "a" "b" would reach snprintf as a
+          ;; format and an argument rather than as one format.
+          (snprintf cmd (sizeof cmd) "openssl req -x509 -newkey rsa:2048 -keyout %s/key.pem -out %s -days 1 -nodes -subj /CN=localhost -addext subjectAltName=DNS:localhost,IP:127.0.0.1 >/dev/null 2>&1" DIR CERT)
+          (if (!= 0 (system cmd)) (return 0))
+          (snprintf cmd (sizeof cmd) "printf '%s' > %s/payload" BODY DIR)
+          (return (? (== 0 (system cmd)) 1 0))))
+
+  ;;; python3's http.server with a TLS socket wrapped round it. Written to a
+  ;;; file and backgrounded, with its pid kept so it can be stopped again --
+  ;;; a test that leaves a listener behind breaks the next run of itself.
+  (func start_server () (out int)
+        (let ((char cmd [2048]))
+          (snprintf cmd (sizeof cmd) "cat > %s/serve.py <<'PYEOF'\nimport http.server, ssl\nsrv = http.server.HTTPServer(('127.0.0.1', 18443), http.server.SimpleHTTPRequestHandler)\nctx = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)\nctx.load_cert_chain('%s', '%s/key.pem')\nsrv.socket = ctx.wrap_socket(srv.socket, server_side=True)\nsrv.serve_forever()\nPYEOF\ncd %s && python3 serve.py >/dev/null 2>&1 & echo $! > %s/pid\ncd %s && python3 -m http.server 18444 --bind 127.0.0.1 >/dev/null 2>&1 & echo $! > %s/pid2" DIR CERT DIR DIR DIR DIR DIR)
+          (if (!= 0 (system cmd)) (return 0))
+          ;; Wait for the listener rather than sleeping a guess -- and wait in
+          ;; PYTHON, not in the shell. `exec 3<>/dev/tcp/…' is a bash feature
+          ;; and system() runs /bin/sh, which is dash here: the probe answered
+          ;; "nothing came up" against a server that was running perfectly.
+          ;; python3 is already a requirement two lines up, so it costs nothing.
+          (let ((char wait [1024]))
+            (snprintf wait (sizeof wait) "cat > %s/wait.py <<'PYEOF'\nimport socket, sys, time\nfor port in (18443, 18444):\n    for _ in range(40):\n        try:\n            socket.create_connection(('127.0.0.1', port), 0.25).close()\n            break\n        except OSError:\n            time.sleep(0.25)\n    else:\n        sys.exit(1)\nsys.exit(0)\nPYEOF\npython3 %s/wait.py" DIR DIR)
+            (return (? (== 0 (system wait)) 1 0)))))
+
+  (func stop_server ()
+        (let ((char cmd [512]))
+          (snprintf cmd (sizeof cmd) "kill $(cat %s/pid) $(cat %s/pid2) 2>/dev/null; rm -rf %s" DIR DIR DIR)
+          (system cmd)))
+
+  (func have ((const char * tool)) (out int)
+        (let ((char cmd [256]))
+          (snprintf cmd (sizeof cmd) "command -v %s >/dev/null 2>&1" tool)
+          (return (? (== 0 (system cmd)) 1 0))))
+
+  ;;; ------------------------------------------------------------------
+
+  (main
+    ;; A libcurl with no TLS answers CURLE_UNSUPPORTED_PROTOCOL to every
+    ;; https:// URL, and nothing about a successful link says which one this is.
+    (check "this libcurl was built with TLS" (cast llong (cu.has-ssl)) 1)
+    (printf "     backend: %s\n" (cu.ssl-version))
+
+    (if (or (== 0 (have "openssl")) (== 0 (have "python3")))
+        (block
+          (printf "skip -- openssl and python3 are needed to raise a TLS server\n")
+          (return 0)))
+    (if (== 0 (make_cert))
+        (block (printf "skip -- could not make a self-signed certificate\n") (return 0)))
+    (if (== 0 (start_server))
+        (block (printf "skip -- nothing came up on 127.0.0.1:18443\n")
+               (stop_server)
+               (return 0)))
+
+    (curl_global_init CURL_GLOBAL_DEFAULT)
+
+    (cu.with h
+      ;; ---- the certificate is not trusted, and that is an error ---------
+      ;; FIRST, because it is the check that would silently pass if the
+      ;; verification were off by default -- and it is the one that matters.
+      (let ((cu_buf body . '{ nil 0 }))
+        (check "an untrusted certificate is refused"
+               (cast llong (cu.get h body URL (timeout 10)))
+               (cast llong CURLE_PEER_FAILED_VERIFICATION))
+        (check "and nothing was written" (cast llong ($ body len)) 0)
+        (cu.free-buffer body))
+      (cu.reset h)
+
+      ;; ---- naming it as the CA makes the same connection succeed --------
+      (let ((cu_buf body . '{ nil 0 }))
+        (check "trusting it, the transfer succeeds"
+               (cast llong (cu.get h body URL (ca-info CERT) (timeout 10))) 0)
+        (check_str "and the body arrived" ($ body data) BODY)
+
+        (cu.info h (status code) (tls-time tls) (total-time total) (connect-time conn)
+                   (verify-result vr) (scheme s) (primary-port port)
+          (check "HTTP 200" (cast llong code) 200)
+          ;; THE ONE THAT PROVES TLS HAPPENED. Reading the URL back only says
+          ;; what was asked for; APPCONNECT_TIME is zero unless a handshake
+          ;; completed, so a non-zero one cannot come from a plain connection.
+          (check "the TLS handshake has a time" (cast llong (> tls 0.0)) 1)
+          ;; and it sits where a handshake has to: after the TCP connection
+          ;; was made and before the transfer finished
+          (check "handshake lands between connect and done"
+                 (cast llong (and (>= tls conn) (<= tls total))) 1)
+          (check "verify-result is clean" (cast llong vr) 0)
+          (check_str "scheme is HTTPS" s "HTTPS")
+          (check "and the port is the one asked for" (cast llong port) 18443))
+        (cu.free-buffer body))
+      (cu.reset h)
+
+      ;; ---- turning verification off also works, and says so -------------
+      ;; This is what a caller writes against a development server, and it is
+      ;; worth having in a test so that its cost is visible: the transfer below
+      ;; succeeds against a certificate nobody vouched for.
+      (let ((cu_buf body . '{ nil 0 }))
+        (check "verification off accepts anything"
+               (cast llong (cu.get h body URL (verify-peer 0) (verify-host 0) (timeout 10))) 0)
+        (check_str "body still arrives" ($ body data) BODY)
+        (cu.free-buffer body))
+      (cu.reset h)
+
+      ;; ---- a floor on the protocol version ------------------------------
+      ;; TLS 1.2 is the sensible floor and this server speaks 1.3, so asking
+      ;; for either must still connect. It is the option reaching libcurl that
+      ;; is being checked, not the negotiation.
+      (let ((cu_buf body . '{ nil 0 }))
+        (check "TLS 1.2 floor still connects"
+               (cast llong (cu.get h body URL (ca-info CERT)
+                                   (tls-version CURL_SSLVERSION_TLSv1_2) (timeout 10))) 0)
+        (cu.free-buffer body))
+      (cu.reset h)
+
+      ;; ---- a wrong pin fails even though the certificate is trusted -----
+      ;; Pinning is the only option here that refuses a connection libcurl
+      ;; would otherwise be happy with, which makes it the clearest evidence
+      ;; that the option is really reaching the library.
+      (let ((cu_buf body . '{ nil 0 }))
+        (check "a wrong public-key pin is refused"
+               (cast llong (!= CURLE_OK
+                               (cu.get h body URL (ca-info CERT)
+                                       (pin "sha256//AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=")
+                                       (timeout 10))))
+               1)
+        (cu.free-buffer body))
+      (cu.reset h)
+
+      ;; ---- the same request without TLS ---------------------------------
+      ;; THE CHECK THAT MAKES tls-time MEAN ANYTHING. Plain HTTP over a real
+      ;; socket: it connects, so connect-time is set, and there is no
+      ;; handshake, so tls-time is not. Against a file:// URL both would be
+      ;; zero, and reading CONNECT_TIME where APPCONNECT_TIME was meant looked
+      ;; identical -- it passed this whole suite until this replaced it.
+      (let ((cu_buf body . '{ nil 0 }))
+        (check "plain HTTP to the same files"
+               (cast llong (cu.get h body "http://127.0.0.1:18444/payload" (timeout 10))) 0)
+        (check_str "and the body arrived over it" ($ body data) BODY)
+        (cu.info h (tls-time tls) (connect-time conn)
+          (check "it connected" (cast llong (> conn 0.0)) 1)
+          (check "and shook no hands" (cast llong (== tls 0.0)) 1))
+        (cu.free-buffer body)))
+
+    (curl_global_cleanup)
+    (stop_server)
+
+    (if (== bad 0)
+        (printf "\ncurl over TLS: all ok\n")
+      (printf "\ncurl over TLS: %d FAILED\n" bad))
+    (return bad)))

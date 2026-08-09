@@ -69,6 +69,47 @@
 ;;;;           (cu.free-buffer body)))
 ;;;;       (curl_global_cleanup))
 ;;;;
+;;;; ------------------------------------------------------------------
+;;;; HTTPS
+;;;; ------------------------------------------------------------------
+;;;;
+;;;; NOTHING SPECIAL IS NEEDED. The scheme is in the URL and libcurl does the
+;;;; rest: (cu.get h body "https://…") verifies the peer against the system
+;;;; roots and fails if it cannot, which is the right default and is libcurl's
+;;;; rather than this file's. What is here is for programs that have something
+;;;; to say about the connection:
+;;;;
+;;;;     (cu.get h body "https://api.example.org/v1/price"
+;;;;             (ca-info "/etc/ssl/certs/ca-bundle.crt")  ; these roots, not the system's
+;;;;             (tls-version CURL_SSLVERSION_TLSv1_2)     ; a floor, not a ceiling
+;;;;             (pin "sha256//K87o…=")                    ; this key, or nobody
+;;;;             (timeout 10))
+;;;;
+;;;;     (cu.info h (status code) (tls-time tls) (verify-result vr)
+;;;;       …)
+;;;;
+;;;; tls-time IS THE ONE TO KNOW: CURLINFO_APPCONNECT_TIME is the moment the
+;;;; handshake finished and is zero when there was not one, so it is the only
+;;;; honest answer to "did this really go over TLS". Reading the URL back says
+;;;; what was asked for, not what happened.
+;;;;
+;;;; (cu.verify-peer 0) TURNS THE CHECK OFF and is spelled out rather than
+;;;; hidden because it should be conspicuous in a diff. It makes every
+;;;; certificate acceptable, including one an attacker minted a second ago.
+;;;; For a development server, name its certificate with (ca-info …) instead --
+;;;; that trusts exactly one thing, which is what was meant.
+;;;;
+;;;; A libcurl BUILT WITHOUT TLS links perfectly and answers
+;;;; CURLE_UNSUPPORTED_PROTOCOL to every https:// URL. (cu.has-ssl) is the way
+;;;; to find out before the first request rather than after it, and
+;;;; (cu.ssl-version) names the backend -- "OpenSSL/3.0.13".
+;;;;
+;;;; test/c/curl-tls.cicili proves all of this against a real handshake: it
+;;;; raises a TLS server with a self-signed certificate and checks that the
+;;;; connection FAILS without (ca-info …) and succeeds with it, that a wrong
+;;;; pin is refused even when the certificate is trusted, and that tls-time is
+;;;; set for https and zero for plain http on the same files.
+;;;;
 ;;;; WHAT IS NOT HERE: the multi and share interfaces. They are a different
 ;;;; shape -- a poll loop and a lock callback -- and a front end for one nobody
 ;;;; has written a program against would be guesswork. A target that needs
@@ -166,6 +207,40 @@
      (typedef int CURLOPT_HTTPGET)
      (typedef int CURLOPT_POST)
 
+     ;;; ---- TLS ----
+     ;;; https:// works through the same easy handle as everything else -- the
+     ;;; scheme is in the URL and libcurl does the rest -- so none of these are
+     ;;; needed to make a request. They are here for the four things a program
+     ;;; that CARES about the connection has to be able to say: which roots to
+     ;;; trust, which certificate to present, how new a protocol to insist on,
+     ;;; and whether to check at all.
+     (typedef int CURLOPT_SSLCERT)
+     (typedef int CURLOPT_SSLCERTTYPE)
+     (typedef int CURLOPT_SSLKEY)
+     (typedef int CURLOPT_SSLKEYTYPE)
+     (typedef int CURLOPT_KEYPASSWD)
+     (typedef int CURLOPT_SSLVERSION)
+     (typedef int CURLOPT_SSL_CIPHER_LIST)
+     (typedef int CURLOPT_SSL_VERIFYSTATUS)
+     (typedef int CURLOPT_PINNEDPUBLICKEY)
+     (typedef int CURLOPT_CERTINFO)
+     (typedef int CURLOPT_HTTP_VERSION)
+
+     ;;; The floor, not the ceiling: SSLVERSION names the LOWEST version
+     ;;; acceptable, and libcurl still negotiates the highest both ends do.
+     ;;; TLS 1.0 and 1.1 are deprecated and refused by most servers, so
+     ;;; CURL_SSLVERSION_TLSv1_2 is the sensible floor and _TLSv1_3 the strict
+     ;;; one. DEFAULT means whatever this libcurl considers safe today.
+     (typedef long CURL_SSLVERSION_DEFAULT)
+     (typedef long CURL_SSLVERSION_TLSv1_2)
+     (typedef long CURL_SSLVERSION_TLSv1_3)
+
+     ;;; HTTP/2 needs TLS in practice: _2TLS asks for it over https and stays
+     ;;; on 1.1 for plain http, which is the setting almost everyone wants.
+     (typedef long CURL_HTTP_VERSION_1_1)
+     (typedef long CURL_HTTP_VERSION_2TLS)
+     (typedef long CURL_HTTP_VERSION_2_0)
+
      ;;; ---- infos ----
      (typedef int CURLINFO_RESPONSE_CODE)
      (typedef int CURLINFO_EFFECTIVE_URL)
@@ -179,6 +254,15 @@
      (typedef int CURLINFO_SIZE_UPLOAD_T)
      (typedef int CURLINFO_SPEED_DOWNLOAD_T)
      (typedef int CURLINFO_HTTP_VERSION)
+     ;;; APPCONNECT_TIME is the moment the TLS handshake finished, and is 0 on
+     ;;; a plain http:// transfer -- which makes it the honest answer to "did
+     ;;; this actually go over TLS", where reading the URL back only says what
+     ;;; was asked for.
+     (typedef int CURLINFO_APPCONNECT_TIME)
+     (typedef int CURLINFO_SSL_VERIFYRESULT)
+     (typedef int CURLINFO_SCHEME)
+     (typedef int CURLINFO_PRIMARY_IP)
+     (typedef int CURLINFO_PRIMARY_PORT)
 
      ;;; ---- global, once per process ----
      ;;; curl_global_init is not thread safe and must run before any handle is
@@ -218,6 +302,28 @@
                                        (int * outlength)) (out char *))
      (decl) (func curl_free           ((void * p)))
      (decl) (func curl_version        () (out char *))
+
+     ;;; ---- what this libcurl can actually do ----
+     ;;; A libcurl built without TLS answers CURLE_UNSUPPORTED_PROTOCOL to
+     ;;; every https:// URL, and there is no way to tell from a successful
+     ;;; link -- the symbols are all there either way. curl_version_info is
+     ;;; the way to ask, and (cu.has-ssl) below is the one bit of it that
+     ;;; nearly every program wants.
+     ;;;
+     ;;; THE STRUCT IS DECLARED IN PART, on purpose. Nothing here is emitted,
+     ;;; and a member is reached BY NAME in the C that is -- so naming the
+     ;;; four fields that get used is enough, and the real header stays the
+     ;;; authority on the layout. Adding a field is naming it, not counting --
+     ;;; there is no offset here to get wrong.
+     (decl) (struct curl_version_info_data
+                   (member const char * version)
+                   (member const char * host)
+                   (member int features)
+                   (member const char * ssl_version))
+     (typedef int CURLVERSION_NOW)
+     (typedef int CURL_VERSION_SSL)
+     (typedef int CURL_VERSION_HTTP2)
+     (decl) (func curl_version_info ((int age)) (out (struct curl_version_info_data) *))
      ))
 
 
@@ -289,8 +395,9 @@
 (DEFPARAMETER +options+
   "url follow max-redirs timeout timeout-ms connect-timeout agent headers
    post-fields post-size method head verbose fail-on-error verify-peer
-   verify-host ca-info encoding referer cookie cookie-file cookie-jar proxy
-   user-pwd range body")
+   verify-host ca-info ca-path pin cert cert-type key key-type key-password
+   ciphers tls-version verify-status http-version cert-info encoding referer
+   cookie cookie-file cookie-jar proxy user-pwd range body")
 
 ;;; one setopt call for one option form, on handle H
 (DEFUN cu-setopt-form (h form)
@@ -316,6 +423,19 @@
       ((STRING= k "user-pwd")        `(curl_easy_setopt ,h CURLOPT_USERPWD         (cast (const char *) ,v)))
       ((STRING= k "range")           `(curl_easy_setopt ,h CURLOPT_RANGE           (cast (const char *) ,v)))
 
+      ;; TLS, the string half. ca-path is a DIRECTORY of hashed certificates
+      ;; and ca-info a single bundle file; a pin is a base64 SHA-256 of the
+      ;; peer's public key, `sha256//…', and is the one option here that makes
+      ;; a connection fail for a certificate that is otherwise perfectly valid.
+      ((STRING= k "ca-path")         `(curl_easy_setopt ,h CURLOPT_CAPATH          (cast (const char *) ,v)))
+      ((STRING= k "pin")             `(curl_easy_setopt ,h CURLOPT_PINNEDPUBLICKEY (cast (const char *) ,v)))
+      ((STRING= k "cert")            `(curl_easy_setopt ,h CURLOPT_SSLCERT         (cast (const char *) ,v)))
+      ((STRING= k "cert-type")       `(curl_easy_setopt ,h CURLOPT_SSLCERTTYPE     (cast (const char *) ,v)))
+      ((STRING= k "key")             `(curl_easy_setopt ,h CURLOPT_SSLKEY          (cast (const char *) ,v)))
+      ((STRING= k "key-type")        `(curl_easy_setopt ,h CURLOPT_SSLKEYTYPE      (cast (const char *) ,v)))
+      ((STRING= k "key-password")    `(curl_easy_setopt ,h CURLOPT_KEYPASSWD       (cast (const char *) ,v)))
+      ((STRING= k "ciphers")         `(curl_easy_setopt ,h CURLOPT_SSL_CIPHER_LIST (cast (const char *) ,v)))
+
       ;; the cast this whole file exists for
       ((STRING= k "follow")          `(curl_easy_setopt ,h CURLOPT_FOLLOWLOCATION  (cast long ,v)))
       ((STRING= k "max-redirs")      `(curl_easy_setopt ,h CURLOPT_MAXREDIRS       (cast long ,v)))
@@ -328,6 +448,15 @@
       ((STRING= k "fail-on-error")   `(curl_easy_setopt ,h CURLOPT_FAILONERROR     (cast long ,v)))
       ((STRING= k "verify-peer")     `(curl_easy_setopt ,h CURLOPT_SSL_VERIFYPEER  (cast long ,v)))
       ((STRING= k "verify-host")     `(curl_easy_setopt ,h CURLOPT_SSL_VERIFYHOST  (cast long ,v)))
+
+      ;; TLS, the long half. tls-version takes a CURL_SSLVERSION_ constant and
+      ;; names the LOWEST acceptable version; http-version takes a
+      ;; CURL_HTTP_VERSION_ one. verify-status is OCSP and is off by default
+      ;; because not every server staples.
+      ((STRING= k "tls-version")     `(curl_easy_setopt ,h CURLOPT_SSLVERSION      (cast long ,v)))
+      ((STRING= k "http-version")    `(curl_easy_setopt ,h CURLOPT_HTTP_VERSION    (cast long ,v)))
+      ((STRING= k "verify-status")   `(curl_easy_setopt ,h CURLOPT_SSL_VERIFYSTATUS (cast long ,v)))
+      ((STRING= k "cert-info")       `(curl_easy_setopt ,h CURLOPT_CERTINFO        (cast long ,v)))
 
       ;; a list built by (cu.headers …), passed as it is
       ((STRING= k "headers")         `(curl_easy_setopt ,h CURLOPT_HTTPHEADER ,v))
@@ -378,6 +507,31 @@
        ,@body
        (curl_easy_cleanup ,h))))
 
+;;; (cu.has-ssl) -- can this libcurl do https at all?
+;;;
+;;; A libcurl built without TLS links perfectly and answers
+;;; CURLE_UNSUPPORTED_PROTOCOL to every https:// URL. Nothing about the link
+;;; line says which one you have, so a program that depends on https is
+;;; entitled to ask before it starts rather than after its first failure.
+;;;
+;;; (cu.ssl-version) answers the backend and its version -- "OpenSSL/3.0.13" --
+;;; or null when there is none.
+;;; The pointer is bound before it is dereferenced: Cicili's `->' takes a
+;;; variable, not a call, so `(-> (curl_version_info …) features)' has no
+;;; storage to reach through.
+(DEFUN cu-version-field (field)
+  (LET ((v (GENSYM "cu_ver_")))
+    `(progn
+       (letn (((struct curl_version_info_data) * ,v . #'(curl_version_info CURLVERSION_NOW)))
+         (-> ,v ,field)))))
+
+;;; `features' and `ssl_version' are written bare: a macro file is read with
+;;; the case PRESERVED and with `|' turned off as an escape character, so
+;;; |features| would be three tokens rather than one symbol.
+(DEFMACRO has-ssl ()   `(!= 0 (bitand ,(cu-version-field 'features) CURL_VERSION_SSL)))
+(DEFMACRO has-http2 () `(!= 0 (bitand ,(cu-version-field 'features) CURL_VERSION_HTTP2)))
+(DEFMACRO ssl-version () (cu-version-field 'ssl_version))
+
 (DEFMACRO perform (h) `(curl_easy_perform ,h))
 (DEFMACRO reset (h) `(curl_easy_reset ,h))
 (DEFMACRO strerror (rc) `(curl_easy_strerror ,rc))
@@ -425,8 +579,9 @@
 ;;; below declares the right variable, so the type appears once, here.
 
 (DEFPARAMETER +infos+
-  "status redirect-count http-version total-time connect-time lookup-time
-   size uploaded speed url content-type redirect-url")
+  "status redirect-count http-version verify-result primary-port total-time
+   connect-time lookup-time tls-time size uploaded speed url content-type
+   redirect-url scheme primary-ip")
 
 ;;; One binding of the info clause: the variable, its type, and the zero it
 ;;; starts at. THE ZERO MATTERS -- a getinfo that fails leaves the variable
@@ -436,9 +591,14 @@
     (COND ((STRING= k "status")         `(long ,name . 0))
           ((STRING= k "redirect-count") `(long ,name . 0))
           ((STRING= k "http-version")   `(long ,name . 0))
+          ((STRING= k "verify-result")  `(long ,name . 0))
+          ((STRING= k "primary-port")   `(long ,name . 0))
           ((STRING= k "total-time")     `(double ,name . 0.0))
           ((STRING= k "connect-time")   `(double ,name . 0.0))
           ((STRING= k "lookup-time")    `(double ,name . 0.0))
+          ;; 0 on a plain http:// transfer, so it is also the answer to
+          ;; "did this really go over TLS"
+          ((STRING= k "tls-time")       `(double ,name . 0.0))
           ((STRING= k "size")           `(curl_off_t ,name . 0))
           ((STRING= k "uploaded")       `(curl_off_t ,name . 0))
           ((STRING= k "speed")          `(curl_off_t ,name . 0))
@@ -447,6 +607,8 @@
           ((STRING= k "url")            `(char * ,name . #'(cast (char *) nil)))
           ((STRING= k "content-type")   `(char * ,name . #'(cast (char *) nil)))
           ((STRING= k "redirect-url")   `(char * ,name . #'(cast (char *) nil)))
+          ((STRING= k "scheme")         `(char * ,name . #'(cast (char *) nil)))
+          ((STRING= k "primary-ip")     `(char * ,name . #'(cast (char *) nil)))
           (T (ERROR "no such curl info: ~A~%  one of: ~A" k +infos+)))))
 
 ;;; the getinfo call that fills it
@@ -455,6 +617,9 @@
     (COND ((STRING= k "status")         `(curl_easy_getinfo ,h CURLINFO_RESPONSE_CODE (aof ,name)))
           ((STRING= k "redirect-count") `(curl_easy_getinfo ,h CURLINFO_REDIRECT_COUNT (aof ,name)))
           ((STRING= k "http-version")   `(curl_easy_getinfo ,h CURLINFO_HTTP_VERSION (aof ,name)))
+          ((STRING= k "verify-result")  `(curl_easy_getinfo ,h CURLINFO_SSL_VERIFYRESULT (aof ,name)))
+          ((STRING= k "primary-port")   `(curl_easy_getinfo ,h CURLINFO_PRIMARY_PORT (aof ,name)))
+          ((STRING= k "tls-time")       `(curl_easy_getinfo ,h CURLINFO_APPCONNECT_TIME (aof ,name)))
           ((STRING= k "total-time")     `(curl_easy_getinfo ,h CURLINFO_TOTAL_TIME (aof ,name)))
           ((STRING= k "connect-time")   `(curl_easy_getinfo ,h CURLINFO_CONNECT_TIME (aof ,name)))
           ((STRING= k "lookup-time")    `(curl_easy_getinfo ,h CURLINFO_NAMELOOKUP_TIME (aof ,name)))
@@ -464,6 +629,8 @@
           ((STRING= k "url")            `(curl_easy_getinfo ,h CURLINFO_EFFECTIVE_URL (aof ,name)))
           ((STRING= k "content-type")   `(curl_easy_getinfo ,h CURLINFO_CONTENT_TYPE (aof ,name)))
           ((STRING= k "redirect-url")   `(curl_easy_getinfo ,h CURLINFO_REDIRECT_URL (aof ,name)))
+          ((STRING= k "scheme")         `(curl_easy_getinfo ,h CURLINFO_SCHEME (aof ,name)))
+          ((STRING= k "primary-ip")     `(curl_easy_getinfo ,h CURLINFO_PRIMARY_IP (aof ,name)))
           (T (ERROR "no such curl info: ~A~%  one of: ~A" k +infos+)))))
 
 ;;; (cu.info h (status code) (size n)
