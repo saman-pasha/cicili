@@ -33,20 +33,12 @@
 
 (DEFMACRO init-macro ()
   `($$$
-     ;; These three were haskell.h's, and haskell.h is gone with the target that
-     ;; wrote it. They are one-liners the layer's own signatures use -- `show'
-     ;; takes a CFile throughout -- so they belong to the layer rather than to a
-     ;; prebuilt object every user had to link against.
-     (typedef char * CStr)
-     (typedef FILE * CFile)
-     (typedef void * CVoid)
-
      (fn identity (-input) -input)
 
      (fn showAsString -show -obj
          (letn ((char * buffer . #'(cast (char *) (calloc 1024 (sizeof char))))
                 (defer () (fclose file))
-                (CFile file . #'(fmemopen buffer 1024 "w+")))
+                (FILE * file . #'(fmemopen buffer 1024 "w+")))
            (-show file -obj)
            buffer))
 

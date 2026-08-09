@@ -21,7 +21,7 @@
     (func next ((type list)) (out type))
     (func take ((int len) (type list)) (out list-t))
     (func drop ((int len) (type list)) (out type))
-    (func show ((CFile file) (type list)) (out int)))
+    (func show ((FILE * file) (type list)) (out int)))
 
   (decl) (func (<> new type) ((a from) (a to) (a step)) (out type))
   
@@ -64,7 +64,7 @@
                            (default list))))
                     (default list))))
 
-    (func show ((CFile file) (type list))
+    (func show ((FILE * file) (type list))
           (out int)
           (return (match list
                     (* Cons from (+ ($> fmt file from) (fprintf file "%s" sep)))

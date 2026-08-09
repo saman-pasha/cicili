@@ -48,7 +48,7 @@
     (func deleteAt  ((type list) (size_t index)) (out type))
     (func replaceAt ((type list) (a item) (size_t index)) (out type))
     (func copy    ((type list)) (out type))
-    (func show    ((CFile file) (type list)) (out size_t))
+    (func show    ((FILE * file) (type list)) (out size_t))
     (func pure    ((const a * buf) (size_t len)) (out type))
     (func wrap    ((const a item)) (out type))
     (func toArray ((type list)) (out a *)))
@@ -222,7 +222,7 @@
                     (* Cons head tail ((<> Cons a) head ((<> copy type) tail)))
                     (default ((<> Nil a))))))
 
-    (func show ((CFile file) (type list))
+    (func show ((FILE * file) (type list))
           (out size_t)
           (return (match list
                     (* Cons head tail

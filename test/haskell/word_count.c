@@ -5,6 +5,7 @@
 #include <string.h>
 #include <stdbool.h>
 #include <errno.h>
+typedef char * cstr_t ;
 typedef FILE * cfile_t ;
 #ifndef __Maybe_char__H_DECL__
 #define __Maybe_char__H_DECL__
@@ -66,7 +67,7 @@ typedef struct List_char__H_Table {
     char * (*toArray) (List_char list );
     List_char (*wrap) (const char item );
     List_char (*pure) (const char * buf , size_t len );
-    size_t (*show) (CFile file , List_char list );
+    size_t (*show) (FILE * file , List_char list );
     List_char (*copy) (List_char list );
     List_char (*replaceAt) (List_char list , char item , size_t index );
     List_char (*deleteAt) (List_char list , size_t index );
@@ -108,7 +109,7 @@ __attribute__((weak)) List_char Default_List_char () {
 char * toArray_List_char (List_char list );
 List_char wrap_List_char (const char item );
 List_char pure_List_char (const char * buf , size_t len );
-size_t show_List_char (CFile file , List_char list );
+size_t show_List_char (FILE * file , List_char list );
 List_char copy_List_char (List_char list );
 List_char replaceAt_List_char (List_char list , char item , size_t index );
 List_char deleteAt_List_char (List_char list , size_t index );
@@ -241,7 +242,7 @@ List_char pure_List_char (const char * buf , size_t len ) {
         (((len  ==  0 )) ? Nil_char () : Cons_char (item , pure_List_char ((++buf ), (--len ))));
       }));
 }
-size_t show_List_char (CFile file , List_char list ) {
+size_t show_List_char (FILE * file , List_char list ) {
   return ({ /* letn363 */
       typeof((((list -> __h_data). Cons). __h_0_mem)) head ;
       typeof((((list -> __h_data). Cons). __h_1_mem)) tail ;
@@ -944,4 +945,225 @@ void free_List_char (List_char * this_ptr ) {
   }
 }
 List_char__H_Table * const get_List_char__H_Table () {
-  static List_char__H_Table table  = { free_List_char , toArray_List_char , wrap_List_char , pure_List_char , 
+  static List_char__H_Table table  = { free_List_char , toArray_List_char , wrap_List_char , pure_List_char , show_List_char , copy_List_char , replaceAt_List_char , deleteAt_List_char , insertAt_List_char , replace_List_char , delete_List_char , insert_List_char , reverse_List_char , append_List_char , push_List_char , take_List_char , last_List_char , init_List_char , hasLen_List_char , len_List_char , tail_List_char , drop_List_char , head_List_char , nthcdr_List_char , nth_List_char };
+  return (&table );
+}
+List_char Cons_char (char head , List_char tail ) {
+  { /* let1068 */
+    List_char instance  = malloc (sizeof(class_List_char));
+    // ----------
+    (*instance ) = ((class_List_char){ get_List_char__H_Table (), __h_Cons_t , .__h_data.Cons = { head , tail }});
+    return instance ;
+  }
+}
+List_char Nil_char () {
+  { /* let1074 */
+    List_char instance  = malloc (sizeof(class_List_char));
+    // ----------
+    (*instance ) = ((class_List_char){ get_List_char__H_Table (), __h_Nil_t });
+    return instance ;
+  }
+}
+#endif /* __List_char__H_IMPL__ */ 
+#ifndef __Maybe_List_char__H_IMPL__
+#define __Maybe_List_char__H_IMPL__
+void free_Maybe_List_char (Maybe_List_char * this ) {
+}
+const Maybe_List_char__H_Table * const get_Maybe_List_char__H_Table () {
+  static const Maybe_List_char__H_Table table  = { free_Maybe_List_char };
+  return (&table );
+}
+Maybe_List_char Just_List_char (List_char value ) {
+  { /* let1091 */
+    Maybe_List_char instance  = ((Maybe_List_char){ get_Maybe_List_char__H_Table (), __h_Just_t , .__h_data.Just = { value }});
+    // ----------
+    return instance ;
+  }
+}
+Maybe_List_char Nothing_List_char () {
+  { /* let1096 */
+    Maybe_List_char instance  = ((Maybe_List_char){ get_Maybe_List_char__H_Table (), __h_Nothing_t });
+    // ----------
+    return instance ;
+  }
+}
+#endif /* __Maybe_List_char__H_IMPL__ */ 
+#ifndef __Either_cstr_t_cfile_t__H_DECL__
+#define __Either_cstr_t_cfile_t__H_DECL__
+#ifndef __H___h_Either_ctor_t__
+#define __H___h_Either_ctor_t__
+typedef enum __h_Either_ctor_t {
+  __h_Left_t = 0,
+  __h_Right_t = 1
+} __h_Either_ctor_t;
+#endif /* __H___h_Either_ctor_t__ */ 
+#ifndef __H_STD_DATA_
+#define __H_STD_DATA_
+typedef struct std_data std_data ;
+#endif /* __H_STD_DATA_ */ 
+typedef struct Either_cstr_t_cfile_t Either_cstr_t_cfile_t ;
+typedef std_data Either_cstr_t_cfile_t_type_t ;
+typedef void (*free_Either_cstr_t_cfile_t_t) (Either_cstr_t_cfile_t * this );
+typedef struct Either_cstr_t_cfile_t__H_Table {
+  free_Either_cstr_t_cfile_t_t freeData ;
+} Either_cstr_t_cfile_t__H_Table;
+typedef struct Either_cstr_t_cfile_t {
+  const Either_cstr_t_cfile_t__H_Table * __h_table ;
+  char __h_ctor ;
+  union { /* ciciliUnion1111 */
+    struct { /* ciciliStruct1112 */
+      cfile_t __h_0_mem ;
+    } Right , _1 ;
+    struct { /* ciciliStruct1113 */
+      cstr_t __h_0_mem ;
+    } Left , _ ;
+  } __h_data ;
+} Either_cstr_t_cfile_t;
+Either_cstr_t_cfile_t Right_cstr_t_cfile_t (cfile_t value );
+Either_cstr_t_cfile_t Left_cstr_t_cfile_t (cstr_t error );
+__attribute__((weak)) Either_cstr_t_cfile_t Default_Either_cstr_t_cfile_t (cstr_t error ) {
+  return Left_cstr_t_cfile_t (error );
+}
+const Either_cstr_t_cfile_t__H_Table * const get_Either_cstr_t_cfile_t__H_Table ();
+void free_Either_cstr_t_cfile_t (Either_cstr_t_cfile_t * this );
+#endif /* __Either_cstr_t_cfile_t__H_DECL__ */ 
+#ifndef __Either_cstr_t_cfile_t__H_IMPL__
+#define __Either_cstr_t_cfile_t__H_IMPL__
+void free_Either_cstr_t_cfile_t (Either_cstr_t_cfile_t * this ) {
+}
+const Either_cstr_t_cfile_t__H_Table * const get_Either_cstr_t_cfile_t__H_Table () {
+  static const Either_cstr_t_cfile_t__H_Table table  = { free_Either_cstr_t_cfile_t };
+  return (&table );
+}
+Either_cstr_t_cfile_t Right_cstr_t_cfile_t (cfile_t value ) {
+  { /* let1141 */
+    Either_cstr_t_cfile_t instance  = ((Either_cstr_t_cfile_t){ get_Either_cstr_t_cfile_t__H_Table (), __h_Right_t , .__h_data.Right = { value }});
+    // ----------
+    return instance ;
+  }
+}
+Either_cstr_t_cfile_t Left_cstr_t_cfile_t (cstr_t error ) {
+  { /* let1146 */
+    Either_cstr_t_cfile_t instance  = ((Either_cstr_t_cfile_t){ get_Either_cstr_t_cfile_t__H_Table (), __h_Left_t , .__h_data._ = { error }});
+    // ----------
+    return instance ;
+  }
+}
+#endif /* __Either_cstr_t_cfile_t__H_IMPL__ */ 
+Either_cstr_t_cfile_t writeTmpFile () {
+  { /* let1150 */
+    FILE * tmpf  = tmpfile ();
+    // ----------
+    if (tmpf  ==  NULL  )
+      { /* block1155 */
+        return Left_cstr_t_cfile_t (strerror (errno ));
+      }
+    fputs ("Alan Turing\n", tmpf );
+    fputs ("John von Neumann\n", tmpf );
+    fputs ("Alonzo Church\n", tmpf );
+    return Right_cstr_t_cfile_t (tmpf );
+  }
+}
+List_char safeReadFile (FILE * file ) {
+  if (file  ==  NULL  )
+    { /* block1161 */
+      return Nil_char ();
+    }
+  { /* let1164 */
+    int c  = fgetc (file );
+    // ----------
+    if (c  ==  EOF  )
+      { /* block1169 */
+        return Nil_char ();
+      }
+    return Cons_char (((char)c ), safeReadFile (file ));
+  }
+}
+int count_from (List_char text , int in_word ) {
+  return ({ /* letn1178 */
+      typeof((((text -> __h_data). Cons). __h_0_mem)) ch ;
+      typeof((((text -> __h_data). Cons). __h_1_mem)) tail ;
+      // ----------
+      ;
+      ({ /* letn1180 */
+        bool __h_case_result  = (true  &&  (((text -> __h_ctor) ==  __h_Cons_t  ) &&  (({ /* progn1181 */
+                ch  = (((text -> __h_data). Cons). __h_0_mem) ;
+                true ;
+              }) &&  ({ /* progn1183 */
+                tail  = (((text -> __h_data). Cons). __h_1_mem) ;
+                true ;
+              }) ) ) );
+        // ----------
+        
+        ((__h_case_result ) ? ({ /* progn1188 */
+            ((((ch  ==  ' ' ) ||  (ch  ==  '\n' ) )) ? count_from (tail , 0) : (((in_word ) ? 0 : 1) +  count_from (tail , 1) ));
+          }) : ({ /* letn1193 */
+            // ----------
+            ;
+            ({ /* progn1195 */
+              0;
+            });
+          }));
+      });
+    });
+}
+int count_words (List_char text ) {
+  return count_from (text , 0);
+}
+void file_close (FILE ** file_ptr ) {
+  fclose ((*file_ptr ));
+}
+int main () {
+  ({ /* letn1202 */
+    Either_cstr_t_cfile_t tmpf  = writeTmpFile ();
+    // ----------
+    { /* let1206 */
+      typeof((((tmpf . __h_data). Left). __h_0_mem)) error ;
+      // ----------
+      ;
+      ({ /* letn1208 */
+        bool __h_case_result  = (true  &&  (((tmpf . __h_ctor) ==  __h_Left_t  ) &&  ({ /* progn1209 */
+              error  = (((tmpf . __h_data). Left). __h_0_mem) ;
+              true ;
+            }) ) );
+        // ----------
+        
+        if (__h_case_result )
+          { /* block1216 */
+            { /* block1218 */
+              fprintf (stderr , "File opening error: %s\n", error );
+              return 1;
+            }
+          }
+        else
+          { /* let1223 */
+            typeof((((tmpf . __h_data). Right). __h_0_mem)) opened ;
+            // ----------
+            ;
+            ({ /* letn1225 */
+              bool __h_case_result  = (true  &&  (((tmpf . __h_ctor) ==  __h_Right_t  ) &&  ({ /* progn1226 */
+                    opened  = (((tmpf . __h_data). Right). __h_0_mem) ;
+                    true ;
+                  }) ) );
+              // ----------
+              
+              if (__h_case_result )
+                { /* block1233 */
+                  ({ /* letn1236 */
+                    typeof((((tmpf . __h_data). Right). __h_0_mem)) file  __attribute__((__cleanup__(file_close ))) = opened ;
+                    // ----------
+                    rewind (file );
+                    ({ /* letn1239 */
+                      List_char text  __attribute__((__cleanup__(free_List_char ))) = safeReadFile (file );
+                      // ----------
+                      printf ("Word count: %d\n", count_words (text ));
+                    });
+                  });
+                }
+            });
+          }
+      });
+    }
+  });
+  return 0;
+}
