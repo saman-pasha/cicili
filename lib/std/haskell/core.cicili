@@ -194,6 +194,32 @@
 (DEFUN make-match-h-arg-name (id number)
   (INTERN (FORMAT NIL "__h_~A_~A_arg" id number)))
 
+;; A NON-COPY PAYLOAD ARRIVES BY MOVE.
+;;
+;; A constructor stores what it is handed, and a non-copy value cannot be stored
+;; by copying -- that is the whole of what the attribute says. `move' is how the
+;; author of an ordinary function says "I take ownership of this", and a
+;; generated constructor has to say the same thing. It is not a preference: the
+;; by-value form is refused at the DECLARATION, before any call site exists, so
+;; without this a List of std string cannot be declared at all.
+;;
+;; COPYABLE PAYLOADS ARE LEFT ALONE, and must be. A `move' parameter carries a
+;; __cleanup__, so marking every payload would have a List of int trying to free
+;; its elements. A parameter that already names a modifier is left alone too --
+;; its author has said what they meant.
+;;
+;; PARAMS is the parsed form (const type modifier const-ptr variable array-def)
+;; and REAL-PARAMS the source form they were parsed from; the answer is
+;; REAL-PARAMS with `move' inserted where it is wanted.
+(DEFUN move-non-copy-params< (params real-params)
+  (MAPCAR #'(LAMBDA (param rp)
+              (IF (AND (LISTP rp) (= 2 (LENGTH rp))
+                       (NULL (NTH 2 param))
+                       (IGNORE-ERRORS (CICILI:IS-NON-COPY (NTH 1 param))))
+                  (LIST (CAR rp) 'move (CADR rp))
+                  rp))
+          params real-params))
+
 (DEFUN make-match-h-item-name (id number)
   (INTERN (FORMAT NIL "__h_~A_~A_item" id number)))
 

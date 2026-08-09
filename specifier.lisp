@@ -774,10 +774,22 @@
              (specify-code-expr pure))
             (t (error (format nil "wrong code form ~A" def)))))))
 
+;; A LIST CONSUMES A `move' THE SAME WAY A CALL DOES.
+;;
+;; This is both the elements of an aggregate literal -- (cast T '{ a b c }) --
+;; and the arguments of a method call through `->' or `=>'. Either way the value
+;; is being taken, and taking a `move' variable's value is what makes it spent:
+;; move-var copies it out, zeroes the source and marks it, so using it again
+;; raises rather than double-freeing.
+;;
+;; Without this a constructor that stores its argument in a struct literal kept
+;; the argument's __cleanup__ AND handed the value on, which frees it twice --
+;; and it is how every generated ADT constructor stores its payload.
 (defun specify-list-expr (def)
   ;; (set-ast-obj def
   (make-specifier nil '|@LIST| nil nil nil nil nil
-                  (loop for item in def collect (specify-expr (expand-macros item))) '()))
+                  (loop for item in def
+                        collect (move-var (specify-expr (expand-macros item)) def)) '()))
 ;; )
 
 (defun specify-unary-expr (def)
@@ -1377,8 +1389,24 @@
            (items (loop for i from 0 to (1- len)
                         for (x y) on (cdr def)
                         when (and (= (mod i 2) 0) (not (null y)))
-                        collect (let ((left-spec (specify-expr x))
-                                      (right-spec (specify-expr y)))
+                        collect (let* ((left-spec (specify-expr x))
+                                       ;; AN ASSIGNMENT MOVES WHAT A CALL WOULD MOVE.
+                                       ;;
+                                       ;; Passing a `move' variable to a function hands
+                                       ;; ownership over: move-var copies it, zeroes the
+                                       ;; source and marks it spent, so a second use is
+                                       ;; caught. Assigning one did none of that -- it
+                                       ;; arrived at assign-check as an ordinary copy,
+                                       ;; and for a non-copy type that is a refusal with
+                                       ;; nothing the author can write instead. Storing a
+                                       ;; std string in a struct member was impossible
+                                       ;; for exactly this reason.
+                                       ;;
+                                       ;; Only a `move' source is affected. move-var
+                                       ;; hands anything else straight back, so a plain
+                                       ;; copy of a non-copy value is still refused --
+                                       ;; which is the whole point of the attribute.
+                                       (right-spec (move-var (specify-expr y) def)))
                                   (assign-check set-spec left-spec right-spec) ; authority check
                                   (list left-spec right-spec)))))
       (setf (default set-spec) items)

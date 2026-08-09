@@ -125,7 +125,7 @@
                             (ct-name (CADAR ct))
                             (def-ct-name (IF is-default `(<> Default ,name) ct-name))
                             (params (CADR ct))
-                            (real-params (CADDR ct)))
+                            (real-params (move-non-copy-params< (CADR ct) (CADDR ct))))
                        
                        (WHEN (EQUAL name ct-name) (ERROR (FORMAT NIL "data type and ctor having same name: ~A" name)))
 
@@ -154,6 +154,13 @@
 
        ;; destructor
        (decl) (func (<> free ,name) ((,name * this)))
+       ;; AND THE ONE A `move' PARAMETER'S CLEANUP CALLS. It is handed the
+       ;; address of a pointer to the value, so it takes one more star than the
+       ;; destructor proper -- lib/std's vector, cell, array and rc all carry
+       ;; the same pair. Without it a data type could not be a `move' parameter
+       ;; at all: the cleanup names free_T_pointer and C answers "cleanup
+       ;; argument not a function".
+       (decl) (func (<> free ,name pointer) ((,name ** this)))
        ))
   ) ; decl-data
 
@@ -214,7 +221,11 @@
        ;; destructor
        (func (<> free ,name) ((,name * this))
              ,@(CDDR free-def))
-       
+
+       (inline)
+       (func (<> free ,name pointer) ((,name ** this))
+             (when this ((<> free ,name) (cof this))))
+
        ;; Table initializer
        (func (<> get ,name _H_Table) ()
              (out const (<> ,name _H_Table) * const)
@@ -231,7 +242,7 @@
        ,@(MAPCAR #'(LAMBDA (i ct)
                      (LET ((ct-name (CADAR ct))
                            (params (CADR ct))
-                           (real-params (CADDR ct)))
+                           (real-params (move-non-copy-params< (CADR ct) (CADDR ct))))
 
                        (WHEN (EQUAL name ct-name) (ERROR (FORMAT NIL "data type and ctor having same name: ~A" name)))
 

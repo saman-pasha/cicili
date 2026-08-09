@@ -728,21 +728,34 @@
       (when (and spec (eql (construct spec) '|@TYPEDEF|) (find-attr spec '|non-copy|))
         (return t)))))
 
+;; IS THE VALUE BEING HANDED OVER RATHER THAN COPIED?
+;;
+;; move-var answers a LETNMOVECAST when it consumes a `move' variable: the value
+;; is copied out, the source is zeroed and marked spent, and using it again
+;; raises. That is a transfer of ownership, not a duplication, and it is exactly
+;; what a non-copy type permits -- refusing it leaves an author who owns a std
+;; string with no way at all to store it.
+;;
+;; Only move-var can produce one, and only from a variable the author declared
+;; `move', so this cannot be reached by writing an ordinary copy.
+(defun moved-in< (right)
+  (when right (key-eq (name right) '|LETNMOVECAST|)))
+
 (defun assign-check (spec left right)
   (let ((initializing (when (find (construct spec) '(|@VAR| |@PARAM| |@LET| |@LETN| |@FUNC|)) t))
         (left-type (deep-typeof "" left)))
     (if left-type
         (let* ((declared (typedef-non-copy< (typeof left-type)))
                (mod (modifier (effective-type< left-type))))
-          (unless (and (not declared)
-                       (or (and initializing mod)
-                           (and mod (not (key-eq mod '|move|)))))
+          (unless (or (moved-in< right)
+                      (and (not declared)
+                           (or (and initializing mod)
+                               (and mod (not (key-eq mod '|move|))))))
             (let ((left-origin (if (typep (typeof left-type) 'sp)
                                    (deep-typeof "" (typeof left-type))
                                    (deep-typeof (typeof left-type)))))
               (when (or declared
                         (and left-origin
-                             ;; (or (null right) (not (key-eq (name right) '|LETNMOVECAST|)))
                              (key-eq (construct left-origin) '|@STRUCT|) (find-attr left-origin '|non-copy|)))
                 (error (format nil "non-copy struct assignment for: ~A~%  by: ~A~%  inside: ~A~%" left right spec ))))))
         (when right
@@ -750,15 +763,15 @@
             (when right-type
               (let* ((declared (typedef-non-copy< (typeof right-type)))
                      (mod (modifier (effective-type< right-type))))
-                (unless (and (not declared)
-                             (or (and initializing (modifier left-type))
-                                 (and mod (not (key-eq mod '|move|)))))
+                (unless (or (moved-in< right)
+                            (and (not declared)
+                                 (or (and initializing (modifier left-type))
+                                     (and mod (not (key-eq mod '|move|))))))
                   (let ((right-origin (if (typep (typeof right-type) 'sp)
                                           (deep-typeof "" (typeof right-type))
                                           (deep-typeof (typeof right-type)))))
                     (when (or declared
                               (and right-origin
-                                   ;; (not (key-eq (name right-origin) '|LETNMOVECAST|))
                                    (key-eq (construct right-origin) '|@STRUCT|) (find-attr right-origin '|non-copy|)))
                       (error (format nil "non-copy struct assignment for: ~A~%  by: ~A~%  inside: ~A~%" left right spec ))))))))))))
 

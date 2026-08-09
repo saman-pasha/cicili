@@ -299,6 +299,10 @@
   ;; `name *' and left the by-address form unnamed.
   (decl) (func (<> free name)       ((name * box)))
   (decl) (func (<> free name value) ((name box)))
+  ;; and the one a `move' parameter's cleanup calls, which is handed the address
+  ;; of a pointer to the value -- lib/std/vector, cell and array all carry the
+  ;; same three-name shape for the same reason
+  (decl) (func (<> free name pointer) ((name ** box)))
 
   ) ; decl-rcbox
 
@@ -349,6 +353,10 @@
         (when box
           ((<> free name value) (cof box))
           (set (cof box) nil)))
+
+  (inline)
+  (func (<> free name pointer) ((name ** box))
+        (when box ((<> free name) (cof box))))
 
   ) ; impl-rcbox
 
