@@ -28,7 +28,7 @@
 (source "btree_persistent.c"
   ;; no :haskell -- that flag linked haskell.o, and the layer is part of std now
   (make :std #t
-        :compile #t :link ("-lbtree_persistent.o" "-o" "btree_persistent"))
+        :compile #t :link ("-lbtree_persistent.o" "-o" "btree_persistent_test"))
 
   ;; id is the key and is not part of the value: (salary, grade)
   (typedef (Tuple int int) User)
