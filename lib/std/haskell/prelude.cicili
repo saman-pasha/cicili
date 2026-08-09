@@ -25,6 +25,9 @@
 ;;; -- a different guarantee, kept separately on purpose.
 (import "./arc.cicili")
 (import "./list.cicili")
+;; the List's owning sibling -- it frees what it holds and answers with a
+;; borrow. The header of the file says why it is not the same generic.
+(import "./ownlist.cicili")
 (import "./range.cicili")
 (import "./monoid.cicili")
 (import "./functor.cicili")
