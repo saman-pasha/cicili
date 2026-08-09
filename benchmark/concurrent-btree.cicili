@@ -207,15 +207,20 @@
           (while #t
             (io doQuit (True (return))) ; stop reader
             
-            ;; cloning in reader threads is locked
+            ;; THE READ OF THE SHARED ARC IS PART OF THE CLONE, and the lock has
+            ;; to cover both. `clone' takes its argument BY VALUE, so (cof
+            ;; pwtree) copies the Hold -- its pointer, count and mutex -- before
+            ;; clone has locked anything, while the writer is inside treeArc
+            ;; freeing that very Hold and putting a new one in its place. The
+            ;; copy then locks a mutex it read from a freed struct and bumps a
+            ;; count that is gone: valgrind reports the invalid read in
+            ;; clone_Arc, freed by another thread's free_Arc.
+            ;;
+            ;; treeArc is recursive, so clone taking it again inside is free.
+            ;;
             ;; freeRcTree will be called deferral
-            ;;
-            ;; declaring instead of letin*, no need define function
-            ;;
-            ;; (let ((defer () ((<> free Arc 3t) (aof nwtree)))
-            ;;       ((<> Arc 3t) nwtree . #'((<> clone Arc 3t) (cof pwtree))))
-
-            (letin* ((nwtree ((<> clone Arc 3t) (cof pwtree)) freeRcTree))
+            (letin* ((nwtree (lockn (aof treeArc) ((<> clone Arc 3t) (cof pwtree)))
+                             freeRcTree))
               
               ;; read whatever from cloned version, either current or one of latest versions
               (io ((<> get Arc 3t) nwtree)

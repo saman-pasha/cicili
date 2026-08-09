@@ -9734,69 +9734,76 @@ void searchMany (Arc_BTree_int_User * pwtree , int from , int to ) {
         });
       }
       ({ /* letn9494 */
-        Arc_BTree_int_User nwtree  __attribute__((__cleanup__(freeRcTree ))) = clone_Arc_BTree_int_User ((*pwtree ));
+        Arc_BTree_int_User nwtree  __attribute__((__cleanup__(freeRcTree ))) = ({ /* progn9496 */
+          pthread_mutex_lock ((&treeArc ));
+          Arc_BTree_int_User lock_result  = ({ /* progn9498 */
+                clone_Arc_BTree_int_User ((*pwtree ));
+              });
+          pthread_mutex_unlock ((&treeArc ));
+          lock_result ;
+        });
         // ----------
-        { /* let9499 */
-          Maybe_BTree_int_User match9498  = get_Arc_BTree_int_User (nwtree );
-          typeof((((match9498 . __h_data). Just). __h_0_mem)) tree ;
+        { /* let9504 */
+          Maybe_BTree_int_User match9503  = get_Arc_BTree_int_User (nwtree );
+          typeof((((match9503 . __h_data). Just). __h_0_mem)) tree ;
           // ----------
           ;
-          ({ /* letn9502 */
-            bool __h_case_result  = (true  &&  (((match9498 . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn9503 */
-                  tree  = (((match9498 . __h_data). Just). __h_0_mem) ;
+          ({ /* letn9507 */
+            bool __h_case_result  = (true  &&  (((match9503 . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn9508 */
+                  tree  = (((match9503 . __h_data). Just). __h_0_mem) ;
                   true ;
                 }) ) );
             // ----------
             
             if (__h_case_result )
-              { /* block9510 */
+              { /* block9515 */
                 for (int i  = from ; (i  <=  to  ); (++i )) {
-                    { /* let9517 */
-                      Maybe_BTree_int_User_pair_t match9516  = search_BTree_int_User (tree , i );
-                      typeof((((match9516 . __h_data). Just). __h_0_mem)) item ;
+                    { /* let9522 */
+                      Maybe_BTree_int_User_pair_t match9521  = search_BTree_int_User (tree , i );
+                      typeof((((match9521 . __h_data). Just). __h_0_mem)) item ;
                       // ----------
                       ;
-                      ({ /* letn9520 */
-                        bool __h_case_result  = (true  &&  (((match9516 . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn9521 */
-                              item  = (((match9516 . __h_data). Just). __h_0_mem) ;
+                      ({ /* letn9525 */
+                        bool __h_case_result  = (true  &&  (((match9521 . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn9526 */
+                              item  = (((match9521 . __h_data). Just). __h_0_mem) ;
                               true ;
                             }) ) );
                         // ----------
                         
                         if (__h_case_result )
-                          { /* block9528 */
-                            { /* block9531 */
+                          { /* block9533 */
+                            { /* block9536 */
                               pthread_mutex_lock ((&outlock ));
                               fprintf (stdout , "thread: %lu, Search Found: ", ((unsigned)pthread_self ()));
-                              ({ /* letn9543 */
+                              ({ /* letn9548 */
                                 typeof((item . __h_0_mem)) id ;
-                                typeof((item . __h_1_mem)) __h_match9541_1_arg ;
-                                typeof((__h_match9541_1_arg . __h_0_mem)) salary ;
-                                typeof((__h_match9541_1_arg . __h_1_mem)) grade ;
+                                typeof((item . __h_1_mem)) __h_match9546_1_arg ;
+                                typeof((__h_match9546_1_arg . __h_0_mem)) salary ;
+                                typeof((__h_match9546_1_arg . __h_1_mem)) grade ;
                                 // ----------
                                 ;
-                                ({ /* letn9545 */
-                                  bool __h_case_result  = (true  &&  ((({ /* progn9546 */
+                                ({ /* letn9550 */
+                                  bool __h_case_result  = (true  &&  ((({ /* progn9551 */
                                           id  = (item . __h_0_mem) ;
                                           true ;
-                                        }) &&  ({ /* progn9548 */
-                                          __h_match9541_1_arg  = (item . __h_1_mem) ;
+                                        }) &&  ({ /* progn9553 */
+                                          __h_match9546_1_arg  = (item . __h_1_mem) ;
                                           true ;
-                                        }) ) &&  (true  &&  (({ /* progn9550 */
-                                            salary  = (__h_match9541_1_arg . __h_0_mem) ;
+                                        }) ) &&  (true  &&  (({ /* progn9555 */
+                                            salary  = (__h_match9546_1_arg . __h_0_mem) ;
                                             true ;
-                                          }) &&  ({ /* progn9552 */
-                                            grade  = (__h_match9541_1_arg . __h_1_mem) ;
+                                          }) &&  ({ /* progn9557 */
+                                            grade  = (__h_match9546_1_arg . __h_1_mem) ;
                                             true ;
                                           }) ) ) ) );
                                   // ----------
                                   
-                                  ((__h_case_result ) ? ({ /* progn9557 */
+                                  ((__h_case_result ) ? ({ /* progn9562 */
                                       fprintf (stdout , "(%d, %d, %d)", id , salary , grade );
-                                    }) : ({ /* letn9561 */
+                                    }) : ({ /* letn9566 */
                                       // ----------
                                       ;
-                                      ({ /* progn9563 */
+                                      ({ /* progn9568 */
                                         0;
                                       });
                                     }));
@@ -9807,18 +9814,18 @@ void searchMany (Arc_BTree_int_User * pwtree , int from , int to ) {
                             }
                           }
                         else
-                          { /* let9568 */
+                          { /* let9573 */
                             // ----------
                             ;
-                            ({ /* letn9570 */
-                              bool __h_case_result  = (true  &&  ((match9516 . __h_ctor) ==  __h_Nothing_t  ) );
+                            ({ /* letn9575 */
+                              bool __h_case_result  = (true  &&  ((match9521 . __h_ctor) ==  __h_Nothing_t  ) );
                               // ----------
                               
                               if (__h_case_result )
-                                { /* block9576 */
-                                  { /* block9579 */
+                                { /* block9581 */
+                                  { /* block9584 */
                                     pthread_mutex_lock ((&outlock ));
-                                    ({ /* letn9582 */
+                                    ({ /* letn9587 */
                                       FILE * tmp_stdout  = stdout ;
                                       // ----------
                                       stdout  = stderr ;
@@ -9840,130 +9847,130 @@ void searchMany (Arc_BTree_int_User * pwtree , int from , int to ) {
       });
   }
 }
-typedef struct __ciciliC_Context_9605 {
-    void (*routine) (struct __ciciliC_Context_9605 * context );
-  struct { /* ciciliStruct9608 */
+typedef struct __ciciliC_Context_9610 {
+    void (*routine) (struct __ciciliC_Context_9610 * context );
+  struct { /* ciciliStruct9613 */
     Arc_BTree_int_User * pwtree ;
   } context ;
-} __ciciliC_Context_9605;
-typedef struct ciciliDELMkbWDLLpKASVJwRyjrIysMRg_ {
+} __ciciliC_Context_9610;
+typedef struct ciciliwxfIsl0_vVsaqG9gYYj9oXXIdXQ_ {
   void * context ;
-} ciciliDELMkbWDLLpKASVJwRyjrIysMRg_;
-void __ciciliL_9615 (struct ciciliDELMkbWDLLpKASVJwRyjrIysMRg_ * ciciliDefer9612 ) {
-  void * context  = (ciciliDefer9612 -> context);
+} ciciliwxfIsl0_vVsaqG9gYYj9oXXIdXQ_;
+void __ciciliL_9620 (struct ciciliwxfIsl0_vVsaqG9gYYj9oXXIdXQ_ * ciciliDefer9617 ) {
+  void * context  = (ciciliDefer9617 -> context);
   free (context );
 }
-void __ciciliC_Context_9605___ciciliC_Routine_9606 (struct __ciciliC_Context_9605 * context ) {
+void __ciciliC_Context_9610___ciciliC_Routine_9611 (struct __ciciliC_Context_9610 * context ) {
   Arc_BTree_int_User * pwtree  = ((context -> context). pwtree);
-  struct ciciliDELMkbWDLLpKASVJwRyjrIysMRg_ ciciliDefer9612  __attribute__((__cleanup__(__ciciliL_9615 ))) = { context };
+  struct ciciliwxfIsl0_vVsaqG9gYYj9oXXIdXQ_ ciciliDefer9617  __attribute__((__cleanup__(__ciciliL_9620 ))) = { context };
   searchMany (pwtree , 200, 200);
 }
-typedef struct __ciciliC_Context_9625 {
-    void (*routine) (struct __ciciliC_Context_9625 * context );
-  struct { /* ciciliStruct9628 */
+typedef struct __ciciliC_Context_9630 {
+    void (*routine) (struct __ciciliC_Context_9630 * context );
+  struct { /* ciciliStruct9633 */
     Arc_BTree_int_User * pwtree ;
   } context ;
-} __ciciliC_Context_9625;
-typedef struct cicili2wvQubHYqobnEQYGG6ZEoLgMReo_ {
+} __ciciliC_Context_9630;
+typedef struct ciciliRT1710IyxCxuXceH7SHKOCjyGEE_ {
   void * context ;
-} cicili2wvQubHYqobnEQYGG6ZEoLgMReo_;
-void __ciciliL_9633 (struct cicili2wvQubHYqobnEQYGG6ZEoLgMReo_ * ciciliDefer9612 ) {
-  void * context  = (ciciliDefer9612 -> context);
+} ciciliRT1710IyxCxuXceH7SHKOCjyGEE_;
+void __ciciliL_9638 (struct ciciliRT1710IyxCxuXceH7SHKOCjyGEE_ * ciciliDefer9617 ) {
+  void * context  = (ciciliDefer9617 -> context);
   free (context );
 }
-void __ciciliC_Context_9625___ciciliC_Routine_9626 (struct __ciciliC_Context_9625 * context ) {
+void __ciciliC_Context_9630___ciciliC_Routine_9631 (struct __ciciliC_Context_9630 * context ) {
   Arc_BTree_int_User * pwtree  = ((context -> context). pwtree);
-  struct cicili2wvQubHYqobnEQYGG6ZEoLgMReo_ ciciliDefer9612  __attribute__((__cleanup__(__ciciliL_9633 ))) = { context };
+  struct ciciliRT1710IyxCxuXceH7SHKOCjyGEE_ ciciliDefer9617  __attribute__((__cleanup__(__ciciliL_9638 ))) = { context };
   searchMany (pwtree , 500, 500);
 }
-typedef struct __ciciliC_Context_9643 {
-    void (*routine) (struct __ciciliC_Context_9643 * context );
-  struct { /* ciciliStruct9646 */
+typedef struct __ciciliC_Context_9648 {
+    void (*routine) (struct __ciciliC_Context_9648 * context );
+  struct { /* ciciliStruct9651 */
     Arc_BTree_int_User * pwtree ;
   } context ;
-} __ciciliC_Context_9643;
-typedef struct ciciliz98JFhrC_jz_umXTNN_0MmEuxI8_ {
+} __ciciliC_Context_9648;
+typedef struct cicili6gVpG2_vh137ydx6hcLOh14n1xk_ {
   void * context ;
-} ciciliz98JFhrC_jz_umXTNN_0MmEuxI8_;
-void __ciciliL_9651 (struct ciciliz98JFhrC_jz_umXTNN_0MmEuxI8_ * ciciliDefer9612 ) {
-  void * context  = (ciciliDefer9612 -> context);
+} cicili6gVpG2_vh137ydx6hcLOh14n1xk_;
+void __ciciliL_9656 (struct cicili6gVpG2_vh137ydx6hcLOh14n1xk_ * ciciliDefer9617 ) {
+  void * context  = (ciciliDefer9617 -> context);
   free (context );
 }
-void __ciciliC_Context_9643___ciciliC_Routine_9644 (struct __ciciliC_Context_9643 * context ) {
+void __ciciliC_Context_9648___ciciliC_Routine_9649 (struct __ciciliC_Context_9648 * context ) {
   Arc_BTree_int_User * pwtree  = ((context -> context). pwtree);
-  struct ciciliz98JFhrC_jz_umXTNN_0MmEuxI8_ ciciliDefer9612  __attribute__((__cleanup__(__ciciliL_9651 ))) = { context };
+  struct cicili6gVpG2_vh137ydx6hcLOh14n1xk_ ciciliDefer9617  __attribute__((__cleanup__(__ciciliL_9656 ))) = { context };
   searchMany (pwtree , 700, 700);
 }
-typedef struct __ciciliC_Context_9661 {
-    void (*routine) (struct __ciciliC_Context_9661 * context );
-  struct { /* ciciliStruct9664 */
+typedef struct __ciciliC_Context_9666 {
+    void (*routine) (struct __ciciliC_Context_9666 * context );
+  struct { /* ciciliStruct9669 */
     Arc_BTree_int_User * pwtree ;
   } context ;
-} __ciciliC_Context_9661;
-typedef struct ciciliVSkZZIvA5CiyFdTeiMHZFtnU__s_ {
+} __ciciliC_Context_9666;
+typedef struct cicili0tWpg0QYKVMZMfD_RBtuskRpi3w_ {
   void * context ;
-} ciciliVSkZZIvA5CiyFdTeiMHZFtnU__s_;
-void __ciciliL_9669 (struct ciciliVSkZZIvA5CiyFdTeiMHZFtnU__s_ * ciciliDefer9612 ) {
-  void * context  = (ciciliDefer9612 -> context);
+} cicili0tWpg0QYKVMZMfD_RBtuskRpi3w_;
+void __ciciliL_9674 (struct cicili0tWpg0QYKVMZMfD_RBtuskRpi3w_ * ciciliDefer9617 ) {
+  void * context  = (ciciliDefer9617 -> context);
   free (context );
 }
-void __ciciliC_Context_9661___ciciliC_Routine_9662 (struct __ciciliC_Context_9661 * context ) {
+void __ciciliC_Context_9666___ciciliC_Routine_9667 (struct __ciciliC_Context_9666 * context ) {
   Arc_BTree_int_User * pwtree  = ((context -> context). pwtree);
-  struct ciciliVSkZZIvA5CiyFdTeiMHZFtnU__s_ ciciliDefer9612  __attribute__((__cleanup__(__ciciliL_9669 ))) = { context };
+  struct cicili0tWpg0QYKVMZMfD_RBtuskRpi3w_ ciciliDefer9617  __attribute__((__cleanup__(__ciciliL_9674 ))) = { context };
   searchMany (pwtree , 1000, 1000);
 }
 int main () {
   fprintf (stdout , "Multi-thread pure functional manipulation of '%s' type into and from '%s' structure using '%s' key type.\n", "User", "BTree_int_User", "int");
   doQuit  = False ();
-  { /* let9591 */
+  { /* let9596 */
     pthread_mutexattr_t attr ;
     // ----------
     pthread_mutexattr_init ((&attr ));
     pthread_mutexattr_settype ((&attr ), PTHREAD_MUTEX_RECURSIVE );
     pthread_mutex_init ((&treeArc ), (&attr ));
   }
-  { /* let9593 */
+  { /* let9598 */
     Arc_BTree_int_User wtree  = new_Arc_BTree_int_User (Leaf_BTree_int_User (Nil_BTree_int_User_pair_t ()), (&treeArc ));
     Arc_BTree_int_User * pwtree  = (&wtree );
-    pthread_t reader1  = ({ /* letn9602 */
-      struct __ciciliC_Context_9605 closure9601  = ((struct __ciciliC_Context_9605){ __ciciliC_Context_9605___ciciliC_Routine_9606 , { pwtree }});
-      void * data  = malloc (sizeof(closure9601));
-      pthread_t thread9600 ;
+    pthread_t reader1  = ({ /* letn9607 */
+      struct __ciciliC_Context_9610 closure9606  = ((struct __ciciliC_Context_9610){ __ciciliC_Context_9610___ciciliC_Routine_9611 , { pwtree }});
+      void * data  = malloc (sizeof(closure9606));
+      pthread_t thread9605 ;
       // ----------
-      memcpy (data , (&closure9601 ), sizeof(closure9601));
-      pthread_create ((&thread9600 ), NULL , ((        void * (*)(void *))(closure9601 . routine)), data );
+      memcpy (data , (&closure9606 ), sizeof(closure9606));
+      pthread_create ((&thread9605 ), NULL , ((        void * (*)(void *))(closure9606 . routine)), data );
       ;
-      thread9600 ;
+      thread9605 ;
     });
-    pthread_t reader2  = ({ /* letn9622 */
-      struct __ciciliC_Context_9625 closure9621  = ((struct __ciciliC_Context_9625){ __ciciliC_Context_9625___ciciliC_Routine_9626 , { pwtree }});
-      void * data  = malloc (sizeof(closure9621));
-      pthread_t thread9620 ;
+    pthread_t reader2  = ({ /* letn9627 */
+      struct __ciciliC_Context_9630 closure9626  = ((struct __ciciliC_Context_9630){ __ciciliC_Context_9630___ciciliC_Routine_9631 , { pwtree }});
+      void * data  = malloc (sizeof(closure9626));
+      pthread_t thread9625 ;
       // ----------
-      memcpy (data , (&closure9621 ), sizeof(closure9621));
-      pthread_create ((&thread9620 ), NULL , ((        void * (*)(void *))(closure9621 . routine)), data );
+      memcpy (data , (&closure9626 ), sizeof(closure9626));
+      pthread_create ((&thread9625 ), NULL , ((        void * (*)(void *))(closure9626 . routine)), data );
       ;
-      thread9620 ;
+      thread9625 ;
     });
-    pthread_t reader3  = ({ /* letn9640 */
-      struct __ciciliC_Context_9643 closure9639  = ((struct __ciciliC_Context_9643){ __ciciliC_Context_9643___ciciliC_Routine_9644 , { pwtree }});
-      void * data  = malloc (sizeof(closure9639));
-      pthread_t thread9638 ;
+    pthread_t reader3  = ({ /* letn9645 */
+      struct __ciciliC_Context_9648 closure9644  = ((struct __ciciliC_Context_9648){ __ciciliC_Context_9648___ciciliC_Routine_9649 , { pwtree }});
+      void * data  = malloc (sizeof(closure9644));
+      pthread_t thread9643 ;
       // ----------
-      memcpy (data , (&closure9639 ), sizeof(closure9639));
-      pthread_create ((&thread9638 ), NULL , ((        void * (*)(void *))(closure9639 . routine)), data );
+      memcpy (data , (&closure9644 ), sizeof(closure9644));
+      pthread_create ((&thread9643 ), NULL , ((        void * (*)(void *))(closure9644 . routine)), data );
       ;
-      thread9638 ;
+      thread9643 ;
     });
-    pthread_t reader4  = ({ /* letn9658 */
-      struct __ciciliC_Context_9661 closure9657  = ((struct __ciciliC_Context_9661){ __ciciliC_Context_9661___ciciliC_Routine_9662 , { pwtree }});
-      void * data  = malloc (sizeof(closure9657));
-      pthread_t thread9656 ;
+    pthread_t reader4  = ({ /* letn9663 */
+      struct __ciciliC_Context_9666 closure9662  = ((struct __ciciliC_Context_9666){ __ciciliC_Context_9666___ciciliC_Routine_9667 , { pwtree }});
+      void * data  = malloc (sizeof(closure9662));
+      pthread_t thread9661 ;
       // ----------
-      memcpy (data , (&closure9657 ), sizeof(closure9657));
-      pthread_create ((&thread9656 ), NULL , ((        void * (*)(void *))(closure9657 . routine)), data );
+      memcpy (data , (&closure9662 ), sizeof(closure9662));
+      pthread_create ((&thread9661 ), NULL , ((        void * (*)(void *))(closure9662 . routine)), data );
       ;
-      thread9656 ;
+      thread9661 ;
     });
     // ----------
     insertMany (pwtree , 1, 250);
