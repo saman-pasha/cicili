@@ -1029,7 +1029,24 @@
                           (if (key-eq symb 'QUASIQUOTE)
                               (eval (car (macroexpand `(,(car def) ,@(cdr def)))))
                               (if (> (length def) 1)
-                                  (let ((app (expand-macros (list symb (nth 1 def)))))
+                                  ;; THE ONE-ARGUMENT PROBE, and it must not be
+                                  ;; fatal. Applying the head to its first
+                                  ;; argument alone is how a curried `fn' is
+                                  ;; recognised -- (a_b 1) answering a_b_0 says
+                                  ;; the rest arrive one at a time -- and this
+                                  ;; `let' keeps only the side effect: its value
+                                  ;; is discarded and `def' is what the branch
+                                  ;; answers with either way.
+                                  ;;
+                                  ;; A head that is a macro REQUIRING more than
+                                  ;; one argument therefore raises for nothing.
+                                  ;; `match' is one since builtins started
+                                  ;; dispatching it: a curried fn whose body is
+                                  ;; a match reaches here already expanded to
+                                  ;; (match* value clauses NIL), and probing
+                                  ;; (match* value) died on the arity rather
+                                  ;; than answering "not curried".
+                                  (let ((app (ignore-errors (expand-macros (list symb (nth 1 def))))))
                                     (if (symbolp app)
                                         (if (> (length def) 2)
                                             (specify-call-expand (append (list app) (nthcdr 2 def))))
@@ -1759,12 +1776,32 @@
       (setf (params include-var) heads)
       include-var)))
 
+;;; A TYPEDEF MAY CARRY `non-copy', and that is the only attribute it takes.
+;;;
+;;; A typedef to a pointer is copyable by default, because copying a pointer is
+;;; how a container holds one -- lib/std/rc.cicili's rcbox is `Rc_T' typedef'd
+;;; to `rc_T *' precisely so a List can hold a reference count whose struct is
+;;; (non-copy). Following the typedef down to that struct and refusing the copy
+;;; would defeat the indirection that exists to allow it.
+;;;
+;;; But some pointers OWN what they point at, and a typedef is how those reach
+;;; the C library: a std file has to be `FILE *' for fopen and fclose to accept
+;;; it, and must still be moved rather than copied so it is closed once. Saying
+;;; so is better than inferring it either way:
+;;;
+;;;   (non-copy) (typedef FILE * file)
+;;;
+;;; The attribute is recorded on the typedef itself, so assign-check consults
+;;; the chain and the answer is the one the author wrote.
 (defun specify-typedef (def attrs)
-  (when (> (length attrs) 0) (error (format nil "wrong attributes ~A" attrs)))
+  (dolist (attr attrs)
+    (unless (key-eq (if (listp attr) (car attr) attr) '|non-copy|)
+      (error (format nil "a typedef takes only (non-copy): ~A" attr))))
   (when (< (length def) 3) (error (format nil "syntax error ~A" def)))
   (set-ast-obj def
     (let ((tmp-typedef-spec *typedef-spec*)
-          (typedef-spec (make-specifier nil '|@TYPEDEF| nil nil nil nil nil nil nil)))
+          (typedef-spec (make-specifier nil '|@TYPEDEF| nil nil nil nil nil nil
+                                        (mapcar #'(lambda (a) (if (listp a) a (list a))) attrs))))
       (setf *typedef-spec* typedef-spec)
       (multiple-value-bind (const type modifier const-ptr variable array)
           (specify-type< (nthcdr 1 def))

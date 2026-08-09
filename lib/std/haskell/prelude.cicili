@@ -13,6 +13,7 @@
 (import "./tuple.cicili")
 (import "./data.cicili")
 (import "./bool.cicili")
+(import "./ordering.cicili")
 (import "./maybe.cicili")
 (import "./either.cicili")
 (import "./class.cicili")

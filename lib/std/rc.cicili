@@ -256,6 +256,96 @@
   ) ; impl-arc
 
 
+
+;;;; ------------------------------------------------------------------
+;;;; rcbox -- an rc a container can hold
+;;;;
+;;;; An rc is (non-copy), and that is the point: copying one without bumping the
+;;;; count is the double free the type exists to prevent. It also means a
+;;;; container that stores its payload BY VALUE cannot hold one -- a haskell
+;;;; List's (<> Cons a) takes an `a', and the specifier refuses a non-copy
+;;;; there. That refusal is correct and there is no arguing with it.
+;;;;
+;;;; So the container holds a POINTER to an rc. A pointer is copyable, the rc
+;;;; behind it is not, and the ownership rule is unchanged: whoever holds the
+;;;; pointer holds one reference, `clone' hands back a new pointer with the
+;;;; count bumped, and `free' drops one reference and the box with it.
+;;;;
+;;;; draft/collection/persistent-btree.cicili is what this is for -- its
+;;;; children are shared subtrees, which is what makes the tree persistent, and
+;;;; they live in a List.
+;;;;
+;;;; ONE ALLOCATION MORE THAN AN rc, which is the price of the indirection: the
+;;;; payload box, the count, and now the rc itself. A container of rcs is the
+;;;; case that needs it; anything holding an rc in a variable should use `rc'
+;;;; directly and pay for neither.
+;;;; ------------------------------------------------------------------
+
+(generic decl-rcbox
+  ;; NAME is the pointer type the container stores; A is the payload
+  (name a)
+
+  (decl-rc a)
+
+  (typedef (<> rc a) * name)
+
+  (decl) (func (<> new name)   ((a obj))   (out name))
+  (decl) (func (<> clone name) ((name box)) (out name))
+  (decl) (func (<> get name)   ((name box)) (out (<> Maybe ref a)))
+  (decl) (func (<> free name)  ((name box)))
+  (decl) (func (<> free name pointer) ((name * box)))
+
+  ) ; decl-rcbox
+
+
+(generic impl-rcbox
+  (name a)
+
+  (impl-rc a)
+
+  ;; The payload is copied into the rc's own box, so the caller's copy is spent
+  ;; -- for a class payload, which is a pointer, that copy is the pointer and
+  ;; there is nothing to double free. A non-copy payload wants `rc' directly.
+  (func (<> new name) ((a obj))
+        (out name)
+        (return (letn ((a ref ptr . #'(malloc (sizeof a)))
+                       (size_t * count . #'(malloc (sizeof size_t)))
+                       (name box . #'(malloc (sizeof (<> rc a)))))
+                  (memcpy ptr (aof obj) (sizeof a))
+                  (set (cof count) 1)
+                  (set (-> box ptr) ptr (-> box count) count)
+                  box)))
+
+  ;; a second pointer to the SAME rc would share the box, and freeing either
+  ;; would free it under the other -- so a clone is its own box over the same
+  ;; payload, with the count bumped once for it
+  (func (<> clone name) ((name box))
+        (out name)
+        (when (or (== box nil) (== (-> box ptr) nil) (== (-> box count) nil))
+          (return nil))
+        (++ (cof (-> box count)))
+        (return (letn ((name fresh . #'(malloc (sizeof (<> rc a)))))
+                  (set (-> fresh ptr) (-> box ptr) (-> fresh count) (-> box count))
+                  fresh)))
+
+  (inline)
+  (func (<> get name) ((name box))
+        (out (<> Maybe ref a))
+        (when (== box nil) (return (nothing)))
+        (return ((<> get rc a) box)))
+
+  (func (<> free name) ((name box))
+        (when box
+          ((<> free rc a) box)
+          (free box)))
+
+  (inline)
+  (func (<> free name pointer) ((name * box))
+        ((<> free name) (cof box)))
+
+  ) ; impl-rcbox
+
+
 ;;;; ------------------------------------------------------------------
 ;;;; front ends. These are cell's, with the count folded in -- not wrappers
 ;;;; round cell's, which is what made every rc borrow expand to two closures.

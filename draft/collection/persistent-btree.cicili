@@ -27,6 +27,13 @@
              (func show (((<> type Error) error))))
   
   ;; dependencies
+  ;;
+  ;; ORDERING IS ONE OF THEM NOW. It is what the caller's comparator answers
+  ;; with and what every descent here matches on, and it used to arrive
+  ;; pre-built in haskell.o. That object is gone, so the tree declares the type
+  ;; it requires rather than hoping the target thought of it -- decl-data's
+  ;; include guard makes a second B-Tree in the same target free.
+  (decl-Ordering)
   (decl-Either (<> type Error) type)
   (decl-Maybe type)
   (decl-Maybe (<> type pair_t))       ; search/min/max return Maybe pair_t
@@ -35,8 +42,27 @@
   (decl-List (<> List type pair_t) (<> type pair_t))
   (decl-Maybe (<> List type pair_t)) ; wleft parameters use Maybe (List pair_t)
   ;; children list
-  ;; list of Rcs wrap each child
-  (decl-Rc type)
+  ;;
+  ;; EACH CHILD IS A SHARED SUBTREE, which is what makes the tree persistent: an
+  ;; update copies the path it touches and leaves the rest alone, so a node can
+  ;; belong to several versions at once and the count is what says when the last
+  ;; one has gone.
+  ;;
+  ;; They are held as (<> Rc type), which decl-rcbox makes a POINTER to a std rc.
+  ;; A std rc is (non-copy) -- copying one without bumping the count is the
+  ;; double free it exists to prevent -- and a List stores its payload by value,
+  ;; so the list holds the pointer and the rc behind it stays uncopyable. The
+  ;; names below (new, clone, get, free) are the same ones the haskell Rc had.
+  (decl-rcbox (<> Rc type) type)
+  ;; A HASKELL Maybe OVER THE BOX, because every read of a child happens inside
+  ;; a match chain. std rc's own `get' answers with a std maybe holding a `ref',
+  ;; and a std maybe nested under `->' cannot be taken apart at all -- the outer
+  ;; `match' dispatches once and everything below it is match*'s, which knows
+  ;; constructors and not the tag/accessor pair a def-matchable registers.
+  ;;
+  ;; The payload is a `type', which is itself a pointer to the class, so handing
+  ;; it back by value copies a pointer and nothing else.
+  (decl) (func (<> deref Rc type) (((<> Rc type) box)) (out (<> Maybe type)))
   (decl-List (<> List (<> Rc type)) (<> Rc type))
   ;; fmap over 'Rc child' and 'List Rc child'
   (decl-Functor-List (<> List (<> Rc type)) (<> Rc type) (<> Rc type))
@@ -90,6 +116,7 @@
                      (default (printf "unknown error")))))
   
   ;; dependencies
+  (impl-Ordering)
   (impl-Either (<> type Error) type)
   (impl-Maybe type)
   (impl-Maybe (<> type pair_t))
@@ -97,9 +124,14 @@
   (impl-List (<> List type pair_t) (<> type pair_t) sh-item " ")
   (impl-Maybe (<> List type pair_t))
 
-  (impl-Rc type)
+  (impl-rcbox (<> Rc type) type)
+  (func (<> deref Rc type) (((<> Rc type) box))
+        (out (<> Maybe type))
+        (return (match ((<> get Rc type) box)
+                  (just child ((<> Just type) (cof child)))
+                  (nothing    ((<> Nothing type))))))
   (impl-List (<> List (<> Rc type)) (<> Rc type)
-             (\\ -f -wChild (match ((<> get Rc type) -wChild)
+             (\\ -f -wChild (match ((<> deref Rc type) -wChild)
                               (Just child ((<> show type) -f child))
                               (default 0)))
              " ")
@@ -493,7 +525,7 @@
               
               (return
                (match ((<> nth List Rc type) (+ index 1) children)
-                 (Just right_child_rc -> ((<> get Rc type) right_child_rc)
+                 (Just right_child_rc -> ((<> deref Rc type) right_child_rc)
                        (Just right_child -> right_child
                              (* Branch ~ Internal right_child_items right_child_children
                                 (case (== ((<> hasLen List type pair_t) right_child_items (<> L type)) (<> L type))
@@ -565,7 +597,7 @@
               
               (return
                (match ((<> nth List Rc type) (+ index 1) children)
-                 (Just right_child_rc -> ((<> get Rc type) right_child_rc)
+                 (Just right_child_rc -> ((<> deref Rc type) right_child_rc)
                        (Just right_child -> right_child
                              (* Leaf right_child_items
                                 (case (== ((<> hasLen List type pair_t) right_child_items (<> L type)) (<> L type))
@@ -603,7 +635,7 @@
         (return
          (letin* ((result
                    (match ((<> nth List Rc type) index children)
-                     (Just left_child_rc -> ((<> get Rc type) left_child_rc)
+                     (Just left_child_rc -> ((<> deref Rc type) left_child_rc)
                            (Just left_child -> left_child 
                                  (* Branch ~ Internal left_child_items left_child_children
                                     (case (== ((<> hasLen List type pair_t) left_child_items (<> L type)) (<> L type))
@@ -707,7 +739,7 @@
                        (LT -> ((<> nth List Rc type) index children) ; lower than
                            ;; using -> inner match application operator to prevent inner match keyword repeatition
                            ;; child exists
-                           (Just child -> ((<> get Rc type) child)
+                           (Just child -> ((<> deref Rc type) child)
                                  ;; if child tree pointer alive
                                  (Just tr -> tr
                                        (* Branch ~ Internal -> ((<> deleteWithParent type) tree
@@ -772,7 +804,7 @@
                     (default (match ((<> nth List Rc type) index children)
                                ;; using -> inner match application operator to prevent inner match keyword repeatition
                                ;; m+1 child exists
-                               (Just child -> ((<> get Rc type) child)
+                               (Just child -> ((<> deref Rc type) child)
                                      ;; if child tree pointer alive
                                      (Just tr -> tr
                                            ;; item is deleted
@@ -984,7 +1016,7 @@
                                        
                                        (LT -> ((<> nth List Rc type) index children)
                                            ;; has child
-                                           (Just child -> ((<> get Rc type) child)
+                                           (Just child -> ((<> deref Rc type) child)
                                                  (Just tr -> ((<> insert type) tr skey svalue)
                                                        (Right child_tree -> child_tree
                                                               ;; new Branch child
@@ -1050,7 +1082,7 @@
                                     (default (match ((<> nth List Rc type) index children)
                                                
                                                ;; has d+1 child
-                                               (Just child -> ((<> get Rc type) child) 
+                                               (Just child -> ((<> deref Rc type) child) 
                                                      (Just tr -> ((<> insert type) tr skey svalue)
                                                            (Right child_tree -> child_tree
                                                                   ;; new Branch child
@@ -1163,7 +1195,7 @@
                           (return (match current
                                     (* Cons (= head (\, key)) tail -> (cmp skey key)
                                        (LT -> ((<> nth List Rc type) index children)
-                                           (Just node -> ((<> get Rc type) node)
+                                           (Just node -> ((<> deref Rc type) node)
                                                  (Just tr ((<> search type) tr skey))
                                                  (default ((<> Nothing type pair_t))))
                                            (default ((<> Nothing type pair_t))))
@@ -1172,7 +1204,7 @@
                                        
                                        (default -> tail
                                                 (* Nil -> ((<> nth List Rc type) (+ index 1) children)
-                                                   (Just node -> ((<> get Rc type) node)
+                                                   (Just node -> ((<> deref Rc type) node)
                                                          (Just tr ((<> search type) tr skey))
                                                          (default ((<> Nothing type pair_t))))
                                                    (default ((<> Nothing type pair_t))))
@@ -1216,7 +1248,7 @@
                     (func minInternal (((<> List Rc type) first))
                           (out (<> Maybe type pair_t))
                           (return (match first
-                                    (* Cons head -> ((<> get Rc type) head)
+                                    (* Cons head -> ((<> deref Rc type) head)
                                        (Just child -> child
                                              (* Branch ~ Internal _ nchildren (minInternal nchildren))
                                              (* Leaf items (minLeaf items))
@@ -1250,7 +1282,7 @@
                           (out (<> Maybe type pair_t))
                           (return (match current
                                     (* Cons head tail -> tail
-                                       (* Nil -> ((<> get Rc type) head)
+                                       (* Nil -> ((<> deref Rc type) head)
                                           (Just child -> child
                                                 (* Branch ~ Internal _ nchildren (maxInternal nchildren))
                                                 (* Leaf items (maxLeaf items))
@@ -1279,7 +1311,7 @@
                     
                     (func traverseInternal (((<> List type pair_t) currentItem) ((<> List Rc type) currentChild))                   
                           (io currentChild
-                            (* Cons wheadC tailC -> ((<> get Rc type) wheadC)
+                            (* Cons wheadC tailC -> ((<> deref Rc type) wheadC)
                                (Just headC (io tailC
                                              (* Cons (block (io headC
                                                               (* Branch ~ Internal items children (traverseInternal items children))
@@ -1316,11 +1348,11 @@
                           (return (match children
                                     (* Cons head tail
                                        (+ (match tail
-                                            (* Cons (match ((<> get Rc type) head)
+                                            (* Cons (match ((<> deref Rc type) head)
                                                       (Just tr (+ (showTree indent tr)
                                                                   (fprintf file "\n")))
                                                       (default 0)))
-                                            (default (match ((<> get Rc type) head)
+                                            (default (match ((<> deref Rc type) head)
                                                        (Just tr (showTree indent tr))
                                                        (default 0))))
                                           (showChildren indent tail)))
@@ -1396,7 +1428,7 @@
 
   (import-List (<> List type pair_t) (<> type pair_t) (<> new List type pair_t))
 
-  (import-Rc type)
+  ;; import-Rc had no body; std rc needs no import step
   (import-List (<> List (<> Rc type)) (<> Rc type) (<> new List (<> Rc type)))
 
   (DEFMACRO ctor (&REST kvs)

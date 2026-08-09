@@ -1,0 +1,74 @@
+;;; test draft/collection/persistent-btree.cicili on std rc and std string
+;;;
+;;; A PERSISTENT tree shares subtrees between versions: an insert copies the
+;;; path it touches and leaves the rest alone, so one node belongs to several
+;;; versions at once and a reference count is what says when the last of them
+;;; has gone. That sharing is the reason this test exists and the reason it runs
+;;; under valgrind -- a child cloned without a matching free leaks a whole
+;;; subtree, and one freed twice reads through a dangling pointer, and neither
+;;; is visible at transpile time.
+;;;
+;;; Modelled on draft/tests/collection/btree.cicili, which tested the
+;;; Vector-spined btree that went with the box mechanic. The counts are checked
+;;; here rather than printed, so the test can fail rather than merely differ.
+(import "../../draft/collection/persistent-btree.cicili")
+
+(source "btree_persistent.c"
+  (make :std #t :haskell #t
+        :compile #t :link ("-lbtree_persistent.o" "-o" "btree_persistent"))
+
+  (decl-string)
+  (impl-string)
+
+  ;; id is the key and is not part of the value
+  (typedef (Tuple string int) User)
+
+  (static) (var int bad . 0)
+
+  (func check ((const char * what) (long got) (long want)) (out int)
+    (if (== got want)
+        (block (printf "ok   %-40s %ld\n" what got) (return 0))
+      (block (printf "FAIL %-40s got %ld want %ld\n" what got want) (return 1))))
+
+  (generic tree-type
+    (3t)
+
+    (decl-B-Tree 3t int User)
+
+    (func compareKey ((int lkey) (int rkey))
+          (out Ordering)
+          (return (case (<  lkey rkey) (LT)
+                        (== lkey rkey) (EQ)
+                        otherwise      (GT))))
+
+    (fn showKey -file -key
+        (fprintf -file "%d" -key))
+
+    (fn showItem -file -item
+        (match -item
+          ((\, id (\, name salary))
+           (+ (fprintf -file "(id: %d, name: " id)
+              (cast int (show_string -file (aof name)))
+              (fprintf -file ", salary: %d)" salary)))
+          (default 0)))
+
+    (impl-B-Tree 3t int User
+                 3          ; order
+                 compareKey
+                 showKey
+                 showItem))
+
+  (tree-type BTree_int_User)
+
+  (main
+    (letin* ((t0 ((<> new BTree_int_User))))
+      (+= bad (check "an empty tree has no minimum"
+                     (matchn ((<> min BTree_int_User) t0)
+                       (Just _ 1)
+                       (default 0))
+                     0)))
+
+    (if (== bad 0)
+        (printf "btree-persistent: all ok\n")
+      (printf "btree-persistent: %d FAILED\n" bad))
+    (return bad)))

@@ -1,0 +1,36 @@
+;;; This file is part of the :std library and shares its package. A library
+;;; owns its namespace instead of borrowing the import prefix's; the full
+;;; explanation is in doc/DOC-C.md, under "A library's package".
+(DEFPACKAGE :std
+  (:USE :COMMON-LISP)
+  (:IMPORT-FROM :COMMON-LISP-USER "import" "generic" "cicili"
+                                  "find-subseq" "expand-form<"))
+
+(IN-PACKAGE :std)
+
+
+;; data Ordering = LT EQ GT
+;;
+;; What a comparison ANSWERS, and the reason it is a type rather than an int:
+;; three cases named, so `case' over one is checked and a fourth is impossible.
+;; Every ordered container here takes a comparator returning one -- the btrees
+;; under draft/collection, the router, dynamic.
+;;
+;; It used to be emitted once into haskell.o by lib/haskell/c.cicili and reached
+;; by every target that linked it. There is no haskell.o now, so it is a pair of
+;; macros like Bool's next door and each target declares it for itself;
+;; decl-data's own include guard is what keeps two instantiations in one target
+;; from colliding.
+(DEFMACRO decl-Ordering ()
+  `(decl-data Ordering LT EQ GT
+     (func show ((FILE * file) (Ordering value)) (out int))))
+
+(DEFMACRO impl-Ordering ()
+  `(impl-data Ordering LT EQ GT
+
+     (func show ((FILE * file) (Ordering value))
+           (out int)
+           (return (match value
+                     (LT      (fprintf file "%s" "LT"))
+                     (EQ      (fprintf file "%s" "EQ"))
+                     (default (fprintf file "%s" "GT")))))))

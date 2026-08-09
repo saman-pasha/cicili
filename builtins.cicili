@@ -172,11 +172,24 @@
      ,@body))
 
 ;; accepts all variables, inferes type to find destructor
+;;
+;; A LEADING `*' IS ACCEPTED AND DROPPED: (* name init) binds exactly as
+;; (name init) does. It is the haskell layer's spelling -- its own `letin', now
+;; commented out in lib/std/haskell/haskell.cicili, used the marker to pick
+;; __h_free_class_router over __h_free_data_router, because a class instance is
+;; a pointer and a data value is not. Both are freed by name now, `free_T'
+;; whichever it is, so the distinction the marker drew no longer exists.
+;;
+;; Dropping it rather than rejecting it is what keeps the corpus that predates
+;; the change readable: draft/collection/persistent-btree alone writes it 36
+;; times, and the haskell tests and benchmarks throughout.
 (DEFMACRO letin (var-list &REST body)
   `(letn ,(APPLY 'APPEND
                  (MAP 'LIST #'(LAMBDA (var)
+                                (WHEN (AND (= (LENGTH var) 3) (CICILI:KEY-EQ (CAR var) '*))
+                                  (SETQ var (CDR var)))
                                 (WHEN (/= (LENGTH var) 2)
-                                  (ERROR (FORMAT NIL "wrong letin variable definition: ~A" var)))
+                                  (ERROR (FORMAT NIL "wrong letin variable definition: ~A -- want (name init) or (* name init)" var)))
                                 (MULTIPLE-VALUE-BIND (type full-type root-type) (CICILI:INFER-TYPE (CADR var))
                                   (LET ((type-name (NTH 1 full-type)))
                                     (UNLESS (SYMBOLP (NTH 1 full-type))

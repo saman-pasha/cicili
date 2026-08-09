@@ -319,11 +319,20 @@
   (IF (NULL cases)
       `($$$)
       (LET* ((case (CAR cases))
-             (~found (POSITION '~ case))) ; inner match application operator
-        
+             ;; inner match application operator
+             ;;
+             ;; BY NAME, not by symbol. This file reads in the :std package and
+             ;; the case it is looking at was read in the caller's, so the two
+             ;; `~' are different symbols and POSITION found neither -- the
+             ;; alternation marker was taken for a field to bind and became a
+             ;; letn named `~'. Everything else here already compares with
+             ;; KEY-EQ for the same reason.
+             (~found (POSITION '~ case :TEST #'CICILI:KEY-EQ)))
+
         (IF ~found ; outer most destructure only
             `(match*-case ,data
-               ,(APPEND (SUBSEQ case 0 ~found) (SUBSEQ case (+ (POSITION '~ case :FROM-END T) 2)))
+               ,(APPEND (SUBSEQ case 0 ~found)
+                        (SUBSEQ case (+ (POSITION '~ case :FROM-END T :TEST #'CICILI:KEY-EQ) 2)))
                ,(APPEND (LIST (APPEND (SUBSEQ case 0 (- ~found 1)) (SUBSEQ case (+ ~found 1)))) (CDR cases))
                ,is-io
                ,prev-args)

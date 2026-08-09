@@ -355,6 +355,12 @@
     ((and (key-eq '|move| bm) (key-eq '|move| tm)) '|move|)
     ((and (key-eq '|move| bm) (key-eq '|ref| tm)) tm)
     ((and (or (key-eq '|ref| bm) (key-eq '|*| bm)) (key-eq '|*|  tm))  '|**|)
+    ;; THE MIRROR OF THE LINE ABOVE, and it was missing. A star on the typedef
+    ;; and a `ref' on the variable is the same arrangement seen from the other
+    ;; side -- a borrow of a type that is itself a pointer -- and it arises
+    ;; wherever a haskell class is borrowed, since a class IS `class_T *'. Only
+    ;; the ref/star pairing needs saying: star over star is the case above.
+    ((and (key-eq '|*| bm) (key-eq '|ref| tm)) '|**|)
     ((and (or (key-eq '|ref| bm) (key-eq '|*| bm)) (key-eq '|**| tm)) '|***|)
     ((and (key-eq '|**| bm)) (key-eq '|*|  tm) '|***|)
     (t (error (format nil "invalid type combination for: ~A~%  base: ~A" type base)))))
@@ -683,31 +689,78 @@
               (str:starts-with-p "do"    lex-id))
       (return-from is-inside-loop t))))
 
+;; THE MODIFIER CAN LIVE ON THE TYPE RATHER THAN THE VARIABLE.
+;;
+;; assign-check below asks whether what it is about to copy is a pointer, and it
+;; used to ask the variable's own `modifier' alone. A typedef can carry the star
+;; instead -- a haskell class is `T' typedef'd to `class_T *', and
+;; lib/std/rc.cicili's rcbox is `Rc_T' typedef'd to `rc_T *' -- and then the
+;; variable has no modifier of its own while the value it holds is still a
+;; pointer. Copying a non-copy struct is refused, and rightly; copying a POINTER
+;; to one is how a container holds it and must be allowed.
+;;
+;; combine-types is what folds the two together, and asking it is the whole
+;; answer here. deep-storageof's `cof' branch has done exactly this all along,
+;; for the same reason and against the same kind of typedef.
+;;
+;; The fold stops as soon as the accumulated type HAS a modifier: there is
+;; nothing further to learn then, and combining two of them is
+;; combine-modifiers' business rather than this one's -- it raises on the pairs
+;; it has no answer for, and this is not the place to find that out. The step
+;; count is a backstop against a typedef cycle, not a real limit.
+(defun effective-type< (ty)
+  (let ((acc ty))
+    (dotimes (step 8 acc)
+      (when (modifier acc) (return acc))
+      (let* ((key (peel-type-tag< (typeof acc)))
+             (def (when (symbolp key) (*gets* key))))
+        (unless (and def (eql (construct def) '|@TYPEDEF|)) (return acc))
+        (setq acc (combine-types def acc))))))
+
+;; A `non-copy' declared ON A TYPEDEF, which is how a type that must be a C
+;; pointer says it is nonetheless not to be copied: a std file is `FILE *' so
+;; the C library accepts it, and (non-copy) so it is closed once. Saying so
+;; beats inferring copyability from the star, so this wins over the fold above
+;; in both directions -- it defeats the skip AND raises on its own.
+(defun typedef-non-copy< (ty)
+  (dolist (step (type-chain< ty) nil)
+    (let ((spec (*gets* step)))
+      (when (and spec (eql (construct spec) '|@TYPEDEF|) (find-attr spec '|non-copy|))
+        (return t)))))
+
 (defun assign-check (spec left right)
   (let ((initializing (when (find (construct spec) '(|@VAR| |@PARAM| |@LET| |@LETN| |@FUNC|)) t))
         (left-type (deep-typeof "" left)))
     (if left-type
-        (unless (or (and initializing (modifier left-type))
-                    (and (modifier left-type) (not (key-eq (modifier left-type) '|move|))))
-          (let ((left-origin (if (typep (typeof left-type) 'sp)
-                                 (deep-typeof "" (typeof left-type))
-                                 (deep-typeof (typeof left-type)))))
-            (when (and left-origin
-                       ;; (or (null right) (not (key-eq (name right) '|LETNMOVECAST|)))
-                       (key-eq (construct left-origin) '|@STRUCT|) (find-attr left-origin '|non-copy|))
-              (error (format nil "non-copy struct assignment for: ~A~%  by: ~A~%  inside: ~A~%" left right spec )))))
+        (let* ((declared (typedef-non-copy< (typeof left-type)))
+               (mod (modifier (effective-type< left-type))))
+          (unless (and (not declared)
+                       (or (and initializing mod)
+                           (and mod (not (key-eq mod '|move|)))))
+            (let ((left-origin (if (typep (typeof left-type) 'sp)
+                                   (deep-typeof "" (typeof left-type))
+                                   (deep-typeof (typeof left-type)))))
+              (when (or declared
+                        (and left-origin
+                             ;; (or (null right) (not (key-eq (name right) '|LETNMOVECAST|)))
+                             (key-eq (construct left-origin) '|@STRUCT|) (find-attr left-origin '|non-copy|)))
+                (error (format nil "non-copy struct assignment for: ~A~%  by: ~A~%  inside: ~A~%" left right spec ))))))
         (when right
           (let ((right-type (deep-typeof "" right)))
             (when right-type
-              (unless (or (and initializing (modifier left-type))
-                          (and (modifier right-type) (not (key-eq (modifier right-type) '|move|))))
-                (let ((right-origin (if (typep (typeof right-type) 'sp)
-                                 (deep-typeof "" (typeof right-type))
-                                 (deep-typeof (typeof right-type)))))
-                  (when (and right-origin
-                             ;; (not (key-eq (name right-origin) '|LETNMOVECAST|))
-                             (key-eq (construct right-origin) '|@STRUCT|) (find-attr right-origin '|non-copy|))
-                    (error (format nil "non-copy struct assignment for: ~A~%  by: ~A~%  inside: ~A~%" left right spec )))))))))))
+              (let* ((declared (typedef-non-copy< (typeof right-type)))
+                     (mod (modifier (effective-type< right-type))))
+                (unless (and (not declared)
+                             (or (and initializing (modifier left-type))
+                                 (and mod (not (key-eq mod '|move|)))))
+                  (let ((right-origin (if (typep (typeof right-type) 'sp)
+                                          (deep-typeof "" (typeof right-type))
+                                          (deep-typeof (typeof right-type)))))
+                    (when (or declared
+                              (and right-origin
+                                   ;; (not (key-eq (name right-origin) '|LETNMOVECAST|))
+                                   (key-eq (construct right-origin) '|@STRUCT|) (find-attr right-origin '|non-copy|)))
+                      (error (format nil "non-copy struct assignment for: ~A~%  by: ~A~%  inside: ~A~%" left right spec ))))))))))))
 
 (defun move-var (spec inside)
   (let ((origin (deep-storageof "" spec))) ; check for moved vars
