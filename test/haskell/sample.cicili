@@ -1,8 +1,7 @@
 
 ;;; gemini sample
 ;;; --- Monadic Data Validation in Cicili ---
-(source "sample.c" (:std #t :compile #t :link "-L{$CCL} -lhaskell.o -L{$CWD} sample.o -o main")
-        (include "../../haskell.h")
+(source "sample.c" (:std #t :compile #t :link "-L{$CWD} sample.o -o main")
 
         ;; Define a simple User type
         (typedef (Tuple String int) User)
@@ -23,7 +22,7 @@
         (func validate_name ((String name))
               (out Either_String_String)
               ;; (\.* len name) calls the 'len' method from the String's V-Table
-              (if (>= ((\.* len name) name) 5)
+              (if (>= (\.* len name name) 5)
                   (return (Right_String_String name))
                   (return (Left_String_String (new_String "Error: Name must be >= 5 chars")))))
 

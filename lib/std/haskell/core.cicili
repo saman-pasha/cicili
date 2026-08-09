@@ -1,0 +1,266 @@
+;;;; Haskell Thinking Model Implementation for Cicili
+;;; This file is part of the :std library and shares its package. A library
+;;; owns its namespace instead of borrowing the import prefix's; the full
+;;; explanation is in doc/DOC-C.md, under "A library's package".
+(DEFPACKAGE :std
+  (:USE :COMMON-LISP)
+  (:IMPORT-FROM :COMMON-LISP-USER "import" "generic" "cicili"
+                                  "find-subseq" "expand-form<"))
+
+(IN-PACKAGE :std)
+
+
+;; lambda calculus
+;; reducible
+;; single parameter
+;; outputs single irreducible clause
+;; (f n)
+(DEFMACRO lambda (macro param body)
+  `(DEFMACRO ,macro (arg)
+     (LET ((param ',param)
+           (body ',body))
+       (SETQ body (SUBST arg param body :TEST 'EQUAL))
+       `(,@body))))
+
+;; everything is a Lambda lalalalalalalalalalalalalalalalalalalalalala
+;; a series of lambdas
+;; ((f m) n)
+;; reducible function
+(DEFMACRO fn (macro param &REST body)
+  (LET ((macro (expand-form< macro)))
+    (WHEN (NULL body) (ERROR (FORMAT NIL "fn without any parameter or body: (~A ~A)" macro param)))
+    (LET* ((params (REVERSE (CDR (REVERSE (APPEND (LIST param) body)))))
+           (body (CAR (LAST body)))
+           (len (LENGTH params)))
+      (DOTIMES (i len)
+        (SETQ body
+              (LIST 'lambda
+                    (IF (> (- len i) 1) (INTERN (FORMAT NIL "~A_aa~D" macro (1- (- len i)))) macro)
+                    ;; THE PARAMETER KEEPS ITS OWN SYMBOL. Re-interning it
+                    ;; re-reads the name in whatever package is current when
+                    ;; this macro expands, and that is the CALLER's -- while
+                    ;; the body it has to be substituted into was read in the
+                    ;; package of the file the `fn' is written in. `lambda'
+                    ;; below substitutes with SUBST, so two symbols spelled the
+                    ;; same in different packages match nothing and the
+                    ;; parameter survives into the emitted code as a free
+                    ;; variable: "unknown symbol: a->b".
+                    ;;
+                    ;; It went unseen because the layer's own instantiations
+                    ;; happen at import time, where the current package IS the
+                    ;; library's and the two agreed by accident. A target
+                    ;; instantiating decl-Functor-List for itself is where they
+                    ;; part -- which is every use of the haskell layer from
+                    ;; outside it.
+                    (LET ((param (NTH (1- (- len i)) params)))
+                      (IF (SYMBOLP param) param (INTERN (FORMAT NIL "~A" param))))
+                    body)))
+      `(,@body))))
+
+;; '\' haskell lambda sign equivalent
+(DEFMACRO \\ (&REST body)
+  `(fn ,(GENSYM "__h_lambda") ,@body))
+
+;; where puts exactly the value of each var in place of it, and makes C functions Curry
+(DEFMACRO where (args body)
+  (IF args
+      `(,@(REDUCE #'LIST
+            (APPEND (LIST `(fn ,(GENSYM "__h_where") ,@(MAPCAR #'CAR args) ,body))
+              (MAPCAR #'CADR args))))
+      body))
+
+;; https://www.reddit.com/user/ckriesbeck/
+;; https://www.reddit.com/r/lisp/comments/m5grm5/split_list_into_sublists/
+(DEFUN partition-h-data (data sep)
+  (DO* ((tail data (MEMBER sep data :TEST 'EQUAL))
+        (lsts NIL (CONS (LDIFF data tail) lsts))
+        (data data (CDR tail)))
+       ((NULL data) (REVERSE lsts))))
+
+;; https://stackoverflow.com/users/34771/vatine
+;; https://stackoverflow.com/questions/13937520/pythons-range-analog-in-common-lisp
+(DEFUN range-h (max &KEY (min 0) (step 1))
+  (LOOP FOR n FROM min BELOW max BY step
+        COLLECT n))
+
+;; both function application and function compsition
+;; '$ for function application and '! for function composition
+;; pointfree style using $> for both haskell '$ and '. 
+;; a way to apply function to arguments in row
+;; ($> f m n)       instead of ((f m) n)
+;; ($> f m $ g $ x) instead of ((f m) (g x))
+;; ($> f m ! g $ x) instead of ((f m) (g x))
+(DEFUN replace-h-operator (op expr)
+  (LET ((parts (partition-h-data expr (CAR op))))
+    (IF (= 1 (LENGTH parts))
+        expr
+        (REDUCE #'(LAMBDA (x y)
+                    (LIST (CDR op) x y))
+          parts))))
+
+;; $ function application
+(DEFMACRO $> (&REST func-n-args)
+  (LET ((parts (partition-h-data func-n-args '$))
+        (result ()))
+    (DOLIST (p parts)
+      (LET ((pres (replace-h-operator (CONS '! '!>) p)))
+        (PUSH (IF (= 1 (LENGTH pres))
+                  (CAR pres)
+                  (IF (> (LENGTH pres) 2)
+                      (IF (EQUAL (CAR pres) (CDR (CONS '! '!>)))
+                          pres
+                          (REDUCE #'LIST pres))
+                      pres))
+          result)))
+    `(,@(REDUCE #'LIST (REVERSE result) :FROM-END T))))
+
+;; . function composition
+(DEFMACRO !> (lhs rhs)
+  (LET ((arg (INTERN (FORMAT NIL "__h_!_arg~A" (GENSYM))))
+        (result ()))
+    (DOLIST (p (LIST lhs rhs))
+      (PUSH (REDUCE #'LIST p) result))
+    (PUSH arg result)
+    `(\\ ,arg ,(REDUCE #'LIST (REVERSE result) :FROM-END T))))
+
+;; >>= monad binding facility
+;; in every step 'in' type is input and 'out' is output
+;; no >>= can handle more than one bind with two different input or output
+(DEFMACRO >>= (bind in out &REST steps)
+  (LET ((bind  (expand-form< bind))
+        (out   (expand-form< out))
+        (var   (CAR steps))
+        (there (CDR steps)))
+    (IF there
+        (IF (CICILI:KEY-EQ (CAR there) '<-)
+            `(,bind ,(CADR there)
+                    '(closure ((,in ,var))
+                      (out ,out)
+                      (return (>>= ,bind ,in ,out ,@(CDDR there)))))
+            (ERROR (FORMAT NIL ">>= syntax error")))
+        var)))
+
+;; | function guard
+;; otherwise case is required
+(DEFMACRO function-h-guard (fcond fpath otherwise elsepath &REST guards)
+  `(? ,fcond ,fpath ,(IF guards
+                         `(function-h-guard ,otherwise ,elsepath ,@guards)
+                         (IF (AND (ATOM otherwise) (CICILI:KEY-EQ otherwise 'otherwise))
+                             elsepath
+                             (ERROR (FORMAT NIL "case guards without otherwise"))))))
+
+;; | function guard
+(DEFMACRO case (fcond fpath otherwise elsepath &REST guards)
+  `(function-h-guard ,fcond ,fpath ,otherwise ,elsepath ,@guards))
+
+;; THE THREE TABLE ACCESSORS, all of them a call.
+;;
+;; A haskell value carries a pointer to its type's table of function pointers,
+;; and these reach into it: (\. show d stdout d) is d.__h_table->show(stdout, d).
+;; `=>' is the form for exactly that -- "call a function stored in a member" --
+;; and it reaches the member with `.', so a pointer to the table is opened with
+;; `cof' first, which is what its own documentation says to do (backend.lisp
+;; :1129).
+;;
+;; THEY USED TO NAME THE FUNCTION AND LEAVE THE CALL TO THE CALL SITE, written
+;; ((\. show d) stdout d), over `->'. That stopped working when `->' was reduced
+;; to member access only: the call site was calling the result of a member
+;; access rather than the member, and `auto' over it inferred the function
+;; POINTER's type instead of what the function returns. `=>' does both halves
+;; at once and has to be given the arguments, so the outer parentheses are gone
+;; from every call site.
+(DEFMACRO \. (function data &REST args)
+  `(=> (cof ($ ,data __h_table)) ,function ,@args))
+
+;; a way to access functions inside Table by class instance -- a class instance
+;; is already a pointer, so its table is reached with `->' rather than `.'
+(DEFMACRO \.* (function class &REST args)
+  `(=> (cof (-> ,class __h_table)) ,function ,@args))
+
+;; a way to access functions inside Table by getTable
+(DEFMACRO \.+ (function type &REST args)
+  `(=> (cof ((<> get ,type _H_Table))) ,function ,@args))
+
+;; helpers
+(DEFUN make-data-h-type-name (ct)
+  (INTERN (FORMAT NIL "__h_~A_t" (expand-form< ct))))
+
+(DEFUN make-data-h-ctor-name (ct)
+  (INTERN (FORMAT NIL "__h_~A_ctor" (expand-form< ct))))
+
+(DEFUN make-data-h-member-name (number)
+  (INTERN (FORMAT NIL "__h_~A_mem" number)))
+
+(DEFUN make-match-h-arg-name (id number)
+  (INTERN (FORMAT NIL "__h_~A_~A_arg" id number)))
+
+;; FREE A VALUE ONLY IF THE CALLER SAID IT OWNS ONE.
+;;
+;; Whether a generic's `a' is something that has to be freed is not knowable
+;; here: a Monoid over int has no free_int and never will, while one over
+;; List_int both has a free and leaks without it. So it is the caller's answer,
+;; given at the instantiation by writing `move' in a `mod-own' slot or leaving
+;; it out. An omitted mod slot is DELETED from the body rather than substituted
+;; with NIL (see subst-out< in builtins.cicili), so a call written
+;;
+;;   (free-owned mod-own (<> free a) (aof acc))
+;;
+;; arrives here with three arguments when they said `move' and two when they
+;; did not -- and answers with the free call or with nothing at all.
+(DEFMACRO free-owned (&REST args)
+  (IF (AND (CDDR args) (CICILI:KEY-EQ (CAR args) 'move))
+      `(,(CADR args) ,(CADDR args))
+      `($$$)))
+
+;; A NON-COPY PAYLOAD ARRIVES BY MOVE.
+;;
+;; A constructor stores what it is handed, and a non-copy value cannot be stored
+;; by copying -- that is the whole of what the attribute says. `move' is how the
+;; author of an ordinary function says "I take ownership of this", and a
+;; generated constructor has to say the same thing. It is not a preference: the
+;; by-value form is refused at the DECLARATION, before any call site exists, so
+;; without this a List of std string cannot be declared at all.
+;;
+;; COPYABLE PAYLOADS ARE LEFT ALONE, and must be. A `move' parameter carries a
+;; __cleanup__, so marking every payload would have a List of int trying to free
+;; its elements. A parameter that already names a modifier is left alone too --
+;; its author has said what they meant.
+;;
+;; PARAMS is the parsed form (const type modifier const-ptr variable array-def)
+;; and REAL-PARAMS the source form they were parsed from; the answer is
+;; REAL-PARAMS with `move' inserted where it is wanted.
+(DEFUN move-non-copy-params< (params real-params)
+  (MAPCAR #'(LAMBDA (param rp)
+              (IF (AND (LISTP rp) (= 2 (LENGTH rp))
+                       (NULL (NTH 2 param))
+                       (IGNORE-ERRORS (CICILI:IS-NON-COPY (NTH 1 param))))
+                  (LIST (CAR rp) 'move (CADR rp))
+                  rp))
+          params real-params))
+
+(DEFUN make-match-h-item-name (id number)
+  (INTERN (FORMAT NIL "__h_~A_~A_item" id number)))
+
+(DEFUN make-class-h-base-name (ct)
+  (INTERN (FORMAT NIL "class_~A" (expand-form< ct))))
+
+(DEFUN make-box-h-base-name (ct)
+  (INTERN (FORMAT NIL "~A_x" (expand-form< ct))))
+
+(DEFUN make-haslen-h-name (id)
+  (INTERN (FORMAT NIL "__h_has_len_~A" id)))
+
+;;; Read a value as a structurally identical sibling type: List_char as String,
+;;; List_int as a Str. Not a conversion -- the same bytes, a different name --
+;;; which is why it goes through a pointer.
+;;;
+;;; It was called `static-cast' and could not keep that name once this layer
+;;; became part of the prelude. C++'s static_cast is a documented Cicili form
+;;; with that exact spelling (doc/DOC-CPP.md, Casts) and a different meaning: it
+;;; CONVERTS, so (static-cast int 3.9) is 3, where this one would reinterpret
+;;; the bits of a double as an int. The two were never the same operation and
+;;; the collision was silent -- test/cpp/syntax.cicili started emitting
+;;; ((int)(*((int *)(&3.9)))), which C++ rejects for taking the address of a
+;;; temporary. That rejection is the only reason it was caught.
+(DEFMACRO coerce (type value)
+  `(cast ,type (cof (cast (,type *) (aof ,value)))))

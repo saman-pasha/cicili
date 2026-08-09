@@ -774,10 +774,22 @@
              (specify-code-expr pure))
             (t (error (format nil "wrong code form ~A" def)))))))
 
+;; A LIST CONSUMES A `move' THE SAME WAY A CALL DOES.
+;;
+;; This is both the elements of an aggregate literal -- (cast T '{ a b c }) --
+;; and the arguments of a method call through `->' or `=>'. Either way the value
+;; is being taken, and taking a `move' variable's value is what makes it spent:
+;; move-var copies it out, zeroes the source and marks it, so using it again
+;; raises rather than double-freeing.
+;;
+;; Without this a constructor that stores its argument in a struct literal kept
+;; the argument's __cleanup__ AND handed the value on, which frees it twice --
+;; and it is how every generated ADT constructor stores its payload.
 (defun specify-list-expr (def)
   ;; (set-ast-obj def
   (make-specifier nil '|@LIST| nil nil nil nil nil
-                  (loop for item in def collect (specify-expr (expand-macros item))) '()))
+                  (loop for item in def
+                        collect (move-var (specify-expr (expand-macros item)) def)) '()))
 ;; )
 
 (defun specify-unary-expr (def)
@@ -1029,7 +1041,24 @@
                           (if (key-eq symb 'QUASIQUOTE)
                               (eval (car (macroexpand `(,(car def) ,@(cdr def)))))
                               (if (> (length def) 1)
-                                  (let ((app (expand-macros (list symb (nth 1 def)))))
+                                  ;; THE ONE-ARGUMENT PROBE, and it must not be
+                                  ;; fatal. Applying the head to its first
+                                  ;; argument alone is how a curried `fn' is
+                                  ;; recognised -- (a_b 1) answering a_b_0 says
+                                  ;; the rest arrive one at a time -- and this
+                                  ;; `let' keeps only the side effect: its value
+                                  ;; is discarded and `def' is what the branch
+                                  ;; answers with either way.
+                                  ;;
+                                  ;; A head that is a macro REQUIRING more than
+                                  ;; one argument therefore raises for nothing.
+                                  ;; `match' is one since builtins started
+                                  ;; dispatching it: a curried fn whose body is
+                                  ;; a match reaches here already expanded to
+                                  ;; (match* value clauses NIL), and probing
+                                  ;; (match* value) died on the arity rather
+                                  ;; than answering "not curried".
+                                  (let ((app (ignore-errors (expand-macros (list symb (nth 1 def))))))
                                     (if (symbolp app)
                                         (if (> (length def) 2)
                                             (specify-call-expand (append (list app) (nthcdr 2 def))))
@@ -1360,8 +1389,24 @@
            (items (loop for i from 0 to (1- len)
                         for (x y) on (cdr def)
                         when (and (= (mod i 2) 0) (not (null y)))
-                        collect (let ((left-spec (specify-expr x))
-                                      (right-spec (specify-expr y)))
+                        collect (let* ((left-spec (specify-expr x))
+                                       ;; AN ASSIGNMENT MOVES WHAT A CALL WOULD MOVE.
+                                       ;;
+                                       ;; Passing a `move' variable to a function hands
+                                       ;; ownership over: move-var copies it, zeroes the
+                                       ;; source and marks it spent, so a second use is
+                                       ;; caught. Assigning one did none of that -- it
+                                       ;; arrived at assign-check as an ordinary copy,
+                                       ;; and for a non-copy type that is a refusal with
+                                       ;; nothing the author can write instead. Storing a
+                                       ;; std string in a struct member was impossible
+                                       ;; for exactly this reason.
+                                       ;;
+                                       ;; Only a `move' source is affected. move-var
+                                       ;; hands anything else straight back, so a plain
+                                       ;; copy of a non-copy value is still refused --
+                                       ;; which is the whole point of the attribute.
+                                       (right-spec (move-var (specify-expr y) def)))
                                   (assign-check set-spec left-spec right-spec) ; authority check
                                   (list left-spec right-spec)))))
       (setf (default set-spec) items)
@@ -1759,12 +1804,32 @@
       (setf (params include-var) heads)
       include-var)))
 
+;;; A TYPEDEF MAY CARRY `non-copy', and that is the only attribute it takes.
+;;;
+;;; A typedef to a pointer is copyable by default, because copying a pointer is
+;;; how a container holds one -- lib/std/rc.cicili's rcbox is `Rc_T' typedef'd
+;;; to `rc_T *' precisely so a List can hold a reference count whose struct is
+;;; (non-copy). Following the typedef down to that struct and refusing the copy
+;;; would defeat the indirection that exists to allow it.
+;;;
+;;; But some pointers OWN what they point at, and a typedef is how those reach
+;;; the C library: a std file has to be `FILE *' for fopen and fclose to accept
+;;; it, and must still be moved rather than copied so it is closed once. Saying
+;;; so is better than inferring it either way:
+;;;
+;;;   (non-copy) (typedef FILE * file)
+;;;
+;;; The attribute is recorded on the typedef itself, so assign-check consults
+;;; the chain and the answer is the one the author wrote.
 (defun specify-typedef (def attrs)
-  (when (> (length attrs) 0) (error (format nil "wrong attributes ~A" attrs)))
+  (dolist (attr attrs)
+    (unless (key-eq (if (listp attr) (car attr) attr) '|non-copy|)
+      (error (format nil "a typedef takes only (non-copy): ~A" attr))))
   (when (< (length def) 3) (error (format nil "syntax error ~A" def)))
   (set-ast-obj def
     (let ((tmp-typedef-spec *typedef-spec*)
-          (typedef-spec (make-specifier nil '|@TYPEDEF| nil nil nil nil nil nil nil)))
+          (typedef-spec (make-specifier nil '|@TYPEDEF| nil nil nil nil nil nil
+                                        (mapcar #'(lambda (a) (if (listp a) a (list a))) attrs))))
       (setf *typedef-spec* typedef-spec)
       (multiple-value-bind (const type modifier const-ptr variable array)
           (specify-type< (nthcdr 1 def))

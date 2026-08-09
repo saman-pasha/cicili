@@ -1,0 +1,81 @@
+;;; This file is part of the :std library and shares its package. A library
+;;; owns its namespace instead of borrowing the import prefix's; the full
+;;; explanation is in doc/DOC-C.md, under "A library's package".
+(DEFPACKAGE :std
+  (:USE :COMMON-LISP)
+  (:IMPORT-FROM :COMMON-LISP-USER "import" "generic" "cicili"
+                                  "find-subseq" "expand-form<"))
+
+(IN-PACKAGE :std)
+
+
+(import "./core.cicili")
+(import "./tuple.cicili")
+(import "./data.cicili")
+(import "./bool.cicili")
+(import "./ordering.cicili")
+(import "./maybe.cicili")
+(import "./either.cicili")
+(import "./class.cicili")
+(import "./match.cicili")
+
+;;; What is left of the old rc.cicili: the Arc that carries a mutex and
+;;; hands the payload to a callback under it. Cell and Rc are lib/std's
+;;; now, and lib/std/rc.cicili has an atomically-counted `arc' beside them
+;;; -- a different guarantee, kept separately on purpose.
+(import "./arc.cicili")
+(import "./list.cicili")
+;; the List's owning sibling -- it frees what it holds and answers with a
+;; borrow. The header of the file says why it is not the same generic.
+(import "./ownlist.cicili")
+(import "./range.cicili")
+;; the persistent B-Tree: a haskell class whose children are shared subtrees
+;; held behind std rc. It was a draft until it compiled, ran and came back clean
+;; under valgrind, which it now does -- test/std/btree-persistent.
+(import "./persistent-btree.cicili")
+(import "./monoid.cicili")
+(import "./functor.cicili")
+(import "./applicative.cicili")
+(import "./monad.cicili")
+(import "./haskell.cicili")
+
+(DEFMACRO init-macro ()
+  `($$$
+     (fn identity (-input) -input)
+
+     (fn showAsString -show -obj
+         (letn ((char * buffer . #'(cast (char *) (calloc 1024 (sizeof char))))
+                (defer () (fclose file))
+                (FILE * file . #'(fmemopen buffer 1024 "w+")))
+           (-show file -obj)
+           buffer))
+
+     (import-List   List_Bool Bool new_List_Bool)
+     (import-List   List_int  int  new_List_int)
+     (import-List   List_char char new_List_char)
+     
+     (import-Range  Range_int int)
+
+     (import-List List_List_int  List_int  new_List_List_int)
+     (import-List List_List_char List_char new_List_List_char)
+     ;; (import-List List_String    String    new_List_String)
+
+     (import-Monoid (<> All     Bool) Bool)
+     (import-Monoid (<> Any     Bool) Bool)
+     (import-Monoid (<> Sum     int)  int)
+     (import-Monoid (<> Product int)  int)
+     
+     (import-Monoid (<> List   Bool) (<> List Bool))
+     (import-Monoid (<> List   int)  (<> List int))
+     (import-Monoid (<> List   char) (<> List char))
+     ;; (import-Monoid (<> String char) (<> List char))
+
+     (import-Functor-List List_int_int   int  int)
+     (import-Functor-List List_int_char  int  char)
+     (import-Functor-List List_int_Bool  int  Bool)
+     (import-Functor-List List_char_char char char)
+     (import-Functor-List List_char_int  char int)
+     (import-Functor-List List_char_Bool char Bool)
+     
+     )
+  ) ; init-macro

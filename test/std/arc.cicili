@@ -1,0 +1,84 @@
+;;; test Cicili std arc -- an rc whose count is moved atomically
+;;;
+;;; The interesting claim is not that an arc compiles; it is that N threads may
+;;; clone one and drop it in any order and the payload is freed exactly once.
+;;; A non-atomic count passes every single-threaded check and fails this one, so
+;;; the thread section below is the test and the rest is scaffolding.
+;;;
+;;; `clone_rc' on an arc is not a slip: arc answers to rc's origin, so rc's
+;;; front ends resolve the arc instantiation and there is only one set of them.
+;;;
+;;; The arc is a local in `main' and reaches the workers as their argument: an
+;;; arc is (non-copy), so there is no assigning one into a file-scope variable,
+;;; which is the type system doing its job rather than an inconvenience.
+(source "arc.c"
+  (make :std #t
+        :compile #t :link ("-lpthread" "-larc.o" "-o" "arc_test"))
+
+  (include <pthread.h>)
+
+  (decl-array int)
+  (impl-array int)
+  (decl-arc array_int)
+  (impl-arc array_int)
+
+  (static) (var int bad . 0)
+
+  (func check ((const char * what) (long got) (long want)) (out int)
+    (if (== got want)
+        (block (printf "ok   %-34s %ld\n" what got) (return 0))
+      (block (printf "FAIL %-34s got %ld want %ld\n" what got want) (return 1))))
+
+  ;; Each thread clones the shared arc, reads through the clone, and drops it.
+  ;; The count goes up and down 40000 times with no lock anywhere. If either
+  ;; move is not indivisible the count drifts, and the drift shows up as a leak
+  ;; (final count above one) or a double free (a crash).
+  (func worker ((void * arg)) (out void *)
+    (let ((arc_array_int * shared . #'(cast (arc_array_int *) arg))
+          (int i . 0))
+      (while (< i 10000)
+        (letin ((mine (clone_rc (cof shared))))
+          (match ((<> get arc array_int) (aof mine))
+            (just arr (when (!= (len_array (cof arr)) 5) (set bad (+ bad 1))))
+            (nothing  (set bad (+ bad 1)))))
+        (set i (+ i 1))))
+    (return nil))
+
+  (main
+    (letin ((a01 (new_arc array (cast (const int []) '{ 1 2 3 4 5 }))))
+
+      ;; ---- the single-threaded surface, the same shape rc has -------
+      (+= bad (check "get on a live arc"
+                     (matchn ((<> get arc array_int) (aof a01))
+                       (just arr (cast long (len_array (cof arr))))
+                       (nothing -1))
+                     5))
+
+      (letin ((cl (clone_rc a01)))
+        (+= bad (check "a clone sees the same payload"
+                       (matchn ((<> get arc array_int) (aof cl))
+                         (just arr (cast long (len_array (cof arr))))
+                         (nothing -1))
+                       5)))
+
+      (+= bad (check "count back to one after the clone went"
+                     (cast long (cof ($ a01 count))) 1))
+
+      ;; ---- and the part that needs the atomics ----------------------
+      (let ((pthread_t t [4])
+            (int i . 0))
+        (while (< i 4)
+          (pthread_create (+ t i) nil worker (aof a01))
+          (set i (+ i 1)))
+        (set i 0)
+        (while (< i 4)
+          (pthread_join (nth i t) nil)
+          (set i (+ i 1))))
+
+      (+= bad (check "no reader saw a torn arc" (cast long bad) 0))
+      (+= bad (check "count survived 40000 clones" (cast long (cof ($ a01 count))) 1)))
+
+    (if (== bad 0)
+        (printf "arc: all ok\n")
+      (printf "arc: %d FAILED\n" bad))
+    (return bad)))

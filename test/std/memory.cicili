@@ -1,0 +1,106 @@
+;;; test Cicili std cell and rc -- borrowing, sharing, and the end of a life
+;;;
+;;; This was test/haskell/memory.cicili, written against the haskell Cell and Rc
+;;; that lib/std/cell.cicili and lib/std/rc.cicili replaced. What it checked is
+;;; worth keeping and reads the same either way: a cell holds a value or it does
+;;; not, an rc's payload lives until the last owner drops it, and reaching into
+;;; either is a case rather than a null check.
+;;;
+;;; It moved to test/std because that is where the types are now. `get' is the
+;;; new part -- the haskell versions had one and lib/std's did not, and this is
+;;; where it earns its place: an expression that answers, rather than a `let_rc'
+;;; block that has to wrap whatever comes next.
+(source "memory.c"
+  (make :std #t
+        :compile #t :link ("-lmemory.o" "-o" "memory_test"))
+
+  (decl-array int)
+  (impl-array int)
+
+  (decl-cell array_int)
+  (impl-cell array_int)
+  (decl-rc array_int)
+  (impl-rc array_int)
+
+  (static) (var int bad . 0)
+
+  ;; An empty cell and a dead rc cannot be written as a local: both types are
+  ;; (non-copy), so there is no assigning one into a variable -- the same
+  ;; refusal lib/std/string.cicili ran into. They come back from a call instead,
+  ;; which is how vector's `new' builds one too.
+  (func empty_cell () (out cell_array_int)
+    (return (cast cell_array_int '{ nil })))
+
+  (func dead_rc () (out rc_array_int)
+    (return (cast rc_array_int '{ nil nil })))
+
+  (func check ((const char * what) (long got) (long want)) (out int)
+    (if (== got want)
+        (block (printf "ok   %-40s %ld\n" what got) (return 0))
+      (block (printf "FAIL %-40s got %ld want %ld\n" what got want) (return 1))))
+
+  (main
+    ;; ---- a cell holds one value, borrowed not owned -------------------
+    (letin ((c01 (new cell array (cast (int []) '{ 1 2 3 4 }))))
+
+      (+= bad (check "get on a full cell"
+                     (matchn ((<> get cell array_int) (aof c01))
+                       (just arr (cast long (len_array (cof arr))))
+                       (nothing -1))
+                     4))
+
+      ;; the borrow is a pointer INTO the cell, so writing through it writes
+      ;; the cell -- which is the whole reason `get' answers with a ref
+      (match ((<> get cell array_int) (aof c01))
+        (just arr (set (nth 0 (-> arr arr)) 99))
+        (nothing  (set bad (+ bad 1))))
+
+      (+= bad (check "and the write went through it"
+                     (matchn ((<> get cell array_int) (aof c01))
+                       (just arr (cast long (nth 0 (-> arr arr))))
+                       (nothing -1))
+                     99)))
+
+    ;; ---- an emptied cell answers nothing, it does not crash -----------
+    (letin ((c02 (empty_cell)))
+      (+= bad (check "get on an empty cell"
+                     (matchn ((<> get cell array_int) (aof c02))
+                       (just _ 1)
+                       (nothing 0))
+                     0)))
+
+    ;; ---- an rc's payload outlives every owner but the last ------------
+    (letin ((r01 (new rc array (cast (int []) '{ 5 6 7 }))))
+
+      (+= bad (check "a fresh rc is sole" (cast long (sole_rc r01)) 1))
+
+      (letin ((r02 (clone_rc r01)))
+        (+= bad (check "a clone shares the payload"
+                       (matchn ((<> get rc array_int) (aof r02))
+                         (just arr (cast long (len_array (cof arr))))
+                         (nothing -1))
+                       3))
+        (+= bad (check "and neither is sole any more" (cast long (sole_rc r01)) 0))
+
+        ;; the clone is dropped here by letin, and the payload must survive it
+        )
+
+      (+= bad (check "the payload survived the clone"
+                     (matchn ((<> get rc array_int) (aof r01))
+                       (just arr (cast long (len_array (cof arr))))
+                       (nothing -1))
+                     3))
+      (+= bad (check "and the original is sole again" (cast long (sole_rc r01)) 1)))
+
+    ;; ---- a dead rc reads as nothing rather than as a dangling pointer --
+    (letin ((r03 (dead_rc)))
+      (+= bad (check "get on a dead rc"
+                     (matchn ((<> get rc array_int) (aof r03))
+                       (just _ 1)
+                       (nothing 0))
+                     0)))
+
+    (if (== bad 0)
+        (printf "memory: all ok\n")
+      (printf "memory: %d FAILED\n" bad))
+    (return bad)))

@@ -67,12 +67,26 @@
                                     (let* ((ty-def (let ((n (peel-type-tag< (typeof ty))))
                                                      (when (symbolp n) (*gets* n))))
                                            (modifier
-                                            ;; combine only against a TYPEDEF that carries a modifier
-                                            ;; of its own -- combining against the @STRUCT every other
-                                            ;; type resolves to is an invalid combination
-                                            (if (and ty-def (eql (construct ty-def) '|@TYPEDEF|) (modifier ty-def))
-                                                (modifier (combine-types ty-def ty))
-                                                (modifier ty)))
+                                            (cond
+                                              ;; combine only against a TYPEDEF that carries a modifier
+                                              ;; of its own -- combining against the @STRUCT every other
+                                              ;; type resolves to is an invalid combination
+                                              ((and ty-def (eql (construct ty-def) '|@TYPEDEF|) (modifier ty-def))
+                                               (modifier (combine-types ty-def ty)))
+                                              ((modifier ty) (modifier ty))
+                                              ;; A TYPE MAY BE AN EXPRESSION RATHER THAN A NAME, and then
+                                              ;; the modifier is on whatever it resolves to. `match'
+                                              ;; declares every binding it makes as
+                                              ;; ((typeof ($ ($ v __h_data) Ctor __h_0_mem)) name), so a
+                                              ;; field declared (a * pointer) gives a binding with no
+                                              ;; modifier of its own and a star one step away. Without
+                                              ;; this, (cof pointer) on such a binding fell through every
+                                              ;; branch to "'cof not allowed" -- which is what the whole
+                                              ;; haskell Arc does inside its lock.
+                                              (t (let ((n (peel-type-tag< (typeof ty))))
+                                                   (when (typep n 'sp)
+                                                     (let ((resolved (deep-typeof "" n)))
+                                                       (when resolved (modifier resolved))))))))
                                            (mod-val (cond
                                                       ;; a `ref' is a borrow. Dereferencing one YIELDS a
                                                       ;; move only when the pointee cannot be copied --
@@ -139,17 +153,82 @@
 
 ;; deeply traverse spec tree to find lexeme id for a type
 ;; type inference back-end
+;; The function typedef behind a callee, or NIL when it is not one.
+;;
+;; A CALL THROUGH A FUNCTION POINTER IS NOT A CALL TO A FUNCTION. Calling a name
+;; resolves to the @FUNC, whose `typeof' is already the return type. Calling a
+;; variable, or a struct member holding a pointer, resolves to the thing that
+;; HOLDS the pointer -- and its type is the pointer's typedef, which is what
+;; (let ((auto r . #'(g 7)))) used to infer where it meant `long'.
+;;
+;; The test is on SHAPE, not on construct, because the same function-pointer
+;; type arrives wearing three different ones: as the @TYPEDEF itself, as a
+;; struct member that carries the typedef expanded inline, and as a variable
+;; merely typed by it. Anything whose `typeof' is func and whose array-def holds
+;; an @FUNC is one, whatever declared it -- and that @FUNC carries the return
+;; type. Requiring @TYPEDEF here answered correctly for a function-pointer
+;; VARIABLE and still wrongly for a table of them, which is the case that
+;; matters: every haskell data type reaches its functions through one.
+(defun func-typedef-of< (callee)
+  (flet ((fn-shaped-p (s)
+           (and s
+                (not (eql (construct s) '|@FUNC|))
+                (key-eq (typeof s) '|func|)
+                (let ((inner (car (array-def s))))
+                  (and (typep inner 'sp) (eql (construct inner) '|@FUNC|))))))
+    (cond ((null callee) nil)
+          ((eql (construct callee) '|@FUNC|) nil)
+          ((fn-shaped-p callee) callee)
+          (t (let ((c (*gets* (peel-type-tag< (typeof callee)))))
+               (when (fn-shaped-p c) c))))))
+
 (defun deep-typeof (id &optional spec too-deep)
   (let ((deep-res 
             (let* ((id (if (and (listp id) (key-eq (car id) '|struct|)) (cadr id) id))
-                   (spec (if spec spec (*gets* id))))
+                   ;; A TYPE SLOT MAY HOLD A SPECIFIER RATHER THAN A NAME, and
+                   ;; every caller here passes a `typeof' straight back in. A
+                   ;; variable declared (typeof X) carries an @TYPEOF in that
+                   ;; slot -- lib/std/haskell/match.cicili declares its
+                   ;; destructured bindings that way, ((typeof (\$ d __h_data
+                   ;; Just __h_0_mem)) arg) -- and peel-type-tag< says so in as
+                   ;; many words: a specifier is handed back untouched for the
+                   ;; caller to resolve further. This was the one caller that
+                   ;; did not, and looked it up instead: (*gets* <specifier>)
+                   ;; asks SYMBOL-NAME of it and dies "is not of type SYMBOL".
+                   ;;
+                   ;; Resolving it is just recognising it -- the @TYPEOF branch
+                   ;; below already knows what to do with one.
+                   (spec (cond (spec spec)
+                               ((typep id 'sp) id)
+                               (t (*gets* id)))))
               (if spec
                   (let ((const-val (construct spec)))
                     (cond ((eql const-val '|@ATOM|) spec)
                           ((key-eq (typeof spec) '|auto|) (deep-typeof id (default spec))) ; var or param
                           ((eql const-val '|@CALL|)
-                           (let ((name-val (name spec)))
-                             (if (typep name-val 'sp) (deep-typeof id name-val) (*gets* name-val))))
+                           (let* ((name-val (name spec))
+                                  (callee (if (typep name-val 'sp)
+                                              (deep-typeof id name-val)
+                                              (*gets* name-val))))
+                             ;; A CALL THROUGH A FUNCTION POINTER IS NOT A CALL
+                             ;; TO A FUNCTION. Calling a name resolves to the
+                             ;; @FUNC, whose `typeof' is already the return
+                             ;; type. Calling a variable or a struct member
+                             ;; resolves to the thing that HOLDS the pointer,
+                             ;; and its type is the pointer's typedef -- so
+                             ;; (let ((auto r . #'(g 7)))) inferred `getter_t'
+                             ;; where it meant `long', and a table of function
+                             ;; pointers -- which is what every haskell data
+                             ;; type carries -- could not be called at all:
+                             ;; "unknown struct type: func".
+                             ;;
+                             ;; A function typedef is `typeof' func with the
+                             ;; @FUNC in its array-def, and that @FUNC carries
+                             ;; the return type. One more step is the whole fix.
+                             (let ((td (func-typedef-of< callee)))
+                               (if (and td (car (array-def td)))
+                                   (or (deep-typeof (typeof (car (array-def td)))) callee)
+                                   callee))))
                           ((eql const-val '|@VAR|) spec)
                           ((eql const-val '|@PARAM|) spec)
                           ((eql const-val '|@FUNC|) spec)
@@ -170,12 +249,79 @@
                                        (t ty))
                                  nil)))
                           ((eql const-val '|@OPR|) (deep-typeof id (car (default spec))))
-                          ((or (eql const-val '|@$|) (eql const-val '|@->|))
+                          ;; `-->' joins them. It reaches a member exactly as
+                          ;; `->' does and only declines to call it, so the
+                          ;; member's declaration is the answer for both -- and
+                          ;; it was missing here, which left every (--> x m)
+                          ;; with no type at all. The layer that needs it is
+                          ;; lib/std/haskell, where (\. f d) NAMES a function
+                          ;; for the call site to call.
+                          ;; `=>' joins them too, and then takes one more step.
+                          ;; All four reach a member of an aggregate and resolve
+                          ;; to its declaration; `=>' additionally CALLS what it
+                          ;; found, so where the others answer with the member,
+                          ;; it answers with what the member returns. That is
+                          ;; the whole difference, and it is why (=> obj m a b)
+                          ;; had no type at all before: this branch knew @$ and
+                          ;; @-> only, so a member holding a function could be
+                          ;; called but never bound, inferred or returned.
+                          ((or (eql const-val '|@$|)
+                               (eql const-val '|@->|)
+                               (eql const-val '|@-->|)
+                               (eql const-val '|@=>|))
                            (let ((struct (deep-typeof id (name spec))))
                              (when struct
                                (let ((end-type (deep-typeof (typeof struct))))
                                  (unless end-type (error "unknown struct type: ~A~%  accessed in: ~A~%" (typeof struct) spec))
-                                 (*gets* (intern (format nil "~A/~A"  (default spec) (typeof end-type))))))))
+                                 ;; `=>' keeps its member as a SPECIFIED
+                                 ;; expression rather than a bare symbol -- it
+                                 ;; is resolved inside the receiver's scope
+                                 ;; (specifier.lisp:993) -- so the name has to
+                                 ;; be taken back out of it. The other three
+                                 ;; hold the symbol itself.
+                                 (let* ((mem (default spec))
+                                        (mem-name (if (typep mem 'sp) (default mem) mem))
+                                        ;; THE FIRST TYPE REACHED IS NOT ALWAYS
+                                        ;; THE ONE HOLDING THE MEMBER. Members
+                                        ;; are keyed `member/Type', and the type
+                                        ;; a receiver resolves to may be a
+                                        ;; typedef standing in front of the
+                                        ;; struct that declares them -- a
+                                        ;; haskell class is `X' typedef'd to
+                                        ;; `class_X *', and every member lives
+                                        ;; on class_X. One lookup answered for
+                                        ;; the receivers that land on the struct
+                                        ;; directly and silently returned NIL
+                                        ;; for the rest, which is how a whole
+                                        ;; member chain came back untyped with
+                                        ;; nothing said about why.
+                                        ;;
+                                        ;; deep-storageof has walked the chain
+                                        ;; like this all along (see its `t'
+                                        ;; branch); this is the same walk. The
+                                        ;; step count is a backstop against a
+                                        ;; typedef cycle, not a real limit --
+                                        ;; nothing legitimate is eight typedefs
+                                        ;; deep.
+                                        (member-spec
+                                         (let ((ty (typeof end-type)))
+                                           (loop repeat 8
+                                                 for key = (peel-type-tag< ty)
+                                                 for hit = (unless (typep key 'sp)
+                                                             (*gets* (intern (format nil "~A/~A" mem-name key))))
+                                                 when hit return hit
+                                                 do (let ((next (if (typep key 'sp)
+                                                                    (deep-typeof "" key)
+                                                                    (deep-typeof key))))
+                                                      (when (or (null next) (equal (typeof next) ty))
+                                                        (return nil))
+                                                      (setq ty (typeof next)))))))
+                                   (if (eql const-val '|@=>|)
+                                       (let ((td (func-typedef-of< member-spec)))
+                                         (if (and td (car (array-def td)))
+                                             (or (deep-typeof (typeof (car (array-def td)))) member-spec)
+                                             member-spec))
+                                       member-spec))))))
                           ((eql const-val '|@TYPEDEF|)
                            ;; Deliberately DISCARDS the typedef's own modifier.
                            ;; Combining it here instead -- the commented line --
@@ -223,6 +369,12 @@
     ((and (key-eq '|move| bm) (key-eq '|move| tm)) '|move|)
     ((and (key-eq '|move| bm) (key-eq '|ref| tm)) tm)
     ((and (or (key-eq '|ref| bm) (key-eq '|*| bm)) (key-eq '|*|  tm))  '|**|)
+    ;; THE MIRROR OF THE LINE ABOVE, and it was missing. A star on the typedef
+    ;; and a `ref' on the variable is the same arrangement seen from the other
+    ;; side -- a borrow of a type that is itself a pointer -- and it arises
+    ;; wherever a haskell class is borrowed, since a class IS `class_T *'. Only
+    ;; the ref/star pairing needs saying: star over star is the case above.
+    ((and (key-eq '|*| bm) (key-eq '|ref| tm)) '|**|)
     ((and (or (key-eq '|ref| bm) (key-eq '|*| bm)) (key-eq '|**| tm)) '|***|)
     ((and (key-eq '|**| bm)) (key-eq '|*|  tm) '|***|)
     (t (error (format nil "invalid type combination for: ~A~%  base: ~A" type base)))))
@@ -551,31 +703,91 @@
               (str:starts-with-p "do"    lex-id))
       (return-from is-inside-loop t))))
 
+;; THE MODIFIER CAN LIVE ON THE TYPE RATHER THAN THE VARIABLE.
+;;
+;; assign-check below asks whether what it is about to copy is a pointer, and it
+;; used to ask the variable's own `modifier' alone. A typedef can carry the star
+;; instead -- a haskell class is `T' typedef'd to `class_T *', and
+;; lib/std/rc.cicili's rcbox is `Rc_T' typedef'd to `rc_T *' -- and then the
+;; variable has no modifier of its own while the value it holds is still a
+;; pointer. Copying a non-copy struct is refused, and rightly; copying a POINTER
+;; to one is how a container holds it and must be allowed.
+;;
+;; combine-types is what folds the two together, and asking it is the whole
+;; answer here. deep-storageof's `cof' branch has done exactly this all along,
+;; for the same reason and against the same kind of typedef.
+;;
+;; The fold stops as soon as the accumulated type HAS a modifier: there is
+;; nothing further to learn then, and combining two of them is
+;; combine-modifiers' business rather than this one's -- it raises on the pairs
+;; it has no answer for, and this is not the place to find that out. The step
+;; count is a backstop against a typedef cycle, not a real limit.
+(defun effective-type< (ty)
+  (let ((acc ty))
+    (dotimes (step 8 acc)
+      (when (modifier acc) (return acc))
+      (let* ((key (peel-type-tag< (typeof acc)))
+             (def (when (symbolp key) (*gets* key))))
+        (unless (and def (eql (construct def) '|@TYPEDEF|)) (return acc))
+        (setq acc (combine-types def acc))))))
+
+;; A `non-copy' declared ON A TYPEDEF, which is how a type that must be a C
+;; pointer says it is nonetheless not to be copied: a std file is `FILE *' so
+;; the C library accepts it, and (non-copy) so it is closed once. Saying so
+;; beats inferring copyability from the star, so this wins over the fold above
+;; in both directions -- it defeats the skip AND raises on its own.
+(defun typedef-non-copy< (ty)
+  (dolist (step (type-chain< ty) nil)
+    (let ((spec (*gets* step)))
+      (when (and spec (eql (construct spec) '|@TYPEDEF|) (find-attr spec '|non-copy|))
+        (return t)))))
+
+;; IS THE VALUE BEING HANDED OVER RATHER THAN COPIED?
+;;
+;; move-var answers a LETNMOVECAST when it consumes a `move' variable: the value
+;; is copied out, the source is zeroed and marked spent, and using it again
+;; raises. That is a transfer of ownership, not a duplication, and it is exactly
+;; what a non-copy type permits -- refusing it leaves an author who owns a std
+;; string with no way at all to store it.
+;;
+;; Only move-var can produce one, and only from a variable the author declared
+;; `move', so this cannot be reached by writing an ordinary copy.
+(defun moved-in< (right)
+  (when right (key-eq (name right) '|LETNMOVECAST|)))
+
 (defun assign-check (spec left right)
   (let ((initializing (when (find (construct spec) '(|@VAR| |@PARAM| |@LET| |@LETN| |@FUNC|)) t))
         (left-type (deep-typeof "" left)))
     (if left-type
-        (unless (or (and initializing (modifier left-type))
-                    (and (modifier left-type) (not (key-eq (modifier left-type) '|move|))))
-          (let ((left-origin (if (typep (typeof left-type) 'sp)
-                                 (deep-typeof "" (typeof left-type))
-                                 (deep-typeof (typeof left-type)))))
-            (when (and left-origin
-                       ;; (or (null right) (not (key-eq (name right) '|LETNMOVECAST|)))
-                       (key-eq (construct left-origin) '|@STRUCT|) (find-attr left-origin '|non-copy|))
-              (error (format nil "non-copy struct assignment for: ~A~%  by: ~A~%  inside: ~A~%" left right spec )))))
+        (let* ((declared (typedef-non-copy< (typeof left-type)))
+               (mod (modifier (effective-type< left-type))))
+          (unless (or (moved-in< right)
+                      (and (not declared)
+                           (or (and initializing mod)
+                               (and mod (not (key-eq mod '|move|))))))
+            (let ((left-origin (if (typep (typeof left-type) 'sp)
+                                   (deep-typeof "" (typeof left-type))
+                                   (deep-typeof (typeof left-type)))))
+              (when (or declared
+                        (and left-origin
+                             (key-eq (construct left-origin) '|@STRUCT|) (find-attr left-origin '|non-copy|)))
+                (error (format nil "non-copy struct assignment for: ~A~%  by: ~A~%  inside: ~A~%" left right spec ))))))
         (when right
           (let ((right-type (deep-typeof "" right)))
             (when right-type
-              (unless (or (and initializing (modifier left-type))
-                          (and (modifier right-type) (not (key-eq (modifier right-type) '|move|))))
-                (let ((right-origin (if (typep (typeof right-type) 'sp)
-                                 (deep-typeof "" (typeof right-type))
-                                 (deep-typeof (typeof right-type)))))
-                  (when (and right-origin
-                             ;; (not (key-eq (name right-origin) '|LETNMOVECAST|))
-                             (key-eq (construct right-origin) '|@STRUCT|) (find-attr right-origin '|non-copy|))
-                    (error (format nil "non-copy struct assignment for: ~A~%  by: ~A~%  inside: ~A~%" left right spec )))))))))))
+              (let* ((declared (typedef-non-copy< (typeof right-type)))
+                     (mod (modifier (effective-type< right-type))))
+                (unless (or (moved-in< right)
+                            (and (not declared)
+                                 (or (and initializing (modifier left-type))
+                                     (and mod (not (key-eq mod '|move|))))))
+                  (let ((right-origin (if (typep (typeof right-type) 'sp)
+                                          (deep-typeof "" (typeof right-type))
+                                          (deep-typeof (typeof right-type)))))
+                    (when (or declared
+                              (and right-origin
+                                   (key-eq (construct right-origin) '|@STRUCT|) (find-attr right-origin '|non-copy|)))
+                      (error (format nil "non-copy struct assignment for: ~A~%  by: ~A~%  inside: ~A~%" left right spec ))))))))))))
 
 (defun move-var (spec inside)
   (let ((origin (deep-storageof "" spec))) ; check for moved vars

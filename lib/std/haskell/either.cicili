@@ -1,0 +1,35 @@
+;;; This file is part of the :std library and shares its package. A library
+;;; owns its namespace instead of borrowing the import prefix's; the full
+;;; explanation is in doc/DOC-C.md, under "A library's package".
+(DEFPACKAGE :std
+  (:USE :COMMON-LISP)
+  (:IMPORT-FROM :COMMON-LISP-USER "import" "generic" "cicili"
+                                  "find-subseq" "expand-form<"))
+
+(IN-PACKAGE :std)
+
+
+(generic decl-Either
+  (e a)
+
+  ;; suitable Error Handling
+  ;; data Either = Left e | Right a         
+  (decl-data (Either (<> Either e a))
+    (= Right (<> Right e a) (a value))
+    (= Left  (<> Left e a) (e error)))
+  
+  ) ; decl-Either
+
+(generic impl-Either
+  (e a)
+  
+  (impl-data (Either (<> Either e a))
+    (= Right (<> Right e a) (a value))
+    (= Left  (<> Left e a) (e error)))
+  
+  ) ; impl-Either
+
+(generic import-Either
+  (e a)
+
+  ) ; import-Either

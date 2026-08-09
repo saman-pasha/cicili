@@ -1,0 +1,93 @@
+;;; This file is part of the :std library and shares its package. A library
+;;; owns its namespace instead of borrowing the import prefix's; the full
+;;; explanation is in doc/DOC-C.md, under "A library's package".
+(DEFPACKAGE :std
+  (:USE :COMMON-LISP)
+  (:IMPORT-FROM :COMMON-LISP-USER "import" "generic" "cicili"
+                                  "find-subseq" "expand-form<"))
+
+(IN-PACKAGE :std)
+
+
+(generic decl-Range
+  (type a list-t)
+
+  (decl-class (List type)
+    (= Cons (<> Cons type)
+       (a from)
+       (a to)
+       (a step))
+    (= Nil (<> Nil type))
+    (func next ((type list)) (out type))
+    (func take ((int len) (type list)) (out list-t))
+    (func drop ((int len) (type list)) (out type))
+    (func show ((FILE * file) (type list)) (out int)))
+
+  (decl) (func (<> new type) ((a from) (a to) (a step)) (out type))
+  
+  ) ; decl-Range
+
+(generic impl-Range
+  (type a list-t fmt sep)
+
+  (impl-class (List type)
+    (= Cons (<> Cons type)
+       (a from)
+       (a to)
+       (a step))
+    (= Nil (<> Nil type))
+
+    (func next ((type list))
+          (out type)
+          (return (match list
+                    (* Cons from to step <!> (<= (+ from step) to)
+                       ((<> Cons type) (+ from step) to step))
+                    (default ((<> Nil type))))))
+    
+    (func take ((int len) (type list))
+          (out list-t)
+          (return (match list
+                    (* Cons from <!> (> len 0)
+                       (letn ((auto ne . #'((<> next type) list)))
+                         (match ne
+                           (* Cons ((<> Cons a) from ((<> take type) (-- len) ne)))
+                           (default ((<> Cons a) from ((<> Nil a)))))))
+                    (default ((<> Nil a))))))
+    
+    (func drop ((int len) (type list))
+          (out type)
+          (return (match list
+                    (* Cons <!> (> len 0)
+                       (letn ((auto ne . #'((<> next type) list)))
+                         (match ne
+                           (* Cons ((<> drop type) (-- len) ne))
+                           (default list))))
+                    (default list))))
+
+    (func show ((FILE * file) (type list))
+          (out int)
+          (return (match list
+                    (* Cons from (+ ($> fmt file from) (fprintf file "%s" sep)))
+                    (default 0))))
+
+    (free (free this)))
+
+  (func (<> new type) ((a from) (a to) (a step))
+        (out type)
+        (return (case (<= from to) ((<> Cons type) from to step)
+                      otherwise    ((<> Nil type)))))
+  
+  ) ; impl-Range
+
+(generic import-Range
+  (type a)
+
+  (import-class (List type)
+    (= Cons  (<> Cons type)
+       (a from)
+       (type tail)
+       (a to)
+       (a step))
+    (= Nil (<> Nil type)))
+
+  ) ; import-Range

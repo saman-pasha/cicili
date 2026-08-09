@@ -1,0 +1,155 @@
+
+;;; function application, map or concept over structure
+;;; This file is part of the :std library and shares its package. A library
+;;; owns its namespace instead of borrowing the import prefix's; the full
+;;; explanation is in doc/DOC-C.md, under "A library's package".
+(DEFPACKAGE :std
+  (:USE :COMMON-LISP)
+  (:IMPORT-FROM :COMMON-LISP-USER "import" "generic" "cicili"
+                                  "find-subseq" "expand-form<"))
+
+(IN-PACKAGE :std)
+
+
+;; f a from datatype
+;; f b to datatype
+;; a type inside fa
+;; b type inside ga
+;; class Functor f where
+;;   fmap :: (a -> b) -> f a -> f b
+;;   <$>  :: (a -> b) -> f a -> f b
+(generic decl-Functor
+  (type f a b)
+
+  ;; GUARDED, because the Applicative declares the Functor it requires and the
+  ;; caller usually declares it too. Everything else here is a decl-data or a
+  ;; decl, which carry their own include guards; a bare typedef does not.
+  (guard (<> _ (<> a to b t) _H_DECL__)
+    (typedef func (<> a to b t) ((a value)) (out b)))
+
+  (decl-data (Functor (<> Functor type))
+    (= Functor (<> Functor type ctor))
+    (func fmap (((<> a to b t) a_b) ((<> f a) input)) (out (<> f b))))
+
+  (decl) (func (<> get Functor type) () (out (<> Functor type)))
+
+  ;; returns f~b
+  (fn (<> fmap type) a->b f~a
+      ((<> fmap Functor type)
+       '(closure ((a __h_value))
+         (out b)
+         (return ($> a->b __h_value)))
+       f~a))
+
+  ) ; decl-Functor
+
+;; mat (match) at end only access to 'a_b' function pointer and 'input'
+;; mat should know about f a b itself
+(generic impl-Functor
+  (type f a b mat)
+
+  (impl-data (Functor (<> Functor type))
+    (= Functor (<> Functor type ctor))
+
+    (func fmap (((<> a to b t) a_b) ((<> f a) input))
+          (out (<> f b))
+          (return mat)))
+
+  (func (<> get Functor type) ()
+        (out (<> Functor type))
+        (return ((<> Functor type ctor))))
+  
+  ) ; impl-Functor
+
+(generic import-Functor
+  (type f a b)
+
+  ;; returns f~b
+  (fn (<> fmap type) a->b f~a
+      ((<> fmap Functor type)
+       '(closure ((a __h_value))
+         (out b)
+         (return ($> a->b __h_value)))
+       f~a))
+  
+  ) ; import-Functor
+
+
+;; List Functor
+(generic decl-Functor-List
+  (type a b)
+
+  (decl-Functor type List a b)
+
+  ) ; decl-Functor-List
+
+;; a_b function is available
+;; input variable is the head of each Cons and the expression should return wrapped b type
+(generic impl-Functor-List
+  (type a b)
+
+  (impl-Functor type List a b
+                (match input
+                  (* Cons head tail  ; extract   f a
+                     ((<> Cons b)    ; construct f b
+                      ($> a_b $ head)
+                      ((<> fmap Functor type) a_b tail)))
+                  (default ((<> Nil b)))))
+
+  ) ; impl-Functor-List
+
+(generic import-Functor-List
+  (type a b)
+
+  (import-Functor type List a b)
+
+  ) ; import-Functor-List
+
+
+;; The BoxedList functor is gone with BoxedList. decl-Functor-List, which
+;; lib/std/haskell/persistent-btree.cicili uses, is untouched.
+
+
+;; The Vector Functor is gone with the Vector -- fmap over a boxed buffer was
+;; the one instance that needed the box mechanic. decl-Functor-List is the one
+;; lib/std/haskell/persistent-btree.cicili uses and it is untouched.
+
+;; Maybe Functor
+(generic decl-Functor-Maybe
+  (type a b)
+
+  (decl-Functor type Maybe a b)
+
+  ) ; decl-Functor-Maybe
+
+;; a_b function is available
+;; input is 'Maybe a'
+(generic impl-Functor-Maybe
+  (type a b)
+
+  (impl-Functor type Maybe a b
+                (match input
+                  (Just val ($> (<> Just b) ! a_b $ val))
+                  (default ((<> Nothing b)))))
+
+  ) ; impl-Functor-Maybe
+
+(generic import-Functor-Maybe
+  (type a b)
+
+  (import-Functor type Maybe a b)
+
+  ) ; import-Functor-Maybe
+
+
+;; THE Cell AND Rc FUNCTORS ARE GONE, with the haskell Cell and Rc they were
+;; written against. Their bodies reached for (<> get Cell a), (<> new Cell b),
+;; (<> Dead b), (<> get Rc a), (<> new Rc b) and (<> Gone b) -- none of which
+;; exist since the memory layer was deleted. lib/std's `cell' and `rc' are the
+;; replacements and they are not the same shape: their `get' answers with a std
+;; maybe holding a BORROW, so mapping over one has to decide what a mapped
+;; borrow means before any of this can be written again.
+;;
+;; Both were doubly broken, which is how long they had gone unused: each passed
+;; `Maybe' to impl-Functor where its own decl passed `Cell' or `Rc', so the
+;; implementation it emitted did not match the declaration beside it.

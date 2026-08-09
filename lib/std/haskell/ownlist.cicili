@@ -1,0 +1,162 @@
+;;; An OWNING linked list: it holds its elements and frees them.
+;;; This file is part of the :std library and shares its package. A library
+;;; owns its namespace instead of borrowing the import prefix's; the full
+;;; explanation is in doc/DOC-C.md, under "A library's package".
+(DEFPACKAGE :std
+  (:USE :COMMON-LISP)
+  (:IMPORT-FROM :COMMON-LISP-USER "import" "generic" "cicili"
+                                  "find-subseq" "expand-form<"))
+
+(IN-PACKAGE :std)
+
+
+;;;; WHY THIS IS NOT decl-List WITH A FLAG.
+;;;;
+;;;; The List next door does not own what it holds. Its free walks the cells and
+;;;; leaves each payload to whoever put it there, and that is right for what
+;;;; uses it: lib/std/haskell/persistent-btree holds its children in one and
+;;;; frees them itself, and is valgrind-clean.
+;;;;
+;;;; Making that List own its elements is not a matter of freeing them in the
+;;;; destructor, because most of its API duplicates them. `copy' is
+;;;; ((<> Cons a) head ((<> copy type) tail)) -- every element appears in two
+;;;; lists afterwards -- and `take', `drop', `append', `reverse' and `toArray'
+;;;; are the same shape, while `nth' and `head' hand an element back BY VALUE
+;;;; inside a Maybe. For a payload that owns a heap buffer every one of those is
+;;;; a second owner and a double free, and not one of them would be caught:
+;;;; reading a cell's head is not a move, so the checker has nothing to object
+;;;; to.
+;;;;
+;;;; So an owning list is a different container, and this is it. It answers with
+;;;; a BORROW rather than a copy -- (<> Maybe ref a), exactly what
+;;;; (<> get cell a), (<> get rc a) and vector's `nth' answer with -- and it
+;;;; carries only the operations that can be written without duplicating an
+;;;; element.
+;;;;
+;;;; WHAT IS DELIBERATELY ABSENT, and what to do instead:
+;;;;
+;;;;   copy, take, drop, toArray   duplicate elements. Build a second list by
+;;;;                               consing what you want into it.
+;;;;   append, reverse             would have to relink cells in place, which is
+;;;;                               sound but is surgery on the representation;
+;;;;                               it is not here until something needs it.
+;;;;   insert, replace, delete     each displaces an element, and nothing in the
+;;;;                               signature says who frees the one displaced.
+;;;;                               That question wants answering before the code
+;;;;                               is written, not after.
+;;;;
+;;;; The constructors take their element by `move' -- not a choice, since a
+;;;; non-copy value cannot be a by-value parameter at all -- so handing one over
+;;;; zeroes the source and a second use raises.
+
+
+(generic decl-OwnList
+  (type a)
+
+  ;; the borrow `nth' and `head' answer with. `ref' is what makes it a borrow:
+  ;; the payload is a pointer INTO the cell, so writing through it writes the
+  ;; list, and dropping it costs nothing because it owns nothing.
+  (decl-maybe ref a)
+
+  ;; OCons and ONil rather than Cons and Nil: the tag names a haskell class
+  ;; generates are shared across every instantiation in a target -- List_char
+  ;; and List_int both answer to __h_Cons_t -- so an owning list living beside
+  ;; an ordinary one needs its own.
+  (decl-class (OwnList type)
+    (= OCons (<> OCons a) ;; takes ownership of head
+       (a head)
+       (type tail))
+    (= ONil (<> ONil a))
+
+    (func nth     ((size_t index) (type list)) (out (<> Maybe ref a)))
+    (func head    ((type list)) (out (<> Maybe ref a)))
+    (func nthcdr  ((size_t index) (type list)) (out type)) ; borrows the spine
+    (func tail    ((type list)) (out type))                ; borrows the spine
+    (func len     ((type list)) (out size_t))
+    (func hasLen  ((type list) (size_t desired)) (out size_t))
+    (func show    ((FILE * file) (type list)) (out size_t)))
+
+  ) ; decl-OwnList
+
+
+(generic impl-OwnList
+  (type
+   a
+   fmt  ; a reducible function ((FILE * file) (a value))
+   sep)
+
+  (impl-class (OwnList type)
+    (= OCons (<> OCons a)
+       (a head)
+       (type tail))
+    (= ONil (<> ONil a))
+
+    ;; A BORROW, NOT A COPY. The address is taken of the member INSIDE the cell,
+    ;; so what comes back points at the list's own element -- write through it
+    ;; and the list changes. Binding the head in the match would copy it, which
+    ;; for a non-copy payload is the double free this container exists to avoid,
+    ;; so the head is left unbound and reached directly.
+    (func nth ((size_t index) (type list))
+          (out (<> Maybe ref a))
+          (return (match list
+                    (* OCons _ tail
+                       (case (== index 0) (cast (<> Maybe ref a) (just (aof ($ (-> list __h_data) OCons __h_0_mem))))
+                             otherwise    ((<> nth type) (-- index) tail)))
+                    (default (cast (<> Maybe ref a) (nothing))))))
+
+    (func head ((type list))
+          (out (<> Maybe ref a))
+          (return (match list
+                    (* OCons _ _ (cast (<> Maybe ref a) (just (aof ($ (-> list __h_data) OCons __h_0_mem)))))
+                    (default (cast (<> Maybe ref a) (nothing))))))
+
+    ;; Both of these hand back an interior cell. It is a BORROW of the spine and
+    ;; the caller must not free it -- freeing it would free the tail a second
+    ;; time when the list itself goes.
+    (func nthcdr ((size_t index) (type list))
+          (out type)
+          (return (match list
+                    (* OCons _ tail <!> (> index 0) ((<> nthcdr type) (-- index) tail))
+                    (default list))))
+
+    (func tail ((type list))
+          (out type)
+          (return ((<> nthcdr type) 1 list)))
+
+    (func len ((type list))
+          (out size_t)
+          (return (match list
+                    (* OCons _ tail (+ 1 ((<> len type) tail)))
+                    (default 0))))
+
+    (func hasLen ((type list) (size_t desired))
+          (out size_t)
+          (return (match list
+                    (* OCons _ tail (case (== desired 1) 1
+                                          otherwise      (+ 1 ((<> hasLen type) tail (-- desired)))))
+                    (default 0))))
+
+    ;; `fmt' is handed the element's ADDRESS for the same reason nth answers
+    ;; with one: showing a string must not copy it.
+    (func show ((FILE * file) (type list))
+          (out size_t)
+          (return (match list
+                    (* OCons _ tail
+                       (+ (cast size_t ($> fmt file (aof ($ (-> list __h_data) OCons __h_0_mem))))
+                          (match tail
+                            (* OCons (+ (cast size_t (fprintf file "%s" sep))
+                                        ((<> show type) file tail)))
+                            (default 0))))
+                    (default 0))))
+
+    ;; THE ELEMENT GOES WITH THE CELL. This is the whole difference from List,
+    ;; and it is why every operation above hands out a borrow: there is exactly
+    ;; one owner and it is this list.
+    (free (io this
+            (* OCons head tail
+               (block ((<> free a) (aof head))
+                      (free this)
+                      ((<> free type) (aof tail))))
+            (* ONil (free this)))))
+
+  ) ; impl-OwnList

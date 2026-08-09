@@ -1,0 +1,162 @@
+;;;; Cicili std string -- a vector of char, and nothing else
+;;;
+;;; A string IS a (<> vector char). Not a wrapper round one, not a struct with a
+;;; vector inside it -- the same struct, under a second name:
+;;;
+;;;   typedef vector_char string;
+;;;
+;;; So every vector function already applies. `len_vector', `nth_vector',
+;;; `push_vector', `free_vector' and the rest work on a string as written, and
+;;; the four functions below are only what a string needs that a vector of char
+;;; does not: building one from a C literal, joining two, writing one to a FILE,
+;;; and handing out a NUL-terminated pointer for the C library.
+;;;
+;;; THE TYPEDEF IS THE SUBTYPING. `vector' declares (typedef (<> std vector)
+;;; (<> vector a type_t)), so a string reaches std_vector as its origin through
+;;; the chain, and CICILI:TYPE-ORIGIN answers `std_vector' for it. That is what
+;;; makes the vector front-end macros dispatch on a string at all -- it is the
+;;; same arrangement arc uses to answer to rc's origin.
+;;;
+;;; THE NUL IS AN INVARIANT, NOT A LENGTH. `len' counts characters, exactly as a
+;;; vector's does, and never counts the terminator. What the functions below
+;;; maintain is that a NUL is reachable at index `len' whenever there is a buffer
+;;; at all, so `c_str' is a read rather than a copy. A string built by
+;;; `push_vector' one char at a time is a perfectly good string that has no
+;;; terminator -- call `c_str' and it puts one there.
+;;; This file is part of the :std library and shares its package. A library
+;;; owns its namespace instead of borrowing the import prefix's; the full
+;;; explanation is in doc/DOC-C.md, under "A library's package".
+(DEFPACKAGE :std
+  (:USE :COMMON-LISP)
+  (:IMPORT-FROM :COMMON-LISP-USER "import" "generic" "cicili"))
+
+(IN-PACKAGE :std)
+
+
+(generic decl-string
+  ()
+
+  (decl-vector char)
+
+  ;; the whole of it
+  (typedef (<> vector char) string)
+
+  ;; `free' under the string's own name, so `letin' and `free_vector' find a
+  ;; destructor for a variable whose type is written `string'. They look for
+  ;; (<> free TYPE), and TYPE here is the typedef rather than what it names.
+  (decl) (func (<> free string) ((string ref str)))
+  (decl) (func (<> free string pointer) ((string ** str)))
+
+  ;; from a NUL-terminated C string. The terminator is not copied into `len'
+  ;; and the empty string allocates nothing, both as vector's `new' does.
+  (decl) (func (<> new string) ((const char * buf)) (out string))
+
+  ;; from a counted buffer that need not be terminated -- what `fread' and
+  ;; `recv' hand back. `new' is this with strlen called for you.
+  (decl) (func (<> new string bytes) ((const char * buf) (size_t len)) (out string))
+
+  ;; joins RHS onto LHS in place and answers with the new length
+  (decl) (func (<> append string) ((string ref lhs) (string ref rhs)) (out size_t))
+
+  ;; writes `len' characters -- a string holding a NUL in the middle writes it
+  (decl) (func (<> show string) ((FILE * file) (string ref str)) (out size_t))
+
+  ;; a NUL-terminated view of the buffer, valid until the string next grows
+  (decl) (func (<> c_str string) ((string ref str)) (out const char *))
+
+  ) ; decl-string
+
+
+(generic impl-string
+  ()
+
+  (impl-vector char)
+
+  (inline)
+  (func (<> free string) ((string ref str))
+        ((<> free vector char) str))
+
+  (inline)
+  (func (<> free string pointer) ((string ** str))
+        ((<> free vector char) (cof str)))
+
+  ;; The struct is built here rather than by calling vector's `new' and then
+  ;; terminating it: a vector is (non-copy), so there is no binding one to a
+  ;; local on the way past -- which is the type system pointing out that the
+  ;; copy would have been the bug. vector's own `new' builds its literal the
+  ;; same way, for the same reason.
+  ;;
+  ;; arraySize is asked for len + 1 so the terminator always has a cell. It
+  ;; rounds up to a power of two and never answers below 16, so this costs
+  ;; nothing except on a string whose length lands exactly on a boundary.
+  (func (<> new string) ((const char * buf))
+        (out string)
+        ;; nil and "" are the same answer, and it allocates nothing -- vector's
+        ;; `new' says so for len 0 and a string is a vector. `c_str' answers ""
+        ;; for an empty string without a buffer, so nothing downstream needs to
+        ;; know the difference.
+        (when (or (== buf nil) (== (cof buf) #\Null))
+          (return (cast string '{ nil 0 0 })))
+        ;; `return' round the letn, not a letn that happens to end the body. A
+        ;; trailing letn is a STATEMENT: its value is computed and dropped, the
+        ;; function falls off the end, and what comes back is whatever was in
+        ;; the return register. vector's own `new' wraps it for this reason.
+        (return ((<> new string bytes) buf (strlen buf))))
+
+  (func (<> new string bytes) ((const char * buf) (size_t len))
+        (out string)
+        (when (or (== buf nil) (== len 0))
+          (return (cast string '{ nil 0 0 })))
+        (return (letn ((const size_t cap . #'((<> arraySize vector char) (+ len 1)))
+                       (char ref arr . #'(malloc cap)))
+                  (memcpy arr buf len)
+                  (set (nth len arr) #\Null)
+                  (cast string '{ arr cap len }))))
+
+  (func (<> append string) ((string ref lhs) (string ref rhs))
+        (out size_t)
+        (when (-> rhs len)
+          ((<> append vector char) lhs (-> rhs arr) (-> rhs len))
+          (set (nth (-> lhs len) (-> lhs arr)) #\Null))
+        (return (-> lhs len)))
+
+  (func (<> show string) ((FILE * file) (string ref str))
+        (out size_t)
+        (when (== (-> str len) 0)
+          (return 0))
+        (return (fwrite (-> str arr) (sizeof char) (-> str len) file)))
+
+  ;; `grow' first, because the terminator needs a cell that `len' does not
+  ;; count. It is a no-op whenever cap already exceeds len, which is the usual
+  ;; case -- arraySize rounds up to a power of two, so only a string whose
+  ;; length landed exactly on one pays for a realloc here.
+  (func (<> c_str string) ((string ref str))
+        (out const char *)
+        (when (== (-> str arr) nil)
+          (return ""))
+        ((<> grow vector char) str (+ (-> str len) 1))
+        (set (nth (-> str len) (-> str arr)) #\Null)
+        (return (-> str arr)))
+
+  ) ; impl-string
+
+
+;;;; ------------------------------------------------------------------
+;;;; NO FRONT-END MACROS, and there is nothing to add.
+;;;;
+;;;; The other std types need them because their functions carry the payload
+;;;; type in the name: the friendly `new_rc' has to work out that a
+;;;; (<> rc array_int) wants new_rc_array_int. A string has no type parameter,
+;;;; so (<> new string) IS the symbol `new_string' and the function already has
+;;;; the name a caller would reach for:
+;;;;
+;;;;   (letin ((s (new_string "hello, ")))
+;;;;     (letin ((t (new_string "world")))
+;;;;       (append_string (aof s) (aof t))
+;;;;       (puts (c_str_string (aof s)))))
+;;;;
+;;;; A macro of the same name would expand to itself. Writing one cost an
+;;;; afternoon and a control stack: (new_string "hi") -> ((<> new string) "hi")
+;;;; -> (new_string "hi"), forever, and what the compiler says about it is
+;;;; "Control stack exhausted" with no mention of the macro.
+;;;; ------------------------------------------------------------------

@@ -18,10 +18,11 @@
 
 (cicili:load-macro-file "builtins.cicili" nil () "CICILI")
 (cicili:load-macro-file "cpp.cicili"      nil () "CICILI")
+;; One prelude. The algebraic layer used to be a second load parked on this
+;; line, because it defined `match' too and whichever loaded second won; it is
+;; imported by the std prelude now and builtins' `match' dispatches on the
+;; scrutinee, so there is nothing left to park.
 (cicili:load-macro-file "lib/std/prelude.cicili" nil () "CICILI")
-;; parked while std is the focus -- the haskell layer also defines 'match,
-;; which would shadow the inference-driven one in builtins.cicili
-;; (cicili:load-macro-file "lib/haskell/prelude.cicili" nil () "CICILI")
 
 (let ((argv (uiop:command-line-arguments)))
   (if (> (length argv) 0)

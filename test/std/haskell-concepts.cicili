@@ -1,0 +1,130 @@
+;;; test the three type-class layers of lib/std/haskell and their front ends
+;;;
+;;; Functor, Applicative and Monad each declare a `data' of function pointers
+;;; AND a set of `fn' front ends that reach it -- fmap_T, pure_T, ap_T, bind_T.
+;;; The front ends are the part a caller actually writes, so they are what this
+;;; checks: the counts come back through them, not through the table.
+;;;
+;;; WHAT VALGRIND SAYS: 46 allocations, 46 frees, no leak and no error.
+;;;
+;;; Getting there took two fixes and they were in different places. The ap mat
+;;; built four lists an `ap' and, written nested, had nowhere to name them; they
+;;; are bound and freed now. Under that, mconcat folded with a COPYING mappend
+;;; and dropped every accumulator but the last, the Nil seed included -- so it
+;;; keeps its own fold and drops each one as it goes, when the instantiation
+;;; says its `a' is something that can be freed.
+;;;
+;;; Checked against its own counterfactual: take `move' off the impl-Monoid in
+;;; applicative.cicili and the same eight blocks come back.
+;;;
+;;; The instances are on int and Maybe int. Nothing here needs a string, which
+;;; keeps it about the classes rather than about ownership.
+(source "haskell_concepts.c"
+  (make :std #t
+        :compile #t :link ("-lhaskell_concepts.o" "-o" "haskell_concepts_test"))
+
+  (decl-Bool)
+  (impl-Bool)
+
+  (decl-List List_int int)
+  (impl-List List_int int (\\ -f -v (fprintf -f "%d" -v)) " ")
+
+  ;; Functor over a List of int
+  (decl-Functor-List List_int_int int int)
+  (impl-Functor-List List_int_int int int)
+
+  ;; Monad over Maybe int
+  (decl-Monad-Maybe Maybe_int_int int int)
+  (impl-Monad-Maybe Maybe_int_int int int)
+
+  ;; Applicative over Maybe int. It declares the Functor it is written in terms
+  ;; of, and the a->b typedef with it -- naming nothing here but the instance is
+  ;; the point of the test.
+  (decl-Applicative-Maybe Ap_Maybe_int_int int int)
+  (impl-Applicative-Maybe Ap_Maybe_int_int int int)
+
+  ;; and over a List of int, which is the instance with the most behind it: a
+  ;; Functor, three Lists and a Monoid, none of them named here. Instantiating
+  ;; it IS a check -- its `mat' composes fmap, Cons, wrap and mconcat over all
+  ;; of that, so anything missing or malformed fails the target.
+  (decl-Applicative-List Ap_List_int_int int int)
+  (impl-Applicative-List Ap_List_int_int int int)
+
+  (static) (var int bad . 0)
+
+  (func check ((const char * what) (long got) (long want)) (out int)
+    (if (== got want)
+        (block (printf "ok   %-40s %ld\n" what got) (return 0))
+      (block (printf "FAIL %-40s got %ld want %ld\n" what got want) (return 1))))
+
+  ;; A REAL FUNCTION, not a `\\' lambda. `\\' makes a curried macro whose name
+  ;; is a gensym; the a->b typedef wants a function POINTER, and only a named
+  ;; function or a quoted (lambda ...) is one.
+  (func add100 ((int v)) (out int) (return (+ 100 v)))
+  (func twice  ((int v)) (out int) (return (* 2 v)))
+
+  (func sum_list ((List_int l)) (out long)
+    (return (match l
+              (* Cons head tail (+ (cast long head) (sum_list tail)))
+              (default 0))))
+
+  (main
+    ;; ---- Functor: fmap through the front end -------------------------
+    (letin ((* l1 ((<> Cons int) 1 ((<> Cons int) 2 ((<> Cons int) 3 ((<> Cons int) 4 ((<> Nil int))))))))
+      (+= bad (check "the list adds up before fmap" (sum_list l1) 10))
+
+      (letin ((* l2 ((fmap_List_int_int (\\ -v (* 5 -v))) l1)))
+        (+= bad (check "fmap (*5) multiplies every element" (sum_list l2) 50))
+        (+= bad (check "and leaves the length alone"
+                       (cast long ((<> len List int) l2)) 4))))
+
+    ;; ---- Monad: bind through the front end ---------------------------
+    (+= bad (check "bind on a Just runs the step"
+                   (match ($> (<> bind Maybe_int_int) v ((<> Just int) 7)
+                              ((<> Just int) (* 3 v)))
+                     (Just r (cast long r))
+                     (default -1))
+                   21))
+
+    (+= bad (check "bind on a Nothing short-circuits"
+                   (match ($> (<> bind Maybe_int_int) v ((<> Nothing int))
+                              ((<> Just int) (* 3 v)))
+                     (Just r (cast long r))
+                     (default -1))
+                   -1))
+
+    ;; ---- Applicative: ap through the front end -----------------------
+    (+= bad (check "ap of a Just function over a Just"
+                   (match ($> (<> ap Ap_Maybe_int_int)
+                              ((<> Just (<> int to int t)) add100)
+                              ((<> Just int) 5))
+                     (Just r (cast long r))
+                     (default -1))
+                   105))
+
+    (+= bad (check "ap of a Nothing function is nothing"
+                   (match ($> (<> ap Ap_Maybe_int_int)
+                              ((<> Nothing (<> int to int t)))
+                              ((<> Just int) 5))
+                     (Just r (cast long r))
+                     (default -1))
+                   -1))
+
+    ;; ---- Applicative over a List: every function against every value ----
+    ;;
+    ;; ap [f, g] [x, y] is [f x, f y, g x, g y] -- the list applicative is the
+    ;; cartesian product, which is why it needs a Monoid to flatten with.
+    (letin* ((fs ((<> Cons (<> int to int t)) add100
+                  ((<> Cons (<> int to int t)) twice
+                   ((<> Nil (<> int to int t)))))
+                 (<> free List (<> int to int t))))
+      (letin ((* xs ((<> Cons int) 1 ((<> Cons int) 2 ((<> Nil int))))))
+        (letin* ((rs ($> (<> ap Ap_List_int_int) fs xs) (<> free List int)))
+          (+= bad (check "ap pairs every function with every value"
+                         (cast long ((<> len List int) rs)) 4))
+          (+= bad (check "and the four results add up" (sum_list rs) 209)))))
+
+    (if (== bad 0)
+        (printf "haskell-concepts: all ok\n")
+      (printf "haskell-concepts: %d FAILED\n" bad))
+    (return bad)))

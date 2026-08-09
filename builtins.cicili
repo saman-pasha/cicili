@@ -63,21 +63,24 @@
      ,@body
      (set stdout tmp_stdout)))
 
+;;; --analyze is inert: the stack it pushed to is gone.
+;;;
+;;; Both of these emitted calls to __h_stack_push and friends, which lived in
+;;; haskell.h -- a header and object built by lib/std/haskell/c.cicili, which
+;;; every user of the layer had to link against. That file is deleted, so the
+;;; layer is generics and nothing else, instantiated per target like lib/std.
+;;;
+;;; They are kept rather than removed because they appear at call sites through
+;;; the tree and are meant to vanish when --analyze is off, which is what they
+;;; now do unconditionally. `analyze!' still hands back its pointer, so an
+;;; expression wrapped in one is unchanged either way.
 (DEFMACRO analyze! (name pointer)
-  (IF (AND CICILI::*DEBUG-ANALYZE*
-        (NOT (STR:CONTAINSP"__h_StackItem" (SYMBOL-NAME name))))
-      `(__h_stack_push ,pointer)
-      pointer))
+  (DECLARE (IGNORE name))
+  pointer)
 
 (DEFMACRO analyze-data! (&REST body)
-  (IF CICILI::*DEBUG-ANALYZE*
-      `(let ((char * __h_stack_buffer . #'(calloc 2048 (sizeof char)))
-             (CFile __h_stack_out . #'(fmemopen __h_stack_buffer 2048 "w+")))
-         ,@body
-         (fclose __h_stack_out)
-         (__h_stack_push_data __h_stack_buffer)
-         (__h_stack_push_separator))
-      `($$$ )))
+  (DECLARE (IGNORE body))
+  `($$$ ))
 
 ;;; MACROEXPAND, dispatched by NAME rather than by symbol identity.
 ;;;
@@ -169,20 +172,49 @@
      ,@body))
 
 ;; accepts all variables, inferes type to find destructor
+;;
+;; A LEADING `*' IS ACCEPTED AND DROPPED: (* name init) binds exactly as
+;; (name init) does. It is the haskell layer's spelling -- its own `letin', now
+;; commented out in lib/std/haskell/haskell.cicili, used the marker to pick
+;; __h_free_class_router over __h_free_data_router, because a class instance is
+;; a pointer and a data value is not. Both are freed by name now, `free_T'
+;; whichever it is, so the distinction the marker drew no longer exists.
+;;
+;; Dropping it rather than rejecting it is what keeps the corpus that predates
+;; the change readable: lib/std/haskell/persistent-btree alone writes it 36
+;; times, and the haskell tests and benchmarks throughout.
 (DEFMACRO letin (var-list &REST body)
   `(letn ,(APPLY 'APPEND
                  (MAP 'LIST #'(LAMBDA (var)
+                                (WHEN (AND (= (LENGTH var) 3) (CICILI:KEY-EQ (CAR var) '*))
+                                  (SETQ var (CDR var)))
                                 (WHEN (/= (LENGTH var) 2)
-                                  (ERROR (FORMAT NIL "wrong letin variable definition: ~A" var)))
+                                  (ERROR (FORMAT NIL "wrong letin variable definition: ~A -- want (name init) or (* name init)" var)))
                                 (MULTIPLE-VALUE-BIND (type full-type root-type) (CICILI:INFER-TYPE (CADR var))
                                   (LET ((type-name (NTH 1 full-type)))
-                                    (UNLESS (SYMBOLP (NTH 1 full-type))
-                                      (MULTIPLE-VALUE-SETQ (type full-type) (CICILI:INFER-TYPE-SPEC "" (NTH 1 full-type)))
+                                    ;; INFER-TYPE-SPEC NESTS when a variable's
+                                    ;; type is itself a typedef: the type slot
+                                    ;; holds another inferred type -- a list of
+                                    ;; (const type modifier ...) with the nils
+                                    ;; already dropped -- rather than the name.
+                                    ;; Every haskell class is typedef'd, so a
+                                    ;; letin over one lands here and asked
+                                    ;; INFER-TYPE-SPEC to read a list as a
+                                    ;; specifier. The name is the first thing in
+                                    ;; it that is not the `const' flag.
+                                    (LOOP WHILE (CONSP type-name)
+                                          DO (SETQ type-name
+                                                   (OR (FIND-IF #'(LAMBDA (e)
+                                                                    (AND e (NOT (CICILI:KEY-EQ e 'const))))
+                                                                type-name)
+                                                       (CAR type-name))))
+                                    (UNLESS (SYMBOLP type-name)
+                                      (MULTIPLE-VALUE-SETQ (type full-type) (CICILI:INFER-TYPE-SPEC "" type-name))
                                       (SETQ type-name (NTH 1 full-type)))
                                     (IF (NTH 2 full-type) ; check has any modifier
                                         `((defer () (<> free ,type-name))
                                           (,@type ,(CAR var) . (FUNCTION ,(CADR var))))
-                                        (IF (CICILI:IS-NON-COPY (NTH 1 full-type)) ; define non-copy instances as 'move
+                                        (IF (CICILI:IS-NON-COPY type-name) ; define non-copy instances as 'move
                                             `((defer () (<> free ,type-name))
                                               (,@type move ,(CAR var) . (FUNCTION ,(CADR var))))
                                             `((defer () (<> free ,type-name))
@@ -238,7 +270,14 @@
       (IF (mod-slot< ty)
           (IF (modifier-arg< (CAR args))
               (PUSH (POP args) filled)
-              (PUSH NIL filled))
+              ;; A MARKER, NOT NIL. An unfilled modifier slot is deleted from
+              ;; the body by `generic' below, and an argument written as NIL is
+              ;; substituted like any other -- (decl-Vector String Char NIL)
+              ;; means is-const is false, not that is-const is not there. Both
+              ;; used to arrive here as NIL, so the false one deleted its
+              ;; parameter and (decl-StringBuffer a is-const) went out one
+              ;; argument short: "missing generic argument for is-const".
+              (PUSH '@OMITTED filled))
           (IF args
               (PUSH (POP args) filled)
               (ERROR (FORMAT NIL "missing generic argument for ~A in: ~A" ty macro)))))
@@ -254,7 +293,7 @@
        (DOTIMES (i (LENGTH types))
          (LET ((arg (NTH i args)))
            (SETQ body
-                 (IF (NULL arg)
+                 (IF (CICILI:KEY-EQ arg '@OMITTED)
                      (subst-out< (NTH i types) body)
                      (SUBST (IF (AND (LISTP arg) (CICILI:KEY-EQ (CAR arg) '<>)) (expand-form< arg) arg)
                             (NTH i types) body)))))
@@ -533,7 +572,7 @@
 ;;;; no tag byte, no v-table, no allocation. What is left in C is the `if' you
 ;;;; would have written by hand.
 ;;;;
-;;;; This is not the Haskell layer's 'match (lib/haskell/match.cicili), which
+;;;; This is not the Haskell layer's 'match (lib/std/haskell/match.cicili), which
 ;;;; walks a constructor tag at run time. Here the type does the talking, so the
 ;;;; whole dispatch is resolved at specification time.
 ;;;;
@@ -647,23 +686,50 @@
 (DEFUN match-body< (bind body)
   (IF bind `(letn (,bind) ,@body) `(progn ,@body)))
 
+;;; The cases registered for a scrutinee, or NIL if it has none.
+;;;
+;;; match-cases-of< above raises instead, which is right where a matchable type
+;;; is the only thing that can appear; `match' below has a second answer for the
+;;; ones that are not, and needs to ask without being stopped. TYPE-CHECK itself
+;;; can raise on a type it cannot resolve, so the whole question is guarded.
+(DEFUN matchable-cases-for< (value)
+  (IGNORE-ERRORS (matchable-cases< (NTH-VALUE 3 (CICILI:TYPE-CHECK value)))))
+
 ;;; (match m (just v ...) (nothing ...))  -- a statement, expands to a cond
 ;;; Partial is fine: an unlisted case simply does nothing, like `when'.
+;;;
+;;; TWO KINDS OF MATCHABLE THING SHARE THIS NAME, and which one is in hand is
+;;; decided here rather than by the author. A type registered with
+;;; def-matchable -- lib/std's `maybe', `either', `cell', `rc' -- is taken apart
+;;; by the tag test and accessor it registered, and expands to the `cond' below.
+;;; A haskell ADT declared with decl-data is taken apart by its constructor tag
+;;; and its __h_data union, which match* in lib/std/haskell/match.cicili knows
+;;; how to do and this does not -- along with the nested patterns, guards and
+;;; tuple destructuring that go with it.
+;;;
+;;; They used to be two macros with one name, which is why the haskell layer
+;;; could not be loaded: whichever was read second won, and loading it beside
+;;; std turned (match m (just …) (nothing …)) into a search for `__h_just_t'.
+;;; Dispatching on the scrutinee is what lets both spellings mean what they say,
+;;; with no call site in either half changed.
 (DEFMACRO match (value &REST clauses)
-  (LET* ((value value)
-         (cases (match-cases-of< "match" value))
-         (box (GENSYM "match")))
-    (MULTIPLE-VALUE-BIND (parsed seen default) (match-parse< "match" value clauses cases box)
-      (DECLARE (IGNORE seen))
-      `(let ((auto ,box . (FUNCTION ,value)))
-         (cond ,@(MAP 'LIST
-                      #'(LAMBDA (p)
-                          (LET ((bind (NTH 1 p)) (body (NTH 2 p)))
-                            (IF bind
-                                (LIST (NTH 0 p) `(let (,bind) ,@body))
-                                (CONS (NTH 0 p) body))))
-                      parsed)
-               ,@(WHEN default (LIST (CONS '#t default))))))))
+  (LET ((value value)
+        (cases (matchable-cases-for< value))
+        (box   (GENSYM "match")))
+    (IF (NULL cases)
+        ;; not registered: a haskell ADT, or an error match* will name better
+        `(match* ,value ,clauses NIL)
+        (MULTIPLE-VALUE-BIND (parsed seen default) (match-parse< "match" value clauses cases box)
+          (DECLARE (IGNORE seen))
+          `(let ((auto ,box . (FUNCTION ,value)))
+             (cond ,@(MAP 'LIST
+                          #'(LAMBDA (p)
+                              (LET ((bind (NTH 1 p)) (body (NTH 2 p)))
+                                (IF bind
+                                    (LIST (NTH 0 p) `(let (,bind) ,@body))
+                                    (CONS (NTH 0 p) body))))
+                          parsed)
+                   ,@(WHEN default (LIST (CONS '#t default)))))))))
 
 ;;; (matchn m (just v ...) (nothing ...))  -- an expression, nested ?
 ;;; Must cover every case or carry a default, checked at expansion time.

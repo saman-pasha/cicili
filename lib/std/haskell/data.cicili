@@ -1,0 +1,272 @@
+;;; This file is part of the :std library and shares its package. A library
+;;; owns its namespace instead of borrowing the import prefix's; the full
+;;; explanation is in doc/DOC-C.md, under "A library's package".
+(DEFPACKAGE :std
+  (:USE :COMMON-LISP)
+  (:IMPORT-FROM :COMMON-LISP-USER "import" "generic" "cicili"
+                                  "find-subseq" "expand-form<"))
+
+(IN-PACKAGE :std)
+
+
+;; Data Constructor
+;; data Mood = Blah | Woot
+;; (data TestT NoArg (WithArg (type x) (type y)))
+;; for value type and copy on assignment types
+;; suggestion: no member pointer and no self member reference
+;; (match alias, data type name) designed for generic types
+;; the data type name and each ctor can have an alias for ease of use in matches
+;; shared alias for generic data types lets them to cast to each other
+(DEFMACRO decl-data (name ctor &REST ctors)
+  (SETQ name (expand-form< name))
+  (SETQ name (IF (SYMBOLP name)
+                 (LIST name name)
+                 (IF (= 2 (LENGTH name))
+                     name
+                     (ERROR (FORMAT NIL "only match alias and name allowed in data name: ~A" name)))))
+  
+  (LET* ((alias (expand-form< (CAR name)))
+         (name (expand-form< (CADR name)))
+         (enum-name (INTERN (FORMAT NIL "__h_~A_ctor_t" alias)))
+         (fns '())
+         (ctors (REMOVE
+                 NIL
+                 (MAPCAR #'(LAMBDA (ct)
+                             (IF (AND (LISTP ct) (CICILI:KEY-EQ (CAR ct) 'func))
+                                 (PROGN (PUSH ct fns) NIL)
+                                 (LET ((ct (expand-form< ct)))
+                                   (SETQ ct (IF (SYMBOLP ct)
+                                                (LIST ct ct)
+                                                (IF (CICILI:KEY-EQ (CAR ct) '=)
+                                                    (SETQ ct (CDR ct))
+                                                    (SETQ ct (CONS (CAR ct) ct)))))
+                                   
+                                   (WHEN (OR (CICILI:KEY-EQ (CAR ct) 'free) (CICILI:KEY-EQ (CADR ct) 'free))
+                                     (ERROR (FORMAT NIL "use 'free' destructor only inside definition: ~A" ct)))
+                                   
+                                   (LIST
+                                    ct
+                                    (MAPCAR #'(LAMBDA (param)
+                                                (MULTIPLE-VALUE-BIND (const type modifier const-ptr variable array-def)
+                                                    (CICILI:SPECIFY-TYPE< param)
+                                                  (LIST const type modifier const-ptr variable array-def)))
+                                            (CDDR ct))
+                                    ;; real param defs
+                                    (CDDR ct)))))
+                         (CONS ctor ctors)))))
+    
+    `(guard (<> _ ,name _H_DECL__)
+
+       (guard (<> __H ,enum-name _)
+         (enum ,enum-name
+           (,(make-data-h-type-name (CAAR (CAR (REVERSE ctors)))) . 0)
+           ,@(MAPCAR #'(LAMBDA (i ct) (CONS (make-data-h-type-name (CAAR ct)) (+ i 1)))
+                     (range-h (LENGTH ctors)) (CDR (REVERSE ctors)))))
+
+
+       ;; THE OPAQUE SUPER TYPE, and the `type_t' typedef that points at it.
+       ;;
+       ;; Every std type carries this pair -- lib/std/maybe.cicili:95 and :115
+       ;; are the model -- and no haskell type did. type-origin (authority.lisp
+       ;; :295) walks a type's chain looking for a `<name>_type_t' typedef and
+       ;; answers with what it aliases, so without one an ADT has no origin at
+       ;; all: nothing above it in the type lattice, and nothing for the type
+       ;; resolution to terminate on. That is what let deep-typeof walk a data
+       ;; type into its own table, out through the member typed back as the
+       ;; data type, and round again until the control stack was gone.
+       ;;
+       ;; The super is declared, never defined -- an incomplete struct is the
+       ;; point. It names the family without giving it a layout, so a data type
+       ;; can be recognised as one without anything being able to hold it.
+       (guard __H_STD_DATA_
+         (decl) (struct (<> std data)))
+
+       (decl) (struct ,name)
+
+       (typedef (<> std data) (<> ,name type_t))
+
+       (typedef func (<> free ,name t) ((,name * this)))  
+
+       (struct (<> ,name _H_Table)
+         (member (<> free ,name t) freeData)
+         ,@(MAPCAR #'(LAMBDA (f)
+                       (WHEN (CICILI:KEY-EQ (CAR f) 'func)
+                         (CONS 'member f)))
+                   fns))
+       
+       (struct ,name
+         (member const (<> ,name _H_Table) * __h_table)
+         (member char __h_ctor)
+         (union ,@(MAPCAR #'(LAMBDA (i ct)
+                              (LET ((ct-name (CAAR ct))
+                                    (params (CADR ct))
+                                    (real-params (CADDR ct))
+                                    (mem-counter -1))
+                                `(struct
+                                     ,@(MAPCAR #'(LAMBDA (param rp)
+                                                   (SETQ mem-counter (1+ mem-counter))
+                                                   (IF (CICILI:KEY-EQ (NTH 1 param) 'func)
+                                                       (LET ((cp-rp (COPY-LIST rp)))
+                                                         (SETF (NTH 1 cp-rp) (make-data-h-member-name mem-counter))
+                                                         `(member ,@cp-rp))
+                                                       (LET ((cp-param (COPY-LIST param)))
+                                                         (SETF (NTH 4 cp-param) (make-data-h-member-name mem-counter))
+                                                         `(member ,@(REMOVE NIL cp-param)))))
+                                               params real-params)
+                                   (declare ,ct-name)
+                                   ,(LIST 'declare (IF (= i (1- (LENGTH ctors))) ; default ctor case
+                                                       '_
+                                                       (INTERN (FORMAT NIL "_~A" (- (LENGTH ctors) i 1))))))))
+                          (range-h (LENGTH ctors)) ctors)
+           (declare __h_data)))
+       
+       ,@(MAPCAR #'(LAMBDA (i ct)
+                     (LET* ((is-default (IF (= i (1- (LENGTH ctors))) T NIL))
+                            (ct-name (CADAR ct))
+                            (def-ct-name (IF is-default `(<> Default ,name) ct-name))
+                            (params (CADR ct))
+                            (real-params (move-non-copy-params< (CADR ct) (CADDR ct))))
+                       
+                       (WHEN (EQUAL name ct-name) (ERROR (FORMAT NIL "data type and ctor having same name: ~A" name)))
+
+                       (IF is-default
+                           (IF (NULL params)
+                               `($$$ (decl)   (func ,ct-name     () (out ,name))
+                                     (inline) (func ,def-ct-name () (out ,name) (return (,ct-name))))
+                               `($$$ (decl)   (func ,ct-name ,real-params (out ,name))
+                                     (inline) (func ,def-ct-name ,real-params (out ,name)
+                                                    (return (,ct-name ,@(MAPCAR #'(LAMBDA (param) (NTH 4 param)) params))))))
+
+                           (IF (NULL params)
+                               `($$$ (decl) (func ,ct-name () (out ,name)))
+                               `($$$ (decl) (func ,ct-name ,real-params (out ,name)))))))
+                 (range-h (LENGTH ctors)) ctors)
+
+       ;; funcs decl
+       ,@(MAPCAR #'(LAMBDA (f)
+                     (LET ((fP (COPY-LIST f)))
+                       (SETF (CADR fP) `(<> ,(CADR f) ,name))
+                       `($$$ (decl) ,fP)))
+                 fns)
+
+       ;; Table initializer
+       (decl) (func (<> get ,name _H_Table) () (out const (<> ,name _H_Table) * const))
+
+       ;; destructor
+       (decl) (func (<> free ,name) ((,name * this)))
+       ;; AND THE ONE A `move' PARAMETER'S CLEANUP CALLS. It is handed the
+       ;; address of a pointer to the value, so it takes one more star than the
+       ;; destructor proper -- lib/std's vector, cell, array and rc all carry
+       ;; the same pair. Without it a data type could not be a `move' parameter
+       ;; at all: the cleanup names free_T_pointer and C answers "cleanup
+       ;; argument not a function".
+       (decl) (func (<> free ,name pointer) ((,name ** this)))
+       ))
+  ) ; decl-data
+
+(DEFMACRO impl-data (name ctor &REST ctors)
+  (SETQ name (expand-form< name))
+  (SETQ name (IF (SYMBOLP name)
+                 (LIST name name)
+                 (IF (= 2 (LENGTH name))
+                     name
+                     (ERROR (FORMAT NIL "only match alias and name allowed in data name: ~A" name)))))
+  
+  (LET* ((alias (expand-form< (CAR name)))
+         (name (expand-form< (CADR name)))
+         (free-def NIL)
+         (fns '())
+         (ctors (REMOVE
+                 NIL
+                 (MAPCAR #'(LAMBDA (i ct)
+                             (IF (AND (LISTP ct) (CICILI:KEY-EQ (CAR ct) 'func))
+                                 (PROGN (PUSH ct fns) NIL)
+                                 (LET ((ct (expand-form< ct)))
+                                   (SETQ ct (IF (SYMBOLP ct)
+                                                (LIST ct ct)
+                                                (IF (CICILI:KEY-EQ (CAR ct) '=)
+                                                    (SETQ ct (CDR ct))
+                                                    (SETQ ct (CONS (CAR ct) ct)))))
+                                   
+                                   (WHEN (OR (CICILI:KEY-EQ (CAR ct) 'free) (CICILI:KEY-EQ (CADR ct) 'free))
+                                     (IF free-def
+                                         (ERROR (FORMAT NIL "'free' is defined twice: ~A" ct))
+                                         (SETQ free-def ct)))
+
+                                   (WHEN (AND free-def (< i (1- (LENGTH ctors))))
+                                     (ERROR (FORMAT NIL "'free' should be last case: ~A" ct)))
+                                   
+                                   (IF free-def
+                                       NIL
+                                       (LIST
+                                        ct
+                                        (MAPCAR #'(LAMBDA (param)
+                                                    (MULTIPLE-VALUE-BIND (const type modifier const-ptr variable array-def)
+                                                        (CICILI:SPECIFY-TYPE< param)
+                                                      (LIST const type modifier const-ptr variable array-def)))
+                                                (CDDR ct))
+                                        ;; real param defs
+                                        (CDDR ct))))))
+                         (range-h (1+ (LENGTH ctors))) (CONS ctor ctors)))))
+
+    `(guard (<> _ ,name _H_IMPL__)
+
+       ;; funcs decl
+       ,@(MAPCAR #'(LAMBDA (f)
+                     (LET ((fP (COPY-LIST f)))
+                       (SETF (CADR fP) `(<> ,(CADR f) ,name))
+                       fP))
+                 fns)
+       
+       ;; destructor
+       (func (<> free ,name) ((,name * this))
+             ,@(CDDR free-def))
+
+       (inline)
+       (func (<> free ,name pointer) ((,name ** this))
+             (when this ((<> free ,name) (cof this))))
+
+       ;; Table initializer
+       (func (<> get ,name _H_Table) ()
+             (out const (<> ,name _H_Table) * const)
+             (static)
+             (var const (<> ,name _H_Table) table . '{
+                  (<> free ,name)
+                  ,@(MAPCAR #'(LAMBDA (f)
+                                (expand-form< `(<> ,(CADR f) ,name)))
+                            fns)
+                  })
+             (return (aof table)))
+
+       ;; constructors
+       ,@(MAPCAR #'(LAMBDA (i ct)
+                     (LET ((ct-name (CADAR ct))
+                           (params (CADR ct))
+                           (real-params (move-non-copy-params< (CADR ct) (CADDR ct))))
+
+                       (WHEN (EQUAL name ct-name) (ERROR (FORMAT NIL "data type and ctor having same name: ~A" name)))
+
+                       (IF (NULL params)
+                           `(func ,ct-name ()
+                                  (out ,name)
+                                  (let ((,name instance . #'(cast ,name '{
+                                                                  ((<> get ,name _H_Table))
+                                                                  ,(make-data-h-type-name (CAAR ct))
+                                                                  })))
+                                    (return instance)))
+                           `(func ,ct-name ,real-params
+                                  (out ,name)
+                                  (let ((,name instance . #'(cast ,name '{
+                                                                  ((<> get ,name _H_Table))
+                                                                  ,(make-data-h-type-name (CAAR ct))
+                                                                  ,(INTERN (FORMAT NIL "$__h_data$~A"
+                                                                                   (IF (= i (1- (LENGTH ctors))) '_ (CAAR ct))))
+                                                                  '{ ,@(MAPCAR #'(LAMBDA (param) (NTH 4 param)) params) }
+                                                                  })))
+                                    (return instance))))))
+                 (range-h (LENGTH ctors)) ctors)))
+  ) ; impl-data
+
+(DEFMACRO import-data (name ctor &REST ctors)
+  
+  ) ; import-data

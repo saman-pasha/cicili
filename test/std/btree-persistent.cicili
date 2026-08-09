@@ -1,0 +1,184 @@
+;;; test lib/std/haskell/persistent-btree.cicili on std rc
+;;;
+;;; A PERSISTENT tree shares subtrees between versions: an insert copies the
+;;; path it touches and leaves the rest alone, so one node belongs to several
+;;; versions at once and a reference count is what says when the last of them
+;;; has gone. That sharing is the reason this test exists and the reason it runs
+;;; under valgrind -- a child cloned without a matching free leaks a whole
+;;; subtree, and one freed twice reads through a dangling pointer, and neither
+;;; is visible at transpile time.
+;;;
+;;; Modelled on draft/tests/collection/btree.cicili, which tested the
+;;; Vector-spined btree that went with the box mechanic. The counts are checked
+;;; here rather than printed, so the test can fail rather than merely differ.
+;;;
+;;; WHAT VALGRIND SAYS: 452 allocations, 452 frees, no leak and no error. Ten
+;;; versions of one spine are built, held live together and dropped one at a
+;;; time, and nothing is freed under anyone -- which is the whole claim the
+;;; refcount makes.
+;;;
+;;; THE PAYLOAD IS A PAIR OF ints, and not because a string could not go there.
+;;; A (Tuple string int) builds and runs through this tree; what is still
+;;; refused is the List API that would carry one -- push, insert, replace and
+;;; wrap take their item by value, and a non-copy item cannot be a by-value
+;;; parameter. What is under test here is the refcount on the spine, and an int
+;;; pair exercises that exactly as well.
+
+(source "btree_persistent.c"
+  ;; no :haskell -- that flag linked haskell.o, and the layer is part of std now
+  (make :std #t
+        :compile #t :link ("-lbtree_persistent.o" "-o" "btree_persistent_test"))
+
+  ;; id is the key and is not part of the value: (salary, grade)
+  (typedef (Tuple int int) User)
+
+  (static) (var int bad . 0)
+
+  ;; the running totals a traverse adds up. They live out here rather than
+  ;; inside the generic: a `generic' walks its body to align its arguments and
+  ;; a dotted (var long seen . 0) is not a list it can walk.
+  (static) (var long seen  . 0)
+  (static) (var long total . 0)
+
+  (func check ((const char * what) (long got) (long want)) (out int)
+    (if (== got want)
+        (block (printf "ok   %-40s %ld\n" what got) (return 0))
+      (block (printf "FAIL %-40s got %ld want %ld\n" what got want) (return 1))))
+
+  (generic tree-type
+    (3t)
+
+    (decl-B-Tree 3t int User)
+
+    (func compareKey ((int lkey) (int rkey))
+          (out Ordering)
+          (return (case (<  lkey rkey) (LT)
+                        (== lkey rkey) (EQ)
+                        otherwise      (GT))))
+
+    (fn showKey -file -key
+        (fprintf -file "%d" -key))
+
+    (fn showItem -file -item
+        (match -item
+          ((\, id (\, salary grade))
+           (fprintf -file "(id: %d, salary: %d, grade: %d)" id salary grade))
+          (default 0)))
+
+    (impl-B-Tree 3t int User
+                 3          ; order
+                 compareKey
+                 showKey
+                 showItem)
+
+    ;; An insert answers a NEW tree that shares most of its spine with the old
+    ;; one. The old handle still holds a reference to everything it did not
+    ;; touch, so it has to be dropped -- that is what the letin is for, and
+    ;; getting it wrong is exactly the leak this test exists to catch.
+    ;; NEITHER OF THESE FREES ITS INPUT. Every version is held by a letin of
+    ;; its own in main and dropped there, which is the point: ten live handles
+    ;; onto ten versions of one spine, each freed in turn, and the refcount is
+    ;; what has to keep the shared parts alive until the last of them goes.
+    ;; Freeing here as well would be the same handle freed twice.
+    (func ins ((3t tree) (int key) (int salary) (int grade)) (out 3t)
+      (match ((<> insert 3t) tree key (cast User '{ salary grade }))
+        (Right ntr (return ntr))
+        (default   (block (set bad (+ bad 1))
+                          (return ((<> Leaf 3t) ((<> Nil 3t pair_t))))))))
+
+    (func del ((3t tree) (int key)) (out 3t)
+      (match ((<> delete 3t) tree key nil)
+        (Right ntr (return ntr))
+        (default   (block (set bad (+ bad 1))
+                          (return ((<> Leaf 3t) ((<> Nil 3t pair_t))))))))
+
+    ;; the value stored under a key, or -1
+    (func salaryOf ((3t tree) (int key)) (out long)
+      (return (match ((<> search 3t) tree key)
+                (Just (\, _ (\, salary)) (cast long salary))
+                (default -1))))
+
+    (func countAll ((3t tree)) (out long)
+      (set seen  0)
+      (set total 0)
+      ((<> traverse 3t) tree
+       ;; `io', not `match': this one is a STATEMENT. A match with no default
+       ;; is an expression with no else, and `?' has nowhere to put that.
+       '(lambda (((<> 3t pair_t) item) (Bool hasNext))
+          (io item
+            ((\, _ (\, salary)) (block (set seen  (+ seen 1))
+                                       (set total (+ total salary)))))))
+      (return seen))
+
+    ) ; tree-type
+
+  (tree-type BTree_int_User)
+
+  (main
+    ;; ---- an empty tree has nothing in it ------------------------------
+    (letin ((* t0 ((<> Leaf BTree_int_User) ((<> Nil BTree_int_User pair_t)))))
+
+      (+= bad (check "an empty tree has no minimum"
+                     (match ((<> min BTree_int_User) t0)
+                       (Just _ 1)
+                       (default 0))
+                     0))
+      (+= bad (check "an empty tree traverses to nothing" (countAll t0) 0))
+
+      ;; ---- filling it ------------------------------------------------
+      ;;
+      ;; Enough keys to force several splits at order 3, and inserted out of
+      ;; order so the splits do not all fall the same way. Every insert drops
+      ;; the tree it was handed, so what is alive at the end is one spine.
+      (letin ((* t1 (ins t0 30 3000 1)))
+      (letin ((* t2 (ins t1 20 2000 1)))
+      (letin ((* t3 (ins t2 40 4000 2)))
+      (letin ((* t4 (ins t3 18 1800 2)))
+      (letin ((* t5 (ins t4 28 2800 3)))
+      (letin ((* t6 (ins t5 50 5000 3)))
+      (letin ((* t7 (ins t6 10 1000 1)))
+      (letin ((* t8 (ins t7 42 4200 2)))
+      (letin ((* t9 (ins t8 52 5200 3)))
+      (letin ((* ta (ins t9  8  800 1)))
+
+        (+= bad (check "ten keys traverse in order" (countAll ta) 10))
+        (+= bad (check "and their salaries add up"  total       29800))
+
+        (+= bad (check "search finds the root key"   (salaryOf ta 30) 3000))
+        (+= bad (check "search finds a leaf key"     (salaryOf ta  8)  800))
+        (+= bad (check "search finds the last key"   (salaryOf ta 52) 5200))
+        (+= bad (check "search misses what is absent" (salaryOf ta 99)  -1))
+
+        (+= bad (check "the minimum is the smallest key"
+                       (match ((<> min BTree_int_User) ta)
+                         (Just (\, key) (cast long key))
+                         (default -1))
+                       8))
+        (+= bad (check "the maximum is the largest key"
+                       (match ((<> max BTree_int_User) ta)
+                         (Just (\, key) (cast long key))
+                         (default -1))
+                       52))
+
+        ;; ---- and emptying it again -----------------------------------
+        (letin ((* d1 (del ta 30)))
+        (letin ((* d2 (del d1  8)))
+        (letin ((* d3 (del d2 52)))
+
+          (+= bad (check "three deletions leave seven" (countAll d3) 7))
+          (+= bad (check "and the deleted key is gone" (salaryOf d3 30) -1))
+          (+= bad (check "while its neighbour is not"  (salaryOf d3 28) 2800))
+          (+= bad (check "the minimum moved up"
+                         (match ((<> min BTree_int_User) d3)
+                           (Just (\, key) (cast long key))
+                           (default -1))
+                         10))
+
+          ))) ; d3 d2 d1
+      )))))))))) ; ta .. t1
+      ) ; t0
+
+    (if (== bad 0)
+        (printf "btree-persistent: all ok\n")
+      (printf "btree-persistent: %d FAILED\n" bad))
+    (return bad)))

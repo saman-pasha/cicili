@@ -1,0 +1,87 @@
+;;; test lib/std/haskell/ownlist.cicili -- a list that owns its elements
+;;;
+;;; A std string owns a heap buffer and is (non-copy), so it is exactly the
+;;; payload an owning container has to get right: hand it over once, borrow it
+;;; to read, free it once. The counts are checked and the whole thing runs under
+;;; valgrind, which is where a second owner shows up.
+(source "ownlist.c"
+  (make :std #t
+        :compile #t :link ("-lownlist.o" "-o" "ownlist_test"))
+
+  (decl-string)
+  (impl-string)
+
+  (decl-OwnList OwnList_string string)
+  (impl-OwnList OwnList_string string
+                (\\ -f -s (show_string -f -s))
+                " ")
+
+  (static) (var int bad . 0)
+
+  (func check ((const char * what) (long got) (long want)) (out int)
+    (if (== got want)
+        (block (printf "ok   %-40s %ld\n" what got) (return 0))
+      (block (printf "FAIL %-40s got %ld want %ld\n" what got want) (return 1))))
+
+  (main
+    (letin* ((l ((<> OCons string) (new_string "alan")
+                 ((<> OCons string) (new_string "alonzo")
+                  ((<> OCons string) (new_string "haskell") ((<> ONil string)))))
+                (<> free OwnList_string)))
+
+      (+= bad (check "three elements" (cast long ((<> len OwnList_string) l)) 3))
+
+      ;; nth hands back a POINTER INTO the cell, not a copy
+      (+= bad (check "nth borrows the first"
+                     (matchn ((<> nth OwnList_string) 0 l)
+                       (just s (cast long (len_vector s)))
+                       (nothing -1))
+                     4))
+      (+= bad (check "nth borrows the last"
+                     (matchn ((<> nth OwnList_string) 2 l)
+                       (just s (cast long (len_vector s)))
+                       (nothing -1))
+                     7))
+      (+= bad (check "nth past the end is nothing"
+                     (matchn ((<> nth OwnList_string) 9 l)
+                       (just _ 1)
+                       (nothing 0))
+                     0))
+      (+= bad (check "head borrows the first"
+                     (matchn ((<> head OwnList_string) l)
+                       (just s (cast long (len_vector s)))
+                       (nothing -1))
+                     4))
+
+      ;; the borrow points AT the list, so writing through it writes the list
+      (letin ((* mark (new_string "!")))
+        (match ((<> nth OwnList_string) 1 l)
+          (just s (cast void (append_string s (aof mark))))
+          (nothing (set bad (+ bad 1)))))
+      (+= bad (check "and the write went through it"
+                     (matchn ((<> nth OwnList_string) 1 l)
+                       (just s (cast long (len_vector s)))
+                       (nothing -1))
+                     7))
+
+      (+= bad (check "the tail is one shorter"
+                     (cast long ((<> len OwnList_string) ((<> tail OwnList_string) l)))
+                     2))
+
+      (printf "list: ")
+      (show_OwnList_string stdout l)
+      (putchar #\Newline))
+
+    ;; an empty list has nothing to borrow and nothing to free
+    (letin* ((e ((<> ONil string)) (<> free OwnList_string)))
+      (+= bad (check "an empty list is empty" (cast long ((<> len OwnList_string) e)) 0))
+      (+= bad (check "and borrows nothing"
+                     (matchn ((<> nth OwnList_string) 0 e)
+                       (just _ 1)
+                       (nothing 0))
+                     0)))
+
+    (if (== bad 0)
+        (printf "ownlist: all ok\n")
+      (printf "ownlist: %d FAILED\n" bad))
+    (return bad)))

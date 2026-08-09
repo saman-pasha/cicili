@@ -1,0 +1,64 @@
+;;; This file is part of the :std library and shares its package. A library
+;;; owns its namespace instead of borrowing the import prefix's; the full
+;;; explanation is in doc/DOC-C.md, under "A library's package".
+(DEFPACKAGE :std
+  (:USE :COMMON-LISP)
+  (:IMPORT-FROM :COMMON-LISP-USER "import" "generic" "cicili"
+                                  "find-subseq" "expand-form<"))
+
+(IN-PACKAGE :std)
+
+
+;; helper macro will auto defer all vars
+;; checks an object has destructor
+(DEFMACRO --h-only-haskell-obj (is-ptr var-name factory)
+  (LET ((var-name var-name))
+    `(letn ((auto ,var-name . (FUNCTION ,factory)))
+       (cast void ,(IF is-ptr
+                       `(-> ,var-name __h_table freeClass)
+                       `(-> ($ ,var-name __h_table) freeData)))
+       ,var-name)))
+
+;; letin accepts only haskell objects are produced by 'data' or 'class'
+;; auto destructor calling
+;; needs to destructor be specified
+;; * at first means the variable is pointer (output of a class instantiation)
+;; (DEFMACRO letin (var-list &REST body)
+;;   `(letn ,(APPLY 'APPEND
+;;                  (MAP 'LIST #'(LAMBDA (var)
+
+;;                                 (UNLESS (OR (NOT (AND (EQUAL (CAR var) *) (= (LENGTH var) 3))) (= (LENGTH var) 2))
+;;                                   (ERROR (FORMAT NIL "wrong letin variable definition: ~A" var)))
+
+;;                                 (IF (= (LENGTH var) 2)
+;;                                     `((defer () __h_free_data_router)
+;;                                       (auto ,(CAR var)
+;;                                         . (FUNCTION (--h-only-haskell-obj ,NIL ,(CAR var) ,(CADR var)))))
+;;                                     `((defer () __h_free_class_router)
+;;                                       (auto ,(CADR var)
+;;                                         . (FUNCTION (--h-only-haskell-obj ,T ,(CADR var) ,(CADDR var)))))))
+;;                       var-list))
+;;      ,@body))
+
+;;; The `rc' macro is gone with the haskell Rc it wrapped values in. It also
+;;; deferred to __h_free_data_router, which lived in haskell.h. lib/std's `rc'
+;;; and its let_rc / take_rc front ends are the replacement.
+
+
+
+;; (DEFMACRO new (obj)
+;;   (LET ((obj obj))
+;;     `((\.* new ,obj) ,obj)))
+
+;; (DEFMACRO copy (obj)
+;;   (LET ((obj obj))
+;;     `((\.* copy ,obj) ,obj)))
+
+;; (DEFMACRO show (obj)
+;;   (LET ((obj obj))
+;;     `((\.* show ,obj) stdout ,obj)))
+
+;;; `iterate' is gone. It walked a haskell Vector -- cloning it for the
+;;; duration, opening the box, then stepping a begin/end pair -- and there is
+;;; no Vector any more. A std vector is walked with an index and its `len',
+;;; and a std string the same way; see lib/std/vector.cicili.

@@ -1,0 +1,211 @@
+
+;;; Monoidal Functor
+;;; This file is part of the :std library and shares its package. A library
+;;; owns its namespace instead of borrowing the import prefix's; the full
+;;; explanation is in doc/DOC-C.md, under "A library's package".
+(DEFPACKAGE :std
+  (:USE :COMMON-LISP)
+  (:IMPORT-FROM :COMMON-LISP-USER "import" "generic" "cicili"
+                                  "find-subseq" "expand-form<"))
+
+(IN-PACKAGE :std)
+
+
+;; takes a functorial structure to 'ap' (apply) over a structure
+;; factor  f
+;; monoid  [ ] a -> [ ] a -> [ ] a
+;; functor f (a -> b) -> f a -> f b
+;; how smash f (a -> b) and f a to produce f b untouched
+;; class Functor f => Applicative f where
+;;   pure :: a -> f a
+;;   ap   :: f (a -> b) -> f a -> f b      -- or tie-fighter
+;;   <*>  :: f (a -> b) -> f a -> f b
+(generic decl-Applicative
+  (type f a b)
+
+  (decl-data (Applicative (<> Applicative type))
+    (= Applicative (<> Applicative type ctor))
+    (func pure (((<> a to b t) a_b)) (out (<> f (<> a to b t))))
+    (func ap   (((<> f (<> a to b t)) f_a_b) ((<> f a) input)) (out (<> f b))))
+
+  (decl) (func (<> get Applicative type) () (out (<> Applicative type)))
+
+  (fn (<> pure type) a->b
+      ((<> pure Applicative type)
+       '(lambda ((a __h_value))
+         (out b)
+         (return ($> a->b __h_value)))))
+
+  (fn (<> ap type) f_a_b input
+      ((<> ap Applicative type) f_a_b input))
+  
+  ) ; decl-Applicative
+
+;; mat has access to 'functor' and 'input' variables inside 'ap' function
+(generic impl-Applicative
+  (type f a b wrap mat)
+
+  (impl-data (Applicative (<> Applicative type))
+    (= Applicative (<> Applicative type ctor))
+
+    (func pure (((<> a to b t) a_b))
+          (out (<> f (<> a to b t)))
+          (return (wrap a_b)))
+
+    (func ap (((<> f (<> a to b t)) f_a_b) ((<> f a) input))
+          (out (<> f b))
+          (return mat)))
+
+  (func (<> get Applicative type) ()
+        (out (<> Applicative type))
+        (return ((<> Applicative type ctor))))
+
+  ) ; impl-Applicative
+
+(generic import-Applicative
+  (type f a b)
+
+  (fn (<> pure type) a->b
+      ((<> pure Applicative type)
+       '(lambda ((a __h_value))
+         (out b)
+         (return ($> a->b __h_value)))))
+
+  (fn (<> ap type) f_a_b input
+      ((<> ap Applicative type) f_a_b input))
+  
+  ) ; import-Applicative
+
+
+;; List
+;; Cartesian Application
+;; enables parallelism computation
+;; List (int -> int) -> List int -> List int
+(generic decl-Applicative-List
+  (type a b)
+
+  ;; DEPENDENCIES, and all of them are reached by impl-Applicative-List's `mat'
+  ;; rather than by anything here -- which is why they went unnoticed. It worked
+  ;; only for a caller who happened to declare them first, in the right order.
+  ;;
+  ;; `class Functor f => Applicative f' is not decoration: ap is written in
+  ;; terms of fmap, and the Functor is also what declares the a->b typedef every
+  ;; signature below names.
+  (decl-Functor-List type a b)
+  (decl-List (<> List (<> a to b t)) (<> a to b t))
+  ;; the answer's list, and the list OF those the mconcat folds down
+  (decl-List (<> List b) b)
+  (decl-List (<> List (<> List b)) (<> List b))
+  (decl-Monoid (<> List b) (<> List b))
+
+  (decl-Applicative type List a b)
+  
+  ) ; decl-Applicative-List
+
+;; f_a_b is List of a_b [ a -> b]
+;; input is List of a   [ a ]
+;; returns  List of b   [ b ]
+;; all functions inside f_a_b should be a -> b
+;; all functions apply with fmap of Functor
+(generic impl-Applicative-List
+  (type a b)
+
+  ;; dependencies -- the same set decl-Applicative-List declares
+  (impl-Functor-List type a b)
+  ;; THE SHOW ARGUMENTS ARE (file value) AND A STRING, and this line had neither.
+  ;; impl-List applies its `fmt' as ($> fmt file head) -- two arguments -- so a
+  ;; one-parameter (\\ v (printf "%p" v)) took `file' as its value, printed THAT,
+  ;; and left the result to be called with the head: "called object is not a
+  ;; function or function pointer", and the emitter stopped mid-expression
+  ;; inside show_List_int_to_int_t. The separator is interpolated with %s, so
+  ;; (putchar #\Space) was a statement standing where a string goes.
+  (impl-List (<> List (<> a to b t)) (<> a to b t)
+             (\\ -f -v (fprintf -f "%p" (cast (void *) -v))) " ")
+  ;; NOTHING HERE KNOWS HOW TO SHOW A `b'. This instance exists so the type is
+  ;; complete, not to be read; a caller who wants theirs shown implements the
+  ;; List themselves and impl-class's include guard makes their version the one
+  ;; that lands.
+  (impl-List (<> List b) b (\\ -f -v 0) " ")
+  (impl-List (<> List (<> List b)) (<> List b) (\\ -f -v ((<> show (<> List b)) -f -v)) " ")
+  ;; `move': a List of b is heap and append copies, so mconcat has to drop each
+  ;; accumulator it folds through or the ap above leaks one per element
+  (impl-Monoid (<> List b) (<> List b) ((<> Nil b)) (<> append (<> List b)) move)
+
+  (impl-Applicative type List a b
+                    (\\ a->b ((<> wrap List (<> a to b t)) a->b))
+                    ;; EVERY STEP HERE BUILDS A LIST, and mconcat folds with
+                    ;; `append', which copies -- so nothing in the chain is
+                    ;; consumed and the answer shares none of it. Written nested
+                    ;; there was nowhere to name the four intermediates and they
+                    ;; were simply dropped: 24 blocks at exit for one `ap' of
+                    ;; two functions over two values.
+                    ;;
+                    ;; Bound, each has a name and a free. `pair' and the cell
+                    ;; `wrap' made are one spine, so freeing `pair' takes both;
+                    ;; a List does not own its elements, so `mapped' and `rest'
+                    ;; are freed separately and the ints inside them go with
+                    ;; neither.
+                    (match f_a_b
+                      (* Cons a_b tail
+                         (letn ((auto mapped . #'((<> fmap Functor type) a_b input))
+                                (auto rest   . #'((<> ap Applicative type) tail input))
+                                (auto pair   . #'((<> Cons List b)
+                                                  mapped
+                                                  ((<> wrap List List b) rest)))
+                                (auto result . #'((<> mconcat List b) pair)))
+                           ((<> free (<> List (<> List b))) (aof pair))
+                           ((<> free (<> List b)) (aof mapped))
+                           ((<> free (<> List b)) (aof rest))
+                           result))
+                      (default ((<> Nil b)))))
+  
+  ) ; impl-Applicative-List
+
+(generic import-Applicative-List
+  (type a b)
+
+  (import-Applicative type List a b)
+  
+  ) ; import-Applicative-List
+
+
+;; Maybe
+;; enables optional computation
+;; Maybe (int -> int) -> Maybe int -> Maybe int
+(generic decl-Applicative-Maybe
+  (type a b)
+
+  ;; dependencies. The Functor is the superclass ap is written in terms of, and
+  ;; is what declares the a->b typedef the signatures below name.
+  (decl-Functor-Maybe type a b)
+  ;; decl-Maybe takes the ELEMENT type, so this is a Maybe holding an a->b --
+  ;; which is what `ap' is handed. Written (<> Maybe (<> a to b t)) it declared
+  ;; a Maybe of a Maybe and the type ap actually names was never declared at
+  ;; all; only a caller who declared it themselves got this far.
+  (decl-Maybe (<> a to b t))
+
+  (decl-Applicative type Maybe a b)
+  
+  ) ; decl-Applicative-Maybe
+
+(generic impl-Applicative-Maybe
+  (type a b)
+
+  ;; dependencies -- the same set decl-Applicative-Maybe declares
+  (impl-Functor-Maybe type a b)
+  (impl-Maybe (<> a to b t))
+  
+  (impl-Applicative type Maybe a b
+                    (<> Just (<> a to b t))
+                    (match f_a_b
+                      (Just a_b ((<> fmap Functor type) a_b input))
+                      (default ((<> Nothing b)))))
+  
+  ) ; impl-Applicative-Maybe
+
+(generic import-Applicative-Maybe
+  (type a b)
+
+  (import-Applicative type Maybe a b)
+  
+  ) ; import-Applicative-Maybe

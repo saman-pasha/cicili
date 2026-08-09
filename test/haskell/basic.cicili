@@ -1,6 +1,5 @@
 
-(source "basic.c" (:std #t :compile #t :link "-L{$CCL} -lhaskell.o -L{$CWD} basic.o -o main")
-        (include "../../haskell.h")
+(source "basic.c" (:std #t :compile #t :link "-L{$CWD} basic.o -o main")
         (include "math.h")
         
         ;; \ lambda calculus
@@ -239,13 +238,13 @@
             
             (format #t "output of printf match: %d\n"
                     ;; match returns a value and all values returned from each case must be the same type
-                    (match ((<> nth String) 3 txt) ; ((\. nth txt) 3 txt)
+                    (match ((<> nth String) 3 txt) ; (\. nth txt 3 txt)
                       (Just c  (format #t "the 4th element is: %c\n" c))
                       (default (format #t "4th element not found\n"))))
 
             (where ; where puts exactly the value of each var in place of it, and makes C functions Curry
-                ((llen ((\.* len txt) txt)) ; (len txt)
-                 (nthf (\\ n ((\.* nth txt) n txt))) ; nth function is reserved for access nth element of an array
+                ((llen (\.* len txt txt)) ; (len txt)
+                 (nthf (\\ n (\.* nth txt n txt))) ; nth function is reserved for access nth element of an array
                  (show (\\ f n (match (f n) ; lambda in place of declared show function
                                  (Just c  (format #t "the %dth element is: %c\n" n c))
                                  (default (format #t "%dth element not found\n" n))))))
@@ -258,9 +257,9 @@
 
             (format #t "output of letin: %d\n"
                     ;; use letin to prevent repeatition calls for every llen 
-                    (letn ((auto llen . #'((\.* len txt) txt)))
+                    (letn ((auto llen . #'(\.* len txt txt)))
                       (where
-                          ((nthf (\\ n ((\.* nth txt) n txt))) ; !! nth lambdas to C function to use Curry style
+                          ((nthf (\\ n (\.* nth txt n txt))) ; !! nth lambdas to C function to use Curry style
                            (show (\\ f n (match (f n)
                                            (Just c  (format #t "the %dth element is: %c\n" n c))
                                            (default (format #t "%dth element not found\n" n))))))
@@ -277,13 +276,13 @@
               ;; _ for types with only one ctor, last ctor id '_' Default ctor
               (* Cons head tail
                  (format #t "first char is: %c, and length of tail is: %d\n"
-                         head ((\.* len tail) tail))))
+                         head (\.* len tail tail))))
             
             ;; using list literal constructor
             (letin ((* str5 (new_String '{ #\C #\i #\c #\i #\l #\i })))
-              (format #t "has 'Cicili' desired length 5: %d\n" ((\.+ hasLen String) str5 5))
+              (format #t "has 'Cicili' desired length 5: %d\n" (\.+ hasLen String str5 5))
               (format #t "has 'Cicili' desired length 6: %d\n" ((\<> hasLen String) str5 6))
-              (format #t "has 'Cicili' desired length 7: %d\n" ((\.* hasLen str5)   str5 7))
+              (format #t "has 'Cicili' desired length 7: %d\n" (\.* hasLen str5   str5 7))
               (io str5
                 ((\: ch0 (* Cons ch1 (* Cons ch2 tail))) ; multi level inner destructuring
                  (block (format #t "fst snd trd chars and tail from String: %c, %c, %c, " ch0 ch1 ch2)
@@ -294,7 +293,7 @@
             ;; io can have default case like match
             ;; but io returns void therefor default case is optional
             (format #t "drop 10 of 'Haskell List'\n")
-            (io ((\.* drop txt) 10 txt)
+            (io (\.* drop txt 10 txt)
               ;; simplified list element access
               ;; (Nothing ^ String (format #t "Nothing String\n"))
               ((\: fst snd trd _) ; _ is tail, if _ be removed trd will be tail
@@ -314,55 +313,55 @@
                     (* ilist1 (push 5 ilist0))           ; \: 'push' is push_List_int to list function
                     (* ilist3 (append ilist2 ilist1))    ; ++ 'append' is append_List_int
                     (* ilist4 (take 5 ilist3)))          ; take creates a new list by copy of specified's elements
-              (format #t "first elem of int list0: %d\n" (match ((\.* head ilist0) ilist0) (Just i i) (default -1)))
-              (format #t "first elem of int list1: %d\n" (match ((\.* head ilist0) ilist1) (Just i i) (default -1)))
+              (format #t "first elem of int list0: %d\n" (match (\.* head ilist0 ilist0) (Just i i) (default -1)))
+              (format #t "first elem of int list1: %d\n" (match (\.* head ilist0 ilist1) (Just i i) (default -1)))
               (format #t "list0:\n")
-              ((\.* show ilist0) stdout  ilist0)
+              (\.* show ilist0 stdout  ilist0)
               (format #t "\nlist1 push 5:\n")
-              ((\.* show ilist0) stdout ilist1)
+              (\.* show ilist0 stdout ilist1)
               (format #t "\nlist2:\n")
-              ((\.* show ilist0) stdout ilist2)
+              (\.* show ilist0 stdout ilist2)
               (format #t "\nlist3:\n")
-              ((\.* show ilist0) stdout ilist3)
+              (\.* show ilist0 stdout ilist3)
               (format #t "\nlist4: take 5 of list3:\n")
-              ((\.* show ilist0) stdout ilist4)
+              (\.* show ilist0 stdout ilist4)
               (putchar #\Newline)))
 
           ;; working with ranges
           (letin ((* ra0  (new_Range_int 1 20 3))
-                  (* ra1  (take  3 ra0)) ; ((\.* take ra0)  3 ra0)
+                  (* ra1  (take  3 ra0)) ; (\.* take ra0  3 ra0)
                   (* ra2  (take  4 ra0))
                   (* rad1 (drop  4 ra0))
                   (* ra4  (take  2 rad1))
                   (* ra5  (take  4 rad1))
                   (* ra3  (take 10 ra0)))
             (format #t "range 1 20 3:\n")
-            ((\.* show ra0) stdout ra0)
+            (\.* show ra0 stdout ra0)
             ;; range shows only first of range
             ;; needs to take enough from it
             (format #t "\ntake 3  of range 1 20 3:\n")
             ((<> show List_int) stdout ra1)
             (format #t "\ntake 4  of range 1 20 3:\n")
-            ((\.* show ra1) stdout ra2)
+            (\.* show ra1 stdout ra2)
             (format #t "\ntake 2  of drop  4 range 1 20 3:\n")
-            ((\.* show ra1) stdout ra4)
+            (\.* show ra1 stdout ra4)
             (format #t "\ntake 4  of drop  4 range 1 20 3:\n")
-            ((\.* show ra1) stdout ra5)
+            (\.* show ra1 stdout ra5)
             (format #t "\ntake 10 of range 1 20 3:\n")
             ;; access Table by type
-            ((\.+ show List_int) stdout ra3))
+            (\.+ show List_int stdout ra3))
 
           ;; casting
           (letin ((* str0 (new_String "Hello World!"))
                   (* str1 (new_List_int '{ 72 101 108 108 111 32 87 111 114 108 100 33 })))
             (format #t "\nString to List_int:\n")
-            ((\.+ show List_int) stdout (static-cast List_int str0))
+            (\.+ show List_int stdout (coerce List_int str0))
             (format #t "\nString to List_char:\n")
-            ((\.+ show List_char) stdout (static-cast List_char str0))
+            (\.+ show List_char stdout (coerce List_char str0))
             (format #t "\nList_int to List_char:\n")
-            (show_List_char stdout (static-cast List_char str1))
+            (show_List_char stdout (coerce List_char str1))
             (format #t "\nList_int to String:\n")
-            (show_String stdout (static-cast String str1))
+            (show_String stdout (coerce String str1))
             (putchar #\Newline))
           
           ))

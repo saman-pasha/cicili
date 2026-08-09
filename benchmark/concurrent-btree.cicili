@@ -5,13 +5,29 @@
 ;;; Rc cooperation with lock makes it atomic
 ;;; and guarantees versioning access to btree
 ;;; Single Writer, Multi Reader
+;;;
+;;; ONE WRITER AND FOUR READERS OVER A PERSISTENT TREE. The writer inserts a
+;;; thousand keys and deletes them again; each write answers a NEW root that
+;;; shares most of its spine with the old one, and swaps it into the Arc. The
+;;; readers clone the Arc and search whatever version that clone caught, so a
+;;; reader finding nothing is not a fault -- it is a reader looking at a version
+;;; the key had not reached yet, or had already left. Both counts are printed.
+;;;
+;;; Reading the output: the writer's lines go to stdout and a reader's misses go
+;;; to stderr through `error!'. Those are two streams with two buffering rules,
+;;; so merging them with 2>&1 interleaves them mid-token and loses lines to the
+;;; naked eye. Redirect them separately when counting anything.
+;;;
+;;; It builds on lib/std/haskell/persistent-btree now. The btree it used to
+;;; import is gone, along with the haskell Cell and String its payload was made
+;;; of; what survived is the haskell Arc, which is the whole point of this file
+;;; -- a refcount behind a mutex, handing the payload to a callback under it.
 
-(import "draft/collection/btree.cicili")
 (import "lib/std/pthread/pthread.cicili")
 
 (source "concurrent_btree.c"
+  ;; no :haskell -- that flag linked haskell.o, and the layer is part of std now
   (make :std #t
-        :haskell #t
         :compile #t
         :link "concurrent_btree.o -o concurrent_btree")
 
@@ -20,14 +36,29 @@
   ;; millisecond it prints is meaningless. Refuse, rather than measure.
   (import "benchmark/release-only.cicili")
   (release-only)
-
-  (include "haskell.h")
   (include <pthread.h>)
   (include <unistd.h>)
   
-  ;; Define a simple User type, contains name and salary
+  ;; Define a simple User type, contains salary and grade
   ;; id is not included in User type, chosen as key
-  (typedef (Tuple (<> Cell String) int) User)
+  ;;
+  ;; A PAIR OF ints, WHERE THIS USED TO CARRY A (<> Cell String). The Cell was
+  ;; there so a delete in one version could empty it and the other versions
+  ;; would read "deleted in another version"; the haskell Cell and String it was
+  ;; built from are both gone. std's string would fit the slot, but the tree
+  ;; copies an item by value across versions -- copy, replace, take and drop all
+  ;; do -- and a struct holding a non-copy field is not itself non-copy, so
+  ;; nothing would object and every version would own the same buffer. What this
+  ;; benchmark measures is the Arc under one writer and four readers, and an int
+  ;; pair measures it the same. test/std/btree-persistent carries the same pair
+  ;; for the same reason.
+  (typedef (Tuple int int) User)
+
+  ;; compareKey answers with one of these and is written before the generic
+  ;; that instantiates the tree, so the type has to be declared before it --
+  ;; decl-B-Tree asks for Ordering too and its include guard makes that free.
+  (decl-Ordering)
+  (impl-Ordering)
 
   (func compareKey ((int lkey) (int rkey))
         (out Ordering)
@@ -41,25 +72,13 @@
 
   (fn showValue -file -u
       (match -u
-        ((\, wname salary)
-         (match ((<> get Cell String) wname)
-           (Just name (+ (fprintf -file "('")
-                         (show_String -file name)
-                         (fprintf -file "', %d)" salary)))
-           (default (fprintf -file "item is deleted in another version!"))))
+        ((\, salary grade) (fprintf -file "(%d, %d)" salary grade))
         (default 0)))
   
   (fn showItem -file -item
       (match -item
-        ((\, id (\, wname salary)) (match ((<> get Cell String) wname)
-                                     (Just name (+ (fprintf -file "(%d, '" id)
-                                                   (show_String -file name)
-                                                   (fprintf -file "', %d)" salary)))
-                                     (default (fprintf -file "%d, but item is deleted in another version!" id))))
+        ((\, id (\, salary grade)) (fprintf -file "(%d, %d, %d)" id salary grade))
         (default 0)))
-
-  (decl-List List_User User)
-  (impl-List List_User User showValue " ")
 
   (generic tree-type
     (3t) ; 3t is BTree_int_User type
@@ -88,27 +107,23 @@
     (impl-Arc 3t)
     
     (func insertMany (((<> Arc 3t) * pwtree) (int from) (int to))
-          (let ((char keyStr [10]))
+          (block
             (for ((int i . from)) (<= i to) ((++ i))
-                 (sprintf keyStr "%d" i)
-                 (let ((String name . #'(letin ((* r1 (new_String_Const "User "))
-                                                (* r2 (new_String_Const keyStr)))
-                                          (append_String r1 r2))))
+                 (block
                    ((<> lock Arc 3t)
                     (cof pwtree)
                     ;; alive callback
-                    ;; closure instead of lambda because of using 'i and 'name
+                    ;; closure instead of lambda because of using 'i
                     '(closure ((3t tree))
-                      (io ((<> insert 3t) tree i (cast User '{ ((<> new Cell String) name) (+ i 2000) }))
+                      (io ((<> insert 3t) tree i (cast User '{ (+ i 2000) 1 }))
                         (Right new_tree (block (lock
                                                  (aof outlock)
-                                                 (format #t "Inserted: %d, " i)
-                                                 (show_String stdout name)
+                                                 (format #t "Inserted: %d" i)
                                                  (putchar #\Newline))
 
                                                ;; trace counting with --info arg
                                                (info! (io (cof pwtree)
-                                                        (Hold pointer count address
+                                                        (Hold pointer count address _
                                                               (lock (aof outlock)
                                                                     (printf "+++++++++++++++++++++++++++++ %p, %p, %d, %p\n"
                                                                       pointer *pointer *count (cast (void *) address))))))
@@ -117,7 +132,7 @@
                                                (set (cof pwtree) ((<> new Arc 3t) new_tree (aof treeArc)))
 
                                                (info! (io (cof pwtree)
-                                                        (Hold pointer count address
+                                                        (Hold pointer count address _
                                                               (lock (aof outlock)
                                                                     (printf "++++++++++++++++++++++++++new %p, %p, %d, %p\n"
                                                                       pointer *pointer *count (cast (void *) address))))))))
@@ -137,14 +152,13 @@
 
     (func deleteMany (((<> Arc 3t) * pwtree) (int from) (int to))
           ;; callback to release item resources
+          ;; NOTHING TO RELEASE. This callback existed to free the Cell String an
+          ;; item carried; an int pair owns nothing, so it only reports.
           (let ((auto item_deallocator . '(lambda (((<> 3t pair_t) item))
                                            (io item
-                                             ((\, key (\, wname)) (lock (aof outlock)
-                                                                        (printf "Deleted: %d, " key)
-                                                                        (io ((<> get Cell String) wname)
-                                                                          (Just name (show_String stdout name)))
-                                                                        (putchar #\Newline)
-                                                                        ((<> free Cell String) (aof wname))))))))
+                                             ((\, key (\, salary)) (lock (aof outlock)
+                                                                        (printf "Deleted: %d, %d" key salary)
+                                                                        (putchar #\Newline)))))))
             (for ((int i . from)) (<= i to) ((++ i))
                  ((<> lock Arc 3t)
                   (cof pwtree)
@@ -153,7 +167,7 @@
                       (Right new_tree (block
                                         ;; trace reference counting with --info arg
                                         (info! (io (cof pwtree)
-                                                 (Hold pointer count address
+                                                 (Hold pointer count address _
                                                        (lock (aof outlock)
                                                              (printf "----------------------------- %p, %p, %d, %p\n"
                                                                pointer *pointer *count (cast (void *) address))))))
@@ -162,7 +176,7 @@
                                         (set (cof pwtree) ((<> new Arc 3t) new_tree (aof treeArc)))
 
                                         (info! (io (cof pwtree)
-                                                 (Hold pointer count address
+                                                 (Hold pointer count address _
                                                        (lock (aof outlock)
                                                              (printf "--------------------------new %p, %p, %d, %p\n"
                                                                pointer *pointer *count (cast (void *) address))))))))
@@ -181,7 +195,7 @@
     (func freeRcTree (((<> Arc 3t) * pnwtree))
           ;; trace counting with --info arg
           (info! (io (cof pnwtree)
-                   (Hold pointer count address
+                   (Hold pointer count address _
                          (lock (aof outlock)
                                (printf "OOOOOOOOOOOOOOOOOOOOOOOOOOOOO %p, %p, %d, %p\n"
                                  pointer *pointer *count (cast (void *) address))))))
@@ -192,15 +206,20 @@
           (while #t
             (io doQuit (True (return))) ; stop reader
             
-            ;; cloning in reader threads is locked
+            ;; THE READ OF THE SHARED ARC IS PART OF THE CLONE, and the lock has
+            ;; to cover both. `clone' takes its argument BY VALUE, so (cof
+            ;; pwtree) copies the Hold -- its pointer, count and mutex -- before
+            ;; clone has locked anything, while the writer is inside treeArc
+            ;; freeing that very Hold and putting a new one in its place. The
+            ;; copy then locks a mutex it read from a freed struct and bumps a
+            ;; count that is gone: valgrind reports the invalid read in
+            ;; clone_Arc, freed by another thread's free_Arc.
+            ;;
+            ;; treeArc is recursive, so clone taking it again inside is free.
+            ;;
             ;; freeRcTree will be called deferral
-            ;;
-            ;; declaring instead of letin*, no need define function
-            ;;
-            ;; (let ((defer () ((<> free Arc 3t) (aof nwtree)))
-            ;;       ((<> Arc 3t) nwtree . #'((<> clone Arc 3t) (cof pwtree))))
-
-            (letin* ((nwtree ((<> clone Arc 3t) (cof pwtree)) freeRcTree))
+            (letin* ((nwtree (lockn (aof treeArc) ((<> clone Arc 3t) (cof pwtree)))
+                             freeRcTree))
               
               ;; read whatever from cloned version, either current or one of latest versions
               (io ((<> get Arc 3t) nwtree)

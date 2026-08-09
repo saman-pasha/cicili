@@ -1,6 +1,5 @@
 
-(source "concepts.c" (:std #t :compile #t :link "-L{$CCL} -lhaskell.o -L{$CWD} concepts.o -o main")
-        (include "../../haskell.h")
+(source "concepts.c" (:std #t :compile #t :link "-L{$CWD} concepts.o -o main")
 
         (generic define-reduce
           (a)
@@ -102,7 +101,7 @@
 
             (show_String chrlst)
             (putchar #\Newline)
-            (reduce_List_char (static-cast List_char chrlst))
+            (reduce_List_char (coerce List_char chrlst))
             (putchar #\Newline)
             
             (io m0
@@ -154,7 +153,7 @@
                        (s2 ((<> new List_char) "Cicili!" 7)))
                 (letin ((* result (mappend s1 s2))) ; frees all at once because of using append they are chained together
                   (format #t "Concat of Strings (mappend Semigroup) of 'Hello ' and 'Cicili' is:\n")
-                  (show_String (static-cast String result))
+                  (show_String (coerce String result))
                   (putchar #\Newline)))))
 
           ;; using Functor datatype or fmap directly
@@ -162,10 +161,10 @@
           (letin* ((ftor_mul_5 (get_Functor_List_int_int))
                    (ftor_mod_3 (get_Functor_List_int_Bool)))
             
-            (where ((fmap-mul-5 (\\ l ((\. fmap ftor_mul_5)
+            (where ((fmap-mul-5 (\\ l (\. fmap ftor_mul_5
                                        '(lambda ((int value)) (out int) (return (* 5 value)))
                                        l)))
-                    (fmap-mod-3 (\\ l ((\. fmap ftor_mod_3)
+                    (fmap-mod-3 (\\ l (\. fmap ftor_mod_3
                                        '(lambda ((int value))
                                          (out Bool)
                                          (return (case (% value 3) (False)
@@ -211,7 +210,7 @@
 
           (letin* ((mul_15 '(lambda ((int value)) (out int) (return (* 15 value))))
                    (apmii (get_Applicative_Maybe_int_int)))
-            (io ((\. ap apmii) ((\. pure apmii) mul_15) (Just_int 12))
+            (io (\. ap apmii (\. pure apmii mul_15) (Just_int 12))
               (Just output (format #t "the result of 'Applicative for Maybe (*15) (Just 12)' is: Just %d\n" output))
               (default (format #t "the result of 'Applicative for Maybe (*15) (Just 12)' is: Nothing\n"))))
           

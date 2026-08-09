@@ -2222,19 +2222,19 @@ printf ("%d\n", (21 * 2));
 * **`generic`** defines a macro parameterised by type, and **`<>`** joins name parts:
 
 ```cicili
-(generic decl-box (a)
-  (struct (<> box a)
+(generic decl-crate (a)
+  (struct (<> crate a)
           (member a value)))
 
-(decl-box int)     ; -> (struct box_int (member int value))
+(decl-crate int)     ; -> (struct crate_int (member int value))
 ```
 ```c
-typedef struct box_int {
+typedef struct crate_int {
   int value;
-} box_int;
+} crate_int;
 ```
 
-`(<> box int)` is the symbol `box_int`, which is the C name too. Writing `box_int` by hand
+`(<> crate int)` is the symbol `crate_int`, which is the C name too. Writing `crate_int` by hand
 is identical.
 
 * Macro files are loaded with `import`; `--macros` prints every macro a file defines, and
