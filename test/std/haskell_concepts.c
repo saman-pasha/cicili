@@ -1173,7 +1173,10 @@ Maybe_List_int Nothing_List_int () {
   }
 }
 #endif /* __Maybe_List_int__H_IMPL__ */ 
+#ifndef __int_to_int_t__H_DECL__
+#define __int_to_int_t__H_DECL__
 typedef int (*int_to_int_t) (int value );
+#endif /* __int_to_int_t__H_DECL__ */ 
 #ifndef __Functor_List_int_int__H_DECL__
 #define __Functor_List_int_int__H_DECL__
 #ifndef __H___h_Functor_ctor_t__
@@ -1196,8 +1199,8 @@ typedef struct Functor_List_int_int__H_Table {
 typedef struct Functor_List_int_int {
   const Functor_List_int_int__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion1309 */
-    struct { /* ciciliStruct1310 */
+  union { /* ciciliUnion1310 */
+    struct { /* ciciliStruct1311 */
     } Functor , _ ;
   } __h_data ;
 } Functor_List_int_int;
@@ -1214,27 +1217,27 @@ Functor_List_int_int get_Functor_List_int_int ();
 #ifndef __Functor_List_int_int__H_IMPL__
 #define __Functor_List_int_int__H_IMPL__
 List_int fmap_Functor_List_int_int (int_to_int_t a_b , List_int input ) {
-  return ({ /* letn1346 */
+  return ({ /* letn1347 */
       typeof((((input -> __h_data). Cons). __h_0_mem)) head ;
       typeof((((input -> __h_data). Cons). __h_1_mem)) tail ;
       // ----------
       ;
-      ({ /* letn1348 */
-        bool __h_case_result  = (true  &&  (((input -> __h_ctor) ==  __h_Cons_t  ) &&  (({ /* progn1349 */
+      ({ /* letn1349 */
+        bool __h_case_result  = (true  &&  (((input -> __h_ctor) ==  __h_Cons_t  ) &&  (({ /* progn1350 */
                 head  = (((input -> __h_data). Cons). __h_0_mem) ;
                 true ;
-              }) &&  ({ /* progn1351 */
+              }) &&  ({ /* progn1352 */
                 tail  = (((input -> __h_data). Cons). __h_1_mem) ;
                 true ;
               }) ) ) );
         // ----------
         
-        ((__h_case_result ) ? ({ /* progn1356 */
+        ((__h_case_result ) ? ({ /* progn1357 */
             Cons_int (a_b (head ), fmap_Functor_List_int_int (a_b , tail ));
-          }) : ({ /* letn1363 */
+          }) : ({ /* letn1364 */
             // ----------
             ;
-            ({ /* progn1365 */
+            ({ /* progn1366 */
               Nil_int ();
             });
           }));
@@ -1245,7 +1248,7 @@ void free_Functor_List_int_int (Functor_List_int_int * this ) {
 }
 __attribute__((weak)) void free_Functor_List_int_int_pointer (Functor_List_int_int ** this ) {
   if (this )
-    { /* block1375 */
+    { /* block1376 */
       free_Functor_List_int_int ((*this ));
     }
 }
@@ -1254,7 +1257,7 @@ const Functor_List_int_int__H_Table * const get_Functor_List_int_int__H_Table ()
   return (&table );
 }
 Functor_List_int_int Functor_List_int_int_ctor () {
-  { /* let1385 */
+  { /* let1386 */
     Functor_List_int_int instance  = ((Functor_List_int_int){ get_Functor_List_int_int__H_Table (), __h_Functor_t });
     // ----------
     return instance ;
@@ -1289,8 +1292,8 @@ typedef struct Monad_Maybe_int_int__H_Table {
 typedef struct Monad_Maybe_int_int {
   const Monad_Maybe_int_int__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion1418 */
-    struct { /* ciciliStruct1419 */
+  union { /* ciciliUnion1419 */
+    struct { /* ciciliStruct1420 */
     } Monad , _ ;
   } __h_data ;
 } Monad_Maybe_int_int;
@@ -1315,23 +1318,23 @@ Maybe_int returnA_Monad_Maybe_int_int (int value ) {
   return Just_int (value );
 }
 Maybe_int bind_Monad_Maybe_int_int (Maybe_int input , int_to_Maybe_int_t a_mb ) {
-  return ({ /* letn1469 */
+  return ({ /* letn1470 */
       typeof((((input . __h_data). Just). __h_0_mem)) value ;
       // ----------
       ;
-      ({ /* letn1471 */
-        bool __h_case_result  = (true  &&  (((input . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn1472 */
+      ({ /* letn1472 */
+        bool __h_case_result  = (true  &&  (((input . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn1473 */
               value  = (((input . __h_data). Just). __h_0_mem) ;
               true ;
             }) ) );
         // ----------
         
-        ((__h_case_result ) ? ({ /* progn1477 */
+        ((__h_case_result ) ? ({ /* progn1478 */
             a_mb (value );
-          }) : ({ /* letn1481 */
+          }) : ({ /* letn1482 */
             // ----------
             ;
-            ({ /* progn1483 */
+            ({ /* progn1484 */
               Nothing_int ();
             });
           }));
@@ -1342,7 +1345,7 @@ void free_Monad_Maybe_int_int (Monad_Maybe_int_int * this ) {
 }
 __attribute__((weak)) void free_Monad_Maybe_int_int_pointer (Monad_Maybe_int_int ** this ) {
   if (this )
-    { /* block1493 */
+    { /* block1494 */
       free_Monad_Maybe_int_int ((*this ));
     }
 }
@@ -1351,7 +1354,7 @@ const Monad_Maybe_int_int__H_Table * const get_Monad_Maybe_int_int__H_Table () {
   return (&table );
 }
 Monad_Maybe_int_int Monad_Maybe_int_int_ctor () {
-  { /* let1503 */
+  { /* let1504 */
     Monad_Maybe_int_int instance  = ((Monad_Maybe_int_int){ get_Monad_Maybe_int_int__H_Table (), __h_Monad_t });
     // ----------
     return instance ;
@@ -1361,41 +1364,293 @@ Monad_Maybe_int_int Monad_Maybe_int_int_ctor () {
 Monad_Maybe_int_int get_Monad_Maybe_int_int () {
   return Monad_Maybe_int_int_ctor ();
 }
+#ifndef __int_to_int_t__H_DECL__
+#define __int_to_int_t__H_DECL__
+typedef int (*int_to_int_t) (int value );
+#endif /* __int_to_int_t__H_DECL__ */ 
+#ifndef __Functor_Ap_Maybe_int_int__H_DECL__
+#define __Functor_Ap_Maybe_int_int__H_DECL__
+#ifndef __H___h_Functor_ctor_t__
+#define __H___h_Functor_ctor_t__
+typedef enum __h_Functor_ctor_t {
+  __h_Functor_t = 0
+} __h_Functor_ctor_t;
+#endif /* __H___h_Functor_ctor_t__ */ 
+#ifndef __H_STD_DATA_
+#define __H_STD_DATA_
+typedef struct std_data std_data ;
+#endif /* __H_STD_DATA_ */ 
+typedef struct Functor_Ap_Maybe_int_int Functor_Ap_Maybe_int_int ;
+typedef std_data Functor_Ap_Maybe_int_int_type_t ;
+typedef void (*free_Functor_Ap_Maybe_int_int_t) (Functor_Ap_Maybe_int_int * this );
+typedef struct Functor_Ap_Maybe_int_int__H_Table {
+  free_Functor_Ap_Maybe_int_int_t freeData ;
+    Maybe_int (*fmap) (int_to_int_t a_b , Maybe_int input );
+} Functor_Ap_Maybe_int_int__H_Table;
+typedef struct Functor_Ap_Maybe_int_int {
+  const Functor_Ap_Maybe_int_int__H_Table * __h_table ;
+  char __h_ctor ;
+  union { /* ciciliUnion1535 */
+    struct { /* ciciliStruct1536 */
+    } Functor , _ ;
+  } __h_data ;
+} Functor_Ap_Maybe_int_int;
+Functor_Ap_Maybe_int_int Functor_Ap_Maybe_int_int_ctor ();
+__attribute__((weak)) Functor_Ap_Maybe_int_int Default_Functor_Ap_Maybe_int_int () {
+  return Functor_Ap_Maybe_int_int_ctor ();
+}
+Maybe_int fmap_Functor_Ap_Maybe_int_int (int_to_int_t a_b , Maybe_int input );
+const Functor_Ap_Maybe_int_int__H_Table * const get_Functor_Ap_Maybe_int_int__H_Table ();
+void free_Functor_Ap_Maybe_int_int (Functor_Ap_Maybe_int_int * this );
+void free_Functor_Ap_Maybe_int_int_pointer (Functor_Ap_Maybe_int_int ** this );
+#endif /* __Functor_Ap_Maybe_int_int__H_DECL__ */ 
+Functor_Ap_Maybe_int_int get_Functor_Ap_Maybe_int_int ();
+#ifndef __Maybe_int_to_int_t__H_DECL__
+#define __Maybe_int_to_int_t__H_DECL__
+#ifndef __H___h_Maybe_ctor_t__
+#define __H___h_Maybe_ctor_t__
+typedef enum __h_Maybe_ctor_t {
+  __h_Nothing_t = 0,
+  __h_Just_t = 1
+} __h_Maybe_ctor_t;
+#endif /* __H___h_Maybe_ctor_t__ */ 
+#ifndef __H_STD_DATA_
+#define __H_STD_DATA_
+typedef struct std_data std_data ;
+#endif /* __H_STD_DATA_ */ 
+typedef struct Maybe_int_to_int_t Maybe_int_to_int_t ;
+typedef std_data Maybe_int_to_int_t_type_t ;
+typedef void (*free_Maybe_int_to_int_t_t) (Maybe_int_to_int_t * this );
+typedef struct Maybe_int_to_int_t__H_Table {
+  free_Maybe_int_to_int_t_t freeData ;
+} Maybe_int_to_int_t__H_Table;
+typedef struct Maybe_int_to_int_t {
+  const Maybe_int_to_int_t__H_Table * __h_table ;
+  char __h_ctor ;
+  union { /* ciciliUnion1569 */
+    struct { /* ciciliStruct1570 */
+      int_to_int_t __h_0_mem ;
+    } Just , _1 ;
+    struct { /* ciciliStruct1571 */
+    } Nothing , _ ;
+  } __h_data ;
+} Maybe_int_to_int_t;
+Maybe_int_to_int_t Just_int_to_int_t (int_to_int_t value );
+Maybe_int_to_int_t Nothing_int_to_int_t ();
+__attribute__((weak)) Maybe_int_to_int_t Default_Maybe_int_to_int_t () {
+  return Nothing_int_to_int_t ();
+}
+const Maybe_int_to_int_t__H_Table * const get_Maybe_int_to_int_t__H_Table ();
+void free_Maybe_int_to_int_t (Maybe_int_to_int_t * this );
+void free_Maybe_int_to_int_t_pointer (Maybe_int_to_int_t ** this );
+#endif /* __Maybe_int_to_int_t__H_DECL__ */ 
+#ifndef __Applicative_Ap_Maybe_int_int__H_DECL__
+#define __Applicative_Ap_Maybe_int_int__H_DECL__
+#ifndef __H___h_Applicative_ctor_t__
+#define __H___h_Applicative_ctor_t__
+typedef enum __h_Applicative_ctor_t {
+  __h_Applicative_t = 0
+} __h_Applicative_ctor_t;
+#endif /* __H___h_Applicative_ctor_t__ */ 
+#ifndef __H_STD_DATA_
+#define __H_STD_DATA_
+typedef struct std_data std_data ;
+#endif /* __H_STD_DATA_ */ 
+typedef struct Applicative_Ap_Maybe_int_int Applicative_Ap_Maybe_int_int ;
+typedef std_data Applicative_Ap_Maybe_int_int_type_t ;
+typedef void (*free_Applicative_Ap_Maybe_int_int_t) (Applicative_Ap_Maybe_int_int * this );
+typedef struct Applicative_Ap_Maybe_int_int__H_Table {
+  free_Applicative_Ap_Maybe_int_int_t freeData ;
+    Maybe_int (*ap) (Maybe_int_to_int_t f_a_b , Maybe_int input );
+    Maybe_int_to_int_t (*pure) (int_to_int_t a_b );
+} Applicative_Ap_Maybe_int_int__H_Table;
+typedef struct Applicative_Ap_Maybe_int_int {
+  const Applicative_Ap_Maybe_int_int__H_Table * __h_table ;
+  char __h_ctor ;
+  union { /* ciciliUnion1607 */
+    struct { /* ciciliStruct1608 */
+    } Applicative , _ ;
+  } __h_data ;
+} Applicative_Ap_Maybe_int_int;
+Applicative_Ap_Maybe_int_int Applicative_Ap_Maybe_int_int_ctor ();
+__attribute__((weak)) Applicative_Ap_Maybe_int_int Default_Applicative_Ap_Maybe_int_int () {
+  return Applicative_Ap_Maybe_int_int_ctor ();
+}
+Maybe_int ap_Applicative_Ap_Maybe_int_int (Maybe_int_to_int_t f_a_b , Maybe_int input );
+Maybe_int_to_int_t pure_Applicative_Ap_Maybe_int_int (int_to_int_t a_b );
+const Applicative_Ap_Maybe_int_int__H_Table * const get_Applicative_Ap_Maybe_int_int__H_Table ();
+void free_Applicative_Ap_Maybe_int_int (Applicative_Ap_Maybe_int_int * this );
+void free_Applicative_Ap_Maybe_int_int_pointer (Applicative_Ap_Maybe_int_int ** this );
+#endif /* __Applicative_Ap_Maybe_int_int__H_DECL__ */ 
+Applicative_Ap_Maybe_int_int get_Applicative_Ap_Maybe_int_int ();
+#ifndef __Functor_Ap_Maybe_int_int__H_IMPL__
+#define __Functor_Ap_Maybe_int_int__H_IMPL__
+Maybe_int fmap_Functor_Ap_Maybe_int_int (int_to_int_t a_b , Maybe_int input ) {
+  return ({ /* letn1650 */
+      typeof((((input . __h_data). Just). __h_0_mem)) val ;
+      // ----------
+      ;
+      ({ /* letn1652 */
+        bool __h_case_result  = (true  &&  (((input . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn1653 */
+              val  = (((input . __h_data). Just). __h_0_mem) ;
+              true ;
+            }) ) );
+        // ----------
+        
+        ((__h_case_result ) ? ({ /* progn1658 */
+            Just_int (a_b (val ));
+          }) : ({ /* letn1668 */
+            // ----------
+            ;
+            ({ /* progn1670 */
+              Nothing_int ();
+            });
+          }));
+      });
+    });
+}
+void free_Functor_Ap_Maybe_int_int (Functor_Ap_Maybe_int_int * this ) {
+}
+__attribute__((weak)) void free_Functor_Ap_Maybe_int_int_pointer (Functor_Ap_Maybe_int_int ** this ) {
+  if (this )
+    { /* block1680 */
+      free_Functor_Ap_Maybe_int_int ((*this ));
+    }
+}
+const Functor_Ap_Maybe_int_int__H_Table * const get_Functor_Ap_Maybe_int_int__H_Table () {
+  static const Functor_Ap_Maybe_int_int__H_Table table  = { free_Functor_Ap_Maybe_int_int , fmap_Functor_Ap_Maybe_int_int };
+  return (&table );
+}
+Functor_Ap_Maybe_int_int Functor_Ap_Maybe_int_int_ctor () {
+  { /* let1690 */
+    Functor_Ap_Maybe_int_int instance  = ((Functor_Ap_Maybe_int_int){ get_Functor_Ap_Maybe_int_int__H_Table (), __h_Functor_t });
+    // ----------
+    return instance ;
+  }
+}
+#endif /* __Functor_Ap_Maybe_int_int__H_IMPL__ */ 
+Functor_Ap_Maybe_int_int get_Functor_Ap_Maybe_int_int () {
+  return Functor_Ap_Maybe_int_int_ctor ();
+}
+#ifndef __Maybe_int_to_int_t__H_IMPL__
+#define __Maybe_int_to_int_t__H_IMPL__
+void free_Maybe_int_to_int_t (Maybe_int_to_int_t * this ) {
+}
+__attribute__((weak)) void free_Maybe_int_to_int_t_pointer (Maybe_int_to_int_t ** this ) {
+  if (this )
+    { /* block1708 */
+      free_Maybe_int_to_int_t ((*this ));
+    }
+}
+const Maybe_int_to_int_t__H_Table * const get_Maybe_int_to_int_t__H_Table () {
+  static const Maybe_int_to_int_t__H_Table table  = { free_Maybe_int_to_int_t };
+  return (&table );
+}
+Maybe_int_to_int_t Just_int_to_int_t (int_to_int_t value ) {
+  { /* let1718 */
+    Maybe_int_to_int_t instance  = ((Maybe_int_to_int_t){ get_Maybe_int_to_int_t__H_Table (), __h_Just_t , .__h_data.Just = { value }});
+    // ----------
+    return instance ;
+  }
+}
+Maybe_int_to_int_t Nothing_int_to_int_t () {
+  { /* let1723 */
+    Maybe_int_to_int_t instance  = ((Maybe_int_to_int_t){ get_Maybe_int_to_int_t__H_Table (), __h_Nothing_t });
+    // ----------
+    return instance ;
+  }
+}
+#endif /* __Maybe_int_to_int_t__H_IMPL__ */ 
+#ifndef __Applicative_Ap_Maybe_int_int__H_IMPL__
+#define __Applicative_Ap_Maybe_int_int__H_IMPL__
+Maybe_int ap_Applicative_Ap_Maybe_int_int (Maybe_int_to_int_t f_a_b , Maybe_int input ) {
+  return ({ /* letn1739 */
+      typeof((((f_a_b . __h_data). Just). __h_0_mem)) a_b ;
+      // ----------
+      ;
+      ({ /* letn1741 */
+        bool __h_case_result  = (true  &&  (((f_a_b . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn1742 */
+              a_b  = (((f_a_b . __h_data). Just). __h_0_mem) ;
+              true ;
+            }) ) );
+        // ----------
+        
+        ((__h_case_result ) ? ({ /* progn1747 */
+            fmap_Functor_Ap_Maybe_int_int (a_b , input );
+          }) : ({ /* letn1752 */
+            // ----------
+            ;
+            ({ /* progn1754 */
+              Nothing_int ();
+            });
+          }));
+      });
+    });
+}
+Maybe_int_to_int_t pure_Applicative_Ap_Maybe_int_int (int_to_int_t a_b ) {
+  return Just_int_to_int_t (a_b );
+}
+void free_Applicative_Ap_Maybe_int_int (Applicative_Ap_Maybe_int_int * this ) {
+}
+__attribute__((weak)) void free_Applicative_Ap_Maybe_int_int_pointer (Applicative_Ap_Maybe_int_int ** this ) {
+  if (this )
+    { /* block1768 */
+      free_Applicative_Ap_Maybe_int_int ((*this ));
+    }
+}
+const Applicative_Ap_Maybe_int_int__H_Table * const get_Applicative_Ap_Maybe_int_int__H_Table () {
+  static const Applicative_Ap_Maybe_int_int__H_Table table  = { free_Applicative_Ap_Maybe_int_int , ap_Applicative_Ap_Maybe_int_int , pure_Applicative_Ap_Maybe_int_int };
+  return (&table );
+}
+Applicative_Ap_Maybe_int_int Applicative_Ap_Maybe_int_int_ctor () {
+  { /* let1778 */
+    Applicative_Ap_Maybe_int_int instance  = ((Applicative_Ap_Maybe_int_int){ get_Applicative_Ap_Maybe_int_int__H_Table (), __h_Applicative_t });
+    // ----------
+    return instance ;
+  }
+}
+#endif /* __Applicative_Ap_Maybe_int_int__H_IMPL__ */ 
+Applicative_Ap_Maybe_int_int get_Applicative_Ap_Maybe_int_int () {
+  return Applicative_Ap_Maybe_int_int_ctor ();
+}
 static int bad  = 0;
 int check (const char * what , long got , long want ) {
   if (got  ==  want  )
-    { /* block1513 */
+    { /* block1788 */
       printf ("ok   %-40s %ld\n", what , got );
       return 0;
     }
   else
-    { /* block1516 */
+    { /* block1791 */
       printf ("FAIL %-40s got %ld want %ld\n", what , got , want );
       return 1;
     }
 }
+int add100 (int v ) {
+  return (100 +  v  );
+}
 long sum_list (List_int l ) {
-  return ({ /* letn1523 */
+  return ({ /* letn1799 */
       typeof((((l -> __h_data). Cons). __h_0_mem)) head ;
       typeof((((l -> __h_data). Cons). __h_1_mem)) tail ;
       // ----------
       ;
-      ({ /* letn1525 */
-        bool __h_case_result  = (true  &&  (((l -> __h_ctor) ==  __h_Cons_t  ) &&  (({ /* progn1526 */
+      ({ /* letn1801 */
+        bool __h_case_result  = (true  &&  (((l -> __h_ctor) ==  __h_Cons_t  ) &&  (({ /* progn1802 */
                 head  = (((l -> __h_data). Cons). __h_0_mem) ;
                 true ;
-              }) &&  ({ /* progn1528 */
+              }) &&  ({ /* progn1804 */
                 tail  = (((l -> __h_data). Cons). __h_1_mem) ;
                 true ;
               }) ) ) );
         // ----------
         
-        ((__h_case_result ) ? ({ /* progn1533 */
+        ((__h_case_result ) ? ({ /* progn1809 */
             (((long)head ) +  sum_list (tail ) );
-          }) : ({ /* letn1537 */
+          }) : ({ /* letn1813 */
             // ----------
             ;
-            ({ /* progn1539 */
+            ({ /* progn1815 */
               0;
             });
           }));
@@ -1403,73 +1658,119 @@ long sum_list (List_int l ) {
     });
 }
 int main () {
-  ({ /* letn1545 */
+  ({ /* letn1821 */
     List_int l1  __attribute__((__cleanup__(free_List_int ))) = Cons_int (1, Cons_int (2, Cons_int (3, Cons_int (4, Nil_int ()))));
     // ----------
     bad  += check ("the list adds up before fmap", sum_list (l1 ), 10) ;
-    ({ /* letn1556 */
-      List_int l2  __attribute__((__cleanup__(free_List_int ))) = fmap_Functor_List_int_int (({ /* progn1560 */
-        int __ciciliC_1559 (int __h_value ) {
+    ({ /* letn1832 */
+      List_int l2  __attribute__((__cleanup__(free_List_int ))) = fmap_Functor_List_int_int (({ /* progn1836 */
+        int __ciciliC_1835 (int __h_value ) {
           return (5 *  __h_value  );
         }
-        __ciciliC_1559 ;
+        __ciciliC_1835 ;
       }), l1 );
       // ----------
       bad  += check ("fmap (*5) multiplies every element", sum_list (l2 ), 50) ;
       bad  += check ("and leaves the length alone", ((long)len_List_int (l2 )), 4) ;
     });
   });
-  bad  += check ("bind on a Just runs the step", ({ /* letn1574 */
-        Maybe_int match1573  = bind_Monad_Maybe_int_int (Just_int (7), ({ /* progn1582 */
-          Maybe_int __ciciliC_1581 (int v ) {
+  bad  += check ("bind on a Just runs the step", ({ /* letn1850 */
+        Maybe_int match1849  = bind_Monad_Maybe_int_int (Just_int (7), ({ /* progn1858 */
+          Maybe_int __ciciliC_1857 (int v ) {
             return Just_int ((3 *  v  ));
           }
-          __ciciliC_1581 ;
+          __ciciliC_1857 ;
         }));
-        typeof((((match1573 . __h_data). Just). __h_0_mem)) r ;
+        typeof((((match1849 . __h_data). Just). __h_0_mem)) r ;
         // ----------
         ;
-        ({ /* letn1588 */
-          bool __h_case_result  = (true  &&  (((match1573 . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn1589 */
-                r  = (((match1573 . __h_data). Just). __h_0_mem) ;
+        ({ /* letn1864 */
+          bool __h_case_result  = (true  &&  (((match1849 . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn1865 */
+                r  = (((match1849 . __h_data). Just). __h_0_mem) ;
                 true ;
               }) ) );
           // ----------
           
-          ((__h_case_result ) ? ({ /* progn1594 */
+          ((__h_case_result ) ? ({ /* progn1870 */
               ((long)r );
-            }) : ({ /* letn1598 */
+            }) : ({ /* letn1874 */
               // ----------
               ;
-              ({ /* progn1600 */
+              ({ /* progn1876 */
                 -1;
               });
             }));
         });
       }), 21) ;
-  bad  += check ("bind on a Nothing short-circuits", ({ /* letn1607 */
-        Maybe_int match1606  = bind_Monad_Maybe_int_int (Nothing_int (), ({ /* progn1614 */
-          Maybe_int __ciciliC_1613 (int v ) {
+  bad  += check ("bind on a Nothing short-circuits", ({ /* letn1883 */
+        Maybe_int match1882  = bind_Monad_Maybe_int_int (Nothing_int (), ({ /* progn1890 */
+          Maybe_int __ciciliC_1889 (int v ) {
             return Just_int ((3 *  v  ));
           }
-          __ciciliC_1613 ;
+          __ciciliC_1889 ;
         }));
-        typeof((((match1606 . __h_data). Just). __h_0_mem)) r ;
+        typeof((((match1882 . __h_data). Just). __h_0_mem)) r ;
         // ----------
         ;
-        ({ /* letn1619 */
-          bool __h_case_result  = (true  &&  (((match1606 . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn1620 */
-                r  = (((match1606 . __h_data). Just). __h_0_mem) ;
+        ({ /* letn1895 */
+          bool __h_case_result  = (true  &&  (((match1882 . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn1896 */
+                r  = (((match1882 . __h_data). Just). __h_0_mem) ;
                 true ;
               }) ) );
           // ----------
           
-          ((__h_case_result ) ? ({ /* progn1625 */
+          ((__h_case_result ) ? ({ /* progn1901 */
               ((long)r );
-            }) : ({ /* letn1629 */
+            }) : ({ /* letn1905 */
               // ----------
               ;
-              ({ /* progn1631 */
+              ({ /* progn1907 */
+                -1;
+              });
+            }));
+        });
+      }), -1) ;
+  bad  += check ("ap of a Just function over a Just", ({ /* letn1914 */
+        Maybe_int match1913  = ap_Applicative_Ap_Maybe_int_int (Just_int_to_int_t (add100 ), Just_int (5));
+        typeof((((match1913 . __h_data). Just). __h_0_mem)) r ;
+        // ----------
+        ;
+        ({ /* letn1922 */
+          bool __h_case_result  = (true  &&  (((match1913 . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn1923 */
+                r  = (((match1913 . __h_data). Just). __h_0_mem) ;
+                true ;
+              }) ) );
+          // ----------
+          
+          ((__h_case_result ) ? ({ /* progn1928 */
+              ((long)r );
+            }) : ({ /* letn1932 */
+              // ----------
+              ;
+              ({ /* progn1934 */
+                -1;
+              });
+            }));
+        });
+      }), 105) ;
+  bad  += check ("ap of a Nothing function is nothing", ({ /* letn1941 */
+        Maybe_int match1940  = ap_Applicative_Ap_Maybe_int_int (Nothing_int_to_int_t (), Just_int (5));
+        typeof((((match1940 . __h_data). Just). __h_0_mem)) r ;
+        // ----------
+        ;
+        ({ /* letn1948 */
+          bool __h_case_result  = (true  &&  (((match1940 . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn1949 */
+                r  = (((match1940 . __h_data). Just). __h_0_mem) ;
+                true ;
+              }) ) );
+          // ----------
+          
+          ((__h_case_result ) ? ({ /* progn1954 */
+              ((long)r );
+            }) : ({ /* letn1958 */
+              // ----------
+              ;
+              ({ /* progn1960 */
                 -1;
               });
             }));

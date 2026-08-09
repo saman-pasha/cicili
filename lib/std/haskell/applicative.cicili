@@ -84,8 +84,19 @@
 (generic decl-Applicative-List
   (type a b)
 
-  ;; dependencies
+  ;; DEPENDENCIES, and all of them are reached by impl-Applicative-List's `mat'
+  ;; rather than by anything here -- which is why they went unnoticed. It worked
+  ;; only for a caller who happened to declare them first, in the right order.
+  ;;
+  ;; `class Functor f => Applicative f' is not decoration: ap is written in
+  ;; terms of fmap, and the Functor is also what declares the a->b typedef every
+  ;; signature below names.
+  (decl-Functor-List type a b)
   (decl-List (<> List (<> a to b t)) (<> a to b t))
+  ;; the answer's list, and the list OF those the mconcat folds down
+  (decl-List (<> List b) b)
+  (decl-List (<> List (<> List b)) (<> List b))
+  (decl-Monoid (<> List b) (<> List b))
 
   (decl-Applicative type List a b)
   
@@ -99,8 +110,12 @@
 (generic impl-Applicative-List
   (type a b)
 
-  ;; dependencies
+  ;; dependencies -- the same set decl-Applicative-List declares
+  (impl-Functor-List type a b)
   (impl-List (<> List (<> a to b t)) (<> a to b t) (\\ v (printf "%p" v)) (putchar #\Space))
+  (impl-List (<> List b) b (\\ -f -v (fprintf -f "%p" (cast (void *) (cast size_t -v)))) " ")
+  (impl-List (<> List (<> List b)) (<> List b) (\\ -f -v ((<> show (<> List b)) -f -v)) " ")
+  (impl-Monoid (<> List b) (<> List b) ((<> Nil b)) (<> append (<> List b)))
 
   (impl-Applicative type List a b
                     (\\ a->b ((<> wrap List (<> a to b t)) a->b))
@@ -129,8 +144,14 @@
 (generic decl-Applicative-Maybe
   (type a b)
 
-  ;; dependencies
-  (decl-Maybe (<> Maybe (<> a to b t)))
+  ;; dependencies. The Functor is the superclass ap is written in terms of, and
+  ;; is what declares the a->b typedef the signatures below name.
+  (decl-Functor-Maybe type a b)
+  ;; decl-Maybe takes the ELEMENT type, so this is a Maybe holding an a->b --
+  ;; which is what `ap' is handed. Written (<> Maybe (<> a to b t)) it declared
+  ;; a Maybe of a Maybe and the type ap actually names was never declared at
+  ;; all; only a caller who declared it themselves got this far.
+  (decl-Maybe (<> a to b t))
 
   (decl-Applicative type Maybe a b)
   
@@ -139,8 +160,9 @@
 (generic impl-Applicative-Maybe
   (type a b)
 
-  ;; dependencies
-  (impl-Maybe (<> Maybe (<> a to b t)))
+  ;; dependencies -- the same set decl-Applicative-Maybe declares
+  (impl-Functor-Maybe type a b)
+  (impl-Maybe (<> a to b t))
   
   (impl-Applicative type Maybe a b
                     (<> Just (<> a to b t))

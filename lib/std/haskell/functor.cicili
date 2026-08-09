@@ -21,7 +21,11 @@
 (generic decl-Functor
   (type f a b)
 
-  (typedef func (<> a to b t) ((a value)) (out b))
+  ;; GUARDED, because the Applicative declares the Functor it requires and the
+  ;; caller usually declares it too. Everything else here is a decl-data or a
+  ;; decl, which carry their own include guards; a bare typedef does not.
+  (guard (<> _ (<> a to b t) _H_DECL__)
+    (typedef func (<> a to b t) ((a value)) (out b)))
 
   (decl-data (Functor (<> Functor type))
     (= Functor (<> Functor type ctor))
