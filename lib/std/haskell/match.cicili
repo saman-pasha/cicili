@@ -263,7 +263,11 @@
       (VALUES case-type data-name symb tail defs assigns args conds dos))))
 
 (DEFMACRO match*-case (data case cases is-io &OPTIONAL prev-args)
-  (LET ((->found (POSITION '-> case))) ; inner match application operator
+  ;; inner match application operator, found BY NAME -- see the `~' in match*
+  ;; below for why. Unsplit, the `->' and every clause after it were counted as
+  ;; fields of the constructor, and the first clause that happened to be a list
+  ;; was destructured as a nested pattern.
+  (LET ((->found (POSITION '-> case :TEST #'CICILI:KEY-EQ)))
     ;; `->#' went with match#/io#: it was this same inner-match operator for a
     ;; scrutinee that had to be unboxed first, and nothing is boxed now.
     (WHEN ->found

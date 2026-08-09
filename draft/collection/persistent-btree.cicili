@@ -33,6 +33,7 @@
   ;; pre-built in haskell.o. That object is gone, so the tree declares the type
   ;; it requires rather than hoping the target thought of it -- decl-data's
   ;; include guard makes a second B-Tree in the same target free.
+  (decl-Bool)
   (decl-Ordering)
   (decl-Either (<> type Error) type)
   (decl-Maybe type)
@@ -66,6 +67,13 @@
   (decl-List (<> List (<> Rc type)) (<> Rc type))
   ;; fmap over 'Rc child' and 'List Rc child'
   (decl-Functor-List (<> List (<> Rc type)) (<> Rc type) (<> Rc type))
+  ;; CLONE EVERY CHILD IN A LIST, which is what an insert or a delete does to
+  ;; the part of the spine it did not touch. It is `fmap clone' and was written
+  ;; that way at three dozen sites; as a named function it is an ordinary call,
+  ;; and `letin' can infer its type -- through a curried application it cannot.
+  ;; After the List, whose type it names.
+  (decl) (func (<> cloneAll Rc type) (((<> List (<> Rc type)) children))
+               (out (<> List (<> Rc type))))
 
   (decl-class (BTree type)
               (= Branch (<> Branch type) ; Branch is used when split occures
@@ -84,7 +92,7 @@
               (func min       ((type tree)) (out (<> Maybe type pair_t)))
               (func max       ((type tree)) (out (<> Maybe type pair_t)))
               (func traverse  ((type tree) (func callback (((<> type pair_t) item) (Bool hasNext)))))
-              (func show      ((CFile file) (type tree)) (out size_t))
+              (func show      ((FILE * file) (type tree)) (out size_t))
               (func pure      ((k keys []) (v values []) (size_t len)) (out (<> Either (<> type Error) type)))
               ) ; decl-class
   
@@ -116,6 +124,7 @@
                      (default (printf "unknown error")))))
   
   ;; dependencies
+  (impl-Bool)
   (impl-Ordering)
   (impl-Either (<> type Error) type)
   (impl-Maybe type)
@@ -127,9 +136,14 @@
   (impl-rcbox (<> Rc type) type)
   (func (<> deref Rc type) (((<> Rc type) box))
         (out (<> Maybe type))
-        (return (match ((<> get Rc type) box)
+        ;; `matchn' -- std's EXPRESSION match. std's `match' expands to a
+        ;; statement, and this one is being returned.
+        (return (matchn ((<> get Rc type) box)
                   (just child ((<> Just type) (cof child)))
                   (nothing    ((<> Nothing type))))))
+  (func (<> cloneAll Rc type) (((<> List (<> Rc type)) children))
+        (out (<> List (<> Rc type)))
+        (return (((<> fmap List Rc type) (<> clone Rc type)) children)))
   (impl-List (<> List (<> Rc type)) (<> Rc type)
              (\\ -f -wChild (match ((<> deref Rc type) -wChild)
                               (Just child ((<> show type) -f child))
@@ -147,8 +161,8 @@
   (DEFMACRO internal (-i -c) `((<> Internal type) ,-i ,-c))
   (DEFMACRO leaf     (-i)    `((<> Leaf     type) ,-i))
   
-  (lambda left  -l ((<> Left  (<> type Error) type) -l))
-  (lambda right -r ((<> Right (<> type Error) type) -r))
+  (lambda bt-left  -l ((<> Left  (<> type Error) type) -l))
+  (lambda bt-right -r ((<> Right (<> type Error) type) -r))
   
   ;; private functions
   (func (<> split type) ((type tree))
@@ -157,7 +171,7 @@
                   (* Branch ~ Internal items children
                      ;; check for split
                      (case (>= ((<> len List type pair_t) items) (<> U type))
-                           (letin ((* tree tree))
+                           (letin ((* tree_spent tree))
                              (branch
                               ;; items
                               ((<> wrap List type pair_t)
@@ -171,12 +185,12 @@
                                       (internal
                                        ((<> take List type pair_t) (- (<> L type) 1) items)
                                        (letin ((* r1 ((<> take List Rc type) (<> L type) children)))
-                                         (((<> fmap List Rc type) (<> clone Rc type)) r1))))
+                                         ((<> cloneAll Rc type) r1))))
                                      ((<> new Rc type)
                                       (internal
                                        ((<> drop List type pair_t) (<> L type) items)
                                        (letin ((* r1 ((<> drop List Rc type) (<> L type) children)))
-                                         (((<> fmap List Rc type) (<> clone Rc type)) r1))))
+                                         ((<> cloneAll Rc type) r1))))
                                      }) 2 )))
                            otherwise tree))
                   (* Leaf items
@@ -184,7 +198,7 @@
                      (case (>= ((<> len List type pair_t) items) (<> U type))
                            ;; because split occures after new items added to leaf so the leaf has a new list of items
                            ;; this error of dangle temp tree pointer was found by Cicili analyzer
-                           (letin ((* tree tree))
+                           (letin ((* tree_spent tree))
                              (branch
                               ;; items
                               ((<> wrap List type pair_t)
@@ -220,12 +234,12 @@
                                     (internal
                                      ((<> take List type pair_t) (- (<> L type) 1) items)
                                      (letin ((* r1 ((<> take List Rc type) (<> L type) children)))
-                                       (((<> fmap List Rc type) (<> clone Rc type)) r1))))
+                                       ((<> cloneAll Rc type) r1))))
                                    ((<> new Rc type)
                                     (internal
                                      ((<> drop List type pair_t) (<> L type) items)
                                      (letin ((* r1 ((<> drop List Rc type) (<> L type) children)))
-                                       (((<> fmap List Rc type) (<> clone Rc type)) r1))))
+                                       ((<> cloneAll Rc type) r1))))
                                    }) 2 ))
                            otherwise tree))
                   (* Leaf items
@@ -277,12 +291,12 @@
          (letin* ((merged (internal
                            ((<> append List type pair_t) left_items right_items)
                            (letin ((* r1 ((<> append List Rc type) left_children right_children)))
-                             (((<> fmap List Rc type) (<> clone Rc type)) r1)))))
+                             ((<> cloneAll Rc type) r1)))))
                  (match ((<> splitForDelete type) merged)
                    ;; splitted after merge
                    (= tmp_child * Branch (* Cons head) tmp_children
-                      (letin ((* merged merged)
-                              (* tmp_child tmp_child))
+                      (letin ((* merged_spent merged)
+                              (* tmp_child_spent tmp_child))
                         (internal
                          ((<> replaceAt List type pair_t) items head pitem_index)
                          (letin ((* r1 ((<> deleteAt List Rc type) children pchild_index))
@@ -290,14 +304,14 @@
                                  (* r3 ((<> drop List Rc type) (+ pchild_index 1) r1))
                                  (* r4 ((<> append List Rc type) tmp_children r3))
                                  (* r5 ((<> append List Rc type) r2 r4)))
-                           (((<> fmap List Rc type) (<> clone Rc type)) r5)))))
+                           ((<> cloneAll Rc type) r5)))))
                    (* Internal ; tmp_items tmp_children
                       (internal
                        ((<> deleteAt List type pair_t) items pitem_index)
                        (letin ((* r1 ((<> deleteAt List Rc type) children pchild_index))
                                (r2   ((<> new Rc type) merged))
                                (* r3 ((<> replaceAt List Rc type) r1 r2 pchild_index)))
-                         (((<> fmap List Rc type) (<> clone Rc type)) r3))))
+                         ((<> cloneAll Rc type) r3))))
                    ;; never be happened
                    (default ((<> Leaf type) ((<> Nil type pair_t))))))))
 
@@ -350,21 +364,21 @@
               
               (return
                (match ((<> nth List Rc type) (+ index 1) children)
-                 (Just right_child_rc -># right_child_rc
-                       (dead (left ((<> type ERR_CANT_BORROW) "borrowRight 3")))
+                 (Just right_child_rc -> ((<> deref Rc type) right_child_rc)
+                       (Just right_child -> right_child
 
                        ;; right child is Leaf
                        (* Leaf right_child_items
                           (case (== ((<> hasLen List type pair_t) right_child_items (<> L type)) (<> L type))
                                 (match right_child_items
                                   (* Cons first_item tail
-                                     (right
+                                     (bt-right
                                       (internal
                                        ((<> replace List type pair_t) items first_item current)
                                        (letin ((* r1 ((<> take List Rc type) index children))
-                                               (* r2 (((<> fmap List Rc type) (<> clone Rc type)) r1))
+                                               (* r2 ((<> cloneAll Rc type) r1))
                                                (* r3 ((<> drop List Rc type) (+ index 2) children))
-                                               (* r4 (((<> fmap List Rc type) (<> clone Rc type)) r3))
+                                               (* r4 ((<> cloneAll Rc type) r3))
                                                (* r5 ((<> take List type pair_t) 1 current))
                                                (* r7 ((<> pure List Rc type)
                                                       (cast ((<> Rc type) []) '{
@@ -375,17 +389,17 @@
                                                             }) 2 ))
                                                (* r6 ((<> append List Rc type) r7 r4)))
                                          ((<> append List Rc type) r2 r6)))))
-                                  (default (left ((<> type ERR_CANT_BORROW) "borrowRight R1"))))
+                                  (default (bt-left ((<> type ERR_CANT_BORROW) "borrowRight R1"))))
                                 ;; merge
                                 otherwise (match current
                                             (* Cons head
-                                               (right
+                                               (bt-right
                                                 (internal
                                                  ((<> delete List type pair_t) items current)
                                                  (letin ((* r1 ((<> take List Rc type) index children))
-                                                         (* r2 (((<> fmap List Rc type) (<> clone Rc type)) r1))
+                                                         (* r2 ((<> cloneAll Rc type) r1))
                                                          (* r3 ((<> drop List Rc type) (+ index 2) children))
-                                                         (* r4 (((<> fmap List Rc type) (<> clone Rc type)) r3))
+                                                         (* r4 ((<> cloneAll Rc type) r3))
                                                          (* r5 ((<> wrap List type pair_t) head))
                                                          (* r6 ((<> append List type pair_t) child_items r5))
                                                          (* r8 ((<> push List Rc type)
@@ -393,10 +407,12 @@
                                                                  (leaf ((<> append List type pair_t) r6 right_child_items)))
                                                                 r4)))
                                                    ((<> append List Rc type) r2 r8)))))
-                                            (default (left ((<> type ERR_CANT_BORROW) "borrowRight R2"))))))
+                                            (default (bt-left ((<> type ERR_CANT_BORROW) "borrowRight R2"))))))
 
-                       (default (left ((<> type ERR_CANT_BORROW) "borrowRight 3"))))
-                 (default (left ((<> type ERR_CANT_BORROW) "borrowRight 4"))))))
+                       (default (bt-left ((<> type ERR_CANT_BORROW) "borrowRight 3"))))
+                       ;; the child is gone -- what `dead' used to say
+                       (default (bt-left ((<> type ERR_CANT_BORROW) "borrowRight 3"))))
+                 (default (bt-left ((<> type ERR_CANT_BORROW) "borrowRight 4"))))))
         
         ;; borrow from left child
         (func borrowLeft (((<> List type pair_t) child_items))
@@ -408,23 +424,23 @@
                (match wleft
                  ;; left child exists
                  (Just (= left * Cons left_item) -> ((<> nth List Rc type) (- index 1) children)
-                       (Just left_child_rc -># left_child_rc
-                             (dead (left ((<> type ERR_CANT_BORROW) "borrowLeft 4")))
-                             
-                             ;; left child is Leaf 
+                       (Just left_child_rc -> ((<> deref Rc type) left_child_rc)
+                             (Just left_child -> left_child
+
+                             ;; left child is Leaf
                              (* Leaf left_child_items
                                 (case (== ((<> hasLen List type pair_t) left_child_items (<> L type)) (<> L type))
                                       (match ((<> last List type pair_t) left_child_items)
                                         (= last * Cons last_item
-                                           (letin ((* last last))
-                                             (right
+                                           (letin ((* last_spent last))
+                                             (bt-right
                                               (internal
                                                ((<> replace List type pair_t) items last_item left)
                                                ;; letin will free all temp lists
                                                (letin ((* r1 ((<> take List Rc type) (- index 1) children))
-                                                       (* r2 (((<> fmap List Rc type) (<> clone Rc type)) r1))
+                                                       (* r2 ((<> cloneAll Rc type) r1))
                                                        (* r3 ((<> drop List Rc type) (+ index 1) children))
-                                                       (* r4 (((<> fmap List Rc type) (<> clone Rc type)) r3))
+                                                       (* r4 ((<> cloneAll Rc type) r3))
                                                        (* r5 ((<> pure List Rc type)
                                                               (cast ((<> Rc type) []) '{
                                                                     ((<> new Rc type)
@@ -434,17 +450,17 @@
                                                                     }) 2 ))
                                                        (* r7 ((<> append List Rc type) r5 r4)))
                                                  ((<> append List Rc type) r2 r7))))))
-                                        (default (left ((<> type ERR_CANT_BORROW) "borrowLeft 2"))))
+                                        (default (bt-left ((<> type ERR_CANT_BORROW) "borrowLeft 2"))))
                                       ;; merge
                                       otherwise (match (borrowRight child_items)
                                                   ;; no right child
-                                                  (Left (right
+                                                  (Left (bt-right
                                                          (internal
                                                           ((<> delete List type pair_t) items left)
                                                           (letin ((* r1 ((<> take List Rc type) (- index 1) children))
-                                                                  (* r2 (((<> fmap List Rc type) (<> clone Rc type)) r1))
+                                                                  (* r2 ((<> cloneAll Rc type) r1))
                                                                   (* r3 ((<> drop List Rc type) (+ index 1) children))
-                                                                  (* r4 (((<> fmap List Rc type) (<> clone Rc type)) r3))
+                                                                  (* r4 ((<> cloneAll Rc type) r3))
                                                                   (* r8 ((<> wrap List type pair_t) left_item))
                                                                   (* r5 ((<> append List type pair_t) left_child_items r8))
                                                                   (* r7 ((<> push List Rc type)
@@ -452,10 +468,12 @@
                                                                           (leaf ((<> append List type pair_t) r5 child_items)))
                                                                          r4)))
                                                             ((<> append List Rc type) r2 r7)))))
-                                                  (= right default right))))
+                                                  (= passthru default passthru))))
 
-                             (default (left ((<> type ERR_CANT_BORROW) "borrowLeft 3"))))
-                       (default (left ((<> type ERR_CANT_BORROW) "borrowLeft 5"))))
+                             (default (bt-left ((<> type ERR_CANT_BORROW) "borrowLeft 3"))))
+                             ;; the child is gone -- what `dead' used to say
+                             (default (bt-left ((<> type ERR_CANT_BORROW) "borrowLeft 4"))))
+                       (default (bt-left ((<> type ERR_CANT_BORROW) "borrowLeft 5"))))
 
                  ;; no left, check for right child existance
                  (default (borrowRight child_items)))))
@@ -466,16 +484,16 @@
                      (* Branch ~ Internal ~ Leaf child_items
                         ;; has got minimum keys
                         (case (== ((<> hasLen List type pair_t) child_items (- (<> L type) 1)) (- (<> L type) 1))
-                              (right
+                              (bt-right
                                (internal
                                 ((<> copy List type pair_t) items)
                                 (letin ((r1   ((<> new Rc type) nchild))
                                         (* r2 ((<> replaceAt List Rc type) children r1 index)))
-                                  (((<> fmap List Rc type) (<> clone Rc type)) r2))))
+                                  ((<> cloneAll Rc type) r2))))
                               ;; hasn't got minimum keys
-                              otherwise (letin ((* nchild nchild))
+                              otherwise (letin ((* nchild_spent nchild))
                                           (borrowLeft child_items))))
-                     (default (left ((<> type ERR_CANT_BORROW) "borrow 1"))))))
+                     (default (bt-left ((<> type ERR_CANT_BORROW) "borrow 1"))))))
 
                  (warn!
                      (format #t "*** borrowLeafEND:\n")
@@ -533,14 +551,14 @@
                                         (Just (= min (\, min_key)) -> ((<> delete type) right_child min_key nil)
                                               ;; new Internal child
                                               (Right nchild
-                                                (right
+                                                (bt-right
                                                  (internal
                                                   ((<> replace List type pair_t) items min current)
                                                   (letin ((r1   ((<> new Rc type) nchild))
                                                           (* r2 ((<> replaceAt List Rc type) children r1 (+ index 1))))
-                                                    (((<> fmap List Rc type) (<> clone Rc type)) r2)))))
-                                              (= left default left))
-                                        (default (left ((<> type ERR_CANT_BORROW) "borrowRI 1"))))
+                                                    ((<> cloneAll Rc type) r2)))))
+                                              (= passthru default passthru))
+                                        (default (bt-left ((<> type ERR_CANT_BORROW) "borrowRI 1"))))
                                       
                                       ;; merge
                                       otherwise (match current
@@ -550,7 +568,7 @@
 
                                                              (* r4 (internal ; temp combined internal
                                                                     ((<> append List type pair_t) left_child_items r1)
-                                                                    (((<> fmap List Rc type) (<> clone Rc type)) r2)))
+                                                                    ((<> cloneAll Rc type) r2)))
                                                              
                                                              (* r5 ((<> take List Rc type) index children))
                                                              (* r7 ((<> drop List Rc type) (+ index 2) children)))
@@ -559,31 +577,31 @@
                                                                 ;; was needed to split after combination (overflow)
                                                                 (= tmp_result * Branch branch_items branch_children -> branch_items
                                                                    (* Cons branch_head
-                                                                      (letin ((* ntree ntree)
-                                                                              (* tmp_result tmp_result))
-                                                                        (right
+                                                                      (letin ((* ntree_spent ntree)
+                                                                              (* tmp_result_spent tmp_result))
+                                                                        (bt-right
                                                                          (internal
                                                                           ((<> replace List type pair_t) items branch_head current)
                                                                           (letin ((* r10 ((<> append List Rc type) branch_children r7))
                                                                                   (* r11 ((<> append List Rc type) r5 r10)))
-                                                                            (((<> fmap List Rc type) (<> clone Rc type)) r11))))))
-                                                                   (default (left ((<> type ERR_CANT_BORROW) "borrowRI 2"))))
+                                                                            ((<> cloneAll Rc type) r11))))))
+                                                                   (default (bt-left ((<> type ERR_CANT_BORROW) "borrowRI 2"))))
                                                                 (* Internal
-                                                                   (right
+                                                                   (bt-right
                                                                     (internal
                                                                      ((<> delete List type pair_t) items current)
                                                                      (letin ((r9    ((<> new Rc type) ntree))
                                                                              (* r10 ((<> push List Rc type) r9 r7))
                                                                              (* r11 ((<> append List Rc type) r5 r10)))
-                                                                       (((<> fmap List Rc type) (<> clone Rc type)) r11)))))
-                                                                (default (left ((<> type ERR_CANT_BORROW) "borrowRI 3"))))
-                                                         (= left default left))))
-                                                  (default (left ((<> type ERR_CANT_BORROW) "borrowRI 4"))))))
+                                                                       ((<> cloneAll Rc type) r11)))))
+                                                                (default (bt-left ((<> type ERR_CANT_BORROW) "borrowRI 3"))))
+                                                         (= passthru default passthru))))
+                                                  (default (bt-left ((<> type ERR_CANT_BORROW) "borrowRI 4"))))))
                              
                              ;; child is Leaf
-                             (default (left ((<> type ERR_CANT_BORROW) "borrowRI 5"))))
-                       (default (left ((<> type ERR_CANT_BORROW) "borrowRI 6")))) ; Dead Child
-                 (default (left ((<> type ERR_CANT_BORROW) "borrowRI 7"))))) ; No Child
+                             (default (bt-left ((<> type ERR_CANT_BORROW) "borrowRI 5"))))
+                       (default (bt-left ((<> type ERR_CANT_BORROW) "borrowRI 6")))) ; Dead Child
+                 (default (bt-left ((<> type ERR_CANT_BORROW) "borrowRI 7"))))) ; No Child
               ) ; borrowRightInternal
 
         ;; borrow from right child (leaf)
@@ -605,31 +623,31 @@
                                         (Just (= min (\, min_key)) -> ((<> delete type) right_child min_key nil)
                                               ;; new Internal child
                                               (Right nchild
-                                                (right
+                                                (bt-right
                                                  (internal
                                                   ((<> replace List type pair_t) items min current)
                                                   (letin ((r1   ((<> new Rc type) nchild))
                                                           (* r2 ((<> replaceAt List Rc type) children r1 (+ index 1))))
-                                                    (((<> fmap List Rc type) (<> clone Rc type)) r2)))))
-                                              (= left default left))
-                                        (default (left ((<> type ERR_CANT_BORROW) "borrowRI 8"))))
+                                                    ((<> cloneAll Rc type) r2)))))
+                                              (= passthru default passthru))
+                                        (default (bt-left ((<> type ERR_CANT_BORROW) "borrowRI 8"))))
                                       ;; merge parent down
-                                      otherwise (right
+                                      otherwise (bt-right
                                                  (internal
                                                   ((<> delete List type pair_t) items current) ; check length of items
                                                   (letin ((* r1 ((<> take List Rc type) index children))
-                                                          (* r2 (((<> fmap List Rc type) (<> clone Rc type)) r1))
+                                                          (* r2 ((<> cloneAll Rc type) r1))
                                                           (* r3 ((<> drop List Rc type) (+ index 2) children))
-                                                          (* r4 (((<> fmap List Rc type) (<> clone Rc type)) r3))
+                                                          (* r4 ((<> cloneAll Rc type) r3))
                                                           (* r5 ((<> push List Rc type)
                                                                  ((<> new Rc type)
                                                                   (leaf ((<> append List type pair_t) left_child_items right_child_items)))
                                                                  r4)))
                                                     ((<> append List Rc type) r2 r5))))))
                              ;; child is Internal
-                             (default (left ((<> type ERR_CANT_BORROW) "borrowRI 9"))))
-                       (default (left ((<> type ERR_CANT_BORROW) "borrowRI 10")))) ; Dead Child
-                 (default (left ((<> type ERR_CANT_BORROW) "borrowRI 11")))))) ; No Child
+                             (default (bt-left ((<> type ERR_CANT_BORROW) "borrowRI 9"))))
+                       (default (bt-left ((<> type ERR_CANT_BORROW) "borrowRI 10")))) ; Dead Child
+                 (default (bt-left ((<> type ERR_CANT_BORROW) "borrowRI 11")))))) ; No Child
 
         ;; borrow from left child
         (return
@@ -643,14 +661,14 @@
                                             (Just (= max (\, max_key)) -> ((<> delete type) left_child max_key nil)
                                                   ;; new Internal child
                                                   (Right nchild
-                                                    (right
+                                                    (bt-right
                                                      (internal
                                                       ((<> replace List type pair_t) items max current)
                                                       (letin ((r1   ((<> new Rc type) nchild))
                                                               (* r2 ((<> replaceAt List Rc type) children r1 index)))
-                                                        (((<> fmap List Rc type) (<> clone Rc type)) r2)))))
-                                                  (= left default left))
-                                            (default (left ((<> type ERR_CANT_BORROW) "borrowRI 12"))))
+                                                        ((<> cloneAll Rc type) r2)))))
+                                                  (= passthru default passthru))
+                                            (default (bt-left ((<> type ERR_CANT_BORROW) "borrowRI 12"))))
                                           ;; try right
                                           otherwise (borrowRightInternal left_child_items left_child_children)))
                                  (* Leaf left_child_items
@@ -659,19 +677,19 @@
                                             (Just (= max (\, max_key)) -> ((<> delete type) left_child max_key nil)
                                                   ;; new Internal child
                                                   (Right nchild
-                                                    (right
+                                                    (bt-right
                                                      (internal
                                                       ((<> replace List type pair_t) items max current)
                                                       (letin ((r1   ((<> new Rc type) nchild))
                                                               (* r2 ((<> replaceAt List Rc type) children r1 index)))
-                                                        (((<> fmap List Rc type) (<> clone Rc type)) r2)))))
-                                                  (= left default left))
-                                            (default (left ((<> type ERR_CANT_BORROW) "borrowRI 13"))))
+                                                        ((<> cloneAll Rc type) r2)))))
+                                                  (= passthru default passthru))
+                                            (default (bt-left ((<> type ERR_CANT_BORROW) "borrowRI 13"))))
                                           ;; try right
                                           otherwise (borrowRightLeaf left_child_items)))
-                                 (default (left ((<> type ERR_CANT_BORROW) "borrowRI 14"))))
-                           (default (left ((<> type ERR_CANT_BORROW) "borrowRI 15")))) ; Dead child
-                     (default (left ((<> type ERR_CANT_BORROW) "borrowRI 16")))))) ; No Child
+                                 (default (bt-left ((<> type ERR_CANT_BORROW) "borrowRI 14"))))
+                           (default (bt-left ((<> type ERR_CANT_BORROW) "borrowRI 15")))) ; Dead child
+                     (default (bt-left ((<> type ERR_CANT_BORROW) "borrowRI 16")))))) ; No Child
 
                  (warn!
                      (format #t "*** borrowInternalEND:\n")
@@ -749,38 +767,42 @@
                                                  (* Branch child_items child_children
                                                     (match ((<> nth List Rc type) (- index 1) children)
                                                       ;; merge left
-                                                      (Just wleft -># wleft
-                                                            (dead (left ((<> type ERR_CANT_BORROW) "BWPL1")))
+                                                      (Just wleft -> ((<> deref Rc type) wleft)
+                                                            (Just left_child -> left_child
                                                             (* Branch ~ Internal left_items left_children
-                                                               (letin ((* nchild nchild))
-                                                                 (right
+                                                               (letin ((* nchild_spent nchild))
+                                                                 (bt-right
                                                                   ((<> mergeUp type)
                                                                    items children
                                                                    (? (> index 0) (- index 1) index) (? (> index 0) (- index 1) index)
                                                                    left_items left_children
                                                                    child_items child_children))))
-                                                            (default (left ((<> type ERR_CANT_BORROW) "BWPL1-1"))))
+                                                            (default (bt-left ((<> type ERR_CANT_BORROW) "BWPL1-1"))))
+                                                            ;; the child is gone -- what `dead' used to say
+                                                            (default (bt-left ((<> type ERR_CANT_BORROW) "BWPL1"))))
                                                       ;; merge right
                                                       (default -> ((<> nth List Rc type) (+ index 1) children)
-                                                               (Just wright -># wright
-                                                                     (dead (left ((<> type ERR_CANT_BORROW) "BWPR2")))
+                                                               (Just wright -> ((<> deref Rc type) wright)
+                                                                     (Just right_child -> right_child
                                                                      (* Branch ~ Internal right_items right_children
-                                                                        (letin ((* nchild nchild))
-                                                                          (right
+                                                                        (letin ((* nchild_spent nchild))
+                                                                          (bt-right
                                                                            ((<> mergeUp type)
                                                                             items children
                                                                             (? (> index 0) (- index 1) index) index
                                                                             child_items child_children
                                                                             right_items right_children))))
-                                                                     (default (left ((<> type ERR_CANT_BORROW) "BWPR2-1"))))
-                                                               (default (left ((<> type ERR_CANT_BORROW) "BWPR1"))))))
-                                                 (default (right
+                                                                     (default (bt-left ((<> type ERR_CANT_BORROW) "BWPR2-1"))))
+                                                                     ;; the child is gone
+                                                                     (default (bt-left ((<> type ERR_CANT_BORROW) "BWPR2"))))
+                                                               (default (bt-left ((<> type ERR_CANT_BORROW) "BWPR1"))))))
+                                                 (default (bt-right
                                                            (internal
                                                             ((<> copy List type pair_t) items)
                                                             (letin ((r1   ((<> new Rc type) nchild))
                                                                     (* r2 ((<> replaceAt List Rc type) children r1 index)))
-                                                              (((<> fmap List Rc type) (<> clone Rc type)) r2))))))
-                                          (= left default left))
+                                                              ((<> cloneAll Rc type) r2))))))
+                                          (= passthru default passthru))
                                        (default -> ((<> deleteWithParent type) tree
                                                     (? (> index 0) (- index 1) index)
                                                     index tr skey callback)
@@ -788,9 +810,9 @@
                                                 (Right nchild
                                                   ((<> borrowLeaf type) items children wleft current index nchild callback))
                                                 ;; propagate error
-                                                (= left default left)))
-                                 (default (left ((<> type ERR_ACCESS_DEAD_CHILD) head index))))
-                           (default (left ((<> type ERR_NOT_FOUND) skey))))
+                                                (= passthru default passthru)))
+                                 (default (bt-left ((<> type ERR_ACCESS_DEAD_CHILD) head index))))
+                           (default (bt-left ((<> type ERR_NOT_FOUND) skey))))
                        
                        ;; case           ; equal
                        (EQ (letin* ((result ((<> borrowInternal type) tree items children current index callback)))
@@ -814,46 +836,50 @@
                                                      (* Branch child_items child_children
                                                         (match ((<> nth List Rc type) (- index 1) children)
                                                           ;; merge left
-                                                          (Just wleft -># wleft
-                                                                (dead (left ((<> type ERR_CANT_BORROW) "BWPL11")))
+                                                          (Just wleft -> ((<> deref Rc type) wleft)
+                                                                (Just left_child -> left_child
                                                                 (* Branch ~ Internal left_items left_children
-                                                                   (letin ((* nchild nchild))
-                                                                     (right
+                                                                   (letin ((* nchild_spent nchild))
+                                                                     (bt-right
                                                                       ((<> mergeUp type)
                                                                        items children
                                                                        (- index 1) (- index 1)
                                                                        left_items left_children
                                                                        child_items child_children))))
-                                                                (default (left ((<> type ERR_CANT_BORROW) "BWPL111"))))
+                                                                (default (bt-left ((<> type ERR_CANT_BORROW) "BWPL111"))))
+                                                                ;; the child is gone -- what `dead' used to say
+                                                                (default (bt-left ((<> type ERR_CANT_BORROW) "BWPL11"))))
                                                           ;; merge right
                                                           (default -> ((<> nth List Rc type) (+ index 1) children)
-                                                                   (Just wright -># wright
-                                                                         (dead (left ((<> type ERR_CANT_BORROW) "BWPR22")))
+                                                                   (Just wright -> ((<> deref Rc type) wright)
+                                                                         (Just right_child -> right_child
                                                                          (* Branch ~ Internal right_items right_children
-                                                                            (letin ((* nchild nchild))
-                                                                              (right
+                                                                            (letin ((* nchild_spent nchild))
+                                                                              (bt-right
                                                                                ((<> mergeUp type)
                                                                                 items children
                                                                                 (- index 1) index
                                                                                 child_items child_children
                                                                                 right_items right_children))))
-                                                                         (default (left ((<> type ERR_CANT_BORROW) "BWPR222"))))
-                                                                   (default (left ((<> type ERR_CANT_BORROW) "BWPR221"))))))
-                                                     (default (right
+                                                                         (default (bt-left ((<> type ERR_CANT_BORROW) "BWPR222"))))
+                                                                         ;; the child is gone
+                                                                         (default (bt-left ((<> type ERR_CANT_BORROW) "BWPR22"))))
+                                                                   (default (bt-left ((<> type ERR_CANT_BORROW) "BWPR221"))))))
+                                                     (default (bt-right
                                                                (internal
                                                                 ((<> copy List type pair_t) items)
                                                                 (letin ((r1   ((<> new Rc type) nchild))
                                                                         (* r2 ((<> replaceAt List Rc type) children r1 index)))
-                                                                  (((<> fmap List Rc type) (<> clone Rc type)) r2))))))
-                                              (= left default left))
+                                                                  ((<> cloneAll Rc type) r2))))))
+                                              (= passthru default passthru))
                                            (default -> ((<> deleteWithParent type) tree (- index 1) index tr skey callback)
                                                     ;; successful deletion in child
                                                     (Right nchild
                                                       ((<> borrowLeaf type) items children wleft current index nchild callback))
                                                     ;; propagate error
-                                                    (= left default left)))
-                                     (default (left ((<> type ERR_ACCESS_DEAD_CHILD) (cast (<> type pair_t) '{ }) index))))
-                               (default (left ((<> type ERR_NOT_FOUND) skey)))))))
+                                                    (= passthru default passthru)))
+                                     (default (bt-left ((<> type ERR_ACCESS_DEAD_CHILD) (cast (<> type pair_t) '{ }) index))))
+                               (default (bt-left ((<> type ERR_NOT_FOUND) skey)))))))
                  ) ; decl result
                 
                 (warn!
@@ -877,8 +903,8 @@
                                                                (* Branch ~ Internal pitems ->
                                                                   ((<> nth List type pair_t) pitem_index pitems)
                                                                   (Just bitem
-                                                                    (letin ((* ntr ntr))
-                                                                      (right
+                                                                    (letin ((* ntr_spent ntr))
+                                                                      (bt-right
                                                                        ;; helper to signal underflow
                                                                        (branch
                                                                         ((<> insertAt List type pair_t) items bitem
@@ -890,18 +916,24 @@
                                                                                        (default skey)))
                                                                            (LT 0)
                                                                            (default items_len)))
-                                                                        (((<> fmap List Rc type) (<> clone Rc type)) children)))))
-                                                                  (default (left ((<> type ERR_CANT_BORROW) "parent borrow 2"))))
-                                                               (default (left ((<> type ERR_CANT_BORROW) "parent borrow 1"))))
+                                                                        ((<> cloneAll Rc type) children)))))
+                                                                  (default (bt-left ((<> type ERR_CANT_BORROW) "parent borrow 2"))))
+                                                               (default (bt-left ((<> type ERR_CANT_BORROW) "parent borrow 1"))))
                                                          ;; no parent
                                                          (default
                                                              (case (== items_len 0)
                                                                    (match children
                                                                      ;; shrink
-                                                                     (* Cons head -># ((<> clone Rc type) head)
-                                                                        (dead (left ((<> type ERR_CANT_BORROW) "parent borrow 3")))
-                                                                        (= chtr * default (letin ((* ntr ntr))
-                                                                                            (right chtr))))
+                                                                     ;; SHRINK: the tree becomes its only child. The clone
+                                                     ;; is what keeps that child alive past the parent's
+                                                     ;; free -- `deref' only borrows, so the count has to
+                                                     ;; be bumped before the payload is handed on. The
+                                                     ;; clone's own box is not freed here; whether that
+                                                     ;; matters is what the valgrind run answers.
+                                                     (* Cons head -> ((<> deref Rc type) ((<> clone Rc type) head))
+                                                                        (Just chtr (letin ((* ntr_spent ntr))
+                                                                                     (bt-right chtr)))
+                                                                        (default (bt-left ((<> type ERR_CANT_BORROW) "parent borrow 3"))))
                                                                      (default result))
                                                                    otherwise result))))))
                                       (default result))
@@ -932,17 +964,17 @@
 
               (return (match current
                         (* Cons (= head (\, key)) tail -> (cmp skey key)
-                           (LT (left ((<> type ERR_NOT_FOUND) skey)))
+                           (LT (bt-left ((<> type ERR_NOT_FOUND) skey)))
                            
                            ;; case
-                           (EQ (letin* ((result (right (leaf ((<> delete List type pair_t) items current)))))
+                           (EQ (letin* ((result (bt-right (leaf ((<> delete List type pair_t) items current)))))
                                        (io result (Right (when callback (callback head))))
                                        result))
                            
                            ;; case
                            (default (deleteLeaf items tail (+ index 1))))
                         
-                        (default (left ((<> type ERR_NOT_FOUND) skey))))))
+                        (default (bt-left ((<> type ERR_NOT_FOUND) skey))))))
         
         (return 
          (letin* ((result
@@ -950,7 +982,7 @@
                      (* Branch ~ Internal items children
                         (deleteInternal ((<> Just type) tree) items children ((<> Nothing (<> List type pair_t))) items 0))
                      (* Leaf items (deleteLeaf items items 0))
-                     (default (left ((<> type ERR_INVALID_OBJECT)))))))
+                     (default (bt-left ((<> type ERR_INVALID_OBJECT)))))))
                  
                  (warn!
                      (format #t "*** deleteWPEND: ")
@@ -989,7 +1021,7 @@
                       ($> sh-key stdout skey)
                       (putchar #\Newline))
                     
-                    (when (< m 3) (return (left ((<> type ERR_INVALID_ORDER) m))))
+                    (when (< m 3) (return (bt-left ((<> type ERR_INVALID_ORDER) m))))
 
                     ;; insert into an internal
                     (func insertInternal (((<> List type pair_t) items)
@@ -1025,55 +1057,55 @@
                                                                  ;; a child with only a single item which is produced by split
                                                                  (* Cons single_item (* Nil)
                                                                     ;; this error of dangle temp tree pointer was found by Cicili analyzer
-                                                                    (letin ((* child_tree child_tree))
-                                                                      (right
+                                                                    (letin ((* child_tree_spent child_tree))
+                                                                      (bt-right
                                                                        (internal
                                                                         ((<> insert List type pair_t) items single_item current)
                                                                         (letin ((* r1 ((<> take List Rc type) index children))
                                                                                 (* r2 ((<> drop List Rc type) (+ index 1) children))
                                                                                 (* r3 ((<> append List Rc type) child_children r2))
                                                                                 (* r4 ((<> append List Rc type) r1 r3)))
-                                                                          (((<> fmap List Rc type) (<> clone Rc type)) r4))))))
-                                                                 (default (left ((<> type ERR_INVALID_BRANCH) child_tree))))
+                                                                          ((<> cloneAll Rc type) r4))))))
+                                                                 (default (bt-left ((<> type ERR_INVALID_BRANCH) child_tree))))
 
                                                               ;; new Internal child
                                                               ;; join new child
                                                               (* Internal
-                                                                 (right
+                                                                 (bt-right
                                                                   (internal
                                                                    ((<> copy List type pair_t) items)
                                                                    (letin ((* r1 ((<> take List Rc type) index children))
-                                                                           (* r2 (((<> fmap List Rc type) (<> clone Rc type)) r1))
+                                                                           (* r2 ((<> cloneAll Rc type) r1))
                                                                            (* r3 ((<> drop List Rc type) (+ index 1) children))
-                                                                           (* r4 (((<> fmap List Rc type) (<> clone Rc type)) r3))
+                                                                           (* r4 ((<> cloneAll Rc type) r3))
                                                                            (* r5 ((<> push List Rc type) ((<> new Rc type) child_tree) r4)))
                                                                      ((<> append List Rc type) r2 r5)))))
                                                               
                                                               ;; new Leaf child
                                                               (default
-                                                                  (right
+                                                                  (bt-right
                                                                    (internal
                                                                     ((<> copy List type pair_t) items)
                                                                     (letin ((* r1 ((<> take List Rc type) index children))
-                                                                            (* r2 (((<> fmap List Rc type) (<> clone Rc type)) r1))
+                                                                            (* r2 ((<> cloneAll Rc type) r1))
                                                                             (* r3 ((<> drop List Rc type) (+ index 1) children))
-                                                                            (* r4 (((<> fmap List Rc type) (<> clone Rc type)) r3))
+                                                                            (* r4 ((<> cloneAll Rc type) r3))
                                                                             (* r5 ((<> push List Rc type) ((<> new Rc type) child_tree) r4)))
                                                                       ((<> append List Rc type) r2 r5))))))
                                                        
                                                        ;; propagate error
-                                                       (= left default left))
+                                                       (= passthru default passthru))
                                                  ;; on dead child pointer
-                                                 (default (left ((<> type ERR_ACCESS_DEAD_CHILD) head index))))
+                                                 (default (bt-left ((<> type ERR_ACCESS_DEAD_CHILD) head index))))
 
                                            ;; no child
-                                           (default (right
+                                           (default (bt-right
                                                      (leaf
                                                       ((<> insert List type pair_t)
                                                        items (cast (<> type pair_t) '{ skey svalue }) current)))))
                                        
                                        ;; case
-                                       (EQ (left ((<> type ERR_UNIQUE_KEY) head))) ; key exists
+                                       (EQ (bt-left ((<> type ERR_UNIQUE_KEY) head))) ; key exists
 
                                        ;; case
                                        (default (insertInternal items children tail (+ index 1)))) ; greater than
@@ -1091,45 +1123,45 @@
                                                                      ;; a child with only a single item which is produced by split
                                                                      (* Cons single_item (* Nil)
                                                                         ;; this error of dangle temp tree pointer was found by Cicili analyzer
-                                                                        (letin ((* child_tree child_tree))
-                                                                          (right
+                                                                        (letin ((* child_tree_spent child_tree))
+                                                                          (bt-right
                                                                            (internal
                                                                             ((<> insert List type pair_t) items single_item current)
                                                                             (letin ((* r1 ((<> take List Rc type) index children))
                                                                                     (* r2 ((<> drop List Rc type) (+ index 1) children))
                                                                                     (* r3 ((<> append List Rc type) child_children r2))
                                                                                     (* r4 ((<> append List Rc type) r1 r3)))
-                                                                              (((<> fmap List Rc type) (<> clone Rc type)) r4))))))
-                                                                     (default (left ((<> type ERR_INVALID_BRANCH) child_tree))))
+                                                                              ((<> cloneAll Rc type) r4))))))
+                                                                     (default (bt-left ((<> type ERR_INVALID_BRANCH) child_tree))))
                                                                   
                                                                   ;; new Internal child
                                                                   ;; join new child
                                                                   (* Internal
-                                                                     (right
+                                                                     (bt-right
                                                                       (internal
                                                                        ((<> copy List type pair_t) items)
                                                                        (letin ((* r1 ((<> take List Rc type) index children))
-                                                                               (* r2 (((<> fmap List Rc type) (<> clone Rc type)) r1))
+                                                                               (* r2 ((<> cloneAll Rc type) r1))
                                                                                (* r3 ((<> wrap List Rc type) ((<> new Rc type) child_tree))))
                                                                          ((<> append List Rc type) r2 r3)))))
 
                                                                   ;; new Leaf child
                                                                   (default
-                                                                      (right
+                                                                      (bt-right
                                                                        (internal
                                                                         ((<> copy List type pair_t) items)
                                                                         (letin ((* r1 ((<> take List Rc type) index children))
-                                                                                (* r2 (((<> fmap List Rc type) (<> clone Rc type)) r1))
+                                                                                (* r2 ((<> cloneAll Rc type) r1))
                                                                                 (* r3 ((<> wrap List Rc type) ((<> new Rc type) child_tree))))
                                                                           ((<> append List Rc type) r2 r3))))))
                                                            
                                                            ;; propagate error
-                                                           (= left default left))
+                                                           (= passthru default passthru))
                                                      ;; on dead child pointer
-                                                     (default (left ((<> type ERR_ACCESS_DEAD_CHILD) (cast (<> type pair_t) '{ }) index))))
+                                                     (default (bt-left ((<> type ERR_ACCESS_DEAD_CHILD) (cast (<> type pair_t) '{ }) index))))
 
                                                ;; no d+1 child
-                                               (default (right
+                                               (default (bt-right
                                                          (leaf
                                                           (letin ((* r1 ((<> wrap List type pair_t) (cast (<> type pair_t) '{ skey svalue }))))
                                                             ((<> append List type pair_t) items r1)))))
@@ -1156,16 +1188,16 @@
 
                                     ;; checks against existing keys
                                     (* Cons (= head (\, key)) tail -> (cmp skey key) ; lower than
-                                       (LT (right (leaf ((<> insert List type pair_t) items (cast (<> type pair_t) '{ skey svalue }) current))))
+                                       (LT (bt-right (leaf ((<> insert List type pair_t) items (cast (<> type pair_t) '{ skey svalue }) current))))
                                        
                                        ;; case
-                                       (EQ (left ((<> type ERR_UNIQUE_KEY) head))) ; key exists
+                                       (EQ (bt-left ((<> type ERR_UNIQUE_KEY) head))) ; key exists
 
                                        ;; case
                                        (default (insertLeaf items tail (+ index 1)))) ; greater than
                                     
                                     ;; no any key (item) exists
-                                    (default (right (leaf (letin ((* r1 ((<> wrap List type pair_t) (cast (<> type pair_t) '{ skey svalue }))))
+                                    (default (bt-right (leaf (letin ((* r1 ((<> wrap List type pair_t) (cast (<> type pair_t) '{ skey svalue }))))
                                                             ((<> append List type pair_t) items r1)))))))
                           ) ; insertLeaf
                     
@@ -1174,13 +1206,13 @@
                     (return (match tree
                               (* Branch ~ Internal items children
                                  (match (insertInternal items children items 0)
-                                   (Right tr (right ((<> split type) tr)))
-                                   (= left default left)))
+                                   (Right tr (bt-right ((<> split type) tr)))
+                                   (= passthru default passthru)))
                               (* Leaf items
                                  (match (insertLeaf items items 0)
-                                   (Right tr (right ((<> split type) tr)))
-                                   (= left default left)))
-                              (default (left ((<> type ERR_INVALID_OBJECT))))))
+                                   (Right tr (bt-right ((<> split type) tr)))
+                                   (= passthru default passthru)))
+                              (default (bt-left ((<> type ERR_INVALID_OBJECT))))))
                     ) ; insert
               
               
@@ -1338,7 +1370,7 @@
                       (* Leaf items (traverseLeaf items (False)))))
               
 
-              (func show ((CFile file) (type tree))
+              (func show ((FILE * file) (type tree))
                     (out size_t)
                     
                     (auto) (decl) (func showTree ((int indent) (type tree)) (out size_t))
@@ -1384,7 +1416,7 @@
                                                             (set tree new_tree)))
                                      (= left default (block ((<> free type) (aof tree))
                                                             (return left)))))
-                              (right tree))))
+                              (bt-right tree))))
               
               (free ; free a B-Tree
                 

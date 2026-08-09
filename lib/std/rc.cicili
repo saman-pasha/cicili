@@ -292,8 +292,13 @@
   (decl) (func (<> new name)   ((a obj))   (out name))
   (decl) (func (<> clone name) ((name box)) (out name))
   (decl) (func (<> get name)   ((name box)) (out (<> Maybe ref a)))
-  (decl) (func (<> free name)  ((name box)))
-  (decl) (func (<> free name pointer) ((name * box)))
+  ;; FREE TAKES THE ADDRESS, which is what everything else here does: lib/std's
+  ;; free is free_T (T * this), a haskell class's is the same, and a List frees
+  ;; its elements by handing each one's address to (<> free a). Declaring the
+  ;; by-value form under the plain name made a List of boxes call it with a
+  ;; `name *' and left the by-address form unnamed.
+  (decl) (func (<> free name)       ((name * box)))
+  (decl) (func (<> free name value) ((name box)))
 
   ) ; decl-rcbox
 
@@ -334,14 +339,16 @@
         (when (== box nil) (return (nothing)))
         (return ((<> get rc a) box)))
 
-  (func (<> free name) ((name box))
+  (func (<> free name value) ((name box))
         (when box
           ((<> free rc a) box)
           (free box)))
 
   (inline)
-  (func (<> free name pointer) ((name * box))
-        ((<> free name) (cof box)))
+  (func (<> free name) ((name * box))
+        (when box
+          ((<> free name value) (cof box))
+          (set (cof box) nil)))
 
   ) ; impl-rcbox
 

@@ -192,13 +192,29 @@
                                   (ERROR (FORMAT NIL "wrong letin variable definition: ~A -- want (name init) or (* name init)" var)))
                                 (MULTIPLE-VALUE-BIND (type full-type root-type) (CICILI:INFER-TYPE (CADR var))
                                   (LET ((type-name (NTH 1 full-type)))
-                                    (UNLESS (SYMBOLP (NTH 1 full-type))
-                                      (MULTIPLE-VALUE-SETQ (type full-type) (CICILI:INFER-TYPE-SPEC "" (NTH 1 full-type)))
+                                    ;; INFER-TYPE-SPEC NESTS when a variable's
+                                    ;; type is itself a typedef: the type slot
+                                    ;; holds another inferred type -- a list of
+                                    ;; (const type modifier ...) with the nils
+                                    ;; already dropped -- rather than the name.
+                                    ;; Every haskell class is typedef'd, so a
+                                    ;; letin over one lands here and asked
+                                    ;; INFER-TYPE-SPEC to read a list as a
+                                    ;; specifier. The name is the first thing in
+                                    ;; it that is not the `const' flag.
+                                    (LOOP WHILE (CONSP type-name)
+                                          DO (SETQ type-name
+                                                   (OR (FIND-IF #'(LAMBDA (e)
+                                                                    (AND e (NOT (CICILI:KEY-EQ e 'const))))
+                                                                type-name)
+                                                       (CAR type-name))))
+                                    (UNLESS (SYMBOLP type-name)
+                                      (MULTIPLE-VALUE-SETQ (type full-type) (CICILI:INFER-TYPE-SPEC "" type-name))
                                       (SETQ type-name (NTH 1 full-type)))
                                     (IF (NTH 2 full-type) ; check has any modifier
                                         `((defer () (<> free ,type-name))
                                           (,@type ,(CAR var) . (FUNCTION ,(CADR var))))
-                                        (IF (CICILI:IS-NON-COPY (NTH 1 full-type)) ; define non-copy instances as 'move
+                                        (IF (CICILI:IS-NON-COPY type-name) ; define non-copy instances as 'move
                                             `((defer () (<> free ,type-name))
                                               (,@type move ,(CAR var) . (FUNCTION ,(CADR var))))
                                             `((defer () (<> free ,type-name))

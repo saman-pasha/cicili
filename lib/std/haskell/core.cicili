@@ -36,7 +36,24 @@
         (SETQ body
               (LIST 'lambda
                     (IF (> (- len i) 1) (INTERN (FORMAT NIL "~A_aa~D" macro (1- (- len i)))) macro)
-                    (INTERN (FORMAT NIL "~A" (NTH (1- (- len i)) params)))
+                    ;; THE PARAMETER KEEPS ITS OWN SYMBOL. Re-interning it
+                    ;; re-reads the name in whatever package is current when
+                    ;; this macro expands, and that is the CALLER's -- while
+                    ;; the body it has to be substituted into was read in the
+                    ;; package of the file the `fn' is written in. `lambda'
+                    ;; below substitutes with SUBST, so two symbols spelled the
+                    ;; same in different packages match nothing and the
+                    ;; parameter survives into the emitted code as a free
+                    ;; variable: "unknown symbol: a->b".
+                    ;;
+                    ;; It went unseen because the layer's own instantiations
+                    ;; happen at import time, where the current package IS the
+                    ;; library's and the two agreed by accident. A target
+                    ;; instantiating decl-Functor-List for itself is where they
+                    ;; part -- which is every use of the haskell layer from
+                    ;; outside it.
+                    (LET ((param (NTH (1- (- len i)) params)))
+                      (IF (SYMBOLP param) param (INTERN (FORMAT NIL "~A" param))))
                     body)))
       `(,@body))))
 
