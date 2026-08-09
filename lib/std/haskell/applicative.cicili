@@ -131,13 +131,30 @@
 
   (impl-Applicative type List a b
                     (\\ a->b ((<> wrap List (<> a to b t)) a->b))
+                    ;; EVERY STEP HERE BUILDS A LIST, and mconcat folds with
+                    ;; `append', which copies -- so nothing in the chain is
+                    ;; consumed and the answer shares none of it. Written nested
+                    ;; there was nowhere to name the four intermediates and they
+                    ;; were simply dropped: 24 blocks at exit for one `ap' of
+                    ;; two functions over two values.
+                    ;;
+                    ;; Bound, each has a name and a free. `pair' and the cell
+                    ;; `wrap' made are one spine, so freeing `pair' takes both;
+                    ;; a List does not own its elements, so `mapped' and `rest'
+                    ;; are freed separately and the ints inside them go with
+                    ;; neither.
                     (match f_a_b
                       (* Cons a_b tail
-                         ((<> mconcat List b)
-                          ((<> Cons List b)
-                           ((<> fmap Functor type) a_b input)
-                           ((<> wrap List List b)
-                            ((<> ap Applicative type) tail input)))))
+                         (letn ((auto mapped . #'((<> fmap Functor type) a_b input))
+                                (auto rest   . #'((<> ap Applicative type) tail input))
+                                (auto pair   . #'((<> Cons List b)
+                                                  mapped
+                                                  ((<> wrap List List b) rest)))
+                                (auto result . #'((<> mconcat List b) pair)))
+                           ((<> free (<> List (<> List b))) (aof pair))
+                           ((<> free (<> List b)) (aof mapped))
+                           ((<> free (<> List b)) (aof rest))
+                           result))
                       (default ((<> Nil b)))))
   
   ) ; impl-Applicative-List

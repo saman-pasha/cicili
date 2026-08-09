@@ -5,17 +5,20 @@
 ;;; The front ends are the part a caller actually writes, so they are what this
 ;;; checks: the counts come back through them, not through the table.
 ;;;
-;;; WHAT VALGRIND SAYS: no invalid access, and 24 blocks still held at exit --
-;;; all of them intermediates of `ap' over a List. Its mat is
+;;; WHAT VALGRIND SAYS: no invalid access, and 8 blocks still held at exit --
+;;; all of them inside mconcat, none of them `ap' the mat's own.
 ;;;
-;;;   mconcat (Cons (fmap a_b input) (wrap (ap tail input)))
+;;; The mat used to drop four lists an `ap' -- the fmapped one, the recursive
+;;; ap's, and the two cells of the list-of-lists mconcat folds -- because
+;;; written nested there was nowhere to name them. They are bound and freed now,
+;;; which took the run from 22 frees to 38.
 ;;;
-;;; and every one of those four builds a list: the fmapped one, the recursive
-;;; ap's, and the two cells of the list-of-lists that mconcat folds. mconcat
-;;; folds with `append', which COPIES, so none of the four is consumed and none
-;;; is freed. The values are right -- the checks below prove that -- and the
-;;; arithmetic of who frees them is not written yet. Fixing it means binding
-;;; the intermediates in the mat rather than nesting them.
+;;; What is left is the fold itself: mconcat is foldr (mappend) Nil, and mappend
+;;; is `append', which COPIES. So the Nil seed is dropped, and so is every
+;;; intermediate the fold builds on the way -- for a two-element list, the seed
+;;; and one list. That is lib/std/haskell/monoid.cicili's arithmetic to fix, not
+;;; the Applicative's: any mconcat over a copying mappend leaks the same way,
+;;; whoever calls it.
 ;;;
 ;;; The instances are on int and Maybe int. Nothing here needs a string, which
 ;;; keeps it about the classes rather than about ownership.
