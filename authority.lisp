@@ -67,12 +67,26 @@
                                     (let* ((ty-def (let ((n (peel-type-tag< (typeof ty))))
                                                      (when (symbolp n) (*gets* n))))
                                            (modifier
-                                            ;; combine only against a TYPEDEF that carries a modifier
-                                            ;; of its own -- combining against the @STRUCT every other
-                                            ;; type resolves to is an invalid combination
-                                            (if (and ty-def (eql (construct ty-def) '|@TYPEDEF|) (modifier ty-def))
-                                                (modifier (combine-types ty-def ty))
-                                                (modifier ty)))
+                                            (cond
+                                              ;; combine only against a TYPEDEF that carries a modifier
+                                              ;; of its own -- combining against the @STRUCT every other
+                                              ;; type resolves to is an invalid combination
+                                              ((and ty-def (eql (construct ty-def) '|@TYPEDEF|) (modifier ty-def))
+                                               (modifier (combine-types ty-def ty)))
+                                              ((modifier ty) (modifier ty))
+                                              ;; A TYPE MAY BE AN EXPRESSION RATHER THAN A NAME, and then
+                                              ;; the modifier is on whatever it resolves to. `match'
+                                              ;; declares every binding it makes as
+                                              ;; ((typeof ($ ($ v __h_data) Ctor __h_0_mem)) name), so a
+                                              ;; field declared (a * pointer) gives a binding with no
+                                              ;; modifier of its own and a star one step away. Without
+                                              ;; this, (cof pointer) on such a binding fell through every
+                                              ;; branch to "'cof not allowed" -- which is what the whole
+                                              ;; haskell Arc does inside its lock.
+                                              (t (let ((n (peel-type-tag< (typeof ty))))
+                                                   (when (typep n 'sp)
+                                                     (let ((resolved (deep-typeof "" n)))
+                                                       (when resolved (modifier resolved))))))))
                                            (mod-val (cond
                                                       ;; a `ref' is a borrow. Dereferencing one YIELDS a
                                                       ;; move only when the pointee cannot be copied --
