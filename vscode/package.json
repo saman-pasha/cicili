@@ -42,13 +42,25 @@
         "scopeName": "source.cicili",
         "path": "./syntaxes/cicili.tmLanguage.json"
       }
-    ]
+    ],
+    "configurationDefaults": {
+      "[cicili]": {
+        "editor.formatOnType": true,
+        "editor.insertSpaces": true,
+        "editor.tabSize": 2
+      }
+    }
   },
   "scripts": {
-    "test": "node test/tokenize.mjs"
+    "build": "node tools/build-grammar.mjs && node tools/build-indent-table.mjs",
+    "test": "node test/tokenize.mjs && node test/indent.mjs"
   },
   "devDependencies": {
     "vscode-oniguruma": "^2.0.1",
     "vscode-textmate": "^9.3.2"
-  }
+  },
+  "main": "./src/extension.js",
+  "activationEvents": [
+    "onLanguage:cicili"
+  ]
 }

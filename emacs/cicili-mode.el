@@ -48,11 +48,23 @@
 ;;;; Each entry is (NAME . INDENT).  INDENT is the number of distinguished
 ;;;; arguments, the same meaning `lisp-indent-function' gives an integer
 ;;;; `lisp-indent-function' symbol property.
+;;;;
+;;;; A bare (NAME) -- cdr nil -- means the opposite: NAME has no indent rule,
+;;;; so its arguments line up under the first one.  That is not the same as
+;;;; leaving NAME out of the table, which lets `cicili-indent-function' fall
+;;;; through to whatever Emacs Lisp itself puts on the symbol; `if', `when'
+;;;; and `progn' are Cicili clauses AND Emacs Lisp special forms, and relying
+;;;; on the two happening to agree is not a rule.
+;;;;
+;;;; The numbers are checked against the corpus rather than chosen: see
+;;;; ../vscode/test/indent.mjs, which measures every one of them against every
+;;;; .cicili file in the tree and prints, per form and argument position, what
+;;;; the files actually do.
 ;;;; ---------------------------------------------------------------------
 
 (defconst cicili-types
   '(("main" . 0) ("const" . 1) ("restrict" . 1) ("function" . 1) ("block" . 0)
-    ("func" . 1) ("this" . 1) ("void" . 1) ("integer" . 1) ("unsigned" . 1)
+    ("func") ("this" . 1) ("void" . 1) ("integer" . 1) ("unsigned" . 1)
     ("char" . 1) ("uchar" . 1) ("short" . 1) ("ushort" . 1) ("int" . 1)
     ("uint" . 1) ("long" . 1) ("ulong" . 1) ("llong" . 1) ("ullong" . 1)
     ("float" . 1) ("double" . 1) ("real" . 1)
@@ -72,9 +84,12 @@
     ("nil" . 1) ("auto" . 1) ("namespace" . 1) ("null" . 1)
     ("byte" . 1) ("ubyte" . 1) ("timestamp" . 1) ("text" . 1) ("vector" . 1)
     ("$" . 1) ("!" . 1) ("->" . 1)
-    ("Maybe" . 1) ("Nothing" . 1) ("Just" . 1) ("Empty" . 1) ("Cons" . 1)
+    ;; The Maybe and Either constructors head a match arm as often as they head
+    ;; a call, and an arm's body lines up under its pattern -- see
+    ;; test/haskell/basic.cicili -- so they take no indent rule.
+    ("Maybe" . 1) ("Nothing") ("Just") ("Empty") ("Cons")
     ("otherwise" . 1) ("String" . 1) ("List" . 1) ("array" . 1) ("object" . 1)
-    ("Range" . 1) ("Either" . 1) ("Left" . 1) ("Right" . 1)
+    ("Range" . 1) ("Either" . 1) ("Left") ("Right")
     ("Cell" . 1) ("Rc" . 1) ("Arc" . 1) ("show" . 1)
     ("Monoid" . 1) ("Functor" . 1) ("Applicative" . 1) ("Monad" . 1)
     ("default" . 1) ("<!>" . 1) ("~" . 1) ("Thunk" . 1)
@@ -83,16 +98,16 @@
 
 (defconst cicili-keywords
   '(("cicili" . 1) ("main" . 0) ("main*" . 0) ("generic" . 1) ("format" . 1)
-    ("code" . 1) ("header" . 1) ("source" . 1) ("make" . 1) ("guard" . 1)
+    ("code" . 1) ("header" . 1) ("source" . 1) ("make") ("guard" . 1)
     ("ghost" . 1) ("module" . 1) ("include" . 1) ("var" . 1) ("lambda" . 1)
-    ("function" . 1) ("block" . 0) ("func" . 1) ("out" . 1)
+    ("function" . 1) ("block" . 0) ("func") ("out" . 1)
     ("enum" . 0) ("struct" . 0) ("union" . 0)
     ("member" . 1) ("method" . 1) ("declare" . 1) ("typedef" . 1)
     ("set" . 1) ("nth" . 1) ("not" . 1) ("and" . 0) ("or" . 0)
     ("bitand" . 0) ("bitor" . 0) ("xor" . 1)
-    ("cof" . 1) ("aof" . 1) ("sizeof" . 1) ("typeof" . 1) ("cast" . 1)
+    ("cof" . 1) ("aof" . 1) ("sizeof" . 1) ("typeof" . 1) ("cast")
     ("switch" . 1) ("default" . 1) ("while" . 1) ("break" . 1)
-    ("continue" . 1) ("for" . 1) ("for-each" . 1) ("for-each-const" . 1)
+    ("continue" . 1) ("for") ("for-each" . 1) ("for-each-const" . 1)
     ("new" . 1) ("pure" . 1) ("printf" . 1) ("scanf" . 1) ("free" . 0)
     ("$" . 1) ("->" . 1) ("import" . 1)
     ("let" . 1) ("letn" . 1) ("defer-let" . 1) ("using" . 1)
@@ -102,18 +117,27 @@
     ("async" . 1) ("yield" . 1) ("done" . 1)
     ("async-main" . 0) ("async-main*" . 0) ("$$$" . 0)
     ("fn" . 1) ("\\" . 1) ("letin" . 1) ("where" . 1) ("$>" . 1)
-    ("data" . 1) ("match" . 1) ("tuple" . 0) ("cast-tuple" . 1)
+    ("data" . 1) ("match" . 1) ("matchn" . 1) ("tuple" . 0) ("cast-tuple" . 1)
     ("," . 1) (":" . 1) ("class" . 1) ("show" . 1) ("io" . 1)
-    ("Maybe" . 1) ("Nothing" . 1) ("Just" . 1)
+    ("Maybe" . 1) ("Nothing") ("Just")
     ("len" . 1) ("!>" . 1) ("nthcdr" . 1) ("push" . 1) ("pop" . 1)
     ("head" . 1) ("tail" . 1) ("append" . 1) ("++" . 1)
     ("take" . 1) ("drop" . 1) ("!!" . 1) ("init" . 1) ("last" . 1)
     ("hasLen" . 1) ("copy" . 1) ("fmap" . 1)
-    ("Either" . 1) ("Left" . 1) ("Right" . 1) ("rc" . 1) ("impl" . 1)
-    ("List" . 1) ("Empty" . 1) ("Cons" . 1)
+    ("Either" . 1) ("Left") ("Right") ("rc" . 1) ("impl" . 1)
+    ("List" . 1) ("Empty") ("Cons")
     ("const" . 1) ("constant" . 1) ("dead" . 1)
     ("lock" . 0) ("lockn" . 0) ("Buffer" . 0) ("Slice" . 0) ("None" . 0)
-    ("force" . 0) ("lazy" . 0) ("iterate" . 1))
+    ("force" . 0) ("lazy" . 0) ("iterate" . 1)
+    ;; Clauses body.lisp dispatches on that this table used to miss entirely,
+    ;; so they were neither highlighted nor indented by any rule of ours.  The
+    ;; four whose names Emacs Lisp also uses -- if, cond, progn, case -- were
+    ;; being indented by Emacs Lisp's own properties, which is agreement by
+    ;; luck rather than by rule.
+    ("if" . 2) ("cond") ("case") ("progn" . 0) ("do" . 1) ("try" . 1)
+    ("return") ("macrolet" . 1) ("lambda*" . 1) ("closure*" . 1)
+    ;; and the builtins.cicili macros the corpus leans on
+    ("when" . 1) ("unless" . 1) ("letin*" . 1))
   "Cicili clause names, highlighted with `font-lock-keyword-face'.")
 
 (defconst cicili-attributes
@@ -139,8 +163,14 @@ memory or disappears entirely depending on the debug level.")
 (defconst cicili-common-lisp-forms
   '(("DEFMACRO" . 2) ("DEFUN" . 2) ("LET" . 1) ("LET*" . 1)
     ("MULTIPLE-VALUE-BIND" . 2) ("DESTRUCTURING-BIND" . 2)
-    ("LAMBDA" . 1) ("WHEN" . 1) ("UNLESS" . 1) ("IF" . 2) ("DOLIST" . 1)
-    ("LOOP" . 0) ("PROGN" . 0) ("COND" . 0) ("CASE" . 0))
+    ("LAMBDA" . 1) ("WHEN" . 1) ("UNLESS" . 1) ("DOLIST" . 1)
+    ("LOOP" . 0) ("PROGN" . 0) ("CASE" . 0)
+    ;; These two are Common Lisp style, not Emacs Lisp style, because the
+    ;; files are: an IF's two branches line up with each other (139 and 123
+    ;; lines against 19 the other way) and a COND's clauses line up under the
+    ;; first clause.  Emacs Lisp indents an else branch two columns in, which
+    ;; is why (IF . 2) fought every macro file in the tree.
+    ("IF" . 3) ("COND"))
   "Common Lisp forms that appear in Cicili macro files, for indentation only.
 
 Cicili macro files are read by SBCL, so a `.cicili' file may hold real
@@ -196,10 +226,16 @@ into other Lisp buffers."
           (current-column))
       (let* ((function (buffer-substring (point)
                                          (progn (forward-sexp 1) (point))))
-             (method (or (gethash function cicili-indent-table)
-                         (function-get (intern-soft function)
-                                       'lisp-indent-function)
-                         (get (intern-soft function) 'lisp-indent-hook))))
+             (entry (gethash function cicili-indent-table 'absent))
+             ;; An entry of nil is a decision -- "this form aligns under its
+             ;; first argument" -- so only a name absent from the table falls
+             ;; through to Emacs Lisp's own properties.  `if' and `when' are
+             ;; in both languages and mean different shapes.
+             (method (if (eq entry 'absent)
+                         (or (function-get (intern-soft function)
+                                           'lisp-indent-function)
+                             (get (intern-soft function) 'lisp-indent-hook))
+                       entry)))
         (cond ((or (eq method 'defun)
                    (and (null method)
                         (> (length function) 3)
