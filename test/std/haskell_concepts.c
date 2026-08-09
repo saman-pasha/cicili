@@ -1629,28 +1629,31 @@ int check (const char * what , long got , long want ) {
 int add100 (int v ) {
   return (100 +  v  );
 }
+int twice (int v ) {
+  return (2 *  v  );
+}
 long sum_list (List_int l ) {
-  return ({ /* letn1799 */
+  return ({ /* letn1800 */
       typeof((((l -> __h_data). Cons). __h_0_mem)) head ;
       typeof((((l -> __h_data). Cons). __h_1_mem)) tail ;
       // ----------
       ;
-      ({ /* letn1801 */
-        bool __h_case_result  = (true  &&  (((l -> __h_ctor) ==  __h_Cons_t  ) &&  (({ /* progn1802 */
+      ({ /* letn1802 */
+        bool __h_case_result  = (true  &&  (((l -> __h_ctor) ==  __h_Cons_t  ) &&  (({ /* progn1803 */
                 head  = (((l -> __h_data). Cons). __h_0_mem) ;
                 true ;
-              }) &&  ({ /* progn1804 */
+              }) &&  ({ /* progn1805 */
                 tail  = (((l -> __h_data). Cons). __h_1_mem) ;
                 true ;
               }) ) ) );
         // ----------
         
-        ((__h_case_result ) ? ({ /* progn1809 */
+        ((__h_case_result ) ? ({ /* progn1810 */
             (((long)head ) +  sum_list (tail ) );
-          }) : ({ /* letn1813 */
+          }) : ({ /* letn1814 */
             // ----------
             ;
-            ({ /* progn1815 */
+            ({ /* progn1816 */
               0;
             });
           }));
@@ -1658,119 +1661,119 @@ long sum_list (List_int l ) {
     });
 }
 int main () {
-  ({ /* letn1821 */
+  ({ /* letn1822 */
     List_int l1  __attribute__((__cleanup__(free_List_int ))) = Cons_int (1, Cons_int (2, Cons_int (3, Cons_int (4, Nil_int ()))));
     // ----------
     bad  += check ("the list adds up before fmap", sum_list (l1 ), 10) ;
-    ({ /* letn1832 */
-      List_int l2  __attribute__((__cleanup__(free_List_int ))) = fmap_Functor_List_int_int (({ /* progn1836 */
-        int __ciciliC_1835 (int __h_value ) {
+    ({ /* letn1833 */
+      List_int l2  __attribute__((__cleanup__(free_List_int ))) = fmap_Functor_List_int_int (({ /* progn1837 */
+        int __ciciliC_1836 (int __h_value ) {
           return (5 *  __h_value  );
         }
-        __ciciliC_1835 ;
+        __ciciliC_1836 ;
       }), l1 );
       // ----------
       bad  += check ("fmap (*5) multiplies every element", sum_list (l2 ), 50) ;
       bad  += check ("and leaves the length alone", ((long)len_List_int (l2 )), 4) ;
     });
   });
-  bad  += check ("bind on a Just runs the step", ({ /* letn1850 */
-        Maybe_int match1849  = bind_Monad_Maybe_int_int (Just_int (7), ({ /* progn1858 */
-          Maybe_int __ciciliC_1857 (int v ) {
+  bad  += check ("bind on a Just runs the step", ({ /* letn1851 */
+        Maybe_int match1850  = bind_Monad_Maybe_int_int (Just_int (7), ({ /* progn1859 */
+          Maybe_int __ciciliC_1858 (int v ) {
             return Just_int ((3 *  v  ));
           }
-          __ciciliC_1857 ;
+          __ciciliC_1858 ;
         }));
-        typeof((((match1849 . __h_data). Just). __h_0_mem)) r ;
+        typeof((((match1850 . __h_data). Just). __h_0_mem)) r ;
         // ----------
         ;
-        ({ /* letn1864 */
-          bool __h_case_result  = (true  &&  (((match1849 . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn1865 */
-                r  = (((match1849 . __h_data). Just). __h_0_mem) ;
+        ({ /* letn1865 */
+          bool __h_case_result  = (true  &&  (((match1850 . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn1866 */
+                r  = (((match1850 . __h_data). Just). __h_0_mem) ;
                 true ;
               }) ) );
           // ----------
           
-          ((__h_case_result ) ? ({ /* progn1870 */
+          ((__h_case_result ) ? ({ /* progn1871 */
               ((long)r );
-            }) : ({ /* letn1874 */
+            }) : ({ /* letn1875 */
               // ----------
               ;
-              ({ /* progn1876 */
+              ({ /* progn1877 */
                 -1;
               });
             }));
         });
       }), 21) ;
-  bad  += check ("bind on a Nothing short-circuits", ({ /* letn1883 */
-        Maybe_int match1882  = bind_Monad_Maybe_int_int (Nothing_int (), ({ /* progn1890 */
-          Maybe_int __ciciliC_1889 (int v ) {
+  bad  += check ("bind on a Nothing short-circuits", ({ /* letn1884 */
+        Maybe_int match1883  = bind_Monad_Maybe_int_int (Nothing_int (), ({ /* progn1891 */
+          Maybe_int __ciciliC_1890 (int v ) {
             return Just_int ((3 *  v  ));
           }
-          __ciciliC_1889 ;
+          __ciciliC_1890 ;
         }));
-        typeof((((match1882 . __h_data). Just). __h_0_mem)) r ;
+        typeof((((match1883 . __h_data). Just). __h_0_mem)) r ;
         // ----------
         ;
-        ({ /* letn1895 */
-          bool __h_case_result  = (true  &&  (((match1882 . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn1896 */
-                r  = (((match1882 . __h_data). Just). __h_0_mem) ;
+        ({ /* letn1896 */
+          bool __h_case_result  = (true  &&  (((match1883 . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn1897 */
+                r  = (((match1883 . __h_data). Just). __h_0_mem) ;
                 true ;
               }) ) );
           // ----------
           
-          ((__h_case_result ) ? ({ /* progn1901 */
+          ((__h_case_result ) ? ({ /* progn1902 */
               ((long)r );
-            }) : ({ /* letn1905 */
+            }) : ({ /* letn1906 */
               // ----------
               ;
-              ({ /* progn1907 */
+              ({ /* progn1908 */
                 -1;
               });
             }));
         });
       }), -1) ;
-  bad  += check ("ap of a Just function over a Just", ({ /* letn1914 */
-        Maybe_int match1913  = ap_Applicative_Ap_Maybe_int_int (Just_int_to_int_t (add100 ), Just_int (5));
-        typeof((((match1913 . __h_data). Just). __h_0_mem)) r ;
+  bad  += check ("ap of a Just function over a Just", ({ /* letn1915 */
+        Maybe_int match1914  = ap_Applicative_Ap_Maybe_int_int (Just_int_to_int_t (add100 ), Just_int (5));
+        typeof((((match1914 . __h_data). Just). __h_0_mem)) r ;
         // ----------
         ;
-        ({ /* letn1922 */
-          bool __h_case_result  = (true  &&  (((match1913 . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn1923 */
-                r  = (((match1913 . __h_data). Just). __h_0_mem) ;
+        ({ /* letn1923 */
+          bool __h_case_result  = (true  &&  (((match1914 . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn1924 */
+                r  = (((match1914 . __h_data). Just). __h_0_mem) ;
                 true ;
               }) ) );
           // ----------
           
-          ((__h_case_result ) ? ({ /* progn1928 */
+          ((__h_case_result ) ? ({ /* progn1929 */
               ((long)r );
-            }) : ({ /* letn1932 */
+            }) : ({ /* letn1933 */
               // ----------
               ;
-              ({ /* progn1934 */
+              ({ /* progn1935 */
                 -1;
               });
             }));
         });
       }), 105) ;
-  bad  += check ("ap of a Nothing function is nothing", ({ /* letn1941 */
-        Maybe_int match1940  = ap_Applicative_Ap_Maybe_int_int (Nothing_int_to_int_t (), Just_int (5));
-        typeof((((match1940 . __h_data). Just). __h_0_mem)) r ;
+  bad  += check ("ap of a Nothing function is nothing", ({ /* letn1942 */
+        Maybe_int match1941  = ap_Applicative_Ap_Maybe_int_int (Nothing_int_to_int_t (), Just_int (5));
+        typeof((((match1941 . __h_data). Just). __h_0_mem)) r ;
         // ----------
         ;
-        ({ /* letn1948 */
-          bool __h_case_result  = (true  &&  (((match1940 . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn1949 */
-                r  = (((match1940 . __h_data). Just). __h_0_mem) ;
+        ({ /* letn1949 */
+          bool __h_case_result  = (true  &&  (((match1941 . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn1950 */
+                r  = (((match1941 . __h_data). Just). __h_0_mem) ;
                 true ;
               }) ) );
           // ----------
           
-          ((__h_case_result ) ? ({ /* progn1954 */
+          ((__h_case_result ) ? ({ /* progn1955 */
               ((long)r );
-            }) : ({ /* letn1958 */
+            }) : ({ /* letn1959 */
               // ----------
               ;
-              ({ /* progn1960 */
+              ({ /* progn1961 */
                 -1;
               });
             }));

@@ -112,8 +112,20 @@
 
   ;; dependencies -- the same set decl-Applicative-List declares
   (impl-Functor-List type a b)
-  (impl-List (<> List (<> a to b t)) (<> a to b t) (\\ v (printf "%p" v)) (putchar #\Space))
-  (impl-List (<> List b) b (\\ -f -v (fprintf -f "%p" (cast (void *) (cast size_t -v)))) " ")
+  ;; THE SHOW ARGUMENTS ARE (file value) AND A STRING, and this line had neither.
+  ;; impl-List applies its `fmt' as ($> fmt file head) -- two arguments -- so a
+  ;; one-parameter (\\ v (printf "%p" v)) took `file' as its value, printed THAT,
+  ;; and left the result to be called with the head: "called object is not a
+  ;; function or function pointer", and the emitter stopped mid-expression
+  ;; inside show_List_int_to_int_t. The separator is interpolated with %s, so
+  ;; (putchar #\Space) was a statement standing where a string goes.
+  (impl-List (<> List (<> a to b t)) (<> a to b t)
+             (\\ -f -v (fprintf -f "%p" (cast (void *) -v))) " ")
+  ;; NOTHING HERE KNOWS HOW TO SHOW A `b'. This instance exists so the type is
+  ;; complete, not to be read; a caller who wants theirs shown implements the
+  ;; List themselves and impl-class's include guard makes their version the one
+  ;; that lands.
+  (impl-List (<> List b) b (\\ -f -v 0) " ")
   (impl-List (<> List (<> List b)) (<> List b) (\\ -f -v ((<> show (<> List b)) -f -v)) " ")
   (impl-Monoid (<> List b) (<> List b) ((<> Nil b)) (<> append (<> List b)))
 

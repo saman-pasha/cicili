@@ -49,6 +49,7 @@
   ;; is a gensym; the a->b typedef wants a function POINTER, and only a named
   ;; function or a quoted (lambda ...) is one.
   (func add100 ((int v)) (out int) (return (+ 100 v)))
+  (func twice  ((int v)) (out int) (return (* 2 v)))
 
   (func sum_list ((List_int l)) (out long)
     (return (match l
@@ -96,6 +97,16 @@
                      (Just r (cast long r))
                      (default -1))
                    -1))
+
+    ;; The List applicative is INSTANTIATED above and not exercised here. That
+    ;; instantiation is the check that matters for it: decl/impl-Applicative-List
+    ;; name a Functor, three Lists and a Monoid between them, and its `mat'
+    ;; composes fmap, Cons, wrap and mconcat over all of it -- so if any of that
+    ;; is missing or malformed, the target does not build. Calling `ap' on top
+    ;; wants a couple of bindings this file cannot spell yet: letin infers a
+    ;; destructor from the type and cannot see through a curried `fn', and
+    ;; free_List_int_to_int_t is not a name the List of function pointers
+    ;; actually publishes.
 
     (if (== bad 0)
         (printf "haskell-concepts: all ok\n")
