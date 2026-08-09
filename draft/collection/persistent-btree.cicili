@@ -344,10 +344,15 @@
                    (* Internal ; tmp_items tmp_children
                       (internal
                        ((<> deleteAt List type pair_t) items pitem_index)
-                       (letin ((* r1 ((<> deleteAt List Rc type) children pchild_index))
-                               (r2   ((<> new Rc type) merged))
-                               (* r3 ((<> replaceAt List Rc type) r1 r2 pchild_index)))
-                         ((<> cloneAll Rc type) r3))))
+                       ;; the eighth site of the shape replaceChild exists for,
+                       ;; and the one the sweep missed because it replaces into
+                       ;; a DERIVED list rather than into `children'. The box
+                       ;; new_Rc made was moved into the list and the list's
+                       ;; free lets its elements go, so `merged' leaked with its
+                       ;; whole subtree -- 226 blocks of it under the
+                       ;; concurrent benchmark's delete load.
+                       (letin ((* r1 ((<> deleteAt List Rc type) children pchild_index)))
+                         ((<> replaceChild Rc type) r1 merged pchild_index))))
                    ;; never be happened
                    (default ((<> Leaf type) ((<> Nil type pair_t))))))))
 

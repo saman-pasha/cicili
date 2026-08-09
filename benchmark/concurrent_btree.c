@@ -3855,22 +3855,15 @@ BTree_int_User mergeUp_BTree_int_User (List_BTree_int_User_pair_t items , List_R
                 // ----------
                 
                 ((__h_case_result ) ? ({ /* progn3983 */
-                    Internal_BTree_int_User (deleteAt_List_BTree_int_User_pair_t (items , pitem_index ), ({ /* letn3991 */
+                    Internal_BTree_int_User (deleteAt_List_BTree_int_User_pair_t (items , pitem_index ), ({ /* letn3989 */
                         List_Rc_BTree_int_User r1  __attribute__((__cleanup__(free_List_Rc_BTree_int_User ))) = deleteAt_List_Rc_BTree_int_User (children , pchild_index );
-                        Rc_BTree_int_User r2  __attribute__((__cleanup__(free_Rc_BTree_int_User ))) = new_Rc_BTree_int_User (merged );
-                        List_Rc_BTree_int_User r3  __attribute__((__cleanup__(free_List_Rc_BTree_int_User ))) = replaceAt_List_Rc_BTree_int_User (r1 , ((Rc_BTree_int_User   )({ /* letnmove3996 */
-                          Rc_BTree_int_User moved_var3995  = r2 ;
-                          // ----------
-                          memset ((&r2 ), 0, sizeof(r2 ));
-                          moved_var3995 ;
-                        })), pchild_index );
                         // ----------
-                        cloneAll_Rc_BTree_int_User (r3 );
+                        replaceChild_Rc_BTree_int_User (r1 , merged , pchild_index );
                       }));
-                  }) : ({ /* letn4002 */
+                  }) : ({ /* letn3995 */
                     // ----------
                     ;
-                    ({ /* progn4004 */
+                    ({ /* progn3997 */
                       Leaf_BTree_int_User (Nil_BTree_int_User_pair_t ());
                     });
                   }));
@@ -3883,61 +3876,61 @@ BTree_int_User mergeUp_BTree_int_User (List_BTree_int_User_pair_t items , List_R
 Either_BTree_int_User_Error_BTree_int_User deleteWithParent_BTree_int_User (Maybe_BTree_int_User wparent , size_t pitem_index , size_t pchild_index , BTree_int_User tree , int skey , void (*callback) (BTree_int_User_pair_t item ));
 Either_BTree_int_User_Error_BTree_int_User borrowLeaf_BTree_int_User (List_BTree_int_User_pair_t items , List_Rc_BTree_int_User children , Maybe_List_BTree_int_User_pair_t wleft , List_BTree_int_User_pair_t current , size_t index , BTree_int_User nchild , void (*callback) (BTree_int_User_pair_t item )) {
   Either_BTree_int_User_Error_BTree_int_User borrowRight (List_BTree_int_User_pair_t child_items ) {
-    return ({ /* letn4035 */
-        Maybe_Rc_BTree_int_User match4034  = nth_List_Rc_BTree_int_User ((index  +  1 ), children );
-        typeof((((match4034 . __h_data). Just). __h_0_mem)) right_child_rc ;
+    return ({ /* letn4028 */
+        Maybe_Rc_BTree_int_User match4027  = nth_List_Rc_BTree_int_User ((index  +  1 ), children );
+        typeof((((match4027 . __h_data). Just). __h_0_mem)) right_child_rc ;
         // ----------
         ;
-        ({ /* letn4037 */
-          bool __h_case_result  = (true  &&  (((match4034 . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn4038 */
-                right_child_rc  = (((match4034 . __h_data). Just). __h_0_mem) ;
+        ({ /* letn4030 */
+          bool __h_case_result  = (true  &&  (((match4027 . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn4031 */
+                right_child_rc  = (((match4027 . __h_data). Just). __h_0_mem) ;
                 true ;
               }) ) );
           // ----------
           
-          ((__h_case_result ) ? ({ /* progn4043 */
-              ({ /* letn4050 */
-                Maybe_BTree_int_User match4049  = deref_Rc_BTree_int_User (right_child_rc );
-                typeof((((match4049 . __h_data). Just). __h_0_mem)) right_child ;
+          ((__h_case_result ) ? ({ /* progn4036 */
+              ({ /* letn4043 */
+                Maybe_BTree_int_User match4042  = deref_Rc_BTree_int_User (right_child_rc );
+                typeof((((match4042 . __h_data). Just). __h_0_mem)) right_child ;
                 // ----------
                 ;
-                ({ /* letn4052 */
-                  bool __h_case_result  = (true  &&  (((match4049 . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn4053 */
-                        right_child  = (((match4049 . __h_data). Just). __h_0_mem) ;
+                ({ /* letn4045 */
+                  bool __h_case_result  = (true  &&  (((match4042 . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn4046 */
+                        right_child  = (((match4042 . __h_data). Just). __h_0_mem) ;
                         true ;
                       }) ) );
                   // ----------
                   
-                  ((__h_case_result ) ? ({ /* progn4058 */
-                      ({ /* letn4064 */
+                  ((__h_case_result ) ? ({ /* progn4051 */
+                      ({ /* letn4057 */
                         typeof((((right_child -> __h_data). Leaf). __h_0_mem)) right_child_items ;
                         // ----------
                         ;
-                        ({ /* letn4066 */
-                          bool __h_case_result  = (true  &&  (((right_child -> __h_ctor) ==  __h_Leaf_t  ) &&  ({ /* progn4067 */
+                        ({ /* letn4059 */
+                          bool __h_case_result  = (true  &&  (((right_child -> __h_ctor) ==  __h_Leaf_t  ) &&  ({ /* progn4060 */
                                 right_child_items  = (((right_child -> __h_data). Leaf). __h_0_mem) ;
                                 true ;
                               }) ) );
                           // ----------
                           
-                          ((__h_case_result ) ? ({ /* progn4072 */
-                              (((hasLen_List_BTree_int_User_pair_t (right_child_items , L_BTree_int_User ) ==  L_BTree_int_User  )) ? ({ /* letn4082 */
+                          ((__h_case_result ) ? ({ /* progn4065 */
+                              (((hasLen_List_BTree_int_User_pair_t (right_child_items , L_BTree_int_User ) ==  L_BTree_int_User  )) ? ({ /* letn4075 */
                                   typeof((((right_child_items -> __h_data). Cons). __h_0_mem)) first_item ;
                                   typeof((((right_child_items -> __h_data). Cons). __h_1_mem)) tail ;
                                   // ----------
                                   ;
-                                  ({ /* letn4084 */
-                                    bool __h_case_result  = (true  &&  (((right_child_items -> __h_ctor) ==  __h_Cons_t  ) &&  (({ /* progn4085 */
+                                  ({ /* letn4077 */
+                                    bool __h_case_result  = (true  &&  (((right_child_items -> __h_ctor) ==  __h_Cons_t  ) &&  (({ /* progn4078 */
                                             first_item  = (((right_child_items -> __h_data). Cons). __h_0_mem) ;
                                             true ;
-                                          }) &&  ({ /* progn4087 */
+                                          }) &&  ({ /* progn4080 */
                                             tail  = (((right_child_items -> __h_data). Cons). __h_1_mem) ;
                                             true ;
                                           }) ) ) );
                                     // ----------
                                     
-                                    ((__h_case_result ) ? ({ /* progn4092 */
-                                        Right_BTree_int_User_Error_BTree_int_User (Internal_BTree_int_User (replace_List_BTree_int_User_pair_t (items , first_item , current ), ({ /* letn4106 */
+                                    ((__h_case_result ) ? ({ /* progn4085 */
+                                        Right_BTree_int_User_Error_BTree_int_User (Internal_BTree_int_User (replace_List_BTree_int_User_pair_t (items , first_item , current ), ({ /* letn4099 */
                                             List_Rc_BTree_int_User r1  __attribute__((__cleanup__(free_List_Rc_BTree_int_User ))) = take_List_Rc_BTree_int_User (index , children );
                                             List_Rc_BTree_int_User r2  __attribute__((__cleanup__(free_List_Rc_BTree_int_User ))) = cloneAll_Rc_BTree_int_User (r1 );
                                             List_Rc_BTree_int_User r3  __attribute__((__cleanup__(free_List_Rc_BTree_int_User ))) = drop_List_Rc_BTree_int_User ((index  +  2 ), children );
@@ -3948,27 +3941,27 @@ Either_BTree_int_User_Error_BTree_int_User borrowLeaf_BTree_int_User (List_BTree
                                             // ----------
                                             append_List_Rc_BTree_int_User (r2 , r6 );
                                           })));
-                                      }) : ({ /* letn4125 */
+                                      }) : ({ /* letn4118 */
                                         // ----------
                                         ;
-                                        ({ /* progn4127 */
+                                        ({ /* progn4120 */
                                           Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_CANT_BORROW ("borrowRight R1"));
                                         });
                                       }));
                                   });
-                                }) : ({ /* letn4136 */
+                                }) : ({ /* letn4129 */
                                   typeof((((current -> __h_data). Cons). __h_0_mem)) head ;
                                   // ----------
                                   ;
-                                  ({ /* letn4138 */
-                                    bool __h_case_result  = (true  &&  (((current -> __h_ctor) ==  __h_Cons_t  ) &&  ({ /* progn4139 */
+                                  ({ /* letn4131 */
+                                    bool __h_case_result  = (true  &&  (((current -> __h_ctor) ==  __h_Cons_t  ) &&  ({ /* progn4132 */
                                           head  = (((current -> __h_data). Cons). __h_0_mem) ;
                                           true ;
                                         }) ) );
                                     // ----------
                                     
-                                    ((__h_case_result ) ? ({ /* progn4144 */
-                                        Right_BTree_int_User_Error_BTree_int_User (Internal_BTree_int_User (delete_List_BTree_int_User_pair_t (items , current ), ({ /* letn4157 */
+                                    ((__h_case_result ) ? ({ /* progn4137 */
+                                        Right_BTree_int_User_Error_BTree_int_User (Internal_BTree_int_User (delete_List_BTree_int_User_pair_t (items , current ), ({ /* letn4150 */
                                             List_Rc_BTree_int_User r1  __attribute__((__cleanup__(free_List_Rc_BTree_int_User ))) = take_List_Rc_BTree_int_User (index , children );
                                             List_Rc_BTree_int_User r2  __attribute__((__cleanup__(free_List_Rc_BTree_int_User ))) = cloneAll_Rc_BTree_int_User (r1 );
                                             List_Rc_BTree_int_User r3  __attribute__((__cleanup__(free_List_Rc_BTree_int_User ))) = drop_List_Rc_BTree_int_User ((index  +  2 ), children );
@@ -3979,37 +3972,37 @@ Either_BTree_int_User_Error_BTree_int_User borrowLeaf_BTree_int_User (List_BTree
                                             // ----------
                                             append_List_Rc_BTree_int_User (r2 , r8 );
                                           })));
-                                      }) : ({ /* letn4172 */
+                                      }) : ({ /* letn4165 */
                                         // ----------
                                         ;
-                                        ({ /* progn4174 */
+                                        ({ /* progn4167 */
                                           Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_CANT_BORROW ("borrowRight R2"));
                                         });
                                       }));
                                   });
                                 }));
-                            }) : ({ /* letn4180 */
+                            }) : ({ /* letn4173 */
                               // ----------
                               ;
-                              ({ /* progn4182 */
+                              ({ /* progn4175 */
                                 Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_CANT_BORROW ("borrowRight 3"));
                               });
                             }));
                         });
                       });
-                    }) : ({ /* letn4188 */
+                    }) : ({ /* letn4181 */
                       // ----------
                       ;
-                      ({ /* progn4190 */
+                      ({ /* progn4183 */
                         Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_CANT_BORROW ("borrowRight 3"));
                       });
                     }));
                 });
               });
-            }) : ({ /* letn4196 */
+            }) : ({ /* letn4189 */
               // ----------
               ;
-              ({ /* progn4198 */
+              ({ /* progn4191 */
                 Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_CANT_BORROW ("borrowRight 4"));
               });
             }));
@@ -4017,77 +4010,77 @@ Either_BTree_int_User_Error_BTree_int_User borrowLeaf_BTree_int_User (List_BTree
       });
   }
   Either_BTree_int_User_Error_BTree_int_User borrowLeft (List_BTree_int_User_pair_t child_items ) {
-    return ({ /* letn4212 */
+    return ({ /* letn4205 */
         typeof((((wleft . __h_data). Just). __h_0_mem)) left ;
         typeof((((left -> __h_data). Cons). __h_0_mem)) left_item ;
         // ----------
         ;
-        ({ /* letn4214 */
-          bool __h_case_result  = (true  &&  (((wleft . __h_ctor) ==  __h_Just_t  ) &&  (({ /* progn4215 */
+        ({ /* letn4207 */
+          bool __h_case_result  = (true  &&  (((wleft . __h_ctor) ==  __h_Just_t  ) &&  (({ /* progn4208 */
                   left  = (((wleft . __h_data). Just). __h_0_mem) ;
                   true ;
-                }) &&  (true  &&  (((left -> __h_ctor) ==  __h_Cons_t  ) &&  ({ /* progn4217 */
+                }) &&  (true  &&  (((left -> __h_ctor) ==  __h_Cons_t  ) &&  ({ /* progn4210 */
                       left_item  = (((left -> __h_data). Cons). __h_0_mem) ;
                       true ;
                     }) ) ) ) ) );
           // ----------
           
-          ((__h_case_result ) ? ({ /* progn4222 */
-              ({ /* letn4229 */
-                Maybe_Rc_BTree_int_User match4228  = nth_List_Rc_BTree_int_User ((index  -  1 ), children );
-                typeof((((match4228 . __h_data). Just). __h_0_mem)) left_child_rc ;
+          ((__h_case_result ) ? ({ /* progn4215 */
+              ({ /* letn4222 */
+                Maybe_Rc_BTree_int_User match4221  = nth_List_Rc_BTree_int_User ((index  -  1 ), children );
+                typeof((((match4221 . __h_data). Just). __h_0_mem)) left_child_rc ;
                 // ----------
                 ;
-                ({ /* letn4231 */
-                  bool __h_case_result  = (true  &&  (((match4228 . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn4232 */
-                        left_child_rc  = (((match4228 . __h_data). Just). __h_0_mem) ;
+                ({ /* letn4224 */
+                  bool __h_case_result  = (true  &&  (((match4221 . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn4225 */
+                        left_child_rc  = (((match4221 . __h_data). Just). __h_0_mem) ;
                         true ;
                       }) ) );
                   // ----------
                   
-                  ((__h_case_result ) ? ({ /* progn4237 */
-                      ({ /* letn4244 */
-                        Maybe_BTree_int_User match4243  = deref_Rc_BTree_int_User (left_child_rc );
-                        typeof((((match4243 . __h_data). Just). __h_0_mem)) left_child ;
+                  ((__h_case_result ) ? ({ /* progn4230 */
+                      ({ /* letn4237 */
+                        Maybe_BTree_int_User match4236  = deref_Rc_BTree_int_User (left_child_rc );
+                        typeof((((match4236 . __h_data). Just). __h_0_mem)) left_child ;
                         // ----------
                         ;
-                        ({ /* letn4246 */
-                          bool __h_case_result  = (true  &&  (((match4243 . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn4247 */
-                                left_child  = (((match4243 . __h_data). Just). __h_0_mem) ;
+                        ({ /* letn4239 */
+                          bool __h_case_result  = (true  &&  (((match4236 . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn4240 */
+                                left_child  = (((match4236 . __h_data). Just). __h_0_mem) ;
                                 true ;
                               }) ) );
                           // ----------
                           
-                          ((__h_case_result ) ? ({ /* progn4252 */
-                              ({ /* letn4258 */
+                          ((__h_case_result ) ? ({ /* progn4245 */
+                              ({ /* letn4251 */
                                 typeof((((left_child -> __h_data). Leaf). __h_0_mem)) left_child_items ;
                                 // ----------
                                 ;
-                                ({ /* letn4260 */
-                                  bool __h_case_result  = (true  &&  (((left_child -> __h_ctor) ==  __h_Leaf_t  ) &&  ({ /* progn4261 */
+                                ({ /* letn4253 */
+                                  bool __h_case_result  = (true  &&  (((left_child -> __h_ctor) ==  __h_Leaf_t  ) &&  ({ /* progn4254 */
                                         left_child_items  = (((left_child -> __h_data). Leaf). __h_0_mem) ;
                                         true ;
                                       }) ) );
                                   // ----------
                                   
-                                  ((__h_case_result ) ? ({ /* progn4266 */
-                                      (((hasLen_List_BTree_int_User_pair_t (left_child_items , L_BTree_int_User ) ==  L_BTree_int_User  )) ? ({ /* letn4277 */
+                                  ((__h_case_result ) ? ({ /* progn4259 */
+                                      (((hasLen_List_BTree_int_User_pair_t (left_child_items , L_BTree_int_User ) ==  L_BTree_int_User  )) ? ({ /* letn4270 */
                                           List_BTree_int_User_pair_t last  = last_List_BTree_int_User_pair_t (left_child_items );
                                           typeof((((last -> __h_data). Cons). __h_0_mem)) last_item ;
                                           // ----------
                                           ;
-                                          ({ /* letn4279 */
-                                            bool __h_case_result  = (true  &&  (((last -> __h_ctor) ==  __h_Cons_t  ) &&  ({ /* progn4280 */
+                                          ({ /* letn4272 */
+                                            bool __h_case_result  = (true  &&  (((last -> __h_ctor) ==  __h_Cons_t  ) &&  ({ /* progn4273 */
                                                   last_item  = (((last -> __h_data). Cons). __h_0_mem) ;
                                                   true ;
                                                 }) ) );
                                             // ----------
                                             
-                                            ((__h_case_result ) ? ({ /* progn4285 */
-                                                ({ /* letn4288 */
+                                            ((__h_case_result ) ? ({ /* progn4278 */
+                                                ({ /* letn4281 */
                                                   List_BTree_int_User_pair_t last_spent  __attribute__((__cleanup__(free_List_BTree_int_User_pair_t ))) = last ;
                                                   // ----------
-                                                  Right_BTree_int_User_Error_BTree_int_User (Internal_BTree_int_User (replace_List_BTree_int_User_pair_t (items , last_item , left ), ({ /* letn4301 */
+                                                  Right_BTree_int_User_Error_BTree_int_User (Internal_BTree_int_User (replace_List_BTree_int_User_pair_t (items , last_item , left ), ({ /* letn4294 */
                                                       List_Rc_BTree_int_User r1  __attribute__((__cleanup__(free_List_Rc_BTree_int_User ))) = take_List_Rc_BTree_int_User ((index  -  1 ), children );
                                                       List_Rc_BTree_int_User r2  __attribute__((__cleanup__(free_List_Rc_BTree_int_User ))) = cloneAll_Rc_BTree_int_User (r1 );
                                                       List_Rc_BTree_int_User r3  __attribute__((__cleanup__(free_List_Rc_BTree_int_User ))) = drop_List_Rc_BTree_int_User ((index  +  1 ), children );
@@ -4098,24 +4091,24 @@ Either_BTree_int_User_Error_BTree_int_User borrowLeaf_BTree_int_User (List_BTree
                                                       append_List_Rc_BTree_int_User (r2 , r7 );
                                                     })));
                                                 });
-                                              }) : ({ /* letn4319 */
+                                              }) : ({ /* letn4312 */
                                                 // ----------
                                                 ;
-                                                ({ /* progn4321 */
+                                                ({ /* progn4314 */
                                                   Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_CANT_BORROW ("borrowLeft 2"));
                                                 });
                                               }));
                                           });
-                                        }) : ({ /* letn4329 */
-                                          Either_BTree_int_User_Error_BTree_int_User match4328  = borrowRight (child_items );
+                                        }) : ({ /* letn4322 */
+                                          Either_BTree_int_User_Error_BTree_int_User match4321  = borrowRight (child_items );
                                           // ----------
                                           ;
-                                          ({ /* letn4331 */
-                                            bool __h_case_result  = (true  &&  ((match4328 . __h_ctor) ==  __h_Left_t  ) );
+                                          ({ /* letn4324 */
+                                            bool __h_case_result  = (true  &&  ((match4321 . __h_ctor) ==  __h_Left_t  ) );
                                             // ----------
                                             
-                                            ((__h_case_result ) ? ({ /* progn4335 */
-                                                Right_BTree_int_User_Error_BTree_int_User (Internal_BTree_int_User (delete_List_BTree_int_User_pair_t (items , left ), ({ /* letn4348 */
+                                            ((__h_case_result ) ? ({ /* progn4328 */
+                                                Right_BTree_int_User_Error_BTree_int_User (Internal_BTree_int_User (delete_List_BTree_int_User_pair_t (items , left ), ({ /* letn4341 */
                                                     List_Rc_BTree_int_User r1  __attribute__((__cleanup__(free_List_Rc_BTree_int_User ))) = take_List_Rc_BTree_int_User ((index  -  1 ), children );
                                                     List_Rc_BTree_int_User r2  __attribute__((__cleanup__(free_List_Rc_BTree_int_User ))) = cloneAll_Rc_BTree_int_User (r1 );
                                                     List_Rc_BTree_int_User r3  __attribute__((__cleanup__(free_List_Rc_BTree_int_User ))) = drop_List_Rc_BTree_int_User ((index  +  1 ), children );
@@ -4126,109 +4119,109 @@ Either_BTree_int_User_Error_BTree_int_User borrowLeaf_BTree_int_User (List_BTree
                                                     // ----------
                                                     append_List_Rc_BTree_int_User (r2 , r7 );
                                                   })));
-                                              }) : ({ /* letn4363 */
-                                                Either_BTree_int_User_Error_BTree_int_User passthru  = match4328 ;
+                                              }) : ({ /* letn4356 */
+                                                Either_BTree_int_User_Error_BTree_int_User passthru  = match4321 ;
                                                 // ----------
                                                 ;
-                                                ({ /* progn4365 */
+                                                ({ /* progn4358 */
                                                   passthru ;
                                                 });
                                               }));
                                           });
                                         }));
-                                    }) : ({ /* letn4369 */
+                                    }) : ({ /* letn4362 */
                                       // ----------
                                       ;
-                                      ({ /* progn4371 */
+                                      ({ /* progn4364 */
                                         Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_CANT_BORROW ("borrowLeft 3"));
                                       });
                                     }));
                                 });
                               });
-                            }) : ({ /* letn4377 */
+                            }) : ({ /* letn4370 */
                               // ----------
                               ;
-                              ({ /* progn4379 */
+                              ({ /* progn4372 */
                                 Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_CANT_BORROW ("borrowLeft 4"));
                               });
                             }));
                         });
                       });
-                    }) : ({ /* letn4385 */
+                    }) : ({ /* letn4378 */
                       // ----------
                       ;
-                      ({ /* progn4387 */
+                      ({ /* progn4380 */
                         Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_CANT_BORROW ("borrowLeft 5"));
                       });
                     }));
                 });
               });
-            }) : ({ /* letn4393 */
+            }) : ({ /* letn4386 */
               // ----------
               ;
-              ({ /* progn4395 */
+              ({ /* progn4388 */
                 borrowRight (child_items );
               });
             }));
         });
       });
   }
-  return ({ /* letn4398 */
-      Either_BTree_int_User_Error_BTree_int_User result  = ({ /* letn4403 */
+  return ({ /* letn4391 */
+      Either_BTree_int_User_Error_BTree_int_User result  = ({ /* letn4396 */
         typeof((((nchild -> __h_data). Branch). __h_0_mem)) child_items ;
         // ----------
         ;
-        ({ /* letn4405 */
-          bool __h_case_result  = (true  &&  (((nchild -> __h_ctor) ==  __h_Branch_t  ) &&  ({ /* progn4406 */
+        ({ /* letn4398 */
+          bool __h_case_result  = (true  &&  (((nchild -> __h_ctor) ==  __h_Branch_t  ) &&  ({ /* progn4399 */
                 child_items  = (((nchild -> __h_data). Branch). __h_0_mem) ;
                 true ;
               }) ) );
           // ----------
           
-          ((__h_case_result ) ? ({ /* progn4411 */
-              (((hasLen_List_BTree_int_User_pair_t (child_items , (L_BTree_int_User  -  1 )) ==  (L_BTree_int_User  -  1 ) )) ? Right_BTree_int_User_Error_BTree_int_User (Internal_BTree_int_User (copy_List_BTree_int_User_pair_t (items ), replaceChild_Rc_BTree_int_User (children , nchild , index ))) : ({ /* letn4422 */
+          ((__h_case_result ) ? ({ /* progn4404 */
+              (((hasLen_List_BTree_int_User_pair_t (child_items , (L_BTree_int_User  -  1 )) ==  (L_BTree_int_User  -  1 ) )) ? Right_BTree_int_User_Error_BTree_int_User (Internal_BTree_int_User (copy_List_BTree_int_User_pair_t (items ), replaceChild_Rc_BTree_int_User (children , nchild , index ))) : ({ /* letn4415 */
                   BTree_int_User nchild_spent  __attribute__((__cleanup__(free_BTree_int_User ))) = nchild ;
                   // ----------
                   borrowLeft (child_items );
                 }));
-            }) : ({ /* letn4427 */
+            }) : ({ /* letn4420 */
               typeof((((nchild -> __h_data). Internal). __h_0_mem)) child_items ;
               // ----------
               ;
-              ({ /* letn4429 */
-                bool __h_case_result  = (true  &&  (((nchild -> __h_ctor) ==  __h_Internal_t  ) &&  ({ /* progn4430 */
+              ({ /* letn4422 */
+                bool __h_case_result  = (true  &&  (((nchild -> __h_ctor) ==  __h_Internal_t  ) &&  ({ /* progn4423 */
                       child_items  = (((nchild -> __h_data). Internal). __h_0_mem) ;
                       true ;
                     }) ) );
                 // ----------
                 
-                ((__h_case_result ) ? ({ /* progn4435 */
-                    (((hasLen_List_BTree_int_User_pair_t (child_items , (L_BTree_int_User  -  1 )) ==  (L_BTree_int_User  -  1 ) )) ? Right_BTree_int_User_Error_BTree_int_User (Internal_BTree_int_User (copy_List_BTree_int_User_pair_t (items ), replaceChild_Rc_BTree_int_User (children , nchild , index ))) : ({ /* letn4437 */
+                ((__h_case_result ) ? ({ /* progn4428 */
+                    (((hasLen_List_BTree_int_User_pair_t (child_items , (L_BTree_int_User  -  1 )) ==  (L_BTree_int_User  -  1 ) )) ? Right_BTree_int_User_Error_BTree_int_User (Internal_BTree_int_User (copy_List_BTree_int_User_pair_t (items ), replaceChild_Rc_BTree_int_User (children , nchild , index ))) : ({ /* letn4430 */
                         BTree_int_User nchild_spent  __attribute__((__cleanup__(free_BTree_int_User ))) = nchild ;
                         // ----------
                         borrowLeft (child_items );
                       }));
-                  }) : ({ /* letn4441 */
+                  }) : ({ /* letn4434 */
                     typeof((((nchild -> __h_data). Leaf). __h_0_mem)) child_items ;
                     // ----------
                     ;
-                    ({ /* letn4443 */
-                      bool __h_case_result  = (true  &&  (((nchild -> __h_ctor) ==  __h_Leaf_t  ) &&  ({ /* progn4444 */
+                    ({ /* letn4436 */
+                      bool __h_case_result  = (true  &&  (((nchild -> __h_ctor) ==  __h_Leaf_t  ) &&  ({ /* progn4437 */
                             child_items  = (((nchild -> __h_data). Leaf). __h_0_mem) ;
                             true ;
                           }) ) );
                       // ----------
                       
-                      ((__h_case_result ) ? ({ /* progn4449 */
-                          (((hasLen_List_BTree_int_User_pair_t (child_items , (L_BTree_int_User  -  1 )) ==  (L_BTree_int_User  -  1 ) )) ? Right_BTree_int_User_Error_BTree_int_User (Internal_BTree_int_User (copy_List_BTree_int_User_pair_t (items ), replaceChild_Rc_BTree_int_User (children , nchild , index ))) : ({ /* letn4451 */
+                      ((__h_case_result ) ? ({ /* progn4442 */
+                          (((hasLen_List_BTree_int_User_pair_t (child_items , (L_BTree_int_User  -  1 )) ==  (L_BTree_int_User  -  1 ) )) ? Right_BTree_int_User_Error_BTree_int_User (Internal_BTree_int_User (copy_List_BTree_int_User_pair_t (items ), replaceChild_Rc_BTree_int_User (children , nchild , index ))) : ({ /* letn4444 */
                               BTree_int_User nchild_spent  __attribute__((__cleanup__(free_BTree_int_User ))) = nchild ;
                               // ----------
                               borrowLeft (child_items );
                             }));
-                        }) : ({ /* letn4455 */
+                        }) : ({ /* letn4448 */
                           // ----------
                           ;
-                          ({ /* progn4457 */
+                          ({ /* progn4450 */
                             Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_CANT_BORROW ("borrow 1"));
                           });
                         }));
@@ -4244,206 +4237,206 @@ Either_BTree_int_User_Error_BTree_int_User borrowLeaf_BTree_int_User (List_BTree
 }
 Either_BTree_int_User_Error_BTree_int_User borrowInternal_BTree_int_User (Maybe_BTree_int_User wtree , List_BTree_int_User_pair_t items , List_Rc_BTree_int_User children , List_BTree_int_User_pair_t current , size_t index , void (*callback) (BTree_int_User_pair_t item )) {
   Either_BTree_int_User_Error_BTree_int_User borrowRightInternal (List_BTree_int_User_pair_t left_child_items , List_Rc_BTree_int_User left_child_children ) {
-    return ({ /* letn4486 */
-        Maybe_Rc_BTree_int_User match4485  = nth_List_Rc_BTree_int_User ((index  +  1 ), children );
-        typeof((((match4485 . __h_data). Just). __h_0_mem)) right_child_rc ;
+    return ({ /* letn4479 */
+        Maybe_Rc_BTree_int_User match4478  = nth_List_Rc_BTree_int_User ((index  +  1 ), children );
+        typeof((((match4478 . __h_data). Just). __h_0_mem)) right_child_rc ;
         // ----------
         ;
-        ({ /* letn4488 */
-          bool __h_case_result  = (true  &&  (((match4485 . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn4489 */
-                right_child_rc  = (((match4485 . __h_data). Just). __h_0_mem) ;
+        ({ /* letn4481 */
+          bool __h_case_result  = (true  &&  (((match4478 . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn4482 */
+                right_child_rc  = (((match4478 . __h_data). Just). __h_0_mem) ;
                 true ;
               }) ) );
           // ----------
           
-          ((__h_case_result ) ? ({ /* progn4494 */
-              ({ /* letn4501 */
-                Maybe_BTree_int_User match4500  = deref_Rc_BTree_int_User (right_child_rc );
-                typeof((((match4500 . __h_data). Just). __h_0_mem)) right_child ;
+          ((__h_case_result ) ? ({ /* progn4487 */
+              ({ /* letn4494 */
+                Maybe_BTree_int_User match4493  = deref_Rc_BTree_int_User (right_child_rc );
+                typeof((((match4493 . __h_data). Just). __h_0_mem)) right_child ;
                 // ----------
                 ;
-                ({ /* letn4503 */
-                  bool __h_case_result  = (true  &&  (((match4500 . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn4504 */
-                        right_child  = (((match4500 . __h_data). Just). __h_0_mem) ;
+                ({ /* letn4496 */
+                  bool __h_case_result  = (true  &&  (((match4493 . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn4497 */
+                        right_child  = (((match4493 . __h_data). Just). __h_0_mem) ;
                         true ;
                       }) ) );
                   // ----------
                   
-                  ((__h_case_result ) ? ({ /* progn4509 */
-                      ({ /* letn4515 */
+                  ((__h_case_result ) ? ({ /* progn4502 */
+                      ({ /* letn4508 */
                         typeof((((right_child -> __h_data). Branch). __h_0_mem)) right_child_items ;
                         typeof((((right_child -> __h_data). Branch). __h_1_mem)) right_child_children ;
                         // ----------
                         ;
-                        ({ /* letn4517 */
-                          bool __h_case_result  = (true  &&  (((right_child -> __h_ctor) ==  __h_Branch_t  ) &&  (({ /* progn4518 */
+                        ({ /* letn4510 */
+                          bool __h_case_result  = (true  &&  (((right_child -> __h_ctor) ==  __h_Branch_t  ) &&  (({ /* progn4511 */
                                   right_child_items  = (((right_child -> __h_data). Branch). __h_0_mem) ;
                                   true ;
-                                }) &&  ({ /* progn4520 */
+                                }) &&  ({ /* progn4513 */
                                   right_child_children  = (((right_child -> __h_data). Branch). __h_1_mem) ;
                                   true ;
                                 }) ) ) );
                           // ----------
                           
-                          ((__h_case_result ) ? ({ /* progn4525 */
-                              (((hasLen_List_BTree_int_User_pair_t (right_child_items , L_BTree_int_User ) ==  L_BTree_int_User  )) ? ({ /* letn4537 */
-                                  Maybe_BTree_int_User_pair_t match4535  = min_BTree_int_User (right_child );
-                                  typeof((((match4535 . __h_data). Just). __h_0_mem)) min ;
+                          ((__h_case_result ) ? ({ /* progn4518 */
+                              (((hasLen_List_BTree_int_User_pair_t (right_child_items , L_BTree_int_User ) ==  L_BTree_int_User  )) ? ({ /* letn4530 */
+                                  Maybe_BTree_int_User_pair_t match4528  = min_BTree_int_User (right_child );
+                                  typeof((((match4528 . __h_data). Just). __h_0_mem)) min ;
                                   typeof((min . __h_0_mem)) min_key ;
                                   // ----------
                                   ;
-                                  ({ /* letn4539 */
-                                    bool __h_case_result  = (true  &&  (((match4535 . __h_ctor) ==  __h_Just_t  ) &&  (({ /* progn4540 */
-                                            min  = (((match4535 . __h_data). Just). __h_0_mem) ;
+                                  ({ /* letn4532 */
+                                    bool __h_case_result  = (true  &&  (((match4528 . __h_ctor) ==  __h_Just_t  ) &&  (({ /* progn4533 */
+                                            min  = (((match4528 . __h_data). Just). __h_0_mem) ;
                                             true ;
-                                          }) &&  (true  &&  ({ /* progn4542 */
+                                          }) &&  (true  &&  ({ /* progn4535 */
                                               min_key  = (min . __h_0_mem) ;
                                               true ;
                                             }) ) ) ) );
                                     // ----------
                                     
-                                    ((__h_case_result ) ? ({ /* progn4547 */
-                                        ({ /* letn4554 */
-                                          Either_BTree_int_User_Error_BTree_int_User match4553  = delete_BTree_int_User (right_child , min_key , NULL );
-                                          typeof((((match4553 . __h_data). Right). __h_0_mem)) nchild ;
+                                    ((__h_case_result ) ? ({ /* progn4540 */
+                                        ({ /* letn4547 */
+                                          Either_BTree_int_User_Error_BTree_int_User match4546  = delete_BTree_int_User (right_child , min_key , NULL );
+                                          typeof((((match4546 . __h_data). Right). __h_0_mem)) nchild ;
                                           // ----------
                                           ;
-                                          ({ /* letn4556 */
-                                            bool __h_case_result  = (true  &&  (((match4553 . __h_ctor) ==  __h_Right_t  ) &&  ({ /* progn4557 */
-                                                  nchild  = (((match4553 . __h_data). Right). __h_0_mem) ;
+                                          ({ /* letn4549 */
+                                            bool __h_case_result  = (true  &&  (((match4546 . __h_ctor) ==  __h_Right_t  ) &&  ({ /* progn4550 */
+                                                  nchild  = (((match4546 . __h_data). Right). __h_0_mem) ;
                                                   true ;
                                                 }) ) );
                                             // ----------
                                             
-                                            ((__h_case_result ) ? ({ /* progn4562 */
+                                            ((__h_case_result ) ? ({ /* progn4555 */
                                                 Right_BTree_int_User_Error_BTree_int_User (Internal_BTree_int_User (replace_List_BTree_int_User_pair_t (items , min , current ), replaceChild_Rc_BTree_int_User (children , nchild , (index  +  1 ))));
-                                              }) : ({ /* letn4570 */
-                                                Either_BTree_int_User_Error_BTree_int_User passthru  = match4553 ;
+                                              }) : ({ /* letn4563 */
+                                                Either_BTree_int_User_Error_BTree_int_User passthru  = match4546 ;
                                                 // ----------
                                                 ;
-                                                ({ /* progn4572 */
+                                                ({ /* progn4565 */
                                                   passthru ;
                                                 });
                                               }));
                                           });
                                         });
-                                      }) : ({ /* letn4576 */
+                                      }) : ({ /* letn4569 */
                                         // ----------
                                         ;
-                                        ({ /* progn4578 */
+                                        ({ /* progn4571 */
                                           Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_CANT_BORROW ("borrowRI 1"));
                                         });
                                       }));
                                   });
-                                }) : ({ /* letn4587 */
+                                }) : ({ /* letn4580 */
                                   typeof((((current -> __h_data). Cons). __h_0_mem)) current_item ;
                                   typeof((current_item . __h_0_mem)) current_key ;
                                   // ----------
                                   ;
-                                  ({ /* letn4589 */
-                                    bool __h_case_result  = (true  &&  (((current -> __h_ctor) ==  __h_Cons_t  ) &&  (({ /* progn4590 */
+                                  ({ /* letn4582 */
+                                    bool __h_case_result  = (true  &&  (((current -> __h_ctor) ==  __h_Cons_t  ) &&  (({ /* progn4583 */
                                             current_item  = (((current -> __h_data). Cons). __h_0_mem) ;
                                             true ;
-                                          }) &&  (true  &&  ({ /* progn4592 */
+                                          }) &&  (true  &&  ({ /* progn4585 */
                                               current_key  = (current_item . __h_0_mem) ;
                                               true ;
                                             }) ) ) ) );
                                     // ----------
                                     
-                                    ((__h_case_result ) ? ({ /* progn4597 */
-                                        ({ /* letn4605 */
+                                    ((__h_case_result ) ? ({ /* progn4590 */
+                                        ({ /* letn4598 */
                                           List_BTree_int_User_pair_t r1  __attribute__((__cleanup__(free_List_BTree_int_User_pair_t ))) = push_List_BTree_int_User_pair_t (current_item , right_child_items );
                                           List_Rc_BTree_int_User r2  __attribute__((__cleanup__(free_List_Rc_BTree_int_User ))) = append_List_Rc_BTree_int_User (left_child_children , right_child_children );
                                           BTree_int_User r4  __attribute__((__cleanup__(free_BTree_int_User ))) = Internal_BTree_int_User (append_List_BTree_int_User_pair_t (left_child_items , r1 ), cloneAll_Rc_BTree_int_User (r2 ));
                                           List_Rc_BTree_int_User r5  __attribute__((__cleanup__(free_List_Rc_BTree_int_User ))) = take_List_Rc_BTree_int_User (index , children );
                                           List_Rc_BTree_int_User r7  __attribute__((__cleanup__(free_List_Rc_BTree_int_User ))) = drop_List_Rc_BTree_int_User ((index  +  2 ), children );
                                           // ----------
-                                          ({ /* letn4619 */
-                                            Either_BTree_int_User_Error_BTree_int_User match4618  = delete_BTree_int_User (r4 , current_key , NULL );
-                                            typeof((((match4618 . __h_data). Right). __h_0_mem)) ntree ;
+                                          ({ /* letn4612 */
+                                            Either_BTree_int_User_Error_BTree_int_User match4611  = delete_BTree_int_User (r4 , current_key , NULL );
+                                            typeof((((match4611 . __h_data). Right). __h_0_mem)) ntree ;
                                             // ----------
                                             ;
-                                            ({ /* letn4621 */
-                                              bool __h_case_result  = (true  &&  (((match4618 . __h_ctor) ==  __h_Right_t  ) &&  ({ /* progn4622 */
-                                                    ntree  = (((match4618 . __h_data). Right). __h_0_mem) ;
+                                            ({ /* letn4614 */
+                                              bool __h_case_result  = (true  &&  (((match4611 . __h_ctor) ==  __h_Right_t  ) &&  ({ /* progn4615 */
+                                                    ntree  = (((match4611 . __h_data). Right). __h_0_mem) ;
                                                     true ;
                                                   }) ) );
                                               // ----------
                                               
-                                              ((__h_case_result ) ? ({ /* progn4627 */
-                                                  ({ /* letn4634 */
+                                              ((__h_case_result ) ? ({ /* progn4620 */
+                                                  ({ /* letn4627 */
                                                     BTree_int_User tmp_result  = splitForDelete_BTree_int_User (ntree );
                                                     typeof((((tmp_result -> __h_data). Branch). __h_0_mem)) branch_items ;
                                                     typeof((((tmp_result -> __h_data). Branch). __h_1_mem)) branch_children ;
                                                     // ----------
                                                     ;
-                                                    ({ /* letn4636 */
-                                                      bool __h_case_result  = (true  &&  (((tmp_result -> __h_ctor) ==  __h_Branch_t  ) &&  (({ /* progn4637 */
+                                                    ({ /* letn4629 */
+                                                      bool __h_case_result  = (true  &&  (((tmp_result -> __h_ctor) ==  __h_Branch_t  ) &&  (({ /* progn4630 */
                                                               branch_items  = (((tmp_result -> __h_data). Branch). __h_0_mem) ;
                                                               true ;
-                                                            }) &&  ({ /* progn4639 */
+                                                            }) &&  ({ /* progn4632 */
                                                               branch_children  = (((tmp_result -> __h_data). Branch). __h_1_mem) ;
                                                               true ;
                                                             }) ) ) );
                                                       // ----------
                                                       
-                                                      ((__h_case_result ) ? ({ /* progn4644 */
-                                                          ({ /* letn4650 */
+                                                      ((__h_case_result ) ? ({ /* progn4637 */
+                                                          ({ /* letn4643 */
                                                             typeof((((branch_items -> __h_data). Cons). __h_0_mem)) branch_head ;
                                                             // ----------
                                                             ;
-                                                            ({ /* letn4652 */
-                                                              bool __h_case_result  = (true  &&  (((branch_items -> __h_ctor) ==  __h_Cons_t  ) &&  ({ /* progn4653 */
+                                                            ({ /* letn4645 */
+                                                              bool __h_case_result  = (true  &&  (((branch_items -> __h_ctor) ==  __h_Cons_t  ) &&  ({ /* progn4646 */
                                                                     branch_head  = (((branch_items -> __h_data). Cons). __h_0_mem) ;
                                                                     true ;
                                                                   }) ) );
                                                               // ----------
                                                               
-                                                              ((__h_case_result ) ? ({ /* progn4658 */
-                                                                  ({ /* letn4661 */
+                                                              ((__h_case_result ) ? ({ /* progn4651 */
+                                                                  ({ /* letn4654 */
                                                                     BTree_int_User ntree_spent  __attribute__((__cleanup__(free_BTree_int_User ))) = ntree ;
                                                                     BTree_int_User tmp_result_spent  __attribute__((__cleanup__(free_BTree_int_User ))) = tmp_result ;
                                                                     // ----------
-                                                                    Right_BTree_int_User_Error_BTree_int_User (Internal_BTree_int_User (replace_List_BTree_int_User_pair_t (items , branch_head , current ), ({ /* letn4671 */
+                                                                    Right_BTree_int_User_Error_BTree_int_User (Internal_BTree_int_User (replace_List_BTree_int_User_pair_t (items , branch_head , current ), ({ /* letn4664 */
                                                                         List_Rc_BTree_int_User r10  __attribute__((__cleanup__(free_List_Rc_BTree_int_User ))) = append_List_Rc_BTree_int_User (branch_children , r7 );
                                                                         List_Rc_BTree_int_User r11  __attribute__((__cleanup__(free_List_Rc_BTree_int_User ))) = append_List_Rc_BTree_int_User (r5 , r10 );
                                                                         // ----------
                                                                         cloneAll_Rc_BTree_int_User (r11 );
                                                                       })));
                                                                   });
-                                                                }) : ({ /* letn4678 */
+                                                                }) : ({ /* letn4671 */
                                                                   // ----------
                                                                   ;
-                                                                  ({ /* progn4680 */
+                                                                  ({ /* progn4673 */
                                                                     Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_CANT_BORROW ("borrowRI 2"));
                                                                   });
                                                                 }));
                                                             });
                                                           });
-                                                        }) : ({ /* letn4686 */
+                                                        }) : ({ /* letn4679 */
                                                           // ----------
                                                           ;
-                                                          ({ /* letn4688 */
+                                                          ({ /* letn4681 */
                                                             bool __h_case_result  = (true  &&  ((tmp_result -> __h_ctor) ==  __h_Internal_t  ) );
                                                             // ----------
                                                             
-                                                            ((__h_case_result ) ? ({ /* progn4692 */
-                                                                Right_BTree_int_User_Error_BTree_int_User (Internal_BTree_int_User (delete_List_BTree_int_User_pair_t (items , current ), ({ /* letn4701 */
+                                                            ((__h_case_result ) ? ({ /* progn4685 */
+                                                                Right_BTree_int_User_Error_BTree_int_User (Internal_BTree_int_User (delete_List_BTree_int_User_pair_t (items , current ), ({ /* letn4694 */
                                                                     Rc_BTree_int_User r9  __attribute__((__cleanup__(free_Rc_BTree_int_User ))) = new_Rc_BTree_int_User (ntree );
-                                                                    List_Rc_BTree_int_User r10  __attribute__((__cleanup__(free_List_Rc_BTree_int_User ))) = push_List_Rc_BTree_int_User (((Rc_BTree_int_User   )({ /* letnmove4705 */
-                                                                      Rc_BTree_int_User moved_var4704  = r9 ;
+                                                                    List_Rc_BTree_int_User r10  __attribute__((__cleanup__(free_List_Rc_BTree_int_User ))) = push_List_Rc_BTree_int_User (((Rc_BTree_int_User   )({ /* letnmove4698 */
+                                                                      Rc_BTree_int_User moved_var4697  = r9 ;
                                                                       // ----------
                                                                       memset ((&r9 ), 0, sizeof(r9 ));
-                                                                      moved_var4704 ;
+                                                                      moved_var4697 ;
                                                                     })), r7 );
                                                                     List_Rc_BTree_int_User r11  __attribute__((__cleanup__(free_List_Rc_BTree_int_User ))) = append_List_Rc_BTree_int_User (r5 , r10 );
                                                                     // ----------
                                                                     cloneAll_Rc_BTree_int_User (r11 );
                                                                   })));
-                                                              }) : ({ /* letn4712 */
+                                                              }) : ({ /* letn4705 */
                                                                 // ----------
                                                                 ;
-                                                                ({ /* progn4714 */
+                                                                ({ /* progn4707 */
                                                                   Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_CANT_BORROW ("borrowRI 3"));
                                                                 });
                                                               }));
@@ -4451,200 +4444,200 @@ Either_BTree_int_User_Error_BTree_int_User borrowInternal_BTree_int_User (Maybe_
                                                         }));
                                                     });
                                                   });
-                                                }) : ({ /* letn4720 */
-                                                  Either_BTree_int_User_Error_BTree_int_User passthru  = match4618 ;
+                                                }) : ({ /* letn4713 */
+                                                  Either_BTree_int_User_Error_BTree_int_User passthru  = match4611 ;
                                                   // ----------
                                                   ;
-                                                  ({ /* progn4722 */
+                                                  ({ /* progn4715 */
                                                     passthru ;
                                                   });
                                                 }));
                                             });
                                           });
                                         });
-                                      }) : ({ /* letn4726 */
+                                      }) : ({ /* letn4719 */
                                         // ----------
                                         ;
-                                        ({ /* progn4728 */
+                                        ({ /* progn4721 */
                                           Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_CANT_BORROW ("borrowRI 4"));
                                         });
                                       }));
                                   });
                                 }));
-                            }) : ({ /* letn4734 */
+                            }) : ({ /* letn4727 */
                               typeof((((right_child -> __h_data). Internal). __h_0_mem)) right_child_items ;
                               typeof((((right_child -> __h_data). Internal). __h_1_mem)) right_child_children ;
                               // ----------
                               ;
-                              ({ /* letn4736 */
-                                bool __h_case_result  = (true  &&  (((right_child -> __h_ctor) ==  __h_Internal_t  ) &&  (({ /* progn4737 */
+                              ({ /* letn4729 */
+                                bool __h_case_result  = (true  &&  (((right_child -> __h_ctor) ==  __h_Internal_t  ) &&  (({ /* progn4730 */
                                         right_child_items  = (((right_child -> __h_data). Internal). __h_0_mem) ;
                                         true ;
-                                      }) &&  ({ /* progn4739 */
+                                      }) &&  ({ /* progn4732 */
                                         right_child_children  = (((right_child -> __h_data). Internal). __h_1_mem) ;
                                         true ;
                                       }) ) ) );
                                 // ----------
                                 
-                                ((__h_case_result ) ? ({ /* progn4744 */
-                                    (((hasLen_List_BTree_int_User_pair_t (right_child_items , L_BTree_int_User ) ==  L_BTree_int_User  )) ? ({ /* letn4746 */
-                                        Maybe_BTree_int_User_pair_t match4535  = min_BTree_int_User (right_child );
-                                        typeof((((match4535 . __h_data). Just). __h_0_mem)) min ;
+                                ((__h_case_result ) ? ({ /* progn4737 */
+                                    (((hasLen_List_BTree_int_User_pair_t (right_child_items , L_BTree_int_User ) ==  L_BTree_int_User  )) ? ({ /* letn4739 */
+                                        Maybe_BTree_int_User_pair_t match4528  = min_BTree_int_User (right_child );
+                                        typeof((((match4528 . __h_data). Just). __h_0_mem)) min ;
                                         typeof((min . __h_0_mem)) min_key ;
                                         // ----------
                                         ;
-                                        ({ /* letn4748 */
-                                          bool __h_case_result  = (true  &&  (((match4535 . __h_ctor) ==  __h_Just_t  ) &&  (({ /* progn4749 */
-                                                  min  = (((match4535 . __h_data). Just). __h_0_mem) ;
+                                        ({ /* letn4741 */
+                                          bool __h_case_result  = (true  &&  (((match4528 . __h_ctor) ==  __h_Just_t  ) &&  (({ /* progn4742 */
+                                                  min  = (((match4528 . __h_data). Just). __h_0_mem) ;
                                                   true ;
-                                                }) &&  (true  &&  ({ /* progn4751 */
+                                                }) &&  (true  &&  ({ /* progn4744 */
                                                     min_key  = (min . __h_0_mem) ;
                                                     true ;
                                                   }) ) ) ) );
                                           // ----------
                                           
-                                          ((__h_case_result ) ? ({ /* progn4756 */
-                                              ({ /* letn4758 */
-                                                Either_BTree_int_User_Error_BTree_int_User match4553  = delete_BTree_int_User (right_child , min_key , NULL );
-                                                typeof((((match4553 . __h_data). Right). __h_0_mem)) nchild ;
+                                          ((__h_case_result ) ? ({ /* progn4749 */
+                                              ({ /* letn4751 */
+                                                Either_BTree_int_User_Error_BTree_int_User match4546  = delete_BTree_int_User (right_child , min_key , NULL );
+                                                typeof((((match4546 . __h_data). Right). __h_0_mem)) nchild ;
                                                 // ----------
                                                 ;
-                                                ({ /* letn4760 */
-                                                  bool __h_case_result  = (true  &&  (((match4553 . __h_ctor) ==  __h_Right_t  ) &&  ({ /* progn4761 */
-                                                        nchild  = (((match4553 . __h_data). Right). __h_0_mem) ;
+                                                ({ /* letn4753 */
+                                                  bool __h_case_result  = (true  &&  (((match4546 . __h_ctor) ==  __h_Right_t  ) &&  ({ /* progn4754 */
+                                                        nchild  = (((match4546 . __h_data). Right). __h_0_mem) ;
                                                         true ;
                                                       }) ) );
                                                   // ----------
                                                   
-                                                  ((__h_case_result ) ? ({ /* progn4766 */
+                                                  ((__h_case_result ) ? ({ /* progn4759 */
                                                       Right_BTree_int_User_Error_BTree_int_User (Internal_BTree_int_User (replace_List_BTree_int_User_pair_t (items , min , current ), replaceChild_Rc_BTree_int_User (children , nchild , (index  +  1 ))));
-                                                    }) : ({ /* letn4768 */
-                                                      Either_BTree_int_User_Error_BTree_int_User passthru  = match4553 ;
+                                                    }) : ({ /* letn4761 */
+                                                      Either_BTree_int_User_Error_BTree_int_User passthru  = match4546 ;
                                                       // ----------
                                                       ;
-                                                      ({ /* progn4770 */
+                                                      ({ /* progn4763 */
                                                         passthru ;
                                                       });
                                                     }));
                                                 });
                                               });
-                                            }) : ({ /* letn4772 */
+                                            }) : ({ /* letn4765 */
                                               // ----------
                                               ;
-                                              ({ /* progn4774 */
+                                              ({ /* progn4767 */
                                                 Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_CANT_BORROW ("borrowRI 1"));
                                               });
                                             }));
                                         });
-                                      }) : ({ /* letn4776 */
+                                      }) : ({ /* letn4769 */
                                         typeof((((current -> __h_data). Cons). __h_0_mem)) current_item ;
                                         typeof((current_item . __h_0_mem)) current_key ;
                                         // ----------
                                         ;
-                                        ({ /* letn4778 */
-                                          bool __h_case_result  = (true  &&  (((current -> __h_ctor) ==  __h_Cons_t  ) &&  (({ /* progn4779 */
+                                        ({ /* letn4771 */
+                                          bool __h_case_result  = (true  &&  (((current -> __h_ctor) ==  __h_Cons_t  ) &&  (({ /* progn4772 */
                                                   current_item  = (((current -> __h_data). Cons). __h_0_mem) ;
                                                   true ;
-                                                }) &&  (true  &&  ({ /* progn4781 */
+                                                }) &&  (true  &&  ({ /* progn4774 */
                                                     current_key  = (current_item . __h_0_mem) ;
                                                     true ;
                                                   }) ) ) ) );
                                           // ----------
                                           
-                                          ((__h_case_result ) ? ({ /* progn4786 */
-                                              ({ /* letn4788 */
+                                          ((__h_case_result ) ? ({ /* progn4779 */
+                                              ({ /* letn4781 */
                                                 List_BTree_int_User_pair_t r1  __attribute__((__cleanup__(free_List_BTree_int_User_pair_t ))) = push_List_BTree_int_User_pair_t (current_item , right_child_items );
                                                 List_Rc_BTree_int_User r2  __attribute__((__cleanup__(free_List_Rc_BTree_int_User ))) = append_List_Rc_BTree_int_User (left_child_children , right_child_children );
                                                 BTree_int_User r4  __attribute__((__cleanup__(free_BTree_int_User ))) = Internal_BTree_int_User (append_List_BTree_int_User_pair_t (left_child_items , r1 ), cloneAll_Rc_BTree_int_User (r2 ));
                                                 List_Rc_BTree_int_User r5  __attribute__((__cleanup__(free_List_Rc_BTree_int_User ))) = take_List_Rc_BTree_int_User (index , children );
                                                 List_Rc_BTree_int_User r7  __attribute__((__cleanup__(free_List_Rc_BTree_int_User ))) = drop_List_Rc_BTree_int_User ((index  +  2 ), children );
                                                 // ----------
-                                                ({ /* letn4790 */
-                                                  Either_BTree_int_User_Error_BTree_int_User match4618  = delete_BTree_int_User (r4 , current_key , NULL );
-                                                  typeof((((match4618 . __h_data). Right). __h_0_mem)) ntree ;
+                                                ({ /* letn4783 */
+                                                  Either_BTree_int_User_Error_BTree_int_User match4611  = delete_BTree_int_User (r4 , current_key , NULL );
+                                                  typeof((((match4611 . __h_data). Right). __h_0_mem)) ntree ;
                                                   // ----------
                                                   ;
-                                                  ({ /* letn4792 */
-                                                    bool __h_case_result  = (true  &&  (((match4618 . __h_ctor) ==  __h_Right_t  ) &&  ({ /* progn4793 */
-                                                          ntree  = (((match4618 . __h_data). Right). __h_0_mem) ;
+                                                  ({ /* letn4785 */
+                                                    bool __h_case_result  = (true  &&  (((match4611 . __h_ctor) ==  __h_Right_t  ) &&  ({ /* progn4786 */
+                                                          ntree  = (((match4611 . __h_data). Right). __h_0_mem) ;
                                                           true ;
                                                         }) ) );
                                                     // ----------
                                                     
-                                                    ((__h_case_result ) ? ({ /* progn4798 */
-                                                        ({ /* letn4800 */
+                                                    ((__h_case_result ) ? ({ /* progn4791 */
+                                                        ({ /* letn4793 */
                                                           BTree_int_User tmp_result  = splitForDelete_BTree_int_User (ntree );
                                                           typeof((((tmp_result -> __h_data). Branch). __h_0_mem)) branch_items ;
                                                           typeof((((tmp_result -> __h_data). Branch). __h_1_mem)) branch_children ;
                                                           // ----------
                                                           ;
-                                                          ({ /* letn4802 */
-                                                            bool __h_case_result  = (true  &&  (((tmp_result -> __h_ctor) ==  __h_Branch_t  ) &&  (({ /* progn4803 */
+                                                          ({ /* letn4795 */
+                                                            bool __h_case_result  = (true  &&  (((tmp_result -> __h_ctor) ==  __h_Branch_t  ) &&  (({ /* progn4796 */
                                                                     branch_items  = (((tmp_result -> __h_data). Branch). __h_0_mem) ;
                                                                     true ;
-                                                                  }) &&  ({ /* progn4805 */
+                                                                  }) &&  ({ /* progn4798 */
                                                                     branch_children  = (((tmp_result -> __h_data). Branch). __h_1_mem) ;
                                                                     true ;
                                                                   }) ) ) );
                                                             // ----------
                                                             
-                                                            ((__h_case_result ) ? ({ /* progn4810 */
-                                                                ({ /* letn4812 */
+                                                            ((__h_case_result ) ? ({ /* progn4803 */
+                                                                ({ /* letn4805 */
                                                                   typeof((((branch_items -> __h_data). Cons). __h_0_mem)) branch_head ;
                                                                   // ----------
                                                                   ;
-                                                                  ({ /* letn4814 */
-                                                                    bool __h_case_result  = (true  &&  (((branch_items -> __h_ctor) ==  __h_Cons_t  ) &&  ({ /* progn4815 */
+                                                                  ({ /* letn4807 */
+                                                                    bool __h_case_result  = (true  &&  (((branch_items -> __h_ctor) ==  __h_Cons_t  ) &&  ({ /* progn4808 */
                                                                           branch_head  = (((branch_items -> __h_data). Cons). __h_0_mem) ;
                                                                           true ;
                                                                         }) ) );
                                                                     // ----------
                                                                     
-                                                                    ((__h_case_result ) ? ({ /* progn4820 */
-                                                                        ({ /* letn4822 */
+                                                                    ((__h_case_result ) ? ({ /* progn4813 */
+                                                                        ({ /* letn4815 */
                                                                           BTree_int_User ntree_spent  __attribute__((__cleanup__(free_BTree_int_User ))) = ntree ;
                                                                           BTree_int_User tmp_result_spent  __attribute__((__cleanup__(free_BTree_int_User ))) = tmp_result ;
                                                                           // ----------
-                                                                          Right_BTree_int_User_Error_BTree_int_User (Internal_BTree_int_User (replace_List_BTree_int_User_pair_t (items , branch_head , current ), ({ /* letn4824 */
+                                                                          Right_BTree_int_User_Error_BTree_int_User (Internal_BTree_int_User (replace_List_BTree_int_User_pair_t (items , branch_head , current ), ({ /* letn4817 */
                                                                               List_Rc_BTree_int_User r10  __attribute__((__cleanup__(free_List_Rc_BTree_int_User ))) = append_List_Rc_BTree_int_User (branch_children , r7 );
                                                                               List_Rc_BTree_int_User r11  __attribute__((__cleanup__(free_List_Rc_BTree_int_User ))) = append_List_Rc_BTree_int_User (r5 , r10 );
                                                                               // ----------
                                                                               cloneAll_Rc_BTree_int_User (r11 );
                                                                             })));
                                                                         });
-                                                                      }) : ({ /* letn4826 */
+                                                                      }) : ({ /* letn4819 */
                                                                         // ----------
                                                                         ;
-                                                                        ({ /* progn4828 */
+                                                                        ({ /* progn4821 */
                                                                           Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_CANT_BORROW ("borrowRI 2"));
                                                                         });
                                                                       }));
                                                                   });
                                                                 });
-                                                              }) : ({ /* letn4830 */
+                                                              }) : ({ /* letn4823 */
                                                                 // ----------
                                                                 ;
-                                                                ({ /* letn4832 */
+                                                                ({ /* letn4825 */
                                                                   bool __h_case_result  = (true  &&  ((tmp_result -> __h_ctor) ==  __h_Internal_t  ) );
                                                                   // ----------
                                                                   
-                                                                  ((__h_case_result ) ? ({ /* progn4836 */
-                                                                      Right_BTree_int_User_Error_BTree_int_User (Internal_BTree_int_User (delete_List_BTree_int_User_pair_t (items , current ), ({ /* letn4838 */
+                                                                  ((__h_case_result ) ? ({ /* progn4829 */
+                                                                      Right_BTree_int_User_Error_BTree_int_User (Internal_BTree_int_User (delete_List_BTree_int_User_pair_t (items , current ), ({ /* letn4831 */
                                                                           Rc_BTree_int_User r9  __attribute__((__cleanup__(free_Rc_BTree_int_User ))) = new_Rc_BTree_int_User (ntree );
-                                                                          List_Rc_BTree_int_User r10  __attribute__((__cleanup__(free_List_Rc_BTree_int_User ))) = push_List_Rc_BTree_int_User (((Rc_BTree_int_User   )({ /* letnmove4840 */
-                                                                            Rc_BTree_int_User moved_var4839  = r9 ;
+                                                                          List_Rc_BTree_int_User r10  __attribute__((__cleanup__(free_List_Rc_BTree_int_User ))) = push_List_Rc_BTree_int_User (((Rc_BTree_int_User   )({ /* letnmove4833 */
+                                                                            Rc_BTree_int_User moved_var4832  = r9 ;
                                                                             // ----------
                                                                             memset ((&r9 ), 0, sizeof(r9 ));
-                                                                            moved_var4839 ;
+                                                                            moved_var4832 ;
                                                                           })), r7 );
                                                                           List_Rc_BTree_int_User r11  __attribute__((__cleanup__(free_List_Rc_BTree_int_User ))) = append_List_Rc_BTree_int_User (r5 , r10 );
                                                                           // ----------
                                                                           cloneAll_Rc_BTree_int_User (r11 );
                                                                         })));
-                                                                    }) : ({ /* letn4843 */
+                                                                    }) : ({ /* letn4836 */
                                                                       // ----------
                                                                       ;
-                                                                      ({ /* progn4845 */
+                                                                      ({ /* progn4838 */
                                                                         Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_CANT_BORROW ("borrowRI 3"));
                                                                       });
                                                                     }));
@@ -4652,30 +4645,30 @@ Either_BTree_int_User_Error_BTree_int_User borrowInternal_BTree_int_User (Maybe_
                                                               }));
                                                           });
                                                         });
-                                                      }) : ({ /* letn4847 */
-                                                        Either_BTree_int_User_Error_BTree_int_User passthru  = match4618 ;
+                                                      }) : ({ /* letn4840 */
+                                                        Either_BTree_int_User_Error_BTree_int_User passthru  = match4611 ;
                                                         // ----------
                                                         ;
-                                                        ({ /* progn4849 */
+                                                        ({ /* progn4842 */
                                                           passthru ;
                                                         });
                                                       }));
                                                   });
                                                 });
                                               });
-                                            }) : ({ /* letn4851 */
+                                            }) : ({ /* letn4844 */
                                               // ----------
                                               ;
-                                              ({ /* progn4853 */
+                                              ({ /* progn4846 */
                                                 Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_CANT_BORROW ("borrowRI 4"));
                                               });
                                             }));
                                         });
                                       }));
-                                  }) : ({ /* letn4857 */
+                                  }) : ({ /* letn4850 */
                                     // ----------
                                     ;
-                                    ({ /* progn4859 */
+                                    ({ /* progn4852 */
                                       Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_CANT_BORROW ("borrowRI 5"));
                                     });
                                   }));
@@ -4683,19 +4676,19 @@ Either_BTree_int_User_Error_BTree_int_User borrowInternal_BTree_int_User (Maybe_
                             }));
                         });
                       });
-                    }) : ({ /* letn4865 */
+                    }) : ({ /* letn4858 */
                       // ----------
                       ;
-                      ({ /* progn4867 */
+                      ({ /* progn4860 */
                         Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_CANT_BORROW ("borrowRI 6"));
                       });
                     }));
                 });
               });
-            }) : ({ /* letn4873 */
+            }) : ({ /* letn4866 */
               // ----------
               ;
-              ({ /* progn4875 */
+              ({ /* progn4868 */
                 Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_CANT_BORROW ("borrowRI 7"));
               });
             }));
@@ -4703,94 +4696,94 @@ Either_BTree_int_User_Error_BTree_int_User borrowInternal_BTree_int_User (Maybe_
       });
   }
   Either_BTree_int_User_Error_BTree_int_User borrowRightLeaf (List_BTree_int_User_pair_t left_child_items ) {
-    return ({ /* letn4889 */
-        Maybe_Rc_BTree_int_User match4888  = nth_List_Rc_BTree_int_User ((index  +  1 ), children );
-        typeof((((match4888 . __h_data). Just). __h_0_mem)) right_child_rc ;
+    return ({ /* letn4882 */
+        Maybe_Rc_BTree_int_User match4881  = nth_List_Rc_BTree_int_User ((index  +  1 ), children );
+        typeof((((match4881 . __h_data). Just). __h_0_mem)) right_child_rc ;
         // ----------
         ;
-        ({ /* letn4891 */
-          bool __h_case_result  = (true  &&  (((match4888 . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn4892 */
-                right_child_rc  = (((match4888 . __h_data). Just). __h_0_mem) ;
+        ({ /* letn4884 */
+          bool __h_case_result  = (true  &&  (((match4881 . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn4885 */
+                right_child_rc  = (((match4881 . __h_data). Just). __h_0_mem) ;
                 true ;
               }) ) );
           // ----------
           
-          ((__h_case_result ) ? ({ /* progn4897 */
-              ({ /* letn4904 */
-                Maybe_BTree_int_User match4903  = deref_Rc_BTree_int_User (right_child_rc );
-                typeof((((match4903 . __h_data). Just). __h_0_mem)) right_child ;
+          ((__h_case_result ) ? ({ /* progn4890 */
+              ({ /* letn4897 */
+                Maybe_BTree_int_User match4896  = deref_Rc_BTree_int_User (right_child_rc );
+                typeof((((match4896 . __h_data). Just). __h_0_mem)) right_child ;
                 // ----------
                 ;
-                ({ /* letn4906 */
-                  bool __h_case_result  = (true  &&  (((match4903 . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn4907 */
-                        right_child  = (((match4903 . __h_data). Just). __h_0_mem) ;
+                ({ /* letn4899 */
+                  bool __h_case_result  = (true  &&  (((match4896 . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn4900 */
+                        right_child  = (((match4896 . __h_data). Just). __h_0_mem) ;
                         true ;
                       }) ) );
                   // ----------
                   
-                  ((__h_case_result ) ? ({ /* progn4912 */
-                      ({ /* letn4918 */
+                  ((__h_case_result ) ? ({ /* progn4905 */
+                      ({ /* letn4911 */
                         typeof((((right_child -> __h_data). Leaf). __h_0_mem)) right_child_items ;
                         // ----------
                         ;
-                        ({ /* letn4920 */
-                          bool __h_case_result  = (true  &&  (((right_child -> __h_ctor) ==  __h_Leaf_t  ) &&  ({ /* progn4921 */
+                        ({ /* letn4913 */
+                          bool __h_case_result  = (true  &&  (((right_child -> __h_ctor) ==  __h_Leaf_t  ) &&  ({ /* progn4914 */
                                 right_child_items  = (((right_child -> __h_data). Leaf). __h_0_mem) ;
                                 true ;
                               }) ) );
                           // ----------
                           
-                          ((__h_case_result ) ? ({ /* progn4926 */
-                              (((hasLen_List_BTree_int_User_pair_t (right_child_items , L_BTree_int_User ) ==  L_BTree_int_User  )) ? ({ /* letn4938 */
-                                  Maybe_BTree_int_User_pair_t match4936  = min_BTree_int_User (right_child );
-                                  typeof((((match4936 . __h_data). Just). __h_0_mem)) min ;
+                          ((__h_case_result ) ? ({ /* progn4919 */
+                              (((hasLen_List_BTree_int_User_pair_t (right_child_items , L_BTree_int_User ) ==  L_BTree_int_User  )) ? ({ /* letn4931 */
+                                  Maybe_BTree_int_User_pair_t match4929  = min_BTree_int_User (right_child );
+                                  typeof((((match4929 . __h_data). Just). __h_0_mem)) min ;
                                   typeof((min . __h_0_mem)) min_key ;
                                   // ----------
                                   ;
-                                  ({ /* letn4940 */
-                                    bool __h_case_result  = (true  &&  (((match4936 . __h_ctor) ==  __h_Just_t  ) &&  (({ /* progn4941 */
-                                            min  = (((match4936 . __h_data). Just). __h_0_mem) ;
+                                  ({ /* letn4933 */
+                                    bool __h_case_result  = (true  &&  (((match4929 . __h_ctor) ==  __h_Just_t  ) &&  (({ /* progn4934 */
+                                            min  = (((match4929 . __h_data). Just). __h_0_mem) ;
                                             true ;
-                                          }) &&  (true  &&  ({ /* progn4943 */
+                                          }) &&  (true  &&  ({ /* progn4936 */
                                               min_key  = (min . __h_0_mem) ;
                                               true ;
                                             }) ) ) ) );
                                     // ----------
                                     
-                                    ((__h_case_result ) ? ({ /* progn4948 */
-                                        ({ /* letn4955 */
-                                          Either_BTree_int_User_Error_BTree_int_User match4954  = delete_BTree_int_User (right_child , min_key , NULL );
-                                          typeof((((match4954 . __h_data). Right). __h_0_mem)) nchild ;
+                                    ((__h_case_result ) ? ({ /* progn4941 */
+                                        ({ /* letn4948 */
+                                          Either_BTree_int_User_Error_BTree_int_User match4947  = delete_BTree_int_User (right_child , min_key , NULL );
+                                          typeof((((match4947 . __h_data). Right). __h_0_mem)) nchild ;
                                           // ----------
                                           ;
-                                          ({ /* letn4957 */
-                                            bool __h_case_result  = (true  &&  (((match4954 . __h_ctor) ==  __h_Right_t  ) &&  ({ /* progn4958 */
-                                                  nchild  = (((match4954 . __h_data). Right). __h_0_mem) ;
+                                          ({ /* letn4950 */
+                                            bool __h_case_result  = (true  &&  (((match4947 . __h_ctor) ==  __h_Right_t  ) &&  ({ /* progn4951 */
+                                                  nchild  = (((match4947 . __h_data). Right). __h_0_mem) ;
                                                   true ;
                                                 }) ) );
                                             // ----------
                                             
-                                            ((__h_case_result ) ? ({ /* progn4963 */
+                                            ((__h_case_result ) ? ({ /* progn4956 */
                                                 Right_BTree_int_User_Error_BTree_int_User (Internal_BTree_int_User (replace_List_BTree_int_User_pair_t (items , min , current ), replaceChild_Rc_BTree_int_User (children , nchild , (index  +  1 ))));
-                                              }) : ({ /* letn4971 */
-                                                Either_BTree_int_User_Error_BTree_int_User passthru  = match4954 ;
+                                              }) : ({ /* letn4964 */
+                                                Either_BTree_int_User_Error_BTree_int_User passthru  = match4947 ;
                                                 // ----------
                                                 ;
-                                                ({ /* progn4973 */
+                                                ({ /* progn4966 */
                                                   passthru ;
                                                 });
                                               }));
                                           });
                                         });
-                                      }) : ({ /* letn4977 */
+                                      }) : ({ /* letn4970 */
                                         // ----------
                                         ;
-                                        ({ /* progn4979 */
+                                        ({ /* progn4972 */
                                           Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_CANT_BORROW ("borrowRI 8"));
                                         });
                                       }));
                                   });
-                                }) : Right_BTree_int_User_Error_BTree_int_User (Internal_BTree_int_User (delete_List_BTree_int_User_pair_t (items , current ), ({ /* letn4992 */
+                                }) : Right_BTree_int_User_Error_BTree_int_User (Internal_BTree_int_User (delete_List_BTree_int_User_pair_t (items , current ), ({ /* letn4985 */
                                   List_Rc_BTree_int_User r1  __attribute__((__cleanup__(free_List_Rc_BTree_int_User ))) = take_List_Rc_BTree_int_User (index , children );
                                   List_Rc_BTree_int_User r2  __attribute__((__cleanup__(free_List_Rc_BTree_int_User ))) = cloneAll_Rc_BTree_int_User (r1 );
                                   List_Rc_BTree_int_User r3  __attribute__((__cleanup__(free_List_Rc_BTree_int_User ))) = drop_List_Rc_BTree_int_User ((index  +  2 ), children );
@@ -4799,259 +4792,259 @@ Either_BTree_int_User_Error_BTree_int_User borrowInternal_BTree_int_User (Maybe_
                                   // ----------
                                   append_List_Rc_BTree_int_User (r2 , r5 );
                                 }))));
-                            }) : ({ /* letn5005 */
+                            }) : ({ /* letn4998 */
                               // ----------
                               ;
-                              ({ /* progn5007 */
+                              ({ /* progn5000 */
                                 Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_CANT_BORROW ("borrowRI 9"));
                               });
                             }));
                         });
                       });
-                    }) : ({ /* letn5013 */
+                    }) : ({ /* letn5006 */
                       // ----------
                       ;
-                      ({ /* progn5015 */
+                      ({ /* progn5008 */
                         Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_CANT_BORROW ("borrowRI 10"));
                       });
                     }));
                 });
               });
-            }) : ({ /* letn5021 */
+            }) : ({ /* letn5014 */
               // ----------
               ;
-              ({ /* progn5023 */
+              ({ /* progn5016 */
                 Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_CANT_BORROW ("borrowRI 11"));
               });
             }));
         });
       });
   }
-  return ({ /* letn5028 */
-      Either_BTree_int_User_Error_BTree_int_User result  = ({ /* letn5034 */
-        Maybe_Rc_BTree_int_User match5033  = nth_List_Rc_BTree_int_User (index , children );
-        typeof((((match5033 . __h_data). Just). __h_0_mem)) left_child_rc ;
+  return ({ /* letn5021 */
+      Either_BTree_int_User_Error_BTree_int_User result  = ({ /* letn5027 */
+        Maybe_Rc_BTree_int_User match5026  = nth_List_Rc_BTree_int_User (index , children );
+        typeof((((match5026 . __h_data). Just). __h_0_mem)) left_child_rc ;
         // ----------
         ;
-        ({ /* letn5036 */
-          bool __h_case_result  = (true  &&  (((match5033 . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn5037 */
-                left_child_rc  = (((match5033 . __h_data). Just). __h_0_mem) ;
+        ({ /* letn5029 */
+          bool __h_case_result  = (true  &&  (((match5026 . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn5030 */
+                left_child_rc  = (((match5026 . __h_data). Just). __h_0_mem) ;
                 true ;
               }) ) );
           // ----------
           
-          ((__h_case_result ) ? ({ /* progn5042 */
-              ({ /* letn5049 */
-                Maybe_BTree_int_User match5048  = deref_Rc_BTree_int_User (left_child_rc );
-                typeof((((match5048 . __h_data). Just). __h_0_mem)) left_child ;
+          ((__h_case_result ) ? ({ /* progn5035 */
+              ({ /* letn5042 */
+                Maybe_BTree_int_User match5041  = deref_Rc_BTree_int_User (left_child_rc );
+                typeof((((match5041 . __h_data). Just). __h_0_mem)) left_child ;
                 // ----------
                 ;
-                ({ /* letn5051 */
-                  bool __h_case_result  = (true  &&  (((match5048 . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn5052 */
-                        left_child  = (((match5048 . __h_data). Just). __h_0_mem) ;
+                ({ /* letn5044 */
+                  bool __h_case_result  = (true  &&  (((match5041 . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn5045 */
+                        left_child  = (((match5041 . __h_data). Just). __h_0_mem) ;
                         true ;
                       }) ) );
                   // ----------
                   
-                  ((__h_case_result ) ? ({ /* progn5057 */
-                      ({ /* letn5063 */
+                  ((__h_case_result ) ? ({ /* progn5050 */
+                      ({ /* letn5056 */
                         typeof((((left_child -> __h_data). Branch). __h_0_mem)) left_child_items ;
                         typeof((((left_child -> __h_data). Branch). __h_1_mem)) left_child_children ;
                         // ----------
                         ;
-                        ({ /* letn5065 */
-                          bool __h_case_result  = (true  &&  (((left_child -> __h_ctor) ==  __h_Branch_t  ) &&  (({ /* progn5066 */
+                        ({ /* letn5058 */
+                          bool __h_case_result  = (true  &&  (((left_child -> __h_ctor) ==  __h_Branch_t  ) &&  (({ /* progn5059 */
                                   left_child_items  = (((left_child -> __h_data). Branch). __h_0_mem) ;
                                   true ;
-                                }) &&  ({ /* progn5068 */
+                                }) &&  ({ /* progn5061 */
                                   left_child_children  = (((left_child -> __h_data). Branch). __h_1_mem) ;
                                   true ;
                                 }) ) ) );
                           // ----------
                           
-                          ((__h_case_result ) ? ({ /* progn5073 */
-                              (((hasLen_List_BTree_int_User_pair_t (left_child_items , L_BTree_int_User ) ==  L_BTree_int_User  )) ? ({ /* letn5085 */
-                                  Maybe_BTree_int_User_pair_t match5083  = max_BTree_int_User (left_child );
-                                  typeof((((match5083 . __h_data). Just). __h_0_mem)) max ;
+                          ((__h_case_result ) ? ({ /* progn5066 */
+                              (((hasLen_List_BTree_int_User_pair_t (left_child_items , L_BTree_int_User ) ==  L_BTree_int_User  )) ? ({ /* letn5078 */
+                                  Maybe_BTree_int_User_pair_t match5076  = max_BTree_int_User (left_child );
+                                  typeof((((match5076 . __h_data). Just). __h_0_mem)) max ;
                                   typeof((max . __h_0_mem)) max_key ;
                                   // ----------
                                   ;
-                                  ({ /* letn5087 */
-                                    bool __h_case_result  = (true  &&  (((match5083 . __h_ctor) ==  __h_Just_t  ) &&  (({ /* progn5088 */
-                                            max  = (((match5083 . __h_data). Just). __h_0_mem) ;
+                                  ({ /* letn5080 */
+                                    bool __h_case_result  = (true  &&  (((match5076 . __h_ctor) ==  __h_Just_t  ) &&  (({ /* progn5081 */
+                                            max  = (((match5076 . __h_data). Just). __h_0_mem) ;
                                             true ;
-                                          }) &&  (true  &&  ({ /* progn5090 */
+                                          }) &&  (true  &&  ({ /* progn5083 */
                                               max_key  = (max . __h_0_mem) ;
                                               true ;
                                             }) ) ) ) );
                                     // ----------
                                     
-                                    ((__h_case_result ) ? ({ /* progn5095 */
-                                        ({ /* letn5102 */
-                                          Either_BTree_int_User_Error_BTree_int_User match5101  = delete_BTree_int_User (left_child , max_key , NULL );
-                                          typeof((((match5101 . __h_data). Right). __h_0_mem)) nchild ;
+                                    ((__h_case_result ) ? ({ /* progn5088 */
+                                        ({ /* letn5095 */
+                                          Either_BTree_int_User_Error_BTree_int_User match5094  = delete_BTree_int_User (left_child , max_key , NULL );
+                                          typeof((((match5094 . __h_data). Right). __h_0_mem)) nchild ;
                                           // ----------
                                           ;
-                                          ({ /* letn5104 */
-                                            bool __h_case_result  = (true  &&  (((match5101 . __h_ctor) ==  __h_Right_t  ) &&  ({ /* progn5105 */
-                                                  nchild  = (((match5101 . __h_data). Right). __h_0_mem) ;
+                                          ({ /* letn5097 */
+                                            bool __h_case_result  = (true  &&  (((match5094 . __h_ctor) ==  __h_Right_t  ) &&  ({ /* progn5098 */
+                                                  nchild  = (((match5094 . __h_data). Right). __h_0_mem) ;
                                                   true ;
                                                 }) ) );
                                             // ----------
                                             
-                                            ((__h_case_result ) ? ({ /* progn5110 */
+                                            ((__h_case_result ) ? ({ /* progn5103 */
                                                 Right_BTree_int_User_Error_BTree_int_User (Internal_BTree_int_User (replace_List_BTree_int_User_pair_t (items , max , current ), replaceChild_Rc_BTree_int_User (children , nchild , index )));
-                                              }) : ({ /* letn5118 */
-                                                Either_BTree_int_User_Error_BTree_int_User passthru  = match5101 ;
+                                              }) : ({ /* letn5111 */
+                                                Either_BTree_int_User_Error_BTree_int_User passthru  = match5094 ;
                                                 // ----------
                                                 ;
-                                                ({ /* progn5120 */
+                                                ({ /* progn5113 */
                                                   passthru ;
                                                 });
                                               }));
                                           });
                                         });
-                                      }) : ({ /* letn5124 */
+                                      }) : ({ /* letn5117 */
                                         // ----------
                                         ;
-                                        ({ /* progn5126 */
+                                        ({ /* progn5119 */
                                           Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_CANT_BORROW ("borrowRI 12"));
                                         });
                                       }));
                                   });
                                 }) : borrowRightInternal (left_child_items , left_child_children ));
-                            }) : ({ /* letn5132 */
+                            }) : ({ /* letn5125 */
                               typeof((((left_child -> __h_data). Internal). __h_0_mem)) left_child_items ;
                               typeof((((left_child -> __h_data). Internal). __h_1_mem)) left_child_children ;
                               // ----------
                               ;
-                              ({ /* letn5134 */
-                                bool __h_case_result  = (true  &&  (((left_child -> __h_ctor) ==  __h_Internal_t  ) &&  (({ /* progn5135 */
+                              ({ /* letn5127 */
+                                bool __h_case_result  = (true  &&  (((left_child -> __h_ctor) ==  __h_Internal_t  ) &&  (({ /* progn5128 */
                                         left_child_items  = (((left_child -> __h_data). Internal). __h_0_mem) ;
                                         true ;
-                                      }) &&  ({ /* progn5137 */
+                                      }) &&  ({ /* progn5130 */
                                         left_child_children  = (((left_child -> __h_data). Internal). __h_1_mem) ;
                                         true ;
                                       }) ) ) );
                                 // ----------
                                 
-                                ((__h_case_result ) ? ({ /* progn5142 */
-                                    (((hasLen_List_BTree_int_User_pair_t (left_child_items , L_BTree_int_User ) ==  L_BTree_int_User  )) ? ({ /* letn5144 */
-                                        Maybe_BTree_int_User_pair_t match5083  = max_BTree_int_User (left_child );
-                                        typeof((((match5083 . __h_data). Just). __h_0_mem)) max ;
+                                ((__h_case_result ) ? ({ /* progn5135 */
+                                    (((hasLen_List_BTree_int_User_pair_t (left_child_items , L_BTree_int_User ) ==  L_BTree_int_User  )) ? ({ /* letn5137 */
+                                        Maybe_BTree_int_User_pair_t match5076  = max_BTree_int_User (left_child );
+                                        typeof((((match5076 . __h_data). Just). __h_0_mem)) max ;
                                         typeof((max . __h_0_mem)) max_key ;
                                         // ----------
                                         ;
-                                        ({ /* letn5146 */
-                                          bool __h_case_result  = (true  &&  (((match5083 . __h_ctor) ==  __h_Just_t  ) &&  (({ /* progn5147 */
-                                                  max  = (((match5083 . __h_data). Just). __h_0_mem) ;
+                                        ({ /* letn5139 */
+                                          bool __h_case_result  = (true  &&  (((match5076 . __h_ctor) ==  __h_Just_t  ) &&  (({ /* progn5140 */
+                                                  max  = (((match5076 . __h_data). Just). __h_0_mem) ;
                                                   true ;
-                                                }) &&  (true  &&  ({ /* progn5149 */
+                                                }) &&  (true  &&  ({ /* progn5142 */
                                                     max_key  = (max . __h_0_mem) ;
                                                     true ;
                                                   }) ) ) ) );
                                           // ----------
                                           
-                                          ((__h_case_result ) ? ({ /* progn5154 */
-                                              ({ /* letn5156 */
-                                                Either_BTree_int_User_Error_BTree_int_User match5101  = delete_BTree_int_User (left_child , max_key , NULL );
-                                                typeof((((match5101 . __h_data). Right). __h_0_mem)) nchild ;
+                                          ((__h_case_result ) ? ({ /* progn5147 */
+                                              ({ /* letn5149 */
+                                                Either_BTree_int_User_Error_BTree_int_User match5094  = delete_BTree_int_User (left_child , max_key , NULL );
+                                                typeof((((match5094 . __h_data). Right). __h_0_mem)) nchild ;
                                                 // ----------
                                                 ;
-                                                ({ /* letn5158 */
-                                                  bool __h_case_result  = (true  &&  (((match5101 . __h_ctor) ==  __h_Right_t  ) &&  ({ /* progn5159 */
-                                                        nchild  = (((match5101 . __h_data). Right). __h_0_mem) ;
+                                                ({ /* letn5151 */
+                                                  bool __h_case_result  = (true  &&  (((match5094 . __h_ctor) ==  __h_Right_t  ) &&  ({ /* progn5152 */
+                                                        nchild  = (((match5094 . __h_data). Right). __h_0_mem) ;
                                                         true ;
                                                       }) ) );
                                                   // ----------
                                                   
-                                                  ((__h_case_result ) ? ({ /* progn5164 */
+                                                  ((__h_case_result ) ? ({ /* progn5157 */
                                                       Right_BTree_int_User_Error_BTree_int_User (Internal_BTree_int_User (replace_List_BTree_int_User_pair_t (items , max , current ), replaceChild_Rc_BTree_int_User (children , nchild , index )));
-                                                    }) : ({ /* letn5166 */
-                                                      Either_BTree_int_User_Error_BTree_int_User passthru  = match5101 ;
+                                                    }) : ({ /* letn5159 */
+                                                      Either_BTree_int_User_Error_BTree_int_User passthru  = match5094 ;
                                                       // ----------
                                                       ;
-                                                      ({ /* progn5168 */
+                                                      ({ /* progn5161 */
                                                         passthru ;
                                                       });
                                                     }));
                                                 });
                                               });
-                                            }) : ({ /* letn5170 */
+                                            }) : ({ /* letn5163 */
                                               // ----------
                                               ;
-                                              ({ /* progn5172 */
+                                              ({ /* progn5165 */
                                                 Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_CANT_BORROW ("borrowRI 12"));
                                               });
                                             }));
                                         });
                                       }) : borrowRightInternal (left_child_items , left_child_children ));
-                                  }) : ({ /* letn5176 */
+                                  }) : ({ /* letn5169 */
                                     typeof((((left_child -> __h_data). Leaf). __h_0_mem)) left_child_items ;
                                     // ----------
                                     ;
-                                    ({ /* letn5178 */
-                                      bool __h_case_result  = (true  &&  (((left_child -> __h_ctor) ==  __h_Leaf_t  ) &&  ({ /* progn5179 */
+                                    ({ /* letn5171 */
+                                      bool __h_case_result  = (true  &&  (((left_child -> __h_ctor) ==  __h_Leaf_t  ) &&  ({ /* progn5172 */
                                             left_child_items  = (((left_child -> __h_data). Leaf). __h_0_mem) ;
                                             true ;
                                           }) ) );
                                       // ----------
                                       
-                                      ((__h_case_result ) ? ({ /* progn5184 */
-                                          (((hasLen_List_BTree_int_User_pair_t (left_child_items , L_BTree_int_User ) ==  L_BTree_int_User  )) ? ({ /* letn5196 */
-                                              Maybe_BTree_int_User_pair_t match5194  = max_BTree_int_User (left_child );
-                                              typeof((((match5194 . __h_data). Just). __h_0_mem)) max ;
+                                      ((__h_case_result ) ? ({ /* progn5177 */
+                                          (((hasLen_List_BTree_int_User_pair_t (left_child_items , L_BTree_int_User ) ==  L_BTree_int_User  )) ? ({ /* letn5189 */
+                                              Maybe_BTree_int_User_pair_t match5187  = max_BTree_int_User (left_child );
+                                              typeof((((match5187 . __h_data). Just). __h_0_mem)) max ;
                                               typeof((max . __h_0_mem)) max_key ;
                                               // ----------
                                               ;
-                                              ({ /* letn5198 */
-                                                bool __h_case_result  = (true  &&  (((match5194 . __h_ctor) ==  __h_Just_t  ) &&  (({ /* progn5199 */
-                                                        max  = (((match5194 . __h_data). Just). __h_0_mem) ;
+                                              ({ /* letn5191 */
+                                                bool __h_case_result  = (true  &&  (((match5187 . __h_ctor) ==  __h_Just_t  ) &&  (({ /* progn5192 */
+                                                        max  = (((match5187 . __h_data). Just). __h_0_mem) ;
                                                         true ;
-                                                      }) &&  (true  &&  ({ /* progn5201 */
+                                                      }) &&  (true  &&  ({ /* progn5194 */
                                                           max_key  = (max . __h_0_mem) ;
                                                           true ;
                                                         }) ) ) ) );
                                                 // ----------
                                                 
-                                                ((__h_case_result ) ? ({ /* progn5206 */
-                                                    ({ /* letn5213 */
-                                                      Either_BTree_int_User_Error_BTree_int_User match5212  = delete_BTree_int_User (left_child , max_key , NULL );
-                                                      typeof((((match5212 . __h_data). Right). __h_0_mem)) nchild ;
+                                                ((__h_case_result ) ? ({ /* progn5199 */
+                                                    ({ /* letn5206 */
+                                                      Either_BTree_int_User_Error_BTree_int_User match5205  = delete_BTree_int_User (left_child , max_key , NULL );
+                                                      typeof((((match5205 . __h_data). Right). __h_0_mem)) nchild ;
                                                       // ----------
                                                       ;
-                                                      ({ /* letn5215 */
-                                                        bool __h_case_result  = (true  &&  (((match5212 . __h_ctor) ==  __h_Right_t  ) &&  ({ /* progn5216 */
-                                                              nchild  = (((match5212 . __h_data). Right). __h_0_mem) ;
+                                                      ({ /* letn5208 */
+                                                        bool __h_case_result  = (true  &&  (((match5205 . __h_ctor) ==  __h_Right_t  ) &&  ({ /* progn5209 */
+                                                              nchild  = (((match5205 . __h_data). Right). __h_0_mem) ;
                                                               true ;
                                                             }) ) );
                                                         // ----------
                                                         
-                                                        ((__h_case_result ) ? ({ /* progn5221 */
+                                                        ((__h_case_result ) ? ({ /* progn5214 */
                                                             Right_BTree_int_User_Error_BTree_int_User (Internal_BTree_int_User (replace_List_BTree_int_User_pair_t (items , max , current ), replaceChild_Rc_BTree_int_User (children , nchild , index )));
-                                                          }) : ({ /* letn5229 */
-                                                            Either_BTree_int_User_Error_BTree_int_User passthru  = match5212 ;
+                                                          }) : ({ /* letn5222 */
+                                                            Either_BTree_int_User_Error_BTree_int_User passthru  = match5205 ;
                                                             // ----------
                                                             ;
-                                                            ({ /* progn5231 */
+                                                            ({ /* progn5224 */
                                                               passthru ;
                                                             });
                                                           }));
                                                       });
                                                     });
-                                                  }) : ({ /* letn5235 */
+                                                  }) : ({ /* letn5228 */
                                                     // ----------
                                                     ;
-                                                    ({ /* progn5237 */
+                                                    ({ /* progn5230 */
                                                       Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_CANT_BORROW ("borrowRI 13"));
                                                     });
                                                   }));
                                               });
                                             }) : borrowRightLeaf (left_child_items ));
-                                        }) : ({ /* letn5243 */
+                                        }) : ({ /* letn5236 */
                                           // ----------
                                           ;
-                                          ({ /* progn5245 */
+                                          ({ /* progn5238 */
                                             Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_CANT_BORROW ("borrowRI 14"));
                                           });
                                         }));
@@ -5061,19 +5054,19 @@ Either_BTree_int_User_Error_BTree_int_User borrowInternal_BTree_int_User (Maybe_
                             }));
                         });
                       });
-                    }) : ({ /* letn5251 */
+                    }) : ({ /* letn5244 */
                       // ----------
                       ;
-                      ({ /* progn5253 */
+                      ({ /* progn5246 */
                         Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_CANT_BORROW ("borrowRI 15"));
                       });
                     }));
                 });
               });
-            }) : ({ /* letn5259 */
+            }) : ({ /* letn5252 */
               // ----------
               ;
-              ({ /* progn5261 */
+              ({ /* progn5254 */
                 Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_CANT_BORROW ("borrowRI 16"));
               });
             }));
@@ -5085,171 +5078,171 @@ Either_BTree_int_User_Error_BTree_int_User borrowInternal_BTree_int_User (Maybe_
 }
 Either_BTree_int_User_Error_BTree_int_User deleteWithParent_BTree_int_User (Maybe_BTree_int_User wparent , size_t pitem_index , size_t pchild_index , BTree_int_User tree , int skey , void (*callback) (BTree_int_User_pair_t item )) {
   Either_BTree_int_User_Error_BTree_int_User deleteInternal (Maybe_BTree_int_User tree , List_BTree_int_User_pair_t items , List_Rc_BTree_int_User children , Maybe_List_BTree_int_User_pair_t wleft , List_BTree_int_User_pair_t current , size_t index ) {
-    return ({ /* letn5290 */
-        Either_BTree_int_User_Error_BTree_int_User result  = ({ /* letn5296 */
+    return ({ /* letn5283 */
+        Either_BTree_int_User_Error_BTree_int_User result  = ({ /* letn5289 */
           typeof((((current -> __h_data). Cons). __h_0_mem)) head ;
           typeof((head . __h_0_mem)) key ;
           typeof((((current -> __h_data). Cons). __h_1_mem)) tail ;
           // ----------
           ;
-          ({ /* letn5298 */
-            bool __h_case_result  = (true  &&  (((current -> __h_ctor) ==  __h_Cons_t  ) &&  ((({ /* progn5299 */
+          ({ /* letn5291 */
+            bool __h_case_result  = (true  &&  (((current -> __h_ctor) ==  __h_Cons_t  ) &&  ((({ /* progn5292 */
                       head  = (((current -> __h_data). Cons). __h_0_mem) ;
                       true ;
-                    }) &&  (true  &&  ({ /* progn5301 */
+                    }) &&  (true  &&  ({ /* progn5294 */
                         key  = (head . __h_0_mem) ;
                         true ;
-                      }) ) ) &&  ({ /* progn5303 */
+                      }) ) ) &&  ({ /* progn5296 */
                     tail  = (((current -> __h_data). Cons). __h_1_mem) ;
                     true ;
                   }) ) ) );
             // ----------
             
-            ((__h_case_result ) ? ({ /* progn5308 */
-                ({ /* letn5314 */
-                  Ordering match5313  = compareKey (skey , key );
+            ((__h_case_result ) ? ({ /* progn5301 */
+                ({ /* letn5307 */
+                  Ordering match5306  = compareKey (skey , key );
                   // ----------
                   ;
-                  ({ /* letn5316 */
-                    bool __h_case_result  = (true  &&  ((match5313 . __h_ctor) ==  __h_LT_t  ) );
+                  ({ /* letn5309 */
+                    bool __h_case_result  = (true  &&  ((match5306 . __h_ctor) ==  __h_LT_t  ) );
                     // ----------
                     
-                    ((__h_case_result ) ? ({ /* progn5320 */
-                        ({ /* letn5327 */
-                          Maybe_Rc_BTree_int_User match5326  = nth_List_Rc_BTree_int_User (index , children );
-                          typeof((((match5326 . __h_data). Just). __h_0_mem)) child ;
+                    ((__h_case_result ) ? ({ /* progn5313 */
+                        ({ /* letn5320 */
+                          Maybe_Rc_BTree_int_User match5319  = nth_List_Rc_BTree_int_User (index , children );
+                          typeof((((match5319 . __h_data). Just). __h_0_mem)) child ;
                           // ----------
                           ;
-                          ({ /* letn5329 */
-                            bool __h_case_result  = (true  &&  (((match5326 . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn5330 */
-                                  child  = (((match5326 . __h_data). Just). __h_0_mem) ;
+                          ({ /* letn5322 */
+                            bool __h_case_result  = (true  &&  (((match5319 . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn5323 */
+                                  child  = (((match5319 . __h_data). Just). __h_0_mem) ;
                                   true ;
                                 }) ) );
                             // ----------
                             
-                            ((__h_case_result ) ? ({ /* progn5335 */
-                                ({ /* letn5342 */
-                                  Maybe_BTree_int_User match5341  = deref_Rc_BTree_int_User (child );
-                                  typeof((((match5341 . __h_data). Just). __h_0_mem)) tr ;
+                            ((__h_case_result ) ? ({ /* progn5328 */
+                                ({ /* letn5335 */
+                                  Maybe_BTree_int_User match5334  = deref_Rc_BTree_int_User (child );
+                                  typeof((((match5334 . __h_data). Just). __h_0_mem)) tr ;
                                   // ----------
                                   ;
-                                  ({ /* letn5344 */
-                                    bool __h_case_result  = (true  &&  (((match5341 . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn5345 */
-                                          tr  = (((match5341 . __h_data). Just). __h_0_mem) ;
+                                  ({ /* letn5337 */
+                                    bool __h_case_result  = (true  &&  (((match5334 . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn5338 */
+                                          tr  = (((match5334 . __h_data). Just). __h_0_mem) ;
                                           true ;
                                         }) ) );
                                     // ----------
                                     
-                                    ((__h_case_result ) ? ({ /* progn5350 */
-                                        ({ /* letn5356 */
+                                    ((__h_case_result ) ? ({ /* progn5343 */
+                                        ({ /* letn5349 */
                                           // ----------
                                           ;
-                                          ({ /* letn5358 */
+                                          ({ /* letn5351 */
                                             bool __h_case_result  = (true  &&  ((tr -> __h_ctor) ==  __h_Branch_t  ) );
                                             // ----------
                                             
-                                            ((__h_case_result ) ? ({ /* progn5362 */
-                                                ({ /* letn5369 */
-                                                  Either_BTree_int_User_Error_BTree_int_User match5368  = deleteWithParent_BTree_int_User (tree , (((index  >  0 )) ? (index  -  1 ) : index ), index , tr , skey , callback );
-                                                  typeof((((match5368 . __h_data). Right). __h_0_mem)) nchild ;
+                                            ((__h_case_result ) ? ({ /* progn5355 */
+                                                ({ /* letn5362 */
+                                                  Either_BTree_int_User_Error_BTree_int_User match5361  = deleteWithParent_BTree_int_User (tree , (((index  >  0 )) ? (index  -  1 ) : index ), index , tr , skey , callback );
+                                                  typeof((((match5361 . __h_data). Right). __h_0_mem)) nchild ;
                                                   // ----------
                                                   ;
-                                                  ({ /* letn5371 */
-                                                    bool __h_case_result  = (true  &&  (((match5368 . __h_ctor) ==  __h_Right_t  ) &&  ({ /* progn5372 */
-                                                          nchild  = (((match5368 . __h_data). Right). __h_0_mem) ;
+                                                  ({ /* letn5364 */
+                                                    bool __h_case_result  = (true  &&  (((match5361 . __h_ctor) ==  __h_Right_t  ) &&  ({ /* progn5365 */
+                                                          nchild  = (((match5361 . __h_data). Right). __h_0_mem) ;
                                                           true ;
                                                         }) ) );
                                                     // ----------
                                                     
-                                                    ((__h_case_result ) ? ({ /* progn5377 */
-                                                        ({ /* letn5383 */
+                                                    ((__h_case_result ) ? ({ /* progn5370 */
+                                                        ({ /* letn5376 */
                                                           typeof((((nchild -> __h_data). Branch). __h_0_mem)) child_items ;
                                                           typeof((((nchild -> __h_data). Branch). __h_1_mem)) child_children ;
                                                           // ----------
                                                           ;
-                                                          ({ /* letn5385 */
-                                                            bool __h_case_result  = (true  &&  (((nchild -> __h_ctor) ==  __h_Branch_t  ) &&  (({ /* progn5386 */
+                                                          ({ /* letn5378 */
+                                                            bool __h_case_result  = (true  &&  (((nchild -> __h_ctor) ==  __h_Branch_t  ) &&  (({ /* progn5379 */
                                                                     child_items  = (((nchild -> __h_data). Branch). __h_0_mem) ;
                                                                     true ;
-                                                                  }) &&  ({ /* progn5388 */
+                                                                  }) &&  ({ /* progn5381 */
                                                                     child_children  = (((nchild -> __h_data). Branch). __h_1_mem) ;
                                                                     true ;
                                                                   }) ) ) );
                                                             // ----------
                                                             
-                                                            ((__h_case_result ) ? ({ /* progn5393 */
-                                                                ({ /* letn5400 */
-                                                                  Maybe_Rc_BTree_int_User match5399  = nth_List_Rc_BTree_int_User ((index  -  1 ), children );
-                                                                  typeof((((match5399 . __h_data). Just). __h_0_mem)) wleft ;
+                                                            ((__h_case_result ) ? ({ /* progn5386 */
+                                                                ({ /* letn5393 */
+                                                                  Maybe_Rc_BTree_int_User match5392  = nth_List_Rc_BTree_int_User ((index  -  1 ), children );
+                                                                  typeof((((match5392 . __h_data). Just). __h_0_mem)) wleft ;
                                                                   // ----------
                                                                   ;
-                                                                  ({ /* letn5402 */
-                                                                    bool __h_case_result  = (true  &&  (((match5399 . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn5403 */
-                                                                          wleft  = (((match5399 . __h_data). Just). __h_0_mem) ;
+                                                                  ({ /* letn5395 */
+                                                                    bool __h_case_result  = (true  &&  (((match5392 . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn5396 */
+                                                                          wleft  = (((match5392 . __h_data). Just). __h_0_mem) ;
                                                                           true ;
                                                                         }) ) );
                                                                     // ----------
                                                                     
-                                                                    ((__h_case_result ) ? ({ /* progn5408 */
-                                                                        ({ /* letn5415 */
-                                                                          Maybe_BTree_int_User match5414  = deref_Rc_BTree_int_User (wleft );
-                                                                          typeof((((match5414 . __h_data). Just). __h_0_mem)) left_child ;
+                                                                    ((__h_case_result ) ? ({ /* progn5401 */
+                                                                        ({ /* letn5408 */
+                                                                          Maybe_BTree_int_User match5407  = deref_Rc_BTree_int_User (wleft );
+                                                                          typeof((((match5407 . __h_data). Just). __h_0_mem)) left_child ;
                                                                           // ----------
                                                                           ;
-                                                                          ({ /* letn5417 */
-                                                                            bool __h_case_result  = (true  &&  (((match5414 . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn5418 */
-                                                                                  left_child  = (((match5414 . __h_data). Just). __h_0_mem) ;
+                                                                          ({ /* letn5410 */
+                                                                            bool __h_case_result  = (true  &&  (((match5407 . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn5411 */
+                                                                                  left_child  = (((match5407 . __h_data). Just). __h_0_mem) ;
                                                                                   true ;
                                                                                 }) ) );
                                                                             // ----------
                                                                             
-                                                                            ((__h_case_result ) ? ({ /* progn5423 */
-                                                                                ({ /* letn5429 */
+                                                                            ((__h_case_result ) ? ({ /* progn5416 */
+                                                                                ({ /* letn5422 */
                                                                                   typeof((((left_child -> __h_data). Branch). __h_0_mem)) left_items ;
                                                                                   typeof((((left_child -> __h_data). Branch). __h_1_mem)) left_children ;
                                                                                   // ----------
                                                                                   ;
-                                                                                  ({ /* letn5431 */
-                                                                                    bool __h_case_result  = (true  &&  (((left_child -> __h_ctor) ==  __h_Branch_t  ) &&  (({ /* progn5432 */
+                                                                                  ({ /* letn5424 */
+                                                                                    bool __h_case_result  = (true  &&  (((left_child -> __h_ctor) ==  __h_Branch_t  ) &&  (({ /* progn5425 */
                                                                                             left_items  = (((left_child -> __h_data). Branch). __h_0_mem) ;
                                                                                             true ;
-                                                                                          }) &&  ({ /* progn5434 */
+                                                                                          }) &&  ({ /* progn5427 */
                                                                                             left_children  = (((left_child -> __h_data). Branch). __h_1_mem) ;
                                                                                             true ;
                                                                                           }) ) ) );
                                                                                     // ----------
                                                                                     
-                                                                                    ((__h_case_result ) ? ({ /* progn5439 */
-                                                                                        ({ /* letn5442 */
+                                                                                    ((__h_case_result ) ? ({ /* progn5432 */
+                                                                                        ({ /* letn5435 */
                                                                                           BTree_int_User nchild_spent  __attribute__((__cleanup__(free_BTree_int_User ))) = nchild ;
                                                                                           // ----------
                                                                                           Right_BTree_int_User_Error_BTree_int_User (mergeUp_BTree_int_User (items , children , (((index  >  0 )) ? (index  -  1 ) : index ), (((index  >  0 )) ? (index  -  1 ) : index ), left_items , left_children , child_items , child_children ));
                                                                                         });
-                                                                                      }) : ({ /* letn5449 */
+                                                                                      }) : ({ /* letn5442 */
                                                                                         typeof((((left_child -> __h_data). Internal). __h_0_mem)) left_items ;
                                                                                         typeof((((left_child -> __h_data). Internal). __h_1_mem)) left_children ;
                                                                                         // ----------
                                                                                         ;
-                                                                                        ({ /* letn5451 */
-                                                                                          bool __h_case_result  = (true  &&  (((left_child -> __h_ctor) ==  __h_Internal_t  ) &&  (({ /* progn5452 */
+                                                                                        ({ /* letn5444 */
+                                                                                          bool __h_case_result  = (true  &&  (((left_child -> __h_ctor) ==  __h_Internal_t  ) &&  (({ /* progn5445 */
                                                                                                   left_items  = (((left_child -> __h_data). Internal). __h_0_mem) ;
                                                                                                   true ;
-                                                                                                }) &&  ({ /* progn5454 */
+                                                                                                }) &&  ({ /* progn5447 */
                                                                                                   left_children  = (((left_child -> __h_data). Internal). __h_1_mem) ;
                                                                                                   true ;
                                                                                                 }) ) ) );
                                                                                           // ----------
                                                                                           
-                                                                                          ((__h_case_result ) ? ({ /* progn5459 */
-                                                                                              ({ /* letn5461 */
+                                                                                          ((__h_case_result ) ? ({ /* progn5452 */
+                                                                                              ({ /* letn5454 */
                                                                                                 BTree_int_User nchild_spent  __attribute__((__cleanup__(free_BTree_int_User ))) = nchild ;
                                                                                                 // ----------
                                                                                                 Right_BTree_int_User_Error_BTree_int_User (mergeUp_BTree_int_User (items , children , (((index  >  0 )) ? (index  -  1 ) : index ), (((index  >  0 )) ? (index  -  1 ) : index ), left_items , left_children , child_items , child_children ));
                                                                                               });
-                                                                                            }) : ({ /* letn5465 */
+                                                                                            }) : ({ /* letn5458 */
                                                                                               // ----------
                                                                                               ;
-                                                                                              ({ /* progn5467 */
+                                                                                              ({ /* progn5460 */
                                                                                                 Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_CANT_BORROW ("BWPL1-1"));
                                                                                               });
                                                                                             }));
@@ -5257,91 +5250,91 @@ Either_BTree_int_User_Error_BTree_int_User deleteWithParent_BTree_int_User (Mayb
                                                                                       }));
                                                                                   });
                                                                                 });
-                                                                              }) : ({ /* letn5473 */
+                                                                              }) : ({ /* letn5466 */
                                                                                 // ----------
                                                                                 ;
-                                                                                ({ /* progn5475 */
+                                                                                ({ /* progn5468 */
                                                                                   Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_CANT_BORROW ("BWPL1"));
                                                                                 });
                                                                               }));
                                                                           });
                                                                         });
-                                                                      }) : ({ /* letn5481 */
+                                                                      }) : ({ /* letn5474 */
                                                                         // ----------
                                                                         ;
-                                                                        ({ /* progn5483 */
-                                                                          ({ /* letn5490 */
-                                                                            Maybe_Rc_BTree_int_User match5489  = nth_List_Rc_BTree_int_User ((index  +  1 ), children );
-                                                                            typeof((((match5489 . __h_data). Just). __h_0_mem)) wright ;
+                                                                        ({ /* progn5476 */
+                                                                          ({ /* letn5483 */
+                                                                            Maybe_Rc_BTree_int_User match5482  = nth_List_Rc_BTree_int_User ((index  +  1 ), children );
+                                                                            typeof((((match5482 . __h_data). Just). __h_0_mem)) wright ;
                                                                             // ----------
                                                                             ;
-                                                                            ({ /* letn5492 */
-                                                                              bool __h_case_result  = (true  &&  (((match5489 . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn5493 */
-                                                                                    wright  = (((match5489 . __h_data). Just). __h_0_mem) ;
+                                                                            ({ /* letn5485 */
+                                                                              bool __h_case_result  = (true  &&  (((match5482 . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn5486 */
+                                                                                    wright  = (((match5482 . __h_data). Just). __h_0_mem) ;
                                                                                     true ;
                                                                                   }) ) );
                                                                               // ----------
                                                                               
-                                                                              ((__h_case_result ) ? ({ /* progn5498 */
-                                                                                  ({ /* letn5505 */
-                                                                                    Maybe_BTree_int_User match5504  = deref_Rc_BTree_int_User (wright );
-                                                                                    typeof((((match5504 . __h_data). Just). __h_0_mem)) right_child ;
+                                                                              ((__h_case_result ) ? ({ /* progn5491 */
+                                                                                  ({ /* letn5498 */
+                                                                                    Maybe_BTree_int_User match5497  = deref_Rc_BTree_int_User (wright );
+                                                                                    typeof((((match5497 . __h_data). Just). __h_0_mem)) right_child ;
                                                                                     // ----------
                                                                                     ;
-                                                                                    ({ /* letn5507 */
-                                                                                      bool __h_case_result  = (true  &&  (((match5504 . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn5508 */
-                                                                                            right_child  = (((match5504 . __h_data). Just). __h_0_mem) ;
+                                                                                    ({ /* letn5500 */
+                                                                                      bool __h_case_result  = (true  &&  (((match5497 . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn5501 */
+                                                                                            right_child  = (((match5497 . __h_data). Just). __h_0_mem) ;
                                                                                             true ;
                                                                                           }) ) );
                                                                                       // ----------
                                                                                       
-                                                                                      ((__h_case_result ) ? ({ /* progn5513 */
-                                                                                          ({ /* letn5519 */
+                                                                                      ((__h_case_result ) ? ({ /* progn5506 */
+                                                                                          ({ /* letn5512 */
                                                                                             typeof((((right_child -> __h_data). Branch). __h_0_mem)) right_items ;
                                                                                             typeof((((right_child -> __h_data). Branch). __h_1_mem)) right_children ;
                                                                                             // ----------
                                                                                             ;
-                                                                                            ({ /* letn5521 */
-                                                                                              bool __h_case_result  = (true  &&  (((right_child -> __h_ctor) ==  __h_Branch_t  ) &&  (({ /* progn5522 */
+                                                                                            ({ /* letn5514 */
+                                                                                              bool __h_case_result  = (true  &&  (((right_child -> __h_ctor) ==  __h_Branch_t  ) &&  (({ /* progn5515 */
                                                                                                       right_items  = (((right_child -> __h_data). Branch). __h_0_mem) ;
                                                                                                       true ;
-                                                                                                    }) &&  ({ /* progn5524 */
+                                                                                                    }) &&  ({ /* progn5517 */
                                                                                                       right_children  = (((right_child -> __h_data). Branch). __h_1_mem) ;
                                                                                                       true ;
                                                                                                     }) ) ) );
                                                                                               // ----------
                                                                                               
-                                                                                              ((__h_case_result ) ? ({ /* progn5529 */
-                                                                                                  ({ /* letn5532 */
+                                                                                              ((__h_case_result ) ? ({ /* progn5522 */
+                                                                                                  ({ /* letn5525 */
                                                                                                     BTree_int_User nchild_spent  __attribute__((__cleanup__(free_BTree_int_User ))) = nchild ;
                                                                                                     // ----------
                                                                                                     Right_BTree_int_User_Error_BTree_int_User (mergeUp_BTree_int_User (items , children , (((index  >  0 )) ? (index  -  1 ) : index ), index , child_items , child_children , right_items , right_children ));
                                                                                                   });
-                                                                                                }) : ({ /* letn5539 */
+                                                                                                }) : ({ /* letn5532 */
                                                                                                   typeof((((right_child -> __h_data). Internal). __h_0_mem)) right_items ;
                                                                                                   typeof((((right_child -> __h_data). Internal). __h_1_mem)) right_children ;
                                                                                                   // ----------
                                                                                                   ;
-                                                                                                  ({ /* letn5541 */
-                                                                                                    bool __h_case_result  = (true  &&  (((right_child -> __h_ctor) ==  __h_Internal_t  ) &&  (({ /* progn5542 */
+                                                                                                  ({ /* letn5534 */
+                                                                                                    bool __h_case_result  = (true  &&  (((right_child -> __h_ctor) ==  __h_Internal_t  ) &&  (({ /* progn5535 */
                                                                                                             right_items  = (((right_child -> __h_data). Internal). __h_0_mem) ;
                                                                                                             true ;
-                                                                                                          }) &&  ({ /* progn5544 */
+                                                                                                          }) &&  ({ /* progn5537 */
                                                                                                             right_children  = (((right_child -> __h_data). Internal). __h_1_mem) ;
                                                                                                             true ;
                                                                                                           }) ) ) );
                                                                                                     // ----------
                                                                                                     
-                                                                                                    ((__h_case_result ) ? ({ /* progn5549 */
-                                                                                                        ({ /* letn5551 */
+                                                                                                    ((__h_case_result ) ? ({ /* progn5542 */
+                                                                                                        ({ /* letn5544 */
                                                                                                           BTree_int_User nchild_spent  __attribute__((__cleanup__(free_BTree_int_User ))) = nchild ;
                                                                                                           // ----------
                                                                                                           Right_BTree_int_User_Error_BTree_int_User (mergeUp_BTree_int_User (items , children , (((index  >  0 )) ? (index  -  1 ) : index ), index , child_items , child_children , right_items , right_children ));
                                                                                                         });
-                                                                                                      }) : ({ /* letn5555 */
+                                                                                                      }) : ({ /* letn5548 */
                                                                                                         // ----------
                                                                                                         ;
-                                                                                                        ({ /* progn5557 */
+                                                                                                        ({ /* progn5550 */
                                                                                                           Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_CANT_BORROW ("BWPR2-1"));
                                                                                                         });
                                                                                                       }));
@@ -5349,19 +5342,19 @@ Either_BTree_int_User_Error_BTree_int_User deleteWithParent_BTree_int_User (Mayb
                                                                                                 }));
                                                                                             });
                                                                                           });
-                                                                                        }) : ({ /* letn5563 */
+                                                                                        }) : ({ /* letn5556 */
                                                                                           // ----------
                                                                                           ;
-                                                                                          ({ /* progn5565 */
+                                                                                          ({ /* progn5558 */
                                                                                             Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_CANT_BORROW ("BWPR2"));
                                                                                           });
                                                                                         }));
                                                                                     });
                                                                                   });
-                                                                                }) : ({ /* letn5571 */
+                                                                                }) : ({ /* letn5564 */
                                                                                   // ----------
                                                                                   ;
-                                                                                  ({ /* progn5573 */
+                                                                                  ({ /* progn5566 */
                                                                                     Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_CANT_BORROW ("BWPR1"));
                                                                                   });
                                                                                 }));
@@ -5371,134 +5364,134 @@ Either_BTree_int_User_Error_BTree_int_User deleteWithParent_BTree_int_User (Mayb
                                                                       }));
                                                                   });
                                                                 });
-                                                              }) : ({ /* letn5579 */
+                                                              }) : ({ /* letn5572 */
                                                                 // ----------
                                                                 ;
-                                                                ({ /* progn5581 */
+                                                                ({ /* progn5574 */
                                                                   Right_BTree_int_User_Error_BTree_int_User (Internal_BTree_int_User (copy_List_BTree_int_User_pair_t (items ), replaceChild_Rc_BTree_int_User (children , nchild , index )));
                                                                 });
                                                               }));
                                                           });
                                                         });
-                                                      }) : ({ /* letn5589 */
-                                                        Either_BTree_int_User_Error_BTree_int_User passthru  = match5368 ;
+                                                      }) : ({ /* letn5582 */
+                                                        Either_BTree_int_User_Error_BTree_int_User passthru  = match5361 ;
                                                         // ----------
                                                         ;
-                                                        ({ /* progn5591 */
+                                                        ({ /* progn5584 */
                                                           passthru ;
                                                         });
                                                       }));
                                                   });
                                                 });
-                                              }) : ({ /* letn5595 */
+                                              }) : ({ /* letn5588 */
                                                 // ----------
                                                 ;
-                                                ({ /* letn5597 */
+                                                ({ /* letn5590 */
                                                   bool __h_case_result  = (true  &&  ((tr -> __h_ctor) ==  __h_Internal_t  ) );
                                                   // ----------
                                                   
-                                                  ((__h_case_result ) ? ({ /* progn5601 */
-                                                      ({ /* letn5607 */
-                                                        Either_BTree_int_User_Error_BTree_int_User match5606  = deleteWithParent_BTree_int_User (tree , (((index  >  0 )) ? (index  -  1 ) : index ), index , tr , skey , callback );
-                                                        typeof((((match5606 . __h_data). Right). __h_0_mem)) nchild ;
+                                                  ((__h_case_result ) ? ({ /* progn5594 */
+                                                      ({ /* letn5600 */
+                                                        Either_BTree_int_User_Error_BTree_int_User match5599  = deleteWithParent_BTree_int_User (tree , (((index  >  0 )) ? (index  -  1 ) : index ), index , tr , skey , callback );
+                                                        typeof((((match5599 . __h_data). Right). __h_0_mem)) nchild ;
                                                         // ----------
                                                         ;
-                                                        ({ /* letn5609 */
-                                                          bool __h_case_result  = (true  &&  (((match5606 . __h_ctor) ==  __h_Right_t  ) &&  ({ /* progn5610 */
-                                                                nchild  = (((match5606 . __h_data). Right). __h_0_mem) ;
+                                                        ({ /* letn5602 */
+                                                          bool __h_case_result  = (true  &&  (((match5599 . __h_ctor) ==  __h_Right_t  ) &&  ({ /* progn5603 */
+                                                                nchild  = (((match5599 . __h_data). Right). __h_0_mem) ;
                                                                 true ;
                                                               }) ) );
                                                           // ----------
                                                           
-                                                          ((__h_case_result ) ? ({ /* progn5615 */
-                                                              ({ /* letn5621 */
+                                                          ((__h_case_result ) ? ({ /* progn5608 */
+                                                              ({ /* letn5614 */
                                                                 typeof((((nchild -> __h_data). Branch). __h_0_mem)) child_items ;
                                                                 typeof((((nchild -> __h_data). Branch). __h_1_mem)) child_children ;
                                                                 // ----------
                                                                 ;
-                                                                ({ /* letn5623 */
-                                                                  bool __h_case_result  = (true  &&  (((nchild -> __h_ctor) ==  __h_Branch_t  ) &&  (({ /* progn5624 */
+                                                                ({ /* letn5616 */
+                                                                  bool __h_case_result  = (true  &&  (((nchild -> __h_ctor) ==  __h_Branch_t  ) &&  (({ /* progn5617 */
                                                                           child_items  = (((nchild -> __h_data). Branch). __h_0_mem) ;
                                                                           true ;
-                                                                        }) &&  ({ /* progn5626 */
+                                                                        }) &&  ({ /* progn5619 */
                                                                           child_children  = (((nchild -> __h_data). Branch). __h_1_mem) ;
                                                                           true ;
                                                                         }) ) ) );
                                                                   // ----------
                                                                   
-                                                                  ((__h_case_result ) ? ({ /* progn5631 */
-                                                                      ({ /* letn5633 */
-                                                                        Maybe_Rc_BTree_int_User match5399  = nth_List_Rc_BTree_int_User ((index  -  1 ), children );
-                                                                        typeof((((match5399 . __h_data). Just). __h_0_mem)) wleft ;
+                                                                  ((__h_case_result ) ? ({ /* progn5624 */
+                                                                      ({ /* letn5626 */
+                                                                        Maybe_Rc_BTree_int_User match5392  = nth_List_Rc_BTree_int_User ((index  -  1 ), children );
+                                                                        typeof((((match5392 . __h_data). Just). __h_0_mem)) wleft ;
                                                                         // ----------
                                                                         ;
-                                                                        ({ /* letn5635 */
-                                                                          bool __h_case_result  = (true  &&  (((match5399 . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn5636 */
-                                                                                wleft  = (((match5399 . __h_data). Just). __h_0_mem) ;
+                                                                        ({ /* letn5628 */
+                                                                          bool __h_case_result  = (true  &&  (((match5392 . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn5629 */
+                                                                                wleft  = (((match5392 . __h_data). Just). __h_0_mem) ;
                                                                                 true ;
                                                                               }) ) );
                                                                           // ----------
                                                                           
-                                                                          ((__h_case_result ) ? ({ /* progn5641 */
-                                                                              ({ /* letn5643 */
-                                                                                Maybe_BTree_int_User match5414  = deref_Rc_BTree_int_User (wleft );
-                                                                                typeof((((match5414 . __h_data). Just). __h_0_mem)) left_child ;
+                                                                          ((__h_case_result ) ? ({ /* progn5634 */
+                                                                              ({ /* letn5636 */
+                                                                                Maybe_BTree_int_User match5407  = deref_Rc_BTree_int_User (wleft );
+                                                                                typeof((((match5407 . __h_data). Just). __h_0_mem)) left_child ;
                                                                                 // ----------
                                                                                 ;
-                                                                                ({ /* letn5645 */
-                                                                                  bool __h_case_result  = (true  &&  (((match5414 . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn5646 */
-                                                                                        left_child  = (((match5414 . __h_data). Just). __h_0_mem) ;
+                                                                                ({ /* letn5638 */
+                                                                                  bool __h_case_result  = (true  &&  (((match5407 . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn5639 */
+                                                                                        left_child  = (((match5407 . __h_data). Just). __h_0_mem) ;
                                                                                         true ;
                                                                                       }) ) );
                                                                                   // ----------
                                                                                   
-                                                                                  ((__h_case_result ) ? ({ /* progn5651 */
-                                                                                      ({ /* letn5653 */
+                                                                                  ((__h_case_result ) ? ({ /* progn5644 */
+                                                                                      ({ /* letn5646 */
                                                                                         typeof((((left_child -> __h_data). Branch). __h_0_mem)) left_items ;
                                                                                         typeof((((left_child -> __h_data). Branch). __h_1_mem)) left_children ;
                                                                                         // ----------
                                                                                         ;
-                                                                                        ({ /* letn5655 */
-                                                                                          bool __h_case_result  = (true  &&  (((left_child -> __h_ctor) ==  __h_Branch_t  ) &&  (({ /* progn5656 */
+                                                                                        ({ /* letn5648 */
+                                                                                          bool __h_case_result  = (true  &&  (((left_child -> __h_ctor) ==  __h_Branch_t  ) &&  (({ /* progn5649 */
                                                                                                   left_items  = (((left_child -> __h_data). Branch). __h_0_mem) ;
                                                                                                   true ;
-                                                                                                }) &&  ({ /* progn5658 */
+                                                                                                }) &&  ({ /* progn5651 */
                                                                                                   left_children  = (((left_child -> __h_data). Branch). __h_1_mem) ;
                                                                                                   true ;
                                                                                                 }) ) ) );
                                                                                           // ----------
                                                                                           
-                                                                                          ((__h_case_result ) ? ({ /* progn5663 */
-                                                                                              ({ /* letn5665 */
+                                                                                          ((__h_case_result ) ? ({ /* progn5656 */
+                                                                                              ({ /* letn5658 */
                                                                                                 BTree_int_User nchild_spent  __attribute__((__cleanup__(free_BTree_int_User ))) = nchild ;
                                                                                                 // ----------
                                                                                                 Right_BTree_int_User_Error_BTree_int_User (mergeUp_BTree_int_User (items , children , (((index  >  0 )) ? (index  -  1 ) : index ), (((index  >  0 )) ? (index  -  1 ) : index ), left_items , left_children , child_items , child_children ));
                                                                                               });
-                                                                                            }) : ({ /* letn5667 */
+                                                                                            }) : ({ /* letn5660 */
                                                                                               typeof((((left_child -> __h_data). Internal). __h_0_mem)) left_items ;
                                                                                               typeof((((left_child -> __h_data). Internal). __h_1_mem)) left_children ;
                                                                                               // ----------
                                                                                               ;
-                                                                                              ({ /* letn5669 */
-                                                                                                bool __h_case_result  = (true  &&  (((left_child -> __h_ctor) ==  __h_Internal_t  ) &&  (({ /* progn5670 */
+                                                                                              ({ /* letn5662 */
+                                                                                                bool __h_case_result  = (true  &&  (((left_child -> __h_ctor) ==  __h_Internal_t  ) &&  (({ /* progn5663 */
                                                                                                         left_items  = (((left_child -> __h_data). Internal). __h_0_mem) ;
                                                                                                         true ;
-                                                                                                      }) &&  ({ /* progn5672 */
+                                                                                                      }) &&  ({ /* progn5665 */
                                                                                                         left_children  = (((left_child -> __h_data). Internal). __h_1_mem) ;
                                                                                                         true ;
                                                                                                       }) ) ) );
                                                                                                 // ----------
                                                                                                 
-                                                                                                ((__h_case_result ) ? ({ /* progn5677 */
-                                                                                                    ({ /* letn5679 */
+                                                                                                ((__h_case_result ) ? ({ /* progn5670 */
+                                                                                                    ({ /* letn5672 */
                                                                                                       BTree_int_User nchild_spent  __attribute__((__cleanup__(free_BTree_int_User ))) = nchild ;
                                                                                                       // ----------
                                                                                                       Right_BTree_int_User_Error_BTree_int_User (mergeUp_BTree_int_User (items , children , (((index  >  0 )) ? (index  -  1 ) : index ), (((index  >  0 )) ? (index  -  1 ) : index ), left_items , left_children , child_items , child_children ));
                                                                                                     });
-                                                                                                  }) : ({ /* letn5681 */
+                                                                                                  }) : ({ /* letn5674 */
                                                                                                     // ----------
                                                                                                     ;
-                                                                                                    ({ /* progn5683 */
+                                                                                                    ({ /* progn5676 */
                                                                                                       Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_CANT_BORROW ("BWPL1-1"));
                                                                                                     });
                                                                                                   }));
@@ -5506,91 +5499,91 @@ Either_BTree_int_User_Error_BTree_int_User deleteWithParent_BTree_int_User (Mayb
                                                                                             }));
                                                                                         });
                                                                                       });
-                                                                                    }) : ({ /* letn5685 */
+                                                                                    }) : ({ /* letn5678 */
                                                                                       // ----------
                                                                                       ;
-                                                                                      ({ /* progn5687 */
+                                                                                      ({ /* progn5680 */
                                                                                         Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_CANT_BORROW ("BWPL1"));
                                                                                       });
                                                                                     }));
                                                                                 });
                                                                               });
-                                                                            }) : ({ /* letn5689 */
+                                                                            }) : ({ /* letn5682 */
                                                                               // ----------
                                                                               ;
-                                                                              ({ /* progn5691 */
-                                                                                ({ /* letn5693 */
-                                                                                  Maybe_Rc_BTree_int_User match5489  = nth_List_Rc_BTree_int_User ((index  +  1 ), children );
-                                                                                  typeof((((match5489 . __h_data). Just). __h_0_mem)) wright ;
+                                                                              ({ /* progn5684 */
+                                                                                ({ /* letn5686 */
+                                                                                  Maybe_Rc_BTree_int_User match5482  = nth_List_Rc_BTree_int_User ((index  +  1 ), children );
+                                                                                  typeof((((match5482 . __h_data). Just). __h_0_mem)) wright ;
                                                                                   // ----------
                                                                                   ;
-                                                                                  ({ /* letn5695 */
-                                                                                    bool __h_case_result  = (true  &&  (((match5489 . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn5696 */
-                                                                                          wright  = (((match5489 . __h_data). Just). __h_0_mem) ;
+                                                                                  ({ /* letn5688 */
+                                                                                    bool __h_case_result  = (true  &&  (((match5482 . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn5689 */
+                                                                                          wright  = (((match5482 . __h_data). Just). __h_0_mem) ;
                                                                                           true ;
                                                                                         }) ) );
                                                                                     // ----------
                                                                                     
-                                                                                    ((__h_case_result ) ? ({ /* progn5701 */
-                                                                                        ({ /* letn5703 */
-                                                                                          Maybe_BTree_int_User match5504  = deref_Rc_BTree_int_User (wright );
-                                                                                          typeof((((match5504 . __h_data). Just). __h_0_mem)) right_child ;
+                                                                                    ((__h_case_result ) ? ({ /* progn5694 */
+                                                                                        ({ /* letn5696 */
+                                                                                          Maybe_BTree_int_User match5497  = deref_Rc_BTree_int_User (wright );
+                                                                                          typeof((((match5497 . __h_data). Just). __h_0_mem)) right_child ;
                                                                                           // ----------
                                                                                           ;
-                                                                                          ({ /* letn5705 */
-                                                                                            bool __h_case_result  = (true  &&  (((match5504 . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn5706 */
-                                                                                                  right_child  = (((match5504 . __h_data). Just). __h_0_mem) ;
+                                                                                          ({ /* letn5698 */
+                                                                                            bool __h_case_result  = (true  &&  (((match5497 . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn5699 */
+                                                                                                  right_child  = (((match5497 . __h_data). Just). __h_0_mem) ;
                                                                                                   true ;
                                                                                                 }) ) );
                                                                                             // ----------
                                                                                             
-                                                                                            ((__h_case_result ) ? ({ /* progn5711 */
-                                                                                                ({ /* letn5713 */
+                                                                                            ((__h_case_result ) ? ({ /* progn5704 */
+                                                                                                ({ /* letn5706 */
                                                                                                   typeof((((right_child -> __h_data). Branch). __h_0_mem)) right_items ;
                                                                                                   typeof((((right_child -> __h_data). Branch). __h_1_mem)) right_children ;
                                                                                                   // ----------
                                                                                                   ;
-                                                                                                  ({ /* letn5715 */
-                                                                                                    bool __h_case_result  = (true  &&  (((right_child -> __h_ctor) ==  __h_Branch_t  ) &&  (({ /* progn5716 */
+                                                                                                  ({ /* letn5708 */
+                                                                                                    bool __h_case_result  = (true  &&  (((right_child -> __h_ctor) ==  __h_Branch_t  ) &&  (({ /* progn5709 */
                                                                                                             right_items  = (((right_child -> __h_data). Branch). __h_0_mem) ;
                                                                                                             true ;
-                                                                                                          }) &&  ({ /* progn5718 */
+                                                                                                          }) &&  ({ /* progn5711 */
                                                                                                             right_children  = (((right_child -> __h_data). Branch). __h_1_mem) ;
                                                                                                             true ;
                                                                                                           }) ) ) );
                                                                                                     // ----------
                                                                                                     
-                                                                                                    ((__h_case_result ) ? ({ /* progn5723 */
-                                                                                                        ({ /* letn5725 */
+                                                                                                    ((__h_case_result ) ? ({ /* progn5716 */
+                                                                                                        ({ /* letn5718 */
                                                                                                           BTree_int_User nchild_spent  __attribute__((__cleanup__(free_BTree_int_User ))) = nchild ;
                                                                                                           // ----------
                                                                                                           Right_BTree_int_User_Error_BTree_int_User (mergeUp_BTree_int_User (items , children , (((index  >  0 )) ? (index  -  1 ) : index ), index , child_items , child_children , right_items , right_children ));
                                                                                                         });
-                                                                                                      }) : ({ /* letn5727 */
+                                                                                                      }) : ({ /* letn5720 */
                                                                                                         typeof((((right_child -> __h_data). Internal). __h_0_mem)) right_items ;
                                                                                                         typeof((((right_child -> __h_data). Internal). __h_1_mem)) right_children ;
                                                                                                         // ----------
                                                                                                         ;
-                                                                                                        ({ /* letn5729 */
-                                                                                                          bool __h_case_result  = (true  &&  (((right_child -> __h_ctor) ==  __h_Internal_t  ) &&  (({ /* progn5730 */
+                                                                                                        ({ /* letn5722 */
+                                                                                                          bool __h_case_result  = (true  &&  (((right_child -> __h_ctor) ==  __h_Internal_t  ) &&  (({ /* progn5723 */
                                                                                                                   right_items  = (((right_child -> __h_data). Internal). __h_0_mem) ;
                                                                                                                   true ;
-                                                                                                                }) &&  ({ /* progn5732 */
+                                                                                                                }) &&  ({ /* progn5725 */
                                                                                                                   right_children  = (((right_child -> __h_data). Internal). __h_1_mem) ;
                                                                                                                   true ;
                                                                                                                 }) ) ) );
                                                                                                           // ----------
                                                                                                           
-                                                                                                          ((__h_case_result ) ? ({ /* progn5737 */
-                                                                                                              ({ /* letn5739 */
+                                                                                                          ((__h_case_result ) ? ({ /* progn5730 */
+                                                                                                              ({ /* letn5732 */
                                                                                                                 BTree_int_User nchild_spent  __attribute__((__cleanup__(free_BTree_int_User ))) = nchild ;
                                                                                                                 // ----------
                                                                                                                 Right_BTree_int_User_Error_BTree_int_User (mergeUp_BTree_int_User (items , children , (((index  >  0 )) ? (index  -  1 ) : index ), index , child_items , child_children , right_items , right_children ));
                                                                                                               });
-                                                                                                            }) : ({ /* letn5741 */
+                                                                                                            }) : ({ /* letn5734 */
                                                                                                               // ----------
                                                                                                               ;
-                                                                                                              ({ /* progn5743 */
+                                                                                                              ({ /* progn5736 */
                                                                                                                 Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_CANT_BORROW ("BWPR2-1"));
                                                                                                               });
                                                                                                             }));
@@ -5598,19 +5591,19 @@ Either_BTree_int_User_Error_BTree_int_User deleteWithParent_BTree_int_User (Mayb
                                                                                                       }));
                                                                                                   });
                                                                                                 });
-                                                                                              }) : ({ /* letn5745 */
+                                                                                              }) : ({ /* letn5738 */
                                                                                                 // ----------
                                                                                                 ;
-                                                                                                ({ /* progn5747 */
+                                                                                                ({ /* progn5740 */
                                                                                                   Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_CANT_BORROW ("BWPR2"));
                                                                                                 });
                                                                                               }));
                                                                                           });
                                                                                         });
-                                                                                      }) : ({ /* letn5749 */
+                                                                                      }) : ({ /* letn5742 */
                                                                                         // ----------
                                                                                         ;
-                                                                                        ({ /* progn5751 */
+                                                                                        ({ /* progn5744 */
                                                                                           Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_CANT_BORROW ("BWPR1"));
                                                                                         });
                                                                                       }));
@@ -5620,48 +5613,48 @@ Either_BTree_int_User_Error_BTree_int_User deleteWithParent_BTree_int_User (Mayb
                                                                             }));
                                                                         });
                                                                       });
-                                                                    }) : ({ /* letn5755 */
+                                                                    }) : ({ /* letn5748 */
                                                                       // ----------
                                                                       ;
-                                                                      ({ /* progn5757 */
+                                                                      ({ /* progn5750 */
                                                                         Right_BTree_int_User_Error_BTree_int_User (Internal_BTree_int_User (copy_List_BTree_int_User_pair_t (items ), replaceChild_Rc_BTree_int_User (children , nchild , index )));
                                                                       });
                                                                     }));
                                                                 });
                                                               });
-                                                            }) : ({ /* letn5761 */
-                                                              Either_BTree_int_User_Error_BTree_int_User passthru  = match5606 ;
+                                                            }) : ({ /* letn5754 */
+                                                              Either_BTree_int_User_Error_BTree_int_User passthru  = match5599 ;
                                                               // ----------
                                                               ;
-                                                              ({ /* progn5763 */
+                                                              ({ /* progn5756 */
                                                                 passthru ;
                                                               });
                                                             }));
                                                         });
                                                       });
-                                                    }) : ({ /* letn5767 */
+                                                    }) : ({ /* letn5760 */
                                                       // ----------
                                                       ;
-                                                      ({ /* progn5769 */
-                                                        ({ /* letn5776 */
-                                                          Either_BTree_int_User_Error_BTree_int_User match5775  = deleteWithParent_BTree_int_User (tree , (((index  >  0 )) ? (index  -  1 ) : index ), index , tr , skey , callback );
-                                                          typeof((((match5775 . __h_data). Right). __h_0_mem)) nchild ;
+                                                      ({ /* progn5762 */
+                                                        ({ /* letn5769 */
+                                                          Either_BTree_int_User_Error_BTree_int_User match5768  = deleteWithParent_BTree_int_User (tree , (((index  >  0 )) ? (index  -  1 ) : index ), index , tr , skey , callback );
+                                                          typeof((((match5768 . __h_data). Right). __h_0_mem)) nchild ;
                                                           // ----------
                                                           ;
-                                                          ({ /* letn5778 */
-                                                            bool __h_case_result  = (true  &&  (((match5775 . __h_ctor) ==  __h_Right_t  ) &&  ({ /* progn5779 */
-                                                                  nchild  = (((match5775 . __h_data). Right). __h_0_mem) ;
+                                                          ({ /* letn5771 */
+                                                            bool __h_case_result  = (true  &&  (((match5768 . __h_ctor) ==  __h_Right_t  ) &&  ({ /* progn5772 */
+                                                                  nchild  = (((match5768 . __h_data). Right). __h_0_mem) ;
                                                                   true ;
                                                                 }) ) );
                                                             // ----------
                                                             
-                                                            ((__h_case_result ) ? ({ /* progn5784 */
+                                                            ((__h_case_result ) ? ({ /* progn5777 */
                                                                 borrowLeaf_BTree_int_User (items , children , wleft , current , index , nchild , callback );
-                                                              }) : ({ /* letn5789 */
-                                                                Either_BTree_int_User_Error_BTree_int_User passthru  = match5775 ;
+                                                              }) : ({ /* letn5782 */
+                                                                Either_BTree_int_User_Error_BTree_int_User passthru  = match5768 ;
                                                                 // ----------
                                                                 ;
-                                                                ({ /* progn5791 */
+                                                                ({ /* progn5784 */
                                                                   passthru ;
                                                                 });
                                                               }));
@@ -5673,46 +5666,46 @@ Either_BTree_int_User_Error_BTree_int_User deleteWithParent_BTree_int_User (Mayb
                                               }));
                                           });
                                         });
-                                      }) : ({ /* letn5795 */
+                                      }) : ({ /* letn5788 */
                                         // ----------
                                         ;
-                                        ({ /* progn5797 */
+                                        ({ /* progn5790 */
                                           Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_ACCESS_DEAD_CHILD (head , index ));
                                         });
                                       }));
                                   });
                                 });
-                              }) : ({ /* letn5803 */
+                              }) : ({ /* letn5796 */
                                 // ----------
                                 ;
-                                ({ /* progn5805 */
+                                ({ /* progn5798 */
                                   Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_NOT_FOUND (skey ));
                                 });
                               }));
                           });
                         });
-                      }) : ({ /* letn5811 */
+                      }) : ({ /* letn5804 */
                         // ----------
                         ;
-                        ({ /* letn5813 */
-                          bool __h_case_result  = (true  &&  ((match5313 . __h_ctor) ==  __h_EQ_t  ) );
+                        ({ /* letn5806 */
+                          bool __h_case_result  = (true  &&  ((match5306 . __h_ctor) ==  __h_EQ_t  ) );
                           // ----------
                           
-                          ((__h_case_result ) ? ({ /* progn5817 */
-                              ({ /* letn5820 */
+                          ((__h_case_result ) ? ({ /* progn5810 */
+                              ({ /* letn5813 */
                                 Either_BTree_int_User_Error_BTree_int_User result  = borrowInternal_BTree_int_User (tree , items , children , current , index , callback );
                                 // ----------
-                                { /* let5825 */
+                                { /* let5818 */
                                   // ----------
                                   ;
-                                  ({ /* letn5827 */
+                                  ({ /* letn5820 */
                                     bool __h_case_result  = (true  &&  ((result . __h_ctor) ==  __h_Right_t  ) );
                                     // ----------
                                     
                                     if (__h_case_result )
-                                      { /* block5833 */
+                                      { /* block5826 */
                                         if (callback )
-                                          { /* block5838 */
+                                          { /* block5831 */
                                             callback (head );
                                           }
                                       }
@@ -5720,10 +5713,10 @@ Either_BTree_int_User_Error_BTree_int_User deleteWithParent_BTree_int_User (Mayb
                                 }
                                 result ;
                               });
-                            }) : ({ /* letn5842 */
+                            }) : ({ /* letn5835 */
                               // ----------
                               ;
-                              ({ /* progn5844 */
+                              ({ /* progn5837 */
                                 deleteInternal (tree , items , children , Just_List_BTree_int_User_pair_t (current ), tail , (index  +  1 ));
                               });
                             }));
@@ -5731,145 +5724,145 @@ Either_BTree_int_User_Error_BTree_int_User deleteWithParent_BTree_int_User (Mayb
                       }));
                   });
                 });
-              }) : ({ /* letn5849 */
+              }) : ({ /* letn5842 */
                 // ----------
                 ;
-                ({ /* progn5851 */
-                  ({ /* letn5858 */
-                    Maybe_Rc_BTree_int_User match5857  = nth_List_Rc_BTree_int_User (index , children );
-                    typeof((((match5857 . __h_data). Just). __h_0_mem)) child ;
+                ({ /* progn5844 */
+                  ({ /* letn5851 */
+                    Maybe_Rc_BTree_int_User match5850  = nth_List_Rc_BTree_int_User (index , children );
+                    typeof((((match5850 . __h_data). Just). __h_0_mem)) child ;
                     // ----------
                     ;
-                    ({ /* letn5860 */
-                      bool __h_case_result  = (true  &&  (((match5857 . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn5861 */
-                            child  = (((match5857 . __h_data). Just). __h_0_mem) ;
+                    ({ /* letn5853 */
+                      bool __h_case_result  = (true  &&  (((match5850 . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn5854 */
+                            child  = (((match5850 . __h_data). Just). __h_0_mem) ;
                             true ;
                           }) ) );
                       // ----------
                       
-                      ((__h_case_result ) ? ({ /* progn5866 */
-                          ({ /* letn5873 */
-                            Maybe_BTree_int_User match5872  = deref_Rc_BTree_int_User (child );
-                            typeof((((match5872 . __h_data). Just). __h_0_mem)) tr ;
+                      ((__h_case_result ) ? ({ /* progn5859 */
+                          ({ /* letn5866 */
+                            Maybe_BTree_int_User match5865  = deref_Rc_BTree_int_User (child );
+                            typeof((((match5865 . __h_data). Just). __h_0_mem)) tr ;
                             // ----------
                             ;
-                            ({ /* letn5875 */
-                              bool __h_case_result  = (true  &&  (((match5872 . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn5876 */
-                                    tr  = (((match5872 . __h_data). Just). __h_0_mem) ;
+                            ({ /* letn5868 */
+                              bool __h_case_result  = (true  &&  (((match5865 . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn5869 */
+                                    tr  = (((match5865 . __h_data). Just). __h_0_mem) ;
                                     true ;
                                   }) ) );
                               // ----------
                               
-                              ((__h_case_result ) ? ({ /* progn5881 */
-                                  ({ /* letn5887 */
+                              ((__h_case_result ) ? ({ /* progn5874 */
+                                  ({ /* letn5880 */
                                     // ----------
                                     ;
-                                    ({ /* letn5889 */
+                                    ({ /* letn5882 */
                                       bool __h_case_result  = (true  &&  ((tr -> __h_ctor) ==  __h_Branch_t  ) );
                                       // ----------
                                       
-                                      ((__h_case_result ) ? ({ /* progn5893 */
-                                          ({ /* letn5900 */
-                                            Either_BTree_int_User_Error_BTree_int_User match5899  = deleteWithParent_BTree_int_User (tree , (index  -  1 ), index , tr , skey , callback );
-                                            typeof((((match5899 . __h_data). Right). __h_0_mem)) nchild ;
+                                      ((__h_case_result ) ? ({ /* progn5886 */
+                                          ({ /* letn5893 */
+                                            Either_BTree_int_User_Error_BTree_int_User match5892  = deleteWithParent_BTree_int_User (tree , (index  -  1 ), index , tr , skey , callback );
+                                            typeof((((match5892 . __h_data). Right). __h_0_mem)) nchild ;
                                             // ----------
                                             ;
-                                            ({ /* letn5902 */
-                                              bool __h_case_result  = (true  &&  (((match5899 . __h_ctor) ==  __h_Right_t  ) &&  ({ /* progn5903 */
-                                                    nchild  = (((match5899 . __h_data). Right). __h_0_mem) ;
+                                            ({ /* letn5895 */
+                                              bool __h_case_result  = (true  &&  (((match5892 . __h_ctor) ==  __h_Right_t  ) &&  ({ /* progn5896 */
+                                                    nchild  = (((match5892 . __h_data). Right). __h_0_mem) ;
                                                     true ;
                                                   }) ) );
                                               // ----------
                                               
-                                              ((__h_case_result ) ? ({ /* progn5908 */
-                                                  ({ /* letn5914 */
+                                              ((__h_case_result ) ? ({ /* progn5901 */
+                                                  ({ /* letn5907 */
                                                     typeof((((nchild -> __h_data). Branch). __h_0_mem)) child_items ;
                                                     typeof((((nchild -> __h_data). Branch). __h_1_mem)) child_children ;
                                                     // ----------
                                                     ;
-                                                    ({ /* letn5916 */
-                                                      bool __h_case_result  = (true  &&  (((nchild -> __h_ctor) ==  __h_Branch_t  ) &&  (({ /* progn5917 */
+                                                    ({ /* letn5909 */
+                                                      bool __h_case_result  = (true  &&  (((nchild -> __h_ctor) ==  __h_Branch_t  ) &&  (({ /* progn5910 */
                                                               child_items  = (((nchild -> __h_data). Branch). __h_0_mem) ;
                                                               true ;
-                                                            }) &&  ({ /* progn5919 */
+                                                            }) &&  ({ /* progn5912 */
                                                               child_children  = (((nchild -> __h_data). Branch). __h_1_mem) ;
                                                               true ;
                                                             }) ) ) );
                                                       // ----------
                                                       
-                                                      ((__h_case_result ) ? ({ /* progn5924 */
-                                                          ({ /* letn5931 */
-                                                            Maybe_Rc_BTree_int_User match5930  = nth_List_Rc_BTree_int_User ((index  -  1 ), children );
-                                                            typeof((((match5930 . __h_data). Just). __h_0_mem)) wleft ;
+                                                      ((__h_case_result ) ? ({ /* progn5917 */
+                                                          ({ /* letn5924 */
+                                                            Maybe_Rc_BTree_int_User match5923  = nth_List_Rc_BTree_int_User ((index  -  1 ), children );
+                                                            typeof((((match5923 . __h_data). Just). __h_0_mem)) wleft ;
                                                             // ----------
                                                             ;
-                                                            ({ /* letn5933 */
-                                                              bool __h_case_result  = (true  &&  (((match5930 . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn5934 */
-                                                                    wleft  = (((match5930 . __h_data). Just). __h_0_mem) ;
+                                                            ({ /* letn5926 */
+                                                              bool __h_case_result  = (true  &&  (((match5923 . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn5927 */
+                                                                    wleft  = (((match5923 . __h_data). Just). __h_0_mem) ;
                                                                     true ;
                                                                   }) ) );
                                                               // ----------
                                                               
-                                                              ((__h_case_result ) ? ({ /* progn5939 */
-                                                                  ({ /* letn5946 */
-                                                                    Maybe_BTree_int_User match5945  = deref_Rc_BTree_int_User (wleft );
-                                                                    typeof((((match5945 . __h_data). Just). __h_0_mem)) left_child ;
+                                                              ((__h_case_result ) ? ({ /* progn5932 */
+                                                                  ({ /* letn5939 */
+                                                                    Maybe_BTree_int_User match5938  = deref_Rc_BTree_int_User (wleft );
+                                                                    typeof((((match5938 . __h_data). Just). __h_0_mem)) left_child ;
                                                                     // ----------
                                                                     ;
-                                                                    ({ /* letn5948 */
-                                                                      bool __h_case_result  = (true  &&  (((match5945 . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn5949 */
-                                                                            left_child  = (((match5945 . __h_data). Just). __h_0_mem) ;
+                                                                    ({ /* letn5941 */
+                                                                      bool __h_case_result  = (true  &&  (((match5938 . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn5942 */
+                                                                            left_child  = (((match5938 . __h_data). Just). __h_0_mem) ;
                                                                             true ;
                                                                           }) ) );
                                                                       // ----------
                                                                       
-                                                                      ((__h_case_result ) ? ({ /* progn5954 */
-                                                                          ({ /* letn5960 */
+                                                                      ((__h_case_result ) ? ({ /* progn5947 */
+                                                                          ({ /* letn5953 */
                                                                             typeof((((left_child -> __h_data). Branch). __h_0_mem)) left_items ;
                                                                             typeof((((left_child -> __h_data). Branch). __h_1_mem)) left_children ;
                                                                             // ----------
                                                                             ;
-                                                                            ({ /* letn5962 */
-                                                                              bool __h_case_result  = (true  &&  (((left_child -> __h_ctor) ==  __h_Branch_t  ) &&  (({ /* progn5963 */
+                                                                            ({ /* letn5955 */
+                                                                              bool __h_case_result  = (true  &&  (((left_child -> __h_ctor) ==  __h_Branch_t  ) &&  (({ /* progn5956 */
                                                                                       left_items  = (((left_child -> __h_data). Branch). __h_0_mem) ;
                                                                                       true ;
-                                                                                    }) &&  ({ /* progn5965 */
+                                                                                    }) &&  ({ /* progn5958 */
                                                                                       left_children  = (((left_child -> __h_data). Branch). __h_1_mem) ;
                                                                                       true ;
                                                                                     }) ) ) );
                                                                               // ----------
                                                                               
-                                                                              ((__h_case_result ) ? ({ /* progn5970 */
-                                                                                  ({ /* letn5973 */
+                                                                              ((__h_case_result ) ? ({ /* progn5963 */
+                                                                                  ({ /* letn5966 */
                                                                                     BTree_int_User nchild_spent  __attribute__((__cleanup__(free_BTree_int_User ))) = nchild ;
                                                                                     // ----------
                                                                                     Right_BTree_int_User_Error_BTree_int_User (mergeUp_BTree_int_User (items , children , (index  -  1 ), (index  -  1 ), left_items , left_children , child_items , child_children ));
                                                                                   });
-                                                                                }) : ({ /* letn5980 */
+                                                                                }) : ({ /* letn5973 */
                                                                                   typeof((((left_child -> __h_data). Internal). __h_0_mem)) left_items ;
                                                                                   typeof((((left_child -> __h_data). Internal). __h_1_mem)) left_children ;
                                                                                   // ----------
                                                                                   ;
-                                                                                  ({ /* letn5982 */
-                                                                                    bool __h_case_result  = (true  &&  (((left_child -> __h_ctor) ==  __h_Internal_t  ) &&  (({ /* progn5983 */
+                                                                                  ({ /* letn5975 */
+                                                                                    bool __h_case_result  = (true  &&  (((left_child -> __h_ctor) ==  __h_Internal_t  ) &&  (({ /* progn5976 */
                                                                                             left_items  = (((left_child -> __h_data). Internal). __h_0_mem) ;
                                                                                             true ;
-                                                                                          }) &&  ({ /* progn5985 */
+                                                                                          }) &&  ({ /* progn5978 */
                                                                                             left_children  = (((left_child -> __h_data). Internal). __h_1_mem) ;
                                                                                             true ;
                                                                                           }) ) ) );
                                                                                     // ----------
                                                                                     
-                                                                                    ((__h_case_result ) ? ({ /* progn5990 */
-                                                                                        ({ /* letn5992 */
+                                                                                    ((__h_case_result ) ? ({ /* progn5983 */
+                                                                                        ({ /* letn5985 */
                                                                                           BTree_int_User nchild_spent  __attribute__((__cleanup__(free_BTree_int_User ))) = nchild ;
                                                                                           // ----------
                                                                                           Right_BTree_int_User_Error_BTree_int_User (mergeUp_BTree_int_User (items , children , (index  -  1 ), (index  -  1 ), left_items , left_children , child_items , child_children ));
                                                                                         });
-                                                                                      }) : ({ /* letn5996 */
+                                                                                      }) : ({ /* letn5989 */
                                                                                         // ----------
                                                                                         ;
-                                                                                        ({ /* progn5998 */
+                                                                                        ({ /* progn5991 */
                                                                                           Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_CANT_BORROW ("BWPL111"));
                                                                                         });
                                                                                       }));
@@ -5877,91 +5870,91 @@ Either_BTree_int_User_Error_BTree_int_User deleteWithParent_BTree_int_User (Mayb
                                                                                 }));
                                                                             });
                                                                           });
-                                                                        }) : ({ /* letn6004 */
+                                                                        }) : ({ /* letn5997 */
                                                                           // ----------
                                                                           ;
-                                                                          ({ /* progn6006 */
+                                                                          ({ /* progn5999 */
                                                                             Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_CANT_BORROW ("BWPL11"));
                                                                           });
                                                                         }));
                                                                     });
                                                                   });
-                                                                }) : ({ /* letn6012 */
+                                                                }) : ({ /* letn6005 */
                                                                   // ----------
                                                                   ;
-                                                                  ({ /* progn6014 */
-                                                                    ({ /* letn6021 */
-                                                                      Maybe_Rc_BTree_int_User match6020  = nth_List_Rc_BTree_int_User ((index  +  1 ), children );
-                                                                      typeof((((match6020 . __h_data). Just). __h_0_mem)) wright ;
+                                                                  ({ /* progn6007 */
+                                                                    ({ /* letn6014 */
+                                                                      Maybe_Rc_BTree_int_User match6013  = nth_List_Rc_BTree_int_User ((index  +  1 ), children );
+                                                                      typeof((((match6013 . __h_data). Just). __h_0_mem)) wright ;
                                                                       // ----------
                                                                       ;
-                                                                      ({ /* letn6023 */
-                                                                        bool __h_case_result  = (true  &&  (((match6020 . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn6024 */
-                                                                              wright  = (((match6020 . __h_data). Just). __h_0_mem) ;
+                                                                      ({ /* letn6016 */
+                                                                        bool __h_case_result  = (true  &&  (((match6013 . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn6017 */
+                                                                              wright  = (((match6013 . __h_data). Just). __h_0_mem) ;
                                                                               true ;
                                                                             }) ) );
                                                                         // ----------
                                                                         
-                                                                        ((__h_case_result ) ? ({ /* progn6029 */
-                                                                            ({ /* letn6036 */
-                                                                              Maybe_BTree_int_User match6035  = deref_Rc_BTree_int_User (wright );
-                                                                              typeof((((match6035 . __h_data). Just). __h_0_mem)) right_child ;
+                                                                        ((__h_case_result ) ? ({ /* progn6022 */
+                                                                            ({ /* letn6029 */
+                                                                              Maybe_BTree_int_User match6028  = deref_Rc_BTree_int_User (wright );
+                                                                              typeof((((match6028 . __h_data). Just). __h_0_mem)) right_child ;
                                                                               // ----------
                                                                               ;
-                                                                              ({ /* letn6038 */
-                                                                                bool __h_case_result  = (true  &&  (((match6035 . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn6039 */
-                                                                                      right_child  = (((match6035 . __h_data). Just). __h_0_mem) ;
+                                                                              ({ /* letn6031 */
+                                                                                bool __h_case_result  = (true  &&  (((match6028 . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn6032 */
+                                                                                      right_child  = (((match6028 . __h_data). Just). __h_0_mem) ;
                                                                                       true ;
                                                                                     }) ) );
                                                                                 // ----------
                                                                                 
-                                                                                ((__h_case_result ) ? ({ /* progn6044 */
-                                                                                    ({ /* letn6050 */
+                                                                                ((__h_case_result ) ? ({ /* progn6037 */
+                                                                                    ({ /* letn6043 */
                                                                                       typeof((((right_child -> __h_data). Branch). __h_0_mem)) right_items ;
                                                                                       typeof((((right_child -> __h_data). Branch). __h_1_mem)) right_children ;
                                                                                       // ----------
                                                                                       ;
-                                                                                      ({ /* letn6052 */
-                                                                                        bool __h_case_result  = (true  &&  (((right_child -> __h_ctor) ==  __h_Branch_t  ) &&  (({ /* progn6053 */
+                                                                                      ({ /* letn6045 */
+                                                                                        bool __h_case_result  = (true  &&  (((right_child -> __h_ctor) ==  __h_Branch_t  ) &&  (({ /* progn6046 */
                                                                                                 right_items  = (((right_child -> __h_data). Branch). __h_0_mem) ;
                                                                                                 true ;
-                                                                                              }) &&  ({ /* progn6055 */
+                                                                                              }) &&  ({ /* progn6048 */
                                                                                                 right_children  = (((right_child -> __h_data). Branch). __h_1_mem) ;
                                                                                                 true ;
                                                                                               }) ) ) );
                                                                                         // ----------
                                                                                         
-                                                                                        ((__h_case_result ) ? ({ /* progn6060 */
-                                                                                            ({ /* letn6063 */
+                                                                                        ((__h_case_result ) ? ({ /* progn6053 */
+                                                                                            ({ /* letn6056 */
                                                                                               BTree_int_User nchild_spent  __attribute__((__cleanup__(free_BTree_int_User ))) = nchild ;
                                                                                               // ----------
                                                                                               Right_BTree_int_User_Error_BTree_int_User (mergeUp_BTree_int_User (items , children , (index  -  1 ), index , child_items , child_children , right_items , right_children ));
                                                                                             });
-                                                                                          }) : ({ /* letn6070 */
+                                                                                          }) : ({ /* letn6063 */
                                                                                             typeof((((right_child -> __h_data). Internal). __h_0_mem)) right_items ;
                                                                                             typeof((((right_child -> __h_data). Internal). __h_1_mem)) right_children ;
                                                                                             // ----------
                                                                                             ;
-                                                                                            ({ /* letn6072 */
-                                                                                              bool __h_case_result  = (true  &&  (((right_child -> __h_ctor) ==  __h_Internal_t  ) &&  (({ /* progn6073 */
+                                                                                            ({ /* letn6065 */
+                                                                                              bool __h_case_result  = (true  &&  (((right_child -> __h_ctor) ==  __h_Internal_t  ) &&  (({ /* progn6066 */
                                                                                                       right_items  = (((right_child -> __h_data). Internal). __h_0_mem) ;
                                                                                                       true ;
-                                                                                                    }) &&  ({ /* progn6075 */
+                                                                                                    }) &&  ({ /* progn6068 */
                                                                                                       right_children  = (((right_child -> __h_data). Internal). __h_1_mem) ;
                                                                                                       true ;
                                                                                                     }) ) ) );
                                                                                               // ----------
                                                                                               
-                                                                                              ((__h_case_result ) ? ({ /* progn6080 */
-                                                                                                  ({ /* letn6082 */
+                                                                                              ((__h_case_result ) ? ({ /* progn6073 */
+                                                                                                  ({ /* letn6075 */
                                                                                                     BTree_int_User nchild_spent  __attribute__((__cleanup__(free_BTree_int_User ))) = nchild ;
                                                                                                     // ----------
                                                                                                     Right_BTree_int_User_Error_BTree_int_User (mergeUp_BTree_int_User (items , children , (index  -  1 ), index , child_items , child_children , right_items , right_children ));
                                                                                                   });
-                                                                                                }) : ({ /* letn6086 */
+                                                                                                }) : ({ /* letn6079 */
                                                                                                   // ----------
                                                                                                   ;
-                                                                                                  ({ /* progn6088 */
+                                                                                                  ({ /* progn6081 */
                                                                                                     Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_CANT_BORROW ("BWPR222"));
                                                                                                   });
                                                                                                 }));
@@ -5969,19 +5962,19 @@ Either_BTree_int_User_Error_BTree_int_User deleteWithParent_BTree_int_User (Mayb
                                                                                           }));
                                                                                       });
                                                                                     });
-                                                                                  }) : ({ /* letn6094 */
+                                                                                  }) : ({ /* letn6087 */
                                                                                     // ----------
                                                                                     ;
-                                                                                    ({ /* progn6096 */
+                                                                                    ({ /* progn6089 */
                                                                                       Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_CANT_BORROW ("BWPR22"));
                                                                                     });
                                                                                   }));
                                                                               });
                                                                             });
-                                                                          }) : ({ /* letn6102 */
+                                                                          }) : ({ /* letn6095 */
                                                                             // ----------
                                                                             ;
-                                                                            ({ /* progn6104 */
+                                                                            ({ /* progn6097 */
                                                                               Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_CANT_BORROW ("BWPR221"));
                                                                             });
                                                                           }));
@@ -5991,134 +5984,134 @@ Either_BTree_int_User_Error_BTree_int_User deleteWithParent_BTree_int_User (Mayb
                                                                 }));
                                                             });
                                                           });
-                                                        }) : ({ /* letn6110 */
+                                                        }) : ({ /* letn6103 */
                                                           // ----------
                                                           ;
-                                                          ({ /* progn6112 */
+                                                          ({ /* progn6105 */
                                                             Right_BTree_int_User_Error_BTree_int_User (Internal_BTree_int_User (copy_List_BTree_int_User_pair_t (items ), replaceChild_Rc_BTree_int_User (children , nchild , index )));
                                                           });
                                                         }));
                                                     });
                                                   });
-                                                }) : ({ /* letn6120 */
-                                                  Either_BTree_int_User_Error_BTree_int_User passthru  = match5899 ;
+                                                }) : ({ /* letn6113 */
+                                                  Either_BTree_int_User_Error_BTree_int_User passthru  = match5892 ;
                                                   // ----------
                                                   ;
-                                                  ({ /* progn6122 */
+                                                  ({ /* progn6115 */
                                                     passthru ;
                                                   });
                                                 }));
                                             });
                                           });
-                                        }) : ({ /* letn6126 */
+                                        }) : ({ /* letn6119 */
                                           // ----------
                                           ;
-                                          ({ /* letn6128 */
+                                          ({ /* letn6121 */
                                             bool __h_case_result  = (true  &&  ((tr -> __h_ctor) ==  __h_Internal_t  ) );
                                             // ----------
                                             
-                                            ((__h_case_result ) ? ({ /* progn6132 */
-                                                ({ /* letn6138 */
-                                                  Either_BTree_int_User_Error_BTree_int_User match6137  = deleteWithParent_BTree_int_User (tree , (index  -  1 ), index , tr , skey , callback );
-                                                  typeof((((match6137 . __h_data). Right). __h_0_mem)) nchild ;
+                                            ((__h_case_result ) ? ({ /* progn6125 */
+                                                ({ /* letn6131 */
+                                                  Either_BTree_int_User_Error_BTree_int_User match6130  = deleteWithParent_BTree_int_User (tree , (index  -  1 ), index , tr , skey , callback );
+                                                  typeof((((match6130 . __h_data). Right). __h_0_mem)) nchild ;
                                                   // ----------
                                                   ;
-                                                  ({ /* letn6140 */
-                                                    bool __h_case_result  = (true  &&  (((match6137 . __h_ctor) ==  __h_Right_t  ) &&  ({ /* progn6141 */
-                                                          nchild  = (((match6137 . __h_data). Right). __h_0_mem) ;
+                                                  ({ /* letn6133 */
+                                                    bool __h_case_result  = (true  &&  (((match6130 . __h_ctor) ==  __h_Right_t  ) &&  ({ /* progn6134 */
+                                                          nchild  = (((match6130 . __h_data). Right). __h_0_mem) ;
                                                           true ;
                                                         }) ) );
                                                     // ----------
                                                     
-                                                    ((__h_case_result ) ? ({ /* progn6146 */
-                                                        ({ /* letn6152 */
+                                                    ((__h_case_result ) ? ({ /* progn6139 */
+                                                        ({ /* letn6145 */
                                                           typeof((((nchild -> __h_data). Branch). __h_0_mem)) child_items ;
                                                           typeof((((nchild -> __h_data). Branch). __h_1_mem)) child_children ;
                                                           // ----------
                                                           ;
-                                                          ({ /* letn6154 */
-                                                            bool __h_case_result  = (true  &&  (((nchild -> __h_ctor) ==  __h_Branch_t  ) &&  (({ /* progn6155 */
+                                                          ({ /* letn6147 */
+                                                            bool __h_case_result  = (true  &&  (((nchild -> __h_ctor) ==  __h_Branch_t  ) &&  (({ /* progn6148 */
                                                                     child_items  = (((nchild -> __h_data). Branch). __h_0_mem) ;
                                                                     true ;
-                                                                  }) &&  ({ /* progn6157 */
+                                                                  }) &&  ({ /* progn6150 */
                                                                     child_children  = (((nchild -> __h_data). Branch). __h_1_mem) ;
                                                                     true ;
                                                                   }) ) ) );
                                                             // ----------
                                                             
-                                                            ((__h_case_result ) ? ({ /* progn6162 */
-                                                                ({ /* letn6164 */
-                                                                  Maybe_Rc_BTree_int_User match5930  = nth_List_Rc_BTree_int_User ((index  -  1 ), children );
-                                                                  typeof((((match5930 . __h_data). Just). __h_0_mem)) wleft ;
+                                                            ((__h_case_result ) ? ({ /* progn6155 */
+                                                                ({ /* letn6157 */
+                                                                  Maybe_Rc_BTree_int_User match5923  = nth_List_Rc_BTree_int_User ((index  -  1 ), children );
+                                                                  typeof((((match5923 . __h_data). Just). __h_0_mem)) wleft ;
                                                                   // ----------
                                                                   ;
-                                                                  ({ /* letn6166 */
-                                                                    bool __h_case_result  = (true  &&  (((match5930 . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn6167 */
-                                                                          wleft  = (((match5930 . __h_data). Just). __h_0_mem) ;
+                                                                  ({ /* letn6159 */
+                                                                    bool __h_case_result  = (true  &&  (((match5923 . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn6160 */
+                                                                          wleft  = (((match5923 . __h_data). Just). __h_0_mem) ;
                                                                           true ;
                                                                         }) ) );
                                                                     // ----------
                                                                     
-                                                                    ((__h_case_result ) ? ({ /* progn6172 */
-                                                                        ({ /* letn6174 */
-                                                                          Maybe_BTree_int_User match5945  = deref_Rc_BTree_int_User (wleft );
-                                                                          typeof((((match5945 . __h_data). Just). __h_0_mem)) left_child ;
+                                                                    ((__h_case_result ) ? ({ /* progn6165 */
+                                                                        ({ /* letn6167 */
+                                                                          Maybe_BTree_int_User match5938  = deref_Rc_BTree_int_User (wleft );
+                                                                          typeof((((match5938 . __h_data). Just). __h_0_mem)) left_child ;
                                                                           // ----------
                                                                           ;
-                                                                          ({ /* letn6176 */
-                                                                            bool __h_case_result  = (true  &&  (((match5945 . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn6177 */
-                                                                                  left_child  = (((match5945 . __h_data). Just). __h_0_mem) ;
+                                                                          ({ /* letn6169 */
+                                                                            bool __h_case_result  = (true  &&  (((match5938 . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn6170 */
+                                                                                  left_child  = (((match5938 . __h_data). Just). __h_0_mem) ;
                                                                                   true ;
                                                                                 }) ) );
                                                                             // ----------
                                                                             
-                                                                            ((__h_case_result ) ? ({ /* progn6182 */
-                                                                                ({ /* letn6184 */
+                                                                            ((__h_case_result ) ? ({ /* progn6175 */
+                                                                                ({ /* letn6177 */
                                                                                   typeof((((left_child -> __h_data). Branch). __h_0_mem)) left_items ;
                                                                                   typeof((((left_child -> __h_data). Branch). __h_1_mem)) left_children ;
                                                                                   // ----------
                                                                                   ;
-                                                                                  ({ /* letn6186 */
-                                                                                    bool __h_case_result  = (true  &&  (((left_child -> __h_ctor) ==  __h_Branch_t  ) &&  (({ /* progn6187 */
+                                                                                  ({ /* letn6179 */
+                                                                                    bool __h_case_result  = (true  &&  (((left_child -> __h_ctor) ==  __h_Branch_t  ) &&  (({ /* progn6180 */
                                                                                             left_items  = (((left_child -> __h_data). Branch). __h_0_mem) ;
                                                                                             true ;
-                                                                                          }) &&  ({ /* progn6189 */
+                                                                                          }) &&  ({ /* progn6182 */
                                                                                             left_children  = (((left_child -> __h_data). Branch). __h_1_mem) ;
                                                                                             true ;
                                                                                           }) ) ) );
                                                                                     // ----------
                                                                                     
-                                                                                    ((__h_case_result ) ? ({ /* progn6194 */
-                                                                                        ({ /* letn6196 */
+                                                                                    ((__h_case_result ) ? ({ /* progn6187 */
+                                                                                        ({ /* letn6189 */
                                                                                           BTree_int_User nchild_spent  __attribute__((__cleanup__(free_BTree_int_User ))) = nchild ;
                                                                                           // ----------
                                                                                           Right_BTree_int_User_Error_BTree_int_User (mergeUp_BTree_int_User (items , children , (index  -  1 ), (index  -  1 ), left_items , left_children , child_items , child_children ));
                                                                                         });
-                                                                                      }) : ({ /* letn6198 */
+                                                                                      }) : ({ /* letn6191 */
                                                                                         typeof((((left_child -> __h_data). Internal). __h_0_mem)) left_items ;
                                                                                         typeof((((left_child -> __h_data). Internal). __h_1_mem)) left_children ;
                                                                                         // ----------
                                                                                         ;
-                                                                                        ({ /* letn6200 */
-                                                                                          bool __h_case_result  = (true  &&  (((left_child -> __h_ctor) ==  __h_Internal_t  ) &&  (({ /* progn6201 */
+                                                                                        ({ /* letn6193 */
+                                                                                          bool __h_case_result  = (true  &&  (((left_child -> __h_ctor) ==  __h_Internal_t  ) &&  (({ /* progn6194 */
                                                                                                   left_items  = (((left_child -> __h_data). Internal). __h_0_mem) ;
                                                                                                   true ;
-                                                                                                }) &&  ({ /* progn6203 */
+                                                                                                }) &&  ({ /* progn6196 */
                                                                                                   left_children  = (((left_child -> __h_data). Internal). __h_1_mem) ;
                                                                                                   true ;
                                                                                                 }) ) ) );
                                                                                           // ----------
                                                                                           
-                                                                                          ((__h_case_result ) ? ({ /* progn6208 */
-                                                                                              ({ /* letn6210 */
+                                                                                          ((__h_case_result ) ? ({ /* progn6201 */
+                                                                                              ({ /* letn6203 */
                                                                                                 BTree_int_User nchild_spent  __attribute__((__cleanup__(free_BTree_int_User ))) = nchild ;
                                                                                                 // ----------
                                                                                                 Right_BTree_int_User_Error_BTree_int_User (mergeUp_BTree_int_User (items , children , (index  -  1 ), (index  -  1 ), left_items , left_children , child_items , child_children ));
                                                                                               });
-                                                                                            }) : ({ /* letn6212 */
+                                                                                            }) : ({ /* letn6205 */
                                                                                               // ----------
                                                                                               ;
-                                                                                              ({ /* progn6214 */
+                                                                                              ({ /* progn6207 */
                                                                                                 Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_CANT_BORROW ("BWPL111"));
                                                                                               });
                                                                                             }));
@@ -6126,91 +6119,91 @@ Either_BTree_int_User_Error_BTree_int_User deleteWithParent_BTree_int_User (Mayb
                                                                                       }));
                                                                                   });
                                                                                 });
-                                                                              }) : ({ /* letn6216 */
+                                                                              }) : ({ /* letn6209 */
                                                                                 // ----------
                                                                                 ;
-                                                                                ({ /* progn6218 */
+                                                                                ({ /* progn6211 */
                                                                                   Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_CANT_BORROW ("BWPL11"));
                                                                                 });
                                                                               }));
                                                                           });
                                                                         });
-                                                                      }) : ({ /* letn6220 */
+                                                                      }) : ({ /* letn6213 */
                                                                         // ----------
                                                                         ;
-                                                                        ({ /* progn6222 */
-                                                                          ({ /* letn6224 */
-                                                                            Maybe_Rc_BTree_int_User match6020  = nth_List_Rc_BTree_int_User ((index  +  1 ), children );
-                                                                            typeof((((match6020 . __h_data). Just). __h_0_mem)) wright ;
+                                                                        ({ /* progn6215 */
+                                                                          ({ /* letn6217 */
+                                                                            Maybe_Rc_BTree_int_User match6013  = nth_List_Rc_BTree_int_User ((index  +  1 ), children );
+                                                                            typeof((((match6013 . __h_data). Just). __h_0_mem)) wright ;
                                                                             // ----------
                                                                             ;
-                                                                            ({ /* letn6226 */
-                                                                              bool __h_case_result  = (true  &&  (((match6020 . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn6227 */
-                                                                                    wright  = (((match6020 . __h_data). Just). __h_0_mem) ;
+                                                                            ({ /* letn6219 */
+                                                                              bool __h_case_result  = (true  &&  (((match6013 . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn6220 */
+                                                                                    wright  = (((match6013 . __h_data). Just). __h_0_mem) ;
                                                                                     true ;
                                                                                   }) ) );
                                                                               // ----------
                                                                               
-                                                                              ((__h_case_result ) ? ({ /* progn6232 */
-                                                                                  ({ /* letn6234 */
-                                                                                    Maybe_BTree_int_User match6035  = deref_Rc_BTree_int_User (wright );
-                                                                                    typeof((((match6035 . __h_data). Just). __h_0_mem)) right_child ;
+                                                                              ((__h_case_result ) ? ({ /* progn6225 */
+                                                                                  ({ /* letn6227 */
+                                                                                    Maybe_BTree_int_User match6028  = deref_Rc_BTree_int_User (wright );
+                                                                                    typeof((((match6028 . __h_data). Just). __h_0_mem)) right_child ;
                                                                                     // ----------
                                                                                     ;
-                                                                                    ({ /* letn6236 */
-                                                                                      bool __h_case_result  = (true  &&  (((match6035 . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn6237 */
-                                                                                            right_child  = (((match6035 . __h_data). Just). __h_0_mem) ;
+                                                                                    ({ /* letn6229 */
+                                                                                      bool __h_case_result  = (true  &&  (((match6028 . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn6230 */
+                                                                                            right_child  = (((match6028 . __h_data). Just). __h_0_mem) ;
                                                                                             true ;
                                                                                           }) ) );
                                                                                       // ----------
                                                                                       
-                                                                                      ((__h_case_result ) ? ({ /* progn6242 */
-                                                                                          ({ /* letn6244 */
+                                                                                      ((__h_case_result ) ? ({ /* progn6235 */
+                                                                                          ({ /* letn6237 */
                                                                                             typeof((((right_child -> __h_data). Branch). __h_0_mem)) right_items ;
                                                                                             typeof((((right_child -> __h_data). Branch). __h_1_mem)) right_children ;
                                                                                             // ----------
                                                                                             ;
-                                                                                            ({ /* letn6246 */
-                                                                                              bool __h_case_result  = (true  &&  (((right_child -> __h_ctor) ==  __h_Branch_t  ) &&  (({ /* progn6247 */
+                                                                                            ({ /* letn6239 */
+                                                                                              bool __h_case_result  = (true  &&  (((right_child -> __h_ctor) ==  __h_Branch_t  ) &&  (({ /* progn6240 */
                                                                                                       right_items  = (((right_child -> __h_data). Branch). __h_0_mem) ;
                                                                                                       true ;
-                                                                                                    }) &&  ({ /* progn6249 */
+                                                                                                    }) &&  ({ /* progn6242 */
                                                                                                       right_children  = (((right_child -> __h_data). Branch). __h_1_mem) ;
                                                                                                       true ;
                                                                                                     }) ) ) );
                                                                                               // ----------
                                                                                               
-                                                                                              ((__h_case_result ) ? ({ /* progn6254 */
-                                                                                                  ({ /* letn6256 */
+                                                                                              ((__h_case_result ) ? ({ /* progn6247 */
+                                                                                                  ({ /* letn6249 */
                                                                                                     BTree_int_User nchild_spent  __attribute__((__cleanup__(free_BTree_int_User ))) = nchild ;
                                                                                                     // ----------
                                                                                                     Right_BTree_int_User_Error_BTree_int_User (mergeUp_BTree_int_User (items , children , (index  -  1 ), index , child_items , child_children , right_items , right_children ));
                                                                                                   });
-                                                                                                }) : ({ /* letn6258 */
+                                                                                                }) : ({ /* letn6251 */
                                                                                                   typeof((((right_child -> __h_data). Internal). __h_0_mem)) right_items ;
                                                                                                   typeof((((right_child -> __h_data). Internal). __h_1_mem)) right_children ;
                                                                                                   // ----------
                                                                                                   ;
-                                                                                                  ({ /* letn6260 */
-                                                                                                    bool __h_case_result  = (true  &&  (((right_child -> __h_ctor) ==  __h_Internal_t  ) &&  (({ /* progn6261 */
+                                                                                                  ({ /* letn6253 */
+                                                                                                    bool __h_case_result  = (true  &&  (((right_child -> __h_ctor) ==  __h_Internal_t  ) &&  (({ /* progn6254 */
                                                                                                             right_items  = (((right_child -> __h_data). Internal). __h_0_mem) ;
                                                                                                             true ;
-                                                                                                          }) &&  ({ /* progn6263 */
+                                                                                                          }) &&  ({ /* progn6256 */
                                                                                                             right_children  = (((right_child -> __h_data). Internal). __h_1_mem) ;
                                                                                                             true ;
                                                                                                           }) ) ) );
                                                                                                     // ----------
                                                                                                     
-                                                                                                    ((__h_case_result ) ? ({ /* progn6268 */
-                                                                                                        ({ /* letn6270 */
+                                                                                                    ((__h_case_result ) ? ({ /* progn6261 */
+                                                                                                        ({ /* letn6263 */
                                                                                                           BTree_int_User nchild_spent  __attribute__((__cleanup__(free_BTree_int_User ))) = nchild ;
                                                                                                           // ----------
                                                                                                           Right_BTree_int_User_Error_BTree_int_User (mergeUp_BTree_int_User (items , children , (index  -  1 ), index , child_items , child_children , right_items , right_children ));
                                                                                                         });
-                                                                                                      }) : ({ /* letn6272 */
+                                                                                                      }) : ({ /* letn6265 */
                                                                                                         // ----------
                                                                                                         ;
-                                                                                                        ({ /* progn6274 */
+                                                                                                        ({ /* progn6267 */
                                                                                                           Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_CANT_BORROW ("BWPR222"));
                                                                                                         });
                                                                                                       }));
@@ -6218,19 +6211,19 @@ Either_BTree_int_User_Error_BTree_int_User deleteWithParent_BTree_int_User (Mayb
                                                                                                 }));
                                                                                             });
                                                                                           });
-                                                                                        }) : ({ /* letn6276 */
+                                                                                        }) : ({ /* letn6269 */
                                                                                           // ----------
                                                                                           ;
-                                                                                          ({ /* progn6278 */
+                                                                                          ({ /* progn6271 */
                                                                                             Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_CANT_BORROW ("BWPR22"));
                                                                                           });
                                                                                         }));
                                                                                     });
                                                                                   });
-                                                                                }) : ({ /* letn6280 */
+                                                                                }) : ({ /* letn6273 */
                                                                                   // ----------
                                                                                   ;
-                                                                                  ({ /* progn6282 */
+                                                                                  ({ /* progn6275 */
                                                                                     Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_CANT_BORROW ("BWPR221"));
                                                                                   });
                                                                                 }));
@@ -6240,48 +6233,48 @@ Either_BTree_int_User_Error_BTree_int_User deleteWithParent_BTree_int_User (Mayb
                                                                       }));
                                                                   });
                                                                 });
-                                                              }) : ({ /* letn6286 */
+                                                              }) : ({ /* letn6279 */
                                                                 // ----------
                                                                 ;
-                                                                ({ /* progn6288 */
+                                                                ({ /* progn6281 */
                                                                   Right_BTree_int_User_Error_BTree_int_User (Internal_BTree_int_User (copy_List_BTree_int_User_pair_t (items ), replaceChild_Rc_BTree_int_User (children , nchild , index )));
                                                                 });
                                                               }));
                                                           });
                                                         });
-                                                      }) : ({ /* letn6292 */
-                                                        Either_BTree_int_User_Error_BTree_int_User passthru  = match6137 ;
+                                                      }) : ({ /* letn6285 */
+                                                        Either_BTree_int_User_Error_BTree_int_User passthru  = match6130 ;
                                                         // ----------
                                                         ;
-                                                        ({ /* progn6294 */
+                                                        ({ /* progn6287 */
                                                           passthru ;
                                                         });
                                                       }));
                                                   });
                                                 });
-                                              }) : ({ /* letn6298 */
+                                              }) : ({ /* letn6291 */
                                                 // ----------
                                                 ;
-                                                ({ /* progn6300 */
-                                                  ({ /* letn6307 */
-                                                    Either_BTree_int_User_Error_BTree_int_User match6306  = deleteWithParent_BTree_int_User (tree , (index  -  1 ), index , tr , skey , callback );
-                                                    typeof((((match6306 . __h_data). Right). __h_0_mem)) nchild ;
+                                                ({ /* progn6293 */
+                                                  ({ /* letn6300 */
+                                                    Either_BTree_int_User_Error_BTree_int_User match6299  = deleteWithParent_BTree_int_User (tree , (index  -  1 ), index , tr , skey , callback );
+                                                    typeof((((match6299 . __h_data). Right). __h_0_mem)) nchild ;
                                                     // ----------
                                                     ;
-                                                    ({ /* letn6309 */
-                                                      bool __h_case_result  = (true  &&  (((match6306 . __h_ctor) ==  __h_Right_t  ) &&  ({ /* progn6310 */
-                                                            nchild  = (((match6306 . __h_data). Right). __h_0_mem) ;
+                                                    ({ /* letn6302 */
+                                                      bool __h_case_result  = (true  &&  (((match6299 . __h_ctor) ==  __h_Right_t  ) &&  ({ /* progn6303 */
+                                                            nchild  = (((match6299 . __h_data). Right). __h_0_mem) ;
                                                             true ;
                                                           }) ) );
                                                       // ----------
                                                       
-                                                      ((__h_case_result ) ? ({ /* progn6315 */
+                                                      ((__h_case_result ) ? ({ /* progn6308 */
                                                           borrowLeaf_BTree_int_User (items , children , wleft , current , index , nchild , callback );
-                                                        }) : ({ /* letn6320 */
-                                                          Either_BTree_int_User_Error_BTree_int_User passthru  = match6306 ;
+                                                        }) : ({ /* letn6313 */
+                                                          Either_BTree_int_User_Error_BTree_int_User passthru  = match6299 ;
                                                           // ----------
                                                           ;
-                                                          ({ /* progn6322 */
+                                                          ({ /* progn6315 */
                                                             passthru ;
                                                           });
                                                         }));
@@ -6293,19 +6286,19 @@ Either_BTree_int_User_Error_BTree_int_User deleteWithParent_BTree_int_User (Mayb
                                         }));
                                     });
                                   });
-                                }) : ({ /* letn6326 */
+                                }) : ({ /* letn6319 */
                                   // ----------
                                   ;
-                                  ({ /* progn6328 */
+                                  ({ /* progn6321 */
                                     Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_ACCESS_DEAD_CHILD (((BTree_int_User_pair_t){ }), index ));
                                   });
                                 }));
                             });
                           });
-                        }) : ({ /* letn6335 */
+                        }) : ({ /* letn6328 */
                           // ----------
                           ;
-                          ({ /* progn6337 */
+                          ({ /* progn6330 */
                             Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_NOT_FOUND (skey ));
                           });
                         }));
@@ -6316,121 +6309,121 @@ Either_BTree_int_User_Error_BTree_int_User deleteWithParent_BTree_int_User (Mayb
           });
         });
         // ----------
-        ({ /* letn6345 */
-          Either_BTree_int_User_Error_BTree_int_User rs  = ({ /* letn6350 */
+        ({ /* letn6338 */
+          Either_BTree_int_User_Error_BTree_int_User rs  = ({ /* letn6343 */
             typeof((((result . __h_data). Right). __h_0_mem)) ntr ;
             // ----------
             ;
-            ({ /* letn6352 */
-              bool __h_case_result  = (true  &&  (((result . __h_ctor) ==  __h_Right_t  ) &&  ({ /* progn6353 */
+            ({ /* letn6345 */
+              bool __h_case_result  = (true  &&  (((result . __h_ctor) ==  __h_Right_t  ) &&  ({ /* progn6346 */
                     ntr  = (((result . __h_data). Right). __h_0_mem) ;
                     true ;
                   }) ) );
               // ----------
               
-              ((__h_case_result ) ? ({ /* progn6358 */
-                  ({ /* letn6364 */
+              ((__h_case_result ) ? ({ /* progn6351 */
+                  ({ /* letn6357 */
                     typeof((((ntr -> __h_data). Branch). __h_0_mem)) items ;
                     typeof((((ntr -> __h_data). Branch). __h_1_mem)) children ;
                     // ----------
                     ;
-                    ({ /* letn6366 */
-                      bool __h_case_result  = (true  &&  (((ntr -> __h_ctor) ==  __h_Branch_t  ) &&  (({ /* progn6367 */
+                    ({ /* letn6359 */
+                      bool __h_case_result  = (true  &&  (((ntr -> __h_ctor) ==  __h_Branch_t  ) &&  (({ /* progn6360 */
                               items  = (((ntr -> __h_data). Branch). __h_0_mem) ;
                               true ;
-                            }) &&  ({ /* progn6369 */
+                            }) &&  ({ /* progn6362 */
                               children  = (((ntr -> __h_data). Branch). __h_1_mem) ;
                               true ;
                             }) ) ) );
                       // ----------
                       
-                      ((__h_case_result ) ? ({ /* progn6374 */
-                          ({ /* letn6377 */
+                      ((__h_case_result ) ? ({ /* progn6367 */
+                          ({ /* letn6370 */
                             size_t items_len  = hasLen_List_BTree_int_User_pair_t (items , (L_BTree_int_User  -  1 ));
                             // ----------
-                            (((items_len  ==  (L_BTree_int_User  -  1 ) )) ? result  : ({ /* letn6387 */
+                            (((items_len  ==  (L_BTree_int_User  -  1 ) )) ? result  : ({ /* letn6380 */
                                 typeof((((wparent . __h_data). Just). __h_0_mem)) ptree ;
                                 // ----------
                                 ;
-                                ({ /* letn6389 */
-                                  bool __h_case_result  = (true  &&  (((wparent . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn6390 */
+                                ({ /* letn6382 */
+                                  bool __h_case_result  = (true  &&  (((wparent . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn6383 */
                                         ptree  = (((wparent . __h_data). Just). __h_0_mem) ;
                                         true ;
                                       }) ) );
                                   // ----------
                                   
-                                  ((__h_case_result ) ? ({ /* progn6395 */
-                                      ({ /* letn6401 */
+                                  ((__h_case_result ) ? ({ /* progn6388 */
+                                      ({ /* letn6394 */
                                         typeof((((ptree -> __h_data). Branch). __h_0_mem)) pitems ;
                                         // ----------
                                         ;
-                                        ({ /* letn6403 */
-                                          bool __h_case_result  = (true  &&  (((ptree -> __h_ctor) ==  __h_Branch_t  ) &&  ({ /* progn6404 */
+                                        ({ /* letn6396 */
+                                          bool __h_case_result  = (true  &&  (((ptree -> __h_ctor) ==  __h_Branch_t  ) &&  ({ /* progn6397 */
                                                 pitems  = (((ptree -> __h_data). Branch). __h_0_mem) ;
                                                 true ;
                                               }) ) );
                                           // ----------
                                           
-                                          ((__h_case_result ) ? ({ /* progn6409 */
-                                              ({ /* letn6416 */
-                                                Maybe_BTree_int_User_pair_t match6415  = nth_List_BTree_int_User_pair_t (pitem_index , pitems );
-                                                typeof((((match6415 . __h_data). Just). __h_0_mem)) bitem ;
+                                          ((__h_case_result ) ? ({ /* progn6402 */
+                                              ({ /* letn6409 */
+                                                Maybe_BTree_int_User_pair_t match6408  = nth_List_BTree_int_User_pair_t (pitem_index , pitems );
+                                                typeof((((match6408 . __h_data). Just). __h_0_mem)) bitem ;
                                                 // ----------
                                                 ;
-                                                ({ /* letn6418 */
-                                                  bool __h_case_result  = (true  &&  (((match6415 . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn6419 */
-                                                        bitem  = (((match6415 . __h_data). Just). __h_0_mem) ;
+                                                ({ /* letn6411 */
+                                                  bool __h_case_result  = (true  &&  (((match6408 . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn6412 */
+                                                        bitem  = (((match6408 . __h_data). Just). __h_0_mem) ;
                                                         true ;
                                                       }) ) );
                                                   // ----------
                                                   
-                                                  ((__h_case_result ) ? ({ /* progn6424 */
-                                                      ({ /* letn6427 */
+                                                  ((__h_case_result ) ? ({ /* progn6417 */
+                                                      ({ /* letn6420 */
                                                         BTree_int_User ntr_spent  __attribute__((__cleanup__(free_BTree_int_User ))) = ntr ;
                                                         // ----------
-                                                        Right_BTree_int_User_Error_BTree_int_User (Branch_BTree_int_User (insertAt_List_BTree_int_User_pair_t (items , bitem , ({ /* letn6437 */
-                                                            Ordering match6436  = compareKey (({ /* letn6442 */
+                                                        Right_BTree_int_User_Error_BTree_int_User (Branch_BTree_int_User (insertAt_List_BTree_int_User_pair_t (items , bitem , ({ /* letn6430 */
+                                                            Ordering match6429  = compareKey (({ /* letn6435 */
                                                               typeof((bitem . __h_0_mem)) key ;
                                                               // ----------
                                                               ;
-                                                              ({ /* letn6444 */
-                                                                bool __h_case_result  = (true  &&  ({ /* progn6445 */
+                                                              ({ /* letn6437 */
+                                                                bool __h_case_result  = (true  &&  ({ /* progn6438 */
                                                                     key  = (bitem . __h_0_mem) ;
                                                                     true ;
                                                                   }) );
                                                                 // ----------
                                                                 
-                                                                ((__h_case_result ) ? ({ /* progn6450 */
+                                                                ((__h_case_result ) ? ({ /* progn6443 */
                                                                     key ;
-                                                                  }) : ({ /* letn6454 */
+                                                                  }) : ({ /* letn6447 */
                                                                     // ----------
                                                                     ;
-                                                                    ({ /* progn6456 */
+                                                                    ({ /* progn6449 */
                                                                       skey ;
                                                                     });
                                                                   }));
                                                               });
-                                                            }), ({ /* letn6463 */
-                                                              typeof((((items -> __h_data). Cons). __h_0_mem)) __h_match6461_0_arg ;
-                                                              typeof((__h_match6461_0_arg . __h_0_mem)) key ;
+                                                            }), ({ /* letn6456 */
+                                                              typeof((((items -> __h_data). Cons). __h_0_mem)) __h_match6454_0_arg ;
+                                                              typeof((__h_match6454_0_arg . __h_0_mem)) key ;
                                                               // ----------
                                                               ;
-                                                              ({ /* letn6465 */
-                                                                bool __h_case_result  = (true  &&  (((items -> __h_ctor) ==  __h_Cons_t  ) &&  (({ /* progn6466 */
-                                                                        __h_match6461_0_arg  = (((items -> __h_data). Cons). __h_0_mem) ;
+                                                              ({ /* letn6458 */
+                                                                bool __h_case_result  = (true  &&  (((items -> __h_ctor) ==  __h_Cons_t  ) &&  (({ /* progn6459 */
+                                                                        __h_match6454_0_arg  = (((items -> __h_data). Cons). __h_0_mem) ;
                                                                         true ;
-                                                                      }) &&  (true  &&  ({ /* progn6468 */
-                                                                          key  = (__h_match6461_0_arg . __h_0_mem) ;
+                                                                      }) &&  (true  &&  ({ /* progn6461 */
+                                                                          key  = (__h_match6454_0_arg . __h_0_mem) ;
                                                                           true ;
                                                                         }) ) ) ) );
                                                                 // ----------
                                                                 
-                                                                ((__h_case_result ) ? ({ /* progn6473 */
+                                                                ((__h_case_result ) ? ({ /* progn6466 */
                                                                     key ;
-                                                                  }) : ({ /* letn6477 */
+                                                                  }) : ({ /* letn6470 */
                                                                     // ----------
                                                                     ;
-                                                                    ({ /* progn6479 */
+                                                                    ({ /* progn6472 */
                                                                       skey ;
                                                                     });
                                                                   }));
@@ -6438,102 +6431,102 @@ Either_BTree_int_User_Error_BTree_int_User deleteWithParent_BTree_int_User (Mayb
                                                             }));
                                                             // ----------
                                                             ;
-                                                            ({ /* letn6482 */
-                                                              bool __h_case_result  = (true  &&  ((match6436 . __h_ctor) ==  __h_LT_t  ) );
+                                                            ({ /* letn6475 */
+                                                              bool __h_case_result  = (true  &&  ((match6429 . __h_ctor) ==  __h_LT_t  ) );
                                                               // ----------
                                                               
-                                                              ((__h_case_result ) ? ({ /* progn6486 */
+                                                              ((__h_case_result ) ? ({ /* progn6479 */
                                                                   0;
-                                                                }) : ({ /* letn6490 */
+                                                                }) : ({ /* letn6483 */
                                                                   // ----------
                                                                   ;
-                                                                  ({ /* progn6492 */
+                                                                  ({ /* progn6485 */
                                                                     items_len ;
                                                                   });
                                                                 }));
                                                             });
                                                           })), cloneAll_Rc_BTree_int_User (children )));
                                                       });
-                                                    }) : ({ /* letn6497 */
+                                                    }) : ({ /* letn6490 */
                                                       // ----------
                                                       ;
-                                                      ({ /* progn6499 */
+                                                      ({ /* progn6492 */
                                                         Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_CANT_BORROW ("parent borrow 2"));
                                                       });
                                                     }));
                                                 });
                                               });
-                                            }) : ({ /* letn6505 */
+                                            }) : ({ /* letn6498 */
                                               typeof((((ptree -> __h_data). Internal). __h_0_mem)) pitems ;
                                               // ----------
                                               ;
-                                              ({ /* letn6507 */
-                                                bool __h_case_result  = (true  &&  (((ptree -> __h_ctor) ==  __h_Internal_t  ) &&  ({ /* progn6508 */
+                                              ({ /* letn6500 */
+                                                bool __h_case_result  = (true  &&  (((ptree -> __h_ctor) ==  __h_Internal_t  ) &&  ({ /* progn6501 */
                                                       pitems  = (((ptree -> __h_data). Internal). __h_0_mem) ;
                                                       true ;
                                                     }) ) );
                                                 // ----------
                                                 
-                                                ((__h_case_result ) ? ({ /* progn6513 */
-                                                    ({ /* letn6519 */
-                                                      Maybe_BTree_int_User_pair_t match6518  = nth_List_BTree_int_User_pair_t (pitem_index , pitems );
-                                                      typeof((((match6518 . __h_data). Just). __h_0_mem)) bitem ;
+                                                ((__h_case_result ) ? ({ /* progn6506 */
+                                                    ({ /* letn6512 */
+                                                      Maybe_BTree_int_User_pair_t match6511  = nth_List_BTree_int_User_pair_t (pitem_index , pitems );
+                                                      typeof((((match6511 . __h_data). Just). __h_0_mem)) bitem ;
                                                       // ----------
                                                       ;
-                                                      ({ /* letn6521 */
-                                                        bool __h_case_result  = (true  &&  (((match6518 . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn6522 */
-                                                              bitem  = (((match6518 . __h_data). Just). __h_0_mem) ;
+                                                      ({ /* letn6514 */
+                                                        bool __h_case_result  = (true  &&  (((match6511 . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn6515 */
+                                                              bitem  = (((match6511 . __h_data). Just). __h_0_mem) ;
                                                               true ;
                                                             }) ) );
                                                         // ----------
                                                         
-                                                        ((__h_case_result ) ? ({ /* progn6527 */
-                                                            ({ /* letn6529 */
+                                                        ((__h_case_result ) ? ({ /* progn6520 */
+                                                            ({ /* letn6522 */
                                                               BTree_int_User ntr_spent  __attribute__((__cleanup__(free_BTree_int_User ))) = ntr ;
                                                               // ----------
-                                                              Right_BTree_int_User_Error_BTree_int_User (Branch_BTree_int_User (insertAt_List_BTree_int_User_pair_t (items , bitem , ({ /* letn6531 */
-                                                                  Ordering match6436  = compareKey (({ /* letn6532 */
+                                                              Right_BTree_int_User_Error_BTree_int_User (Branch_BTree_int_User (insertAt_List_BTree_int_User_pair_t (items , bitem , ({ /* letn6524 */
+                                                                  Ordering match6429  = compareKey (({ /* letn6525 */
                                                                     typeof((bitem . __h_0_mem)) key ;
                                                                     // ----------
                                                                     ;
-                                                                    ({ /* letn6534 */
-                                                                      bool __h_case_result  = (true  &&  ({ /* progn6535 */
+                                                                    ({ /* letn6527 */
+                                                                      bool __h_case_result  = (true  &&  ({ /* progn6528 */
                                                                           key  = (bitem . __h_0_mem) ;
                                                                           true ;
                                                                         }) );
                                                                       // ----------
                                                                       
-                                                                      ((__h_case_result ) ? ({ /* progn6540 */
+                                                                      ((__h_case_result ) ? ({ /* progn6533 */
                                                                           key ;
-                                                                        }) : ({ /* letn6542 */
+                                                                        }) : ({ /* letn6535 */
                                                                           // ----------
                                                                           ;
-                                                                          ({ /* progn6544 */
+                                                                          ({ /* progn6537 */
                                                                             skey ;
                                                                           });
                                                                         }));
                                                                     });
-                                                                  }), ({ /* letn6546 */
-                                                                    typeof((((items -> __h_data). Cons). __h_0_mem)) __h_match6461_0_arg ;
-                                                                    typeof((__h_match6461_0_arg . __h_0_mem)) key ;
+                                                                  }), ({ /* letn6539 */
+                                                                    typeof((((items -> __h_data). Cons). __h_0_mem)) __h_match6454_0_arg ;
+                                                                    typeof((__h_match6454_0_arg . __h_0_mem)) key ;
                                                                     // ----------
                                                                     ;
-                                                                    ({ /* letn6548 */
-                                                                      bool __h_case_result  = (true  &&  (((items -> __h_ctor) ==  __h_Cons_t  ) &&  (({ /* progn6549 */
-                                                                              __h_match6461_0_arg  = (((items -> __h_data). Cons). __h_0_mem) ;
+                                                                    ({ /* letn6541 */
+                                                                      bool __h_case_result  = (true  &&  (((items -> __h_ctor) ==  __h_Cons_t  ) &&  (({ /* progn6542 */
+                                                                              __h_match6454_0_arg  = (((items -> __h_data). Cons). __h_0_mem) ;
                                                                               true ;
-                                                                            }) &&  (true  &&  ({ /* progn6551 */
-                                                                                key  = (__h_match6461_0_arg . __h_0_mem) ;
+                                                                            }) &&  (true  &&  ({ /* progn6544 */
+                                                                                key  = (__h_match6454_0_arg . __h_0_mem) ;
                                                                                 true ;
                                                                               }) ) ) ) );
                                                                       // ----------
                                                                       
-                                                                      ((__h_case_result ) ? ({ /* progn6556 */
+                                                                      ((__h_case_result ) ? ({ /* progn6549 */
                                                                           key ;
-                                                                        }) : ({ /* letn6558 */
+                                                                        }) : ({ /* letn6551 */
                                                                           // ----------
                                                                           ;
-                                                                          ({ /* progn6560 */
+                                                                          ({ /* progn6553 */
                                                                             skey ;
                                                                           });
                                                                         }));
@@ -6541,35 +6534,35 @@ Either_BTree_int_User_Error_BTree_int_User deleteWithParent_BTree_int_User (Mayb
                                                                   }));
                                                                   // ----------
                                                                   ;
-                                                                  ({ /* letn6563 */
-                                                                    bool __h_case_result  = (true  &&  ((match6436 . __h_ctor) ==  __h_LT_t  ) );
+                                                                  ({ /* letn6556 */
+                                                                    bool __h_case_result  = (true  &&  ((match6429 . __h_ctor) ==  __h_LT_t  ) );
                                                                     // ----------
                                                                     
-                                                                    ((__h_case_result ) ? ({ /* progn6567 */
+                                                                    ((__h_case_result ) ? ({ /* progn6560 */
                                                                         0;
-                                                                      }) : ({ /* letn6569 */
+                                                                      }) : ({ /* letn6562 */
                                                                         // ----------
                                                                         ;
-                                                                        ({ /* progn6571 */
+                                                                        ({ /* progn6564 */
                                                                           items_len ;
                                                                         });
                                                                       }));
                                                                   });
                                                                 })), cloneAll_Rc_BTree_int_User (children )));
                                                             });
-                                                          }) : ({ /* letn6575 */
+                                                          }) : ({ /* letn6568 */
                                                             // ----------
                                                             ;
-                                                            ({ /* progn6577 */
+                                                            ({ /* progn6570 */
                                                               Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_CANT_BORROW ("parent borrow 2"));
                                                             });
                                                           }));
                                                       });
                                                     });
-                                                  }) : ({ /* letn6581 */
+                                                  }) : ({ /* letn6574 */
                                                     // ----------
                                                     ;
-                                                    ({ /* progn6583 */
+                                                    ({ /* progn6576 */
                                                       Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_CANT_BORROW ("parent borrow 1"));
                                                     });
                                                   }));
@@ -6577,53 +6570,53 @@ Either_BTree_int_User_Error_BTree_int_User deleteWithParent_BTree_int_User (Mayb
                                             }));
                                         });
                                       });
-                                    }) : ({ /* letn6589 */
+                                    }) : ({ /* letn6582 */
                                       // ----------
                                       ;
-                                      ({ /* progn6591 */
-                                        (((items_len  ==  0 )) ? ({ /* letn6598 */
+                                      ({ /* progn6584 */
+                                        (((items_len  ==  0 )) ? ({ /* letn6591 */
                                             typeof((((children -> __h_data). Cons). __h_0_mem)) head ;
                                             // ----------
                                             ;
-                                            ({ /* letn6600 */
-                                              bool __h_case_result  = (true  &&  (((children -> __h_ctor) ==  __h_Cons_t  ) &&  ({ /* progn6601 */
+                                            ({ /* letn6593 */
+                                              bool __h_case_result  = (true  &&  (((children -> __h_ctor) ==  __h_Cons_t  ) &&  ({ /* progn6594 */
                                                     head  = (((children -> __h_data). Cons). __h_0_mem) ;
                                                     true ;
                                                   }) ) );
                                               // ----------
                                               
-                                              ((__h_case_result ) ? ({ /* progn6606 */
-                                                  ({ /* letn6613 */
-                                                    Maybe_BTree_int_User match6612  = deref_Rc_BTree_int_User (clone_Rc_BTree_int_User (head ));
-                                                    typeof((((match6612 . __h_data). Just). __h_0_mem)) chtr ;
+                                              ((__h_case_result ) ? ({ /* progn6599 */
+                                                  ({ /* letn6606 */
+                                                    Maybe_BTree_int_User match6605  = deref_Rc_BTree_int_User (clone_Rc_BTree_int_User (head ));
+                                                    typeof((((match6605 . __h_data). Just). __h_0_mem)) chtr ;
                                                     // ----------
                                                     ;
-                                                    ({ /* letn6616 */
-                                                      bool __h_case_result  = (true  &&  (((match6612 . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn6617 */
-                                                            chtr  = (((match6612 . __h_data). Just). __h_0_mem) ;
+                                                    ({ /* letn6609 */
+                                                      bool __h_case_result  = (true  &&  (((match6605 . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn6610 */
+                                                            chtr  = (((match6605 . __h_data). Just). __h_0_mem) ;
                                                             true ;
                                                           }) ) );
                                                       // ----------
                                                       
-                                                      ((__h_case_result ) ? ({ /* progn6622 */
-                                                          ({ /* letn6625 */
+                                                      ((__h_case_result ) ? ({ /* progn6615 */
+                                                          ({ /* letn6618 */
                                                             BTree_int_User ntr_spent  __attribute__((__cleanup__(free_BTree_int_User ))) = ntr ;
                                                             // ----------
                                                             Right_BTree_int_User_Error_BTree_int_User (chtr );
                                                           });
-                                                        }) : ({ /* letn6631 */
+                                                        }) : ({ /* letn6624 */
                                                           // ----------
                                                           ;
-                                                          ({ /* progn6633 */
+                                                          ({ /* progn6626 */
                                                             Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_CANT_BORROW ("parent borrow 3"));
                                                           });
                                                         }));
                                                     });
                                                   });
-                                                }) : ({ /* letn6639 */
+                                                }) : ({ /* letn6632 */
                                                   // ----------
                                                   ;
-                                                  ({ /* progn6641 */
+                                                  ({ /* progn6634 */
                                                     result ;
                                                   });
                                                 }));
@@ -6634,108 +6627,108 @@ Either_BTree_int_User_Error_BTree_int_User deleteWithParent_BTree_int_User (Mayb
                                 });
                               }));
                           });
-                        }) : ({ /* letn6645 */
+                        }) : ({ /* letn6638 */
                           typeof((((ntr -> __h_data). Internal). __h_0_mem)) items ;
                           typeof((((ntr -> __h_data). Internal). __h_1_mem)) children ;
                           // ----------
                           ;
-                          ({ /* letn6647 */
-                            bool __h_case_result  = (true  &&  (((ntr -> __h_ctor) ==  __h_Internal_t  ) &&  (({ /* progn6648 */
+                          ({ /* letn6640 */
+                            bool __h_case_result  = (true  &&  (((ntr -> __h_ctor) ==  __h_Internal_t  ) &&  (({ /* progn6641 */
                                     items  = (((ntr -> __h_data). Internal). __h_0_mem) ;
                                     true ;
-                                  }) &&  ({ /* progn6650 */
+                                  }) &&  ({ /* progn6643 */
                                     children  = (((ntr -> __h_data). Internal). __h_1_mem) ;
                                     true ;
                                   }) ) ) );
                             // ----------
                             
-                            ((__h_case_result ) ? ({ /* progn6655 */
-                                ({ /* letn6657 */
+                            ((__h_case_result ) ? ({ /* progn6648 */
+                                ({ /* letn6650 */
                                   size_t items_len  = hasLen_List_BTree_int_User_pair_t (items , (L_BTree_int_User  -  1 ));
                                   // ----------
-                                  (((items_len  ==  (L_BTree_int_User  -  1 ) )) ? result  : ({ /* letn6659 */
+                                  (((items_len  ==  (L_BTree_int_User  -  1 ) )) ? result  : ({ /* letn6652 */
                                       typeof((((wparent . __h_data). Just). __h_0_mem)) ptree ;
                                       // ----------
                                       ;
-                                      ({ /* letn6661 */
-                                        bool __h_case_result  = (true  &&  (((wparent . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn6662 */
+                                      ({ /* letn6654 */
+                                        bool __h_case_result  = (true  &&  (((wparent . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn6655 */
                                               ptree  = (((wparent . __h_data). Just). __h_0_mem) ;
                                               true ;
                                             }) ) );
                                         // ----------
                                         
-                                        ((__h_case_result ) ? ({ /* progn6667 */
-                                            ({ /* letn6669 */
+                                        ((__h_case_result ) ? ({ /* progn6660 */
+                                            ({ /* letn6662 */
                                               typeof((((ptree -> __h_data). Branch). __h_0_mem)) pitems ;
                                               // ----------
                                               ;
-                                              ({ /* letn6671 */
-                                                bool __h_case_result  = (true  &&  (((ptree -> __h_ctor) ==  __h_Branch_t  ) &&  ({ /* progn6672 */
+                                              ({ /* letn6664 */
+                                                bool __h_case_result  = (true  &&  (((ptree -> __h_ctor) ==  __h_Branch_t  ) &&  ({ /* progn6665 */
                                                       pitems  = (((ptree -> __h_data). Branch). __h_0_mem) ;
                                                       true ;
                                                     }) ) );
                                                 // ----------
                                                 
-                                                ((__h_case_result ) ? ({ /* progn6677 */
-                                                    ({ /* letn6679 */
-                                                      Maybe_BTree_int_User_pair_t match6415  = nth_List_BTree_int_User_pair_t (pitem_index , pitems );
-                                                      typeof((((match6415 . __h_data). Just). __h_0_mem)) bitem ;
+                                                ((__h_case_result ) ? ({ /* progn6670 */
+                                                    ({ /* letn6672 */
+                                                      Maybe_BTree_int_User_pair_t match6408  = nth_List_BTree_int_User_pair_t (pitem_index , pitems );
+                                                      typeof((((match6408 . __h_data). Just). __h_0_mem)) bitem ;
                                                       // ----------
                                                       ;
-                                                      ({ /* letn6681 */
-                                                        bool __h_case_result  = (true  &&  (((match6415 . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn6682 */
-                                                              bitem  = (((match6415 . __h_data). Just). __h_0_mem) ;
+                                                      ({ /* letn6674 */
+                                                        bool __h_case_result  = (true  &&  (((match6408 . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn6675 */
+                                                              bitem  = (((match6408 . __h_data). Just). __h_0_mem) ;
                                                               true ;
                                                             }) ) );
                                                         // ----------
                                                         
-                                                        ((__h_case_result ) ? ({ /* progn6687 */
-                                                            ({ /* letn6689 */
+                                                        ((__h_case_result ) ? ({ /* progn6680 */
+                                                            ({ /* letn6682 */
                                                               BTree_int_User ntr_spent  __attribute__((__cleanup__(free_BTree_int_User ))) = ntr ;
                                                               // ----------
-                                                              Right_BTree_int_User_Error_BTree_int_User (Branch_BTree_int_User (insertAt_List_BTree_int_User_pair_t (items , bitem , ({ /* letn6691 */
-                                                                  Ordering match6436  = compareKey (({ /* letn6692 */
+                                                              Right_BTree_int_User_Error_BTree_int_User (Branch_BTree_int_User (insertAt_List_BTree_int_User_pair_t (items , bitem , ({ /* letn6684 */
+                                                                  Ordering match6429  = compareKey (({ /* letn6685 */
                                                                     typeof((bitem . __h_0_mem)) key ;
                                                                     // ----------
                                                                     ;
-                                                                    ({ /* letn6694 */
-                                                                      bool __h_case_result  = (true  &&  ({ /* progn6695 */
+                                                                    ({ /* letn6687 */
+                                                                      bool __h_case_result  = (true  &&  ({ /* progn6688 */
                                                                           key  = (bitem . __h_0_mem) ;
                                                                           true ;
                                                                         }) );
                                                                       // ----------
                                                                       
-                                                                      ((__h_case_result ) ? ({ /* progn6700 */
+                                                                      ((__h_case_result ) ? ({ /* progn6693 */
                                                                           key ;
-                                                                        }) : ({ /* letn6702 */
+                                                                        }) : ({ /* letn6695 */
                                                                           // ----------
                                                                           ;
-                                                                          ({ /* progn6704 */
+                                                                          ({ /* progn6697 */
                                                                             skey ;
                                                                           });
                                                                         }));
                                                                     });
-                                                                  }), ({ /* letn6706 */
-                                                                    typeof((((items -> __h_data). Cons). __h_0_mem)) __h_match6461_0_arg ;
-                                                                    typeof((__h_match6461_0_arg . __h_0_mem)) key ;
+                                                                  }), ({ /* letn6699 */
+                                                                    typeof((((items -> __h_data). Cons). __h_0_mem)) __h_match6454_0_arg ;
+                                                                    typeof((__h_match6454_0_arg . __h_0_mem)) key ;
                                                                     // ----------
                                                                     ;
-                                                                    ({ /* letn6708 */
-                                                                      bool __h_case_result  = (true  &&  (((items -> __h_ctor) ==  __h_Cons_t  ) &&  (({ /* progn6709 */
-                                                                              __h_match6461_0_arg  = (((items -> __h_data). Cons). __h_0_mem) ;
+                                                                    ({ /* letn6701 */
+                                                                      bool __h_case_result  = (true  &&  (((items -> __h_ctor) ==  __h_Cons_t  ) &&  (({ /* progn6702 */
+                                                                              __h_match6454_0_arg  = (((items -> __h_data). Cons). __h_0_mem) ;
                                                                               true ;
-                                                                            }) &&  (true  &&  ({ /* progn6711 */
-                                                                                key  = (__h_match6461_0_arg . __h_0_mem) ;
+                                                                            }) &&  (true  &&  ({ /* progn6704 */
+                                                                                key  = (__h_match6454_0_arg . __h_0_mem) ;
                                                                                 true ;
                                                                               }) ) ) ) );
                                                                       // ----------
                                                                       
-                                                                      ((__h_case_result ) ? ({ /* progn6716 */
+                                                                      ((__h_case_result ) ? ({ /* progn6709 */
                                                                           key ;
-                                                                        }) : ({ /* letn6718 */
+                                                                        }) : ({ /* letn6711 */
                                                                           // ----------
                                                                           ;
-                                                                          ({ /* progn6720 */
+                                                                          ({ /* progn6713 */
                                                                             skey ;
                                                                           });
                                                                         }));
@@ -6743,102 +6736,102 @@ Either_BTree_int_User_Error_BTree_int_User deleteWithParent_BTree_int_User (Mayb
                                                                   }));
                                                                   // ----------
                                                                   ;
-                                                                  ({ /* letn6723 */
-                                                                    bool __h_case_result  = (true  &&  ((match6436 . __h_ctor) ==  __h_LT_t  ) );
+                                                                  ({ /* letn6716 */
+                                                                    bool __h_case_result  = (true  &&  ((match6429 . __h_ctor) ==  __h_LT_t  ) );
                                                                     // ----------
                                                                     
-                                                                    ((__h_case_result ) ? ({ /* progn6727 */
+                                                                    ((__h_case_result ) ? ({ /* progn6720 */
                                                                         0;
-                                                                      }) : ({ /* letn6729 */
+                                                                      }) : ({ /* letn6722 */
                                                                         // ----------
                                                                         ;
-                                                                        ({ /* progn6731 */
+                                                                        ({ /* progn6724 */
                                                                           items_len ;
                                                                         });
                                                                       }));
                                                                   });
                                                                 })), cloneAll_Rc_BTree_int_User (children )));
                                                             });
-                                                          }) : ({ /* letn6733 */
+                                                          }) : ({ /* letn6726 */
                                                             // ----------
                                                             ;
-                                                            ({ /* progn6735 */
+                                                            ({ /* progn6728 */
                                                               Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_CANT_BORROW ("parent borrow 2"));
                                                             });
                                                           }));
                                                       });
                                                     });
-                                                  }) : ({ /* letn6737 */
+                                                  }) : ({ /* letn6730 */
                                                     typeof((((ptree -> __h_data). Internal). __h_0_mem)) pitems ;
                                                     // ----------
                                                     ;
-                                                    ({ /* letn6739 */
-                                                      bool __h_case_result  = (true  &&  (((ptree -> __h_ctor) ==  __h_Internal_t  ) &&  ({ /* progn6740 */
+                                                    ({ /* letn6732 */
+                                                      bool __h_case_result  = (true  &&  (((ptree -> __h_ctor) ==  __h_Internal_t  ) &&  ({ /* progn6733 */
                                                             pitems  = (((ptree -> __h_data). Internal). __h_0_mem) ;
                                                             true ;
                                                           }) ) );
                                                       // ----------
                                                       
-                                                      ((__h_case_result ) ? ({ /* progn6745 */
-                                                          ({ /* letn6747 */
-                                                            Maybe_BTree_int_User_pair_t match6518  = nth_List_BTree_int_User_pair_t (pitem_index , pitems );
-                                                            typeof((((match6518 . __h_data). Just). __h_0_mem)) bitem ;
+                                                      ((__h_case_result ) ? ({ /* progn6738 */
+                                                          ({ /* letn6740 */
+                                                            Maybe_BTree_int_User_pair_t match6511  = nth_List_BTree_int_User_pair_t (pitem_index , pitems );
+                                                            typeof((((match6511 . __h_data). Just). __h_0_mem)) bitem ;
                                                             // ----------
                                                             ;
-                                                            ({ /* letn6749 */
-                                                              bool __h_case_result  = (true  &&  (((match6518 . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn6750 */
-                                                                    bitem  = (((match6518 . __h_data). Just). __h_0_mem) ;
+                                                            ({ /* letn6742 */
+                                                              bool __h_case_result  = (true  &&  (((match6511 . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn6743 */
+                                                                    bitem  = (((match6511 . __h_data). Just). __h_0_mem) ;
                                                                     true ;
                                                                   }) ) );
                                                               // ----------
                                                               
-                                                              ((__h_case_result ) ? ({ /* progn6755 */
-                                                                  ({ /* letn6757 */
+                                                              ((__h_case_result ) ? ({ /* progn6748 */
+                                                                  ({ /* letn6750 */
                                                                     BTree_int_User ntr_spent  __attribute__((__cleanup__(free_BTree_int_User ))) = ntr ;
                                                                     // ----------
-                                                                    Right_BTree_int_User_Error_BTree_int_User (Branch_BTree_int_User (insertAt_List_BTree_int_User_pair_t (items , bitem , ({ /* letn6759 */
-                                                                        Ordering match6436  = compareKey (({ /* letn6760 */
+                                                                    Right_BTree_int_User_Error_BTree_int_User (Branch_BTree_int_User (insertAt_List_BTree_int_User_pair_t (items , bitem , ({ /* letn6752 */
+                                                                        Ordering match6429  = compareKey (({ /* letn6753 */
                                                                           typeof((bitem . __h_0_mem)) key ;
                                                                           // ----------
                                                                           ;
-                                                                          ({ /* letn6762 */
-                                                                            bool __h_case_result  = (true  &&  ({ /* progn6763 */
+                                                                          ({ /* letn6755 */
+                                                                            bool __h_case_result  = (true  &&  ({ /* progn6756 */
                                                                                 key  = (bitem . __h_0_mem) ;
                                                                                 true ;
                                                                               }) );
                                                                             // ----------
                                                                             
-                                                                            ((__h_case_result ) ? ({ /* progn6768 */
+                                                                            ((__h_case_result ) ? ({ /* progn6761 */
                                                                                 key ;
-                                                                              }) : ({ /* letn6770 */
+                                                                              }) : ({ /* letn6763 */
                                                                                 // ----------
                                                                                 ;
-                                                                                ({ /* progn6772 */
+                                                                                ({ /* progn6765 */
                                                                                   skey ;
                                                                                 });
                                                                               }));
                                                                           });
-                                                                        }), ({ /* letn6774 */
-                                                                          typeof((((items -> __h_data). Cons). __h_0_mem)) __h_match6461_0_arg ;
-                                                                          typeof((__h_match6461_0_arg . __h_0_mem)) key ;
+                                                                        }), ({ /* letn6767 */
+                                                                          typeof((((items -> __h_data). Cons). __h_0_mem)) __h_match6454_0_arg ;
+                                                                          typeof((__h_match6454_0_arg . __h_0_mem)) key ;
                                                                           // ----------
                                                                           ;
-                                                                          ({ /* letn6776 */
-                                                                            bool __h_case_result  = (true  &&  (((items -> __h_ctor) ==  __h_Cons_t  ) &&  (({ /* progn6777 */
-                                                                                    __h_match6461_0_arg  = (((items -> __h_data). Cons). __h_0_mem) ;
+                                                                          ({ /* letn6769 */
+                                                                            bool __h_case_result  = (true  &&  (((items -> __h_ctor) ==  __h_Cons_t  ) &&  (({ /* progn6770 */
+                                                                                    __h_match6454_0_arg  = (((items -> __h_data). Cons). __h_0_mem) ;
                                                                                     true ;
-                                                                                  }) &&  (true  &&  ({ /* progn6779 */
-                                                                                      key  = (__h_match6461_0_arg . __h_0_mem) ;
+                                                                                  }) &&  (true  &&  ({ /* progn6772 */
+                                                                                      key  = (__h_match6454_0_arg . __h_0_mem) ;
                                                                                       true ;
                                                                                     }) ) ) ) );
                                                                             // ----------
                                                                             
-                                                                            ((__h_case_result ) ? ({ /* progn6784 */
+                                                                            ((__h_case_result ) ? ({ /* progn6777 */
                                                                                 key ;
-                                                                              }) : ({ /* letn6786 */
+                                                                              }) : ({ /* letn6779 */
                                                                                 // ----------
                                                                                 ;
-                                                                                ({ /* progn6788 */
+                                                                                ({ /* progn6781 */
                                                                                   skey ;
                                                                                 });
                                                                               }));
@@ -6846,35 +6839,35 @@ Either_BTree_int_User_Error_BTree_int_User deleteWithParent_BTree_int_User (Mayb
                                                                         }));
                                                                         // ----------
                                                                         ;
-                                                                        ({ /* letn6791 */
-                                                                          bool __h_case_result  = (true  &&  ((match6436 . __h_ctor) ==  __h_LT_t  ) );
+                                                                        ({ /* letn6784 */
+                                                                          bool __h_case_result  = (true  &&  ((match6429 . __h_ctor) ==  __h_LT_t  ) );
                                                                           // ----------
                                                                           
-                                                                          ((__h_case_result ) ? ({ /* progn6795 */
+                                                                          ((__h_case_result ) ? ({ /* progn6788 */
                                                                               0;
-                                                                            }) : ({ /* letn6797 */
+                                                                            }) : ({ /* letn6790 */
                                                                               // ----------
                                                                               ;
-                                                                              ({ /* progn6799 */
+                                                                              ({ /* progn6792 */
                                                                                 items_len ;
                                                                               });
                                                                             }));
                                                                         });
                                                                       })), cloneAll_Rc_BTree_int_User (children )));
                                                                   });
-                                                                }) : ({ /* letn6801 */
+                                                                }) : ({ /* letn6794 */
                                                                   // ----------
                                                                   ;
-                                                                  ({ /* progn6803 */
+                                                                  ({ /* progn6796 */
                                                                     Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_CANT_BORROW ("parent borrow 2"));
                                                                   });
                                                                 }));
                                                             });
                                                           });
-                                                        }) : ({ /* letn6805 */
+                                                        }) : ({ /* letn6798 */
                                                           // ----------
                                                           ;
-                                                          ({ /* progn6807 */
+                                                          ({ /* progn6800 */
                                                             Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_CANT_BORROW ("parent borrow 1"));
                                                           });
                                                         }));
@@ -6882,53 +6875,53 @@ Either_BTree_int_User_Error_BTree_int_User deleteWithParent_BTree_int_User (Mayb
                                                   }));
                                               });
                                             });
-                                          }) : ({ /* letn6809 */
+                                          }) : ({ /* letn6802 */
                                             // ----------
                                             ;
-                                            ({ /* progn6811 */
-                                              (((items_len  ==  0 )) ? ({ /* letn6813 */
+                                            ({ /* progn6804 */
+                                              (((items_len  ==  0 )) ? ({ /* letn6806 */
                                                   typeof((((children -> __h_data). Cons). __h_0_mem)) head ;
                                                   // ----------
                                                   ;
-                                                  ({ /* letn6815 */
-                                                    bool __h_case_result  = (true  &&  (((children -> __h_ctor) ==  __h_Cons_t  ) &&  ({ /* progn6816 */
+                                                  ({ /* letn6808 */
+                                                    bool __h_case_result  = (true  &&  (((children -> __h_ctor) ==  __h_Cons_t  ) &&  ({ /* progn6809 */
                                                           head  = (((children -> __h_data). Cons). __h_0_mem) ;
                                                           true ;
                                                         }) ) );
                                                     // ----------
                                                     
-                                                    ((__h_case_result ) ? ({ /* progn6821 */
-                                                        ({ /* letn6823 */
-                                                          Maybe_BTree_int_User match6612  = deref_Rc_BTree_int_User (clone_Rc_BTree_int_User (head ));
-                                                          typeof((((match6612 . __h_data). Just). __h_0_mem)) chtr ;
+                                                    ((__h_case_result ) ? ({ /* progn6814 */
+                                                        ({ /* letn6816 */
+                                                          Maybe_BTree_int_User match6605  = deref_Rc_BTree_int_User (clone_Rc_BTree_int_User (head ));
+                                                          typeof((((match6605 . __h_data). Just). __h_0_mem)) chtr ;
                                                           // ----------
                                                           ;
-                                                          ({ /* letn6825 */
-                                                            bool __h_case_result  = (true  &&  (((match6612 . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn6826 */
-                                                                  chtr  = (((match6612 . __h_data). Just). __h_0_mem) ;
+                                                          ({ /* letn6818 */
+                                                            bool __h_case_result  = (true  &&  (((match6605 . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn6819 */
+                                                                  chtr  = (((match6605 . __h_data). Just). __h_0_mem) ;
                                                                   true ;
                                                                 }) ) );
                                                             // ----------
                                                             
-                                                            ((__h_case_result ) ? ({ /* progn6831 */
-                                                                ({ /* letn6833 */
+                                                            ((__h_case_result ) ? ({ /* progn6824 */
+                                                                ({ /* letn6826 */
                                                                   BTree_int_User ntr_spent  __attribute__((__cleanup__(free_BTree_int_User ))) = ntr ;
                                                                   // ----------
                                                                   Right_BTree_int_User_Error_BTree_int_User (chtr );
                                                                 });
-                                                              }) : ({ /* letn6835 */
+                                                              }) : ({ /* letn6828 */
                                                                 // ----------
                                                                 ;
-                                                                ({ /* progn6837 */
+                                                                ({ /* progn6830 */
                                                                   Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_CANT_BORROW ("parent borrow 3"));
                                                                 });
                                                               }));
                                                           });
                                                         });
-                                                      }) : ({ /* letn6839 */
+                                                      }) : ({ /* letn6832 */
                                                         // ----------
                                                         ;
-                                                        ({ /* progn6841 */
+                                                        ({ /* progn6834 */
                                                           result ;
                                                         });
                                                       }));
@@ -6939,10 +6932,10 @@ Either_BTree_int_User_Error_BTree_int_User deleteWithParent_BTree_int_User (Mayb
                                       });
                                     }));
                                 });
-                              }) : ({ /* letn6845 */
+                              }) : ({ /* letn6838 */
                                 // ----------
                                 ;
-                                ({ /* progn6847 */
+                                ({ /* progn6840 */
                                   result ;
                                 });
                               }));
@@ -6950,10 +6943,10 @@ Either_BTree_int_User_Error_BTree_int_User deleteWithParent_BTree_int_User (Mayb
                         }));
                     });
                   });
-                }) : ({ /* letn6851 */
+                }) : ({ /* letn6844 */
                   // ----------
                   ;
-                  ({ /* progn6853 */
+                  ({ /* progn6846 */
                     result ;
                   });
                 }));
@@ -6965,58 +6958,58 @@ Either_BTree_int_User_Error_BTree_int_User deleteWithParent_BTree_int_User (Mayb
       });
   }
   Either_BTree_int_User_Error_BTree_int_User deleteLeaf (List_BTree_int_User_pair_t items , List_BTree_int_User_pair_t current , size_t index ) {
-    return ({ /* letn6869 */
+    return ({ /* letn6862 */
         typeof((((current -> __h_data). Cons). __h_0_mem)) head ;
         typeof((head . __h_0_mem)) key ;
         typeof((((current -> __h_data). Cons). __h_1_mem)) tail ;
         // ----------
         ;
-        ({ /* letn6871 */
-          bool __h_case_result  = (true  &&  (((current -> __h_ctor) ==  __h_Cons_t  ) &&  ((({ /* progn6872 */
+        ({ /* letn6864 */
+          bool __h_case_result  = (true  &&  (((current -> __h_ctor) ==  __h_Cons_t  ) &&  ((({ /* progn6865 */
                     head  = (((current -> __h_data). Cons). __h_0_mem) ;
                     true ;
-                  }) &&  (true  &&  ({ /* progn6874 */
+                  }) &&  (true  &&  ({ /* progn6867 */
                       key  = (head . __h_0_mem) ;
                       true ;
-                    }) ) ) &&  ({ /* progn6876 */
+                    }) ) ) &&  ({ /* progn6869 */
                   tail  = (((current -> __h_data). Cons). __h_1_mem) ;
                   true ;
                 }) ) ) );
           // ----------
           
-          ((__h_case_result ) ? ({ /* progn6881 */
-              ({ /* letn6887 */
-                Ordering match6886  = compareKey (skey , key );
+          ((__h_case_result ) ? ({ /* progn6874 */
+              ({ /* letn6880 */
+                Ordering match6879  = compareKey (skey , key );
                 // ----------
                 ;
-                ({ /* letn6889 */
-                  bool __h_case_result  = (true  &&  ((match6886 . __h_ctor) ==  __h_LT_t  ) );
+                ({ /* letn6882 */
+                  bool __h_case_result  = (true  &&  ((match6879 . __h_ctor) ==  __h_LT_t  ) );
                   // ----------
                   
-                  ((__h_case_result ) ? ({ /* progn6893 */
+                  ((__h_case_result ) ? ({ /* progn6886 */
                       Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_NOT_FOUND (skey ));
-                    }) : ({ /* letn6899 */
+                    }) : ({ /* letn6892 */
                       // ----------
                       ;
-                      ({ /* letn6901 */
-                        bool __h_case_result  = (true  &&  ((match6886 . __h_ctor) ==  __h_EQ_t  ) );
+                      ({ /* letn6894 */
+                        bool __h_case_result  = (true  &&  ((match6879 . __h_ctor) ==  __h_EQ_t  ) );
                         // ----------
                         
-                        ((__h_case_result ) ? ({ /* progn6905 */
-                            ({ /* letn6908 */
+                        ((__h_case_result ) ? ({ /* progn6898 */
+                            ({ /* letn6901 */
                               Either_BTree_int_User_Error_BTree_int_User result  = Right_BTree_int_User_Error_BTree_int_User (Leaf_BTree_int_User (delete_List_BTree_int_User_pair_t (items , current )));
                               // ----------
-                              { /* let6915 */
+                              { /* let6908 */
                                 // ----------
                                 ;
-                                ({ /* letn6917 */
+                                ({ /* letn6910 */
                                   bool __h_case_result  = (true  &&  ((result . __h_ctor) ==  __h_Right_t  ) );
                                   // ----------
                                   
                                   if (__h_case_result )
-                                    { /* block6923 */
+                                    { /* block6916 */
                                       if (callback )
-                                        { /* block6928 */
+                                        { /* block6921 */
                                           callback (head );
                                         }
                                     }
@@ -7024,10 +7017,10 @@ Either_BTree_int_User_Error_BTree_int_User deleteWithParent_BTree_int_User (Mayb
                               }
                               result ;
                             });
-                          }) : ({ /* letn6932 */
+                          }) : ({ /* letn6925 */
                             // ----------
                             ;
-                            ({ /* progn6934 */
+                            ({ /* progn6927 */
                               deleteLeaf (items , tail , (index  +  1 ));
                             });
                           }));
@@ -7035,68 +7028,68 @@ Either_BTree_int_User_Error_BTree_int_User deleteWithParent_BTree_int_User (Mayb
                     }));
                 });
               });
-            }) : ({ /* letn6938 */
+            }) : ({ /* letn6931 */
               // ----------
               ;
-              ({ /* progn6940 */
+              ({ /* progn6933 */
                 Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_NOT_FOUND (skey ));
               });
             }));
         });
       });
   }
-  return ({ /* letn6945 */
-      Either_BTree_int_User_Error_BTree_int_User result  = ({ /* letn6950 */
+  return ({ /* letn6938 */
+      Either_BTree_int_User_Error_BTree_int_User result  = ({ /* letn6943 */
         typeof((((tree -> __h_data). Branch). __h_0_mem)) items ;
         typeof((((tree -> __h_data). Branch). __h_1_mem)) children ;
         // ----------
         ;
-        ({ /* letn6952 */
-          bool __h_case_result  = (true  &&  (((tree -> __h_ctor) ==  __h_Branch_t  ) &&  (({ /* progn6953 */
+        ({ /* letn6945 */
+          bool __h_case_result  = (true  &&  (((tree -> __h_ctor) ==  __h_Branch_t  ) &&  (({ /* progn6946 */
                   items  = (((tree -> __h_data). Branch). __h_0_mem) ;
                   true ;
-                }) &&  ({ /* progn6955 */
+                }) &&  ({ /* progn6948 */
                   children  = (((tree -> __h_data). Branch). __h_1_mem) ;
                   true ;
                 }) ) ) );
           // ----------
           
-          ((__h_case_result ) ? ({ /* progn6960 */
+          ((__h_case_result ) ? ({ /* progn6953 */
               deleteInternal (Just_BTree_int_User (tree ), items , children , Nothing_List_BTree_int_User_pair_t (), items , 0);
-            }) : ({ /* letn6966 */
+            }) : ({ /* letn6959 */
               typeof((((tree -> __h_data). Internal). __h_0_mem)) items ;
               typeof((((tree -> __h_data). Internal). __h_1_mem)) children ;
               // ----------
               ;
-              ({ /* letn6968 */
-                bool __h_case_result  = (true  &&  (((tree -> __h_ctor) ==  __h_Internal_t  ) &&  (({ /* progn6969 */
+              ({ /* letn6961 */
+                bool __h_case_result  = (true  &&  (((tree -> __h_ctor) ==  __h_Internal_t  ) &&  (({ /* progn6962 */
                         items  = (((tree -> __h_data). Internal). __h_0_mem) ;
                         true ;
-                      }) &&  ({ /* progn6971 */
+                      }) &&  ({ /* progn6964 */
                         children  = (((tree -> __h_data). Internal). __h_1_mem) ;
                         true ;
                       }) ) ) );
                 // ----------
                 
-                ((__h_case_result ) ? ({ /* progn6976 */
+                ((__h_case_result ) ? ({ /* progn6969 */
                     deleteInternal (Just_BTree_int_User (tree ), items , children , Nothing_List_BTree_int_User_pair_t (), items , 0);
-                  }) : ({ /* letn6980 */
+                  }) : ({ /* letn6973 */
                     typeof((((tree -> __h_data). Leaf). __h_0_mem)) items ;
                     // ----------
                     ;
-                    ({ /* letn6982 */
-                      bool __h_case_result  = (true  &&  (((tree -> __h_ctor) ==  __h_Leaf_t  ) &&  ({ /* progn6983 */
+                    ({ /* letn6975 */
+                      bool __h_case_result  = (true  &&  (((tree -> __h_ctor) ==  __h_Leaf_t  ) &&  ({ /* progn6976 */
                             items  = (((tree -> __h_data). Leaf). __h_0_mem) ;
                             true ;
                           }) ) );
                       // ----------
                       
-                      ((__h_case_result ) ? ({ /* progn6988 */
+                      ((__h_case_result ) ? ({ /* progn6981 */
                           deleteLeaf (items , items , 0);
-                        }) : ({ /* letn6992 */
+                        }) : ({ /* letn6985 */
                           // ----------
                           ;
-                          ({ /* progn6994 */
+                          ({ /* progn6987 */
                             Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_INVALID_OBJECT ());
                           });
                         }));
@@ -7113,36 +7106,36 @@ Either_BTree_int_User_Error_BTree_int_User deleteWithParent_BTree_int_User (Mayb
 #ifndef __BTree_int_User__H_IMPL__
 #define __BTree_int_User__H_IMPL__
 Either_BTree_int_User_Error_BTree_int_User pure_BTree_int_User (int keys [], User values [], size_t len ) {
-  return ({ /* letn7011 */
+  return ({ /* letn7004 */
       BTree_int_User tree  = Leaf_BTree_int_User (Nil_BTree_int_User_pair_t ());
       // ----------
       for (size_t i  = 0; (i  <  len  ); (++i )) {
-          { /* let7020 */
-            Either_BTree_int_User_Error_BTree_int_User match7019  = insert_BTree_int_User (tree , keys [i ], values [i ]);
-            typeof((((match7019 . __h_data). Right). __h_0_mem)) new_tree ;
+          { /* let7013 */
+            Either_BTree_int_User_Error_BTree_int_User match7012  = insert_BTree_int_User (tree , keys [i ], values [i ]);
+            typeof((((match7012 . __h_data). Right). __h_0_mem)) new_tree ;
             // ----------
             ;
-            ({ /* letn7023 */
-              bool __h_case_result  = (true  &&  (((match7019 . __h_ctor) ==  __h_Right_t  ) &&  ({ /* progn7024 */
-                    new_tree  = (((match7019 . __h_data). Right). __h_0_mem) ;
+            ({ /* letn7016 */
+              bool __h_case_result  = (true  &&  (((match7012 . __h_ctor) ==  __h_Right_t  ) &&  ({ /* progn7017 */
+                    new_tree  = (((match7012 . __h_data). Right). __h_0_mem) ;
                     true ;
                   }) ) );
               // ----------
               
               if (__h_case_result )
-                { /* block7031 */
-                  { /* block7033 */
+                { /* block7024 */
+                  { /* block7026 */
                     free_BTree_int_User ((&tree ));
                     tree  = new_tree ;
                   }
                 }
               else
-                { /* let7039 */
-                  Either_BTree_int_User_Error_BTree_int_User left  = match7019 ;
+                { /* let7032 */
+                  Either_BTree_int_User_Error_BTree_int_User left  = match7012 ;
                   // ----------
                   ;
-                  { /* block7041 */
-                    { /* block7043 */
+                  { /* block7034 */
+                    { /* block7036 */
                       free_BTree_int_User ((&tree ));
                       return left ;
                     }
@@ -7157,75 +7150,75 @@ Either_BTree_int_User_Error_BTree_int_User pure_BTree_int_User (int keys [], Use
 size_t show_BTree_int_User (FILE * file , BTree_int_User tree ) {
   auto size_t showTree (int indent , BTree_int_User tree );
   size_t showChildren (int indent , List_Rc_BTree_int_User children ) {
-    return ({ /* letn7056 */
+    return ({ /* letn7049 */
         typeof((((children -> __h_data). Cons). __h_0_mem)) head ;
         typeof((((children -> __h_data). Cons). __h_1_mem)) tail ;
         // ----------
         ;
-        ({ /* letn7058 */
-          bool __h_case_result  = (true  &&  (((children -> __h_ctor) ==  __h_Cons_t  ) &&  (({ /* progn7059 */
+        ({ /* letn7051 */
+          bool __h_case_result  = (true  &&  (((children -> __h_ctor) ==  __h_Cons_t  ) &&  (({ /* progn7052 */
                   head  = (((children -> __h_data). Cons). __h_0_mem) ;
                   true ;
-                }) &&  ({ /* progn7061 */
+                }) &&  ({ /* progn7054 */
                   tail  = (((children -> __h_data). Cons). __h_1_mem) ;
                   true ;
                 }) ) ) );
           // ----------
           
-          ((__h_case_result ) ? ({ /* progn7066 */
-              (({ /* letn7072 */
+          ((__h_case_result ) ? ({ /* progn7059 */
+              (({ /* letn7065 */
                   // ----------
                   ;
-                  ({ /* letn7074 */
+                  ({ /* letn7067 */
                     bool __h_case_result  = (true  &&  ((tail -> __h_ctor) ==  __h_Cons_t  ) );
                     // ----------
                     
-                    ((__h_case_result ) ? ({ /* progn7078 */
-                        ({ /* letn7085 */
-                          Maybe_BTree_int_User match7084  = deref_Rc_BTree_int_User (head );
-                          typeof((((match7084 . __h_data). Just). __h_0_mem)) tr ;
+                    ((__h_case_result ) ? ({ /* progn7071 */
+                        ({ /* letn7078 */
+                          Maybe_BTree_int_User match7077  = deref_Rc_BTree_int_User (head );
+                          typeof((((match7077 . __h_data). Just). __h_0_mem)) tr ;
                           // ----------
                           ;
-                          ({ /* letn7087 */
-                            bool __h_case_result  = (true  &&  (((match7084 . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn7088 */
-                                  tr  = (((match7084 . __h_data). Just). __h_0_mem) ;
+                          ({ /* letn7080 */
+                            bool __h_case_result  = (true  &&  (((match7077 . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn7081 */
+                                  tr  = (((match7077 . __h_data). Just). __h_0_mem) ;
                                   true ;
                                 }) ) );
                             // ----------
                             
-                            ((__h_case_result ) ? ({ /* progn7093 */
+                            ((__h_case_result ) ? ({ /* progn7086 */
                                 (showTree (indent , tr ) +  fprintf (file , "\n") );
-                              }) : ({ /* letn7097 */
+                              }) : ({ /* letn7090 */
                                 // ----------
                                 ;
-                                ({ /* progn7099 */
+                                ({ /* progn7092 */
                                   0;
                                 });
                               }));
                           });
                         });
-                      }) : ({ /* letn7103 */
+                      }) : ({ /* letn7096 */
                         // ----------
                         ;
-                        ({ /* progn7105 */
-                          ({ /* letn7112 */
-                            Maybe_BTree_int_User match7111  = deref_Rc_BTree_int_User (head );
-                            typeof((((match7111 . __h_data). Just). __h_0_mem)) tr ;
+                        ({ /* progn7098 */
+                          ({ /* letn7105 */
+                            Maybe_BTree_int_User match7104  = deref_Rc_BTree_int_User (head );
+                            typeof((((match7104 . __h_data). Just). __h_0_mem)) tr ;
                             // ----------
                             ;
-                            ({ /* letn7114 */
-                              bool __h_case_result  = (true  &&  (((match7111 . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn7115 */
-                                    tr  = (((match7111 . __h_data). Just). __h_0_mem) ;
+                            ({ /* letn7107 */
+                              bool __h_case_result  = (true  &&  (((match7104 . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn7108 */
+                                    tr  = (((match7104 . __h_data). Just). __h_0_mem) ;
                                     true ;
                                   }) ) );
                               // ----------
                               
-                              ((__h_case_result ) ? ({ /* progn7120 */
+                              ((__h_case_result ) ? ({ /* progn7113 */
                                   showTree (indent , tr );
-                                }) : ({ /* letn7124 */
+                                }) : ({ /* letn7117 */
                                   // ----------
                                   ;
-                                  ({ /* progn7126 */
+                                  ({ /* progn7119 */
                                     0;
                                   });
                                 }));
@@ -7235,10 +7228,10 @@ size_t show_BTree_int_User (FILE * file , BTree_int_User tree ) {
                       }));
                   });
                 }) +  showChildren (indent , tail ) );
-            }) : ({ /* letn7130 */
+            }) : ({ /* letn7123 */
               // ----------
               ;
-              ({ /* progn7132 */
+              ({ /* progn7125 */
                 0;
               });
             }));
@@ -7246,91 +7239,91 @@ size_t show_BTree_int_User (FILE * file , BTree_int_User tree ) {
       });
   }
   size_t showTree (int indent , BTree_int_User tree ) {
-    return (fprintf (file , "%d%*c", indent , (indent  *  2 ), ' ') +  ({ /* letn7139 */
+    return (fprintf (file , "%d%*c", indent , (indent  *  2 ), ' ') +  ({ /* letn7132 */
           typeof((((tree -> __h_data). Branch). __h_0_mem)) items ;
           typeof((((tree -> __h_data). Branch). __h_1_mem)) children ;
           // ----------
           ;
-          ({ /* letn7141 */
-            bool __h_case_result  = (true  &&  (((tree -> __h_ctor) ==  __h_Branch_t  ) &&  (({ /* progn7142 */
+          ({ /* letn7134 */
+            bool __h_case_result  = (true  &&  (((tree -> __h_ctor) ==  __h_Branch_t  ) &&  (({ /* progn7135 */
                     items  = (((tree -> __h_data). Branch). __h_0_mem) ;
                     true ;
-                  }) &&  ({ /* progn7144 */
+                  }) &&  ({ /* progn7137 */
                     children  = (((tree -> __h_data). Branch). __h_1_mem) ;
                     true ;
                   }) ) ) );
             // ----------
             
-            ((__h_case_result ) ? ({ /* progn7149 */
-                (show_List_BTree_int_User_pair_t (file , items ) +  ({ /* letn7156 */
+            ((__h_case_result ) ? ({ /* progn7142 */
+                (show_List_BTree_int_User_pair_t (file , items ) +  ({ /* letn7149 */
                     // ----------
                     ;
-                    ({ /* letn7158 */
+                    ({ /* letn7151 */
                       bool __h_case_result  = (true  &&  ((children -> __h_ctor) ==  __h_Cons_t  ) );
                       // ----------
                       
-                      ((__h_case_result ) ? ({ /* progn7162 */
+                      ((__h_case_result ) ? ({ /* progn7155 */
                           (fprintf (file , "\n") +  showChildren ((indent  +  1 ), children ) );
-                        }) : ({ /* letn7166 */
+                        }) : ({ /* letn7159 */
                           // ----------
                           ;
-                          ({ /* progn7168 */
+                          ({ /* progn7161 */
                             0;
                           });
                         }));
                     });
                   }) );
-              }) : ({ /* letn7172 */
+              }) : ({ /* letn7165 */
                 typeof((((tree -> __h_data). Internal). __h_0_mem)) items ;
                 typeof((((tree -> __h_data). Internal). __h_1_mem)) children ;
                 // ----------
                 ;
-                ({ /* letn7174 */
-                  bool __h_case_result  = (true  &&  (((tree -> __h_ctor) ==  __h_Internal_t  ) &&  (({ /* progn7175 */
+                ({ /* letn7167 */
+                  bool __h_case_result  = (true  &&  (((tree -> __h_ctor) ==  __h_Internal_t  ) &&  (({ /* progn7168 */
                           items  = (((tree -> __h_data). Internal). __h_0_mem) ;
                           true ;
-                        }) &&  ({ /* progn7177 */
+                        }) &&  ({ /* progn7170 */
                           children  = (((tree -> __h_data). Internal). __h_1_mem) ;
                           true ;
                         }) ) ) );
                   // ----------
                   
-                  ((__h_case_result ) ? ({ /* progn7182 */
-                      (show_List_BTree_int_User_pair_t (file , items ) +  ({ /* letn7184 */
+                  ((__h_case_result ) ? ({ /* progn7175 */
+                      (show_List_BTree_int_User_pair_t (file , items ) +  ({ /* letn7177 */
                           // ----------
                           ;
-                          ({ /* letn7186 */
+                          ({ /* letn7179 */
                             bool __h_case_result  = (true  &&  ((children -> __h_ctor) ==  __h_Cons_t  ) );
                             // ----------
                             
-                            ((__h_case_result ) ? ({ /* progn7190 */
+                            ((__h_case_result ) ? ({ /* progn7183 */
                                 (fprintf (file , "\n") +  showChildren ((indent  +  1 ), children ) );
-                              }) : ({ /* letn7192 */
+                              }) : ({ /* letn7185 */
                                 // ----------
                                 ;
-                                ({ /* progn7194 */
+                                ({ /* progn7187 */
                                   0;
                                 });
                               }));
                           });
                         }) );
-                    }) : ({ /* letn7198 */
+                    }) : ({ /* letn7191 */
                       typeof((((tree -> __h_data). Leaf). __h_0_mem)) items ;
                       // ----------
                       ;
-                      ({ /* letn7200 */
-                        bool __h_case_result  = (true  &&  (((tree -> __h_ctor) ==  __h_Leaf_t  ) &&  ({ /* progn7201 */
+                      ({ /* letn7193 */
+                        bool __h_case_result  = (true  &&  (((tree -> __h_ctor) ==  __h_Leaf_t  ) &&  ({ /* progn7194 */
                               items  = (((tree -> __h_data). Leaf). __h_0_mem) ;
                               true ;
                             }) ) );
                         // ----------
                         
-                        ((__h_case_result ) ? ({ /* progn7206 */
+                        ((__h_case_result ) ? ({ /* progn7199 */
                             show_List_BTree_int_User_pair_t (file , items );
-                          }) : ({ /* letn7211 */
+                          }) : ({ /* letn7204 */
                             // ----------
                             ;
-                            ({ /* progn7213 */
+                            ({ /* progn7206 */
                               0;
                             });
                           }));
@@ -7346,100 +7339,100 @@ size_t show_BTree_int_User (FILE * file , BTree_int_User tree ) {
 void traverse_BTree_int_User (BTree_int_User tree , void (*callback) (BTree_int_User_pair_t item , Bool hasNext )) {
   auto void traverseLeaf (List_BTree_int_User_pair_t current , Bool hasNextLeaf );
   void traverseInternal (List_BTree_int_User_pair_t currentItem , List_Rc_BTree_int_User currentChild ) {
-    { /* let7226 */
+    { /* let7219 */
       typeof((((currentChild -> __h_data). Cons). __h_0_mem)) wheadC ;
       typeof((((currentChild -> __h_data). Cons). __h_1_mem)) tailC ;
       // ----------
       ;
-      ({ /* letn7228 */
-        bool __h_case_result  = (true  &&  (((currentChild -> __h_ctor) ==  __h_Cons_t  ) &&  (({ /* progn7229 */
+      ({ /* letn7221 */
+        bool __h_case_result  = (true  &&  (((currentChild -> __h_ctor) ==  __h_Cons_t  ) &&  (({ /* progn7222 */
                 wheadC  = (((currentChild -> __h_data). Cons). __h_0_mem) ;
                 true ;
-              }) &&  ({ /* progn7231 */
+              }) &&  ({ /* progn7224 */
                 tailC  = (((currentChild -> __h_data). Cons). __h_1_mem) ;
                 true ;
               }) ) ) );
         // ----------
         
         if (__h_case_result )
-          { /* block7238 */
-            { /* let7242 */
-              Maybe_BTree_int_User match7241  = deref_Rc_BTree_int_User (wheadC );
-              typeof((((match7241 . __h_data). Just). __h_0_mem)) headC ;
+          { /* block7231 */
+            { /* let7235 */
+              Maybe_BTree_int_User match7234  = deref_Rc_BTree_int_User (wheadC );
+              typeof((((match7234 . __h_data). Just). __h_0_mem)) headC ;
               // ----------
               ;
-              ({ /* letn7245 */
-                bool __h_case_result  = (true  &&  (((match7241 . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn7246 */
-                      headC  = (((match7241 . __h_data). Just). __h_0_mem) ;
+              ({ /* letn7238 */
+                bool __h_case_result  = (true  &&  (((match7234 . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn7239 */
+                      headC  = (((match7234 . __h_data). Just). __h_0_mem) ;
                       true ;
                     }) ) );
                 // ----------
                 
                 if (__h_case_result )
-                  { /* block7253 */
-                    { /* let7257 */
+                  { /* block7246 */
+                    { /* let7250 */
                       // ----------
                       ;
-                      ({ /* letn7259 */
+                      ({ /* letn7252 */
                         bool __h_case_result  = (true  &&  ((tailC -> __h_ctor) ==  __h_Cons_t  ) );
                         // ----------
                         
                         if (__h_case_result )
-                          { /* block7265 */
-                            { /* block7267 */
-                              { /* let7271 */
+                          { /* block7258 */
+                            { /* block7260 */
+                              { /* let7264 */
                                 typeof((((headC -> __h_data). Branch). __h_0_mem)) items ;
                                 typeof((((headC -> __h_data). Branch). __h_1_mem)) children ;
                                 // ----------
                                 ;
-                                ({ /* letn7273 */
-                                  bool __h_case_result  = (true  &&  (((headC -> __h_ctor) ==  __h_Branch_t  ) &&  (({ /* progn7274 */
+                                ({ /* letn7266 */
+                                  bool __h_case_result  = (true  &&  (((headC -> __h_ctor) ==  __h_Branch_t  ) &&  (({ /* progn7267 */
                                           items  = (((headC -> __h_data). Branch). __h_0_mem) ;
                                           true ;
-                                        }) &&  ({ /* progn7276 */
+                                        }) &&  ({ /* progn7269 */
                                           children  = (((headC -> __h_data). Branch). __h_1_mem) ;
                                           true ;
                                         }) ) ) );
                                   // ----------
                                   
                                   if (__h_case_result )
-                                    { /* block7283 */
+                                    { /* block7276 */
                                       traverseInternal (items , children );
                                     }
                                   else
-                                    { /* let7288 */
+                                    { /* let7281 */
                                       typeof((((headC -> __h_data). Internal). __h_0_mem)) items ;
                                       typeof((((headC -> __h_data). Internal). __h_1_mem)) children ;
                                       // ----------
                                       ;
-                                      ({ /* letn7290 */
-                                        bool __h_case_result  = (true  &&  (((headC -> __h_ctor) ==  __h_Internal_t  ) &&  (({ /* progn7291 */
+                                      ({ /* letn7283 */
+                                        bool __h_case_result  = (true  &&  (((headC -> __h_ctor) ==  __h_Internal_t  ) &&  (({ /* progn7284 */
                                                 items  = (((headC -> __h_data). Internal). __h_0_mem) ;
                                                 true ;
-                                              }) &&  ({ /* progn7293 */
+                                              }) &&  ({ /* progn7286 */
                                                 children  = (((headC -> __h_data). Internal). __h_1_mem) ;
                                                 true ;
                                               }) ) ) );
                                         // ----------
                                         
                                         if (__h_case_result )
-                                          { /* block7300 */
+                                          { /* block7293 */
                                             traverseInternal (items , children );
                                           }
                                         else
-                                          { /* let7305 */
+                                          { /* let7298 */
                                             typeof((((headC -> __h_data). Leaf). __h_0_mem)) items ;
                                             // ----------
                                             ;
-                                            ({ /* letn7307 */
-                                              bool __h_case_result  = (true  &&  (((headC -> __h_ctor) ==  __h_Leaf_t  ) &&  ({ /* progn7308 */
+                                            ({ /* letn7300 */
+                                              bool __h_case_result  = (true  &&  (((headC -> __h_ctor) ==  __h_Leaf_t  ) &&  ({ /* progn7301 */
                                                     items  = (((headC -> __h_data). Leaf). __h_0_mem) ;
                                                     true ;
                                                   }) ) );
                                               // ----------
                                               
                                               if (__h_case_result )
-                                                { /* block7315 */
+                                                { /* block7308 */
                                                   traverseLeaf (items , True ());
                                                 }
                                             });
@@ -7448,24 +7441,24 @@ void traverse_BTree_int_User (BTree_int_User tree , void (*callback) (BTree_int_
                                     }
                                 });
                               }
-                              { /* let7319 */
+                              { /* let7312 */
                                 typeof((((currentItem -> __h_data). Cons). __h_0_mem)) headI ;
                                 typeof((((currentItem -> __h_data). Cons). __h_1_mem)) tailI ;
                                 // ----------
                                 ;
-                                ({ /* letn7321 */
-                                  bool __h_case_result  = (true  &&  (((currentItem -> __h_ctor) ==  __h_Cons_t  ) &&  (({ /* progn7322 */
+                                ({ /* letn7314 */
+                                  bool __h_case_result  = (true  &&  (((currentItem -> __h_ctor) ==  __h_Cons_t  ) &&  (({ /* progn7315 */
                                           headI  = (((currentItem -> __h_data). Cons). __h_0_mem) ;
                                           true ;
-                                        }) &&  ({ /* progn7324 */
+                                        }) &&  ({ /* progn7317 */
                                           tailI  = (((currentItem -> __h_data). Cons). __h_1_mem) ;
                                           true ;
                                         }) ) ) );
                                   // ----------
                                   
                                   if (__h_case_result )
-                                    { /* block7331 */
-                                      { /* block7333 */
+                                    { /* block7324 */
+                                      { /* block7326 */
                                         callback (headI , True ());
                                         traverseInternal (tailI , tailC );
                                       }
@@ -7475,64 +7468,64 @@ void traverse_BTree_int_User (BTree_int_User tree , void (*callback) (BTree_int_
                             }
                           }
                         else
-                          { /* let7338 */
+                          { /* let7331 */
                             // ----------
                             ;
-                            { /* block7340 */
-                              { /* block7342 */
-                                { /* let7346 */
+                            { /* block7333 */
+                              { /* block7335 */
+                                { /* let7339 */
                                   typeof((((headC -> __h_data). Branch). __h_0_mem)) items ;
                                   typeof((((headC -> __h_data). Branch). __h_1_mem)) children ;
                                   // ----------
                                   ;
-                                  ({ /* letn7348 */
-                                    bool __h_case_result  = (true  &&  (((headC -> __h_ctor) ==  __h_Branch_t  ) &&  (({ /* progn7349 */
+                                  ({ /* letn7341 */
+                                    bool __h_case_result  = (true  &&  (((headC -> __h_ctor) ==  __h_Branch_t  ) &&  (({ /* progn7342 */
                                             items  = (((headC -> __h_data). Branch). __h_0_mem) ;
                                             true ;
-                                          }) &&  ({ /* progn7351 */
+                                          }) &&  ({ /* progn7344 */
                                             children  = (((headC -> __h_data). Branch). __h_1_mem) ;
                                             true ;
                                           }) ) ) );
                                     // ----------
                                     
                                     if (__h_case_result )
-                                      { /* block7358 */
+                                      { /* block7351 */
                                         traverseInternal (items , children );
                                       }
                                     else
-                                      { /* let7363 */
+                                      { /* let7356 */
                                         typeof((((headC -> __h_data). Internal). __h_0_mem)) items ;
                                         typeof((((headC -> __h_data). Internal). __h_1_mem)) children ;
                                         // ----------
                                         ;
-                                        ({ /* letn7365 */
-                                          bool __h_case_result  = (true  &&  (((headC -> __h_ctor) ==  __h_Internal_t  ) &&  (({ /* progn7366 */
+                                        ({ /* letn7358 */
+                                          bool __h_case_result  = (true  &&  (((headC -> __h_ctor) ==  __h_Internal_t  ) &&  (({ /* progn7359 */
                                                   items  = (((headC -> __h_data). Internal). __h_0_mem) ;
                                                   true ;
-                                                }) &&  ({ /* progn7368 */
+                                                }) &&  ({ /* progn7361 */
                                                   children  = (((headC -> __h_data). Internal). __h_1_mem) ;
                                                   true ;
                                                 }) ) ) );
                                           // ----------
                                           
                                           if (__h_case_result )
-                                            { /* block7375 */
+                                            { /* block7368 */
                                               traverseInternal (items , children );
                                             }
                                           else
-                                            { /* let7380 */
+                                            { /* let7373 */
                                               typeof((((headC -> __h_data). Leaf). __h_0_mem)) items ;
                                               // ----------
                                               ;
-                                              ({ /* letn7382 */
-                                                bool __h_case_result  = (true  &&  (((headC -> __h_ctor) ==  __h_Leaf_t  ) &&  ({ /* progn7383 */
+                                              ({ /* letn7375 */
+                                                bool __h_case_result  = (true  &&  (((headC -> __h_ctor) ==  __h_Leaf_t  ) &&  ({ /* progn7376 */
                                                       items  = (((headC -> __h_data). Leaf). __h_0_mem) ;
                                                       true ;
                                                     }) ) );
                                                 // ----------
                                                 
                                                 if (__h_case_result )
-                                                  { /* block7390 */
+                                                  { /* block7383 */
                                                     traverseLeaf (items , False ());
                                                   }
                                               });
@@ -7541,24 +7534,24 @@ void traverse_BTree_int_User (BTree_int_User tree , void (*callback) (BTree_int_
                                       }
                                   });
                                 }
-                                { /* let7394 */
+                                { /* let7387 */
                                   typeof((((currentItem -> __h_data). Cons). __h_0_mem)) headI ;
                                   typeof((((currentItem -> __h_data). Cons). __h_1_mem)) tailI ;
                                   // ----------
                                   ;
-                                  ({ /* letn7396 */
-                                    bool __h_case_result  = (true  &&  (((currentItem -> __h_ctor) ==  __h_Cons_t  ) &&  (({ /* progn7397 */
+                                  ({ /* letn7389 */
+                                    bool __h_case_result  = (true  &&  (((currentItem -> __h_ctor) ==  __h_Cons_t  ) &&  (({ /* progn7390 */
                                             headI  = (((currentItem -> __h_data). Cons). __h_0_mem) ;
                                             true ;
-                                          }) &&  ({ /* progn7399 */
+                                          }) &&  ({ /* progn7392 */
                                             tailI  = (((currentItem -> __h_data). Cons). __h_1_mem) ;
                                             true ;
                                           }) ) ) );
                                     // ----------
                                     
                                     if (__h_case_result )
-                                      { /* block7406 */
-                                        { /* block7408 */
+                                      { /* block7399 */
+                                        { /* block7401 */
                                           callback (headI , False ());
                                           traverseInternal (tailI , tailC );
                                         }
@@ -7578,50 +7571,50 @@ void traverse_BTree_int_User (BTree_int_User tree , void (*callback) (BTree_int_
     }
   }
   void traverseLeaf (List_BTree_int_User_pair_t current , Bool hasNextLeaf ) {
-    { /* let7414 */
+    { /* let7407 */
       typeof((((current -> __h_data). Cons). __h_0_mem)) head ;
       typeof((((current -> __h_data). Cons). __h_1_mem)) tail ;
       // ----------
       ;
-      ({ /* letn7416 */
-        bool __h_case_result  = (true  &&  (((current -> __h_ctor) ==  __h_Cons_t  ) &&  (({ /* progn7417 */
+      ({ /* letn7409 */
+        bool __h_case_result  = (true  &&  (((current -> __h_ctor) ==  __h_Cons_t  ) &&  (({ /* progn7410 */
                 head  = (((current -> __h_data). Cons). __h_0_mem) ;
                 true ;
-              }) &&  ({ /* progn7419 */
+              }) &&  ({ /* progn7412 */
                 tail  = (((current -> __h_data). Cons). __h_1_mem) ;
                 true ;
               }) ) ) );
         // ----------
         
         if (__h_case_result )
-          { /* block7426 */
-            { /* block7428 */
-              callback (head , ({ /* letn7434 */
+          { /* block7419 */
+            { /* block7421 */
+              callback (head , ({ /* letn7427 */
                   // ----------
                   ;
-                  ({ /* letn7436 */
+                  ({ /* letn7429 */
                     bool __h_case_result  = (true  &&  ((hasNextLeaf . __h_ctor) ==  __h_True_t  ) );
                     // ----------
                     
-                    ((__h_case_result ) ? ({ /* progn7440 */
+                    ((__h_case_result ) ? ({ /* progn7433 */
                         hasNextLeaf ;
-                      }) : ({ /* letn7444 */
+                      }) : ({ /* letn7437 */
                         // ----------
                         ;
-                        ({ /* progn7446 */
-                          ({ /* letn7452 */
+                        ({ /* progn7439 */
+                          ({ /* letn7445 */
                             // ----------
                             ;
-                            ({ /* letn7454 */
+                            ({ /* letn7447 */
                               bool __h_case_result  = (true  &&  ((tail -> __h_ctor) ==  __h_Cons_t  ) );
                               // ----------
                               
-                              ((__h_case_result ) ? ({ /* progn7458 */
+                              ((__h_case_result ) ? ({ /* progn7451 */
                                   True ();
-                                }) : ({ /* letn7462 */
+                                }) : ({ /* letn7455 */
                                   // ----------
                                   ;
-                                  ({ /* progn7464 */
+                                  ({ /* progn7457 */
                                     False ();
                                   });
                                 }));
@@ -7637,59 +7630,59 @@ void traverse_BTree_int_User (BTree_int_User tree , void (*callback) (BTree_int_
       });
     }
   }
-  { /* let7468 */
+  { /* let7461 */
     typeof((((tree -> __h_data). Branch). __h_0_mem)) items ;
     typeof((((tree -> __h_data). Branch). __h_1_mem)) children ;
     // ----------
     ;
-    ({ /* letn7470 */
-      bool __h_case_result  = (true  &&  (((tree -> __h_ctor) ==  __h_Branch_t  ) &&  (({ /* progn7471 */
+    ({ /* letn7463 */
+      bool __h_case_result  = (true  &&  (((tree -> __h_ctor) ==  __h_Branch_t  ) &&  (({ /* progn7464 */
               items  = (((tree -> __h_data). Branch). __h_0_mem) ;
               true ;
-            }) &&  ({ /* progn7473 */
+            }) &&  ({ /* progn7466 */
               children  = (((tree -> __h_data). Branch). __h_1_mem) ;
               true ;
             }) ) ) );
       // ----------
       
       if (__h_case_result )
-        { /* block7480 */
+        { /* block7473 */
           traverseInternal (items , children );
         }
       else
-        { /* let7485 */
+        { /* let7478 */
           typeof((((tree -> __h_data). Internal). __h_0_mem)) items ;
           typeof((((tree -> __h_data). Internal). __h_1_mem)) children ;
           // ----------
           ;
-          ({ /* letn7487 */
-            bool __h_case_result  = (true  &&  (((tree -> __h_ctor) ==  __h_Internal_t  ) &&  (({ /* progn7488 */
+          ({ /* letn7480 */
+            bool __h_case_result  = (true  &&  (((tree -> __h_ctor) ==  __h_Internal_t  ) &&  (({ /* progn7481 */
                     items  = (((tree -> __h_data). Internal). __h_0_mem) ;
                     true ;
-                  }) &&  ({ /* progn7490 */
+                  }) &&  ({ /* progn7483 */
                     children  = (((tree -> __h_data). Internal). __h_1_mem) ;
                     true ;
                   }) ) ) );
             // ----------
             
             if (__h_case_result )
-              { /* block7497 */
+              { /* block7490 */
                 traverseInternal (items , children );
               }
             else
-              { /* let7502 */
+              { /* let7495 */
                 typeof((((tree -> __h_data). Leaf). __h_0_mem)) items ;
                 // ----------
                 ;
-                ({ /* letn7504 */
-                  bool __h_case_result  = (true  &&  (((tree -> __h_ctor) ==  __h_Leaf_t  ) &&  ({ /* progn7505 */
+                ({ /* letn7497 */
+                  bool __h_case_result  = (true  &&  (((tree -> __h_ctor) ==  __h_Leaf_t  ) &&  ({ /* progn7498 */
                         items  = (((tree -> __h_data). Leaf). __h_0_mem) ;
                         true ;
                       }) ) );
                   // ----------
                   
                   if (__h_case_result )
-                    { /* block7512 */
+                    { /* block7505 */
                       traverseLeaf (items , False ());
                     }
                 });
@@ -7702,86 +7695,86 @@ void traverse_BTree_int_User (BTree_int_User tree , void (*callback) (BTree_int_
 Maybe_BTree_int_User_pair_t max_BTree_int_User (BTree_int_User tree ) {
   auto Maybe_BTree_int_User_pair_t maxLeaf (List_BTree_int_User_pair_t current );
   Maybe_BTree_int_User_pair_t maxInternal (List_Rc_BTree_int_User current ) {
-    return ({ /* letn7529 */
+    return ({ /* letn7522 */
         typeof((((current -> __h_data). Cons). __h_0_mem)) head ;
         typeof((((current -> __h_data). Cons). __h_1_mem)) tail ;
         // ----------
         ;
-        ({ /* letn7531 */
-          bool __h_case_result  = (true  &&  (((current -> __h_ctor) ==  __h_Cons_t  ) &&  (({ /* progn7532 */
+        ({ /* letn7524 */
+          bool __h_case_result  = (true  &&  (((current -> __h_ctor) ==  __h_Cons_t  ) &&  (({ /* progn7525 */
                   head  = (((current -> __h_data). Cons). __h_0_mem) ;
                   true ;
-                }) &&  ({ /* progn7534 */
+                }) &&  ({ /* progn7527 */
                   tail  = (((current -> __h_data). Cons). __h_1_mem) ;
                   true ;
                 }) ) ) );
           // ----------
           
-          ((__h_case_result ) ? ({ /* progn7539 */
-              ({ /* letn7545 */
+          ((__h_case_result ) ? ({ /* progn7532 */
+              ({ /* letn7538 */
                 // ----------
                 ;
-                ({ /* letn7547 */
+                ({ /* letn7540 */
                   bool __h_case_result  = (true  &&  ((tail -> __h_ctor) ==  __h_Nil_t  ) );
                   // ----------
                   
-                  ((__h_case_result ) ? ({ /* progn7551 */
-                      ({ /* letn7558 */
-                        Maybe_BTree_int_User match7557  = deref_Rc_BTree_int_User (head );
-                        typeof((((match7557 . __h_data). Just). __h_0_mem)) child ;
+                  ((__h_case_result ) ? ({ /* progn7544 */
+                      ({ /* letn7551 */
+                        Maybe_BTree_int_User match7550  = deref_Rc_BTree_int_User (head );
+                        typeof((((match7550 . __h_data). Just). __h_0_mem)) child ;
                         // ----------
                         ;
-                        ({ /* letn7560 */
-                          bool __h_case_result  = (true  &&  (((match7557 . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn7561 */
-                                child  = (((match7557 . __h_data). Just). __h_0_mem) ;
+                        ({ /* letn7553 */
+                          bool __h_case_result  = (true  &&  (((match7550 . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn7554 */
+                                child  = (((match7550 . __h_data). Just). __h_0_mem) ;
                                 true ;
                               }) ) );
                           // ----------
                           
-                          ((__h_case_result ) ? ({ /* progn7566 */
-                              ({ /* letn7572 */
+                          ((__h_case_result ) ? ({ /* progn7559 */
+                              ({ /* letn7565 */
                                 typeof((((child -> __h_data). Branch). __h_1_mem)) nchildren ;
                                 // ----------
                                 ;
-                                ({ /* letn7574 */
-                                  bool __h_case_result  = (true  &&  (((child -> __h_ctor) ==  __h_Branch_t  ) &&  ({ /* progn7575 */
+                                ({ /* letn7567 */
+                                  bool __h_case_result  = (true  &&  (((child -> __h_ctor) ==  __h_Branch_t  ) &&  ({ /* progn7568 */
                                         nchildren  = (((child -> __h_data). Branch). __h_1_mem) ;
                                         true ;
                                       }) ) );
                                   // ----------
                                   
-                                  ((__h_case_result ) ? ({ /* progn7580 */
+                                  ((__h_case_result ) ? ({ /* progn7573 */
                                       maxInternal (nchildren );
-                                    }) : ({ /* letn7584 */
+                                    }) : ({ /* letn7577 */
                                       typeof((((child -> __h_data). Internal). __h_1_mem)) nchildren ;
                                       // ----------
                                       ;
-                                      ({ /* letn7586 */
-                                        bool __h_case_result  = (true  &&  (((child -> __h_ctor) ==  __h_Internal_t  ) &&  ({ /* progn7587 */
+                                      ({ /* letn7579 */
+                                        bool __h_case_result  = (true  &&  (((child -> __h_ctor) ==  __h_Internal_t  ) &&  ({ /* progn7580 */
                                               nchildren  = (((child -> __h_data). Internal). __h_1_mem) ;
                                               true ;
                                             }) ) );
                                         // ----------
                                         
-                                        ((__h_case_result ) ? ({ /* progn7592 */
+                                        ((__h_case_result ) ? ({ /* progn7585 */
                                             maxInternal (nchildren );
-                                          }) : ({ /* letn7596 */
+                                          }) : ({ /* letn7589 */
                                             typeof((((child -> __h_data). Leaf). __h_0_mem)) items ;
                                             // ----------
                                             ;
-                                            ({ /* letn7598 */
-                                              bool __h_case_result  = (true  &&  (((child -> __h_ctor) ==  __h_Leaf_t  ) &&  ({ /* progn7599 */
+                                            ({ /* letn7591 */
+                                              bool __h_case_result  = (true  &&  (((child -> __h_ctor) ==  __h_Leaf_t  ) &&  ({ /* progn7592 */
                                                     items  = (((child -> __h_data). Leaf). __h_0_mem) ;
                                                     true ;
                                                   }) ) );
                                               // ----------
                                               
-                                              ((__h_case_result ) ? ({ /* progn7604 */
+                                              ((__h_case_result ) ? ({ /* progn7597 */
                                                   maxLeaf (items );
-                                                }) : ({ /* letn7608 */
+                                                }) : ({ /* letn7601 */
                                                   // ----------
                                                   ;
-                                                  ({ /* progn7610 */
+                                                  ({ /* progn7603 */
                                                     Nothing_BTree_int_User_pair_t ();
                                                   });
                                                 }));
@@ -7791,28 +7784,28 @@ Maybe_BTree_int_User_pair_t max_BTree_int_User (BTree_int_User tree ) {
                                     }));
                                 });
                               });
-                            }) : ({ /* letn7615 */
+                            }) : ({ /* letn7608 */
                               // ----------
                               ;
-                              ({ /* progn7617 */
+                              ({ /* progn7610 */
                                 Nothing_BTree_int_User_pair_t ();
                               });
                             }));
                         });
                       });
-                    }) : ({ /* letn7622 */
+                    }) : ({ /* letn7615 */
                       // ----------
                       ;
-                      ({ /* progn7624 */
+                      ({ /* progn7617 */
                         maxInternal (tail );
                       });
                     }));
                 });
               });
-            }) : ({ /* letn7628 */
+            }) : ({ /* letn7621 */
               // ----------
               ;
-              ({ /* progn7630 */
+              ({ /* progn7623 */
                 Nothing_BTree_int_User_pair_t ();
               });
             }));
@@ -7820,93 +7813,93 @@ Maybe_BTree_int_User_pair_t max_BTree_int_User (BTree_int_User tree ) {
       });
   }
   Maybe_BTree_int_User_pair_t maxLeaf (List_BTree_int_User_pair_t current ) {
-    return ({ /* letn7640 */
+    return ({ /* letn7633 */
         typeof((((current -> __h_data). Cons). __h_0_mem)) head ;
         typeof((((current -> __h_data). Cons). __h_1_mem)) tail ;
         // ----------
         ;
-        ({ /* letn7642 */
-          bool __h_case_result  = (true  &&  (((current -> __h_ctor) ==  __h_Cons_t  ) &&  (({ /* progn7643 */
+        ({ /* letn7635 */
+          bool __h_case_result  = (true  &&  (((current -> __h_ctor) ==  __h_Cons_t  ) &&  (({ /* progn7636 */
                   head  = (((current -> __h_data). Cons). __h_0_mem) ;
                   true ;
-                }) &&  ({ /* progn7645 */
+                }) &&  ({ /* progn7638 */
                   tail  = (((current -> __h_data). Cons). __h_1_mem) ;
                   true ;
                 }) ) ) );
           // ----------
           
-          ((__h_case_result ) ? ({ /* progn7650 */
-              ({ /* letn7656 */
+          ((__h_case_result ) ? ({ /* progn7643 */
+              ({ /* letn7649 */
                 // ----------
                 ;
-                ({ /* letn7658 */
+                ({ /* letn7651 */
                   bool __h_case_result  = (true  &&  ((tail -> __h_ctor) ==  __h_Nil_t  ) );
                   // ----------
                   
-                  ((__h_case_result ) ? ({ /* progn7662 */
+                  ((__h_case_result ) ? ({ /* progn7655 */
                       Just_BTree_int_User_pair_t (head );
-                    }) : ({ /* letn7667 */
+                    }) : ({ /* letn7660 */
                       // ----------
                       ;
-                      ({ /* progn7669 */
+                      ({ /* progn7662 */
                         maxLeaf (tail );
                       });
                     }));
                 });
               });
-            }) : ({ /* letn7673 */
+            }) : ({ /* letn7666 */
               // ----------
               ;
-              ({ /* progn7675 */
+              ({ /* progn7668 */
                 Nothing_BTree_int_User_pair_t ();
               });
             }));
         });
       });
   }
-  return ({ /* letn7682 */
+  return ({ /* letn7675 */
       typeof((((tree -> __h_data). Branch). __h_1_mem)) children ;
       // ----------
       ;
-      ({ /* letn7684 */
-        bool __h_case_result  = (true  &&  (((tree -> __h_ctor) ==  __h_Branch_t  ) &&  ({ /* progn7685 */
+      ({ /* letn7677 */
+        bool __h_case_result  = (true  &&  (((tree -> __h_ctor) ==  __h_Branch_t  ) &&  ({ /* progn7678 */
               children  = (((tree -> __h_data). Branch). __h_1_mem) ;
               true ;
             }) ) );
         // ----------
         
-        ((__h_case_result ) ? ({ /* progn7690 */
+        ((__h_case_result ) ? ({ /* progn7683 */
             maxInternal (children );
-          }) : ({ /* letn7694 */
+          }) : ({ /* letn7687 */
             typeof((((tree -> __h_data). Internal). __h_1_mem)) children ;
             // ----------
             ;
-            ({ /* letn7696 */
-              bool __h_case_result  = (true  &&  (((tree -> __h_ctor) ==  __h_Internal_t  ) &&  ({ /* progn7697 */
+            ({ /* letn7689 */
+              bool __h_case_result  = (true  &&  (((tree -> __h_ctor) ==  __h_Internal_t  ) &&  ({ /* progn7690 */
                     children  = (((tree -> __h_data). Internal). __h_1_mem) ;
                     true ;
                   }) ) );
               // ----------
               
-              ((__h_case_result ) ? ({ /* progn7702 */
+              ((__h_case_result ) ? ({ /* progn7695 */
                   maxInternal (children );
-                }) : ({ /* letn7706 */
+                }) : ({ /* letn7699 */
                   typeof((((tree -> __h_data). Leaf). __h_0_mem)) items ;
                   // ----------
                   ;
-                  ({ /* letn7708 */
-                    bool __h_case_result  = (true  &&  (((tree -> __h_ctor) ==  __h_Leaf_t  ) &&  ({ /* progn7709 */
+                  ({ /* letn7701 */
+                    bool __h_case_result  = (true  &&  (((tree -> __h_ctor) ==  __h_Leaf_t  ) &&  ({ /* progn7702 */
                           items  = (((tree -> __h_data). Leaf). __h_0_mem) ;
                           true ;
                         }) ) );
                     // ----------
                     
-                    ((__h_case_result ) ? ({ /* progn7714 */
+                    ((__h_case_result ) ? ({ /* progn7707 */
                         maxLeaf (items );
-                      }) : ({ /* letn7718 */
+                      }) : ({ /* letn7711 */
                         // ----------
                         ;
-                        ({ /* progn7720 */
+                        ({ /* progn7713 */
                           Nothing_BTree_int_User_pair_t ();
                         });
                       }));
@@ -7920,74 +7913,74 @@ Maybe_BTree_int_User_pair_t max_BTree_int_User (BTree_int_User tree ) {
 Maybe_BTree_int_User_pair_t min_BTree_int_User (BTree_int_User tree ) {
   auto Maybe_BTree_int_User_pair_t minLeaf (List_BTree_int_User_pair_t first );
   Maybe_BTree_int_User_pair_t minInternal (List_Rc_BTree_int_User first ) {
-    return ({ /* letn7738 */
+    return ({ /* letn7731 */
         typeof((((first -> __h_data). Cons). __h_0_mem)) head ;
         // ----------
         ;
-        ({ /* letn7740 */
-          bool __h_case_result  = (true  &&  (((first -> __h_ctor) ==  __h_Cons_t  ) &&  ({ /* progn7741 */
+        ({ /* letn7733 */
+          bool __h_case_result  = (true  &&  (((first -> __h_ctor) ==  __h_Cons_t  ) &&  ({ /* progn7734 */
                 head  = (((first -> __h_data). Cons). __h_0_mem) ;
                 true ;
               }) ) );
           // ----------
           
-          ((__h_case_result ) ? ({ /* progn7746 */
-              ({ /* letn7753 */
-                Maybe_BTree_int_User match7752  = deref_Rc_BTree_int_User (head );
-                typeof((((match7752 . __h_data). Just). __h_0_mem)) child ;
+          ((__h_case_result ) ? ({ /* progn7739 */
+              ({ /* letn7746 */
+                Maybe_BTree_int_User match7745  = deref_Rc_BTree_int_User (head );
+                typeof((((match7745 . __h_data). Just). __h_0_mem)) child ;
                 // ----------
                 ;
-                ({ /* letn7755 */
-                  bool __h_case_result  = (true  &&  (((match7752 . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn7756 */
-                        child  = (((match7752 . __h_data). Just). __h_0_mem) ;
+                ({ /* letn7748 */
+                  bool __h_case_result  = (true  &&  (((match7745 . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn7749 */
+                        child  = (((match7745 . __h_data). Just). __h_0_mem) ;
                         true ;
                       }) ) );
                   // ----------
                   
-                  ((__h_case_result ) ? ({ /* progn7761 */
-                      ({ /* letn7767 */
+                  ((__h_case_result ) ? ({ /* progn7754 */
+                      ({ /* letn7760 */
                         typeof((((child -> __h_data). Branch). __h_1_mem)) nchildren ;
                         // ----------
                         ;
-                        ({ /* letn7769 */
-                          bool __h_case_result  = (true  &&  (((child -> __h_ctor) ==  __h_Branch_t  ) &&  ({ /* progn7770 */
+                        ({ /* letn7762 */
+                          bool __h_case_result  = (true  &&  (((child -> __h_ctor) ==  __h_Branch_t  ) &&  ({ /* progn7763 */
                                 nchildren  = (((child -> __h_data). Branch). __h_1_mem) ;
                                 true ;
                               }) ) );
                           // ----------
                           
-                          ((__h_case_result ) ? ({ /* progn7775 */
+                          ((__h_case_result ) ? ({ /* progn7768 */
                               minInternal (nchildren );
-                            }) : ({ /* letn7779 */
+                            }) : ({ /* letn7772 */
                               typeof((((child -> __h_data). Internal). __h_1_mem)) nchildren ;
                               // ----------
                               ;
-                              ({ /* letn7781 */
-                                bool __h_case_result  = (true  &&  (((child -> __h_ctor) ==  __h_Internal_t  ) &&  ({ /* progn7782 */
+                              ({ /* letn7774 */
+                                bool __h_case_result  = (true  &&  (((child -> __h_ctor) ==  __h_Internal_t  ) &&  ({ /* progn7775 */
                                       nchildren  = (((child -> __h_data). Internal). __h_1_mem) ;
                                       true ;
                                     }) ) );
                                 // ----------
                                 
-                                ((__h_case_result ) ? ({ /* progn7787 */
+                                ((__h_case_result ) ? ({ /* progn7780 */
                                     minInternal (nchildren );
-                                  }) : ({ /* letn7791 */
+                                  }) : ({ /* letn7784 */
                                     typeof((((child -> __h_data). Leaf). __h_0_mem)) items ;
                                     // ----------
                                     ;
-                                    ({ /* letn7793 */
-                                      bool __h_case_result  = (true  &&  (((child -> __h_ctor) ==  __h_Leaf_t  ) &&  ({ /* progn7794 */
+                                    ({ /* letn7786 */
+                                      bool __h_case_result  = (true  &&  (((child -> __h_ctor) ==  __h_Leaf_t  ) &&  ({ /* progn7787 */
                                             items  = (((child -> __h_data). Leaf). __h_0_mem) ;
                                             true ;
                                           }) ) );
                                       // ----------
                                       
-                                      ((__h_case_result ) ? ({ /* progn7799 */
+                                      ((__h_case_result ) ? ({ /* progn7792 */
                                           minLeaf (items );
-                                        }) : ({ /* letn7803 */
+                                        }) : ({ /* letn7796 */
                                           // ----------
                                           ;
-                                          ({ /* progn7805 */
+                                          ({ /* progn7798 */
                                             Nothing_BTree_int_User_pair_t ();
                                           });
                                         }));
@@ -7997,19 +7990,19 @@ Maybe_BTree_int_User_pair_t min_BTree_int_User (BTree_int_User tree ) {
                             }));
                         });
                       });
-                    }) : ({ /* letn7810 */
+                    }) : ({ /* letn7803 */
                       // ----------
                       ;
-                      ({ /* progn7812 */
+                      ({ /* progn7805 */
                         Nothing_BTree_int_User_pair_t ();
                       });
                     }));
                 });
               });
-            }) : ({ /* letn7817 */
+            }) : ({ /* letn7810 */
               // ----------
               ;
-              ({ /* progn7819 */
+              ({ /* progn7812 */
                 Nothing_BTree_int_User_pair_t ();
               });
             }));
@@ -8017,72 +8010,72 @@ Maybe_BTree_int_User_pair_t min_BTree_int_User (BTree_int_User tree ) {
       });
   }
   Maybe_BTree_int_User_pair_t minLeaf (List_BTree_int_User_pair_t first ) {
-    return ({ /* letn7829 */
+    return ({ /* letn7822 */
         typeof((((first -> __h_data). Cons). __h_0_mem)) head ;
         // ----------
         ;
-        ({ /* letn7831 */
-          bool __h_case_result  = (true  &&  (((first -> __h_ctor) ==  __h_Cons_t  ) &&  ({ /* progn7832 */
+        ({ /* letn7824 */
+          bool __h_case_result  = (true  &&  (((first -> __h_ctor) ==  __h_Cons_t  ) &&  ({ /* progn7825 */
                 head  = (((first -> __h_data). Cons). __h_0_mem) ;
                 true ;
               }) ) );
           // ----------
           
-          ((__h_case_result ) ? ({ /* progn7837 */
+          ((__h_case_result ) ? ({ /* progn7830 */
               Just_BTree_int_User_pair_t (head );
-            }) : ({ /* letn7842 */
+            }) : ({ /* letn7835 */
               // ----------
               ;
-              ({ /* progn7844 */
+              ({ /* progn7837 */
                 Nothing_BTree_int_User_pair_t ();
               });
             }));
         });
       });
   }
-  return ({ /* letn7851 */
+  return ({ /* letn7844 */
       typeof((((tree -> __h_data). Branch). __h_1_mem)) children ;
       // ----------
       ;
-      ({ /* letn7853 */
-        bool __h_case_result  = (true  &&  (((tree -> __h_ctor) ==  __h_Branch_t  ) &&  ({ /* progn7854 */
+      ({ /* letn7846 */
+        bool __h_case_result  = (true  &&  (((tree -> __h_ctor) ==  __h_Branch_t  ) &&  ({ /* progn7847 */
               children  = (((tree -> __h_data). Branch). __h_1_mem) ;
               true ;
             }) ) );
         // ----------
         
-        ((__h_case_result ) ? ({ /* progn7859 */
+        ((__h_case_result ) ? ({ /* progn7852 */
             minInternal (children );
-          }) : ({ /* letn7863 */
+          }) : ({ /* letn7856 */
             typeof((((tree -> __h_data). Internal). __h_1_mem)) children ;
             // ----------
             ;
-            ({ /* letn7865 */
-              bool __h_case_result  = (true  &&  (((tree -> __h_ctor) ==  __h_Internal_t  ) &&  ({ /* progn7866 */
+            ({ /* letn7858 */
+              bool __h_case_result  = (true  &&  (((tree -> __h_ctor) ==  __h_Internal_t  ) &&  ({ /* progn7859 */
                     children  = (((tree -> __h_data). Internal). __h_1_mem) ;
                     true ;
                   }) ) );
               // ----------
               
-              ((__h_case_result ) ? ({ /* progn7871 */
+              ((__h_case_result ) ? ({ /* progn7864 */
                   minInternal (children );
-                }) : ({ /* letn7875 */
+                }) : ({ /* letn7868 */
                   typeof((((tree -> __h_data). Leaf). __h_0_mem)) items ;
                   // ----------
                   ;
-                  ({ /* letn7877 */
-                    bool __h_case_result  = (true  &&  (((tree -> __h_ctor) ==  __h_Leaf_t  ) &&  ({ /* progn7878 */
+                  ({ /* letn7870 */
+                    bool __h_case_result  = (true  &&  (((tree -> __h_ctor) ==  __h_Leaf_t  ) &&  ({ /* progn7871 */
                           items  = (((tree -> __h_data). Leaf). __h_0_mem) ;
                           true ;
                         }) ) );
                     // ----------
                     
-                    ((__h_case_result ) ? ({ /* progn7883 */
+                    ((__h_case_result ) ? ({ /* progn7876 */
                         minLeaf (items );
-                      }) : ({ /* letn7887 */
+                      }) : ({ /* letn7880 */
                         // ----------
                         ;
-                        ({ /* progn7889 */
+                        ({ /* progn7882 */
                           Nothing_BTree_int_User_pair_t ();
                         });
                       }));
@@ -8098,150 +8091,150 @@ Either_BTree_int_User_Error_BTree_int_User delete_BTree_int_User (BTree_int_User
 }
 Maybe_BTree_int_User_pair_t search_BTree_int_User (BTree_int_User tree , int skey ) {
   Maybe_BTree_int_User_pair_t searchInternal (List_Rc_BTree_int_User children , List_BTree_int_User_pair_t current , size_t index ) {
-    return ({ /* letn7911 */
+    return ({ /* letn7904 */
         typeof((((current -> __h_data). Cons). __h_0_mem)) head ;
         typeof((head . __h_0_mem)) key ;
         typeof((((current -> __h_data). Cons). __h_1_mem)) tail ;
         // ----------
         ;
-        ({ /* letn7913 */
-          bool __h_case_result  = (true  &&  (((current -> __h_ctor) ==  __h_Cons_t  ) &&  ((({ /* progn7914 */
+        ({ /* letn7906 */
+          bool __h_case_result  = (true  &&  (((current -> __h_ctor) ==  __h_Cons_t  ) &&  ((({ /* progn7907 */
                     head  = (((current -> __h_data). Cons). __h_0_mem) ;
                     true ;
-                  }) &&  (true  &&  ({ /* progn7916 */
+                  }) &&  (true  &&  ({ /* progn7909 */
                       key  = (head . __h_0_mem) ;
                       true ;
-                    }) ) ) &&  ({ /* progn7918 */
+                    }) ) ) &&  ({ /* progn7911 */
                   tail  = (((current -> __h_data). Cons). __h_1_mem) ;
                   true ;
                 }) ) ) );
           // ----------
           
-          ((__h_case_result ) ? ({ /* progn7923 */
-              ({ /* letn7929 */
-                Ordering match7928  = compareKey (skey , key );
+          ((__h_case_result ) ? ({ /* progn7916 */
+              ({ /* letn7922 */
+                Ordering match7921  = compareKey (skey , key );
                 // ----------
                 ;
-                ({ /* letn7931 */
-                  bool __h_case_result  = (true  &&  ((match7928 . __h_ctor) ==  __h_LT_t  ) );
+                ({ /* letn7924 */
+                  bool __h_case_result  = (true  &&  ((match7921 . __h_ctor) ==  __h_LT_t  ) );
                   // ----------
                   
-                  ((__h_case_result ) ? ({ /* progn7935 */
-                      ({ /* letn7942 */
-                        Maybe_Rc_BTree_int_User match7941  = nth_List_Rc_BTree_int_User (index , children );
-                        typeof((((match7941 . __h_data). Just). __h_0_mem)) node ;
+                  ((__h_case_result ) ? ({ /* progn7928 */
+                      ({ /* letn7935 */
+                        Maybe_Rc_BTree_int_User match7934  = nth_List_Rc_BTree_int_User (index , children );
+                        typeof((((match7934 . __h_data). Just). __h_0_mem)) node ;
                         // ----------
                         ;
-                        ({ /* letn7944 */
-                          bool __h_case_result  = (true  &&  (((match7941 . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn7945 */
-                                node  = (((match7941 . __h_data). Just). __h_0_mem) ;
+                        ({ /* letn7937 */
+                          bool __h_case_result  = (true  &&  (((match7934 . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn7938 */
+                                node  = (((match7934 . __h_data). Just). __h_0_mem) ;
                                 true ;
                               }) ) );
                           // ----------
                           
-                          ((__h_case_result ) ? ({ /* progn7950 */
-                              ({ /* letn7957 */
-                                Maybe_BTree_int_User match7956  = deref_Rc_BTree_int_User (node );
-                                typeof((((match7956 . __h_data). Just). __h_0_mem)) tr ;
+                          ((__h_case_result ) ? ({ /* progn7943 */
+                              ({ /* letn7950 */
+                                Maybe_BTree_int_User match7949  = deref_Rc_BTree_int_User (node );
+                                typeof((((match7949 . __h_data). Just). __h_0_mem)) tr ;
                                 // ----------
                                 ;
-                                ({ /* letn7959 */
-                                  bool __h_case_result  = (true  &&  (((match7956 . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn7960 */
-                                        tr  = (((match7956 . __h_data). Just). __h_0_mem) ;
+                                ({ /* letn7952 */
+                                  bool __h_case_result  = (true  &&  (((match7949 . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn7953 */
+                                        tr  = (((match7949 . __h_data). Just). __h_0_mem) ;
                                         true ;
                                       }) ) );
                                   // ----------
                                   
-                                  ((__h_case_result ) ? ({ /* progn7965 */
+                                  ((__h_case_result ) ? ({ /* progn7958 */
                                       search_BTree_int_User (tr , skey );
-                                    }) : ({ /* letn7970 */
+                                    }) : ({ /* letn7963 */
                                       // ----------
                                       ;
-                                      ({ /* progn7972 */
+                                      ({ /* progn7965 */
                                         Nothing_BTree_int_User_pair_t ();
                                       });
                                     }));
                                 });
                               });
-                            }) : ({ /* letn7977 */
+                            }) : ({ /* letn7970 */
                               // ----------
                               ;
-                              ({ /* progn7979 */
+                              ({ /* progn7972 */
                                 Nothing_BTree_int_User_pair_t ();
                               });
                             }));
                         });
                       });
-                    }) : ({ /* letn7984 */
+                    }) : ({ /* letn7977 */
                       // ----------
                       ;
-                      ({ /* letn7986 */
-                        bool __h_case_result  = (true  &&  ((match7928 . __h_ctor) ==  __h_EQ_t  ) );
+                      ({ /* letn7979 */
+                        bool __h_case_result  = (true  &&  ((match7921 . __h_ctor) ==  __h_EQ_t  ) );
                         // ----------
                         
-                        ((__h_case_result ) ? ({ /* progn7990 */
+                        ((__h_case_result ) ? ({ /* progn7983 */
                             Just_BTree_int_User_pair_t (head );
-                          }) : ({ /* letn7995 */
+                          }) : ({ /* letn7988 */
                             // ----------
                             ;
-                            ({ /* progn7997 */
-                              ({ /* letn8003 */
+                            ({ /* progn7990 */
+                              ({ /* letn7996 */
                                 // ----------
                                 ;
-                                ({ /* letn8005 */
+                                ({ /* letn7998 */
                                   bool __h_case_result  = (true  &&  ((tail -> __h_ctor) ==  __h_Nil_t  ) );
                                   // ----------
                                   
-                                  ((__h_case_result ) ? ({ /* progn8009 */
-                                      ({ /* letn8016 */
-                                        Maybe_Rc_BTree_int_User match8015  = nth_List_Rc_BTree_int_User ((index  +  1 ), children );
-                                        typeof((((match8015 . __h_data). Just). __h_0_mem)) node ;
+                                  ((__h_case_result ) ? ({ /* progn8002 */
+                                      ({ /* letn8009 */
+                                        Maybe_Rc_BTree_int_User match8008  = nth_List_Rc_BTree_int_User ((index  +  1 ), children );
+                                        typeof((((match8008 . __h_data). Just). __h_0_mem)) node ;
                                         // ----------
                                         ;
-                                        ({ /* letn8018 */
-                                          bool __h_case_result  = (true  &&  (((match8015 . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn8019 */
-                                                node  = (((match8015 . __h_data). Just). __h_0_mem) ;
+                                        ({ /* letn8011 */
+                                          bool __h_case_result  = (true  &&  (((match8008 . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn8012 */
+                                                node  = (((match8008 . __h_data). Just). __h_0_mem) ;
                                                 true ;
                                               }) ) );
                                           // ----------
                                           
-                                          ((__h_case_result ) ? ({ /* progn8024 */
-                                              ({ /* letn8031 */
-                                                Maybe_BTree_int_User match8030  = deref_Rc_BTree_int_User (node );
-                                                typeof((((match8030 . __h_data). Just). __h_0_mem)) tr ;
+                                          ((__h_case_result ) ? ({ /* progn8017 */
+                                              ({ /* letn8024 */
+                                                Maybe_BTree_int_User match8023  = deref_Rc_BTree_int_User (node );
+                                                typeof((((match8023 . __h_data). Just). __h_0_mem)) tr ;
                                                 // ----------
                                                 ;
-                                                ({ /* letn8033 */
-                                                  bool __h_case_result  = (true  &&  (((match8030 . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn8034 */
-                                                        tr  = (((match8030 . __h_data). Just). __h_0_mem) ;
+                                                ({ /* letn8026 */
+                                                  bool __h_case_result  = (true  &&  (((match8023 . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn8027 */
+                                                        tr  = (((match8023 . __h_data). Just). __h_0_mem) ;
                                                         true ;
                                                       }) ) );
                                                   // ----------
                                                   
-                                                  ((__h_case_result ) ? ({ /* progn8039 */
+                                                  ((__h_case_result ) ? ({ /* progn8032 */
                                                       search_BTree_int_User (tr , skey );
-                                                    }) : ({ /* letn8044 */
+                                                    }) : ({ /* letn8037 */
                                                       // ----------
                                                       ;
-                                                      ({ /* progn8046 */
+                                                      ({ /* progn8039 */
                                                         Nothing_BTree_int_User_pair_t ();
                                                       });
                                                     }));
                                                 });
                                               });
-                                            }) : ({ /* letn8051 */
+                                            }) : ({ /* letn8044 */
                                               // ----------
                                               ;
-                                              ({ /* progn8053 */
+                                              ({ /* progn8046 */
                                                 Nothing_BTree_int_User_pair_t ();
                                               });
                                             }));
                                         });
                                       });
-                                    }) : ({ /* letn8058 */
+                                    }) : ({ /* letn8051 */
                                       // ----------
                                       ;
-                                      ({ /* progn8060 */
+                                      ({ /* progn8053 */
                                         searchInternal (children , tail , (index  +  1 ));
                                       });
                                     }));
@@ -8253,10 +8246,10 @@ Maybe_BTree_int_User_pair_t search_BTree_int_User (BTree_int_User tree , int ske
                     }));
                 });
               });
-            }) : ({ /* letn8064 */
+            }) : ({ /* letn8057 */
               // ----------
               ;
-              ({ /* progn8066 */
+              ({ /* progn8059 */
                 Nothing_BTree_int_User_pair_t ();
               });
             }));
@@ -8264,53 +8257,53 @@ Maybe_BTree_int_User_pair_t search_BTree_int_User (BTree_int_User tree , int ske
       });
   }
   Maybe_BTree_int_User_pair_t searchLeaf (List_BTree_int_User_pair_t current , size_t index ) {
-    return ({ /* letn8077 */
+    return ({ /* letn8070 */
         typeof((((current -> __h_data). Cons). __h_0_mem)) head ;
         typeof((head . __h_0_mem)) key ;
         typeof((((current -> __h_data). Cons). __h_1_mem)) tail ;
         // ----------
         ;
-        ({ /* letn8079 */
-          bool __h_case_result  = (true  &&  (((current -> __h_ctor) ==  __h_Cons_t  ) &&  ((({ /* progn8080 */
+        ({ /* letn8072 */
+          bool __h_case_result  = (true  &&  (((current -> __h_ctor) ==  __h_Cons_t  ) &&  ((({ /* progn8073 */
                     head  = (((current -> __h_data). Cons). __h_0_mem) ;
                     true ;
-                  }) &&  (true  &&  ({ /* progn8082 */
+                  }) &&  (true  &&  ({ /* progn8075 */
                       key  = (head . __h_0_mem) ;
                       true ;
-                    }) ) ) &&  ({ /* progn8084 */
+                    }) ) ) &&  ({ /* progn8077 */
                   tail  = (((current -> __h_data). Cons). __h_1_mem) ;
                   true ;
                 }) ) ) );
           // ----------
           
-          ((__h_case_result ) ? ({ /* progn8089 */
-              ({ /* letn8095 */
-                Ordering match8094  = compareKey (skey , key );
+          ((__h_case_result ) ? ({ /* progn8082 */
+              ({ /* letn8088 */
+                Ordering match8087  = compareKey (skey , key );
                 // ----------
                 ;
-                ({ /* letn8097 */
-                  bool __h_case_result  = (true  &&  ((match8094 . __h_ctor) ==  __h_EQ_t  ) );
+                ({ /* letn8090 */
+                  bool __h_case_result  = (true  &&  ((match8087 . __h_ctor) ==  __h_EQ_t  ) );
                   // ----------
                   
-                  ((__h_case_result ) ? ({ /* progn8101 */
+                  ((__h_case_result ) ? ({ /* progn8094 */
                       Just_BTree_int_User_pair_t (head );
-                    }) : ({ /* letn8106 */
+                    }) : ({ /* letn8099 */
                       // ----------
                       ;
-                      ({ /* progn8108 */
-                        ({ /* letn8114 */
+                      ({ /* progn8101 */
+                        ({ /* letn8107 */
                           // ----------
                           ;
-                          ({ /* letn8116 */
+                          ({ /* letn8109 */
                             bool __h_case_result  = (true  &&  ((tail -> __h_ctor) ==  __h_Nil_t  ) );
                             // ----------
                             
-                            ((__h_case_result ) ? ({ /* progn8120 */
+                            ((__h_case_result ) ? ({ /* progn8113 */
                                 Nothing_BTree_int_User_pair_t ();
-                              }) : ({ /* letn8125 */
+                              }) : ({ /* letn8118 */
                                 // ----------
                                 ;
-                                ({ /* progn8127 */
+                                ({ /* progn8120 */
                                   searchLeaf (tail , (index  +  1 ));
                                 });
                               }));
@@ -8320,67 +8313,67 @@ Maybe_BTree_int_User_pair_t search_BTree_int_User (BTree_int_User tree , int ske
                     }));
                 });
               });
-            }) : ({ /* letn8131 */
+            }) : ({ /* letn8124 */
               // ----------
               ;
-              ({ /* progn8133 */
+              ({ /* progn8126 */
                 Nothing_BTree_int_User_pair_t ();
               });
             }));
         });
       });
   }
-  return ({ /* letn8140 */
+  return ({ /* letn8133 */
       typeof((((tree -> __h_data). Branch). __h_0_mem)) items ;
       typeof((((tree -> __h_data). Branch). __h_1_mem)) children ;
       // ----------
       ;
-      ({ /* letn8142 */
-        bool __h_case_result  = (true  &&  (((tree -> __h_ctor) ==  __h_Branch_t  ) &&  (({ /* progn8143 */
+      ({ /* letn8135 */
+        bool __h_case_result  = (true  &&  (((tree -> __h_ctor) ==  __h_Branch_t  ) &&  (({ /* progn8136 */
                 items  = (((tree -> __h_data). Branch). __h_0_mem) ;
                 true ;
-              }) &&  ({ /* progn8145 */
+              }) &&  ({ /* progn8138 */
                 children  = (((tree -> __h_data). Branch). __h_1_mem) ;
                 true ;
               }) ) ) );
         // ----------
         
-        ((__h_case_result ) ? ({ /* progn8150 */
+        ((__h_case_result ) ? ({ /* progn8143 */
             searchInternal (children , items , 0);
-          }) : ({ /* letn8154 */
+          }) : ({ /* letn8147 */
             typeof((((tree -> __h_data). Internal). __h_0_mem)) items ;
             typeof((((tree -> __h_data). Internal). __h_1_mem)) children ;
             // ----------
             ;
-            ({ /* letn8156 */
-              bool __h_case_result  = (true  &&  (((tree -> __h_ctor) ==  __h_Internal_t  ) &&  (({ /* progn8157 */
+            ({ /* letn8149 */
+              bool __h_case_result  = (true  &&  (((tree -> __h_ctor) ==  __h_Internal_t  ) &&  (({ /* progn8150 */
                       items  = (((tree -> __h_data). Internal). __h_0_mem) ;
                       true ;
-                    }) &&  ({ /* progn8159 */
+                    }) &&  ({ /* progn8152 */
                       children  = (((tree -> __h_data). Internal). __h_1_mem) ;
                       true ;
                     }) ) ) );
               // ----------
               
-              ((__h_case_result ) ? ({ /* progn8164 */
+              ((__h_case_result ) ? ({ /* progn8157 */
                   searchInternal (children , items , 0);
-                }) : ({ /* letn8168 */
+                }) : ({ /* letn8161 */
                   typeof((((tree -> __h_data). Leaf). __h_0_mem)) items ;
                   // ----------
                   ;
-                  ({ /* letn8170 */
-                    bool __h_case_result  = (true  &&  (((tree -> __h_ctor) ==  __h_Leaf_t  ) &&  ({ /* progn8171 */
+                  ({ /* letn8163 */
+                    bool __h_case_result  = (true  &&  (((tree -> __h_ctor) ==  __h_Leaf_t  ) &&  ({ /* progn8164 */
                           items  = (((tree -> __h_data). Leaf). __h_0_mem) ;
                           true ;
                         }) ) );
                     // ----------
                     
-                    ((__h_case_result ) ? ({ /* progn8176 */
+                    ((__h_case_result ) ? ({ /* progn8169 */
                         searchLeaf (items , 0);
-                      }) : ({ /* letn8180 */
+                      }) : ({ /* letn8173 */
                         // ----------
                         ;
-                        ({ /* progn8182 */
+                        ({ /* progn8175 */
                           Nothing_BTree_int_User_pair_t ();
                         });
                       }));
@@ -8393,114 +8386,114 @@ Maybe_BTree_int_User_pair_t search_BTree_int_User (BTree_int_User tree , int ske
 }
 Either_BTree_int_User_Error_BTree_int_User insert_BTree_int_User (BTree_int_User tree , int skey , User svalue ) {
   if (3 <  3 )
-    { /* block8195 */
+    { /* block8188 */
       return Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_INVALID_ORDER (3));
     }
   Either_BTree_int_User_Error_BTree_int_User insertInternal (List_BTree_int_User_pair_t items , List_Rc_BTree_int_User children , List_BTree_int_User_pair_t current , size_t index ) {
-    return ({ /* letn8211 */
+    return ({ /* letn8204 */
         typeof((((current -> __h_data). Cons). __h_0_mem)) head ;
         typeof((head . __h_0_mem)) key ;
         typeof((((current -> __h_data). Cons). __h_1_mem)) tail ;
         // ----------
         ;
-        ({ /* letn8213 */
-          bool __h_case_result  = (true  &&  (((current -> __h_ctor) ==  __h_Cons_t  ) &&  ((({ /* progn8214 */
+        ({ /* letn8206 */
+          bool __h_case_result  = (true  &&  (((current -> __h_ctor) ==  __h_Cons_t  ) &&  ((({ /* progn8207 */
                     head  = (((current -> __h_data). Cons). __h_0_mem) ;
                     true ;
-                  }) &&  (true  &&  ({ /* progn8216 */
+                  }) &&  (true  &&  ({ /* progn8209 */
                       key  = (head . __h_0_mem) ;
                       true ;
-                    }) ) ) &&  ({ /* progn8218 */
+                    }) ) ) &&  ({ /* progn8211 */
                   tail  = (((current -> __h_data). Cons). __h_1_mem) ;
                   true ;
                 }) ) ) );
           // ----------
           
-          ((__h_case_result ) ? ({ /* progn8223 */
-              ({ /* letn8229 */
-                Ordering match8228  = compareKey (skey , key );
+          ((__h_case_result ) ? ({ /* progn8216 */
+              ({ /* letn8222 */
+                Ordering match8221  = compareKey (skey , key );
                 // ----------
                 ;
-                ({ /* letn8231 */
-                  bool __h_case_result  = (true  &&  ((match8228 . __h_ctor) ==  __h_LT_t  ) );
+                ({ /* letn8224 */
+                  bool __h_case_result  = (true  &&  ((match8221 . __h_ctor) ==  __h_LT_t  ) );
                   // ----------
                   
-                  ((__h_case_result ) ? ({ /* progn8235 */
-                      ({ /* letn8242 */
-                        Maybe_Rc_BTree_int_User match8241  = nth_List_Rc_BTree_int_User (index , children );
-                        typeof((((match8241 . __h_data). Just). __h_0_mem)) child ;
+                  ((__h_case_result ) ? ({ /* progn8228 */
+                      ({ /* letn8235 */
+                        Maybe_Rc_BTree_int_User match8234  = nth_List_Rc_BTree_int_User (index , children );
+                        typeof((((match8234 . __h_data). Just). __h_0_mem)) child ;
                         // ----------
                         ;
-                        ({ /* letn8244 */
-                          bool __h_case_result  = (true  &&  (((match8241 . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn8245 */
-                                child  = (((match8241 . __h_data). Just). __h_0_mem) ;
+                        ({ /* letn8237 */
+                          bool __h_case_result  = (true  &&  (((match8234 . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn8238 */
+                                child  = (((match8234 . __h_data). Just). __h_0_mem) ;
                                 true ;
                               }) ) );
                           // ----------
                           
-                          ((__h_case_result ) ? ({ /* progn8250 */
-                              ({ /* letn8257 */
-                                Maybe_BTree_int_User match8256  = deref_Rc_BTree_int_User (child );
-                                typeof((((match8256 . __h_data). Just). __h_0_mem)) tr ;
+                          ((__h_case_result ) ? ({ /* progn8243 */
+                              ({ /* letn8250 */
+                                Maybe_BTree_int_User match8249  = deref_Rc_BTree_int_User (child );
+                                typeof((((match8249 . __h_data). Just). __h_0_mem)) tr ;
                                 // ----------
                                 ;
-                                ({ /* letn8259 */
-                                  bool __h_case_result  = (true  &&  (((match8256 . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn8260 */
-                                        tr  = (((match8256 . __h_data). Just). __h_0_mem) ;
+                                ({ /* letn8252 */
+                                  bool __h_case_result  = (true  &&  (((match8249 . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn8253 */
+                                        tr  = (((match8249 . __h_data). Just). __h_0_mem) ;
                                         true ;
                                       }) ) );
                                   // ----------
                                   
-                                  ((__h_case_result ) ? ({ /* progn8265 */
-                                      ({ /* letn8272 */
-                                        Either_BTree_int_User_Error_BTree_int_User match8271  = insert_BTree_int_User (tr , skey , svalue );
-                                        typeof((((match8271 . __h_data). Right). __h_0_mem)) child_tree ;
+                                  ((__h_case_result ) ? ({ /* progn8258 */
+                                      ({ /* letn8265 */
+                                        Either_BTree_int_User_Error_BTree_int_User match8264  = insert_BTree_int_User (tr , skey , svalue );
+                                        typeof((((match8264 . __h_data). Right). __h_0_mem)) child_tree ;
                                         // ----------
                                         ;
-                                        ({ /* letn8274 */
-                                          bool __h_case_result  = (true  &&  (((match8271 . __h_ctor) ==  __h_Right_t  ) &&  ({ /* progn8275 */
-                                                child_tree  = (((match8271 . __h_data). Right). __h_0_mem) ;
+                                        ({ /* letn8267 */
+                                          bool __h_case_result  = (true  &&  (((match8264 . __h_ctor) ==  __h_Right_t  ) &&  ({ /* progn8268 */
+                                                child_tree  = (((match8264 . __h_data). Right). __h_0_mem) ;
                                                 true ;
                                               }) ) );
                                           // ----------
                                           
-                                          ((__h_case_result ) ? ({ /* progn8280 */
-                                              ({ /* letn8286 */
+                                          ((__h_case_result ) ? ({ /* progn8273 */
+                                              ({ /* letn8279 */
                                                 typeof((((child_tree -> __h_data). Branch). __h_0_mem)) child_items ;
                                                 typeof((((child_tree -> __h_data). Branch). __h_1_mem)) child_children ;
                                                 // ----------
                                                 ;
-                                                ({ /* letn8288 */
-                                                  bool __h_case_result  = (true  &&  (((child_tree -> __h_ctor) ==  __h_Branch_t  ) &&  (({ /* progn8289 */
+                                                ({ /* letn8281 */
+                                                  bool __h_case_result  = (true  &&  (((child_tree -> __h_ctor) ==  __h_Branch_t  ) &&  (({ /* progn8282 */
                                                           child_items  = (((child_tree -> __h_data). Branch). __h_0_mem) ;
                                                           true ;
-                                                        }) &&  ({ /* progn8291 */
+                                                        }) &&  ({ /* progn8284 */
                                                           child_children  = (((child_tree -> __h_data). Branch). __h_1_mem) ;
                                                           true ;
                                                         }) ) ) );
                                                   // ----------
                                                   
-                                                  ((__h_case_result ) ? ({ /* progn8296 */
-                                                      ({ /* letn8303 */
+                                                  ((__h_case_result ) ? ({ /* progn8289 */
+                                                      ({ /* letn8296 */
                                                         typeof((((child_items -> __h_data). Cons). __h_0_mem)) single_item ;
-                                                        typeof((((child_items -> __h_data). Cons). __h_1_mem)) __h_match8301_1_arg ;
+                                                        typeof((((child_items -> __h_data). Cons). __h_1_mem)) __h_match8294_1_arg ;
                                                         // ----------
                                                         ;
-                                                        ({ /* letn8305 */
-                                                          bool __h_case_result  = (true  &&  (((child_items -> __h_ctor) ==  __h_Cons_t  ) &&  ((({ /* progn8306 */
+                                                        ({ /* letn8298 */
+                                                          bool __h_case_result  = (true  &&  (((child_items -> __h_ctor) ==  __h_Cons_t  ) &&  ((({ /* progn8299 */
                                                                     single_item  = (((child_items -> __h_data). Cons). __h_0_mem) ;
                                                                     true ;
-                                                                  }) &&  ({ /* progn8308 */
-                                                                    __h_match8301_1_arg  = (((child_items -> __h_data). Cons). __h_1_mem) ;
+                                                                  }) &&  ({ /* progn8301 */
+                                                                    __h_match8294_1_arg  = (((child_items -> __h_data). Cons). __h_1_mem) ;
                                                                     true ;
-                                                                  }) ) &&  (true  &&  ((__h_match8301_1_arg -> __h_ctor) ==  __h_Nil_t  ) ) ) ) );
+                                                                  }) ) &&  (true  &&  ((__h_match8294_1_arg -> __h_ctor) ==  __h_Nil_t  ) ) ) ) );
                                                           // ----------
                                                           
-                                                          ((__h_case_result ) ? ({ /* progn8313 */
-                                                              ({ /* letn8316 */
+                                                          ((__h_case_result ) ? ({ /* progn8306 */
+                                                              ({ /* letn8309 */
                                                                 BTree_int_User child_tree_spent  __attribute__((__cleanup__(free_BTree_int_User ))) = child_tree ;
                                                                 // ----------
-                                                                Right_BTree_int_User_Error_BTree_int_User (Internal_BTree_int_User (insert_List_BTree_int_User_pair_t (items , single_item , current ), ({ /* letn8327 */
+                                                                Right_BTree_int_User_Error_BTree_int_User (Internal_BTree_int_User (insert_List_BTree_int_User_pair_t (items , single_item , current ), ({ /* letn8320 */
                                                                     List_Rc_BTree_int_User r1  __attribute__((__cleanup__(free_List_Rc_BTree_int_User ))) = take_List_Rc_BTree_int_User (index , children );
                                                                     List_Rc_BTree_int_User r2  __attribute__((__cleanup__(free_List_Rc_BTree_int_User ))) = drop_List_Rc_BTree_int_User ((index  +  1 ), children );
                                                                     List_Rc_BTree_int_User r3  __attribute__((__cleanup__(free_List_Rc_BTree_int_User ))) = append_List_Rc_BTree_int_User (child_children , r2 );
@@ -8509,24 +8502,24 @@ Either_BTree_int_User_Error_BTree_int_User insert_BTree_int_User (BTree_int_User
                                                                     cloneAll_Rc_BTree_int_User (r4 );
                                                                   })));
                                                               });
-                                                            }) : ({ /* letn8336 */
+                                                            }) : ({ /* letn8329 */
                                                               // ----------
                                                               ;
-                                                              ({ /* progn8338 */
+                                                              ({ /* progn8331 */
                                                                 Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_INVALID_BRANCH (child_tree ));
                                                               });
                                                             }));
                                                         });
                                                       });
-                                                    }) : ({ /* letn8344 */
+                                                    }) : ({ /* letn8337 */
                                                       // ----------
                                                       ;
-                                                      ({ /* letn8346 */
+                                                      ({ /* letn8339 */
                                                         bool __h_case_result  = (true  &&  ((child_tree -> __h_ctor) ==  __h_Internal_t  ) );
                                                         // ----------
                                                         
-                                                        ((__h_case_result ) ? ({ /* progn8350 */
-                                                            Right_BTree_int_User_Error_BTree_int_User (Internal_BTree_int_User (copy_List_BTree_int_User_pair_t (items ), ({ /* letn8361 */
+                                                        ((__h_case_result ) ? ({ /* progn8343 */
+                                                            Right_BTree_int_User_Error_BTree_int_User (Internal_BTree_int_User (copy_List_BTree_int_User_pair_t (items ), ({ /* letn8354 */
                                                                 List_Rc_BTree_int_User r1  __attribute__((__cleanup__(free_List_Rc_BTree_int_User ))) = take_List_Rc_BTree_int_User (index , children );
                                                                 List_Rc_BTree_int_User r2  __attribute__((__cleanup__(free_List_Rc_BTree_int_User ))) = cloneAll_Rc_BTree_int_User (r1 );
                                                                 List_Rc_BTree_int_User r3  __attribute__((__cleanup__(free_List_Rc_BTree_int_User ))) = drop_List_Rc_BTree_int_User ((index  +  1 ), children );
@@ -8535,11 +8528,11 @@ Either_BTree_int_User_Error_BTree_int_User insert_BTree_int_User (BTree_int_User
                                                                 // ----------
                                                                 append_List_Rc_BTree_int_User (r2 , r5 );
                                                               })));
-                                                          }) : ({ /* letn8372 */
+                                                          }) : ({ /* letn8365 */
                                                             // ----------
                                                             ;
-                                                            ({ /* progn8374 */
-                                                              Right_BTree_int_User_Error_BTree_int_User (Internal_BTree_int_User (copy_List_BTree_int_User_pair_t (items ), ({ /* letn8385 */
+                                                            ({ /* progn8367 */
+                                                              Right_BTree_int_User_Error_BTree_int_User (Internal_BTree_int_User (copy_List_BTree_int_User_pair_t (items ), ({ /* letn8378 */
                                                                   List_Rc_BTree_int_User r1  __attribute__((__cleanup__(free_List_Rc_BTree_int_User ))) = take_List_Rc_BTree_int_User (index , children );
                                                                   List_Rc_BTree_int_User r2  __attribute__((__cleanup__(free_List_Rc_BTree_int_User ))) = cloneAll_Rc_BTree_int_User (r1 );
                                                                   List_Rc_BTree_int_User r3  __attribute__((__cleanup__(free_List_Rc_BTree_int_User ))) = drop_List_Rc_BTree_int_User ((index  +  1 ), children );
@@ -8554,47 +8547,47 @@ Either_BTree_int_User_Error_BTree_int_User insert_BTree_int_User (BTree_int_User
                                                     }));
                                                 });
                                               });
-                                            }) : ({ /* letn8396 */
-                                              Either_BTree_int_User_Error_BTree_int_User passthru  = match8271 ;
+                                            }) : ({ /* letn8389 */
+                                              Either_BTree_int_User_Error_BTree_int_User passthru  = match8264 ;
                                               // ----------
                                               ;
-                                              ({ /* progn8398 */
+                                              ({ /* progn8391 */
                                                 passthru ;
                                               });
                                             }));
                                         });
                                       });
-                                    }) : ({ /* letn8402 */
+                                    }) : ({ /* letn8395 */
                                       // ----------
                                       ;
-                                      ({ /* progn8404 */
+                                      ({ /* progn8397 */
                                         Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_ACCESS_DEAD_CHILD (head , index ));
                                       });
                                     }));
                                 });
                               });
-                            }) : ({ /* letn8410 */
+                            }) : ({ /* letn8403 */
                               // ----------
                               ;
-                              ({ /* progn8412 */
+                              ({ /* progn8405 */
                                 Right_BTree_int_User_Error_BTree_int_User (Leaf_BTree_int_User (insert_List_BTree_int_User_pair_t (items , ((BTree_int_User_pair_t){ skey , svalue }), current )));
                               });
                             }));
                         });
                       });
-                    }) : ({ /* letn8420 */
+                    }) : ({ /* letn8413 */
                       // ----------
                       ;
-                      ({ /* letn8422 */
-                        bool __h_case_result  = (true  &&  ((match8228 . __h_ctor) ==  __h_EQ_t  ) );
+                      ({ /* letn8415 */
+                        bool __h_case_result  = (true  &&  ((match8221 . __h_ctor) ==  __h_EQ_t  ) );
                         // ----------
                         
-                        ((__h_case_result ) ? ({ /* progn8426 */
+                        ((__h_case_result ) ? ({ /* progn8419 */
                             Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_UNIQUE_KEY (head ));
-                          }) : ({ /* letn8432 */
+                          }) : ({ /* letn8425 */
                             // ----------
                             ;
-                            ({ /* progn8434 */
+                            ({ /* progn8427 */
                               insertInternal (items , children , tail , (index  +  1 ));
                             });
                           }));
@@ -8602,85 +8595,85 @@ Either_BTree_int_User_Error_BTree_int_User insert_BTree_int_User (BTree_int_User
                     }));
                 });
               });
-            }) : ({ /* letn8438 */
+            }) : ({ /* letn8431 */
               // ----------
               ;
-              ({ /* progn8440 */
-                ({ /* letn8447 */
-                  Maybe_Rc_BTree_int_User match8446  = nth_List_Rc_BTree_int_User (index , children );
-                  typeof((((match8446 . __h_data). Just). __h_0_mem)) child ;
+              ({ /* progn8433 */
+                ({ /* letn8440 */
+                  Maybe_Rc_BTree_int_User match8439  = nth_List_Rc_BTree_int_User (index , children );
+                  typeof((((match8439 . __h_data). Just). __h_0_mem)) child ;
                   // ----------
                   ;
-                  ({ /* letn8449 */
-                    bool __h_case_result  = (true  &&  (((match8446 . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn8450 */
-                          child  = (((match8446 . __h_data). Just). __h_0_mem) ;
+                  ({ /* letn8442 */
+                    bool __h_case_result  = (true  &&  (((match8439 . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn8443 */
+                          child  = (((match8439 . __h_data). Just). __h_0_mem) ;
                           true ;
                         }) ) );
                     // ----------
                     
-                    ((__h_case_result ) ? ({ /* progn8455 */
-                        ({ /* letn8462 */
-                          Maybe_BTree_int_User match8461  = deref_Rc_BTree_int_User (child );
-                          typeof((((match8461 . __h_data). Just). __h_0_mem)) tr ;
+                    ((__h_case_result ) ? ({ /* progn8448 */
+                        ({ /* letn8455 */
+                          Maybe_BTree_int_User match8454  = deref_Rc_BTree_int_User (child );
+                          typeof((((match8454 . __h_data). Just). __h_0_mem)) tr ;
                           // ----------
                           ;
-                          ({ /* letn8464 */
-                            bool __h_case_result  = (true  &&  (((match8461 . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn8465 */
-                                  tr  = (((match8461 . __h_data). Just). __h_0_mem) ;
+                          ({ /* letn8457 */
+                            bool __h_case_result  = (true  &&  (((match8454 . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn8458 */
+                                  tr  = (((match8454 . __h_data). Just). __h_0_mem) ;
                                   true ;
                                 }) ) );
                             // ----------
                             
-                            ((__h_case_result ) ? ({ /* progn8470 */
-                                ({ /* letn8477 */
-                                  Either_BTree_int_User_Error_BTree_int_User match8476  = insert_BTree_int_User (tr , skey , svalue );
-                                  typeof((((match8476 . __h_data). Right). __h_0_mem)) child_tree ;
+                            ((__h_case_result ) ? ({ /* progn8463 */
+                                ({ /* letn8470 */
+                                  Either_BTree_int_User_Error_BTree_int_User match8469  = insert_BTree_int_User (tr , skey , svalue );
+                                  typeof((((match8469 . __h_data). Right). __h_0_mem)) child_tree ;
                                   // ----------
                                   ;
-                                  ({ /* letn8479 */
-                                    bool __h_case_result  = (true  &&  (((match8476 . __h_ctor) ==  __h_Right_t  ) &&  ({ /* progn8480 */
-                                          child_tree  = (((match8476 . __h_data). Right). __h_0_mem) ;
+                                  ({ /* letn8472 */
+                                    bool __h_case_result  = (true  &&  (((match8469 . __h_ctor) ==  __h_Right_t  ) &&  ({ /* progn8473 */
+                                          child_tree  = (((match8469 . __h_data). Right). __h_0_mem) ;
                                           true ;
                                         }) ) );
                                     // ----------
                                     
-                                    ((__h_case_result ) ? ({ /* progn8485 */
-                                        ({ /* letn8491 */
+                                    ((__h_case_result ) ? ({ /* progn8478 */
+                                        ({ /* letn8484 */
                                           typeof((((child_tree -> __h_data). Branch). __h_0_mem)) child_items ;
                                           typeof((((child_tree -> __h_data). Branch). __h_1_mem)) child_children ;
                                           // ----------
                                           ;
-                                          ({ /* letn8493 */
-                                            bool __h_case_result  = (true  &&  (((child_tree -> __h_ctor) ==  __h_Branch_t  ) &&  (({ /* progn8494 */
+                                          ({ /* letn8486 */
+                                            bool __h_case_result  = (true  &&  (((child_tree -> __h_ctor) ==  __h_Branch_t  ) &&  (({ /* progn8487 */
                                                     child_items  = (((child_tree -> __h_data). Branch). __h_0_mem) ;
                                                     true ;
-                                                  }) &&  ({ /* progn8496 */
+                                                  }) &&  ({ /* progn8489 */
                                                     child_children  = (((child_tree -> __h_data). Branch). __h_1_mem) ;
                                                     true ;
                                                   }) ) ) );
                                             // ----------
                                             
-                                            ((__h_case_result ) ? ({ /* progn8501 */
-                                                ({ /* letn8508 */
+                                            ((__h_case_result ) ? ({ /* progn8494 */
+                                                ({ /* letn8501 */
                                                   typeof((((child_items -> __h_data). Cons). __h_0_mem)) single_item ;
-                                                  typeof((((child_items -> __h_data). Cons). __h_1_mem)) __h_match8506_1_arg ;
+                                                  typeof((((child_items -> __h_data). Cons). __h_1_mem)) __h_match8499_1_arg ;
                                                   // ----------
                                                   ;
-                                                  ({ /* letn8510 */
-                                                    bool __h_case_result  = (true  &&  (((child_items -> __h_ctor) ==  __h_Cons_t  ) &&  ((({ /* progn8511 */
+                                                  ({ /* letn8503 */
+                                                    bool __h_case_result  = (true  &&  (((child_items -> __h_ctor) ==  __h_Cons_t  ) &&  ((({ /* progn8504 */
                                                               single_item  = (((child_items -> __h_data). Cons). __h_0_mem) ;
                                                               true ;
-                                                            }) &&  ({ /* progn8513 */
-                                                              __h_match8506_1_arg  = (((child_items -> __h_data). Cons). __h_1_mem) ;
+                                                            }) &&  ({ /* progn8506 */
+                                                              __h_match8499_1_arg  = (((child_items -> __h_data). Cons). __h_1_mem) ;
                                                               true ;
-                                                            }) ) &&  (true  &&  ((__h_match8506_1_arg -> __h_ctor) ==  __h_Nil_t  ) ) ) ) );
+                                                            }) ) &&  (true  &&  ((__h_match8499_1_arg -> __h_ctor) ==  __h_Nil_t  ) ) ) ) );
                                                     // ----------
                                                     
-                                                    ((__h_case_result ) ? ({ /* progn8518 */
-                                                        ({ /* letn8521 */
+                                                    ((__h_case_result ) ? ({ /* progn8511 */
+                                                        ({ /* letn8514 */
                                                           BTree_int_User child_tree_spent  __attribute__((__cleanup__(free_BTree_int_User ))) = child_tree ;
                                                           // ----------
-                                                          Right_BTree_int_User_Error_BTree_int_User (Internal_BTree_int_User (insert_List_BTree_int_User_pair_t (items , single_item , current ), ({ /* letn8532 */
+                                                          Right_BTree_int_User_Error_BTree_int_User (Internal_BTree_int_User (insert_List_BTree_int_User_pair_t (items , single_item , current ), ({ /* letn8525 */
                                                               List_Rc_BTree_int_User r1  __attribute__((__cleanup__(free_List_Rc_BTree_int_User ))) = take_List_Rc_BTree_int_User (index , children );
                                                               List_Rc_BTree_int_User r2  __attribute__((__cleanup__(free_List_Rc_BTree_int_User ))) = drop_List_Rc_BTree_int_User ((index  +  1 ), children );
                                                               List_Rc_BTree_int_User r3  __attribute__((__cleanup__(free_List_Rc_BTree_int_User ))) = append_List_Rc_BTree_int_User (child_children , r2 );
@@ -8689,35 +8682,35 @@ Either_BTree_int_User_Error_BTree_int_User insert_BTree_int_User (BTree_int_User
                                                               cloneAll_Rc_BTree_int_User (r4 );
                                                             })));
                                                         });
-                                                      }) : ({ /* letn8541 */
+                                                      }) : ({ /* letn8534 */
                                                         // ----------
                                                         ;
-                                                        ({ /* progn8543 */
+                                                        ({ /* progn8536 */
                                                           Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_INVALID_BRANCH (child_tree ));
                                                         });
                                                       }));
                                                   });
                                                 });
-                                              }) : ({ /* letn8549 */
+                                              }) : ({ /* letn8542 */
                                                 // ----------
                                                 ;
-                                                ({ /* letn8551 */
+                                                ({ /* letn8544 */
                                                   bool __h_case_result  = (true  &&  ((child_tree -> __h_ctor) ==  __h_Internal_t  ) );
                                                   // ----------
                                                   
-                                                  ((__h_case_result ) ? ({ /* progn8555 */
-                                                      Right_BTree_int_User_Error_BTree_int_User (Internal_BTree_int_User (copy_List_BTree_int_User_pair_t (items ), ({ /* letn8564 */
+                                                  ((__h_case_result ) ? ({ /* progn8548 */
+                                                      Right_BTree_int_User_Error_BTree_int_User (Internal_BTree_int_User (copy_List_BTree_int_User_pair_t (items ), ({ /* letn8557 */
                                                           List_Rc_BTree_int_User r1  __attribute__((__cleanup__(free_List_Rc_BTree_int_User ))) = take_List_Rc_BTree_int_User (index , children );
                                                           List_Rc_BTree_int_User r2  __attribute__((__cleanup__(free_List_Rc_BTree_int_User ))) = cloneAll_Rc_BTree_int_User (r1 );
                                                           List_Rc_BTree_int_User r3  __attribute__((__cleanup__(free_List_Rc_BTree_int_User ))) = wrap_List_Rc_BTree_int_User (new_Rc_BTree_int_User (child_tree ));
                                                           // ----------
                                                           append_List_Rc_BTree_int_User (r2 , r3 );
                                                         })));
-                                                    }) : ({ /* letn8573 */
+                                                    }) : ({ /* letn8566 */
                                                       // ----------
                                                       ;
-                                                      ({ /* progn8575 */
-                                                        Right_BTree_int_User_Error_BTree_int_User (Internal_BTree_int_User (copy_List_BTree_int_User_pair_t (items ), ({ /* letn8584 */
+                                                      ({ /* progn8568 */
+                                                        Right_BTree_int_User_Error_BTree_int_User (Internal_BTree_int_User (copy_List_BTree_int_User_pair_t (items ), ({ /* letn8577 */
                                                             List_Rc_BTree_int_User r1  __attribute__((__cleanup__(free_List_Rc_BTree_int_User ))) = take_List_Rc_BTree_int_User (index , children );
                                                             List_Rc_BTree_int_User r2  __attribute__((__cleanup__(free_List_Rc_BTree_int_User ))) = cloneAll_Rc_BTree_int_User (r1 );
                                                             List_Rc_BTree_int_User r3  __attribute__((__cleanup__(free_List_Rc_BTree_int_User ))) = wrap_List_Rc_BTree_int_User (new_Rc_BTree_int_User (child_tree ));
@@ -8730,30 +8723,30 @@ Either_BTree_int_User_Error_BTree_int_User insert_BTree_int_User (BTree_int_User
                                               }));
                                           });
                                         });
-                                      }) : ({ /* letn8593 */
-                                        Either_BTree_int_User_Error_BTree_int_User passthru  = match8476 ;
+                                      }) : ({ /* letn8586 */
+                                        Either_BTree_int_User_Error_BTree_int_User passthru  = match8469 ;
                                         // ----------
                                         ;
-                                        ({ /* progn8595 */
+                                        ({ /* progn8588 */
                                           passthru ;
                                         });
                                       }));
                                   });
                                 });
-                              }) : ({ /* letn8599 */
+                              }) : ({ /* letn8592 */
                                 // ----------
                                 ;
-                                ({ /* progn8601 */
+                                ({ /* progn8594 */
                                   Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_ACCESS_DEAD_CHILD (((BTree_int_User_pair_t){ }), index ));
                                 });
                               }));
                           });
                         });
-                      }) : ({ /* letn8608 */
+                      }) : ({ /* letn8601 */
                         // ----------
                         ;
-                        ({ /* progn8610 */
-                          Right_BTree_int_User_Error_BTree_int_User (Leaf_BTree_int_User (({ /* letn8616 */
+                        ({ /* progn8603 */
+                          Right_BTree_int_User_Error_BTree_int_User (Leaf_BTree_int_User (({ /* letn8609 */
                               List_BTree_int_User_pair_t r1  __attribute__((__cleanup__(free_List_BTree_int_User_pair_t ))) = wrap_List_BTree_int_User_pair_t (((BTree_int_User_pair_t){ skey , svalue }));
                               // ----------
                               append_List_BTree_int_User_pair_t (items , r1 );
@@ -8768,49 +8761,49 @@ Either_BTree_int_User_Error_BTree_int_User insert_BTree_int_User (BTree_int_User
       });
   }
   Either_BTree_int_User_Error_BTree_int_User insertLeaf (List_BTree_int_User_pair_t items , List_BTree_int_User_pair_t current , size_t index ) {
-    return ({ /* letn8632 */
+    return ({ /* letn8625 */
         typeof((((current -> __h_data). Cons). __h_0_mem)) head ;
         typeof((head . __h_0_mem)) key ;
         typeof((((current -> __h_data). Cons). __h_1_mem)) tail ;
         // ----------
         ;
-        ({ /* letn8634 */
-          bool __h_case_result  = (true  &&  (((current -> __h_ctor) ==  __h_Cons_t  ) &&  ((({ /* progn8635 */
+        ({ /* letn8627 */
+          bool __h_case_result  = (true  &&  (((current -> __h_ctor) ==  __h_Cons_t  ) &&  ((({ /* progn8628 */
                     head  = (((current -> __h_data). Cons). __h_0_mem) ;
                     true ;
-                  }) &&  (true  &&  ({ /* progn8637 */
+                  }) &&  (true  &&  ({ /* progn8630 */
                       key  = (head . __h_0_mem) ;
                       true ;
-                    }) ) ) &&  ({ /* progn8639 */
+                    }) ) ) &&  ({ /* progn8632 */
                   tail  = (((current -> __h_data). Cons). __h_1_mem) ;
                   true ;
                 }) ) ) );
           // ----------
           
-          ((__h_case_result ) ? ({ /* progn8644 */
-              ({ /* letn8650 */
-                Ordering match8649  = compareKey (skey , key );
+          ((__h_case_result ) ? ({ /* progn8637 */
+              ({ /* letn8643 */
+                Ordering match8642  = compareKey (skey , key );
                 // ----------
                 ;
-                ({ /* letn8652 */
-                  bool __h_case_result  = (true  &&  ((match8649 . __h_ctor) ==  __h_LT_t  ) );
+                ({ /* letn8645 */
+                  bool __h_case_result  = (true  &&  ((match8642 . __h_ctor) ==  __h_LT_t  ) );
                   // ----------
                   
-                  ((__h_case_result ) ? ({ /* progn8656 */
+                  ((__h_case_result ) ? ({ /* progn8649 */
                       Right_BTree_int_User_Error_BTree_int_User (Leaf_BTree_int_User (insert_List_BTree_int_User_pair_t (items , ((BTree_int_User_pair_t){ skey , svalue }), current )));
-                    }) : ({ /* letn8664 */
+                    }) : ({ /* letn8657 */
                       // ----------
                       ;
-                      ({ /* letn8666 */
-                        bool __h_case_result  = (true  &&  ((match8649 . __h_ctor) ==  __h_EQ_t  ) );
+                      ({ /* letn8659 */
+                        bool __h_case_result  = (true  &&  ((match8642 . __h_ctor) ==  __h_EQ_t  ) );
                         // ----------
                         
-                        ((__h_case_result ) ? ({ /* progn8670 */
+                        ((__h_case_result ) ? ({ /* progn8663 */
                             Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_UNIQUE_KEY (head ));
-                          }) : ({ /* letn8676 */
+                          }) : ({ /* letn8669 */
                             // ----------
                             ;
-                            ({ /* progn8678 */
+                            ({ /* progn8671 */
                               insertLeaf (items , tail , (index  +  1 ));
                             });
                           }));
@@ -8818,11 +8811,11 @@ Either_BTree_int_User_Error_BTree_int_User insert_BTree_int_User (BTree_int_User
                     }));
                 });
               });
-            }) : ({ /* letn8682 */
+            }) : ({ /* letn8675 */
               // ----------
               ;
-              ({ /* progn8684 */
-                Right_BTree_int_User_Error_BTree_int_User (Leaf_BTree_int_User (({ /* letn8690 */
+              ({ /* progn8677 */
+                Right_BTree_int_User_Error_BTree_int_User (Leaf_BTree_int_User (({ /* letn8683 */
                     List_BTree_int_User_pair_t r1  __attribute__((__cleanup__(free_List_BTree_int_User_pair_t ))) = wrap_List_BTree_int_User_pair_t (((BTree_int_User_pair_t){ skey , svalue }));
                     // ----------
                     append_List_BTree_int_User_pair_t (items , r1 );
@@ -8832,126 +8825,126 @@ Either_BTree_int_User_Error_BTree_int_User insert_BTree_int_User (BTree_int_User
         });
       });
   }
-  return ({ /* letn8699 */
+  return ({ /* letn8692 */
       typeof((((tree -> __h_data). Branch). __h_0_mem)) items ;
       typeof((((tree -> __h_data). Branch). __h_1_mem)) children ;
       // ----------
       ;
-      ({ /* letn8701 */
-        bool __h_case_result  = (true  &&  (((tree -> __h_ctor) ==  __h_Branch_t  ) &&  (({ /* progn8702 */
+      ({ /* letn8694 */
+        bool __h_case_result  = (true  &&  (((tree -> __h_ctor) ==  __h_Branch_t  ) &&  (({ /* progn8695 */
                 items  = (((tree -> __h_data). Branch). __h_0_mem) ;
                 true ;
-              }) &&  ({ /* progn8704 */
+              }) &&  ({ /* progn8697 */
                 children  = (((tree -> __h_data). Branch). __h_1_mem) ;
                 true ;
               }) ) ) );
         // ----------
         
-        ((__h_case_result ) ? ({ /* progn8709 */
-            ({ /* letn8715 */
-              Either_BTree_int_User_Error_BTree_int_User match8714  = insertInternal (items , children , items , 0);
-              typeof((((match8714 . __h_data). Right). __h_0_mem)) tr ;
+        ((__h_case_result ) ? ({ /* progn8702 */
+            ({ /* letn8708 */
+              Either_BTree_int_User_Error_BTree_int_User match8707  = insertInternal (items , children , items , 0);
+              typeof((((match8707 . __h_data). Right). __h_0_mem)) tr ;
               // ----------
               ;
-              ({ /* letn8717 */
-                bool __h_case_result  = (true  &&  (((match8714 . __h_ctor) ==  __h_Right_t  ) &&  ({ /* progn8718 */
-                      tr  = (((match8714 . __h_data). Right). __h_0_mem) ;
+              ({ /* letn8710 */
+                bool __h_case_result  = (true  &&  (((match8707 . __h_ctor) ==  __h_Right_t  ) &&  ({ /* progn8711 */
+                      tr  = (((match8707 . __h_data). Right). __h_0_mem) ;
                       true ;
                     }) ) );
                 // ----------
                 
-                ((__h_case_result ) ? ({ /* progn8723 */
+                ((__h_case_result ) ? ({ /* progn8716 */
                     Right_BTree_int_User_Error_BTree_int_User (split_BTree_int_User (tr ));
-                  }) : ({ /* letn8729 */
-                    Either_BTree_int_User_Error_BTree_int_User passthru  = match8714 ;
+                  }) : ({ /* letn8722 */
+                    Either_BTree_int_User_Error_BTree_int_User passthru  = match8707 ;
                     // ----------
                     ;
-                    ({ /* progn8731 */
+                    ({ /* progn8724 */
                       passthru ;
                     });
                   }));
               });
             });
-          }) : ({ /* letn8735 */
+          }) : ({ /* letn8728 */
             typeof((((tree -> __h_data). Internal). __h_0_mem)) items ;
             typeof((((tree -> __h_data). Internal). __h_1_mem)) children ;
             // ----------
             ;
-            ({ /* letn8737 */
-              bool __h_case_result  = (true  &&  (((tree -> __h_ctor) ==  __h_Internal_t  ) &&  (({ /* progn8738 */
+            ({ /* letn8730 */
+              bool __h_case_result  = (true  &&  (((tree -> __h_ctor) ==  __h_Internal_t  ) &&  (({ /* progn8731 */
                       items  = (((tree -> __h_data). Internal). __h_0_mem) ;
                       true ;
-                    }) &&  ({ /* progn8740 */
+                    }) &&  ({ /* progn8733 */
                       children  = (((tree -> __h_data). Internal). __h_1_mem) ;
                       true ;
                     }) ) ) );
               // ----------
               
-              ((__h_case_result ) ? ({ /* progn8745 */
-                  ({ /* letn8747 */
-                    Either_BTree_int_User_Error_BTree_int_User match8714  = insertInternal (items , children , items , 0);
-                    typeof((((match8714 . __h_data). Right). __h_0_mem)) tr ;
+              ((__h_case_result ) ? ({ /* progn8738 */
+                  ({ /* letn8740 */
+                    Either_BTree_int_User_Error_BTree_int_User match8707  = insertInternal (items , children , items , 0);
+                    typeof((((match8707 . __h_data). Right). __h_0_mem)) tr ;
                     // ----------
                     ;
-                    ({ /* letn8749 */
-                      bool __h_case_result  = (true  &&  (((match8714 . __h_ctor) ==  __h_Right_t  ) &&  ({ /* progn8750 */
-                            tr  = (((match8714 . __h_data). Right). __h_0_mem) ;
+                    ({ /* letn8742 */
+                      bool __h_case_result  = (true  &&  (((match8707 . __h_ctor) ==  __h_Right_t  ) &&  ({ /* progn8743 */
+                            tr  = (((match8707 . __h_data). Right). __h_0_mem) ;
                             true ;
                           }) ) );
                       // ----------
                       
-                      ((__h_case_result ) ? ({ /* progn8755 */
+                      ((__h_case_result ) ? ({ /* progn8748 */
                           Right_BTree_int_User_Error_BTree_int_User (split_BTree_int_User (tr ));
-                        }) : ({ /* letn8757 */
-                          Either_BTree_int_User_Error_BTree_int_User passthru  = match8714 ;
+                        }) : ({ /* letn8750 */
+                          Either_BTree_int_User_Error_BTree_int_User passthru  = match8707 ;
                           // ----------
                           ;
-                          ({ /* progn8759 */
+                          ({ /* progn8752 */
                             passthru ;
                           });
                         }));
                     });
                   });
-                }) : ({ /* letn8763 */
+                }) : ({ /* letn8756 */
                   typeof((((tree -> __h_data). Leaf). __h_0_mem)) items ;
                   // ----------
                   ;
-                  ({ /* letn8765 */
-                    bool __h_case_result  = (true  &&  (((tree -> __h_ctor) ==  __h_Leaf_t  ) &&  ({ /* progn8766 */
+                  ({ /* letn8758 */
+                    bool __h_case_result  = (true  &&  (((tree -> __h_ctor) ==  __h_Leaf_t  ) &&  ({ /* progn8759 */
                           items  = (((tree -> __h_data). Leaf). __h_0_mem) ;
                           true ;
                         }) ) );
                     // ----------
                     
-                    ((__h_case_result ) ? ({ /* progn8771 */
-                        ({ /* letn8777 */
-                          Either_BTree_int_User_Error_BTree_int_User match8776  = insertLeaf (items , items , 0);
-                          typeof((((match8776 . __h_data). Right). __h_0_mem)) tr ;
+                    ((__h_case_result ) ? ({ /* progn8764 */
+                        ({ /* letn8770 */
+                          Either_BTree_int_User_Error_BTree_int_User match8769  = insertLeaf (items , items , 0);
+                          typeof((((match8769 . __h_data). Right). __h_0_mem)) tr ;
                           // ----------
                           ;
-                          ({ /* letn8779 */
-                            bool __h_case_result  = (true  &&  (((match8776 . __h_ctor) ==  __h_Right_t  ) &&  ({ /* progn8780 */
-                                  tr  = (((match8776 . __h_data). Right). __h_0_mem) ;
+                          ({ /* letn8772 */
+                            bool __h_case_result  = (true  &&  (((match8769 . __h_ctor) ==  __h_Right_t  ) &&  ({ /* progn8773 */
+                                  tr  = (((match8769 . __h_data). Right). __h_0_mem) ;
                                   true ;
                                 }) ) );
                             // ----------
                             
-                            ((__h_case_result ) ? ({ /* progn8785 */
+                            ((__h_case_result ) ? ({ /* progn8778 */
                                 Right_BTree_int_User_Error_BTree_int_User (split_BTree_int_User (tr ));
-                              }) : ({ /* letn8791 */
-                                Either_BTree_int_User_Error_BTree_int_User passthru  = match8776 ;
+                              }) : ({ /* letn8784 */
+                                Either_BTree_int_User_Error_BTree_int_User passthru  = match8769 ;
                                 // ----------
                                 ;
-                                ({ /* progn8793 */
+                                ({ /* progn8786 */
                                   passthru ;
                                 });
                               }));
                           });
                         });
-                      }) : ({ /* letn8797 */
+                      }) : ({ /* letn8790 */
                         // ----------
                         ;
-                        ({ /* progn8799 */
+                        ({ /* progn8792 */
                           Left_BTree_int_User_Error_BTree_int_User (BTree_int_User_ERR_INVALID_OBJECT ());
                         });
                       }));
@@ -8966,28 +8959,28 @@ size_t order_BTree_int_User () {
   return 3;
 }
 void free_BTree_int_User (BTree_int_User * this_ptr ) {
-  { /* let8807 */
+  { /* let8800 */
     BTree_int_User this  = (*this_ptr );
     // ----------
     void freeChildren (List_Rc_BTree_int_User children ) {
-      { /* let8813 */
+      { /* let8806 */
         typeof((((children -> __h_data). Cons). __h_0_mem)) head ;
         typeof((((children -> __h_data). Cons). __h_1_mem)) tail ;
         // ----------
         ;
-        ({ /* letn8815 */
-          bool __h_case_result  = (true  &&  (((children -> __h_ctor) ==  __h_Cons_t  ) &&  (({ /* progn8816 */
+        ({ /* letn8808 */
+          bool __h_case_result  = (true  &&  (((children -> __h_ctor) ==  __h_Cons_t  ) &&  (({ /* progn8809 */
                   head  = (((children -> __h_data). Cons). __h_0_mem) ;
                   true ;
-                }) &&  ({ /* progn8818 */
+                }) &&  ({ /* progn8811 */
                   tail  = (((children -> __h_data). Cons). __h_1_mem) ;
                   true ;
                 }) ) ) );
           // ----------
           
           if (__h_case_result )
-            { /* block8825 */
-              { /* block8827 */
+            { /* block8818 */
+              { /* block8820 */
                 free_Rc_BTree_int_User ((&head ));
                 freeChildren (tail );
               }
@@ -8995,24 +8988,24 @@ void free_BTree_int_User (BTree_int_User * this_ptr ) {
         });
       }
     }
-    { /* let8832 */
+    { /* let8825 */
       typeof((((this -> __h_data). Branch). __h_0_mem)) items ;
       typeof((((this -> __h_data). Branch). __h_1_mem)) children ;
       // ----------
       ;
-      ({ /* letn8834 */
-        bool __h_case_result  = (true  &&  (((this -> __h_ctor) ==  __h_Branch_t  ) &&  (({ /* progn8835 */
+      ({ /* letn8827 */
+        bool __h_case_result  = (true  &&  (((this -> __h_ctor) ==  __h_Branch_t  ) &&  (({ /* progn8828 */
                 items  = (((this -> __h_data). Branch). __h_0_mem) ;
                 true ;
-              }) &&  ({ /* progn8837 */
+              }) &&  ({ /* progn8830 */
                 children  = (((this -> __h_data). Branch). __h_1_mem) ;
                 true ;
               }) ) ) );
         // ----------
         
         if (__h_case_result )
-          { /* block8844 */
-            { /* block8846 */
+          { /* block8837 */
+            { /* block8839 */
               free_List_BTree_int_User_pair_t ((&items ));
               freeChildren (children );
               free_List_Rc_BTree_int_User ((&children ));
@@ -9020,24 +9013,24 @@ void free_BTree_int_User (BTree_int_User * this_ptr ) {
             }
           }
         else
-          { /* let8857 */
+          { /* let8850 */
             typeof((((this -> __h_data). Internal). __h_0_mem)) items ;
             typeof((((this -> __h_data). Internal). __h_1_mem)) children ;
             // ----------
             ;
-            ({ /* letn8859 */
-              bool __h_case_result  = (true  &&  (((this -> __h_ctor) ==  __h_Internal_t  ) &&  (({ /* progn8860 */
+            ({ /* letn8852 */
+              bool __h_case_result  = (true  &&  (((this -> __h_ctor) ==  __h_Internal_t  ) &&  (({ /* progn8853 */
                       items  = (((this -> __h_data). Internal). __h_0_mem) ;
                       true ;
-                    }) &&  ({ /* progn8862 */
+                    }) &&  ({ /* progn8855 */
                       children  = (((this -> __h_data). Internal). __h_1_mem) ;
                       true ;
                     }) ) ) );
               // ----------
               
               if (__h_case_result )
-                { /* block8869 */
-                  { /* block8871 */
+                { /* block8862 */
+                  { /* block8864 */
                     free_List_BTree_int_User_pair_t ((&items ));
                     freeChildren (children );
                     free_List_Rc_BTree_int_User ((&children ));
@@ -9045,20 +9038,20 @@ void free_BTree_int_User (BTree_int_User * this_ptr ) {
                   }
                 }
               else
-                { /* let8878 */
+                { /* let8871 */
                   typeof((((this -> __h_data). Leaf). __h_0_mem)) items ;
                   // ----------
                   ;
-                  ({ /* letn8880 */
-                    bool __h_case_result  = (true  &&  (((this -> __h_ctor) ==  __h_Leaf_t  ) &&  ({ /* progn8881 */
+                  ({ /* letn8873 */
+                    bool __h_case_result  = (true  &&  (((this -> __h_ctor) ==  __h_Leaf_t  ) &&  ({ /* progn8874 */
                           items  = (((this -> __h_data). Leaf). __h_0_mem) ;
                           true ;
                         }) ) );
                     // ----------
                     
                     if (__h_case_result )
-                      { /* block8888 */
-                        { /* block8890 */
+                      { /* block8881 */
+                        { /* block8883 */
                           free_List_BTree_int_User_pair_t ((&items ));
                           free (this );
                         }
@@ -9073,7 +9066,7 @@ void free_BTree_int_User (BTree_int_User * this_ptr ) {
 }
 __attribute__((weak)) void free_BTree_int_User_pointer (BTree_int_User ** this_ptr ) {
   if (this_ptr )
-    { /* block8900 */
+    { /* block8893 */
       free_BTree_int_User ((*this_ptr ));
     }
 }
@@ -9082,7 +9075,7 @@ BTree_int_User__H_Table * const get_BTree_int_User__H_Table () {
   return (&table );
 }
 BTree_int_User Branch_BTree_int_User (List_BTree_int_User_pair_t items , List_Rc_BTree_int_User children ) {
-  { /* let8910 */
+  { /* let8903 */
     BTree_int_User instance  = malloc (sizeof(class_BTree_int_User));
     // ----------
     (*instance ) = ((class_BTree_int_User){ get_BTree_int_User__H_Table (), __h_Branch_t , .__h_data.Branch = { items , children }});
@@ -9090,7 +9083,7 @@ BTree_int_User Branch_BTree_int_User (List_BTree_int_User_pair_t items , List_Rc
   }
 }
 BTree_int_User Internal_BTree_int_User (List_BTree_int_User_pair_t items , List_Rc_BTree_int_User children ) {
-  { /* let8916 */
+  { /* let8909 */
     BTree_int_User instance  = malloc (sizeof(class_BTree_int_User));
     // ----------
     (*instance ) = ((class_BTree_int_User){ get_BTree_int_User__H_Table (), __h_Internal_t , .__h_data.Internal = { items , children }});
@@ -9098,7 +9091,7 @@ BTree_int_User Internal_BTree_int_User (List_BTree_int_User_pair_t items , List_
   }
 }
 BTree_int_User Leaf_BTree_int_User (List_BTree_int_User_pair_t items ) {
-  { /* let8922 */
+  { /* let8915 */
     BTree_int_User instance  = malloc (sizeof(class_BTree_int_User));
     // ----------
     (*instance ) = ((class_BTree_int_User){ get_BTree_int_User__H_Table (), __h_Leaf_t , .__h_data._ = { items }});
@@ -9131,11 +9124,11 @@ typedef struct Maybe_BTree_int_User__H_Table {
 typedef struct Maybe_BTree_int_User {
   const Maybe_BTree_int_User__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion8942 */
-    struct { /* ciciliStruct8943 */
+  union { /* ciciliUnion8935 */
+    struct { /* ciciliStruct8936 */
       BTree_int_User __h_0_mem ;
     } Just , _1 ;
-    struct { /* ciciliStruct8944 */
+    struct { /* ciciliStruct8937 */
     } Nothing , _ ;
   } __h_data ;
 } Maybe_BTree_int_User;
@@ -9175,14 +9168,14 @@ typedef struct Arc_BTree_int_User__H_Table {
 typedef struct Arc_BTree_int_User {
   const Arc_BTree_int_User__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion8986 */
-    struct { /* ciciliStruct8987 */
+  union { /* ciciliUnion8979 */
+    struct { /* ciciliStruct8980 */
       BTree_int_User * __h_0_mem ;
       int * __h_1_mem ;
       size_t __h_2_mem ;
       pthread_mutex_t * __h_3_mem ;
     } Hold , _1 ;
-    struct { /* ciciliStruct8988 */
+    struct { /* ciciliStruct8981 */
     } Gone , _ ;
   } __h_data ;
 } Arc_BTree_int_User;
@@ -9206,7 +9199,7 @@ void free_Maybe_BTree_int_User (Maybe_BTree_int_User * this ) {
 }
 __attribute__((weak)) void free_Maybe_BTree_int_User_pointer (Maybe_BTree_int_User ** this ) {
   if (this )
-    { /* block9035 */
+    { /* block9028 */
       free_Maybe_BTree_int_User ((*this ));
     }
 }
@@ -9215,14 +9208,14 @@ const Maybe_BTree_int_User__H_Table * const get_Maybe_BTree_int_User__H_Table ()
   return (&table );
 }
 Maybe_BTree_int_User Just_BTree_int_User (BTree_int_User value ) {
-  { /* let9045 */
+  { /* let9038 */
     Maybe_BTree_int_User instance  = ((Maybe_BTree_int_User){ get_Maybe_BTree_int_User__H_Table (), __h_Just_t , .__h_data.Just = { value }});
     // ----------
     return instance ;
   }
 }
 Maybe_BTree_int_User Nothing_BTree_int_User () {
-  { /* let9050 */
+  { /* let9043 */
     Maybe_BTree_int_User instance  = ((Maybe_BTree_int_User){ get_Maybe_BTree_int_User__H_Table (), __h_Nothing_t });
     // ----------
     return instance ;
@@ -9232,32 +9225,32 @@ Maybe_BTree_int_User Nothing_BTree_int_User () {
 #ifndef __Arc_BTree_int_User__H_IMPL__
 #define __Arc_BTree_int_User__H_IMPL__
 void lock_Arc_BTree_int_User (Arc_BTree_int_User arc , void (*alive_callback) (BTree_int_User pointer ), void (*dead_callback) ()) {
-  { /* let9062 */
+  { /* let9055 */
     typeof((((arc . __h_data). Hold). __h_0_mem)) pointer ;
     typeof((((arc . __h_data). Hold). __h_1_mem)) count ;
     typeof((((arc . __h_data). Hold). __h_2_mem)) address ;
     typeof((((arc . __h_data). Hold). __h_3_mem)) mutex ;
     // ----------
     ;
-    ({ /* letn9064 */
-      bool __h_case_result  = (true  &&  (((arc . __h_ctor) ==  __h_Hold_t  ) &&  (((({ /* progn9065 */
+    ({ /* letn9057 */
+      bool __h_case_result  = (true  &&  (((arc . __h_ctor) ==  __h_Hold_t  ) &&  (((({ /* progn9058 */
                   pointer  = (((arc . __h_data). Hold). __h_0_mem) ;
                   true ;
-                }) &&  ({ /* progn9067 */
+                }) &&  ({ /* progn9060 */
                   count  = (((arc . __h_data). Hold). __h_1_mem) ;
                   true ;
-                }) ) &&  ({ /* progn9069 */
+                }) ) &&  ({ /* progn9062 */
                 address  = (((arc . __h_data). Hold). __h_2_mem) ;
                 true ;
-              }) ) &&  ({ /* progn9071 */
+              }) ) &&  ({ /* progn9064 */
               mutex  = (((arc . __h_data). Hold). __h_3_mem) ;
               true ;
             }) ) ) );
       // ----------
       
       if (__h_case_result )
-        { /* block9078 */
-          { /* block9081 */
+        { /* block9071 */
+          { /* block9074 */
             pthread_mutex_lock (mutex );
             if (pointer  &&  (((size_t)(*pointer )) ==  address  ) &&  ((*count ) >  0 ) )
               alive_callback ((*pointer ));
@@ -9267,15 +9260,15 @@ void lock_Arc_BTree_int_User (Arc_BTree_int_User arc , void (*alive_callback) (B
           }
         }
       else
-        { /* let9089 */
+        { /* let9082 */
           // ----------
           ;
-          ({ /* letn9091 */
+          ({ /* letn9084 */
             bool __h_case_result  = (true  &&  ((arc . __h_ctor) ==  __h_Gone_t  ) );
             // ----------
             
             if (__h_case_result )
-              { /* block9097 */
+              { /* block9090 */
                 dead_callback ();
               }
           });
@@ -9284,7 +9277,7 @@ void lock_Arc_BTree_int_User (Arc_BTree_int_User arc , void (*alive_callback) (B
   }
 }
 Arc_BTree_int_User new_Arc_BTree_int_User (BTree_int_User pointer , pthread_mutex_t * mutex ) {
-  return ({ /* letn9102 */
+  return ({ /* letn9095 */
       int * count  = ((int *)malloc (sizeof(int)));
       BTree_int_User * holder  = ((BTree_int_User *)malloc (sizeof(BTree_int_User *)));
       // ----------
@@ -9294,34 +9287,34 @@ Arc_BTree_int_User new_Arc_BTree_int_User (BTree_int_User pointer , pthread_mute
     });
 }
 Arc_BTree_int_User clone_Arc_BTree_int_User (Arc_BTree_int_User arc ) {
-  return ({ /* letn9113 */
+  return ({ /* letn9106 */
       typeof((((arc . __h_data). Hold). __h_0_mem)) pointer ;
       typeof((((arc . __h_data). Hold). __h_1_mem)) count ;
       typeof((((arc . __h_data). Hold). __h_2_mem)) address ;
       typeof((((arc . __h_data). Hold). __h_3_mem)) mutex ;
       // ----------
       ;
-      ({ /* letn9115 */
-        bool __h_case_result  = (true  &&  (((arc . __h_ctor) ==  __h_Hold_t  ) &&  (((({ /* progn9116 */
+      ({ /* letn9108 */
+        bool __h_case_result  = (true  &&  (((arc . __h_ctor) ==  __h_Hold_t  ) &&  (((({ /* progn9109 */
                     pointer  = (((arc . __h_data). Hold). __h_0_mem) ;
                     true ;
-                  }) &&  ({ /* progn9118 */
+                  }) &&  ({ /* progn9111 */
                     count  = (((arc . __h_data). Hold). __h_1_mem) ;
                     true ;
-                  }) ) &&  ({ /* progn9120 */
+                  }) ) &&  ({ /* progn9113 */
                   address  = (((arc . __h_data). Hold). __h_2_mem) ;
                   true ;
-                }) ) &&  ({ /* progn9122 */
+                }) ) &&  ({ /* progn9115 */
                 mutex  = (((arc . __h_data). Hold). __h_3_mem) ;
                 true ;
               }) ) ) );
         // ----------
         
-        ((__h_case_result ) ? ({ /* progn9127 */
-            ({ /* progn9130 */
+        ((__h_case_result ) ? ({ /* progn9120 */
+            ({ /* progn9123 */
               pthread_mutex_lock (mutex );
-              Arc_BTree_int_User lock_result  = ({ /* progn9132 */
-                    (((pointer  &&  (((size_t)(*pointer )) ==  address  ) )) ? ({ /* progn9135 */
+              Arc_BTree_int_User lock_result  = ({ /* progn9125 */
+                    (((pointer  &&  (((size_t)(*pointer )) ==  address  ) )) ? ({ /* progn9128 */
                         (++(*count ));
                         __h_AtomicHold_BTree_int_User (pointer , count , address , mutex );
                       }) : AtomicGone_BTree_int_User ());
@@ -9329,10 +9322,10 @@ Arc_BTree_int_User clone_Arc_BTree_int_User (Arc_BTree_int_User arc ) {
               pthread_mutex_unlock (mutex );
               lock_result ;
             });
-          }) : ({ /* letn9141 */
+          }) : ({ /* letn9134 */
             // ----------
             ;
-            ({ /* progn9143 */
+            ({ /* progn9136 */
               AtomicGone_BTree_int_User ();
             });
           }));
@@ -9340,34 +9333,34 @@ Arc_BTree_int_User clone_Arc_BTree_int_User (Arc_BTree_int_User arc ) {
     });
 }
 Maybe_BTree_int_User take_Arc_BTree_int_User (Arc_BTree_int_User * this ) {
-  return ({ /* letn9154 */
+  return ({ /* letn9147 */
       typeof((((this -> __h_data). Hold). __h_0_mem)) pointer ;
       typeof((((this -> __h_data). Hold). __h_1_mem)) count ;
       typeof((((this -> __h_data). Hold). __h_2_mem)) address ;
       typeof((((this -> __h_data). Hold). __h_3_mem)) mutex ;
       // ----------
       ;
-      ({ /* letn9156 */
-        bool __h_case_result  = (true  &&  (((this -> __h_ctor) ==  __h_Hold_t  ) &&  (((({ /* progn9157 */
+      ({ /* letn9149 */
+        bool __h_case_result  = (true  &&  (((this -> __h_ctor) ==  __h_Hold_t  ) &&  (((({ /* progn9150 */
                     pointer  = (((this -> __h_data). Hold). __h_0_mem) ;
                     true ;
-                  }) &&  ({ /* progn9159 */
+                  }) &&  ({ /* progn9152 */
                     count  = (((this -> __h_data). Hold). __h_1_mem) ;
                     true ;
-                  }) ) &&  ({ /* progn9161 */
+                  }) ) &&  ({ /* progn9154 */
                   address  = (((this -> __h_data). Hold). __h_2_mem) ;
                   true ;
-                }) ) &&  ({ /* progn9163 */
+                }) ) &&  ({ /* progn9156 */
                 mutex  = (((this -> __h_data). Hold). __h_3_mem) ;
                 true ;
               }) ) ) );
         // ----------
         
-        ((__h_case_result ) ? ({ /* progn9168 */
-            ({ /* progn9171 */
+        ((__h_case_result ) ? ({ /* progn9161 */
+            ({ /* progn9164 */
               pthread_mutex_lock (mutex );
-              Maybe_BTree_int_User lock_result  = ({ /* progn9173 */
-                    (((pointer  &&  (((size_t)(*pointer )) ==  address  ) &&  ((*count ) ==  1 ) )) ? ({ /* letn9177 */
+              Maybe_BTree_int_User lock_result  = ({ /* progn9166 */
+                    (((pointer  &&  (((size_t)(*pointer )) ==  address  ) &&  ((*count ) ==  1 ) )) ? ({ /* letn9170 */
                         Maybe_BTree_int_User result  = Just_BTree_int_User ((*pointer ));
                         // ----------
                         (*count ) = 0;
@@ -9378,10 +9371,10 @@ Maybe_BTree_int_User take_Arc_BTree_int_User (Arc_BTree_int_User * this ) {
               pthread_mutex_unlock (mutex );
               lock_result ;
             });
-          }) : ({ /* letn9185 */
+          }) : ({ /* letn9178 */
             // ----------
             ;
-            ({ /* progn9187 */
+            ({ /* progn9180 */
               Nothing_BTree_int_User ();
             });
           }));
@@ -9389,42 +9382,42 @@ Maybe_BTree_int_User take_Arc_BTree_int_User (Arc_BTree_int_User * this ) {
     });
 }
 Maybe_BTree_int_User get_Arc_BTree_int_User (Arc_BTree_int_User arc ) {
-  return ({ /* letn9198 */
+  return ({ /* letn9191 */
       typeof((((arc . __h_data). Hold). __h_0_mem)) pointer ;
       typeof((((arc . __h_data). Hold). __h_1_mem)) count ;
       typeof((((arc . __h_data). Hold). __h_2_mem)) address ;
       typeof((((arc . __h_data). Hold). __h_3_mem)) mutex ;
       // ----------
       ;
-      ({ /* letn9200 */
-        bool __h_case_result  = (true  &&  (((arc . __h_ctor) ==  __h_Hold_t  ) &&  (((({ /* progn9201 */
+      ({ /* letn9193 */
+        bool __h_case_result  = (true  &&  (((arc . __h_ctor) ==  __h_Hold_t  ) &&  (((({ /* progn9194 */
                     pointer  = (((arc . __h_data). Hold). __h_0_mem) ;
                     true ;
-                  }) &&  ({ /* progn9203 */
+                  }) &&  ({ /* progn9196 */
                     count  = (((arc . __h_data). Hold). __h_1_mem) ;
                     true ;
-                  }) ) &&  ({ /* progn9205 */
+                  }) ) &&  ({ /* progn9198 */
                   address  = (((arc . __h_data). Hold). __h_2_mem) ;
                   true ;
-                }) ) &&  ({ /* progn9207 */
+                }) ) &&  ({ /* progn9200 */
                 mutex  = (((arc . __h_data). Hold). __h_3_mem) ;
                 true ;
               }) ) ) );
         // ----------
         
-        ((__h_case_result ) ? ({ /* progn9212 */
-            ({ /* progn9215 */
+        ((__h_case_result ) ? ({ /* progn9205 */
+            ({ /* progn9208 */
               pthread_mutex_lock (mutex );
-              Maybe_BTree_int_User lock_result  = ({ /* progn9217 */
+              Maybe_BTree_int_User lock_result  = ({ /* progn9210 */
                     (((pointer  &&  (((size_t)(*pointer )) ==  address  ) &&  ((*count ) >  0 ) )) ? Just_BTree_int_User ((*pointer )) : Nothing_BTree_int_User ());
                   });
               pthread_mutex_unlock (mutex );
               lock_result ;
             });
-          }) : ({ /* letn9224 */
+          }) : ({ /* letn9217 */
             // ----------
             ;
-            ({ /* progn9226 */
+            ({ /* progn9219 */
               Nothing_BTree_int_User ();
             });
           }));
@@ -9432,35 +9425,35 @@ Maybe_BTree_int_User get_Arc_BTree_int_User (Arc_BTree_int_User arc ) {
     });
 }
 void free_Arc_BTree_int_User (Arc_BTree_int_User * this ) {
-  { /* let9235 */
+  { /* let9228 */
     typeof((((this -> __h_data). Hold). __h_0_mem)) pointer ;
     typeof((((this -> __h_data). Hold). __h_1_mem)) count ;
     typeof((((this -> __h_data). Hold). __h_2_mem)) address ;
     typeof((((this -> __h_data). Hold). __h_3_mem)) mutex ;
     // ----------
     ;
-    ({ /* letn9237 */
-      bool __h_case_result  = (true  &&  (((this -> __h_ctor) ==  __h_Hold_t  ) &&  (((({ /* progn9238 */
+    ({ /* letn9230 */
+      bool __h_case_result  = (true  &&  (((this -> __h_ctor) ==  __h_Hold_t  ) &&  (((({ /* progn9231 */
                   pointer  = (((this -> __h_data). Hold). __h_0_mem) ;
                   true ;
-                }) &&  ({ /* progn9240 */
+                }) &&  ({ /* progn9233 */
                   count  = (((this -> __h_data). Hold). __h_1_mem) ;
                   true ;
-                }) ) &&  ({ /* progn9242 */
+                }) ) &&  ({ /* progn9235 */
                 address  = (((this -> __h_data). Hold). __h_2_mem) ;
                 true ;
-              }) ) &&  ({ /* progn9244 */
+              }) ) &&  ({ /* progn9237 */
               mutex  = (((this -> __h_data). Hold). __h_3_mem) ;
               true ;
             }) ) ) );
       // ----------
       
       if (__h_case_result )
-        { /* block9251 */
-          { /* block9254 */
+        { /* block9244 */
+          { /* block9247 */
             pthread_mutex_lock (mutex );
             if (((*count ) ==  0 ) &&  ((*pointer ) ==  NULL  ) )
-              { /* block9258 */
+              { /* block9251 */
                 free (((void *)count ));
                 free (((void *)pointer ));
                 (*this ) = AtomicGone_BTree_int_User ();
@@ -9468,9 +9461,9 @@ void free_Arc_BTree_int_User (Arc_BTree_int_User * this ) {
             else
               {
               if (pointer  &&  (((size_t)(*pointer )) ==  address  ) )
-                { /* block9267 */
+                { /* block9260 */
                   if ((*count ) ==  1 )
-                    { /* block9271 */
+                    { /* block9264 */
                       free_BTree_int_User (pointer );
                       (*count ) = 0;
                       free (((void *)count ));
@@ -9485,15 +9478,15 @@ void free_Arc_BTree_int_User (Arc_BTree_int_User * this ) {
           }
         }
       else
-        { /* let9281 */
+        { /* let9274 */
           // ----------
           ;
-          ({ /* letn9283 */
+          ({ /* letn9276 */
             bool __h_case_result  = (true  &&  ((this -> __h_ctor) ==  __h_Gone_t  ) );
             // ----------
             
             if (__h_case_result )
-              { /* block9289 */
+              { /* block9282 */
               }
           });
         }
@@ -9502,7 +9495,7 @@ void free_Arc_BTree_int_User (Arc_BTree_int_User * this ) {
 }
 __attribute__((weak)) void free_Arc_BTree_int_User_pointer (Arc_BTree_int_User ** this ) {
   if (this )
-    { /* block9298 */
+    { /* block9291 */
       free_Arc_BTree_int_User ((*this ));
     }
 }
@@ -9511,22 +9504,22 @@ const Arc_BTree_int_User__H_Table * const get_Arc_BTree_int_User__H_Table () {
   return (&table );
 }
 Arc_BTree_int_User __h_AtomicHold_BTree_int_User (BTree_int_User * pointer , int * count , size_t address , pthread_mutex_t * mutex ) {
-  { /* let9308 */
+  { /* let9301 */
     Arc_BTree_int_User instance  = ((Arc_BTree_int_User){ get_Arc_BTree_int_User__H_Table (), __h_Hold_t , .__h_data.Hold = { pointer , count , address , mutex }});
     // ----------
     return instance ;
   }
 }
 Arc_BTree_int_User AtomicGone_BTree_int_User () {
-  { /* let9313 */
+  { /* let9306 */
     Arc_BTree_int_User instance  = ((Arc_BTree_int_User){ get_Arc_BTree_int_User__H_Table (), __h_Gone_t });
     // ----------
     return instance ;
   }
 }
 #endif /* __Arc_BTree_int_User__H_IMPL__ */ 
-void __ciciliL_9379 () {
-  ({ /* letn9382 */
+void __ciciliL_9372 () {
+  ({ /* letn9375 */
     FILE * tmp_stdout  = stdout ;
     // ----------
     stdout  = stderr ;
@@ -9536,27 +9529,27 @@ void __ciciliL_9379 () {
   });
 }
 void insertMany (Arc_BTree_int_User * pwtree , int from , int to ) {
-  { /* block9318 */
+  { /* block9311 */
     for (int i  = from ; (i  <=  to  ); (++i )) {
-        { /* block9323 */
-          lock_Arc_BTree_int_User ((*pwtree ), ({ /* progn9327 */
-              void __ciciliC_9326 (BTree_int_User tree ) {
-                { /* let9332 */
-                  Either_BTree_int_User_Error_BTree_int_User match9331  = insert_BTree_int_User (tree , i , ((User){ (i  +  2000 ), 1}));
-                  typeof((((match9331 . __h_data). Right). __h_0_mem)) new_tree ;
+        { /* block9316 */
+          lock_Arc_BTree_int_User ((*pwtree ), ({ /* progn9320 */
+              void __ciciliC_9319 (BTree_int_User tree ) {
+                { /* let9325 */
+                  Either_BTree_int_User_Error_BTree_int_User match9324  = insert_BTree_int_User (tree , i , ((User){ (i  +  2000 ), 1}));
+                  typeof((((match9324 . __h_data). Right). __h_0_mem)) new_tree ;
                   // ----------
                   ;
-                  ({ /* letn9335 */
-                    bool __h_case_result  = (true  &&  (((match9331 . __h_ctor) ==  __h_Right_t  ) &&  ({ /* progn9336 */
-                          new_tree  = (((match9331 . __h_data). Right). __h_0_mem) ;
+                  ({ /* letn9328 */
+                    bool __h_case_result  = (true  &&  (((match9324 . __h_ctor) ==  __h_Right_t  ) &&  ({ /* progn9329 */
+                          new_tree  = (((match9324 . __h_data). Right). __h_0_mem) ;
                           true ;
                         }) ) );
                     // ----------
                     
                     if (__h_case_result )
-                      { /* block9343 */
-                        { /* block9345 */
-                          { /* block9348 */
+                      { /* block9336 */
+                        { /* block9338 */
+                          { /* block9341 */
                             pthread_mutex_lock ((&outlock ));
                             fprintf (stdout , "Inserted: %d", i );
                             putchar ('\n');
@@ -9567,22 +9560,22 @@ void insertMany (Arc_BTree_int_User * pwtree , int from , int to ) {
                         }
                       }
                     else
-                      { /* let9360 */
-                        typeof((((match9331 . __h_data). Left). __h_0_mem)) err ;
+                      { /* let9353 */
+                        typeof((((match9324 . __h_data). Left). __h_0_mem)) err ;
                         // ----------
                         ;
-                        ({ /* letn9362 */
-                          bool __h_case_result  = (true  &&  (((match9331 . __h_ctor) ==  __h_Left_t  ) &&  ({ /* progn9363 */
-                                err  = (((match9331 . __h_data). Left). __h_0_mem) ;
+                        ({ /* letn9355 */
+                          bool __h_case_result  = (true  &&  (((match9324 . __h_ctor) ==  __h_Left_t  ) &&  ({ /* progn9356 */
+                                err  = (((match9324 . __h_data). Left). __h_0_mem) ;
                                 true ;
                               }) ) );
                           // ----------
                           
                           if (__h_case_result )
-                            { /* block9370 */
-                              { /* block9373 */
+                            { /* block9363 */
+                              { /* block9366 */
                                 pthread_mutex_lock ((&outlock ));
-                                ({ /* letn9376 */
+                                ({ /* letn9369 */
                                   FILE * tmp_stdout  = stdout ;
                                   // ----------
                                   stdout  = stderr ;
@@ -9600,36 +9593,36 @@ void insertMany (Arc_BTree_int_User * pwtree , int from , int to ) {
                   });
                 }
               }
-              __ciciliC_9326 ;
-            }), __ciciliL_9379 );
+              __ciciliC_9319 ;
+            }), __ciciliL_9372 );
           usleep (5);
         }
     }
   }
 }
-void __ciciliL_9387 (BTree_int_User_pair_t item ) {
-  { /* let9393 */
+void __ciciliL_9380 (BTree_int_User_pair_t item ) {
+  { /* let9386 */
     typeof((item . __h_0_mem)) key ;
-    typeof((item . __h_1_mem)) __h_match9391_1_arg ;
-    typeof((__h_match9391_1_arg . __h_0_mem)) salary ;
+    typeof((item . __h_1_mem)) __h_match9384_1_arg ;
+    typeof((__h_match9384_1_arg . __h_0_mem)) salary ;
     // ----------
     ;
-    ({ /* letn9395 */
-      bool __h_case_result  = (true  &&  ((({ /* progn9396 */
+    ({ /* letn9388 */
+      bool __h_case_result  = (true  &&  ((({ /* progn9389 */
               key  = (item . __h_0_mem) ;
               true ;
-            }) &&  ({ /* progn9398 */
-              __h_match9391_1_arg  = (item . __h_1_mem) ;
+            }) &&  ({ /* progn9391 */
+              __h_match9384_1_arg  = (item . __h_1_mem) ;
               true ;
-            }) ) &&  (true  &&  ({ /* progn9400 */
-              salary  = (__h_match9391_1_arg . __h_0_mem) ;
+            }) ) &&  (true  &&  ({ /* progn9393 */
+              salary  = (__h_match9384_1_arg . __h_0_mem) ;
               true ;
             }) ) ) );
       // ----------
       
       if (__h_case_result )
-        { /* block9407 */
-          { /* block9410 */
+        { /* block9400 */
+          { /* block9403 */
             pthread_mutex_lock ((&outlock ));
             printf ("Deleted: %d, %d", key , salary );
             putchar ('\n');
@@ -9639,8 +9632,8 @@ void __ciciliL_9387 (BTree_int_User_pair_t item ) {
     });
   }
 }
-void __ciciliL_9467 () {
-  ({ /* letn9470 */
+void __ciciliL_9460 () {
+  ({ /* letn9463 */
     FILE * tmp_stdout  = stdout ;
     // ----------
     stdout  = stderr ;
@@ -9650,48 +9643,48 @@ void __ciciliL_9467 () {
   });
 }
 void deleteMany (Arc_BTree_int_User * pwtree , int from , int to ) {
-  { /* let9386 */
-      void (*item_deallocator) (BTree_int_User_pair_t item ) = __ciciliL_9387 ;
+  { /* let9379 */
+      void (*item_deallocator) (BTree_int_User_pair_t item ) = __ciciliL_9380 ;
     // ----------
     for (int i  = from ; (i  <=  to  ); (++i )) {
-        lock_Arc_BTree_int_User ((*pwtree ), ({ /* progn9419 */
-            void __ciciliC_9418 (BTree_int_User tree ) {
-              { /* let9424 */
-                Either_BTree_int_User_Error_BTree_int_User match9423  = delete_BTree_int_User (tree , i , item_deallocator );
-                typeof((((match9423 . __h_data). Right). __h_0_mem)) new_tree ;
+        lock_Arc_BTree_int_User ((*pwtree ), ({ /* progn9412 */
+            void __ciciliC_9411 (BTree_int_User tree ) {
+              { /* let9417 */
+                Either_BTree_int_User_Error_BTree_int_User match9416  = delete_BTree_int_User (tree , i , item_deallocator );
+                typeof((((match9416 . __h_data). Right). __h_0_mem)) new_tree ;
                 // ----------
                 ;
-                ({ /* letn9427 */
-                  bool __h_case_result  = (true  &&  (((match9423 . __h_ctor) ==  __h_Right_t  ) &&  ({ /* progn9428 */
-                        new_tree  = (((match9423 . __h_data). Right). __h_0_mem) ;
+                ({ /* letn9420 */
+                  bool __h_case_result  = (true  &&  (((match9416 . __h_ctor) ==  __h_Right_t  ) &&  ({ /* progn9421 */
+                        new_tree  = (((match9416 . __h_data). Right). __h_0_mem) ;
                         true ;
                       }) ) );
                   // ----------
                   
                   if (__h_case_result )
-                    { /* block9435 */
-                      { /* block9437 */
+                    { /* block9428 */
+                      { /* block9430 */
                         free_Arc_BTree_int_User (pwtree );
                         (*pwtree ) = new_Arc_BTree_int_User (new_tree , (&treeArc ));
                       }
                     }
                   else
-                    { /* let9448 */
-                      typeof((((match9423 . __h_data). Left). __h_0_mem)) err ;
+                    { /* let9441 */
+                      typeof((((match9416 . __h_data). Left). __h_0_mem)) err ;
                       // ----------
                       ;
-                      ({ /* letn9450 */
-                        bool __h_case_result  = (true  &&  (((match9423 . __h_ctor) ==  __h_Left_t  ) &&  ({ /* progn9451 */
-                              err  = (((match9423 . __h_data). Left). __h_0_mem) ;
+                      ({ /* letn9443 */
+                        bool __h_case_result  = (true  &&  (((match9416 . __h_ctor) ==  __h_Left_t  ) &&  ({ /* progn9444 */
+                              err  = (((match9416 . __h_data). Left). __h_0_mem) ;
                               true ;
                             }) ) );
                         // ----------
                         
                         if (__h_case_result )
-                          { /* block9458 */
-                            { /* block9461 */
+                          { /* block9451 */
+                            { /* block9454 */
                               pthread_mutex_lock ((&outlock ));
-                              ({ /* letn9464 */
+                              ({ /* letn9457 */
                                 FILE * tmp_stdout  = stdout ;
                                 // ----------
                                 stdout  = stderr ;
@@ -9709,8 +9702,8 @@ void deleteMany (Arc_BTree_int_User * pwtree , int from , int to ) {
                 });
               }
             }
-            __ciciliC_9418 ;
-          }), __ciciliL_9467 );
+            __ciciliC_9411 ;
+          }), __ciciliL_9460 );
         usleep (5);
     }
   }
@@ -9720,90 +9713,90 @@ void freeRcTree (Arc_BTree_int_User * pnwtree ) {
 }
 void searchMany (Arc_BTree_int_User * pwtree , int from , int to ) {
   while (true ) {
-      { /* let9483 */
+      { /* let9476 */
         // ----------
         ;
-        ({ /* letn9485 */
+        ({ /* letn9478 */
           bool __h_case_result  = (true  &&  ((doQuit . __h_ctor) ==  __h_True_t  ) );
           // ----------
           
           if (__h_case_result )
-            { /* block9491 */
+            { /* block9484 */
               return ;
             }
         });
       }
-      ({ /* letn9494 */
-        Arc_BTree_int_User nwtree  __attribute__((__cleanup__(freeRcTree ))) = ({ /* progn9496 */
+      ({ /* letn9487 */
+        Arc_BTree_int_User nwtree  __attribute__((__cleanup__(freeRcTree ))) = ({ /* progn9489 */
           pthread_mutex_lock ((&treeArc ));
-          Arc_BTree_int_User lock_result  = ({ /* progn9498 */
+          Arc_BTree_int_User lock_result  = ({ /* progn9491 */
                 clone_Arc_BTree_int_User ((*pwtree ));
               });
           pthread_mutex_unlock ((&treeArc ));
           lock_result ;
         });
         // ----------
-        { /* let9504 */
-          Maybe_BTree_int_User match9503  = get_Arc_BTree_int_User (nwtree );
-          typeof((((match9503 . __h_data). Just). __h_0_mem)) tree ;
+        { /* let9497 */
+          Maybe_BTree_int_User match9496  = get_Arc_BTree_int_User (nwtree );
+          typeof((((match9496 . __h_data). Just). __h_0_mem)) tree ;
           // ----------
           ;
-          ({ /* letn9507 */
-            bool __h_case_result  = (true  &&  (((match9503 . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn9508 */
-                  tree  = (((match9503 . __h_data). Just). __h_0_mem) ;
+          ({ /* letn9500 */
+            bool __h_case_result  = (true  &&  (((match9496 . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn9501 */
+                  tree  = (((match9496 . __h_data). Just). __h_0_mem) ;
                   true ;
                 }) ) );
             // ----------
             
             if (__h_case_result )
-              { /* block9515 */
+              { /* block9508 */
                 for (int i  = from ; (i  <=  to  ); (++i )) {
-                    { /* let9522 */
-                      Maybe_BTree_int_User_pair_t match9521  = search_BTree_int_User (tree , i );
-                      typeof((((match9521 . __h_data). Just). __h_0_mem)) item ;
+                    { /* let9515 */
+                      Maybe_BTree_int_User_pair_t match9514  = search_BTree_int_User (tree , i );
+                      typeof((((match9514 . __h_data). Just). __h_0_mem)) item ;
                       // ----------
                       ;
-                      ({ /* letn9525 */
-                        bool __h_case_result  = (true  &&  (((match9521 . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn9526 */
-                              item  = (((match9521 . __h_data). Just). __h_0_mem) ;
+                      ({ /* letn9518 */
+                        bool __h_case_result  = (true  &&  (((match9514 . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn9519 */
+                              item  = (((match9514 . __h_data). Just). __h_0_mem) ;
                               true ;
                             }) ) );
                         // ----------
                         
                         if (__h_case_result )
-                          { /* block9533 */
-                            { /* block9536 */
+                          { /* block9526 */
+                            { /* block9529 */
                               pthread_mutex_lock ((&outlock ));
                               fprintf (stdout , "thread: %lu, Search Found: ", ((unsigned)pthread_self ()));
-                              ({ /* letn9548 */
+                              ({ /* letn9541 */
                                 typeof((item . __h_0_mem)) id ;
-                                typeof((item . __h_1_mem)) __h_match9546_1_arg ;
-                                typeof((__h_match9546_1_arg . __h_0_mem)) salary ;
-                                typeof((__h_match9546_1_arg . __h_1_mem)) grade ;
+                                typeof((item . __h_1_mem)) __h_match9539_1_arg ;
+                                typeof((__h_match9539_1_arg . __h_0_mem)) salary ;
+                                typeof((__h_match9539_1_arg . __h_1_mem)) grade ;
                                 // ----------
                                 ;
-                                ({ /* letn9550 */
-                                  bool __h_case_result  = (true  &&  ((({ /* progn9551 */
+                                ({ /* letn9543 */
+                                  bool __h_case_result  = (true  &&  ((({ /* progn9544 */
                                           id  = (item . __h_0_mem) ;
                                           true ;
-                                        }) &&  ({ /* progn9553 */
-                                          __h_match9546_1_arg  = (item . __h_1_mem) ;
+                                        }) &&  ({ /* progn9546 */
+                                          __h_match9539_1_arg  = (item . __h_1_mem) ;
                                           true ;
-                                        }) ) &&  (true  &&  (({ /* progn9555 */
-                                            salary  = (__h_match9546_1_arg . __h_0_mem) ;
+                                        }) ) &&  (true  &&  (({ /* progn9548 */
+                                            salary  = (__h_match9539_1_arg . __h_0_mem) ;
                                             true ;
-                                          }) &&  ({ /* progn9557 */
-                                            grade  = (__h_match9546_1_arg . __h_1_mem) ;
+                                          }) &&  ({ /* progn9550 */
+                                            grade  = (__h_match9539_1_arg . __h_1_mem) ;
                                             true ;
                                           }) ) ) ) );
                                   // ----------
                                   
-                                  ((__h_case_result ) ? ({ /* progn9562 */
+                                  ((__h_case_result ) ? ({ /* progn9555 */
                                       fprintf (stdout , "(%d, %d, %d)", id , salary , grade );
-                                    }) : ({ /* letn9566 */
+                                    }) : ({ /* letn9559 */
                                       // ----------
                                       ;
-                                      ({ /* progn9568 */
+                                      ({ /* progn9561 */
                                         0;
                                       });
                                     }));
@@ -9814,18 +9807,18 @@ void searchMany (Arc_BTree_int_User * pwtree , int from , int to ) {
                             }
                           }
                         else
-                          { /* let9573 */
+                          { /* let9566 */
                             // ----------
                             ;
-                            ({ /* letn9575 */
-                              bool __h_case_result  = (true  &&  ((match9521 . __h_ctor) ==  __h_Nothing_t  ) );
+                            ({ /* letn9568 */
+                              bool __h_case_result  = (true  &&  ((match9514 . __h_ctor) ==  __h_Nothing_t  ) );
                               // ----------
                               
                               if (__h_case_result )
-                                { /* block9581 */
-                                  { /* block9584 */
+                                { /* block9574 */
+                                  { /* block9577 */
                                     pthread_mutex_lock ((&outlock ));
-                                    ({ /* letn9587 */
+                                    ({ /* letn9580 */
                                       FILE * tmp_stdout  = stdout ;
                                       // ----------
                                       stdout  = stderr ;
@@ -9847,130 +9840,130 @@ void searchMany (Arc_BTree_int_User * pwtree , int from , int to ) {
       });
   }
 }
-typedef struct __ciciliC_Context_9610 {
-    void (*routine) (struct __ciciliC_Context_9610 * context );
-  struct { /* ciciliStruct9613 */
+typedef struct __ciciliC_Context_9603 {
+    void (*routine) (struct __ciciliC_Context_9603 * context );
+  struct { /* ciciliStruct9606 */
     Arc_BTree_int_User * pwtree ;
   } context ;
-} __ciciliC_Context_9610;
-typedef struct ciciliwxfIsl0_vVsaqG9gYYj9oXXIdXQ_ {
+} __ciciliC_Context_9603;
+typedef struct ciciliiL1ol_cMBZKCZUx__gLqrhCL05M_ {
   void * context ;
-} ciciliwxfIsl0_vVsaqG9gYYj9oXXIdXQ_;
-void __ciciliL_9620 (struct ciciliwxfIsl0_vVsaqG9gYYj9oXXIdXQ_ * ciciliDefer9617 ) {
-  void * context  = (ciciliDefer9617 -> context);
+} ciciliiL1ol_cMBZKCZUx__gLqrhCL05M_;
+void __ciciliL_9613 (struct ciciliiL1ol_cMBZKCZUx__gLqrhCL05M_ * ciciliDefer9610 ) {
+  void * context  = (ciciliDefer9610 -> context);
   free (context );
 }
-void __ciciliC_Context_9610___ciciliC_Routine_9611 (struct __ciciliC_Context_9610 * context ) {
+void __ciciliC_Context_9603___ciciliC_Routine_9604 (struct __ciciliC_Context_9603 * context ) {
   Arc_BTree_int_User * pwtree  = ((context -> context). pwtree);
-  struct ciciliwxfIsl0_vVsaqG9gYYj9oXXIdXQ_ ciciliDefer9617  __attribute__((__cleanup__(__ciciliL_9620 ))) = { context };
+  struct ciciliiL1ol_cMBZKCZUx__gLqrhCL05M_ ciciliDefer9610  __attribute__((__cleanup__(__ciciliL_9613 ))) = { context };
   searchMany (pwtree , 200, 200);
 }
-typedef struct __ciciliC_Context_9630 {
-    void (*routine) (struct __ciciliC_Context_9630 * context );
-  struct { /* ciciliStruct9633 */
+typedef struct __ciciliC_Context_9623 {
+    void (*routine) (struct __ciciliC_Context_9623 * context );
+  struct { /* ciciliStruct9626 */
     Arc_BTree_int_User * pwtree ;
   } context ;
-} __ciciliC_Context_9630;
-typedef struct ciciliRT1710IyxCxuXceH7SHKOCjyGEE_ {
+} __ciciliC_Context_9623;
+typedef struct cicilitLDhKw9A1JTI0tNORnH4od_MOVE_ {
   void * context ;
-} ciciliRT1710IyxCxuXceH7SHKOCjyGEE_;
-void __ciciliL_9638 (struct ciciliRT1710IyxCxuXceH7SHKOCjyGEE_ * ciciliDefer9617 ) {
-  void * context  = (ciciliDefer9617 -> context);
+} cicilitLDhKw9A1JTI0tNORnH4od_MOVE_;
+void __ciciliL_9631 (struct cicilitLDhKw9A1JTI0tNORnH4od_MOVE_ * ciciliDefer9610 ) {
+  void * context  = (ciciliDefer9610 -> context);
   free (context );
 }
-void __ciciliC_Context_9630___ciciliC_Routine_9631 (struct __ciciliC_Context_9630 * context ) {
+void __ciciliC_Context_9623___ciciliC_Routine_9624 (struct __ciciliC_Context_9623 * context ) {
   Arc_BTree_int_User * pwtree  = ((context -> context). pwtree);
-  struct ciciliRT1710IyxCxuXceH7SHKOCjyGEE_ ciciliDefer9617  __attribute__((__cleanup__(__ciciliL_9638 ))) = { context };
+  struct cicilitLDhKw9A1JTI0tNORnH4od_MOVE_ ciciliDefer9610  __attribute__((__cleanup__(__ciciliL_9631 ))) = { context };
   searchMany (pwtree , 500, 500);
 }
-typedef struct __ciciliC_Context_9648 {
-    void (*routine) (struct __ciciliC_Context_9648 * context );
-  struct { /* ciciliStruct9651 */
+typedef struct __ciciliC_Context_9641 {
+    void (*routine) (struct __ciciliC_Context_9641 * context );
+  struct { /* ciciliStruct9644 */
     Arc_BTree_int_User * pwtree ;
   } context ;
-} __ciciliC_Context_9648;
-typedef struct cicili6gVpG2_vh137ydx6hcLOh14n1xk_ {
+} __ciciliC_Context_9641;
+typedef struct ciciliKsrP5duCiKHpPZmdJg7d_zXEdR0_ {
   void * context ;
-} cicili6gVpG2_vh137ydx6hcLOh14n1xk_;
-void __ciciliL_9656 (struct cicili6gVpG2_vh137ydx6hcLOh14n1xk_ * ciciliDefer9617 ) {
-  void * context  = (ciciliDefer9617 -> context);
+} ciciliKsrP5duCiKHpPZmdJg7d_zXEdR0_;
+void __ciciliL_9649 (struct ciciliKsrP5duCiKHpPZmdJg7d_zXEdR0_ * ciciliDefer9610 ) {
+  void * context  = (ciciliDefer9610 -> context);
   free (context );
 }
-void __ciciliC_Context_9648___ciciliC_Routine_9649 (struct __ciciliC_Context_9648 * context ) {
+void __ciciliC_Context_9641___ciciliC_Routine_9642 (struct __ciciliC_Context_9641 * context ) {
   Arc_BTree_int_User * pwtree  = ((context -> context). pwtree);
-  struct cicili6gVpG2_vh137ydx6hcLOh14n1xk_ ciciliDefer9617  __attribute__((__cleanup__(__ciciliL_9656 ))) = { context };
+  struct ciciliKsrP5duCiKHpPZmdJg7d_zXEdR0_ ciciliDefer9610  __attribute__((__cleanup__(__ciciliL_9649 ))) = { context };
   searchMany (pwtree , 700, 700);
 }
-typedef struct __ciciliC_Context_9666 {
-    void (*routine) (struct __ciciliC_Context_9666 * context );
-  struct { /* ciciliStruct9669 */
+typedef struct __ciciliC_Context_9659 {
+    void (*routine) (struct __ciciliC_Context_9659 * context );
+  struct { /* ciciliStruct9662 */
     Arc_BTree_int_User * pwtree ;
   } context ;
-} __ciciliC_Context_9666;
-typedef struct cicili0tWpg0QYKVMZMfD_RBtuskRpi3w_ {
+} __ciciliC_Context_9659;
+typedef struct cicili6leU2MkzSxYp1BO8rzFGEF2RzHA_ {
   void * context ;
-} cicili0tWpg0QYKVMZMfD_RBtuskRpi3w_;
-void __ciciliL_9674 (struct cicili0tWpg0QYKVMZMfD_RBtuskRpi3w_ * ciciliDefer9617 ) {
-  void * context  = (ciciliDefer9617 -> context);
+} cicili6leU2MkzSxYp1BO8rzFGEF2RzHA_;
+void __ciciliL_9667 (struct cicili6leU2MkzSxYp1BO8rzFGEF2RzHA_ * ciciliDefer9610 ) {
+  void * context  = (ciciliDefer9610 -> context);
   free (context );
 }
-void __ciciliC_Context_9666___ciciliC_Routine_9667 (struct __ciciliC_Context_9666 * context ) {
+void __ciciliC_Context_9659___ciciliC_Routine_9660 (struct __ciciliC_Context_9659 * context ) {
   Arc_BTree_int_User * pwtree  = ((context -> context). pwtree);
-  struct cicili0tWpg0QYKVMZMfD_RBtuskRpi3w_ ciciliDefer9617  __attribute__((__cleanup__(__ciciliL_9674 ))) = { context };
+  struct cicili6leU2MkzSxYp1BO8rzFGEF2RzHA_ ciciliDefer9610  __attribute__((__cleanup__(__ciciliL_9667 ))) = { context };
   searchMany (pwtree , 1000, 1000);
 }
 int main () {
   fprintf (stdout , "Multi-thread pure functional manipulation of '%s' type into and from '%s' structure using '%s' key type.\n", "User", "BTree_int_User", "int");
   doQuit  = False ();
-  { /* let9596 */
+  { /* let9589 */
     pthread_mutexattr_t attr ;
     // ----------
     pthread_mutexattr_init ((&attr ));
     pthread_mutexattr_settype ((&attr ), PTHREAD_MUTEX_RECURSIVE );
     pthread_mutex_init ((&treeArc ), (&attr ));
   }
-  { /* let9598 */
+  { /* let9591 */
     Arc_BTree_int_User wtree  = new_Arc_BTree_int_User (Leaf_BTree_int_User (Nil_BTree_int_User_pair_t ()), (&treeArc ));
     Arc_BTree_int_User * pwtree  = (&wtree );
-    pthread_t reader1  = ({ /* letn9607 */
-      struct __ciciliC_Context_9610 closure9606  = ((struct __ciciliC_Context_9610){ __ciciliC_Context_9610___ciciliC_Routine_9611 , { pwtree }});
-      void * data  = malloc (sizeof(closure9606));
-      pthread_t thread9605 ;
+    pthread_t reader1  = ({ /* letn9600 */
+      struct __ciciliC_Context_9603 closure9599  = ((struct __ciciliC_Context_9603){ __ciciliC_Context_9603___ciciliC_Routine_9604 , { pwtree }});
+      void * data  = malloc (sizeof(closure9599));
+      pthread_t thread9598 ;
       // ----------
-      memcpy (data , (&closure9606 ), sizeof(closure9606));
-      pthread_create ((&thread9605 ), NULL , ((        void * (*)(void *))(closure9606 . routine)), data );
+      memcpy (data , (&closure9599 ), sizeof(closure9599));
+      pthread_create ((&thread9598 ), NULL , ((        void * (*)(void *))(closure9599 . routine)), data );
       ;
-      thread9605 ;
+      thread9598 ;
     });
-    pthread_t reader2  = ({ /* letn9627 */
-      struct __ciciliC_Context_9630 closure9626  = ((struct __ciciliC_Context_9630){ __ciciliC_Context_9630___ciciliC_Routine_9631 , { pwtree }});
-      void * data  = malloc (sizeof(closure9626));
-      pthread_t thread9625 ;
+    pthread_t reader2  = ({ /* letn9620 */
+      struct __ciciliC_Context_9623 closure9619  = ((struct __ciciliC_Context_9623){ __ciciliC_Context_9623___ciciliC_Routine_9624 , { pwtree }});
+      void * data  = malloc (sizeof(closure9619));
+      pthread_t thread9618 ;
       // ----------
-      memcpy (data , (&closure9626 ), sizeof(closure9626));
-      pthread_create ((&thread9625 ), NULL , ((        void * (*)(void *))(closure9626 . routine)), data );
+      memcpy (data , (&closure9619 ), sizeof(closure9619));
+      pthread_create ((&thread9618 ), NULL , ((        void * (*)(void *))(closure9619 . routine)), data );
       ;
-      thread9625 ;
+      thread9618 ;
     });
-    pthread_t reader3  = ({ /* letn9645 */
-      struct __ciciliC_Context_9648 closure9644  = ((struct __ciciliC_Context_9648){ __ciciliC_Context_9648___ciciliC_Routine_9649 , { pwtree }});
-      void * data  = malloc (sizeof(closure9644));
-      pthread_t thread9643 ;
+    pthread_t reader3  = ({ /* letn9638 */
+      struct __ciciliC_Context_9641 closure9637  = ((struct __ciciliC_Context_9641){ __ciciliC_Context_9641___ciciliC_Routine_9642 , { pwtree }});
+      void * data  = malloc (sizeof(closure9637));
+      pthread_t thread9636 ;
       // ----------
-      memcpy (data , (&closure9644 ), sizeof(closure9644));
-      pthread_create ((&thread9643 ), NULL , ((        void * (*)(void *))(closure9644 . routine)), data );
+      memcpy (data , (&closure9637 ), sizeof(closure9637));
+      pthread_create ((&thread9636 ), NULL , ((        void * (*)(void *))(closure9637 . routine)), data );
       ;
-      thread9643 ;
+      thread9636 ;
     });
-    pthread_t reader4  = ({ /* letn9663 */
-      struct __ciciliC_Context_9666 closure9662  = ((struct __ciciliC_Context_9666){ __ciciliC_Context_9666___ciciliC_Routine_9667 , { pwtree }});
-      void * data  = malloc (sizeof(closure9662));
-      pthread_t thread9661 ;
+    pthread_t reader4  = ({ /* letn9656 */
+      struct __ciciliC_Context_9659 closure9655  = ((struct __ciciliC_Context_9659){ __ciciliC_Context_9659___ciciliC_Routine_9660 , { pwtree }});
+      void * data  = malloc (sizeof(closure9655));
+      pthread_t thread9654 ;
       // ----------
-      memcpy (data , (&closure9662 ), sizeof(closure9662));
-      pthread_create ((&thread9661 ), NULL , ((        void * (*)(void *))(closure9662 . routine)), data );
+      memcpy (data , (&closure9655 ), sizeof(closure9655));
+      pthread_create ((&thread9654 ), NULL , ((        void * (*)(void *))(closure9655 . routine)), data );
       ;
-      thread9661 ;
+      thread9654 ;
     });
     // ----------
     insertMany (pwtree , 1, 250);
