@@ -214,3 +214,7 @@ example/*.hpp
 example/data/
 example/classifier.pt
 example/mnist_train
+
+# VSCode extension build products
+vscode/node_modules/
+vscode/*.vsix

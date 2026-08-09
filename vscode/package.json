@@ -1,0 +1,54 @@
+{
+  "name": "cicili",
+  "displayName": "Cicili",
+  "description": "Syntax highlighting and editor support for the Cicili language.",
+  "version": "0.1.0",
+  "publisher": "saman-pasha",
+  "license": "SEE LICENSE IN ../LICENSE",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/saman-pasha/cicili"
+  },
+  "engines": {
+    "vscode": "^1.75.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "keywords": [
+    "cicili",
+    "lisp",
+    "transpiler",
+    "c",
+    "c++"
+  ],
+  "contributes": {
+    "languages": [
+      {
+        "id": "cicili",
+        "aliases": [
+          "Cicili",
+          "cicili"
+        ],
+        "extensions": [
+          ".cicili"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "cicili",
+        "scopeName": "source.cicili",
+        "path": "./syntaxes/cicili.tmLanguage.json"
+      }
+    ]
+  },
+  "scripts": {
+    "test": "node test/tokenize.mjs"
+  },
+  "devDependencies": {
+    "vscode-oniguruma": "^2.0.1",
+    "vscode-textmate": "^9.3.2"
+  }
+}

@@ -1,0 +1,208 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "Cicili",
+  "scopeName": "source.cicili",
+  "fileTypes": [
+    "cicili"
+  ],
+  "patterns": [
+    {
+      "include": "#expression"
+    }
+  ],
+  "repository": {
+    "expression": {
+      "patterns": [
+        {
+          "include": "#comment"
+        },
+        {
+          "include": "#target-filename"
+        },
+        {
+          "include": "#string"
+        },
+        {
+          "include": "#character"
+        },
+        {
+          "include": "#boolean"
+        },
+        {
+          "include": "#function-quote"
+        },
+        {
+          "include": "#number"
+        },
+        {
+          "include": "#option-keyword"
+        },
+        {
+          "include": "#preprocessor"
+        },
+        {
+          "include": "#definition"
+        },
+        {
+          "include": "#instantiation"
+        },
+        {
+          "include": "#warning-form"
+        },
+        {
+          "include": "#attribute"
+        },
+        {
+          "include": "#type-attribute"
+        },
+        {
+          "include": "#keyword"
+        },
+        {
+          "include": "#type"
+        },
+        {
+          "include": "#operator"
+        },
+        {
+          "include": "#quote"
+        },
+        {
+          "include": "#punctuation"
+        }
+      ]
+    },
+    "comment": {
+      "name": "comment.line.semicolon.cicili",
+      "begin": ";",
+      "end": "$"
+    },
+    "target-filename": {
+      "match": "(?<=\\()(source|header)(\\s+)(\".*?\")",
+      "captures": {
+        "1": {
+          "name": "keyword.control.cicili"
+        },
+        "3": {
+          "name": "string.quoted.double.filename.cicili"
+        }
+      }
+    },
+    "string": {
+      "name": "string.quoted.double.cicili",
+      "begin": "\"",
+      "end": "\"",
+      "patterns": [
+        {
+          "name": "constant.character.escape.cicili",
+          "match": "\\\\."
+        }
+      ]
+    },
+    "character": {
+      "name": "constant.character.cicili",
+      "match": "#\\\\(?:[A-Za-z][A-Za-z0-9-]*|.)"
+    },
+    "boolean": {
+      "name": "constant.language.boolean.cicili",
+      "match": "#[tf](?=[\\s()'\";]|$)"
+    },
+    "function-quote": {
+      "name": "keyword.operator.function-quote.cicili",
+      "match": "#'"
+    },
+    "number": {
+      "name": "constant.numeric.cicili",
+      "match": "(?<=[\\s(])[+-]?(?:0[xX][0-9a-fA-F]+|\\d+\\.\\d+|\\d+)[uUlLfF]*(?=[\\s()'\";]|$)"
+    },
+    "option-keyword": {
+      "name": "variable.parameter.option.cicili",
+      "match": "(?<=[\\s(]):[A-Za-z][A-Za-z0-9-]*(?=[\\s()'\";]|$)"
+    },
+    "preprocessor": {
+      "name": "keyword.control.preprocessor.cicili",
+      "match": "(?<=\\()@[A-Za-z_][A-Za-z0-9_-]*"
+    },
+    "definition": {
+      "patterns": [
+        {
+          "match": "(?<=\\()(func|fn|method|member)\\s+(?![(])([^\\s()\"';]+)",
+          "captures": {
+            "1": {
+              "name": "keyword.control.cicili"
+            },
+            "2": {
+              "name": "entity.name.function.cicili"
+            }
+          }
+        },
+        {
+          "match": "(?<=\\()(struct|union|enum|generic|guard|typedef|class|data)\\s+(?![(])([^\\s()\"';]+)",
+          "captures": {
+            "1": {
+              "name": "keyword.control.cicili"
+            },
+            "2": {
+              "name": "entity.name.type.cicili"
+            }
+          }
+        }
+      ]
+    },
+    "instantiation": {
+      "match": "(?<=\\()(<>)\\s+(\\(?)([^\\s()\"';]+)",
+      "captures": {
+        "1": {
+          "name": "keyword.operator.instantiate.cicili"
+        },
+        "3": {
+          "name": "entity.name.type.instantiation.cicili"
+        }
+      }
+    },
+    "keyword": {
+      "name": "keyword.control.cicili",
+      "match": "(?<=\\()(?:shared-func-name|method-func-name|for-each-const|inline-generic|def-matchable|exec-closure|async-main\\*|symbol-name|def-closure|async-main|cast-tuple|defer-let|exit_self|function|continue|for-each|constant|generic|include|declare|typedef|default|closure|iterate|dotimes|IString|cicili|format|header|source|module|lambda|struct|member|method|bitand|sizeof|typeof|switch|printf|import|detach|cancel|assert|letin\\*|matchn|nthcdr|append|hasLen|Buffer|unless|return|dolist|defer\\*|main\\*|guard|ghost|block|union|bitor|while|break|scanf|using|abort|async|yield|letin|where|match|tuple|class|lockn|Slice|force|progn|catch|defer|main|code|make|func|enum|cast|pure|free|letn|self|join|exit|done|data|show|push|head|tail|take|drop|init|last|copy|fmap|impl|dead|lock|None|lazy|when|case|null|var|out|set|nth|not|and|xor|cof|aof|for|new|let|len|pop|try|or|go|fn|io|rc|if)(?=[\\s()'\";]|$)"
+    },
+    "attribute": {
+      "name": "storage.modifier.cicili",
+      "match": "(?<=\\()(?:thread-local|register|volatile|non-copy|resolve|static|inline|extern|defer\\*|define|atomic|defer|decl|auto)(?=[\\s()'\";]|$)"
+    },
+    "type-attribute": {
+      "name": "storage.type.cicili",
+      "match": "(?<=\\()(?:import|decl|impl)(?=[\\s()'\";]|$)"
+    },
+    "warning-form": {
+      "name": "keyword.other.alloc.cicili",
+      "match": "(?<=\\()(?:analyze-data!|analyze!|realloc|syslog!|malloc|calloc|debug!|error!|alloc|warn!|info!)(?=[\\s()'\";]|$)"
+    },
+    "type": {
+      "name": "support.type.cicili",
+      "match": "(?<=[\\s(])(?:uint_least16_t|uint_least32_t|uint_least64_t|uint_least8_t|int_least16_t|int_least32_t|int_least64_t|uint_fast16_t|uint_fast32_t|uint_fast64_t|int_least8_t|uint_fast8_t|int_fast16_t|int_fast32_t|int_fast64_t|int_fast8_t|Applicative|uintptr_t|namespace|timestamp|otherwise|restrict|function|unsigned|uint16_t|uint32_t|uint64_t|__int128|intmax_t|intptr_t|Ordering|integer|uint8_t|int16_t|int32_t|int64_t|boolean|Nothing|Functor|default|OwnList|ushort|ullong|double|int8_t|size_t|symbol|vector|String|object|Either|Monoid|string|const|block|uchar|short|ulong|llong|float|error|false|ubyte|Maybe|Empty|array|Range|Right|Monad|Thunk|OCons|False|Tuple|main|func|this|void|char|uint|long|real|i128|u128|true|auto|null|byte|text|Just|Cons|List|Left|Cell|show|move|cell|ONil|Bool|True|int|i16|u16|i32|u32|i64|u64|nil|Arc|ref|arc|i8|u8|Rc|rc|LT|EQ|GT)(?=[\\s()'\";]|$)"
+    },
+    "operator": {
+      "name": "keyword.operator.cicili",
+      "match": "(?<=[\\s(])(?:\\\\\\.\\*|\\\\\\.\\+|\\\\<>|\\$\\$\\$|<!>|-->|t<>|\\\\\\\\|\\\\\\.|\\\\,|\\\\:|\\$\\$|\\$>|!>|!!|\\+\\+|->|=>|<>|\\$|~|!|,|:)(?=[\\s()'\";]|$)"
+    },
+    "quote": {
+      "name": "keyword.operator.quote.cicili",
+      "match": "'"
+    },
+    "punctuation": {
+      "patterns": [
+        {
+          "name": "punctuation.section.parens.cicili",
+          "match": "[()]"
+        },
+        {
+          "name": "punctuation.section.braces.cicili",
+          "match": "[{}]"
+        },
+        {
+          "name": "punctuation.section.brackets.cicili",
+          "match": "\\[|\\]"
+        }
+      ]
+    }
+  }
+}
