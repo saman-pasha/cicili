@@ -79,7 +79,13 @@
 
 ;; op is a strict irreducible function which accepts lhs and rhs of type a
 (generic impl-Monoid
-  (type a neutral op)
+  ;; MOD-OWN SAYS WHETHER AN `a' HAS TO BE FREED. mconcat folds with mappend,
+  ;; and a mappend that COPIES -- which append does, and which is the only kind
+  ;; a non-owning List can offer -- leaves every accumulator but the last on the
+  ;; floor. Written `move' at the instantiation, mconcat drops each one as it
+  ;; goes; left out, it does not, because a Monoid over int has no free_int and
+  ;; never will.
+  (type a neutral op mod-own)
 
   ;; dependencies
   (guard (<> _ folds a _H_IMPL__)
@@ -102,9 +108,25 @@
         (out a)
         (return (op lhs rhs)))
 
+  ;; ITS OWN FOLD, so each accumulator has a name and can be dropped. foldr
+  ;; threads the accumulator forward and hands back only the last, so delegating
+  ;; to it leaves every earlier one unreachable the moment mappend copies out of
+  ;; it -- the Nil seed included.
+  ;;
+  ;; The answer and, when the list is empty, the neutral are the CALLER's; only
+  ;; what this made itself is freed here.
   (func (<> mconcat type) (((<> List a) list))
         (out a)
-        (return ((<> foldr a) (<> mappend type) neutral list)))
+
+        (func step (((<> List a) rest) (a acc)) (out a)
+              (return (match rest
+                        (* Cons head tail
+                           (letn ((auto next . #'((<> mappend type) acc head)))
+                             (free-owned mod-own (<> free a) (aof acc))
+                             (step tail next)))
+                        (default acc))))
+
+        (return (step list neutral)))
 
   (func (<> get Monoid type) ()
         (out (<> Monoid type))

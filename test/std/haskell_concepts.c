@@ -4917,7 +4917,40 @@ List_int mappend_List_int (List_int lhs , List_int rhs ) {
   return append_List_int (lhs , rhs );
 }
 List_int mconcat_List_int (List_List_int list ) {
-  return foldr_List_int (mappend_List_int , Nil_int (), list );
+  List_int step (List_List_int rest , List_int acc ) {
+    return ({ /* letn5180 */
+        typeof((((rest -> __h_data). Cons). __h_0_mem)) head ;
+        typeof((((rest -> __h_data). Cons). __h_1_mem)) tail ;
+        // ----------
+        ;
+        ({ /* letn5182 */
+          bool __h_case_result  = (true  &&  (((rest -> __h_ctor) ==  __h_Cons_t  ) &&  (({ /* progn5183 */
+                  head  = (((rest -> __h_data). Cons). __h_0_mem) ;
+                  true ;
+                }) &&  ({ /* progn5185 */
+                  tail  = (((rest -> __h_data). Cons). __h_1_mem) ;
+                  true ;
+                }) ) ) );
+          // ----------
+          
+          ((__h_case_result ) ? ({ /* progn5190 */
+              ({ /* letn5192 */
+                List_int next  = mappend_List_int (acc , head );
+                // ----------
+                free_List_int ((&acc ));
+                step (tail , next );
+              });
+            }) : ({ /* letn5199 */
+              // ----------
+              ;
+              ({ /* progn5201 */
+                acc ;
+              });
+            }));
+        });
+      });
+  }
+  return step (list , Nil_int ());
 }
 Monoid_List_int get_Monoid_List_int () {
   return Monoid_List_int_ctor (mappend_List_int , Nil_int (), mconcat_List_int );
@@ -4928,23 +4961,23 @@ Semigroup_List_int get_Semigroup_List_int () {
 #ifndef __Applicative_Ap_List_int_int__H_IMPL__
 #define __Applicative_Ap_List_int_int__H_IMPL__
 List_int ap_Applicative_Ap_List_int_int (List_int_to_int_t f_a_b , List_int input ) {
-  return ({ /* letn5200 */
+  return ({ /* letn5227 */
       typeof((((f_a_b -> __h_data). Cons). __h_0_mem)) a_b ;
       typeof((((f_a_b -> __h_data). Cons). __h_1_mem)) tail ;
       // ----------
       ;
-      ({ /* letn5202 */
-        bool __h_case_result  = (true  &&  (((f_a_b -> __h_ctor) ==  __h_Cons_t  ) &&  (({ /* progn5203 */
+      ({ /* letn5229 */
+        bool __h_case_result  = (true  &&  (((f_a_b -> __h_ctor) ==  __h_Cons_t  ) &&  (({ /* progn5230 */
                 a_b  = (((f_a_b -> __h_data). Cons). __h_0_mem) ;
                 true ;
-              }) &&  ({ /* progn5205 */
+              }) &&  ({ /* progn5232 */
                 tail  = (((f_a_b -> __h_data). Cons). __h_1_mem) ;
                 true ;
               }) ) ) );
         // ----------
         
-        ((__h_case_result ) ? ({ /* progn5210 */
-            ({ /* letn5212 */
+        ((__h_case_result ) ? ({ /* progn5237 */
+            ({ /* letn5239 */
               List_int mapped  = fmap_Functor_Ap_List_int_int (a_b , input );
               List_int rest  = ap_Applicative_Ap_List_int_int (tail , input );
               List_List_int pair  = Cons_List_int (mapped , wrap_List_List_int (rest ));
@@ -4955,10 +4988,10 @@ List_int ap_Applicative_Ap_List_int_int (List_int_to_int_t f_a_b , List_int inpu
               free_List_int ((&rest ));
               result ;
             });
-          }) : ({ /* letn5224 */
+          }) : ({ /* letn5251 */
             // ----------
             ;
-            ({ /* progn5226 */
+            ({ /* progn5253 */
               Nil_int ();
             });
           }));
@@ -4972,7 +5005,7 @@ void free_Applicative_Ap_List_int_int (Applicative_Ap_List_int_int * this ) {
 }
 __attribute__((weak)) void free_Applicative_Ap_List_int_int_pointer (Applicative_Ap_List_int_int ** this ) {
   if (this )
-    { /* block5244 */
+    { /* block5271 */
       free_Applicative_Ap_List_int_int ((*this ));
     }
 }
@@ -4981,7 +5014,7 @@ const Applicative_Ap_List_int_int__H_Table * const get_Applicative_Ap_List_int_i
   return (&table );
 }
 Applicative_Ap_List_int_int Applicative_Ap_List_int_int_ctor () {
-  { /* let5254 */
+  { /* let5281 */
     Applicative_Ap_List_int_int instance  = ((Applicative_Ap_List_int_int){ get_Applicative_Ap_List_int_int__H_Table (), __h_Applicative_t });
     // ----------
     return instance ;
@@ -4994,12 +5027,12 @@ Applicative_Ap_List_int_int get_Applicative_Ap_List_int_int () {
 static int bad  = 0;
 int check (const char * what , long got , long want ) {
   if (got  ==  want  )
-    { /* block5264 */
+    { /* block5291 */
       printf ("ok   %-40s %ld\n", what , got );
       return 0;
     }
   else
-    { /* block5267 */
+    { /* block5294 */
       printf ("FAIL %-40s got %ld want %ld\n", what , got , want );
       return 1;
     }
@@ -5011,27 +5044,27 @@ int twice (int v ) {
   return (2 *  v  );
 }
 long sum_list (List_int l ) {
-  return ({ /* letn5276 */
+  return ({ /* letn5303 */
       typeof((((l -> __h_data). Cons). __h_0_mem)) head ;
       typeof((((l -> __h_data). Cons). __h_1_mem)) tail ;
       // ----------
       ;
-      ({ /* letn5278 */
-        bool __h_case_result  = (true  &&  (((l -> __h_ctor) ==  __h_Cons_t  ) &&  (({ /* progn5279 */
+      ({ /* letn5305 */
+        bool __h_case_result  = (true  &&  (((l -> __h_ctor) ==  __h_Cons_t  ) &&  (({ /* progn5306 */
                 head  = (((l -> __h_data). Cons). __h_0_mem) ;
                 true ;
-              }) &&  ({ /* progn5281 */
+              }) &&  ({ /* progn5308 */
                 tail  = (((l -> __h_data). Cons). __h_1_mem) ;
                 true ;
               }) ) ) );
         // ----------
         
-        ((__h_case_result ) ? ({ /* progn5286 */
+        ((__h_case_result ) ? ({ /* progn5313 */
             (((long)head ) +  sum_list (tail ) );
-          }) : ({ /* letn5290 */
+          }) : ({ /* letn5317 */
             // ----------
             ;
-            ({ /* progn5292 */
+            ({ /* progn5319 */
               0;
             });
           }));
@@ -5039,86 +5072,63 @@ long sum_list (List_int l ) {
     });
 }
 int main () {
-  ({ /* letn5298 */
+  ({ /* letn5325 */
     List_int l1  __attribute__((__cleanup__(free_List_int ))) = Cons_int (1, Cons_int (2, Cons_int (3, Cons_int (4, Nil_int ()))));
     // ----------
     bad  += check ("the list adds up before fmap", sum_list (l1 ), 10) ;
-    ({ /* letn5309 */
-      List_int l2  __attribute__((__cleanup__(free_List_int ))) = fmap_Functor_List_int_int (({ /* progn5313 */
-        int __ciciliC_5312 (int __h_value ) {
+    ({ /* letn5336 */
+      List_int l2  __attribute__((__cleanup__(free_List_int ))) = fmap_Functor_List_int_int (({ /* progn5340 */
+        int __ciciliC_5339 (int __h_value ) {
           return (5 *  __h_value  );
         }
-        __ciciliC_5312 ;
+        __ciciliC_5339 ;
       }), l1 );
       // ----------
       bad  += check ("fmap (*5) multiplies every element", sum_list (l2 ), 50) ;
       bad  += check ("and leaves the length alone", ((long)len_List_int (l2 )), 4) ;
     });
   });
-  bad  += check ("bind on a Just runs the step", ({ /* letn5327 */
-        Maybe_int match5326  = bind_Monad_Maybe_int_int (Just_int (7), ({ /* progn5335 */
-          Maybe_int __ciciliC_5334 (int v ) {
+  bad  += check ("bind on a Just runs the step", ({ /* letn5354 */
+        Maybe_int match5353  = bind_Monad_Maybe_int_int (Just_int (7), ({ /* progn5362 */
+          Maybe_int __ciciliC_5361 (int v ) {
             return Just_int ((3 *  v  ));
           }
-          __ciciliC_5334 ;
+          __ciciliC_5361 ;
         }));
-        typeof((((match5326 . __h_data). Just). __h_0_mem)) r ;
+        typeof((((match5353 . __h_data). Just). __h_0_mem)) r ;
         // ----------
         ;
-        ({ /* letn5341 */
-          bool __h_case_result  = (true  &&  (((match5326 . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn5342 */
-                r  = (((match5326 . __h_data). Just). __h_0_mem) ;
+        ({ /* letn5368 */
+          bool __h_case_result  = (true  &&  (((match5353 . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn5369 */
+                r  = (((match5353 . __h_data). Just). __h_0_mem) ;
                 true ;
               }) ) );
           // ----------
           
-          ((__h_case_result ) ? ({ /* progn5347 */
+          ((__h_case_result ) ? ({ /* progn5374 */
               ((long)r );
-            }) : ({ /* letn5351 */
+            }) : ({ /* letn5378 */
               // ----------
               ;
-              ({ /* progn5353 */
+              ({ /* progn5380 */
                 -1;
               });
             }));
         });
       }), 21) ;
-  bad  += check ("bind on a Nothing short-circuits", ({ /* letn5360 */
-        Maybe_int match5359  = bind_Monad_Maybe_int_int (Nothing_int (), ({ /* progn5367 */
-          Maybe_int __ciciliC_5366 (int v ) {
+  bad  += check ("bind on a Nothing short-circuits", ({ /* letn5387 */
+        Maybe_int match5386  = bind_Monad_Maybe_int_int (Nothing_int (), ({ /* progn5394 */
+          Maybe_int __ciciliC_5393 (int v ) {
             return Just_int ((3 *  v  ));
           }
-          __ciciliC_5366 ;
+          __ciciliC_5393 ;
         }));
-        typeof((((match5359 . __h_data). Just). __h_0_mem)) r ;
-        // ----------
-        ;
-        ({ /* letn5372 */
-          bool __h_case_result  = (true  &&  (((match5359 . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn5373 */
-                r  = (((match5359 . __h_data). Just). __h_0_mem) ;
-                true ;
-              }) ) );
-          // ----------
-          
-          ((__h_case_result ) ? ({ /* progn5378 */
-              ((long)r );
-            }) : ({ /* letn5382 */
-              // ----------
-              ;
-              ({ /* progn5384 */
-                -1;
-              });
-            }));
-        });
-      }), -1) ;
-  bad  += check ("ap of a Just function over a Just", ({ /* letn5391 */
-        Maybe_int match5390  = ap_Applicative_Ap_Maybe_int_int (Just_int_to_int_t (add100 ), Just_int (5));
-        typeof((((match5390 . __h_data). Just). __h_0_mem)) r ;
+        typeof((((match5386 . __h_data). Just). __h_0_mem)) r ;
         // ----------
         ;
         ({ /* letn5399 */
-          bool __h_case_result  = (true  &&  (((match5390 . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn5400 */
-                r  = (((match5390 . __h_data). Just). __h_0_mem) ;
+          bool __h_case_result  = (true  &&  (((match5386 . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn5400 */
+                r  = (((match5386 . __h_data). Just). __h_0_mem) ;
                 true ;
               }) ) );
           // ----------
@@ -5133,37 +5143,60 @@ int main () {
               });
             }));
         });
-      }), 105) ;
-  bad  += check ("ap of a Nothing function is nothing", ({ /* letn5418 */
-        Maybe_int match5417  = ap_Applicative_Ap_Maybe_int_int (Nothing_int_to_int_t (), Just_int (5));
+      }), -1) ;
+  bad  += check ("ap of a Just function over a Just", ({ /* letn5418 */
+        Maybe_int match5417  = ap_Applicative_Ap_Maybe_int_int (Just_int_to_int_t (add100 ), Just_int (5));
         typeof((((match5417 . __h_data). Just). __h_0_mem)) r ;
         // ----------
         ;
-        ({ /* letn5425 */
-          bool __h_case_result  = (true  &&  (((match5417 . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn5426 */
+        ({ /* letn5426 */
+          bool __h_case_result  = (true  &&  (((match5417 . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn5427 */
                 r  = (((match5417 . __h_data). Just). __h_0_mem) ;
                 true ;
               }) ) );
           // ----------
           
-          ((__h_case_result ) ? ({ /* progn5431 */
+          ((__h_case_result ) ? ({ /* progn5432 */
               ((long)r );
-            }) : ({ /* letn5435 */
+            }) : ({ /* letn5436 */
               // ----------
               ;
-              ({ /* progn5437 */
+              ({ /* progn5438 */
+                -1;
+              });
+            }));
+        });
+      }), 105) ;
+  bad  += check ("ap of a Nothing function is nothing", ({ /* letn5445 */
+        Maybe_int match5444  = ap_Applicative_Ap_Maybe_int_int (Nothing_int_to_int_t (), Just_int (5));
+        typeof((((match5444 . __h_data). Just). __h_0_mem)) r ;
+        // ----------
+        ;
+        ({ /* letn5452 */
+          bool __h_case_result  = (true  &&  (((match5444 . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn5453 */
+                r  = (((match5444 . __h_data). Just). __h_0_mem) ;
+                true ;
+              }) ) );
+          // ----------
+          
+          ((__h_case_result ) ? ({ /* progn5458 */
+              ((long)r );
+            }) : ({ /* letn5462 */
+              // ----------
+              ;
+              ({ /* progn5464 */
                 -1;
               });
             }));
         });
       }), -1) ;
-  ({ /* letn5440 */
+  ({ /* letn5467 */
     List_int_to_int_t fs  __attribute__((__cleanup__(free_List_int_to_int_t ))) = Cons_int_to_int_t (add100 , Cons_int_to_int_t (twice , Nil_int_to_int_t ()));
     // ----------
-    ({ /* letn5448 */
+    ({ /* letn5475 */
       List_int xs  __attribute__((__cleanup__(free_List_int ))) = Cons_int (1, Cons_int (2, Nil_int ()));
       // ----------
-      ({ /* letn5454 */
+      ({ /* letn5481 */
         List_int rs  __attribute__((__cleanup__(free_List_int ))) = ap_Applicative_Ap_List_int_int (fs , xs );
         // ----------
         bad  += check ("ap pairs every function with every value", ((long)len_List_int (rs )), 4) ;

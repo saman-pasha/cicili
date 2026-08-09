@@ -5,20 +5,17 @@
 ;;; The front ends are the part a caller actually writes, so they are what this
 ;;; checks: the counts come back through them, not through the table.
 ;;;
-;;; WHAT VALGRIND SAYS: no invalid access, and 8 blocks still held at exit --
-;;; all of them inside mconcat, none of them `ap' the mat's own.
+;;; WHAT VALGRIND SAYS: 46 allocations, 46 frees, no leak and no error.
 ;;;
-;;; The mat used to drop four lists an `ap' -- the fmapped one, the recursive
-;;; ap's, and the two cells of the list-of-lists mconcat folds -- because
-;;; written nested there was nowhere to name them. They are bound and freed now,
-;;; which took the run from 22 frees to 38.
+;;; Getting there took two fixes and they were in different places. The ap mat
+;;; built four lists an `ap' and, written nested, had nowhere to name them; they
+;;; are bound and freed now. Under that, mconcat folded with a COPYING mappend
+;;; and dropped every accumulator but the last, the Nil seed included -- so it
+;;; keeps its own fold and drops each one as it goes, when the instantiation
+;;; says its `a' is something that can be freed.
 ;;;
-;;; What is left is the fold itself: mconcat is foldr (mappend) Nil, and mappend
-;;; is `append', which COPIES. So the Nil seed is dropped, and so is every
-;;; intermediate the fold builds on the way -- for a two-element list, the seed
-;;; and one list. That is lib/std/haskell/monoid.cicili's arithmetic to fix, not
-;;; the Applicative's: any mconcat over a copying mappend leaks the same way,
-;;; whoever calls it.
+;;; Checked against its own counterfactual: take `move' off the impl-Monoid in
+;;; applicative.cicili and the same eight blocks come back.
 ;;;
 ;;; The instances are on int and Maybe int. Nothing here needs a string, which
 ;;; keeps it about the classes rather than about ownership.

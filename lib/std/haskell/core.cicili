@@ -194,6 +194,24 @@
 (DEFUN make-match-h-arg-name (id number)
   (INTERN (FORMAT NIL "__h_~A_~A_arg" id number)))
 
+;; FREE A VALUE ONLY IF THE CALLER SAID IT OWNS ONE.
+;;
+;; Whether a generic's `a' is something that has to be freed is not knowable
+;; here: a Monoid over int has no free_int and never will, while one over
+;; List_int both has a free and leaks without it. So it is the caller's answer,
+;; given at the instantiation by writing `move' in a `mod-own' slot or leaving
+;; it out. An omitted mod slot is DELETED from the body rather than substituted
+;; with NIL (see subst-out< in builtins.cicili), so a call written
+;;
+;;   (free-owned mod-own (<> free a) (aof acc))
+;;
+;; arrives here with three arguments when they said `move' and two when they
+;; did not -- and answers with the free call or with nothing at all.
+(DEFMACRO free-owned (&REST args)
+  (IF (AND (CDDR args) (CICILI:KEY-EQ (CAR args) 'move))
+      `(,(CADR args) ,(CADDR args))
+      `($$$)))
+
 ;; A NON-COPY PAYLOAD ARRIVES BY MOVE.
 ;;
 ;; A constructor stores what it is handed, and a non-copy value cannot be stored

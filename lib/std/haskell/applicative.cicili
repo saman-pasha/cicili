@@ -127,7 +127,9 @@
   ;; that lands.
   (impl-List (<> List b) b (\\ -f -v 0) " ")
   (impl-List (<> List (<> List b)) (<> List b) (\\ -f -v ((<> show (<> List b)) -f -v)) " ")
-  (impl-Monoid (<> List b) (<> List b) ((<> Nil b)) (<> append (<> List b)))
+  ;; `move': a List of b is heap and append copies, so mconcat has to drop each
+  ;; accumulator it folds through or the ap above leaks one per element
+  (impl-Monoid (<> List b) (<> List b) ((<> Nil b)) (<> append (<> List b)) move)
 
   (impl-Applicative type List a b
                     (\\ a->b ((<> wrap List (<> a to b t)) a->b))
