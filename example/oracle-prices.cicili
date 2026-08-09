@@ -1,0 +1,237 @@
+;;;; Fetch BTC/USD from four public price oracles and agree on a number
+;;;;
+;;;; A worked example of lib/net/curl.cicili against real endpoints. Each of
+;;;; these is a live public API that needs no key:
+;;;;
+;;;;   Coinbase   https://api.coinbase.com/v2/prices/BTC-USD/spot
+;;;;   Kraken     https://api.kraken.com/0/public/Ticker?pair=XBTUSD
+;;;;   Binance    https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT
+;;;;   CoinGecko  https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd
+;;;;
+;;;; WHY FOUR AND NOT ONE, which is the whole reason a program like this is
+;;;; written rather than a curl one-liner: a single feed is a single point of
+;;;; failure and a single point of manipulation. Asking several and taking the
+;;;; MEDIAN is the cheapest defence there is -- one oracle that is down, stale,
+;;;; or lying moves the median by nothing as long as the others agree. The
+;;;; spread that is printed with it is the honesty check: a wide one means they
+;;;; do not agree and the median is not worth much either.
+;;;;
+;;;; Build and run:
+;;;;
+;;;;     sbcl --script cicili.lisp example/oracle-prices.cicili
+;;;;     cd example && ./oracle_prices
+;;;;
+;;;; POINTING IT SOMEWHERE ELSE. An argument replaces the scheme and host of
+;;;; every URL, keeping the paths:
+;;;;
+;;;;     ./oracle_prices http://127.0.0.1:8000
+;;;;
+;;;; which is how it is tested without reaching the internet -- see
+;;;; example/oracle-fixtures/, a directory of the exact JSON these four APIs
+;;;; answer, laid out under the paths they answer it at. The HTTP is real
+;;;; either way: a status line, headers, a body, a write callback. Only the TLS
+;;;; handshake and somebody else's uptime are missing.
+
+(source "oracle-prices.c"
+  (make :std #t :compile #t :link ("-loracle-prices.o" "-lcurl" "-o" "oracle_prices"))
+
+  (include <curl/curl.h>)
+  (import "lib/net/curl.cicili" :cu)
+
+  ;; the response buffer and its write callback
+  (cu.impl-buffer)
+
+  ;;; ------------------------------------------------------------------
+  ;;; the oracles
+  ;;; ------------------------------------------------------------------
+
+  ;;; A feed is a name, a path, and the JSON key its price hides behind. The
+  ;;; four shapes differ, which is exactly why the key is data rather than code:
+  ;;;
+  ;;;   Coinbase   {"data":{"amount":"117000.00","base":"BTC",…}}     amount
+  ;;;   Kraken     {"result":{"XXBTZUSD":{…,"c":["117000.0","0.01"]}}} c
+  ;;;   Binance    {"symbol":"BTCUSDT","price":"117000.00000000"}      price
+  ;;;   CoinGecko  {"bitcoin":{"usd":117000}}                          usd
+  (struct feed
+          (member const char * name)
+          (member const char * path)
+          (member const char * key))
+
+  (var const char * DEFAULT_BASE . "https://api.coinbase.com")
+
+  ;;; ------------------------------------------------------------------
+  ;;; the smallest JSON reader that answers this question
+  ;;; ------------------------------------------------------------------
+
+  ;;; Find "KEY" and answer the first number after it, stepping over the
+  ;;; punctuation that can stand between -- a colon, an opening bracket, a
+  ;;; quote. That covers all four shapes above, including Kraken's, where the
+  ;;; price is the first element of an array.
+  ;;;
+  ;;; THIS IS NOT A JSON PARSER and is not pretending to be one. It would be
+  ;;; wrong about a key that appeared inside a string value, and about a number
+  ;;; in exponent form. It is here because the alternative -- linking a JSON
+  ;;; library -- would make the example about that library instead of about
+  ;;; fetching. A program that has to trust the answer wants a real parser.
+  (func json_after ((const char * text) (const char * key) (double * out)) (out int)
+        (let ((char quoted [64])
+              (const char * at . nil)
+              (const char * p . nil)
+              (char * end . nil)
+              (double value . 0.0))
+          (snprintf quoted (sizeof quoted) "\"%s\"" key)
+          (set at (strstr text quoted))
+          (if (== at nil) (return 0))
+          (set p (+ at (strlen quoted)))
+          ;; step over  :  [  "  and any space between them
+          (while (and (!= (nth 0 p) #\Nul)
+                      (or (== (nth 0 p) #\:) (== (nth 0 p) #\[)
+                          (== (nth 0 p) #\") (== (nth 0 p) #\Space)))
+            (++ p))
+          (set value (strtod p (aof end)))
+          ;; strtod answers 0 and moves nothing when there was no number there
+          (if (== end p) (return 0))
+          (set (cof out) value)
+          (return 1)))
+
+  ;;; ------------------------------------------------------------------
+  ;;; one request
+  ;;; ------------------------------------------------------------------
+
+  ;;; Ask one feed, and answer 1 only if the transfer succeeded, the status was
+  ;;; a 2xx, and the body held the key. Anything else is a miss, and a miss is
+  ;;; reported rather than silently counted as a price of zero -- which is what
+  ;;; makes the median below mean anything.
+  (func ask ((CURL * h) (const char * base) (feed * f) (double * out)) (out int)
+        (let ((cu_buf body . '{ nil 0 })
+              (char url [512])
+              (int rc . 0)
+              (int ok . 0))
+          (snprintf url (sizeof url) "%s%s" base (-> f path))
+
+          ;; The request. follow, because an API that has moved answers a 301
+          ;; and libcurl does NOT follow by default; a timeout, because a feed
+          ;; that hangs must not hang the program; an agent, because several of
+          ;; these refuse an empty one.
+          (set rc (cu.get h body url
+                          (follow 1)
+                          (max-redirs 3)
+                          (timeout 15)
+                          (connect-timeout 5)
+                          (agent "cicili-oracle-prices/1.0")
+                          (encoding "")))
+
+          (if (!= rc CURLE_OK)
+              (block
+                (printf "  %-10s -- %s\n" (-> f name) (cu.strerror rc))
+                (cu.free-buffer body)
+                (return 0)))
+
+          (cu.info h (status code) (size n) (total-time secs)
+            (if (or (< code 200) (>= code 300))
+                (block
+                  (printf "  %-10s -- HTTP %ld\n" (-> f name) code)
+                  (cu.free-buffer body)
+                  (return 0)))
+            (set ok (json_after ($ body data) (-> f key) out))
+            (if (== ok 0)
+                (printf "  %-10s -- no \"%s\" in %lld bytes\n" (-> f name) (-> f key) (cast llong n))
+              (printf "  %-10s %14.2f   (%lld bytes, %.2fs)\n"
+                      (-> f name) (cof out) (cast llong n) secs)))
+
+          (cu.free-buffer body)
+          (return ok)))
+
+  ;;; ------------------------------------------------------------------
+  ;;; agreeing on a number
+  ;;; ------------------------------------------------------------------
+
+  ;;; Insertion sort. Four elements, so the algorithm is beside the point and
+  ;;; the shortest correct one wins.
+  (func sort_doubles ((double * a) (int n))
+        (let ((int i . 1) (int j . 0) (double key . 0.0))
+          (while (< i n)
+            (set key (nth i a))
+            (set j (- i 1))
+            (while (and (>= j 0) (> (nth j a) key))
+              (set (nth (+ j 1) a) (nth j a))
+              (-- j))
+            (set (nth (+ j 1) a) key)
+            (++ i))))
+
+  (func median ((double * a) (int n)) (out double)
+        (if (== n 0) (return 0.0))
+        (sort_doubles a n)
+        (if (== 0 (% n 2))
+            (return (/ (+ (nth (- (/ n 2) 1) a) (nth (/ n 2) a)) 2.0)))
+        (return (nth (/ n 2) a)))
+
+  ;;; ------------------------------------------------------------------
+
+  ;; main* is the argc/argv form; plain `main' takes none
+  (main*
+    (let ((const char * base . DEFAULT_BASE)
+          (double prices [8])
+          (int got . 0)
+          (int i . 0)
+          (feed feeds [4]))
+
+      ;; The four, in one place. Each path is complete including its query
+      ;; string, so an override of the host reaches all of them.
+      ;; A brace list is an INITIALISER in C, not an expression, so assigning
+      ;; one after the fact needs the compound-literal cast -- the same
+      ;; (cast (const int []) '{ … }) shape test/std/array.cicili uses.
+      (set (nth 0 feeds) (cast feed '{ "coinbase"  "/v2/prices/BTC-USD/spot"             "amount" }))
+      (set (nth 1 feeds) (cast feed '{ "kraken"    "/0/public/Ticker?pair=XBTUSD"        "c"      }))
+      (set (nth 2 feeds) (cast feed '{ "binance"   "/api/v3/ticker/price?symbol=BTCUSDT" "price"  }))
+      (set (nth 3 feeds) (cast feed '{ "coingecko" "/api/v3/simple/price?ids=bitcoin&vs_currencies=usd" "usd" }))
+
+      ;; With no argument each feed keeps its own host; with one, they all move
+      ;; to it. The default is a placeholder that only Coinbase's path fits,
+      ;; which is why the real hosts are per-feed below.
+      (if (> argc 1) (set base (nth 1 argv)))
+
+      (curl_global_init CURL_GLOBAL_DEFAULT)
+
+      (printf "BTC/USD from %d oracles%s\n\n" 4
+              (? (> argc 1) " (overridden)" ""))
+
+      ;; ONE HANDLE FOR ALL FOUR. curl_easy_reset between requests keeps the
+      ;; connection cache and the TLS session, so a second request to a host
+      ;; already spoken to skips the handshake entirely. A fresh handle per
+      ;; request would throw that away, and is the most common way a program
+      ;; like this ends up slower than it needs to be.
+      (cu.with h
+        (set i 0)
+        (while (< i 4)
+          (let ((char host [256])
+                (double price . 0.0))
+            ;; each feed's own host, unless the command line replaced it
+            (if (> argc 1)
+                (snprintf host (sizeof host) "%s" base)
+              (block
+                (if (== i 0) (snprintf host (sizeof host) "https://api.coinbase.com"))
+                (if (== i 1) (snprintf host (sizeof host) "https://api.kraken.com"))
+                (if (== i 2) (snprintf host (sizeof host) "https://api.binance.com"))
+                (if (== i 3) (snprintf host (sizeof host) "https://api.coingecko.com"))))
+
+            (if (== 1 (ask h host (aof (nth i feeds)) (aof price)))
+                (block (set (nth got prices) price) (++ got)))
+            (cu.reset h))
+          (++ i)))
+
+      (curl_global_cleanup)
+
+      (printf "\n")
+      (if (== got 0)
+          (block (printf "no oracle answered\n") (return 1)))
+
+      (let ((double mid . #'(median prices got))
+            (double lo . #'(nth 0 prices))
+            (double hi . #'(nth (- got 1) prices)))
+        ;; median is sorted in place, so lo and hi are the ends of the range
+        (printf "median of %d: %.2f    spread %.2f (%.3f%%)\n"
+                got mid (- hi lo)
+                (? (> mid 0.0) (* 100.0 (/ (- hi lo) mid)) 0.0)))
+
+      (return 0))))

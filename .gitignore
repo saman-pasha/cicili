@@ -185,6 +185,7 @@ test/std/deferral.txt
 example/*.c
 example/*.cpp
 example/*.o
+example/oracle_prices
 example/*.lo
 example/.libs/
 example/data/

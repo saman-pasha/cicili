@@ -1,0 +1,519 @@
+;;;; Cicili declarations for <curl/curl.h>, and a front end over them
+;;;; Import in target: (import "lib/net/curl.cicili" :cu)
+;;;; Requires in target: (include <curl/curl.h>) and -lcurl on the link line.
+;;;;
+;;;; THE PREFIX IS YOURS, NOT THIS FILE'S. Nothing here is named cu-anything:
+;;;; the macros are `with', `set', `get', `post', `perform', `info', `headers'
+;;;; and `escape', and import's second argument decides what they are called at
+;;;; the call site.
+;;;;
+;;;;     (import "lib/net/curl.cicili" :cu)     ->  (cu.get h body url)
+;;;;     (import "lib/net/curl.cicili" :http)   ->  (http.get h body url)
+;;;;
+;;;; USE ONE. Imported with no prefix these register as `set', `get' and `with'
+;;;; for every Cicili file in the process -- and `set' is a Cicili CLAUSE. That
+;;;; is the developer's call to make, which is the point, but here it is a
+;;;; certainty rather than a risk.
+;;;;
+;;;; THE DECLARATIONS EMIT NOTHING. They exist so Cicili's type inference knows
+;;;; what a CURL and a curl_slist are and what each entry point returns; the
+;;;; real declarations still come from the real header. Constants are declared
+;;;; the way lib/std/c declares EOF and SEEK_SET -- as (typedef int NAME) --
+;;;; because that is what a #define or an enum member is to Cicili: a name of
+;;;; that type which the header provides.
+;;;;
+;;;; (cu.impl-buffer) is the exception and says so in its own name: it is the
+;;;; one part of this file that is code rather than a description of somebody
+;;;; else's, and it has to be emitted into a target.
+;;;;
+;;;; ------------------------------------------------------------------
+;;;; WHAT THE FRONT END IS FOR
+;;;; ------------------------------------------------------------------
+;;;;
+;;;; Two things, and both are things every libcurl program writes again.
+;;;;
+;;;; ONE: curl_easy_setopt IS VARIADIC AND UNTYPED. Its third argument is read
+;;;; as whatever the option's declared type is, and nothing checks that against
+;;;; what was passed. The classic is
+;;;;
+;;;;     curl_easy_setopt(h, CURLOPT_TIMEOUT, 10);
+;;;;
+;;;; which is wrong: CURLOPT_TIMEOUT is read as a long, `10' is an int, and a
+;;;; variadic argument is not converted. It happens to work where int and long
+;;;; are the same width and is undefined where they are not. The same mistake
+;;;; with a pointer option is a crash rather than a portability note. So every
+;;;; option here is a WORD THAT KNOWS ITS OWN TYPE:
+;;;;
+;;;;     (cu.set h (url "https://example.org")   ; const char *
+;;;;               (timeout 10)                  ; cast to long, for you
+;;;;               (follow 1))                   ; cast to long, for you
+;;;;
+;;;; A misspelled option is a transpile-time error naming the words that exist,
+;;;; where curl_easy_setopt with a wrong constant is CURLE_UNKNOWN_OPTION at
+;;;; best and silence at worst.
+;;;;
+;;;; TWO: THERE IS NO WAY TO ASK FOR THE RESPONSE BODY. libcurl writes it
+;;;; through a callback, so getting bytes out of a GET means a growable buffer,
+;;;; a realloc loop and a callback with libcurl's exact signature -- twenty
+;;;; lines before the interesting one. (cu.impl-buffer) emits that once:
+;;;;
+;;;;     (cu.impl-buffer)                       ; once, at target top level
+;;;;
+;;;;     (main
+;;;;       (curl_global_init CURL_GLOBAL_DEFAULT)
+;;;;       (cu.with h
+;;;;         (let ((cu_buf body . '{ nil 0 }))
+;;;;           (if (== (cu.get h body "https://example.org" (timeout 10)) CURLE_OK)
+;;;;               (cu.info h (status code)
+;;;;                 (printf "%ld %zu bytes\n" code ($ body len))))
+;;;;           (cu.free-buffer body)))
+;;;;       (curl_global_cleanup))
+;;;;
+;;;; WHAT IS NOT HERE: the multi and share interfaces. They are a different
+;;;; shape -- a poll loop and a lock callback -- and a front end for one nobody
+;;;; has written a program against would be guesswork. A target that needs
+;;;; curl_multi_* declares it the same way this file does.
+;;;;
+;;;; ERRORS ARE NOT HIDDEN. Every macro answers what its C call answers, so a
+;;;; caller checks a CURLcode or ignores one exactly as it would in C. cu.set
+;;;; answers the FIRST option that failed -- see below for why it stops.
+
+;;; A package of its own, so the helpers below are not added to CL-USER and an
+;;; unprefixed import has a namespace to enter. No :shadow is needed: a macro
+;;; file is read with the case PRESERVED, so `set' and `get' here are not
+;;; Common Lisp's SET and GET.
+(DEFPACKAGE :curl
+  (:USE :COMMON-LISP)
+  (:IMPORT-FROM :COMMON-LISP-USER "import" "generic" "cicili"))
+
+(IN-PACKAGE :curl)
+
+
+(DEFMACRO init-macro ()
+  `($$$
+     ;;; ---- types ----
+     ;;; CURL is `typedef void CURL' in curl.h, not a struct: declaring it as
+     ;;; one is a conflicting type the moment the real header is included.
+     (typedef void CURL)
+     ;;; A `struct curl_slist' with no typedef over it, so every use of the
+     ;;; name needs the keyword -- (struct curl_slist) -- the way lib/std/c
+     ;;; writes (struct timespec). sqlite3_stmt does not, because sqlite3.h
+     ;;; typedefs it; that is the header's choice, not a Cicili convention.
+     (decl) (struct curl_slist)
+     ;;; 64-bit on every platform libcurl builds on; the _T infos write one
+     (typedef llong curl_off_t)
+
+     ;;; ---- result codes ----
+     ;;; The ones a caller branches on. The rest reach a reader through
+     ;;; curl_easy_strerror, which turns any of them into a sentence.
+     (typedef int CURLE_OK)
+     (typedef int CURLE_UNSUPPORTED_PROTOCOL)
+     (typedef int CURLE_URL_MALFORMAT)
+     (typedef int CURLE_COULDNT_RESOLVE_HOST)
+     (typedef int CURLE_COULDNT_CONNECT)
+     (typedef int CURLE_OPERATION_TIMEDOUT)
+     (typedef int CURLE_HTTP_RETURNED_ERROR)
+     (typedef int CURLE_WRITE_ERROR)
+     (typedef int CURLE_OUT_OF_MEMORY)
+     (typedef int CURLE_UNKNOWN_OPTION)
+     (typedef int CURLE_PEER_FAILED_VERIFICATION)
+     (typedef int CURLE_SSL_CONNECT_ERROR)
+
+     ;;; ---- global init flags ----
+     (typedef long CURL_GLOBAL_DEFAULT)
+     (typedef long CURL_GLOBAL_ALL)
+     (typedef long CURL_GLOBAL_SSL)
+     (typedef long CURL_GLOBAL_NOTHING)
+
+     ;;; ---- options ----
+     ;;; Declared so a caller can reach curl_easy_setopt directly for anything
+     ;;; the front end does not name. Adding one here does NOT add it to
+     ;;; (cu.set …): that list is `cu-setopt-form' below, and it is the list
+     ;;; that carries the type each option is read as.
+     (typedef int CURLOPT_URL)
+     (typedef int CURLOPT_WRITEFUNCTION)
+     (typedef int CURLOPT_WRITEDATA)
+     (typedef int CURLOPT_HEADERFUNCTION)
+     (typedef int CURLOPT_HEADERDATA)
+     (typedef int CURLOPT_FOLLOWLOCATION)
+     (typedef int CURLOPT_MAXREDIRS)
+     (typedef int CURLOPT_TIMEOUT)
+     (typedef int CURLOPT_TIMEOUT_MS)
+     (typedef int CURLOPT_CONNECTTIMEOUT)
+     (typedef int CURLOPT_CONNECTTIMEOUT_MS)
+     (typedef int CURLOPT_USERAGENT)
+     (typedef int CURLOPT_HTTPHEADER)
+     (typedef int CURLOPT_POSTFIELDS)
+     (typedef int CURLOPT_POSTFIELDSIZE)
+     (typedef int CURLOPT_CUSTOMREQUEST)
+     (typedef int CURLOPT_NOBODY)
+     (typedef int CURLOPT_UPLOAD)
+     (typedef int CURLOPT_VERBOSE)
+     (typedef int CURLOPT_NOPROGRESS)
+     (typedef int CURLOPT_FAILONERROR)
+     (typedef int CURLOPT_SSL_VERIFYPEER)
+     (typedef int CURLOPT_SSL_VERIFYHOST)
+     (typedef int CURLOPT_CAINFO)
+     (typedef int CURLOPT_CAPATH)
+     (typedef int CURLOPT_ACCEPT_ENCODING)
+     (typedef int CURLOPT_REFERER)
+     (typedef int CURLOPT_COOKIE)
+     (typedef int CURLOPT_COOKIEFILE)
+     (typedef int CURLOPT_COOKIEJAR)
+     (typedef int CURLOPT_PROXY)
+     (typedef int CURLOPT_USERPWD)
+     (typedef int CURLOPT_RANGE)
+     (typedef int CURLOPT_HTTPGET)
+     (typedef int CURLOPT_POST)
+
+     ;;; ---- infos ----
+     (typedef int CURLINFO_RESPONSE_CODE)
+     (typedef int CURLINFO_EFFECTIVE_URL)
+     (typedef int CURLINFO_CONTENT_TYPE)
+     (typedef int CURLINFO_TOTAL_TIME)
+     (typedef int CURLINFO_NAMELOOKUP_TIME)
+     (typedef int CURLINFO_CONNECT_TIME)
+     (typedef int CURLINFO_REDIRECT_COUNT)
+     (typedef int CURLINFO_REDIRECT_URL)
+     (typedef int CURLINFO_SIZE_DOWNLOAD_T)
+     (typedef int CURLINFO_SIZE_UPLOAD_T)
+     (typedef int CURLINFO_SPEED_DOWNLOAD_T)
+     (typedef int CURLINFO_HTTP_VERSION)
+
+     ;;; ---- global, once per process ----
+     ;;; curl_global_init is not thread safe and must run before any handle is
+     ;;; created; curl_global_cleanup after the last one is gone.
+     (decl) (func curl_global_init    ((long flags)) (out int))
+     (decl) (func curl_global_cleanup ())
+
+     ;;; ---- the easy handle ----
+     (decl) (func curl_easy_init      () (out CURL *))
+     (decl) (func curl_easy_cleanup   ((CURL * handle)))
+     ;;; reset returns a handle to its just-init state but KEEPS the connection
+     ;;; cache, which is the whole reason to reuse one
+     (decl) (func curl_easy_reset     ((CURL * handle)))
+     (decl) (func curl_easy_duphandle ((CURL * handle)) (out CURL *))
+     (decl) (func curl_easy_perform   ((CURL * handle)) (out int))
+     (decl) (func curl_easy_strerror  ((int code)) (out const char *))
+
+     ;;; VARIADIC, AND THAT IS THE HAZARD the front end exists for -- see the
+     ;;; head of this file. Declared because a caller needs it for an option
+     ;;; (cu.set …) does not name, and because (cu.set …) expands to it.
+     (decl) (func curl_easy_setopt    ((CURL * handle) (int option) ($$$)) (out int))
+     (decl) (func curl_easy_getinfo   ((CURL * handle) (int info) ($$$)) (out int))
+
+     ;;; ---- header lists ----
+     ;;; append answers a NEW head, and answers null on failure -- which is why
+     ;;; `list = curl_slist_append(list, …)' loses the whole list the one time
+     ;;; it matters. (cu.headers …) keeps the old head until the new one lands.
+     (decl) (func curl_slist_append   (((struct curl_slist) * list) (const char * s))
+                                      (out (struct curl_slist) *))
+     (decl) (func curl_slist_free_all (((struct curl_slist) * list)))
+
+     ;;; ---- escaping, and curl's own allocator ----
+     ;;; escape answers memory curl owns: free it with curl_free, not free().
+     (decl) (func curl_easy_escape    ((CURL * handle) (const char * s) (int length))
+                                      (out char *))
+     (decl) (func curl_easy_unescape  ((CURL * handle) (const char * s) (int length)
+                                       (int * outlength)) (out char *))
+     (decl) (func curl_free           ((void * p)))
+     (decl) (func curl_version        () (out char *))
+     ))
+
+
+;;; ------------------------------------------------------------------
+;;; the response buffer
+;;; ------------------------------------------------------------------
+
+;;; (cu.impl-buffer) -- ONCE, at target top level, before any (cu.get …).
+;;;
+;;; It emits a growable byte buffer, libcurl's write callback over one, and a
+;;; free. THE NAME SAYS WHAT IS DIFFERENT ABOUT IT: everything else in this file
+;;; describes libcurl, and an imported init-macro declares without emitting --
+;;; that is what lets these files describe a library without defining it. This
+;;; is real code and has to land in a target, so it is an `impl-' like the ones
+;;; in lib/std rather than part of the declarations.
+;;;
+;;; WHY NOT lib/std/string: a write callback is called from libcurl with a raw
+;;; (char *, size_t) and must be a plain C function pointer. Going through a
+;;; Cicili container would put its representation in libcurl's ABI. Copy
+;;; ($ b data) into whatever you actually want once the transfer is done.
+(DEFMACRO impl-buffer ()
+  `($$$
+     (struct cu_buf
+             (member char * data)
+             (member size_t len))
+
+     ;;; libcurl's write callback, exactly: handed SIZE * NMEMB bytes, answers
+     ;;; how many it took. ANSWERING ANYTHING ELSE ABORTS THE TRANSFER with
+     ;;; CURLE_WRITE_ERROR -- which is the documented way to stop one early, and
+     ;;; is what this does when the realloc fails rather than writing through a
+     ;;; null pointer.
+     (func cu_write ((char * chunk) (size_t size) (size_t nmemb) (void * user)) (out size_t)
+           (let ((size_t add . #'(* size nmemb))
+                 (cu_buf * b . #'(cast (cu_buf *) user))
+                 (char * grown . nil))
+             (set grown (cast (char *) (realloc (-> b data) (+ (-> b len) add 1))))
+             (if (== grown nil) (return 0))
+             (set (-> b data) grown)
+             (memcpy (+ (-> b data) (-> b len)) chunk add)
+             (+= (-> b len) add)
+             ;; the NUL is not counted in len, so the bytes stay exact for a
+             ;; binary body and (-> b data) is still a C string for a textual one
+             (set (nth (-> b len) (-> b data)) #\Nul)
+             (return add)))
+
+     ;;; Zeroed rather than merely freed, so a second free is a no-op and a
+     ;;; buffer can be reused for a second request without a fresh declaration.
+     (func cu_buf_free ((cu_buf * b))
+           (if (!= (-> b data) nil) (free (-> b data)))
+           (set (-> b data) nil)
+           (set (-> b len) 0))))
+
+
+;;; ------------------------------------------------------------------
+;;; the front end
+;;; ------------------------------------------------------------------
+
+;;; ---- options ----
+;;;
+;;; (cu.set h (url "…") (timeout 10)) -- each one is a form the set, get and
+;;; post macros turn into a curl_easy_setopt call with the cast libcurl reads.
+;;;
+;;; THEY ARE NOT MACROS, and deliberately. Registered as macros they would be
+;;; `url', `timeout' and `follow' for every Cicili file in the process -- and
+;;; (range x) is a plausible call. They are words the macros below recognise
+;;; inside their own argument list, so they exist nowhere else and can collide
+;;; with nothing. lib/db/sqlite.cicili does the same with its bound values.
+
+(DEFPARAMETER +options+
+  "url follow max-redirs timeout timeout-ms connect-timeout agent headers
+   post-fields post-size method head verbose fail-on-error verify-peer
+   verify-host ca-info encoding referer cookie cookie-file cookie-jar proxy
+   user-pwd range body")
+
+;;; one setopt call for one option form, on handle H
+(DEFUN cu-setopt-form (h form)
+  (UNLESS (AND (CONSP form) (SYMBOLP (CAR form)) (= (LENGTH form) 2))
+    (ERROR "not a curl option: ~S -- write (url \"…\"), (timeout 10), …~%  one of: ~A"
+           form +options+))
+  (LET ((k (SYMBOL-NAME (CAR form))) (v (SECOND form)))
+    (COND
+      ;; A STRING OPTION IS NOT COPIED. libcurl keeps the pointer and reads it
+      ;; when the transfer runs, so the bytes must outlive the perform: a
+      ;; literal always does, a buffer in a shorter scope does not.
+      ((STRING= k "url")             `(curl_easy_setopt ,h CURLOPT_URL             (cast (const char *) ,v)))
+      ((STRING= k "agent")           `(curl_easy_setopt ,h CURLOPT_USERAGENT       (cast (const char *) ,v)))
+      ((STRING= k "post-fields")     `(curl_easy_setopt ,h CURLOPT_POSTFIELDS      (cast (const char *) ,v)))
+      ((STRING= k "method")          `(curl_easy_setopt ,h CURLOPT_CUSTOMREQUEST   (cast (const char *) ,v)))
+      ((STRING= k "ca-info")         `(curl_easy_setopt ,h CURLOPT_CAINFO          (cast (const char *) ,v)))
+      ((STRING= k "encoding")        `(curl_easy_setopt ,h CURLOPT_ACCEPT_ENCODING (cast (const char *) ,v)))
+      ((STRING= k "referer")         `(curl_easy_setopt ,h CURLOPT_REFERER         (cast (const char *) ,v)))
+      ((STRING= k "cookie")          `(curl_easy_setopt ,h CURLOPT_COOKIE          (cast (const char *) ,v)))
+      ((STRING= k "cookie-file")     `(curl_easy_setopt ,h CURLOPT_COOKIEFILE      (cast (const char *) ,v)))
+      ((STRING= k "cookie-jar")      `(curl_easy_setopt ,h CURLOPT_COOKIEJAR       (cast (const char *) ,v)))
+      ((STRING= k "proxy")           `(curl_easy_setopt ,h CURLOPT_PROXY           (cast (const char *) ,v)))
+      ((STRING= k "user-pwd")        `(curl_easy_setopt ,h CURLOPT_USERPWD         (cast (const char *) ,v)))
+      ((STRING= k "range")           `(curl_easy_setopt ,h CURLOPT_RANGE           (cast (const char *) ,v)))
+
+      ;; the cast this whole file exists for
+      ((STRING= k "follow")          `(curl_easy_setopt ,h CURLOPT_FOLLOWLOCATION  (cast long ,v)))
+      ((STRING= k "max-redirs")      `(curl_easy_setopt ,h CURLOPT_MAXREDIRS       (cast long ,v)))
+      ((STRING= k "timeout")         `(curl_easy_setopt ,h CURLOPT_TIMEOUT         (cast long ,v)))
+      ((STRING= k "timeout-ms")      `(curl_easy_setopt ,h CURLOPT_TIMEOUT_MS      (cast long ,v)))
+      ((STRING= k "connect-timeout") `(curl_easy_setopt ,h CURLOPT_CONNECTTIMEOUT  (cast long ,v)))
+      ((STRING= k "post-size")       `(curl_easy_setopt ,h CURLOPT_POSTFIELDSIZE   (cast long ,v)))
+      ((STRING= k "head")            `(curl_easy_setopt ,h CURLOPT_NOBODY          (cast long ,v)))
+      ((STRING= k "verbose")         `(curl_easy_setopt ,h CURLOPT_VERBOSE         (cast long ,v)))
+      ((STRING= k "fail-on-error")   `(curl_easy_setopt ,h CURLOPT_FAILONERROR     (cast long ,v)))
+      ((STRING= k "verify-peer")     `(curl_easy_setopt ,h CURLOPT_SSL_VERIFYPEER  (cast long ,v)))
+      ((STRING= k "verify-host")     `(curl_easy_setopt ,h CURLOPT_SSL_VERIFYHOST  (cast long ,v)))
+
+      ;; a list built by (cu.headers …), passed as it is
+      ((STRING= k "headers")         `(curl_easy_setopt ,h CURLOPT_HTTPHEADER ,v))
+
+      ;; The odd one: asking for the response body is not one option but two,
+      ;; because it means naming both the callback and its argument. SETTING
+      ;; ONLY THE CALLBACK SEGFAULTS -- libcurl then hands it the default write
+      ;; data, which is a FILE *, and the callback casts it to a cu_buf * and
+      ;; writes through it. Keeping the pair together is most of the reason
+      ;; this word exists.
+      ((STRING= k "body")
+       `(progn
+          (curl_easy_setopt ,h CURLOPT_WRITEFUNCTION cu_write)
+          (curl_easy_setopt ,h CURLOPT_WRITEDATA (aof ,v))))
+
+      (T (ERROR "no such curl option: ~A~%  one of: ~A" k +options+)))))
+
+;;; The body of (cu.set …). get and post need the same thing and cannot call
+;;; the macro: it is registered under the CALLER's import prefix, which this
+;;; file does not know.
+;;;
+;;; ANSWERS THE FIRST OPTION THAT FAILED, or CURLE_OK. It stops at the first
+;;; rather than pressing on because the options after it were very likely
+;;; chosen on the assumption that the earlier one took -- a request that goes
+;;; out with the URL set and the timeout rejected is worse than one that does
+;;; not go out.
+(DEFUN cu-set-form (h options)
+  (LET ((rc (GENSYM "cu_rc_")))
+    `(progn
+       (letn ((int ,rc . 0))
+         ,@(LOOP FOR o IN options
+                 COLLECT `(if (== ,rc CURLE_OK) (set ,rc ,(cu-setopt-form h o))))
+         ,rc))))
+
+;;; (cu.set h (url "https://…") (timeout 10) (follow 1))
+(DEFMACRO set (h &REST options) (cu-set-form h options))
+
+;;; (cu.with h BODY…) -- an easy handle, cleaned up on every path out.
+;;;
+;;; The handle is null if init failed and BODY runs anyway: every entry point
+;;; below tolerates a null handle the way libcurl does, so a caller that checks
+;;; its first CURLcode finds out there. Cleaning up unconditionally is the whole
+;;; reason this is a macro -- curl_easy_cleanup(NULL) is defined and does
+;;; nothing, so no path out of the body leaks a handle.
+(DEFMACRO with (h &REST body)
+  `(progn
+     (letn ((CURL * ,h . #'(curl_easy_init)))
+       ,@body
+       (curl_easy_cleanup ,h))))
+
+(DEFMACRO perform (h) `(curl_easy_perform ,h))
+(DEFMACRO reset (h) `(curl_easy_reset ,h))
+(DEFMACRO strerror (rc) `(curl_easy_strerror ,rc))
+(DEFMACRO version () `(curl_version))
+
+;;; (cu.get h body "https://…" (timeout 10) …)
+;;;
+;;; The three lines every GET is: point the handle at a URL, say where the body
+;;; goes, run it. BODY is a cu_buf the caller declared -- it is APPENDED to, not
+;;; replaced, so a caller wanting one request per buffer frees it between them.
+;;;
+;;; Answers an option failure if one was rejected, otherwise what perform said.
+(DEFMACRO get (h buf url &REST options)
+  (LET ((rc (GENSYM "cu_rc_")))
+    `(progn
+       (letn ((int ,rc . 0))
+         (set ,rc ,(cu-set-form h (LIST* (LIST (INTERN "url") url)
+                                         (LIST (INTERN "body") buf)
+                                         options)))
+         (if (== ,rc CURLE_OK) (set ,rc (curl_easy_perform ,h)))
+         ,rc))))
+
+;;; (cu.post h body "https://…" "a=1&b=2" (timeout 10) …)
+;;;
+;;; FIELDS IS NOT COPIED, which is libcurl's rule for CURLOPT_POSTFIELDS rather
+;;; than this macro's: the bytes are read when the transfer runs, so they have
+;;; to still be there. A literal is fine; a buffer in a scope that ends before
+;;; the perform is not, and is the one way to misuse this.
+(DEFMACRO post (h buf url fields &REST options)
+  (LET ((rc (GENSYM "cu_rc_")))
+    `(progn
+       (letn ((int ,rc . 0))
+         (set ,rc ,(cu-set-form h (LIST* (LIST (INTERN "url") url)
+                                         (LIST (INTERN "body") buf)
+                                         (LIST (INTERN "post-fields") fields)
+                                         options)))
+         (if (== ,rc CURLE_OK) (set ,rc (curl_easy_perform ,h)))
+         ,rc))))
+
+;;; ---- reading what happened ----
+;;;
+;;; curl_easy_getinfo has curl_easy_setopt's problem in the other direction: it
+;;; writes THROUGH the pointer it is handed, as whatever the info's type is, so
+;;; the address of an int where it writes a long corrupts the stack. Each word
+;;; below declares the right variable, so the type appears once, here.
+
+(DEFPARAMETER +infos+
+  "status redirect-count http-version total-time connect-time lookup-time
+   size uploaded speed url content-type redirect-url")
+
+;;; One binding of the info clause: the variable, its type, and the zero it
+;;; starts at. THE ZERO MATTERS -- a getinfo that fails leaves the variable
+;;; alone, and an uninitialised long would then be read as a status code.
+(DEFUN cu-info-binding (name form)
+  (LET ((k (SYMBOL-NAME (CAR form))))
+    (COND ((STRING= k "status")         `(long ,name . 0))
+          ((STRING= k "redirect-count") `(long ,name . 0))
+          ((STRING= k "http-version")   `(long ,name . 0))
+          ((STRING= k "total-time")     `(double ,name . 0.0))
+          ((STRING= k "connect-time")   `(double ,name . 0.0))
+          ((STRING= k "lookup-time")    `(double ,name . 0.0))
+          ((STRING= k "size")           `(curl_off_t ,name . 0))
+          ((STRING= k "uploaded")       `(curl_off_t ,name . 0))
+          ((STRING= k "speed")          `(curl_off_t ,name . 0))
+          ;; A STRING INFO IS BORROWED: it points into the handle and is valid
+          ;; until the next perform or cleanup, so copy it to outlive either.
+          ((STRING= k "url")            `(char * ,name . #'(cast (char *) nil)))
+          ((STRING= k "content-type")   `(char * ,name . #'(cast (char *) nil)))
+          ((STRING= k "redirect-url")   `(char * ,name . #'(cast (char *) nil)))
+          (T (ERROR "no such curl info: ~A~%  one of: ~A" k +infos+)))))
+
+;;; the getinfo call that fills it
+(DEFUN cu-getinfo-form (h name form)
+  (LET ((k (SYMBOL-NAME (CAR form))))
+    (COND ((STRING= k "status")         `(curl_easy_getinfo ,h CURLINFO_RESPONSE_CODE (aof ,name)))
+          ((STRING= k "redirect-count") `(curl_easy_getinfo ,h CURLINFO_REDIRECT_COUNT (aof ,name)))
+          ((STRING= k "http-version")   `(curl_easy_getinfo ,h CURLINFO_HTTP_VERSION (aof ,name)))
+          ((STRING= k "total-time")     `(curl_easy_getinfo ,h CURLINFO_TOTAL_TIME (aof ,name)))
+          ((STRING= k "connect-time")   `(curl_easy_getinfo ,h CURLINFO_CONNECT_TIME (aof ,name)))
+          ((STRING= k "lookup-time")    `(curl_easy_getinfo ,h CURLINFO_NAMELOOKUP_TIME (aof ,name)))
+          ((STRING= k "size")           `(curl_easy_getinfo ,h CURLINFO_SIZE_DOWNLOAD_T (aof ,name)))
+          ((STRING= k "uploaded")       `(curl_easy_getinfo ,h CURLINFO_SIZE_UPLOAD_T (aof ,name)))
+          ((STRING= k "speed")          `(curl_easy_getinfo ,h CURLINFO_SPEED_DOWNLOAD_T (aof ,name)))
+          ((STRING= k "url")            `(curl_easy_getinfo ,h CURLINFO_EFFECTIVE_URL (aof ,name)))
+          ((STRING= k "content-type")   `(curl_easy_getinfo ,h CURLINFO_CONTENT_TYPE (aof ,name)))
+          ((STRING= k "redirect-url")   `(curl_easy_getinfo ,h CURLINFO_REDIRECT_URL (aof ,name)))
+          (T (ERROR "no such curl info: ~A~%  one of: ~A" k +infos+)))))
+
+;;; (cu.info h (status code) (size n)
+;;;   (printf "%ld %lld\n" code n))
+;;;
+;;; The clauses name what to ask for and what to call it; everything after them
+;;; is the body, and reads in names rather than in CURLINFO_ constants.
+(DEFMACRO info (h &REST rest)
+  (LET* ((clauses (LOOP FOR f IN rest
+                        WHILE (AND (CONSP f) (SYMBOLP (CAR f)) (= (LENGTH f) 2)
+                                   (SYMBOLP (SECOND f))
+                                   (SEARCH (SYMBOL-NAME (CAR f)) +infos+))
+                        COLLECT f))
+         (body (NTHCDR (LENGTH clauses) rest)))
+    (WHEN (NULL clauses)
+      (ERROR "info wants at least one (name var) clause~%  one of: ~A" +infos+))
+    `(let ,(LOOP FOR c IN clauses COLLECT (cu-info-binding (SECOND c) c))
+       ,@(LOOP FOR c IN clauses COLLECT (cu-getinfo-form h (SECOND c) c))
+       ,@body)))
+
+;;; ---- header lists ----
+;;;
+;;; (cu.headers hs "Accept: application/json" "X-Key: abc")
+;;;
+;;; HS is a `(struct curl_slist) *' the caller declared and frees. curl_slist_append
+;;; answers a new head and answers null on failure, so the naive
+;;;
+;;;     hs = curl_slist_append(hs, "…");
+;;;
+;;; loses the whole list the one time it matters. This keeps the old head until
+;;; the new one arrives, so a caller that frees HS frees everything either way.
+(DEFMACRO headers (hs &REST lines)
+  (LET ((next (GENSYM "cu_hs_")))
+    `(progn
+       (letn (((struct curl_slist) * ,next . nil))
+         ,@(LOOP FOR l IN lines
+                 APPEND `((set ,next (curl_slist_append ,hs ,l))
+                          (if (!= ,next nil) (set ,hs ,next))))
+         ,hs))))
+
+(DEFMACRO free-headers (hs) `(progn (curl_slist_free_all ,hs) (set ,hs nil)))
+
+;;; ---- escaping ----
+;;;
+;;; ANSWERS CURL'S MEMORY. Free it with (cu.free …), which is curl_free -- not
+;;; free(), which is a different allocator on Windows and a coincidence
+;;; everywhere else.
+(DEFMACRO escape (h s) `(curl_easy_escape ,h ,s 0))
+(DEFMACRO unescape (h s) `(curl_easy_unescape ,h ,s 0 nil))
+(DEFMACRO free (p) `(curl_free ,p))
+
+;;; the response buffer, for symmetry with the rest of the front end
+(DEFMACRO free-buffer (b) `(cu_buf_free (aof ,b)))

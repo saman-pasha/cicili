@@ -1,0 +1,219 @@
+;;;; lib/net/curl.cicili, against the real libcurl
+;;;;
+;;;; NO STUB HERE, and that is the difference from test/c/python.cicili and
+;;;; test/cpp/torch.cicili. Those two stand in for a library that is a hundred
+;;;; megabytes and an interpreter; libcurl is one .so that every distribution
+;;;; already ships, so a test against the real thing costs nothing and proves
+;;;; what a stub cannot -- that the declared signatures are the library's.
+;;;;
+;;;; NOTHING HERE TOUCHES THE NETWORK. Every transfer is a file:// URL over a
+;;;; file this test wrote itself, which libcurl fetches through exactly the
+;;;; same easy-handle machinery as an https:// one: setopt, perform, the write
+;;;; callback, getinfo. A test that reached a real host would be measuring
+;;;; somebody else's uptime and would fail behind a proxy, and the parts of
+;;;; this binding that are ours are the same either way.
+;;;;
+;;;; Run:  sh test/run.sh test/c/curl
+
+(source "curl.c"
+  (make :std #t :compile #t :link ("-lcurl.o" "-lcurl" "-o" "curl_test"))
+
+  (include <curl/curl.h>)
+  (import "lib/net/curl.cicili" :cu)
+
+  ;; the response buffer and its write callback, emitted once
+  (cu.impl-buffer)
+
+  (var int bad . 0)
+  (var const char * PAYLOAD . "hello from a file url\n")
+  (var const char * PATH . "/tmp/cicili-curl-test.txt")
+  (var const char * URL  . "file:///tmp/cicili-curl-test.txt")
+
+  (func check ((const char * what) (llong got) (llong want))
+        (if (== got want)
+            (printf "ok   %-44s %lld\n" what got)
+          (block (printf "FAIL %-44s got %lld want %lld\n" what got want)
+                 (++ bad))))
+
+  (func check_str ((const char * what) (const char * got) (const char * want))
+        (if (and (!= got nil) (== 0 (strcmp got want)))
+            (printf "ok   %-44s %s\n" what what)
+          (block (printf "FAIL %-44s got '%s' want '%s'\n" what
+                         (? (== got nil) "(null)" got) want)
+                 (++ bad))))
+
+  ;; The file every transfer below reads. Written rather than assumed: a test
+  ;; that fetched /etc/hostname would pass or fail on what the container is
+  ;; called.
+  (func write_payload () (out int)
+        (let ((FILE * f . #'(fopen PATH "wb")))
+          (if (== f nil) (return 0))
+          (fputs PAYLOAD f)
+          (fclose f)
+          (return 1)))
+
+  ;; Does the generated C carry the cast? THIS IS THE ONE CHECK THAT DEFENDS
+  ;; THE FILE'S REASON TO EXIST -- everything else here would pass just as well
+  ;; against curl_easy_setopt called by hand, because on x86-64 int and long
+  ;; are the same width and the bug the option table prevents is invisible at
+  ;; runtime. It is not invisible in the source, so that is where it is
+  ;; checked: (timeout 10) must reach libcurl as (long)10 and not as 10.
+  ;;
+  ;; THE NEEDLE IS IN TWO HALVES, and that is not decoration. A check that
+  ;; searched curl.c for one string would find its own argument -- the literal
+  ;; is compiled into the same file it is reading -- and pass whatever the
+  ;; transpiler emitted. It did, and removing the cast from the option table
+  ;; left this green until the halves were split. Neither half is the needle,
+  ;; and the whole never appears in the source, so a match can only come from
+  ;; the emitted call.
+  ;;
+  ;; EVERY occurrence of HEAD is tried rather than the first, so the answer
+  ;; does not depend on the emitted call happening to come before the check.
+  (func generated_has ((const char * head) (const char * tail)) (out int)
+        (let ((FILE * f . #'(fopen "curl.c" "rb"))
+              (char * text . nil)
+              (char * at . nil)
+              (long size . 0)
+              (int found . 0))
+          ;; run.sh runs a target from its own directory; a plain `make' run
+          ;; from the tree root leaves the caller wherever it was
+          (if (== f nil) (set f (fopen "test/c/curl.c" "rb")))
+          (if (== f nil) (return -1))
+          (fseek f 0 SEEK_END)
+          (set size (ftell f))
+          (fseek f 0 SEEK_SET)
+          (set text (cast (char *) (malloc (+ size 1))))
+          (if (== text nil) (block (fclose f) (return -1)))
+          (set size (cast long (fread text 1 size f)))
+          (set (nth size text) #\Nul)
+          (fclose f)
+          (set at (strstr text head))
+          (while (!= at nil)
+            (if (== 0 (strncmp (+ at (strlen head)) tail (strlen tail)))
+                (block (set found 1) (break)))
+            (set at (strstr (+ at 1) head)))
+          (free text)
+          (return found)))
+
+  (main
+    ;; the declarations resolve against the real header: a version string is
+    ;; the cheapest call that proves the link line reached the library
+    (check "curl_version is not empty" (cast llong (> (strlen (cu.version)) 0)) 1)
+    (check "wrote the payload file" (cast llong (write_payload)) 1)
+    (check "global init" (cast llong (curl_global_init CURL_GLOBAL_DEFAULT)) 0)
+
+    ;; ---- one handle, cleaned up on the way out -------------------------
+    (cu.with h
+      (check "handle is not null" (cast llong (!= h nil)) 1)
+
+      ;; ---- a GET, with the body collected for us ------------------------
+      ;; The three lines every transfer is, and the buffer is the part nobody
+      ;; wants to write again.
+      (let ((cu_buf body . '{ nil 0 }))
+        (check "get a file:// url" (cast llong (cu.get h body URL (timeout 10))) 0)
+        (check "body length matches the file"
+               (cast llong ($ body len)) (cast llong (strlen PAYLOAD)))
+        (check_str "body bytes match the file" ($ body data) PAYLOAD)
+
+        ;; ---- what libcurl says about it ---------------------------------
+        ;; Each info declares the variable of the type libcurl writes, which is
+        ;; the half of the hazard that corrupts a stack rather than an option.
+        (cu.info h (size n) (url effective)
+          (check "size info matches the buffer"
+                 (cast llong n) (cast llong ($ body len)))
+          (check_str "effective url is the one asked for" effective URL))
+
+        ;; ---- the buffer is reusable -------------------------------------
+        ;; It APPENDS, so a second transfer into the same buffer without a free
+        ;; is twice the bytes -- which is worth pinning down, because it is the
+        ;; one thing about cu_buf a caller can get wrong.
+        (check "get again, appending" (cast llong (cu.get h body URL)) 0)
+        (check "appended, not replaced"
+               (cast llong ($ body len)) (cast llong (* 2 (strlen PAYLOAD))))
+        (cu.free-buffer body)
+        (check "free zeroes the buffer" (cast llong ($ body len)) 0)
+        (check "free drops the bytes" (cast llong (== ($ body data) nil)) 1)
+
+        ;; a freed buffer is a fresh one, with no fresh declaration
+        (check "reused after free" (cast llong (cu.get h body URL)) 0)
+        (check "and holds one copy again"
+               (cast llong ($ body len)) (cast llong (strlen PAYLOAD)))
+        (cu.free-buffer body)
+        ;; freeing twice is a no-op rather than a double free
+        (cu.free-buffer body)
+        (check "freeing twice is harmless" (cast llong ($ body len)) 0))
+
+      ;; ---- failures are answered, not hidden ----------------------------
+      (let ((cu_buf empty . '{ nil 0 }))
+        (check "a missing file is not CURLE_OK"
+               (cast llong (!= CURLE_OK (cu.get h empty "file:///no/such/cicili/file")))
+               1)
+        (cu.free-buffer empty)
+
+        ;; curl was not built with every protocol, and a made-up one is the
+        ;; reliable way to see a specific code come back
+        (check "an unknown scheme is UNSUPPORTED_PROTOCOL"
+               (cast llong (cu.get h empty "nosuchscheme://host/path"))
+               (cast llong CURLE_UNSUPPORTED_PROTOCOL))
+        (cu.free-buffer empty))
+
+      ;; ---- an option that does not exist is refused ---------------------
+      ;; cu.set answers the FIRST failure and stops. CURLOPT_HTTPHEADER with a
+      ;; garbage pointer would crash; an out-of-range option constant is the
+      ;; safe way to see the code come back.
+      (check "a rejected option answers its code"
+             (cast llong (!= CURLE_OK (curl_easy_setopt h 999999 (cast long 1))))
+             1)
+
+      ;; ---- reset, and the handle still works ---------------------------
+      (cu.reset h)
+      (let ((cu_buf after . '{ nil 0 }))
+        (check "still usable after reset" (cast llong (cu.get h after URL)) 0)
+        (cu.free-buffer after))
+
+      ;; ---- header lists -------------------------------------------------
+      ;; The list is built and freed here rather than sent: file:// has no
+      ;; headers to carry it. What is checked is the part that is ours -- that
+      ;; append's new head is kept, so nothing is lost and the free reaches it.
+      (let (((struct curl_slist) * hs . nil))
+        (cu.headers hs "Accept: application/json" "X-Cicili: 1")
+        (check "a header list was built" (cast llong (!= hs nil)) 1)
+        (check "setting it is accepted"
+               (cast llong (cu.set h (headers hs))) (cast llong CURLE_OK))
+        ;; the list has to outlive the transfer, so it is freed after, and
+        ;; free-headers nulls it so a second free is a no-op
+        (cu.free-headers hs)
+        (check "free-headers nulls the list" (cast llong (== hs nil)) 1))
+
+      ;; ---- escaping, and curl's own allocator ---------------------------
+      (let ((char * esc . #'(cu.escape h "a b&c"))
+            (char * back . nil))
+        (check_str "escape percent-encodes" esc "a%20b%26c")
+        (set back (cu.unescape h esc))
+        (check_str "unescape is its inverse" back "a b&c")
+        (cu.free esc)
+        (cu.free back))
+
+      ;; ---- codes carry a sentence ---------------------------------------
+      (check_str "strerror of OK" (cu.strerror CURLE_OK) "No error"))
+
+    ;; ---- the cast the option table exists for -------------------------
+    ;; Read out of the generated C, because on this machine int and long are
+    ;; the same width and a missing cast would run perfectly. See generated_has.
+    (check "(timeout 10) reaches libcurl as (long)10"
+           (cast llong (generated_has "CURLOPT_TIMEOUT , ((" "long)10)")) 1)
+    (check "(url …) reaches libcurl as (const char *)"
+           (cast llong (generated_has "CURLOPT_URL , ((" "const char *)")) 1)
+    ;; and the body option really is the two setopts it has to be
+    (check "(body b) sets the callback"
+           (cast llong (generated_has "CURLOPT_WRITEFUNCTION , " "cu_write")) 1)
+    (check "(body b) sets its argument"
+           (cast llong (generated_has "CURLOPT_WRITEDATA , (" "&body")) 1)
+
+    (curl_global_cleanup)
+    (remove PATH)
+
+    (if (== bad 0)
+        (printf "\ncurl: all ok\n")
+      (printf "\ncurl: %d FAILED\n" bad))
+    (return bad)))
