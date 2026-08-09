@@ -5,6 +5,18 @@
 ;;; The front ends are the part a caller actually writes, so they are what this
 ;;; checks: the counts come back through them, not through the table.
 ;;;
+;;; WHAT VALGRIND SAYS: no invalid access, and 24 blocks still held at exit --
+;;; all of them intermediates of `ap' over a List. Its mat is
+;;;
+;;;   mconcat (Cons (fmap a_b input) (wrap (ap tail input)))
+;;;
+;;; and every one of those four builds a list: the fmapped one, the recursive
+;;; ap's, and the two cells of the list-of-lists that mconcat folds. mconcat
+;;; folds with `append', which COPIES, so none of the four is consumed and none
+;;; is freed. The values are right -- the checks below prove that -- and the
+;;; arithmetic of who frees them is not written yet. Fixing it means binding
+;;; the intermediates in the mat rather than nesting them.
+;;;
 ;;; The instances are on int and Maybe int. Nothing here needs a string, which
 ;;; keeps it about the classes rather than about ownership.
 (source "haskell_concepts.c"
@@ -31,12 +43,12 @@
   (decl-Applicative-Maybe Ap_Maybe_int_int int int)
   (impl-Applicative-Maybe Ap_Maybe_int_int int int)
 
-  ;; NOT the List applicative. decl-Applicative-List now declares everything its
-  ;; impl reaches for -- a Functor, three Lists and a Monoid -- but the impl's
-  ;; own `mat' does not compile: "called object is not a function or function
-  ;; pointer", and it does the same with every dependency declared by hand
-  ;; against the code as it was, so the fault is in the body rather than in what
-  ;; is or is not declared around it. It is not exercised here until it does.
+  ;; and over a List of int, which is the instance with the most behind it: a
+  ;; Functor, three Lists and a Monoid, none of them named here. Instantiating
+  ;; it IS a check -- its `mat' composes fmap, Cons, wrap and mconcat over all
+  ;; of that, so anything missing or malformed fails the target.
+  (decl-Applicative-List Ap_List_int_int int int)
+  (impl-Applicative-List Ap_List_int_int int int)
 
   (static) (var int bad . 0)
 
@@ -98,15 +110,19 @@
                      (default -1))
                    -1))
 
-    ;; The List applicative is INSTANTIATED above and not exercised here. That
-    ;; instantiation is the check that matters for it: decl/impl-Applicative-List
-    ;; name a Functor, three Lists and a Monoid between them, and its `mat'
-    ;; composes fmap, Cons, wrap and mconcat over all of it -- so if any of that
-    ;; is missing or malformed, the target does not build. Calling `ap' on top
-    ;; wants a couple of bindings this file cannot spell yet: letin infers a
-    ;; destructor from the type and cannot see through a curried `fn', and
-    ;; free_List_int_to_int_t is not a name the List of function pointers
-    ;; actually publishes.
+    ;; ---- Applicative over a List: every function against every value ----
+    ;;
+    ;; ap [f, g] [x, y] is [f x, f y, g x, g y] -- the list applicative is the
+    ;; cartesian product, which is why it needs a Monoid to flatten with.
+    (letin* ((fs ((<> Cons (<> int to int t)) add100
+                  ((<> Cons (<> int to int t)) twice
+                   ((<> Nil (<> int to int t)))))
+                 (<> free List (<> int to int t))))
+      (letin ((* xs ((<> Cons int) 1 ((<> Cons int) 2 ((<> Nil int))))))
+        (letin* ((rs ($> (<> ap Ap_List_int_int) fs xs) (<> free List int)))
+          (+= bad (check "ap pairs every function with every value"
+                         (cast long ((<> len List int) rs)) 4))
+          (+= bad (check "and the four results add up" (sum_list rs) 209)))))
 
     (if (== bad 0)
         (printf "haskell-concepts: all ok\n")
