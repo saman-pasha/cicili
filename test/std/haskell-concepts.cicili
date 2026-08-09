@@ -1,0 +1,68 @@
+;;; test the three type-class layers of lib/std/haskell and their front ends
+;;;
+;;; Functor, Applicative and Monad each declare a `data' of function pointers
+;;; AND a set of `fn' front ends that reach it -- fmap_T, pure_T, ap_T, bind_T.
+;;; The front ends are the part a caller actually writes, so they are what this
+;;; checks: the counts come back through them, not through the table.
+;;;
+;;; The instances are on int and Maybe int. Nothing here needs a string, which
+;;; keeps it about the classes rather than about ownership.
+(source "haskell_concepts.c"
+  (make :std #t
+        :compile #t :link ("-lhaskell_concepts.o" "-o" "haskell_concepts_test"))
+
+  (decl-Bool)
+  (impl-Bool)
+
+  (decl-List List_int int)
+  (impl-List List_int int (\\ -f -v (fprintf -f "%d" -v)) " ")
+
+  ;; Functor over a List of int
+  (decl-Functor-List List_int_int int int)
+  (impl-Functor-List List_int_int int int)
+
+  ;; Monad over Maybe int
+  (decl-Monad-Maybe Maybe_int_int int int)
+  (impl-Monad-Maybe Maybe_int_int int int)
+
+  (static) (var int bad . 0)
+
+  (func check ((const char * what) (long got) (long want)) (out int)
+    (if (== got want)
+        (block (printf "ok   %-40s %ld\n" what got) (return 0))
+      (block (printf "FAIL %-40s got %ld want %ld\n" what got want) (return 1))))
+
+  (func sum_list ((List_int l)) (out long)
+    (return (match l
+              (* Cons head tail (+ (cast long head) (sum_list tail)))
+              (default 0))))
+
+  (main
+    ;; ---- Functor: fmap through the front end -------------------------
+    (letin ((* l1 ((<> Cons int) 1 ((<> Cons int) 2 ((<> Cons int) 3 ((<> Cons int) 4 ((<> Nil int))))))))
+      (+= bad (check "the list adds up before fmap" (sum_list l1) 10))
+
+      (letin ((* l2 ((fmap_List_int_int (\\ -v (* 5 -v))) l1)))
+        (+= bad (check "fmap (*5) multiplies every element" (sum_list l2) 50))
+        (+= bad (check "and leaves the length alone"
+                       (cast long ((<> len List int) l2)) 4))))
+
+    ;; ---- Monad: bind through the front end ---------------------------
+    (+= bad (check "bind on a Just runs the step"
+                   (match ($> (<> bind Maybe_int_int) v ((<> Just int) 7)
+                              ((<> Just int) (* 3 v)))
+                     (Just r (cast long r))
+                     (default -1))
+                   21))
+
+    (+= bad (check "bind on a Nothing short-circuits"
+                   (match ($> (<> bind Maybe_int_int) v ((<> Nothing int))
+                              ((<> Just int) (* 3 v)))
+                     (Just r (cast long r))
+                     (default -1))
+                   -1))
+
+    (if (== bad 0)
+        (printf "haskell-concepts: all ok\n")
+      (printf "haskell-concepts: %d FAILED\n" bad))
+    (return bad)))

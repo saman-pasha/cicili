@@ -138,57 +138,14 @@
   ) ; import-Functor-Maybe
 
 
-;; Cell Functor
-(generic decl-Functor-Cell
-  (type a b)
-
-  (decl-Functor type Cell a b)
-
-  ) ; decl-Functor-Cell
-
-;; a_b function is available
-;; input is 'Cell a'
-(generic impl-Functor-Cell
-  (type a b)
-
-  (impl-Functor type Maybe a b
-                (match ((<> get Cell a) input)
-                  (Just val ($> (<> new Cell b) ! a_b $ val))
-                  (default ((<> Dead b)))))
-
-  ) ; impl-Functor-Cell
-
-(generic import-Functor-Cell
-  (type a b)
-
-  (import-Functor type Cell a b)
-
-  ) ; import-Functor-Cell
-
-
-;; Rc Functor
-(generic decl-Functor-Rc
-  (type a b)
-
-  (decl-Functor type Rc a b)
-
-  ) ; decl-Functor-Rc
-
-;; a_b function is available
-;; input is 'Rc a'
-(generic impl-Functor-Rc
-  (type a b)
-
-  (impl-Functor type Maybe a b
-                (match ((<> get Rc a) input)
-                  (Just val ($> (<> new Rc b) ! a_b $ val))
-                  (default ((<> Gone b)))))
-
-  ) ; impl-Functor-Rc
-
-(generic import-Functor-Rc
-  (type a b)
-
-  (import-Functor type Rc a b)
-
-  ) ; import-Functor-Rc
+;; THE Cell AND Rc FUNCTORS ARE GONE, with the haskell Cell and Rc they were
+;; written against. Their bodies reached for (<> get Cell a), (<> new Cell b),
+;; (<> Dead b), (<> get Rc a), (<> new Rc b) and (<> Gone b) -- none of which
+;; exist since the memory layer was deleted. lib/std's `cell' and `rc' are the
+;; replacements and they are not the same shape: their `get' answers with a std
+;; maybe holding a BORROW, so mapping over one has to decide what a mapped
+;; borrow means before any of this can be written again.
+;;
+;; Both were doubly broken, which is how long they had gone unused: each passed
+;; `Maybe' to impl-Functor where its own decl passed `Cell' or `Rc', so the
+;; implementation it emitted did not match the declaration beside it.
