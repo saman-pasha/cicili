@@ -204,7 +204,17 @@
               (if spec
                   (let ((const-val (construct spec)))
                     (cond ((eql const-val '|@ATOM|) spec)
-                          ((key-eq (typeof spec) '|auto|) (deep-typeof id (default spec))) ; var or param
+                          ;; an auto var or param resolves through what
+                          ;; initialised it -- and one that has NOTHING there
+                          ;; must answer "unknown" rather than ask itself
+                          ;; again: (*gets* id) hands the same auto spec back,
+                          ;; and the recursion has no floor. Found by a member
+                          ;; call on a value of an undeclared template
+                          ;; instance, where the receiver's type never
+                          ;; resolved and the stack died in place of an error
+                          ;; naming the member.
+                          ((key-eq (typeof spec) '|auto|)
+                           (if (default spec) (deep-typeof id (default spec)) nil)) ; var or param
                           ((eql const-val '|@CALL|)
                            (let* ((name-val (name spec))
                                   (callee (if (typep name-val 'sp)

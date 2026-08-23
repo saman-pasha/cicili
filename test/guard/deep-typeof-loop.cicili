@@ -1,0 +1,27 @@
+;;;; The reproducer for a transpiler stack death. `mystery' answers a
+;;;; template instance no declaration opens, so `v' never resolves past
+;;;; `auto' -- and the member call then asked deep-typeof for auto's
+;;;; type, whose lookup handed the same auto spec straight back:
+;;;; (*gets* '|auto|) -> a spec with typeof auto and no default ->
+;;;; recurse with identical arguments, no floor, and SBCL died
+;;;; "Control stack exhausted" with nothing named.
+;;;;
+;;;; The guard in authority.lisp answers nil for an auto with nothing
+;;;; to resolve through. What follows from nil depends on where the
+;;;; access sits: here the member is simply emitted as written and C++
+;;;; decides -- the same passthrough an undeclared free name gets, and
+;;;; std::vector does have size(), so this file COMPILES. Where the
+;;;; resolver genuinely needs the type it refuses instead, naming the
+;;;; access ("unknown struct type: auto"). Either is the contract;
+;;;; the stack death was the bug. deep-typeof-loop.sh asserts that.
+;;;;
+;;;; It lives beside its .sh rather than under test/cpp so run.sh's
+;;;; scan does not double-count it; the .sh is the test.
+
+(source "guard.cpp"
+  (make :cpp #t :compile #t)
+  (include <vector>)
+  (decl) (func mystery () (out (t<> std::vector int)))
+  (func f () (out int)
+    (letin* ((v (mystery)))
+      (return (cast int (($ v size)))))))
