@@ -1129,7 +1129,11 @@
         (multiple-value-bind (const typeof modifier const-ptr variable array value)
 		    (specify-type-value< type)
           (setf (name var-spec) (specify-decl-name< variable))
-          (if *module-path* (setf (unique var-spec) (free-name *module-path* (name var-spec))))
+          ;; Mangle only where the module is a naming convention. Under :cpp a
+          ;; module is a namespace and the name must stay as written -- every
+          ;; other construct already asks module-mangles<; a var that did not
+          ;; was emitted mangled while its references were not.
+          (if (module-mangles<) (setf (unique var-spec) (free-name *module-path* (name var-spec))))
           (setf (const var-spec) const)
           (setf (typeof var-spec) typeof)
           (setf (modifier var-spec) modifier)
@@ -1835,7 +1839,8 @@
           (specify-type< (nthcdr 1 def))
 	    (when (null variable) (error (format nil "syntax error ~A" def)))
         (setf (name typedef-spec) (specify-decl-name< (expand-macros variable)))
-        (if *module-path* (setf (unique typedef-spec) (free-name *module-path* (name typedef-spec))))
+        ;; module-mangles<, not *module-path*: a namespace keeps names as written
+        (if (module-mangles<) (setf (unique typedef-spec) (free-name *module-path* (name typedef-spec))))
         (setf (const typedef-spec) const)
         (setf (typeof typedef-spec) type)
         (setf (modifier typedef-spec) modifier)

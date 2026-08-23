@@ -162,6 +162,24 @@
                                           (otherwise value))))) 
           (t (set-ast-line (output "~A" value))))))
 
+;;; A .cicili string keeps its source spelling: the reader leaves every
+;;; backslash in place, which is right for a C string literal emitted back
+;;; between quotes. A code escape's payload is emitted OUTSIDE any quotes,
+;;; so one level of that spelling comes off here: \" is the " it named and
+;;; \\ is the \. Any other backslash passes through whole, so the \n in
+;;; (code "printf(\"a\\n\")") stays the two characters the C string wants.
+;;; Before this, a code escape could not carry a double quote at all --
+;;; test/c/preprocess.cicili recorded the limitation.
+(defun unescape-code< (s)
+  (with-output-to-string (out)
+    (loop with i = 0
+          while (< i (length s))
+          do (let ((c (char s i)))
+               (if (and (char= c #\\) (< (1+ i) (length s))
+                        (member (char s (1+ i)) (list #\" #\\)))
+                   (progn (write-char (char s (1+ i)) out) (incf i 2))
+                   (progn (write-char c out) (incf i 1)))))))
+
 (defun compile-code (spec lvl globals parent-spec)
   (with-slots ((content default)) spec
     (cond ((and (typep content 'sp) (eql (construct content) '|@CODE|))
@@ -177,7 +195,9 @@
            (compile-form content lvl globals spec)
            (output " "))
           ((atom content)
-           (set-ast-line (output "~A " content)))
+           (set-ast-line (output "~A " (if (stringp content)
+                                           (unescape-code< content)
+                                           content))))
           ;; The SAME dispatch as above, per item -- and it has to be, because a
           ;; specifier in an escape's list is not a code specifier and does not
           ;; keep its payload where one does. A @CALL holds its callee in `name'

@@ -23,6 +23,7 @@ int add_one_a (int n ) {
 int add_two_a (int n ) {
   return (n  +  2 );
 }
+int spliced_counter  = 41;
 typedef struct crate_int {
   int value ;
 } crate_int;
@@ -46,12 +47,13 @@ double get_crate_double (crate_double * b ) {
   return (b -> value);
 }
 int main () {
-  { /* let153 */
+  { /* let155 */
     int bad  = 0;
     // ----------
     bad  += check ("DEFMACRO expands", (2 *  21 ), 42) ;
     bad  += check ("DEFMACRO nests", (2 *  (2 *  10 ) ), 40) ;
     bad  += check ("$$$ spliced first", add_one_a (41), 42) ;
+    bad  += check ("$$$ dotted var", (spliced_counter  +  1 ), 42) ;
     bad  += check ("$$$ spliced second", add_two_a (40), 42) ;
     bad  += check ("symbol-name of a generic", strlen ("crate_int"), 9) ;
     bad  += check ("imported macro", (84 /  2 ), 42) ;
@@ -59,12 +61,12 @@ int main () {
     bad  += check ("unprefixed import", (3 *  14 ), 42) ;
     bad  += check ("unprefixed CL-owned name", (3 *  14 ), 42) ;
     bad  += check ("macrolet", (3 *  14 ), 42) ;
-    { /* let167 */
+    { /* let169 */
       crate_int bi  = make_crate_int (42);
       // ----------
       bad  += check ("generic int box", get_crate_int ((&bi )), 42) ;
     }
-    { /* let172 */
+    { /* let174 */
       crate_double bd  = make_crate_double (2.5);
       // ----------
       bad  += check ("generic double box", ((int)(get_crate_double ((&bd )) *  4 )), 10) ;

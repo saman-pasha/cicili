@@ -38,6 +38,16 @@
 
   (two-adders a)
 
+  ;; a macro may expand to a dotted var -- (var int x . 7) -- exactly as the
+  ;; same form is written in plain source. The body dispatcher used to call
+  ;; CL:LENGTH on the raw form and die on the dotted tail before the var
+  ;; specifier, which handles it, ever saw it.
+  (DEFMACRO counted-var (vname n)
+    `($$$
+      (var int ,vname . ,n)))
+
+  (counted-var spliced_counter 41)
+
   ;; To get a string from a symbol at macro time, use symbol-name -- a Cicili
   ;; macro over the Lisp function.
 
@@ -76,6 +86,7 @@
 
       ;; the $$$ macro defined two real functions
       (+= bad (check "$$$ spliced first"  (add_one_a 41) 42))
+      (+= bad (check "$$$ dotted var"     (+ spliced_counter 1) 42))
       (+= bad (check "$$$ spliced second" (add_two_a 40) 42))
 
       ;; ---- symbol-name: the symbol of a type, as a C string --------

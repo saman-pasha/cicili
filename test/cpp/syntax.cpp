@@ -13,6 +13,7 @@ void check (const char * what , long got , long want ) {
     }
 }
 namespace geom {
+int point_count  = 0;
 struct Point {
   int x ;
   int y ;
@@ -47,6 +48,8 @@ int main () {
     // ----------
     check ("namespaced method", ((long)(p . sum)()), 7);
   });
+  geom::point_count  = 5;
+  check ("module var unmangled", ((long)geom::point_count ), 5);
   check ("template int", ((long)biggest (3, 9)), 9);
   check ("template double", ((long)biggest<double> (2.5, 1.5)), 2);
   { /* let134 */

@@ -27,6 +27,9 @@
   ;; So the type is geom::Point from outside, with no `using' -- and it is a
   ;; TYPE, not text: the declaration below resolves and `$' sees through it.
   (module geom
+    ;; a module-level var: in a C++ target the name stays as written -- it
+    ;; used to be emitted mangled while every reference stayed plain
+    (var int point_count . 0)
     (struct Point
             (member int x)
             (member int y)
@@ -59,6 +62,10 @@
     ;; namespace + scope resolution
     (letin* ((p (geom::Point 3 4)))
       (check "namespaced method" (cast long (($ p sum))) 7))
+
+    ;; a module var resolves under the name it was written with
+    (set geom::point_count 5)
+    (check "module var unmangled" (cast long geom::point_count) 5)
 
     ;; template instantiation, explicit and inferred
     (check "template int"    (cast long (biggest 3 9)) 9)
