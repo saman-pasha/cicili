@@ -39,7 +39,7 @@
                                             (name (if (listp fname)
                                                       (intern (make-shared-name (car fname) (cdr fname)))
                                                       fname)))
-                                       (specify-symbol-expr (if *module-path* (free-name *module-path* lname) name)))))
+                                       (specify-symbol-expr (if (module-mangles<) (free-name *module-path* lname) name)))))
                                   
                                   ((key-eq (car quoted) '|lambda*|) ; named lambda 
                                    (let* ((func-spec (specify-function quoted '())))
@@ -50,7 +50,7 @@
                                             (name (if (listp fname)
                                                       (intern (make-shared-name (car fname) (cdr fname)))
                                                       fname)))
-                                       (specify-symbol-expr (if *module-path* (free-name *module-path* name) name)))))
+                                       (specify-symbol-expr (if (module-mangles<) (free-name *module-path* name) name)))))
 
                                   ((key-eq (car quoted) '|def-closure*|) ; def-closure*
                                    (let ((struct-spec (specify-struct (cadr quoted) '())))
@@ -160,9 +160,9 @@
 	                 (t (let ((func (car form)))
                           (cond ((and (symbolp func) (find (char (symbol-name func) 0) "@#"))
 		                         (specify-preprocessor form '()))
-                                ((and (= (length form) 2) (find func *unaries*     :test #'key-eq))
+                                ((and (= (proper-length< form) 2) (find func *unaries*     :test #'key-eq))
                                  (specify-unary-expr form))
-		                        ((and (= (length form) 3) (find func *assignments* :test #'key-eq))
+		                        ((and (= (proper-length< form) 3) (find func *assignments* :test #'key-eq))
                                  (specify-assignment-expr form))
                                 
 		                        ((key-eq func '|macrolet|)  (specify-macrolet      form)) 

@@ -175,6 +175,18 @@
   (when *debug-macros* (format t "macro: ~A~%" macro))
   (setf (gethash macro *macros*) symbol))
 
+;;; Length of L, or -1 when L is dotted. CL:LENGTH signals on an improper
+;;; list, and specify-body's fixed-arity dispatch calls it on raw forms --
+;;; so a macro expanding to (var int x . 0) died in the dispatcher before
+;;; specify-variable, which handles the dotted tail fine, ever saw it. The
+;;; same form written directly in a target never passes through that
+;;; dispatch, which is why only the macro path failed.
+(defun proper-length< (l)
+  (loop for n from 0
+        for tail = l then (cdr tail)
+        do (cond ((null tail) (return n))
+                 ((atom tail) (return -1)))))
+
 (defun reving (list result)
   (cond ((consp list) (reving (cdr list) (cons (car list) result)))
         ((null list) result)

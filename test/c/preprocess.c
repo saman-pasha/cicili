@@ -10,6 +10,7 @@
 #define MAX_AMOUNT 1000 
 #define SQUARE(x) ((x) * (x)) 
 #define GREETING_INITIAL 'h' 
+#define GREETING_TEXT "hi" 
 #define FEATURE_ON 1 
 #ifdef FEATURE_ON 
 #define FEATURE_VALUE 10 
@@ -34,6 +35,7 @@
 int c_max_amount (void) { return MAX_AMOUNT; } ;
 int c_square (int n) { return SQUARE(n); } ;
 int c_greeting_initial (void) { return GREETING_INITIAL; } ;
+int c_greeting_len (void) { const char* g = GREETING_TEXT; int n = 0; while (g[n]) n++; return n; } ;
 int c_feature_value (void) { return FEATURE_VALUE; } ;
 int c_fallback_value (void) { return FALLBACK_VALUE; } ;
 int c_size_class (void) { return SIZE_CLASS; } ;
@@ -41,30 +43,32 @@ int c_temp_state (void) { return TEMP_STATE; } ;
 int c_max_amount ();
 int c_square (int n );
 int c_greeting_initial ();
+int c_greeting_len ();
 int c_feature_value ();
 int c_fallback_value ();
 int c_size_class ();
 int c_temp_state ();
 int check (const char * what , long long got , long long want ) {
   if (got  ==  want  )
-    { /* block162 */
+    { /* block166 */
       printf ("ok   %-30s %lld\n", what , got );
       return 0;
     }
   else
-    { /* block165 */
+    { /* block169 */
       printf ("FAIL %-30s got %lld want %lld\n", what , got , want );
       return 1;
     }
   return 1;
 }
 int main () {
-  { /* let169 */
+  { /* let173 */
     int bad  = 0;
     // ----------
     bad  += check ("@define object-like", c_max_amount (), 1000) ;
     bad  += check ("@define function-like", c_square (7), 49) ;
     bad  += check ("@define char literal", c_greeting_initial (), 104) ;
+    bad  += check ("@define string literal", c_greeting_len (), 2) ;
     bad  += check ("@ifdef takes then arm", c_feature_value (), 10) ;
     bad  += check ("@ifndef taken", c_fallback_value (), 20) ;
     bad  += check ("@if first arm", c_size_class (), 2) ;
