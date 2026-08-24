@@ -953,7 +953,14 @@
 	    ('|static|   (setq is-static   t))
 	    ('|decl|     (setq is-declare  t))
         ('|non-copy| (setq is-non-copy t))))
-    
+
+    ;; A C++ declaration binding on a QUALIFIED name emits nothing at all.
+    ;; The type belongs to a header the target includes, and the binding
+    ;; exists only so member calls resolve -- `struct NS::name ;' is not
+    ;; C++: gcc discards the do-nothing declaration, clang refuses it.
+    (when (and *cpp* is-declare (search "::" (string name)))
+      (return-from compile-struct))
+
     (when is-nested (output "~&~A" (indent (- lvl 1))))
     (when is-static (set-ast-line (output "static ")))
     ;; C++ needs no typedef -- `struct X' already introduces the type name X --
