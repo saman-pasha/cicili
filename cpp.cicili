@@ -104,8 +104,12 @@
 ;; spliced rather than wrapped, so the expression stays an ordinary statement
 ;; and gets its own `;' -- a code escape supplies its own punctuation and there
 ;; is none to supply here
-(DEFMACRO delete* (expr)     `($$$ (code '{ delete }) ,expr))
-(DEFMACRO delete[]* (expr)   `($$$ (code '{ delete "[]" }) ,expr))
+(DEFMACRO delete* (expr)       `($$$ (code '{ delete }) ,expr))
+;; bracket-free on purpose: `[' ends a symbol under this readtable, so the
+;; old name `delete[]*' split apart as it was read -- the DEFMACRO came out
+;; named plain `delete' with an unbound `expr' in its body (the sbcl warning
+;; at every load), and no call site could have spelled it either
+(DEFMACRO delete-array* (expr) `($$$ (code '{ delete "[]" }) ,expr))
 
 ;;; The four named casts are CLAUSES now -- see specify-cppcast-expr. They were
 ;;; macros producing code escapes, which meant the result had no type (so a
