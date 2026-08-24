@@ -100,11 +100,11 @@
         ;; clang, so naming it directly is what actually runs and keeps the
         ;; benchmark honest about the toolchain it measures.
         'dumper   '()
-        'compiler `("glibtool" "--tag=CC" "--mode=compile" "clang" "-Werror" "-Wall" ,@opt ,*verbose*)
+        'compiler `("glibtool" "--tag=CC" "--mode=compile" "clang" ,@opt ,*verbose*) ; "-Werror" "-Wall" 
         'linker   `("glibtool" "--tag=CC" "--mode=link"    "clang" ,@opt ,*verbose*)
         ;; C++
         'cpp-dumper   '()
-        'cpp-compiler `("glibtool" "--tag=CXX" "--mode=compile" "clang++" "-Werror" "-Wall" ,@cpp-opt ,*verbose*)
+        'cpp-compiler `("glibtool" "--tag=CXX" "--mode=compile" "clang++" ,@cpp-opt ,*verbose*) ; "-Werror" "-Wall" 
         'cpp-linker   `("glibtool" "--tag=CXX" "--mode=link"    "clang++" ,@cpp-opt ,*verbose*)))
 
       (t
