@@ -1,5 +1,7 @@
 # Cicili
 
+![Cicili, the philosopher](art/banner.svg)
+
 **The C language, in S-expressions — with Lisp macros as its build system and type system.**
 
 Cicili is a transpiler: you write C in Lisp syntax, and it emits the C you would have
