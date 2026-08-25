@@ -1,0 +1,93 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="400" viewBox="0 0 1280 400">
+  <!-- Cicili, the philosopher; one of the three: Cicili writes it, Zigurat
+       keeps it, Coco makes it think. Hand-drawn SVG, no external assets. -->
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0b0e1a"/>
+      <stop offset="0.7" stop-color="#121831"/>
+      <stop offset="1" stop-color="#182040"/>
+    </linearGradient>
+    <radialGradient id="medal" cx="0.5" cy="0.42" r="0.75">
+      <stop offset="0" stop-color="#1d2647"/>
+      <stop offset="1" stop-color="#131a35"/>
+    </radialGradient>
+    <linearGradient id="parch" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#efe8d4"/>
+      <stop offset="1" stop-color="#d9cfb2"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1280" height="400" fill="url(#sky)"/>
+
+  <!-- stars -->
+  <g fill="#cfd6ef">
+    <circle cx="70" cy="52" r="1.6" opacity="0.8"/><circle cx="150" cy="120" r="1.1" opacity="0.5"/>
+    <circle cx="215" cy="35" r="1.3" opacity="0.6"/><circle cx="330" cy="70" r="1.0" opacity="0.4"/>
+    <circle cx="415" cy="30" r="1.5" opacity="0.7"/><circle cx="470" cy="105" r="1.0" opacity="0.5"/>
+    <circle cx="540" cy="48" r="1.2" opacity="0.6"/><circle cx="600" cy="22" r="1.6" opacity="0.8"/>
+    <circle cx="705" cy="40" r="1.1" opacity="0.5"/><circle cx="760" cy="90" r="1.4" opacity="0.6"/>
+    <circle cx="835" cy="28" r="1.0" opacity="0.5"/><circle cx="905" cy="72" r="1.5" opacity="0.7"/>
+    <circle cx="975" cy="38" r="1.1" opacity="0.5"/><circle cx="1060" cy="60" r="1.4" opacity="0.7"/>
+    <circle cx="1130" cy="110" r="1.0" opacity="0.4"/><circle cx="1195" cy="42" r="1.6" opacity="0.8"/>
+    <circle cx="1245" cy="95" r="1.1" opacity="0.5"/><circle cx="35" cy="150" r="1.0" opacity="0.4"/>
+    <circle cx="640" cy="12" r="1.2" opacity="0.6"/>
+  </g>
+
+  <!-- great ghost parentheses, the philosopher's climate -->
+  <g font-family="Georgia, 'Times New Roman', serif" fill="#7d8fd4" text-anchor="middle">
+    <text x="300" y="255" font-size="260" opacity="0.10">(</text>
+    <text x="980" y="255" font-size="260" opacity="0.10">)</text>
+    <text x="170" y="230" font-size="150" opacity="0.06">(</text>
+    <text x="1110" y="230" font-size="150" opacity="0.06">)</text>
+    <text x="435" y="150" font-size="34" opacity="0.14" font-style="italic">&#955;</text>
+    <text x="852" y="270" font-size="30" opacity="0.12" font-style="italic">&#955;</text>
+  </g>
+
+  <!-- ziggurat skyline, the family's horizon -->
+  <g fill="#0e1327">
+    <path d="M0 400 L0 360 H70 V340 H130 V360 H200 V400 Z"/>
+    <path d="M170 400 V352 H240 V330 H290 V310 H350 V330 H400 V352 H470 V400 Z"/>
+    <path d="M430 400 V366 H500 V344 H560 V366 H630 V400 Z"/>
+    <path d="M820 400 V362 H890 V338 H950 V362 H1020 V400 Z"/>
+    <path d="M990 400 V354 H1060 V330 H1110 V312 H1170 V330 H1220 V354 H1280 V400 Z"/>
+    <path d="M1200 400 V368 H1260 V350 H1280 V400 Z"/>
+  </g>
+  <rect y="398" width="1280" height="2" fill="#0d1122"/>
+
+  <!-- ================= CICILI, the philosopher ================= -->
+  <g transform="translate(640,160) scale(1.18) translate(-1000,-168)">
+    <circle cx="1000" cy="168" r="104" fill="#7d8fd4" opacity="0.08"/>
+    <circle cx="1000" cy="168" r="95" fill="url(#medal)" stroke="#7d8fd4" stroke-width="3"/>
+    <circle cx="1000" cy="168" r="88" fill="none" stroke="#7d8fd4" stroke-width="1" opacity="0.35"/>
+    <g>
+      <path d="M1070 118 C1086 140 1083 174 1057 196 C1048 174 1051 142 1070 118 Z" fill="#aab8ea"/>
+      <path d="M1070 118 C1062 142 1058 168 1057 196 L1053 192 C1055 164 1060 138 1070 118 Z" fill="#8fa0dd"/>
+      <line x1="1057" y1="196" x2="1042" y2="222" stroke="#aab8ea" stroke-width="3.5" stroke-linecap="round"/>
+      <path d="M1042 222 L1038 231 L1047 226 Z" fill="#dfe5f8"/>
+    </g>
+    <g transform="rotate(6 1000 172)">
+      <rect x="954" y="130" width="92" height="84" fill="url(#parch)" rx="3"/>
+      <rect x="948" y="122" width="104" height="14" rx="7" fill="#cfc3a0"/>
+      <rect x="948" y="208" width="104" height="14" rx="7" fill="#c7bb97"/>
+      <text x="1000" y="172" font-family="Georgia, 'Times New Roman', serif" font-size="30"
+            fill="#4a4059" text-anchor="middle" font-style="italic">(&#955;)</text>
+      <g stroke="#8d8168" stroke-width="3" stroke-linecap="round">
+        <line x1="968" y1="188" x2="1018" y2="188"/>
+        <line x1="968" y1="198" x2="1002" y2="198"/>
+        <line x1="968" y1="146" x2="1030" y2="146"/>
+      </g>
+    </g>
+  </g>
+
+  <!-- name -->
+  <g font-family="Georgia, 'Times New Roman', serif" text-anchor="middle">
+    <text x="640" y="323" font-size="32" font-weight="bold" fill="#e8e2d0" letter-spacing="10">CICILI</text>
+    <text x="640" y="347" font-size="16" font-style="italic" fill="#9aa2c4">the philosopher &#183; Lisp syntax, C soul</text>
+  </g>
+
+  <!-- the one line -->
+  <text x="640" y="380" font-family="Georgia, 'Times New Roman', serif" font-size="15"
+        font-style="italic" fill="#7d86ad" text-anchor="middle" letter-spacing="1">
+    the philosopher writes it &#183; the warrior keeps it &#183; the engineer makes it think
+  </text>
+</svg>
