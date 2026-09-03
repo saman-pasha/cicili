@@ -157,6 +157,17 @@ This is the shape to copy, and it is the point of the tree:
 end if the API has a shape worth hiding; and anything that must emit real code
 in a separate `impl-` macro, because `init-macro` cannot.
 
+**A C++ library gets the same shape, under `lib/cpp/`.** `lib/cpp/torch` is
+the worked example: `(decl) (struct torch::Tensor (const) (method dim ()
+(out i64)) …)` and `(decl) (func torch::zeros …)` inside an `init-macro`,
+emitting nothing, and a `:cpp #t` target that imports it INSIDE the target
+writes libtorch as Cicili clauses -- `(($ t sizes))`, `(letin* ((v ((t<>
+std::vector int)))) …)`, `(try … (catch ((const std::exception & e)) …))`.
+Downstream, cocolog's rule for a C++ module is one such file per library
+and no C++ pasted into `(code "…")`; `doc/DOC-CPP.md` is the reference,
+and its limits are real: one signature per name, no `operator` (use the
+function forms), a `code` result has no type.
+
 Constants are declared `(typedef int NAME)`, because that is what a `#define` or
 an enum member *is* to Cicili: a name of that type the header provides. Which is
 also why **a `#define` you write yourself is invisible** — a Cicili form naming

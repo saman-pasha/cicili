@@ -1,0 +1,418 @@
+;;;; Cicili declarations for OpenCV 4 -- the C++ API, as type inference sees it
+;;;;
+;;;; Requires in target: (make :cpp #t), the OpenCV headers a program uses --
+;;;;
+;;;;     (include <opencv2/core.hpp>)
+;;;;     (include <opencv2/imgproc.hpp>)
+;;;;     (include <opencv2/imgcodecs.hpp>)
+;;;;     (include <opencv2/dnn.hpp>)       ; and objdetect, features2d, photo,
+;;;;     ...                                ; video, videoio, calib3d as needed
+;;;;
+;;;; -- and this file imported INSIDE the target, since :cpp is the target's.
+;;;;
+;;;; NOTHING HERE EMITS C++. As lib/cpp/torch does for libtorch, these
+;;;; declarations exist so Cicili's inference knows what a cv::Mat is -- what
+;;;; its members are called, what they answer, which free functions produce
+;;;; one -- and the real declarations come from the real headers at compile
+;;;; time. Declaring a name buys inference, not permission: cv::whatever is
+;;;; emitted as written whether or not it is here, and C++ decides.
+;;;;
+;;;; OPENCV TAKES InputArray AND OutputArray, which are proxies a cv::Mat, a
+;;;; cv::Scalar or a std::vector converts to at the call. They are declared
+;;;; here as the concrete types a program hands them -- `(const cv::Mat & src)',
+;;;; `(cv::Mat & dst)', `((t<> std::vector cv::Point2f) & pts)' -- so a call
+;;;; site is checked against what it actually passes. One signature per name
+;;;; is the language's rule, so where OpenCV overloads, the form a program
+;;;; reaches for is the one declared: cv::dnn::readNet with a model AND a
+;;;; config (pass "" for none), cv::resize with fx, fy and the interpolation.
+;;;;
+;;;; THE CONTAINERS ARE DECLARED PER ELEMENT TYPE. std::vector<cv::Point> and
+;;;; std::vector<double> are two names to Cicili, each with size, at,
+;;;; push_back, data, clear, resize and empty -- `vector<' below writes one --
+;;;; and an element reached through `at' has its type, which is what lets
+;;;; ($ (($ pts at) k) x) resolve. cv::Ptr<T> is std::shared_ptr<T> in OpenCV 4,
+;;;; declared with get, so a method of the pointee is ((-> (($ p get)) apply) ...).
+;;;;
+;;;; CONSTANTS -- the enumerators and the CV_ type macros -- are declared
+;;;; `(typedef int NAME)', which is how a constant is declared to inference
+;;;; (lib/std/c/stdlib.cicili does the same for EXIT_SUCCESS). CV_MAKETYPE,
+;;;; CV_MAT_DEPTH and CV_MAT_CN are function-like macros and are called as
+;;;; functions; they are declared so their answers type as int.
+;;;;
+;;;; WHAT IS NOT HERE: highgui, the GPU modules, stitching, ml, the contrib
+;;;; modules, and every overload not named above. Add a declaration when you
+;;;; use one; an incomplete binding is a smaller problem than a wrong one.
+;;; This file is part of the :opencv library and owns its package; the full
+;;; explanation is in doc/DOC-C.md, under "A library's package".
+(DEFPACKAGE :opencv
+  (:USE :COMMON-LISP)
+  (:IMPORT-FROM :COMMON-LISP-USER "import" "generic" "cicili")
+  (:EXPORT "vector<" "ptr<" "consts<"))
+
+(IN-PACKAGE :opencv)
+
+;;; (vector< 'cv::Point) -> the declaration of std::vector<cv::Point>, with
+;;; the seven members a program touches. A Lisp function rather than a macro
+;;; because init-macro splices its answer with ,@ .
+(DEFUN vector< (type)
+  `((decl) (struct (t<> std::vector ,type)
+             (const) (method size  () (out size_t))
+             (const) (method empty () (out bool))
+             (method push_back ((const ,type & v)))
+             (method at ((size_t i)) (out ,type &))
+             (method data () (out ,type *))
+             (method clear ())
+             (method resize ((size_t n))))))
+
+;;; (ptr< 'cv::CLAHE) -> cv::Ptr<cv::CLAHE>, which is a std::shared_ptr:
+;;; get answers the raw pointer, and that is how a method is reached.
+(DEFUN ptr< (type)
+  `((decl) (struct (t<> cv::Ptr ,type)
+             (const) (method get () (out ,type *))
+             (const) (method empty () (out bool))
+             (method reset ()))))
+
+;;; (consts< 'cv::IMREAD_COLOR 'cv::IMREAD_GRAYSCALE ...) -> one int typedef each
+(DEFUN consts< (&REST names)
+  (LOOP FOR n IN names COLLECT `(typedef int ,n)))
+
+(DEFMACRO init-macro ()
+  `($$$
+
+     ;;; ---- the standard library this leans on ----------------------
+     (decl) (struct std::string
+              (const) (method c_str () (out const char *))
+              (const) (method size  () (out size_t))
+              (const) (method empty () (out bool)))
+     (decl) (func std::to_string ((long v)) (out std::string))
+     (decl) (struct std::exception
+              (const) (method what () (out const char *)))
+     (decl) (struct std::runtime_error (inherits std::exception))
+     ,@(vector< 'double)
+     ,@(vector< 'float)
+     ,@(vector< 'int)
+     ,@(vector< 'u8)
+     ,@(vector< 'std::string)
+     ,@(vector< 'size_t)
+
+     ;;; ---- the small value types -----------------------------------
+     (decl) (struct cv::Size (member int width) (member int height))
+     (decl) (struct cv::Point (member int x) (member int y))
+     (decl) (struct cv::Point2f (member float x) (member float y))
+     (decl) (struct cv::Rect (member int x) (member int y) (member int width) (member int height)
+              (const) (method area () (out int)))
+     (decl) (struct cv::RotatedRect (member cv::Point2f center) (member cv::Size2f size) (member float angle))
+     (decl) (struct cv::Size2f (member float width) (member float height))
+     ;; a Scalar is four doubles, reached with (nth k s)
+     (decl) (struct cv::Scalar)
+     (decl) (func cv::Scalar::all ((double v)) (out cv::Scalar))
+     (decl) (struct cv::Vec2f)
+     (decl) (struct cv::Vec3f)
+     (decl) (struct cv::Vec4i)
+     (decl) (struct cv::KeyPoint (member cv::Point2f pt) (member float size) (member float angle) (member float response))
+     (decl) (struct cv::DMatch (member int queryIdx) (member int trainIdx) (member float distance))
+     (decl) (struct cv::Moments (member double m00) (member double m10) (member double m01)
+              (member double m20) (member double m11) (member double m02)
+              (member double m30) (member double m21) (member double m12) (member double m03))
+     (decl) (struct cv::TermCriteria)
+     (decl) (struct cv::Exception (inherits std::exception)
+              (member std::string err) (member std::string func) (member std::string file) (member int line))
+     ,@(vector< 'cv::Point)
+     ,@(vector< 'cv::Point2f)
+     ,@(vector< 'cv::Rect)
+     ,@(vector< 'cv::KeyPoint)
+     ,@(vector< 'cv::DMatch)
+     ,@(vector< 'cv::Vec2f)
+     ,@(vector< 'cv::Vec3f)
+     ,@(vector< 'cv::Vec4i)
+     ,@(vector< '(t<> std::vector cv::Point))
+     ,@(vector< '(t<> std::vector cv::DMatch))
+
+     ;;; ---- cv::Mat ---------------------------------------------------
+     ;;; A refcounted header over shared pixels: a copy is cheap, clone copies
+     ;;; the pixels. `dims' is 2 for an image; a dnn blob has more, and then
+     ;;; (nth k ($ m size)) is the k-th extent.
+     (decl) (struct cv::Mat
+              (member int rows) (member int cols) (member int dims)
+              (const) (method channels () (out int))
+              (const) (method type () (out int))
+              (const) (method depth () (out int))
+              (const) (method empty () (out bool))
+              (const) (method total () (out size_t))
+              (const) (method elemSize () (out size_t))
+              (const) (method isContinuous () (out bool))
+              (const) (method clone () (out cv::Mat))
+              (const) (method copyTo ((cv::Mat & dst)))
+              (const) (method convertTo ((cv::Mat & dst) (int type) (double alpha) (double beta)))
+              (const) (method reshape ((int channels) (int rows)) (out cv::Mat))
+              (method setTo ((const cv::Scalar & value)) (out cv::Mat &))
+              (method release ())
+              ;; the row pointers and the element accessors, per type
+              (method (t<> ptr double) ((int row)) (out double *))
+              (method (t<> ptr float) ((int row)) (out float *))
+              (method (t<> ptr u8) ((int row)) (out u8 *))
+              (method (t<> ptr int) ((int row)) (out int *))
+              (method (t<> at double) ((int i) (int j)) (out double &))
+              (method (t<> at float) ((int i) (int j)) (out float &))
+              (method (t<> at int) ((int i) (int j)) (out int &))
+              (method (t<> at u8) ((int i) (int j)) (out u8 &)))
+     (decl) (func cv::Mat::zeros ((int rows) (int cols) (int type)) (out cv::Mat))
+     (decl) (func cv::Mat::ones ((int rows) (int cols) (int type)) (out cv::Mat))
+     (decl) (func cv::Mat::eye ((int rows) (int cols) (int type)) (out cv::Mat))
+     ,@(vector< 'cv::Mat)
+     (decl) (func cv::noArray () (out cv::Mat))
+
+     ;;; ---- imgcodecs -------------------------------------------------
+     (decl) (func cv::imread ((const std::string & path) (int flags)) (out cv::Mat))
+     (decl) (func cv::imwrite ((const std::string & path) (const cv::Mat & img)) (out bool))
+     (decl) (func cv::imencode ((const std::string & ext) (const cv::Mat & img) ((t<> std::vector u8) & buf)) (out bool))
+     (decl) (func cv::imdecode ((const (t<> std::vector u8) & buf) (int flags)) (out cv::Mat))
+
+     ;;; ---- core: arithmetic, statistics, shape ------------------------
+     (decl) (func cv::add ((const cv::Mat & a) (const cv::Mat & b) (cv::Mat & dst)))
+     (decl) (func cv::subtract ((const cv::Mat & a) (const cv::Mat & b) (cv::Mat & dst)))
+     (decl) (func cv::multiply ((const cv::Mat & a) (const cv::Mat & b) (cv::Mat & dst)))
+     (decl) (func cv::divide ((const cv::Mat & a) (const cv::Mat & b) (cv::Mat & dst)))
+     (decl) (func cv::absdiff ((const cv::Mat & a) (const cv::Mat & b) (cv::Mat & dst)))
+     (decl) (func cv::max ((const cv::Mat & a) (const cv::Mat & b) (cv::Mat & dst)))
+     (decl) (func cv::min ((const cv::Mat & a) (const cv::Mat & b) (cv::Mat & dst)))
+     (decl) (func cv::bitwise_and ((const cv::Mat & a) (const cv::Mat & b) (cv::Mat & dst)))
+     (decl) (func cv::bitwise_or ((const cv::Mat & a) (const cv::Mat & b) (cv::Mat & dst)))
+     (decl) (func cv::bitwise_xor ((const cv::Mat & a) (const cv::Mat & b) (cv::Mat & dst)))
+     (decl) (func cv::bitwise_not ((const cv::Mat & a) (cv::Mat & dst)))
+     (decl) (func cv::pow ((const cv::Mat & a) (double p) (cv::Mat & dst)))
+     (decl) (func cv::addWeighted ((const cv::Mat & a) (double alpha) (const cv::Mat & b) (double beta) (double gamma) (cv::Mat & dst)))
+     (decl) (func cv::normalize ((const cv::Mat & src) (cv::Mat & dst) (double alpha) (double beta) (int type)))
+     (decl) (func cv::flip ((const cv::Mat & src) (cv::Mat & dst) (int code)))
+     (decl) (func cv::rotate ((const cv::Mat & src) (cv::Mat & dst) (int code)))
+     (decl) (func cv::transpose ((const cv::Mat & src) (cv::Mat & dst)))
+     (decl) (func cv::hconcat ((const (t<> std::vector cv::Mat) & src) (cv::Mat & dst)))
+     (decl) (func cv::vconcat ((const (t<> std::vector cv::Mat) & src) (cv::Mat & dst)))
+     (decl) (func cv::compare ((const cv::Mat & a) (const cv::Mat & b) (cv::Mat & dst) (int op)))
+     (decl) (func cv::inRange ((const cv::Mat & src) (const cv::Scalar & lower) (const cv::Scalar & upper) (cv::Mat & dst)))
+     (decl) (func cv::split ((const cv::Mat & src) ((t<> std::vector cv::Mat) & channels)))
+     (decl) (func cv::merge ((const (t<> std::vector cv::Mat) & channels) (cv::Mat & dst)))
+     (decl) (func cv::mean ((const cv::Mat & src)) (out cv::Scalar))
+     (decl) (func cv::meanStdDev ((const cv::Mat & src) (cv::Scalar & mean) (cv::Scalar & stddev)))
+     (decl) (func cv::minMaxLoc ((const cv::Mat & src) (double * minv) (double * maxv) (cv::Point * minloc) (cv::Point * maxloc)))
+     (decl) (func cv::sum ((const cv::Mat & src)) (out cv::Scalar))
+     (decl) (func cv::countNonZero ((const cv::Mat & src)) (out int))
+     (decl) (func cv::getOptimalDFTSize ((int n)) (out int))
+     (decl) (func cv::dft ((const cv::Mat & src) (cv::Mat & dst) (int flags)))
+     (decl) (func cv::magnitude ((const cv::Mat & x) (const cv::Mat & y) (cv::Mat & mag)))
+     (decl) (func cv::log ((const cv::Mat & src) (cv::Mat & dst)))
+     (decl) (func cv::cartToPolar ((const cv::Mat & x) (const cv::Mat & y) (cv::Mat & mag) (cv::Mat & angle) (bool degrees)))
+     (decl) (func cv::getTickFrequency () (out double))
+     ;; <opencv2/core/utils/logger.hpp>
+     (decl) (func cv::utils::logging::setLogLevel ((int level)) (out int))
+     (decl) (func cv::setRNGSeed ((int seed)))
+     (decl) (func cv::randn ((cv::Mat & dst) (const cv::Scalar & mean) (const cv::Scalar & stddev)))
+     (decl) (func cv::randu ((cv::Mat & dst) (const cv::Scalar & low) (const cv::Scalar & high)))
+     (decl) (func cv::kmeans ((const cv::Mat & data) (int k) (cv::Mat & bestLabels) (cv::TermCriteria criteria) (int attempts) (int flags) (cv::Mat & centers)) (out double))
+
+     ;;; ---- imgproc ---------------------------------------------------
+     (decl) (func cv::cvtColor ((const cv::Mat & src) (cv::Mat & dst) (int code)))
+     (decl) (func cv::resize ((const cv::Mat & src) (cv::Mat & dst) (cv::Size size) (double fx) (double fy) (int interpolation)))
+     (decl) (func cv::blur ((const cv::Mat & src) (cv::Mat & dst) (cv::Size ksize)))
+     (decl) (func cv::GaussianBlur ((const cv::Mat & src) (cv::Mat & dst) (cv::Size ksize) (double sigmaX)))
+     (decl) (func cv::medianBlur ((const cv::Mat & src) (cv::Mat & dst) (int ksize)))
+     (decl) (func cv::bilateralFilter ((const cv::Mat & src) (cv::Mat & dst) (int d) (double sigmaColor) (double sigmaSpace)))
+     (decl) (func cv::threshold ((const cv::Mat & src) (cv::Mat & dst) (double thresh) (double maxval) (int type)) (out double))
+     (decl) (func cv::adaptiveThreshold ((const cv::Mat & src) (cv::Mat & dst) (double maxval) (int method) (int type) (int blockSize) (double c)))
+     (decl) (func cv::Canny ((const cv::Mat & src) (cv::Mat & edges) (double t1) (double t2)))
+     (decl) (func cv::Sobel ((const cv::Mat & src) (cv::Mat & dst) (int ddepth) (int dx) (int dy) (int ksize)))
+     (decl) (func cv::Laplacian ((const cv::Mat & src) (cv::Mat & dst) (int ddepth) (int ksize)))
+     (decl) (func cv::convertScaleAbs ((const cv::Mat & src) (cv::Mat & dst)))
+     (decl) (func cv::getStructuringElement ((int shape) (cv::Size ksize)) (out cv::Mat))
+     (decl) (func cv::erode ((const cv::Mat & src) (cv::Mat & dst) (const cv::Mat & kernel) (cv::Point anchor) (int iterations)))
+     (decl) (func cv::dilate ((const cv::Mat & src) (cv::Mat & dst) (const cv::Mat & kernel) (cv::Point anchor) (int iterations)))
+     (decl) (func cv::morphologyEx ((const cv::Mat & src) (cv::Mat & dst) (int op) (const cv::Mat & kernel) (cv::Point anchor) (int iterations)))
+     (decl) (func cv::findContours ((const cv::Mat & image) ((t<> std::vector (t<> std::vector cv::Point)) & contours) (int mode) (int method)))
+     (decl) (func cv::contourArea ((const (t<> std::vector cv::Point2f) & contour)) (out double))
+     (decl) (func cv::arcLength ((const (t<> std::vector cv::Point2f) & curve) (bool closed)) (out double))
+     (decl) (func cv::boundingRect ((const (t<> std::vector cv::Point2f) & points)) (out cv::Rect))
+     (decl) (func cv::minAreaRect ((const (t<> std::vector cv::Point2f) & points)) (out cv::RotatedRect))
+     (decl) (func cv::minEnclosingCircle ((const (t<> std::vector cv::Point2f) & points) (cv::Point2f & center) (float & radius)))
+     (decl) (func cv::approxPolyDP ((const (t<> std::vector cv::Point2f) & curve) ((t<> std::vector cv::Point2f) & out) (double epsilon) (bool closed)))
+     (decl) (func cv::convexHull ((const (t<> std::vector cv::Point2f) & points) ((t<> std::vector cv::Point2f) & hull)))
+     (decl) (func cv::moments ((const (t<> std::vector cv::Point2f) & points)) (out cv::Moments))
+     (decl) (func cv::pointPolygonTest ((const (t<> std::vector cv::Point2f) & contour) (cv::Point2f pt) (bool measureDist)) (out double))
+     (decl) (func cv::fitEllipse ((const (t<> std::vector cv::Point2f) & points)) (out cv::RotatedRect))
+     (decl) (func cv::isContourConvex ((const (t<> std::vector cv::Point2f) & contour)) (out bool))
+     (decl) (func cv::drawContours ((cv::Mat & image) (const (t<> std::vector (t<> std::vector cv::Point)) & contours) (int idx) (const cv::Scalar & color) (int thickness) (int lineType)))
+     (decl) (func cv::HoughLines ((const cv::Mat & image) ((t<> std::vector cv::Vec2f) & lines) (double rho) (double theta) (int threshold)))
+     (decl) (func cv::HoughLinesP ((const cv::Mat & image) ((t<> std::vector cv::Vec4i) & lines) (double rho) (double theta) (int threshold) (double minLineLength) (double maxLineGap)))
+     (decl) (func cv::HoughCircles ((const cv::Mat & image) ((t<> std::vector cv::Vec3f) & circles) (int method) (double dp) (double minDist) (double param1) (double param2) (int minRadius) (int maxRadius)))
+     (decl) (func cv::calcHist ((const cv::Mat * images) (int nimages) (const int * channels) (const cv::Mat & mask) (cv::Mat & hist) (int dims) (const int * histSize) (const float ** ranges)))
+     (decl) (func cv::equalizeHist ((const cv::Mat & src) (cv::Mat & dst)))
+     (decl) (func cv::compareHist ((const cv::Mat & h1) (const cv::Mat & h2) (int method)) (out double))
+     (decl) (func cv::matchTemplate ((const cv::Mat & image) (const cv::Mat & templ) (cv::Mat & result) (int method)))
+     (decl) (func cv::warpAffine ((const cv::Mat & src) (cv::Mat & dst) (const cv::Mat & m) (cv::Size dsize)))
+     (decl) (func cv::getRotationMatrix2D ((cv::Point2f center) (double angle) (double scale)) (out cv::Mat))
+     (decl) (func cv::getAffineTransform ((const (t<> std::vector cv::Point2f) & src) (const (t<> std::vector cv::Point2f) & dst)) (out cv::Mat))
+     (decl) (func cv::warpPerspective ((const cv::Mat & src) (cv::Mat & dst) (const cv::Mat & m) (cv::Size dsize)))
+     (decl) (func cv::getPerspectiveTransform ((const (t<> std::vector cv::Point2f) & src) (const (t<> std::vector cv::Point2f) & dst)) (out cv::Mat))
+     (decl) (func cv::perspectiveTransform ((const (t<> std::vector cv::Point2f) & src) ((t<> std::vector cv::Point2f) & dst) (const cv::Mat & m)))
+     (decl) (func cv::pyrDown ((const cv::Mat & src) (cv::Mat & dst)))
+     (decl) (func cv::pyrUp ((const cv::Mat & src) (cv::Mat & dst)))
+     (decl) (func cv::distanceTransform ((const cv::Mat & src) (cv::Mat & dst) (int distanceType) (int maskSize)))
+     (decl) (func cv::watershed ((const cv::Mat & image) (cv::Mat & markers)))
+     (decl) (func cv::connectedComponents ((const cv::Mat & image) (cv::Mat & labels)) (out int))
+     (decl) (func cv::floodFill ((cv::Mat & image) (cv::Point seed) (cv::Scalar newVal)) (out int))
+     (decl) (func cv::filter2D ((const cv::Mat & src) (cv::Mat & dst) (int ddepth) (const cv::Mat & kernel)))
+     (decl) (func cv::copyMakeBorder ((const cv::Mat & src) (cv::Mat & dst) (int top) (int bottom) (int left) (int right) (int borderType) (const cv::Scalar & value)))
+     (decl) (func cv::cornerHarris ((const cv::Mat & src) (cv::Mat & dst) (int blockSize) (int ksize) (double k)))
+     (decl) (func cv::applyColorMap ((const cv::Mat & src) (cv::Mat & dst) (int colormap)))
+     (decl) (func cv::grabCut ((const cv::Mat & img) (cv::Mat & mask) (cv::Rect rect) (cv::Mat & bgdModel) (cv::Mat & fgdModel) (int iterCount) (int mode)))
+     (decl) (func cv::goodFeaturesToTrack ((const cv::Mat & image) ((t<> std::vector cv::Point2f) & corners) (int maxCorners) (double qualityLevel) (double minDistance)))
+
+     ;;; ---- drawing ---------------------------------------------------
+     (decl) (func cv::line ((cv::Mat & img) (cv::Point p1) (cv::Point p2) (const cv::Scalar & color) (int thickness) (int lineType)))
+     (decl) (func cv::rectangle ((cv::Mat & img) (cv::Rect rect) (const cv::Scalar & color) (int thickness) (int lineType)))
+     (decl) (func cv::circle ((cv::Mat & img) (cv::Point center) (int radius) (const cv::Scalar & color) (int thickness) (int lineType)))
+     (decl) (func cv::ellipse ((cv::Mat & img) (cv::Point center) (cv::Size axes) (double angle) (double startAngle) (double endAngle) (const cv::Scalar & color) (int thickness) (int lineType)))
+     (decl) (func cv::polylines ((cv::Mat & img) (const (t<> std::vector (t<> std::vector cv::Point)) & pts) (bool isClosed) (const cv::Scalar & color) (int thickness) (int lineType)))
+     (decl) (func cv::fillPoly ((cv::Mat & img) (const (t<> std::vector (t<> std::vector cv::Point)) & pts) (const cv::Scalar & color) (int lineType)))
+     (decl) (func cv::putText ((cv::Mat & img) (const std::string & text) (cv::Point org) (int fontFace) (double fontScale) (const cv::Scalar & color) (int thickness) (int lineType)))
+     (decl) (func cv::getTextSize ((const std::string & text) (int fontFace) (double fontScale) (int thickness) (int * baseLine)) (out cv::Size))
+
+     ;;; ---- dnn -------------------------------------------------------
+     (decl) (struct cv::dnn::Net
+              (const) (method empty () (out bool))
+              (method setInput ((const cv::Mat & blob)))
+              (method forward ((const std::string & outputName)) (out cv::Mat))
+              (method setPreferableBackend ((int backend)))
+              (method setPreferableTarget ((int target)))
+              (const) (method getLayerNames () (out (t<> std::vector std::string)))
+              (const) (method getUnconnectedOutLayersNames () (out (t<> std::vector std::string)))
+              (method getPerfProfile (((t<> std::vector double) & timings)) (out i64)))
+     (decl) (func cv::dnn::readNet ((const std::string & model) (const std::string & config)) (out cv::dnn::Net))
+     (decl) (func cv::dnn::blobFromImage ((const cv::Mat & image) (double scalefactor) (const cv::Size & size) (const cv::Scalar & mean) (bool swapRB) (bool crop)) (out cv::Mat))
+     (decl) (func cv::dnn::NMSBoxes ((const (t<> std::vector cv::Rect) & bboxes) (const (t<> std::vector float) & scores) (float scoreThreshold) (float nmsThreshold) ((t<> std::vector int) & indices)))
+     ;; Net::forward(outs, names) -- the many-outputs form -- is a second
+     ;; signature of a declared name, which the language does not hold; a
+     ;; program that wants every output forwards each name in turn.
+
+     ;;; ---- objdetect -------------------------------------------------
+     (decl) (struct cv::CascadeClassifier
+              (method load ((const std::string & filename)) (out bool))
+              (const) (method empty () (out bool))
+              (method detectMultiScale ((const cv::Mat & image) ((t<> std::vector cv::Rect) & objects) (double scaleFactor) (int minNeighbors) (int flags) (cv::Size minSize))))
+     (decl) (struct cv::HOGDescriptor
+              (method setSVMDetector ((const (t<> std::vector float) & detector)))
+              (method detectMultiScale ((const cv::Mat & img) ((t<> std::vector cv::Rect) & found) (double hitThreshold) (cv::Size winStride) (cv::Size padding) (double scale) (double groupThreshold))))
+     (decl) (func cv::HOGDescriptor::getDefaultPeopleDetector () (out (t<> std::vector float)))
+     (decl) (struct cv::QRCodeDetector
+              (method detectAndDecode ((const cv::Mat & img) ((t<> std::vector cv::Point2f) & points)) (out std::string)))
+     (decl) (struct cv::QRCodeEncoder
+              (method encode ((const std::string & text) (cv::Mat & qrcode))))
+     ,@(ptr< 'cv::QRCodeEncoder)
+     (decl) (func cv::QRCodeEncoder::create () (out (t<> cv::Ptr cv::QRCodeEncoder)))
+
+     ;;; ---- features2d ------------------------------------------------
+     (decl) (struct cv::Feature2D
+              (method detectAndCompute ((const cv::Mat & image) (const cv::Mat & mask) ((t<> std::vector cv::KeyPoint) & keypoints) (cv::Mat & descriptors))))
+     ,@(ptr< 'cv::Feature2D)
+     (decl) (struct cv::ORB (inherits cv::Feature2D))
+     (decl) (struct cv::SIFT (inherits cv::Feature2D))
+     (decl) (struct cv::AKAZE (inherits cv::Feature2D))
+     ,@(ptr< 'cv::ORB)
+     ,@(ptr< 'cv::SIFT)
+     ,@(ptr< 'cv::AKAZE)
+     (decl) (func cv::ORB::create ((int nfeatures)) (out (t<> cv::Ptr cv::ORB)))
+     (decl) (func cv::SIFT::create ((int nfeatures)) (out (t<> cv::Ptr cv::SIFT)))
+     (decl) (func cv::AKAZE::create () (out (t<> cv::Ptr cv::AKAZE)))
+     (decl) (struct cv::BFMatcher
+              (method match ((const cv::Mat & query) (const cv::Mat & train) ((t<> std::vector cv::DMatch) & matches)))
+              (method knnMatch ((const cv::Mat & query) (const cv::Mat & train) ((t<> std::vector (t<> std::vector cv::DMatch)) & matches) (int k))))
+     (decl) (func cv::drawKeypoints ((const cv::Mat & image) (const (t<> std::vector cv::KeyPoint) & keypoints) (cv::Mat & out) (const cv::Scalar & color) (int flags)))
+     (decl) (func cv::findHomography ((const (t<> std::vector cv::Point2f) & src) (const (t<> std::vector cv::Point2f) & dst) (int method) (double ransacReprojThreshold) (cv::Mat & mask)) (out cv::Mat))
+
+     ;;; ---- photo -----------------------------------------------------
+     (decl) (func cv::fastNlMeansDenoising ((const cv::Mat & src) (cv::Mat & dst) (float h) (int templateWindowSize) (int searchWindowSize)))
+     (decl) (func cv::fastNlMeansDenoisingColored ((const cv::Mat & src) (cv::Mat & dst) (float h) (float hColor) (int templateWindowSize) (int searchWindowSize)))
+     (decl) (func cv::inpaint ((const cv::Mat & src) (const cv::Mat & mask) (cv::Mat & dst) (double radius) (int flags)))
+     (decl) (func cv::detailEnhance ((const cv::Mat & src) (cv::Mat & dst) (float sigma_s) (float sigma_r)))
+     (decl) (func cv::stylization ((const cv::Mat & src) (cv::Mat & dst) (float sigma_s) (float sigma_r)))
+     (decl) (func cv::pencilSketch ((const cv::Mat & src) (cv::Mat & dst1) (cv::Mat & dst2) (float sigma_s) (float sigma_r) (float shade_factor)))
+     (decl) (struct cv::MergeMertens
+              (method process ((const (t<> std::vector cv::Mat) & src) (cv::Mat & dst))))
+     ,@(ptr< 'cv::MergeMertens)
+     (decl) (func cv::createMergeMertens () (out (t<> cv::Ptr cv::MergeMertens)))
+     (decl) (struct cv::CLAHE
+              (method apply ((const cv::Mat & src) (cv::Mat & dst))))
+     ,@(ptr< 'cv::CLAHE)
+     (decl) (func cv::createCLAHE ((double clipLimit) (cv::Size tileGridSize)) (out (t<> cv::Ptr cv::CLAHE)))
+
+     ;;; ---- video and videoio -----------------------------------------
+     (decl) (struct cv::VideoCapture
+              (const) (method isOpened () (out bool))
+              (method read ((cv::Mat & image)) (out bool))
+              (const) (method get ((int propId)) (out double))
+              (method release ()))
+     (decl) (struct cv::VideoWriter
+              (const) (method isOpened () (out bool))
+              (method write ((const cv::Mat & image)))
+              (method release ()))
+     (decl) (func cv::VideoWriter::fourcc ((char c1) (char c2) (char c3) (char c4)) (out int))
+     (decl) (struct cv::BackgroundSubtractor
+              (method apply ((const cv::Mat & image) (cv::Mat & fgmask) (double learningRate))))
+     ,@(ptr< 'cv::BackgroundSubtractor)
+     (decl) (func cv::createBackgroundSubtractorMOG2 ((int history) (double varThreshold) (bool detectShadows)) (out (t<> cv::Ptr cv::BackgroundSubtractor)))
+     (decl) (func cv::createBackgroundSubtractorKNN ((int history) (double dist2Threshold) (bool detectShadows)) (out (t<> cv::Ptr cv::BackgroundSubtractor)))
+     (decl) (func cv::calcOpticalFlowFarneback ((const cv::Mat & prev) (const cv::Mat & next) (cv::Mat & flow) (double pyr_scale) (int levels) (int winsize) (int iterations) (int poly_n) (double poly_sigma) (int flags)))
+     (decl) (func cv::calcOpticalFlowPyrLK ((const cv::Mat & prevImg) (const cv::Mat & nextImg) (const (t<> std::vector cv::Point2f) & prevPts) ((t<> std::vector cv::Point2f) & nextPts) ((t<> std::vector u8) & status) ((t<> std::vector float) & err)))
+
+     ;;; ---- calib3d ---------------------------------------------------
+     (decl) (func cv::findChessboardCorners ((const cv::Mat & image) (cv::Size patternSize) ((t<> std::vector cv::Point2f) & corners) (int flags)) (out bool))
+     (decl) (func cv::cornerSubPix ((const cv::Mat & image) ((t<> std::vector cv::Point2f) & corners) (cv::Size winSize) (cv::Size zeroZone) (cv::TermCriteria criteria)))
+     (decl) (func cv::drawChessboardCorners ((cv::Mat & image) (cv::Size patternSize) (const (t<> std::vector cv::Point2f) & corners) (bool patternWasFound)))
+
+     ;;; ---- the type macros, as the functions they behave like ----------
+     (decl) (func CV_MAKETYPE ((int depth) (int channels)) (out int))
+     (decl) (func CV_MAT_DEPTH ((int type)) (out int))
+     (decl) (func CV_MAT_CN ((int type)) (out int))
+     (decl) (func CV_64FC ((int channels)) (out int))
+     (decl) (func CV_32FC ((int channels)) (out int))
+     (decl) (func CV_8UC ((int channels)) (out int))
+     (decl) (func cvRound ((double v)) (out int))
+
+     ;;; ---- constants ---------------------------------------------------
+     ,@(consts< 'CV_8U 'CV_8S 'CV_16U 'CV_16S 'CV_32S 'CV_32F 'CV_64F 'CV_16F
+                'CV_8UC1 'CV_8UC3 'CV_8UC4 'CV_32FC1 'CV_32FC2 'CV_32FC3 'CV_64FC1 'CV_32SC1
+                'cv::IMREAD_COLOR 'cv::IMREAD_GRAYSCALE 'cv::IMREAD_UNCHANGED
+                'cv::COLOR_BGR2GRAY 'cv::COLOR_GRAY2BGR 'cv::COLOR_BGR2RGB 'cv::COLOR_RGB2BGR
+                'cv::COLOR_BGR2HSV 'cv::COLOR_HSV2BGR 'cv::COLOR_BGR2Lab 'cv::COLOR_Lab2BGR
+                'cv::COLOR_BGR2YCrCb 'cv::COLOR_YCrCb2BGR 'cv::COLOR_BGR2BGRA 'cv::COLOR_BGRA2BGR
+                'cv::COLOR_RGB2GRAY 'cv::COLOR_GRAY2RGB 'cv::COLOR_BGR2HLS 'cv::COLOR_HLS2BGR
+                'cv::COLOR_BGR2Luv 'cv::COLOR_Luv2BGR 'cv::COLOR_BGR2XYZ 'cv::COLOR_XYZ2BGR
+                'cv::INTER_NEAREST 'cv::INTER_LINEAR 'cv::INTER_CUBIC 'cv::INTER_AREA 'cv::INTER_LANCZOS4
+                'cv::THRESH_BINARY 'cv::THRESH_BINARY_INV 'cv::THRESH_TRUNC 'cv::THRESH_TOZERO 'cv::THRESH_TOZERO_INV
+                'cv::THRESH_OTSU 'cv::THRESH_TRIANGLE
+                'cv::ADAPTIVE_THRESH_MEAN_C 'cv::ADAPTIVE_THRESH_GAUSSIAN_C
+                'cv::MORPH_RECT 'cv::MORPH_ELLIPSE 'cv::MORPH_CROSS
+                'cv::MORPH_OPEN 'cv::MORPH_CLOSE 'cv::MORPH_GRADIENT 'cv::MORPH_TOPHAT 'cv::MORPH_BLACKHAT 'cv::MORPH_HITMISS
+                'cv::RETR_EXTERNAL 'cv::RETR_LIST 'cv::RETR_CCOMP 'cv::RETR_TREE
+                'cv::CHAIN_APPROX_NONE 'cv::CHAIN_APPROX_SIMPLE
+                'cv::HOUGH_GRADIENT
+                'cv::HISTCMP_CORREL 'cv::HISTCMP_CHISQR 'cv::HISTCMP_INTERSECT 'cv::HISTCMP_BHATTACHARYYA
+                'cv::TM_SQDIFF 'cv::TM_SQDIFF_NORMED 'cv::TM_CCORR 'cv::TM_CCORR_NORMED 'cv::TM_CCOEFF 'cv::TM_CCOEFF_NORMED
+                'cv::DIST_L2 'cv::BORDER_CONSTANT 'cv::BORDER_REPLICATE 'cv::BORDER_REFLECT 'cv::BORDER_WRAP 'cv::BORDER_REFLECT_101
+                'cv::LINE_AA 'cv::LINE_8 'cv::FONT_HERSHEY_SIMPLEX
+                'cv::NORM_MINMAX 'cv::NORM_L2 'cv::NORM_L1 'cv::NORM_INF 'cv::NORM_HAMMING
+                'cv::ROTATE_90_CLOCKWISE 'cv::ROTATE_180 'cv::ROTATE_90_COUNTERCLOCKWISE
+                'cv::CMP_EQ 'cv::CMP_NE 'cv::CMP_GT 'cv::CMP_GE 'cv::CMP_LT 'cv::CMP_LE
+                'cv::DFT_COMPLEX_OUTPUT
+                'cv::INPAINT_TELEA 'cv::INPAINT_NS
+                'cv::RANSAC 'cv::LMEDS
+                'cv::CALIB_CB_ADAPTIVE_THRESH 'cv::CALIB_CB_NORMALIZE_IMAGE
+                'cv::CAP_PROP_FRAME_WIDTH 'cv::CAP_PROP_FRAME_HEIGHT 'cv::CAP_PROP_FPS 'cv::CAP_PROP_FRAME_COUNT
+                'cv::dnn::DNN_BACKEND_DEFAULT 'cv::dnn::DNN_BACKEND_OPENCV 'cv::dnn::DNN_TARGET_CPU
+                'cv::COLORMAP_JET 'cv::COLORMAP_HOT 'cv::COLORMAP_BONE 'cv::COLORMAP_VIRIDIS 'cv::COLORMAP_INFERNO 'cv::COLORMAP_TURBO
+                'cv::KMEANS_PP_CENTERS 'cv::KMEANS_RANDOM_CENTERS
+                'cv::GC_INIT_WITH_RECT 'cv::GC_BGD 'cv::GC_FGD 'cv::GC_PR_BGD 'cv::GC_PR_FGD
+                'cv::utils::logging::LOG_LEVEL_SILENT 'cv::utils::logging::LOG_LEVEL_ERROR 'cv::utils::logging::LOG_LEVEL_WARNING
+                'cv::DrawMatchesFlags::DEFAULT
+                'cv::TermCriteria::EPS 'cv::TermCriteria::COUNT)
+     (typedef (const char *) CV_VERSION)
+     ))

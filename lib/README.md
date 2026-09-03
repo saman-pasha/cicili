@@ -99,6 +99,7 @@ Each needs its own `(import …)`, the header included in the target, and the fl
 | [python/python.cicili](python/python.cicili) | `<Python.h>` **first**, `-export-dynamic -ldl` | CPython's embedding API and the numpy C API — see [python/README.md](python/README.md). [python/module.cicili](python/module.cicili) is the other direction: a `.so` that `import` loads, whose functions are written in Cicili. |
 | [cpp/torch/torch.cicili](cpp/torch/torch.cicili) | `<torch/torch.h>`, `:cpp #t` | libtorch, and a DSL in which a network is described rather than constructed — see [cpp/torch/README.md](cpp/torch/README.md). |
 | [cpp/memory.cicili](cpp/memory.cicili) | `<memory>`, `:cpp #t` | `std::shared_ptr` and `std::make_shared`. |
+| [cpp/opencv/opencv.cicili](cpp/opencv/opencv.cicili) | `<opencv2/*.hpp>`, `:cpp #t`, pkg-config `opencv4` | OpenCV 4: `cv::Mat` and the small value types, the containers per element type, imgcodecs, imgproc, drawing, dnn, objdetect, features2d, photo, video, videoio, calib3d, the constants. Declarations only; cocolog's `modules/opencv` is the program written against it. |
 | [parsi/parsi.cicili](parsi/parsi.cicili) | ZiguratIP | A Cicili macro for each of Parsi's seven top-level objects — `TABLE`, `PROCEDURE`, `CLASS`, `PAGE`, `TYPE`, `ENUM`, `SEQUENCE` — so a Cicili program writes one instead of a developer pasting C++ into it. Its import takes a third argument, the domain: `(import "lib/parsi/parsi.cicili" :parsi "demo")`. |
 
 ## Tests
