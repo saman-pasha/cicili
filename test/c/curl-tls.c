@@ -68,14 +68,22 @@ int make_cert () {
     return (((0 ==  system (cmd ) )) ? 1 : 0);
   }
 }
-int start_server () {
+int ports_free () {
   { /* let151 */
+    char cmd [512];
+    // ----------
+    snprintf (cmd , sizeof(cmd), "python3 -c \"import socket, sys\nfor p in (18443, 18444):\n    try:\n        socket.create_connection(('127.0.0.1', p), 0.25).close(); sys.exit(1)\n    except OSError:\n        pass\nsys.exit(0)\"");
+    return (((0 ==  system (cmd ) )) ? 1 : 0);
+  }
+}
+int start_server () {
+  { /* let154 */
     char cmd [2048];
     // ----------
-    snprintf (cmd , sizeof(cmd), "cat > %s/serve.py <<'PYEOF'\nimport http.server, ssl\nsrv = http.server.HTTPServer(('127.0.0.1', 18443), http.server.SimpleHTTPRequestHandler)\nctx = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)\nctx.load_cert_chain('%s', '%s/key.pem')\nsrv.socket = ctx.wrap_socket(srv.socket, server_side=True)\nsrv.serve_forever()\nPYEOF\ncd %s && python3 serve.py >/dev/null 2>&1 & echo $! > %s/pid\ncd %s && python3 -m http.server 18444 --bind 127.0.0.1 >/dev/null 2>&1 & echo $! > %s/pid2", DIR , CERT , DIR , DIR , DIR , DIR , DIR );
+    snprintf (cmd , sizeof(cmd), "cat > %s/serve.py <<'PYEOF'\nimport http.server, ssl\nsrv = http.server.HTTPServer(('127.0.0.1', 18443), http.server.SimpleHTTPRequestHandler)\nctx = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)\nctx.load_cert_chain('%s', '%s/key.pem')\nsrv.socket = ctx.wrap_socket(srv.socket, server_side=True)\nsrv.serve_forever()\nPYEOF\ncd %s && exec python3 serve.py >/dev/null 2>&1 & echo $! > %s/pid\ncd %s && exec python3 -m http.server 18444 --bind 127.0.0.1 >/dev/null 2>&1 & echo $! > %s/pid2", DIR , CERT , DIR , DIR , DIR , DIR , DIR );
     if (0 !=  system (cmd ) )
       return 0;
-    { /* let155 */
+    { /* let158 */
       char wait [1024];
       // ----------
       snprintf (wait , sizeof(wait), "cat > %s/wait.py <<'PYEOF'\nimport socket, sys, time\nfor port in (18443, 18444):\n    for _ in range(40):\n        try:\n            socket.create_connection(('127.0.0.1', port), 0.25).close()\n            break\n        except OSError:\n            time.sleep(0.25)\n    else:\n        sys.exit(1)\nsys.exit(0)\nPYEOF\npython3 %s/wait.py", DIR , DIR );
@@ -84,15 +92,15 @@ int start_server () {
   }
 }
 void stop_server () {
-  { /* let158 */
-    char cmd [512];
+  { /* let161 */
+    char cmd [1024];
     // ----------
-    snprintf (cmd , sizeof(cmd), "kill $(cat %s/pid) $(cat %s/pid2) 2>/dev/null; rm -rf %s", DIR , DIR , DIR );
+    snprintf (cmd , sizeof(cmd), "kill $(cat %s/pid) $(cat %s/pid2) 2>/dev/null; rm -rf %s; python3 -c \"import socket, time\nfor _ in range(40):\n    try:\n        socket.create_connection(('127.0.0.1', 18443), 0.25).close(); time.sleep(0.25)\n    except OSError:\n        break\"", DIR , DIR , DIR );
     system (cmd );
   }
 }
 int have (const char * tool ) {
-  { /* let161 */
+  { /* let164 */
     char cmd [256];
     // ----------
     snprintf (cmd , sizeof(cmd), "command -v %s >/dev/null 2>&1", tool );
@@ -100,105 +108,121 @@ int have (const char * tool ) {
   }
 }
 int main () {
-  check ("this libcurl was built with TLS", ((long long)(0 !=  (({ /* progn167 */
-          ({ /* letn169 */
-            struct curl_version_info_data * cu_ver_166  = curl_version_info (CURLVERSION_NOW );
+  check ("this libcurl was built with TLS", ((long long)(0 !=  (({ /* progn170 */
+          ({ /* letn172 */
+            struct curl_version_info_data * cu_ver_169  = curl_version_info (CURLVERSION_NOW );
             // ----------
-            (cu_ver_166 -> features);
+            (cu_ver_169 -> features);
           });
         }) &  CURL_VERSION_SSL  ) )), 1);
-  printf ("     backend: %s\n", ({ /* progn173 */
-      ({ /* letn175 */
-        struct curl_version_info_data * cu_ver_172  = curl_version_info (CURLVERSION_NOW );
+  printf ("     backend: %s\n", ({ /* progn176 */
+      ({ /* letn178 */
+        struct curl_version_info_data * cu_ver_175  = curl_version_info (CURLVERSION_NOW );
         // ----------
-        (cu_ver_172 -> ssl_version);
+        (cu_ver_175 -> ssl_version);
       });
     }));
+  if (NULL  !=  strstr (({ /* progn182 */
+        ({ /* letn184 */
+          struct curl_version_info_data * cu_ver_181  = curl_version_info (CURLVERSION_NOW );
+          // ----------
+          (cu_ver_181 -> ssl_version);
+        });
+      }), "SecureTransport") )
+    { /* block188 */
+      printf ("skip -- this is Apple's SecureTransport libcurl, which ignores CURLOPT_CAINFO; brew install curl\n");
+      return 0;
+    }
   if ((0 ==  have ("openssl") ) ||  (0 ==  have ("python3") ) )
-    { /* block179 */
+    { /* block192 */
       printf ("skip -- openssl and python3 are needed to raise a TLS server\n");
       return 0;
     }
+  if (0 ==  ports_free () )
+    { /* block196 */
+      printf ("skip -- 127.0.0.1:18443 or :18444 is already taken (a server left behind? kill it)\n");
+      return 0;
+    }
   if (0 ==  make_cert () )
-    { /* block183 */
+    { /* block200 */
       printf ("skip -- could not make a self-signed certificate\n");
       return 0;
     }
   if (0 ==  start_server () )
-    { /* block187 */
+    { /* block204 */
       printf ("skip -- nothing came up on 127.0.0.1:18443\n");
       stop_server ();
       return 0;
     }
   curl_global_init (CURL_GLOBAL_DEFAULT );
-  ({ /* progn190 */
-    ({ /* letn192 */
+  ({ /* progn207 */
+    ({ /* letn209 */
       CURL * h  = curl_easy_init ();
       // ----------
-      { /* let194 */
+      { /* let211 */
         cu_buf body  = { NULL , 0};
         // ----------
-        check ("an untrusted certificate is refused", ((long long)({ /* progn199 */
-            ({ /* letn201 */
-              int cu_rc_197  = 0;
+        check ("an untrusted certificate is refused", ((long long)({ /* progn216 */
+            ({ /* letn218 */
+              int cu_rc_214  = 0;
               // ----------
-              cu_rc_197  = ({ /* progn203 */
-                    ({ /* letn205 */
-                      int cu_rc_198  = 0;
+              cu_rc_214  = ({ /* progn220 */
+                    ({ /* letn222 */
+                      int cu_rc_215  = 0;
                       // ----------
-                      if (cu_rc_198  ==  CURLE_OK  )
-                        cu_rc_198  = curl_easy_setopt (h , CURLOPT_URL , ((const char *)URL ));
-                      if (cu_rc_198  ==  CURLE_OK  )
-                        cu_rc_198  = ({ /* progn211 */
+                      if (cu_rc_215  ==  CURLE_OK  )
+                        cu_rc_215  = curl_easy_setopt (h , CURLOPT_URL , ((const char *)URL ));
+                      if (cu_rc_215  ==  CURLE_OK  )
+                        cu_rc_215  = ({ /* progn228 */
                               curl_easy_setopt (h , CURLOPT_WRITEFUNCTION , cu_write );
                               curl_easy_setopt (h , CURLOPT_WRITEDATA , (&body ));
                             });
-                      if (cu_rc_198  ==  CURLE_OK  )
-                        cu_rc_198  = curl_easy_setopt (h , CURLOPT_TIMEOUT , ((long)10));
-                      cu_rc_198 ;
+                      if (cu_rc_215  ==  CURLE_OK  )
+                        cu_rc_215  = curl_easy_setopt (h , CURLOPT_TIMEOUT , ((long)10));
+                      cu_rc_215 ;
                     });
                   });
-              if (cu_rc_197  ==  CURLE_OK  )
-                cu_rc_197  = curl_easy_perform (h );
-              cu_rc_197 ;
+              if (cu_rc_214  ==  CURLE_OK  )
+                cu_rc_214  = curl_easy_perform (h );
+              cu_rc_214 ;
             });
           })), ((long long)CURLE_PEER_FAILED_VERIFICATION ));
         check ("and nothing was written", ((long long)(body . len)), 0);
         cu_buf_free ((&body ));
       }
       curl_easy_reset (h );
-      { /* let219 */
+      { /* let236 */
         cu_buf body  = { NULL , 0};
         // ----------
-        check ("trusting it, the transfer succeeds", ((long long)({ /* progn224 */
-            ({ /* letn226 */
-              int cu_rc_222  = 0;
+        check ("trusting it, the transfer succeeds", ((long long)({ /* progn241 */
+            ({ /* letn243 */
+              int cu_rc_239  = 0;
               // ----------
-              cu_rc_222  = ({ /* progn228 */
-                    ({ /* letn230 */
-                      int cu_rc_223  = 0;
+              cu_rc_239  = ({ /* progn245 */
+                    ({ /* letn247 */
+                      int cu_rc_240  = 0;
                       // ----------
-                      if (cu_rc_223  ==  CURLE_OK  )
-                        cu_rc_223  = curl_easy_setopt (h , CURLOPT_URL , ((const char *)URL ));
-                      if (cu_rc_223  ==  CURLE_OK  )
-                        cu_rc_223  = ({ /* progn236 */
+                      if (cu_rc_240  ==  CURLE_OK  )
+                        cu_rc_240  = curl_easy_setopt (h , CURLOPT_URL , ((const char *)URL ));
+                      if (cu_rc_240  ==  CURLE_OK  )
+                        cu_rc_240  = ({ /* progn253 */
                               curl_easy_setopt (h , CURLOPT_WRITEFUNCTION , cu_write );
                               curl_easy_setopt (h , CURLOPT_WRITEDATA , (&body ));
                             });
-                      if (cu_rc_223  ==  CURLE_OK  )
-                        cu_rc_223  = curl_easy_setopt (h , CURLOPT_CAINFO , ((const char *)CERT ));
-                      if (cu_rc_223  ==  CURLE_OK  )
-                        cu_rc_223  = curl_easy_setopt (h , CURLOPT_TIMEOUT , ((long)10));
-                      cu_rc_223 ;
+                      if (cu_rc_240  ==  CURLE_OK  )
+                        cu_rc_240  = curl_easy_setopt (h , CURLOPT_CAINFO , ((const char *)CERT ));
+                      if (cu_rc_240  ==  CURLE_OK  )
+                        cu_rc_240  = curl_easy_setopt (h , CURLOPT_TIMEOUT , ((long)10));
+                      cu_rc_240 ;
                     });
                   });
-              if (cu_rc_222  ==  CURLE_OK  )
-                cu_rc_222  = curl_easy_perform (h );
-              cu_rc_222 ;
+              if (cu_rc_239  ==  CURLE_OK  )
+                cu_rc_239  = curl_easy_perform (h );
+              cu_rc_239 ;
             });
           })), 0);
         check_str ("and the body arrived", (body . data), BODY );
-        { /* let245 */
+        { /* let262 */
           long code  = 0;
           double tls  = 0.0;
           double total  = 0.0;
@@ -218,148 +242,148 @@ int main () {
           check ("the TLS handshake has a time", ((long long)(tls  >  0.0 )), 1);
           check ("handshake lands between connect and done", ((long long)((tls  >=  conn  ) &&  (tls  <=  total  ) )), 1);
           check ("verify-result is clean", ((long long)vr ), 0);
-          check_str ("scheme is HTTPS", s , "HTTPS");
+          check ("scheme is https", ((long long)(0 ==  strcasecmp (s , "https") )), 1);
           check ("and the port is the one asked for", ((long long)port ), 18443);
         }
         cu_buf_free ((&body ));
       }
       curl_easy_reset (h );
-      { /* let249 */
+      { /* let266 */
         cu_buf body  = { NULL , 0};
         // ----------
-        check ("verification off accepts anything", ((long long)({ /* progn254 */
-            ({ /* letn256 */
-              int cu_rc_252  = 0;
+        check ("verification off accepts anything", ((long long)({ /* progn271 */
+            ({ /* letn273 */
+              int cu_rc_269  = 0;
               // ----------
-              cu_rc_252  = ({ /* progn258 */
-                    ({ /* letn260 */
-                      int cu_rc_253  = 0;
+              cu_rc_269  = ({ /* progn275 */
+                    ({ /* letn277 */
+                      int cu_rc_270  = 0;
                       // ----------
-                      if (cu_rc_253  ==  CURLE_OK  )
-                        cu_rc_253  = curl_easy_setopt (h , CURLOPT_URL , ((const char *)URL ));
-                      if (cu_rc_253  ==  CURLE_OK  )
-                        cu_rc_253  = ({ /* progn266 */
+                      if (cu_rc_270  ==  CURLE_OK  )
+                        cu_rc_270  = curl_easy_setopt (h , CURLOPT_URL , ((const char *)URL ));
+                      if (cu_rc_270  ==  CURLE_OK  )
+                        cu_rc_270  = ({ /* progn283 */
                               curl_easy_setopt (h , CURLOPT_WRITEFUNCTION , cu_write );
                               curl_easy_setopt (h , CURLOPT_WRITEDATA , (&body ));
                             });
-                      if (cu_rc_253  ==  CURLE_OK  )
-                        cu_rc_253  = curl_easy_setopt (h , CURLOPT_SSL_VERIFYPEER , ((long)0));
-                      if (cu_rc_253  ==  CURLE_OK  )
-                        cu_rc_253  = curl_easy_setopt (h , CURLOPT_SSL_VERIFYHOST , ((long)0));
-                      if (cu_rc_253  ==  CURLE_OK  )
-                        cu_rc_253  = curl_easy_setopt (h , CURLOPT_TIMEOUT , ((long)10));
-                      cu_rc_253 ;
+                      if (cu_rc_270  ==  CURLE_OK  )
+                        cu_rc_270  = curl_easy_setopt (h , CURLOPT_SSL_VERIFYPEER , ((long)0));
+                      if (cu_rc_270  ==  CURLE_OK  )
+                        cu_rc_270  = curl_easy_setopt (h , CURLOPT_SSL_VERIFYHOST , ((long)0));
+                      if (cu_rc_270  ==  CURLE_OK  )
+                        cu_rc_270  = curl_easy_setopt (h , CURLOPT_TIMEOUT , ((long)10));
+                      cu_rc_270 ;
                     });
                   });
-              if (cu_rc_252  ==  CURLE_OK  )
-                cu_rc_252  = curl_easy_perform (h );
-              cu_rc_252 ;
+              if (cu_rc_269  ==  CURLE_OK  )
+                cu_rc_269  = curl_easy_perform (h );
+              cu_rc_269 ;
             });
           })), 0);
         check_str ("body still arrives", (body . data), BODY );
         cu_buf_free ((&body ));
       }
       curl_easy_reset (h );
-      { /* let278 */
+      { /* let295 */
         cu_buf body  = { NULL , 0};
         // ----------
-        check ("TLS 1.2 floor still connects", ((long long)({ /* progn283 */
-            ({ /* letn285 */
-              int cu_rc_281  = 0;
+        check ("TLS 1.2 floor still connects", ((long long)({ /* progn300 */
+            ({ /* letn302 */
+              int cu_rc_298  = 0;
               // ----------
-              cu_rc_281  = ({ /* progn287 */
-                    ({ /* letn289 */
-                      int cu_rc_282  = 0;
+              cu_rc_298  = ({ /* progn304 */
+                    ({ /* letn306 */
+                      int cu_rc_299  = 0;
                       // ----------
-                      if (cu_rc_282  ==  CURLE_OK  )
-                        cu_rc_282  = curl_easy_setopt (h , CURLOPT_URL , ((const char *)URL ));
-                      if (cu_rc_282  ==  CURLE_OK  )
-                        cu_rc_282  = ({ /* progn295 */
+                      if (cu_rc_299  ==  CURLE_OK  )
+                        cu_rc_299  = curl_easy_setopt (h , CURLOPT_URL , ((const char *)URL ));
+                      if (cu_rc_299  ==  CURLE_OK  )
+                        cu_rc_299  = ({ /* progn312 */
                               curl_easy_setopt (h , CURLOPT_WRITEFUNCTION , cu_write );
                               curl_easy_setopt (h , CURLOPT_WRITEDATA , (&body ));
                             });
-                      if (cu_rc_282  ==  CURLE_OK  )
-                        cu_rc_282  = curl_easy_setopt (h , CURLOPT_CAINFO , ((const char *)CERT ));
-                      if (cu_rc_282  ==  CURLE_OK  )
-                        cu_rc_282  = curl_easy_setopt (h , CURLOPT_SSLVERSION , ((long)CURL_SSLVERSION_TLSv1_2 ));
-                      if (cu_rc_282  ==  CURLE_OK  )
-                        cu_rc_282  = curl_easy_setopt (h , CURLOPT_TIMEOUT , ((long)10));
-                      cu_rc_282 ;
+                      if (cu_rc_299  ==  CURLE_OK  )
+                        cu_rc_299  = curl_easy_setopt (h , CURLOPT_CAINFO , ((const char *)CERT ));
+                      if (cu_rc_299  ==  CURLE_OK  )
+                        cu_rc_299  = curl_easy_setopt (h , CURLOPT_SSLVERSION , ((long)CURL_SSLVERSION_TLSv1_2 ));
+                      if (cu_rc_299  ==  CURLE_OK  )
+                        cu_rc_299  = curl_easy_setopt (h , CURLOPT_TIMEOUT , ((long)10));
+                      cu_rc_299 ;
                     });
                   });
-              if (cu_rc_281  ==  CURLE_OK  )
-                cu_rc_281  = curl_easy_perform (h );
-              cu_rc_281 ;
+              if (cu_rc_298  ==  CURLE_OK  )
+                cu_rc_298  = curl_easy_perform (h );
+              cu_rc_298 ;
             });
           })), 0);
         cu_buf_free ((&body ));
       }
       curl_easy_reset (h );
-      { /* let307 */
+      { /* let324 */
         cu_buf body  = { NULL , 0};
         // ----------
-        check ("a wrong public-key pin is refused", ((long long)(CURLE_OK  !=  ({ /* progn312 */
-              ({ /* letn314 */
-                int cu_rc_310  = 0;
+        check ("a wrong public-key pin is refused", ((long long)(CURLE_OK  !=  ({ /* progn329 */
+              ({ /* letn331 */
+                int cu_rc_327  = 0;
                 // ----------
-                cu_rc_310  = ({ /* progn316 */
-                      ({ /* letn318 */
-                        int cu_rc_311  = 0;
+                cu_rc_327  = ({ /* progn333 */
+                      ({ /* letn335 */
+                        int cu_rc_328  = 0;
                         // ----------
-                        if (cu_rc_311  ==  CURLE_OK  )
-                          cu_rc_311  = curl_easy_setopt (h , CURLOPT_URL , ((const char *)URL ));
-                        if (cu_rc_311  ==  CURLE_OK  )
-                          cu_rc_311  = ({ /* progn324 */
+                        if (cu_rc_328  ==  CURLE_OK  )
+                          cu_rc_328  = curl_easy_setopt (h , CURLOPT_URL , ((const char *)URL ));
+                        if (cu_rc_328  ==  CURLE_OK  )
+                          cu_rc_328  = ({ /* progn341 */
                                 curl_easy_setopt (h , CURLOPT_WRITEFUNCTION , cu_write );
                                 curl_easy_setopt (h , CURLOPT_WRITEDATA , (&body ));
                               });
-                        if (cu_rc_311  ==  CURLE_OK  )
-                          cu_rc_311  = curl_easy_setopt (h , CURLOPT_CAINFO , ((const char *)CERT ));
-                        if (cu_rc_311  ==  CURLE_OK  )
-                          cu_rc_311  = curl_easy_setopt (h , CURLOPT_PINNEDPUBLICKEY , ((const char *)"sha256//AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="));
-                        if (cu_rc_311  ==  CURLE_OK  )
-                          cu_rc_311  = curl_easy_setopt (h , CURLOPT_TIMEOUT , ((long)10));
-                        cu_rc_311 ;
+                        if (cu_rc_328  ==  CURLE_OK  )
+                          cu_rc_328  = curl_easy_setopt (h , CURLOPT_CAINFO , ((const char *)CERT ));
+                        if (cu_rc_328  ==  CURLE_OK  )
+                          cu_rc_328  = curl_easy_setopt (h , CURLOPT_PINNEDPUBLICKEY , ((const char *)"sha256//AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="));
+                        if (cu_rc_328  ==  CURLE_OK  )
+                          cu_rc_328  = curl_easy_setopt (h , CURLOPT_TIMEOUT , ((long)10));
+                        cu_rc_328 ;
                       });
                     });
-                if (cu_rc_310  ==  CURLE_OK  )
-                  cu_rc_310  = curl_easy_perform (h );
-                cu_rc_310 ;
+                if (cu_rc_327  ==  CURLE_OK  )
+                  cu_rc_327  = curl_easy_perform (h );
+                cu_rc_327 ;
               });
             }) )), 1);
         cu_buf_free ((&body ));
       }
       curl_easy_reset (h );
-      { /* let336 */
+      { /* let353 */
         cu_buf body  = { NULL , 0};
         // ----------
-        check ("plain HTTP to the same files", ((long long)({ /* progn341 */
-            ({ /* letn343 */
-              int cu_rc_339  = 0;
+        check ("plain HTTP to the same files", ((long long)({ /* progn358 */
+            ({ /* letn360 */
+              int cu_rc_356  = 0;
               // ----------
-              cu_rc_339  = ({ /* progn345 */
-                    ({ /* letn347 */
-                      int cu_rc_340  = 0;
+              cu_rc_356  = ({ /* progn362 */
+                    ({ /* letn364 */
+                      int cu_rc_357  = 0;
                       // ----------
-                      if (cu_rc_340  ==  CURLE_OK  )
-                        cu_rc_340  = curl_easy_setopt (h , CURLOPT_URL , ((const char *)"http://127.0.0.1:18444/payload"));
-                      if (cu_rc_340  ==  CURLE_OK  )
-                        cu_rc_340  = ({ /* progn353 */
+                      if (cu_rc_357  ==  CURLE_OK  )
+                        cu_rc_357  = curl_easy_setopt (h , CURLOPT_URL , ((const char *)"http://127.0.0.1:18444/payload"));
+                      if (cu_rc_357  ==  CURLE_OK  )
+                        cu_rc_357  = ({ /* progn370 */
                               curl_easy_setopt (h , CURLOPT_WRITEFUNCTION , cu_write );
                               curl_easy_setopt (h , CURLOPT_WRITEDATA , (&body ));
                             });
-                      if (cu_rc_340  ==  CURLE_OK  )
-                        cu_rc_340  = curl_easy_setopt (h , CURLOPT_TIMEOUT , ((long)10));
-                      cu_rc_340 ;
+                      if (cu_rc_357  ==  CURLE_OK  )
+                        cu_rc_357  = curl_easy_setopt (h , CURLOPT_TIMEOUT , ((long)10));
+                      cu_rc_357 ;
                     });
                   });
-              if (cu_rc_339  ==  CURLE_OK  )
-                cu_rc_339  = curl_easy_perform (h );
-              cu_rc_339 ;
+              if (cu_rc_356  ==  CURLE_OK  )
+                cu_rc_356  = curl_easy_perform (h );
+              cu_rc_356 ;
             });
           })), 0);
         check_str ("and the body arrived over it", (body . data), BODY );
-        { /* let360 */
+        { /* let377 */
           double tls  = 0.0;
           double conn  = 0.0;
           // ----------

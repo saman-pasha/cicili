@@ -1,0 +1,39 @@
+;;;; Zigurat::DER -- Distinguished Encoding Rules, from <der.hpp>.
+;;;;
+;;;; Every encoder writes to a binarystream& and every decoder reads one.
+;;;; Of each overloaded name the declared form is: encode_octet_string
+;;;; over bytes and a length, encode_oid over the vector (oid_t is
+;;;; std::vector<uint32_t>), the string encoders over std::string,
+;;;; decode_oid answering the vector, and the times as long.
+;;; Part of the :zigurat library; see zigurat.cicili.
+(DEFPACKAGE :zigurat
+  (:USE :COMMON-LISP)
+  (:IMPORT-FROM :COMMON-LISP-USER "import" "generic" "cicili")
+  (:EXPORT "vector<" "consts<"))
+
+(IN-PACKAGE :zigurat)
+
+(DEFMACRO init-macro ()
+  `($$$
+     (decl) (struct Zigurat::DER)
+     (decl) (func Zigurat::DER::encode_length ((Zigurat::binarystream & b) (u64 n)))
+     (decl) (func Zigurat::DER::encode_boolean ((Zigurat::binarystream & b) (bool v)))
+     (decl) (func Zigurat::DER::encode_octet_string ((Zigurat::binarystream & b) (const u8 * bytes) (size_t n)))
+     (decl) (func Zigurat::DER::encode_null ((Zigurat::binarystream & b)))
+     (decl) (func Zigurat::DER::encode_oid ((Zigurat::binarystream & b) ((t<> std::vector u32) oid)))
+     (decl) (func Zigurat::DER::encode_utf8_string ((Zigurat::binarystream & b) (const std::string s)))
+     (decl) (func Zigurat::DER::encode_printable_string ((Zigurat::binarystream & b) (const std::string s)))
+     (decl) (func Zigurat::DER::encode_ia5_string ((Zigurat::binarystream & b) (const std::string s)))
+     (decl) (func Zigurat::DER::encode_utc_time ((Zigurat::binarystream & b) (long t) (bool zulu)))
+     (decl) (func Zigurat::DER::encode_generalized_time ((Zigurat::binarystream & b) (long t) (bool zulu)))
+     (decl) (func Zigurat::DER::encode_sequence ((Zigurat::binarystream & b) (Zigurat::binarystream & content)))
+     (decl) (func Zigurat::DER::encode_set ((Zigurat::binarystream & b) (Zigurat::binarystream & content)))
+     (decl) (func Zigurat::DER::decode_tag ((Zigurat::binarystream & b)) (out u8))
+     (decl) (func Zigurat::DER::decode_length ((Zigurat::binarystream & b)) (out u64))
+     (decl) (func Zigurat::DER::decode_boolean ((Zigurat::binarystream & b)) (out bool))
+     (decl) (func Zigurat::DER::decode_octet_string ((Zigurat::binarystream & b) (Zigurat::binarystream & out)) (out size_t))
+     (decl) (func Zigurat::DER::decode_null ((Zigurat::binarystream & b)))
+     (decl) (func Zigurat::DER::decode_oid ((Zigurat::binarystream & b)) (out (t<> std::vector u32)))
+     (decl) (func Zigurat::DER::decode_utc_time ((Zigurat::binarystream & b)) (out long))
+     (decl) (func Zigurat::DER::decode_generalized_time ((Zigurat::binarystream & b)) (out long))
+     (decl) (func Zigurat::DER::decode_sequence ((Zigurat::binarystream & b) (Zigurat::binarystream & out)))))

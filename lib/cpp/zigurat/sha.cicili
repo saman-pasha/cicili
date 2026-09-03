@@ -1,0 +1,25 @@
+;;;; Zigurat::SHA -- the SHA family and HMAC, from <shahelper.hpp>.
+;;;;
+;;;; The STREAM overloads are the ones declared: checksum(Version, istream&,
+;;;; size_t, ostream&) and hmac(Version, istream& key, size_t, istream&
+;;;; text, size_t, ostream&). Bytes in memory go through a bufferstream
+;;;; built from a std::string, a file through an std::ifstream, and the
+;;;; digest is read back out of the output stream -- one signature serving
+;;;; both, which is what one-signature-per-name asks for.
+;;; Part of the :zigurat library; see zigurat.cicili.
+(DEFPACKAGE :zigurat
+  (:USE :COMMON-LISP)
+  (:IMPORT-FROM :COMMON-LISP-USER "import" "generic" "cicili")
+  (:EXPORT "vector<" "consts<"))
+
+(IN-PACKAGE :zigurat)
+
+(DEFMACRO init-macro ()
+  `($$$
+     (decl) (struct Zigurat::SHA)
+     (typedef int Zigurat::SHA::Version)
+     ,@(consts< 'Zigurat::SHA::SHA1 'Zigurat::SHA::SHA224 'Zigurat::SHA::SHA256 'Zigurat::SHA::SHA384 'Zigurat::SHA::SHA512)
+     (decl) (func Zigurat::SHA::checksum ((Zigurat::SHA::Version v) (std::istream & in) (size_t n) (std::ostream & out)))
+     (decl) (func Zigurat::SHA::hmac ((Zigurat::SHA::Version v) (std::istream & key) (size_t kn) (std::istream & text) (size_t tn) (std::ostream & out)))
+     (decl) (func Zigurat::SHA::size ((Zigurat::SHA::Version v)) (out size_t))
+     (decl) (func Zigurat::SHA::name ((Zigurat::SHA::Version v)) (out std::string))))

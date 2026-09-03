@@ -1,0 +1,34 @@
+;;;; Zigurat::AES<Nk, Nb, Nr> -- the three instantiations <aes.hpp> names,
+;;;; AES128, AES192 and AES256, declared one by one since a template is not
+;;;; a name Cicili can declare once for all. `aes<' writes the set for one.
+;;;;
+;;;; The STREAM overloads of Cipher and InverseCipher are the declared ones;
+;;;; key_t and schedule_t are array typedefs a program declares a local of
+;;;; and fills with memcpy and KeyExpansion.
+;;; Part of the :zigurat library; see zigurat.cicili.
+(DEFPACKAGE :zigurat
+  (:USE :COMMON-LISP)
+  (:IMPORT-FROM :COMMON-LISP-USER "import" "generic" "cicili")
+  (:EXPORT "vector<" "consts<"))
+
+(IN-PACKAGE :zigurat)
+
+;;; `cls' arrives as the reader's ($$ Zigurat AES128); a member of it is that
+;;; list with one more segment, which is how the reader would have spelled
+;;; Zigurat::AES128::key_t itself.
+(DEFUN aes< (cls)
+  (FLET ((q (m) (APPEND cls (LIST (INTERN m :zigurat)))))
+    `((decl) (struct ,cls)
+      (typedef u8 ,(q "key_t"))
+      (typedef u8 ,(q "schedule_t"))
+      (decl) (func ,(q "KeyExpansion") ((,(q "key_t") key) (,(q "schedule_t") schedule)))
+      (decl) (func ,(q "Cipher") ((std::istream & in) (,(q "schedule_t") schedule) (std::ostream & out)))
+      (decl) (func ,(q "InverseCipher") ((std::istream & in) (,(q "schedule_t") schedule) (std::ostream & out)))
+      (decl) (func ,(q "CipherCBC") ((std::istream & in) (,(q "schedule_t") schedule) (const u8 * iv) (std::ostream & out)))
+      (decl) (func ,(q "InverseCipherCBC") ((std::istream & in) (,(q "schedule_t") schedule) (const u8 * iv) (std::ostream & out))))))
+
+(DEFMACRO init-macro ()
+  `($$$
+     ,@(aes< 'Zigurat::AES128)
+     ,@(aes< 'Zigurat::AES192)
+     ,@(aes< 'Zigurat::AES256)))

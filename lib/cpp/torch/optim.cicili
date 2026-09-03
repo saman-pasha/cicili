@@ -25,7 +25,8 @@
 
      (decl) (struct torch::optim::Optimizer
               (method step      ())
-              (method zero_grad ()))
+              (method zero_grad ())
+              (method param_groups () (out (t<> std::vector torch::optim::OptimizerParamGroup) &)))
 
      ;;; constructed from a module's parameters and a learning rate:
      ;;;   (letin* ((opt (torch::optim::SGD (($ net parameters)) 0.1)))
@@ -54,5 +55,18 @@
      ;;; reached through the object rather than declared one by one here.
      (decl) (struct torch::optim::SGDOptions)
      (decl) (struct torch::optim::AdamOptions)
+
+     ;;; the learning-rate schedule by hand: every group's options carry the lr
+     (decl) (struct torch::optim::OptimizerOptions
+              (const) (method get_lr () (out double))
+              (method set_lr ((double lr))))
+     (decl) (struct torch::optim::OptimizerParamGroup
+              (method options () (out torch::optim::OptimizerOptions &)))
+     (decl) (struct (t<> std::vector torch::optim::OptimizerParamGroup)
+              (const) (method size () (out size_t))
+              (method at ((size_t i)) (out torch::optim::OptimizerParamGroup &)))
+     (decl) (struct (t<> std::unique_ptr torch::optim::Optimizer)
+              (method reset ((torch::optim::Optimizer * p)))
+              (const) (method get () (out torch::optim::Optimizer *)))
 
      ))

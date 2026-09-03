@@ -40,6 +40,7 @@
     (func take    ((size_t len) (type list)) (out type))
     (func push    ((a item) (type list)) (out type))
     (func append  ((type llist) (type rlist)) (out type))
+    (func reverseOnto ((type list) (type rlist)) (out type))   ; reverse's accumulator
     (func reverse ((type list)) (out type))
     (func insert  ((type llist) (a item) (type rlist)) (out type))
     (func delete  ((type list) (type aimed)) (out type))
@@ -51,6 +52,7 @@
     (func show    ((FILE * file) (type list)) (out size_t))
     (func pure    ((const a * buf) (size_t len)) (out type))
     (func wrap    ((const a item)) (out type))
+    (func toArrayFrom ((type list) (size_t count)) (out a *))    ; toArray's recursion
     (func toArray ((type list)) (out a *)))
 
   (decl-Maybe type)
@@ -150,17 +152,22 @@
                     (* Cons head tail ((<> Cons a) head ((<> append type) tail rlist)))
                     (default ((<> copy type) rlist)))))
 
+    ;; A SIBLING, NOT A NESTED FUNCTION. reverse used to define its
+    ;; accumulator helper inside its own body, which gcc accepts as a
+    ;; nested function and clang refuses outright ("function definition is
+    ;; not allowed here"), so the whole test tree was red on a Mac. The
+    ;; helper is a function of the generic like any other, reached through
+    ;; the same (<> name type) the rest of the file uses.
+    (func reverseOnto ((type list) (type rlist))
+          (out type)
+          (return (match list
+                    (* Cons head tail ((<> reverseOnto type) tail ((<> Cons a) head rlist)))
+                    (default rlist))))
+
     (func reverse ((type list))
           (out type)
-
-          (func _reverse ((type list) (type rlist))
-                (out type)
-                (return (match list
-                          (* Cons head tail (_reverse tail ((<> Cons a) head rlist)))
-                          (default rlist))))
-          
           (return (match list
-                    (* Cons head tail (_reverse tail ((<> Cons a) head ((<> Nil a)))))
+                    (* Cons head tail ((<> reverseOnto type) tail ((<> Cons a) head ((<> Nil a)))))
                     (default list))))
     
     ;; pushes item to the new list
@@ -244,17 +251,18 @@
           (out type)
           (return ((<> Cons a) item ((<> Nil a)))))
 
+    ;; the same for toArray: the recursion that sizes the array from the
+    ;; tail and fills it on the way back is a sibling function
+    (func toArrayFrom ((type list) (size_t count))
+          (out a *)
+          (return (match list
+                    (* Cons head tail (letn ((a * arr . #'((<> toArrayFrom type) tail (+ count 1))))
+                                        (set (nth count arr) head)
+                                        arr))
+                    (default (cast (a *) (calloc count (sizeof a)))))))
+
     (func toArray ((type list)) (out a *)
-          
-          (func array ((type list) (size_t count))
-                (out a *)
-                (return (match list
-                          (* Cons head tail (letn ((a * arr . #'(array tail (+ count 1))))
-                                              (set (nth count arr) head)
-                                              arr))
-                          (default (cast (a *) (calloc count (sizeof a)))))))
-          
-          (return (array list 0)))
+          (return ((<> toArrayFrom type) list 0)))
 
     (free (io this
             (* Cons _ tail

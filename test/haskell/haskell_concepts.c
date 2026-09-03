@@ -230,6 +230,7 @@ typedef void (*free_List_int_t) (List_int * this_ptr );
 typedef struct List_int__H_Table {
   free_List_int_t freeClass ;
     int * (*toArray) (List_int list );
+    int * (*toArrayFrom) (List_int list , size_t count );
     List_int (*wrap) (const int item );
     List_int (*pure) (const int * buf , size_t len );
     size_t (*show) (FILE * file , List_int list );
@@ -241,6 +242,7 @@ typedef struct List_int__H_Table {
     List_int (*delete) (List_int list , List_int aimed );
     List_int (*insert) (List_int llist , int item , List_int rlist );
     List_int (*reverse) (List_int list );
+    List_int (*reverseOnto) (List_int list , List_int rlist );
     List_int (*append) (List_int llist , List_int rlist );
     List_int (*push) (int item , List_int list );
     List_int (*take) (size_t len , List_int list );
@@ -257,12 +259,12 @@ typedef struct List_int__H_Table {
 typedef struct class_List_int {
   const List_int__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion333 */
-    struct { /* ciciliStruct334 */
+  union { /* ciciliUnion335 */
+    struct { /* ciciliStruct336 */
       int __h_0_mem ;
       List_int __h_1_mem ;
     } Cons , _1 ;
-    struct { /* ciciliStruct335 */
+    struct { /* ciciliStruct337 */
     } Nil , _ ;
   } __h_data ;
 } class_List_int;
@@ -272,6 +274,7 @@ __attribute__((weak)) List_int Default_List_int () {
   return Nil_int ();
 }
 int * toArray_List_int (List_int list );
+int * toArrayFrom_List_int (List_int list , size_t count );
 List_int wrap_List_int (const int item );
 List_int pure_List_int (const int * buf , size_t len );
 size_t show_List_int (FILE * file , List_int list );
@@ -283,6 +286,7 @@ List_int replace_List_int (List_int list , int item , List_int aimed );
 List_int delete_List_int (List_int list , List_int aimed );
 List_int insert_List_int (List_int llist , int item , List_int rlist );
 List_int reverse_List_int (List_int list );
+List_int reverseOnto_List_int (List_int list , List_int rlist );
 List_int append_List_int (List_int llist , List_int rlist );
 List_int push_List_int (int item , List_int list );
 List_int take_List_int (size_t len , List_int list );
@@ -321,11 +325,11 @@ typedef struct Maybe_List_int__H_Table {
 typedef struct Maybe_List_int {
   const Maybe_List_int__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion436 */
-    struct { /* ciciliStruct437 */
+  union { /* ciciliUnion444 */
+    struct { /* ciciliStruct445 */
       List_int __h_0_mem ;
     } Just , _1 ;
-    struct { /* ciciliStruct438 */
+    struct { /* ciciliStruct446 */
     } Nothing , _ ;
   } __h_data ;
 } Maybe_List_int;
@@ -344,7 +348,7 @@ void free_Maybe_int (Maybe_int * this ) {
 }
 __attribute__((weak)) void free_Maybe_int_pointer (Maybe_int ** this ) {
   if (this )
-    { /* block468 */
+    { /* block476 */
       free_Maybe_int ((*this ));
     }
 }
@@ -353,14 +357,14 @@ const Maybe_int__H_Table * const get_Maybe_int__H_Table () {
   return (&table );
 }
 Maybe_int Just_int (int value ) {
-  { /* let478 */
+  { /* let486 */
     Maybe_int instance  = ((Maybe_int){ get_Maybe_int__H_Table (), __h_Just_t , .__h_data.Just = { value }});
     // ----------
     return instance ;
   }
 }
 Maybe_int Nothing_int () {
-  { /* let483 */
+  { /* let491 */
     Maybe_int instance  = ((Maybe_int){ get_Maybe_int__H_Table (), __h_Nothing_t });
     // ----------
     return instance ;
@@ -370,90 +374,90 @@ Maybe_int Nothing_int () {
 #ifndef __List_int__H_IMPL__
 #define __List_int__H_IMPL__
 int * toArray_List_int (List_int list ) {
-  int * array (List_int list , size_t count ) {
-    return ({ /* letn495 */
-        typeof((((list -> __h_data). Cons). __h_0_mem)) head ;
-        typeof((((list -> __h_data). Cons). __h_1_mem)) tail ;
+  return toArrayFrom_List_int (list , 0);
+}
+int * toArrayFrom_List_int (List_int list , size_t count ) {
+  return ({ /* letn505 */
+      typeof((((list -> __h_data). Cons). __h_0_mem)) head ;
+      typeof((((list -> __h_data). Cons). __h_1_mem)) tail ;
+      // ----------
+      ;
+      ({ /* letn507 */
+        bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  (({ /* progn508 */
+                head  = (((list -> __h_data). Cons). __h_0_mem) ;
+                true ;
+              }) &&  ({ /* progn510 */
+                tail  = (((list -> __h_data). Cons). __h_1_mem) ;
+                true ;
+              }) ) ) );
         // ----------
-        ;
-        ({ /* letn497 */
-          bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  (({ /* progn498 */
-                  head  = (((list -> __h_data). Cons). __h_0_mem) ;
-                  true ;
-                }) &&  ({ /* progn500 */
-                  tail  = (((list -> __h_data). Cons). __h_1_mem) ;
-                  true ;
-                }) ) ) );
-          // ----------
-          
-          ((__h_case_result ) ? ({ /* progn505 */
-              ({ /* letn507 */
-                int * arr  = array (tail , (count  +  1 ));
-                // ----------
-                arr [count ] = head ;
-                arr ;
-              });
-            }) : ({ /* letn511 */
+        
+        ((__h_case_result ) ? ({ /* progn515 */
+            ({ /* letn517 */
+              int * arr  = toArrayFrom_List_int (tail , (count  +  1 ));
               // ----------
-              ;
-              ({ /* progn513 */
-                ((int *)calloc (count , sizeof(int)));
-              });
-            }));
-        });
+              arr [count ] = head ;
+              arr ;
+            });
+          }) : ({ /* letn522 */
+            // ----------
+            ;
+            ({ /* progn524 */
+              ((int *)calloc (count , sizeof(int)));
+            });
+          }));
       });
-  }
-  return array (list , 0);
+    });
 }
 List_int wrap_List_int (const int item ) {
   return Cons_int (item , Nil_int ());
 }
 List_int pure_List_int (const int * buf , size_t len ) {
-  return (((buf  ==  NULL  )) ? Nil_int () : ({ /* letn524 */
+  return (((buf  ==  NULL  )) ? Nil_int () : ({ /* letn535 */
         int item  = (*buf );
         // ----------
         (((len  ==  0 )) ? Nil_int () : Cons_int (item , pure_List_int ((++buf ), (--len ))));
       }));
 }
 size_t show_List_int (FILE * file , List_int list ) {
-  return ({ /* letn536 */
+  return ({ /* letn547 */
       typeof((((list -> __h_data). Cons). __h_0_mem)) head ;
       typeof((((list -> __h_data). Cons). __h_1_mem)) tail ;
       // ----------
       ;
-      ({ /* letn538 */
-        bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  (({ /* progn539 */
+      ({ /* letn549 */
+        bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  (({ /* progn550 */
                 head  = (((list -> __h_data). Cons). __h_0_mem) ;
                 true ;
-              }) &&  ({ /* progn541 */
+              }) &&  ({ /* progn552 */
                 tail  = (((list -> __h_data). Cons). __h_1_mem) ;
                 true ;
               }) ) ) );
         // ----------
         
-        ((__h_case_result ) ? ({ /* progn546 */
-            (({ /* letn552 */
+        ((__h_case_result ) ? ({ /* progn557 */
+            (({ /* letn563 */
                 // ----------
                 ;
-                ({ /* letn554 */
+                ({ /* letn565 */
                   bool __h_case_result  = (true  &&  ((tail -> __h_ctor) ==  __h_Cons_t  ) );
                   // ----------
                   
-                  ((__h_case_result ) ? ({ /* progn558 */
+                  ((__h_case_result ) ? ({ /* progn569 */
                       (fprintf (file , "%d", head ) +  fprintf (file , "%s", " ") );
-                    }) : ({ /* letn567 */
+                    }) : ({ /* letn578 */
                       // ----------
                       ;
-                      ({ /* progn569 */
+                      ({ /* progn580 */
                         fprintf (file , "%d", head );
                       });
                     }));
                 });
               }) +  show_List_int (file , tail ) );
-          }) : ({ /* letn577 */
+          }) : ({ /* letn588 */
             // ----------
             ;
-            ({ /* progn579 */
+            ({ /* progn590 */
               0;
             });
           }));
@@ -461,27 +465,27 @@ size_t show_List_int (FILE * file , List_int list ) {
     });
 }
 List_int copy_List_int (List_int list ) {
-  return ({ /* letn587 */
+  return ({ /* letn598 */
       typeof((((list -> __h_data). Cons). __h_0_mem)) head ;
       typeof((((list -> __h_data). Cons). __h_1_mem)) tail ;
       // ----------
       ;
-      ({ /* letn589 */
-        bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  (({ /* progn590 */
+      ({ /* letn600 */
+        bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  (({ /* progn601 */
                 head  = (((list -> __h_data). Cons). __h_0_mem) ;
                 true ;
-              }) &&  ({ /* progn592 */
+              }) &&  ({ /* progn603 */
                 tail  = (((list -> __h_data). Cons). __h_1_mem) ;
                 true ;
               }) ) ) );
         // ----------
         
-        ((__h_case_result ) ? ({ /* progn597 */
+        ((__h_case_result ) ? ({ /* progn608 */
             Cons_int (head , copy_List_int (tail ));
-          }) : ({ /* letn603 */
+          }) : ({ /* letn614 */
             // ----------
             ;
-            ({ /* progn605 */
+            ({ /* progn616 */
               Nil_int ();
             });
           }));
@@ -489,44 +493,44 @@ List_int copy_List_int (List_int list ) {
     });
 }
 List_int replaceAt_List_int (List_int list , int item , size_t index ) {
-  return ({ /* letn614 */
+  return ({ /* letn625 */
       typeof((((list -> __h_data). Cons). __h_0_mem)) head ;
       typeof((((list -> __h_data). Cons). __h_1_mem)) tail ;
       // ----------
       ;
-      ({ /* letn616 */
-        bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  ((({ /* progn617 */
+      ({ /* letn627 */
+        bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  ((({ /* progn628 */
                   head  = (((list -> __h_data). Cons). __h_0_mem) ;
                   true ;
-                }) &&  ({ /* progn619 */
+                }) &&  ({ /* progn630 */
                   tail  = (((list -> __h_data). Cons). __h_1_mem) ;
                   true ;
                 }) ) &&  (index  >  0 ) ) ) );
         // ----------
         
-        ((__h_case_result ) ? ({ /* progn624 */
+        ((__h_case_result ) ? ({ /* progn635 */
             Cons_int (head , replaceAt_List_int (tail , item , (index  -  1 )));
-          }) : ({ /* letn630 */
+          }) : ({ /* letn641 */
             // ----------
             ;
-            ({ /* progn632 */
-              ({ /* letn638 */
+            ({ /* progn643 */
+              ({ /* letn649 */
                 typeof((((list -> __h_data). Cons). __h_1_mem)) taill ;
                 // ----------
                 ;
-                ({ /* letn640 */
-                  bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  ({ /* progn641 */
+                ({ /* letn651 */
+                  bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  ({ /* progn652 */
                         taill  = (((list -> __h_data). Cons). __h_1_mem) ;
                         true ;
                       }) ) );
                   // ----------
                   
-                  ((__h_case_result ) ? ({ /* progn646 */
+                  ((__h_case_result ) ? ({ /* progn657 */
                       Cons_int (item , copy_List_int (taill ));
-                    }) : ({ /* letn652 */
+                    }) : ({ /* letn663 */
                       // ----------
                       ;
-                      ({ /* progn654 */
+                      ({ /* progn665 */
                         Nil_int ();
                       });
                     }));
@@ -538,44 +542,44 @@ List_int replaceAt_List_int (List_int list , int item , size_t index ) {
     });
 }
 List_int deleteAt_List_int (List_int list , size_t index ) {
-  return ({ /* letn663 */
+  return ({ /* letn674 */
       typeof((((list -> __h_data). Cons). __h_0_mem)) head ;
       typeof((((list -> __h_data). Cons). __h_1_mem)) tail ;
       // ----------
       ;
-      ({ /* letn665 */
-        bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  ((({ /* progn666 */
+      ({ /* letn676 */
+        bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  ((({ /* progn677 */
                   head  = (((list -> __h_data). Cons). __h_0_mem) ;
                   true ;
-                }) &&  ({ /* progn668 */
+                }) &&  ({ /* progn679 */
                   tail  = (((list -> __h_data). Cons). __h_1_mem) ;
                   true ;
                 }) ) &&  (index  >  0 ) ) ) );
         // ----------
         
-        ((__h_case_result ) ? ({ /* progn673 */
+        ((__h_case_result ) ? ({ /* progn684 */
             Cons_int (head , deleteAt_List_int (tail , (index  -  1 )));
-          }) : ({ /* letn679 */
+          }) : ({ /* letn690 */
             // ----------
             ;
-            ({ /* progn681 */
-              ({ /* letn687 */
+            ({ /* progn692 */
+              ({ /* letn698 */
                 typeof((((list -> __h_data). Cons). __h_1_mem)) taill ;
                 // ----------
                 ;
-                ({ /* letn689 */
-                  bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  ({ /* progn690 */
+                ({ /* letn700 */
+                  bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  ({ /* progn701 */
                         taill  = (((list -> __h_data). Cons). __h_1_mem) ;
                         true ;
                       }) ) );
                   // ----------
                   
-                  ((__h_case_result ) ? ({ /* progn695 */
+                  ((__h_case_result ) ? ({ /* progn706 */
                       copy_List_int (taill );
-                    }) : ({ /* letn700 */
+                    }) : ({ /* letn711 */
                       // ----------
                       ;
-                      ({ /* progn702 */
+                      ({ /* progn713 */
                         Nil_int ();
                       });
                     }));
@@ -587,27 +591,27 @@ List_int deleteAt_List_int (List_int list , size_t index ) {
     });
 }
 List_int insertAt_List_int (List_int list , int item , size_t index ) {
-  return ({ /* letn711 */
+  return ({ /* letn722 */
       typeof((((list -> __h_data). Cons). __h_0_mem)) head ;
       typeof((((list -> __h_data). Cons). __h_1_mem)) tail ;
       // ----------
       ;
-      ({ /* letn713 */
-        bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  ((({ /* progn714 */
+      ({ /* letn724 */
+        bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  ((({ /* progn725 */
                   head  = (((list -> __h_data). Cons). __h_0_mem) ;
                   true ;
-                }) &&  ({ /* progn716 */
+                }) &&  ({ /* progn727 */
                   tail  = (((list -> __h_data). Cons). __h_1_mem) ;
                   true ;
                 }) ) &&  (index  >  0 ) ) ) );
         // ----------
         
-        ((__h_case_result ) ? ({ /* progn721 */
+        ((__h_case_result ) ? ({ /* progn732 */
             Cons_int (head , insertAt_List_int (tail , item , (index  -  1 )));
-          }) : ({ /* letn727 */
+          }) : ({ /* letn738 */
             // ----------
             ;
-            ({ /* progn729 */
+            ({ /* progn740 */
               Cons_int (item , copy_List_int (list ));
             });
           }));
@@ -615,44 +619,44 @@ List_int insertAt_List_int (List_int list , int item , size_t index ) {
     });
 }
 List_int replace_List_int (List_int list , int item , List_int aimed ) {
-  return ({ /* letn739 */
+  return ({ /* letn750 */
       typeof((((list -> __h_data). Cons). __h_0_mem)) head ;
       typeof((((list -> __h_data). Cons). __h_1_mem)) tail ;
       // ----------
       ;
-      ({ /* letn741 */
-        bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  ((({ /* progn742 */
+      ({ /* letn752 */
+        bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  ((({ /* progn753 */
                   head  = (((list -> __h_data). Cons). __h_0_mem) ;
                   true ;
-                }) &&  ({ /* progn744 */
+                }) &&  ({ /* progn755 */
                   tail  = (((list -> __h_data). Cons). __h_1_mem) ;
                   true ;
                 }) ) &&  (list  !=  aimed  ) ) ) );
         // ----------
         
-        ((__h_case_result ) ? ({ /* progn749 */
+        ((__h_case_result ) ? ({ /* progn760 */
             Cons_int (head , replace_List_int (tail , item , aimed ));
-          }) : ({ /* letn755 */
+          }) : ({ /* letn766 */
             // ----------
             ;
-            ({ /* progn757 */
-              ({ /* letn763 */
+            ({ /* progn768 */
+              ({ /* letn774 */
                 typeof((((aimed -> __h_data). Cons). __h_1_mem)) taill ;
                 // ----------
                 ;
-                ({ /* letn765 */
-                  bool __h_case_result  = (true  &&  (((aimed -> __h_ctor) ==  __h_Cons_t  ) &&  ({ /* progn766 */
+                ({ /* letn776 */
+                  bool __h_case_result  = (true  &&  (((aimed -> __h_ctor) ==  __h_Cons_t  ) &&  ({ /* progn777 */
                         taill  = (((aimed -> __h_data). Cons). __h_1_mem) ;
                         true ;
                       }) ) );
                   // ----------
                   
-                  ((__h_case_result ) ? ({ /* progn771 */
+                  ((__h_case_result ) ? ({ /* progn782 */
                       Cons_int (item , copy_List_int (taill ));
-                    }) : ({ /* letn777 */
+                    }) : ({ /* letn788 */
                       // ----------
                       ;
-                      ({ /* progn779 */
+                      ({ /* progn790 */
                         Nil_int ();
                       });
                     }));
@@ -664,44 +668,44 @@ List_int replace_List_int (List_int list , int item , List_int aimed ) {
     });
 }
 List_int delete_List_int (List_int list , List_int aimed ) {
-  return ({ /* letn788 */
+  return ({ /* letn799 */
       typeof((((list -> __h_data). Cons). __h_0_mem)) head ;
       typeof((((list -> __h_data). Cons). __h_1_mem)) tail ;
       // ----------
       ;
-      ({ /* letn790 */
-        bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  ((({ /* progn791 */
+      ({ /* letn801 */
+        bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  ((({ /* progn802 */
                   head  = (((list -> __h_data). Cons). __h_0_mem) ;
                   true ;
-                }) &&  ({ /* progn793 */
+                }) &&  ({ /* progn804 */
                   tail  = (((list -> __h_data). Cons). __h_1_mem) ;
                   true ;
                 }) ) &&  (list  !=  aimed  ) ) ) );
         // ----------
         
-        ((__h_case_result ) ? ({ /* progn798 */
+        ((__h_case_result ) ? ({ /* progn809 */
             Cons_int (head , delete_List_int (tail , aimed ));
-          }) : ({ /* letn804 */
+          }) : ({ /* letn815 */
             // ----------
             ;
-            ({ /* progn806 */
-              ({ /* letn812 */
+            ({ /* progn817 */
+              ({ /* letn823 */
                 typeof((((aimed -> __h_data). Cons). __h_1_mem)) taill ;
                 // ----------
                 ;
-                ({ /* letn814 */
-                  bool __h_case_result  = (true  &&  (((aimed -> __h_ctor) ==  __h_Cons_t  ) &&  ({ /* progn815 */
+                ({ /* letn825 */
+                  bool __h_case_result  = (true  &&  (((aimed -> __h_ctor) ==  __h_Cons_t  ) &&  ({ /* progn826 */
                         taill  = (((aimed -> __h_data). Cons). __h_1_mem) ;
                         true ;
                       }) ) );
                   // ----------
                   
-                  ((__h_case_result ) ? ({ /* progn820 */
+                  ((__h_case_result ) ? ({ /* progn831 */
                       copy_List_int (taill );
-                    }) : ({ /* letn825 */
+                    }) : ({ /* letn836 */
                       // ----------
                       ;
-                      ({ /* progn827 */
+                      ({ /* progn838 */
                         Nil_int ();
                       });
                     }));
@@ -713,27 +717,27 @@ List_int delete_List_int (List_int list , List_int aimed ) {
     });
 }
 List_int insert_List_int (List_int llist , int item , List_int rlist ) {
-  return ({ /* letn836 */
+  return ({ /* letn847 */
       typeof((((llist -> __h_data). Cons). __h_0_mem)) head ;
       typeof((((llist -> __h_data). Cons). __h_1_mem)) tail ;
       // ----------
       ;
-      ({ /* letn838 */
-        bool __h_case_result  = (true  &&  (((llist -> __h_ctor) ==  __h_Cons_t  ) &&  ((({ /* progn839 */
+      ({ /* letn849 */
+        bool __h_case_result  = (true  &&  (((llist -> __h_ctor) ==  __h_Cons_t  ) &&  ((({ /* progn850 */
                   head  = (((llist -> __h_data). Cons). __h_0_mem) ;
                   true ;
-                }) &&  ({ /* progn841 */
+                }) &&  ({ /* progn852 */
                   tail  = (((llist -> __h_data). Cons). __h_1_mem) ;
                   true ;
                 }) ) &&  (llist  !=  rlist  ) ) ) );
         // ----------
         
-        ((__h_case_result ) ? ({ /* progn846 */
+        ((__h_case_result ) ? ({ /* progn857 */
             Cons_int (head , insert_List_int (tail , item , rlist ));
-          }) : ({ /* letn852 */
+          }) : ({ /* letn863 */
             // ----------
             ;
-            ({ /* progn854 */
+            ({ /* progn865 */
               Cons_int (item , copy_List_int (rlist ));
             });
           }));
@@ -741,83 +745,83 @@ List_int insert_List_int (List_int llist , int item , List_int rlist ) {
     });
 }
 List_int reverse_List_int (List_int list ) {
-  List_int _reverse (List_int list , List_int rlist ) {
-    return ({ /* letn865 */
-        typeof((((list -> __h_data). Cons). __h_0_mem)) head ;
-        typeof((((list -> __h_data). Cons). __h_1_mem)) tail ;
-        // ----------
-        ;
-        ({ /* letn867 */
-          bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  (({ /* progn868 */
-                  head  = (((list -> __h_data). Cons). __h_0_mem) ;
-                  true ;
-                }) &&  ({ /* progn870 */
-                  tail  = (((list -> __h_data). Cons). __h_1_mem) ;
-                  true ;
-                }) ) ) );
-          // ----------
-          
-          ((__h_case_result ) ? ({ /* progn875 */
-              _reverse (tail , Cons_int (head , rlist ));
-            }) : ({ /* letn880 */
-              // ----------
-              ;
-              ({ /* progn882 */
-                rlist ;
-              });
-            }));
-        });
-      });
-  }
-  return ({ /* letn888 */
+  return ({ /* letn875 */
       typeof((((list -> __h_data). Cons). __h_0_mem)) head ;
       typeof((((list -> __h_data). Cons). __h_1_mem)) tail ;
       // ----------
       ;
-      ({ /* letn890 */
-        bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  (({ /* progn891 */
+      ({ /* letn877 */
+        bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  (({ /* progn878 */
                 head  = (((list -> __h_data). Cons). __h_0_mem) ;
                 true ;
-              }) &&  ({ /* progn893 */
+              }) &&  ({ /* progn880 */
                 tail  = (((list -> __h_data). Cons). __h_1_mem) ;
                 true ;
               }) ) ) );
         // ----------
         
-        ((__h_case_result ) ? ({ /* progn898 */
-            _reverse (tail , Cons_int (head , Nil_int ()));
-          }) : ({ /* letn904 */
+        ((__h_case_result ) ? ({ /* progn885 */
+            reverseOnto_List_int (tail , Cons_int (head , Nil_int ()));
+          }) : ({ /* letn892 */
             // ----------
             ;
-            ({ /* progn906 */
+            ({ /* progn894 */
               list ;
             });
           }));
       });
     });
 }
+List_int reverseOnto_List_int (List_int list , List_int rlist ) {
+  return ({ /* letn902 */
+      typeof((((list -> __h_data). Cons). __h_0_mem)) head ;
+      typeof((((list -> __h_data). Cons). __h_1_mem)) tail ;
+      // ----------
+      ;
+      ({ /* letn904 */
+        bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  (({ /* progn905 */
+                head  = (((list -> __h_data). Cons). __h_0_mem) ;
+                true ;
+              }) &&  ({ /* progn907 */
+                tail  = (((list -> __h_data). Cons). __h_1_mem) ;
+                true ;
+              }) ) ) );
+        // ----------
+        
+        ((__h_case_result ) ? ({ /* progn912 */
+            reverseOnto_List_int (tail , Cons_int (head , rlist ));
+          }) : ({ /* letn918 */
+            // ----------
+            ;
+            ({ /* progn920 */
+              rlist ;
+            });
+          }));
+      });
+    });
+}
 List_int append_List_int (List_int llist , List_int rlist ) {
-  return ({ /* letn914 */
+  return ({ /* letn928 */
       typeof((((llist -> __h_data). Cons). __h_0_mem)) head ;
       typeof((((llist -> __h_data). Cons). __h_1_mem)) tail ;
       // ----------
       ;
-      ({ /* letn916 */
-        bool __h_case_result  = (true  &&  (((llist -> __h_ctor) ==  __h_Cons_t  ) &&  (({ /* progn917 */
+      ({ /* letn930 */
+        bool __h_case_result  = (true  &&  (((llist -> __h_ctor) ==  __h_Cons_t  ) &&  (({ /* progn931 */
                 head  = (((llist -> __h_data). Cons). __h_0_mem) ;
                 true ;
-              }) &&  ({ /* progn919 */
+              }) &&  ({ /* progn933 */
                 tail  = (((llist -> __h_data). Cons). __h_1_mem) ;
                 true ;
               }) ) ) );
         // ----------
         
-        ((__h_case_result ) ? ({ /* progn924 */
+        ((__h_case_result ) ? ({ /* progn938 */
             Cons_int (head , append_List_int (tail , rlist ));
-          }) : ({ /* letn930 */
+          }) : ({ /* letn944 */
             // ----------
             ;
-            ({ /* progn932 */
+            ({ /* progn946 */
               copy_List_int (rlist );
             });
           }));
@@ -828,27 +832,27 @@ List_int push_List_int (int item , List_int list ) {
   return Cons_int (item , copy_List_int (list ));
 }
 List_int take_List_int (size_t len , List_int list ) {
-  return (((len  <=  0 )) ? Nil_int () : ({ /* letn947 */
+  return (((len  <=  0 )) ? Nil_int () : ({ /* letn961 */
         typeof((((list -> __h_data). Cons). __h_0_mem)) head ;
         typeof((((list -> __h_data). Cons). __h_1_mem)) tail ;
         // ----------
         ;
-        ({ /* letn949 */
-          bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  (({ /* progn950 */
+        ({ /* letn963 */
+          bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  (({ /* progn964 */
                   head  = (((list -> __h_data). Cons). __h_0_mem) ;
                   true ;
-                }) &&  ({ /* progn952 */
+                }) &&  ({ /* progn966 */
                   tail  = (((list -> __h_data). Cons). __h_1_mem) ;
                   true ;
                 }) ) ) );
           // ----------
           
-          ((__h_case_result ) ? ({ /* progn957 */
+          ((__h_case_result ) ? ({ /* progn971 */
               Cons_int (head , take_List_int ((--len ), tail ));
-            }) : ({ /* letn963 */
+            }) : ({ /* letn977 */
               // ----------
               ;
-              ({ /* progn965 */
+              ({ /* progn979 */
                 Nil_int ();
               });
             }));
@@ -856,40 +860,40 @@ List_int take_List_int (size_t len , List_int list ) {
       }));
 }
 List_int last_List_int (List_int list ) {
-  return ({ /* letn974 */
+  return ({ /* letn988 */
       typeof((((list -> __h_data). Cons). __h_1_mem)) tail ;
       // ----------
       ;
-      ({ /* letn976 */
-        bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  ({ /* progn977 */
+      ({ /* letn990 */
+        bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  ({ /* progn991 */
               tail  = (((list -> __h_data). Cons). __h_1_mem) ;
               true ;
             }) ) );
         // ----------
         
-        ((__h_case_result ) ? ({ /* progn982 */
-            ({ /* letn988 */
+        ((__h_case_result ) ? ({ /* progn996 */
+            ({ /* letn1002 */
               // ----------
               ;
-              ({ /* letn990 */
+              ({ /* letn1004 */
                 bool __h_case_result  = (true  &&  ((tail -> __h_ctor) ==  __h_Nil_t  ) );
                 // ----------
                 
-                ((__h_case_result ) ? ({ /* progn994 */
+                ((__h_case_result ) ? ({ /* progn1008 */
                     copy_List_int (list );
-                  }) : ({ /* letn999 */
+                  }) : ({ /* letn1013 */
                     // ----------
                     ;
-                    ({ /* progn1001 */
+                    ({ /* progn1015 */
                       last_List_int (tail );
                     });
                   }));
               });
             });
-          }) : ({ /* letn1006 */
+          }) : ({ /* letn1020 */
             // ----------
             ;
-            ({ /* progn1008 */
+            ({ /* progn1022 */
               Nil_int ();
             });
           }));
@@ -897,27 +901,27 @@ List_int last_List_int (List_int list ) {
     });
 }
 List_int init_List_int (List_int list ) {
-  return ({ /* letn1018 */
+  return ({ /* letn1032 */
       typeof((((list -> __h_data). Cons). __h_0_mem)) head ;
       typeof((((list -> __h_data). Cons). __h_1_mem)) tail ;
       // ----------
       ;
-      ({ /* letn1020 */
-        bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  ((({ /* progn1021 */
+      ({ /* letn1034 */
+        bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  ((({ /* progn1035 */
                   head  = (((list -> __h_data). Cons). __h_0_mem) ;
                   true ;
-                }) &&  ({ /* progn1023 */
+                }) &&  ({ /* progn1037 */
                   tail  = (((list -> __h_data). Cons). __h_1_mem) ;
                   true ;
                 }) ) &&  (true  &&  ((tail -> __h_ctor) ==  __h_Cons_t  ) ) ) ) );
         // ----------
         
-        ((__h_case_result ) ? ({ /* progn1028 */
+        ((__h_case_result ) ? ({ /* progn1042 */
             Cons_int (head , init_List_int (tail ));
-          }) : ({ /* letn1034 */
+          }) : ({ /* letn1048 */
             // ----------
             ;
-            ({ /* progn1036 */
+            ({ /* progn1050 */
               Nil_int ();
             });
           }));
@@ -925,23 +929,23 @@ List_int init_List_int (List_int list ) {
     });
 }
 size_t hasLen_List_int (List_int list , size_t desired ) {
-  return ({ /* letn1045 */
+  return ({ /* letn1059 */
       typeof((((list -> __h_data). Cons). __h_1_mem)) tail ;
       // ----------
       ;
-      ({ /* letn1047 */
-        bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  ({ /* progn1048 */
+      ({ /* letn1061 */
+        bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  ({ /* progn1062 */
               tail  = (((list -> __h_data). Cons). __h_1_mem) ;
               true ;
             }) ) );
         // ----------
         
-        ((__h_case_result ) ? ({ /* progn1053 */
+        ((__h_case_result ) ? ({ /* progn1067 */
             (((desired  ==  1 )) ? 1 : (1 +  hasLen_List_int (tail , (--desired )) ));
-          }) : ({ /* letn1059 */
+          }) : ({ /* letn1073 */
             // ----------
             ;
-            ({ /* progn1061 */
+            ({ /* progn1075 */
               0;
             });
           }));
@@ -949,23 +953,23 @@ size_t hasLen_List_int (List_int list , size_t desired ) {
     });
 }
 size_t len_List_int (List_int list ) {
-  return ({ /* letn1069 */
+  return ({ /* letn1083 */
       typeof((((list -> __h_data). Cons). __h_1_mem)) tail ;
       // ----------
       ;
-      ({ /* letn1071 */
-        bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  ({ /* progn1072 */
+      ({ /* letn1085 */
+        bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  ({ /* progn1086 */
               tail  = (((list -> __h_data). Cons). __h_1_mem) ;
               true ;
             }) ) );
         // ----------
         
-        ((__h_case_result ) ? ({ /* progn1077 */
+        ((__h_case_result ) ? ({ /* progn1091 */
             (1 +  len_List_int (tail ) );
-          }) : ({ /* letn1082 */
+          }) : ({ /* letn1096 */
             // ----------
             ;
-            ({ /* progn1084 */
+            ({ /* progn1098 */
               0;
             });
           }));
@@ -976,23 +980,23 @@ List_int tail_List_int (List_int list ) {
   return drop_List_int (1, list );
 }
 List_int drop_List_int (size_t len , List_int list ) {
-  return (((len  <=  0 )) ? copy_List_int (list ) : ({ /* letn1097 */
+  return (((len  <=  0 )) ? copy_List_int (list ) : ({ /* letn1111 */
         typeof((((list -> __h_data). Cons). __h_1_mem)) tail ;
         // ----------
         ;
-        ({ /* letn1099 */
-          bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  ({ /* progn1100 */
+        ({ /* letn1113 */
+          bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  ({ /* progn1114 */
                 tail  = (((list -> __h_data). Cons). __h_1_mem) ;
                 true ;
               }) ) );
           // ----------
           
-          ((__h_case_result ) ? ({ /* progn1105 */
+          ((__h_case_result ) ? ({ /* progn1119 */
               drop_List_int ((--len ), tail );
-            }) : ({ /* letn1110 */
+            }) : ({ /* letn1124 */
               // ----------
               ;
-              ({ /* progn1112 */
+              ({ /* progn1126 */
                 Nil_int ();
               });
             }));
@@ -1000,23 +1004,23 @@ List_int drop_List_int (size_t len , List_int list ) {
       }));
 }
 Maybe_int head_List_int (List_int list ) {
-  return ({ /* letn1122 */
+  return ({ /* letn1136 */
       typeof((((list -> __h_data). Cons). __h_0_mem)) head ;
       // ----------
       ;
-      ({ /* letn1124 */
-        bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  ({ /* progn1125 */
+      ({ /* letn1138 */
+        bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  ({ /* progn1139 */
               head  = (((list -> __h_data). Cons). __h_0_mem) ;
               true ;
             }) ) );
         // ----------
         
-        ((__h_case_result ) ? ({ /* progn1130 */
+        ((__h_case_result ) ? ({ /* progn1144 */
             Just_int (head );
-          }) : ({ /* letn1135 */
+          }) : ({ /* letn1149 */
             // ----------
             ;
-            ({ /* progn1137 */
+            ({ /* progn1151 */
               Nothing_int ();
             });
           }));
@@ -1024,23 +1028,23 @@ Maybe_int head_List_int (List_int list ) {
     });
 }
 List_int nthcdr_List_int (size_t index , List_int list ) {
-  return ({ /* letn1146 */
+  return ({ /* letn1160 */
       typeof((((list -> __h_data). Cons). __h_1_mem)) tail ;
       // ----------
       ;
-      ({ /* letn1148 */
-        bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  (({ /* progn1149 */
+      ({ /* letn1162 */
+        bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  (({ /* progn1163 */
                 tail  = (((list -> __h_data). Cons). __h_1_mem) ;
                 true ;
               }) &&  (index  >  0 ) ) ) );
         // ----------
         
-        ((__h_case_result ) ? ({ /* progn1154 */
+        ((__h_case_result ) ? ({ /* progn1168 */
             nthcdr_List_int ((--index ), tail );
-          }) : ({ /* letn1159 */
+          }) : ({ /* letn1173 */
             // ----------
             ;
-            ({ /* progn1161 */
+            ({ /* progn1175 */
               list ;
             });
           }));
@@ -1048,27 +1052,27 @@ List_int nthcdr_List_int (size_t index , List_int list ) {
     });
 }
 Maybe_int nth_List_int (size_t index , List_int list ) {
-  return ({ /* letn1170 */
+  return ({ /* letn1184 */
       typeof((((list -> __h_data). Cons). __h_0_mem)) head ;
       typeof((((list -> __h_data). Cons). __h_1_mem)) tail ;
       // ----------
       ;
-      ({ /* letn1172 */
-        bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  (({ /* progn1173 */
+      ({ /* letn1186 */
+        bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  (({ /* progn1187 */
                 head  = (((list -> __h_data). Cons). __h_0_mem) ;
                 true ;
-              }) &&  ({ /* progn1175 */
+              }) &&  ({ /* progn1189 */
                 tail  = (((list -> __h_data). Cons). __h_1_mem) ;
                 true ;
               }) ) ) );
         // ----------
         
-        ((__h_case_result ) ? ({ /* progn1180 */
+        ((__h_case_result ) ? ({ /* progn1194 */
             (((index  ==  0 )) ? Just_int (head ) : (((index  <  0 )) ? Nothing_int () : nth_List_int ((--index ), tail )));
-          }) : ({ /* letn1189 */
+          }) : ({ /* letn1203 */
             // ----------
             ;
-            ({ /* progn1191 */
+            ({ /* progn1205 */
               Nothing_int ();
             });
           }));
@@ -1076,38 +1080,38 @@ Maybe_int nth_List_int (size_t index , List_int list ) {
     });
 }
 void free_List_int (List_int * this_ptr ) {
-  { /* let1196 */
+  { /* let1210 */
     List_int this  = (*this_ptr );
     // ----------
-    { /* let1200 */
+    { /* let1214 */
       typeof((((this -> __h_data). Cons). __h_1_mem)) tail ;
       // ----------
       ;
-      ({ /* letn1202 */
-        bool __h_case_result  = (true  &&  (((this -> __h_ctor) ==  __h_Cons_t  ) &&  ({ /* progn1203 */
+      ({ /* letn1216 */
+        bool __h_case_result  = (true  &&  (((this -> __h_ctor) ==  __h_Cons_t  ) &&  ({ /* progn1217 */
               tail  = (((this -> __h_data). Cons). __h_1_mem) ;
               true ;
             }) ) );
         // ----------
         
         if (__h_case_result )
-          { /* block1210 */
-            { /* block1212 */
+          { /* block1224 */
+            { /* block1226 */
               free (this );
               free_List_int ((&tail ));
             }
           }
         else
-          { /* let1220 */
+          { /* let1234 */
             // ----------
             ;
-            ({ /* letn1222 */
+            ({ /* letn1236 */
               bool __h_case_result  = (true  &&  ((this -> __h_ctor) ==  __h_Nil_t  ) );
               // ----------
               
               if (__h_case_result )
-                { /* block1228 */
-                  { /* block1230 */
+                { /* block1242 */
+                  { /* block1244 */
                     free (this );
                   }
                 }
@@ -1119,16 +1123,16 @@ void free_List_int (List_int * this_ptr ) {
 }
 __attribute__((weak)) void free_List_int_pointer (List_int ** this_ptr ) {
   if (this_ptr )
-    { /* block1239 */
+    { /* block1253 */
       free_List_int ((*this_ptr ));
     }
 }
 List_int__H_Table * const get_List_int__H_Table () {
-  static List_int__H_Table table  = { free_List_int , toArray_List_int , wrap_List_int , pure_List_int , show_List_int , copy_List_int , replaceAt_List_int , deleteAt_List_int , insertAt_List_int , replace_List_int , delete_List_int , insert_List_int , reverse_List_int , append_List_int , push_List_int , take_List_int , last_List_int , init_List_int , hasLen_List_int , len_List_int , tail_List_int , drop_List_int , head_List_int , nthcdr_List_int , nth_List_int };
+  static List_int__H_Table table  = { free_List_int , toArray_List_int , toArrayFrom_List_int , wrap_List_int , pure_List_int , show_List_int , copy_List_int , replaceAt_List_int , deleteAt_List_int , insertAt_List_int , replace_List_int , delete_List_int , insert_List_int , reverse_List_int , reverseOnto_List_int , append_List_int , push_List_int , take_List_int , last_List_int , init_List_int , hasLen_List_int , len_List_int , tail_List_int , drop_List_int , head_List_int , nthcdr_List_int , nth_List_int };
   return (&table );
 }
 List_int Cons_int (int head , List_int tail ) {
-  { /* let1249 */
+  { /* let1263 */
     List_int instance  = malloc (sizeof(class_List_int));
     // ----------
     (*instance ) = ((class_List_int){ get_List_int__H_Table (), __h_Cons_t , .__h_data.Cons = { head , tail }});
@@ -1136,7 +1140,7 @@ List_int Cons_int (int head , List_int tail ) {
   }
 }
 List_int Nil_int () {
-  { /* let1255 */
+  { /* let1269 */
     List_int instance  = malloc (sizeof(class_List_int));
     // ----------
     (*instance ) = ((class_List_int){ get_List_int__H_Table (), __h_Nil_t });
@@ -1150,7 +1154,7 @@ void free_Maybe_List_int (Maybe_List_int * this ) {
 }
 __attribute__((weak)) void free_Maybe_List_int_pointer (Maybe_List_int ** this ) {
   if (this )
-    { /* block1270 */
+    { /* block1284 */
       free_Maybe_List_int ((*this ));
     }
 }
@@ -1159,14 +1163,14 @@ const Maybe_List_int__H_Table * const get_Maybe_List_int__H_Table () {
   return (&table );
 }
 Maybe_List_int Just_List_int (List_int value ) {
-  { /* let1280 */
+  { /* let1294 */
     Maybe_List_int instance  = ((Maybe_List_int){ get_Maybe_List_int__H_Table (), __h_Just_t , .__h_data.Just = { value }});
     // ----------
     return instance ;
   }
 }
 Maybe_List_int Nothing_List_int () {
-  { /* let1285 */
+  { /* let1299 */
     Maybe_List_int instance  = ((Maybe_List_int){ get_Maybe_List_int__H_Table (), __h_Nothing_t });
     // ----------
     return instance ;
@@ -1199,8 +1203,8 @@ typedef struct Functor_List_int_int__H_Table {
 typedef struct Functor_List_int_int {
   const Functor_List_int_int__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion1310 */
-    struct { /* ciciliStruct1311 */
+  union { /* ciciliUnion1324 */
+    struct { /* ciciliStruct1325 */
     } Functor , _ ;
   } __h_data ;
 } Functor_List_int_int;
@@ -1217,27 +1221,27 @@ Functor_List_int_int get_Functor_List_int_int ();
 #ifndef __Functor_List_int_int__H_IMPL__
 #define __Functor_List_int_int__H_IMPL__
 List_int fmap_Functor_List_int_int (int_to_int_t a_b , List_int input ) {
-  return ({ /* letn1347 */
+  return ({ /* letn1361 */
       typeof((((input -> __h_data). Cons). __h_0_mem)) head ;
       typeof((((input -> __h_data). Cons). __h_1_mem)) tail ;
       // ----------
       ;
-      ({ /* letn1349 */
-        bool __h_case_result  = (true  &&  (((input -> __h_ctor) ==  __h_Cons_t  ) &&  (({ /* progn1350 */
+      ({ /* letn1363 */
+        bool __h_case_result  = (true  &&  (((input -> __h_ctor) ==  __h_Cons_t  ) &&  (({ /* progn1364 */
                 head  = (((input -> __h_data). Cons). __h_0_mem) ;
                 true ;
-              }) &&  ({ /* progn1352 */
+              }) &&  ({ /* progn1366 */
                 tail  = (((input -> __h_data). Cons). __h_1_mem) ;
                 true ;
               }) ) ) );
         // ----------
         
-        ((__h_case_result ) ? ({ /* progn1357 */
+        ((__h_case_result ) ? ({ /* progn1371 */
             Cons_int (a_b (head ), fmap_Functor_List_int_int (a_b , tail ));
-          }) : ({ /* letn1364 */
+          }) : ({ /* letn1378 */
             // ----------
             ;
-            ({ /* progn1366 */
+            ({ /* progn1380 */
               Nil_int ();
             });
           }));
@@ -1248,7 +1252,7 @@ void free_Functor_List_int_int (Functor_List_int_int * this ) {
 }
 __attribute__((weak)) void free_Functor_List_int_int_pointer (Functor_List_int_int ** this ) {
   if (this )
-    { /* block1376 */
+    { /* block1390 */
       free_Functor_List_int_int ((*this ));
     }
 }
@@ -1257,7 +1261,7 @@ const Functor_List_int_int__H_Table * const get_Functor_List_int_int__H_Table ()
   return (&table );
 }
 Functor_List_int_int Functor_List_int_int_ctor () {
-  { /* let1386 */
+  { /* let1400 */
     Functor_List_int_int instance  = ((Functor_List_int_int){ get_Functor_List_int_int__H_Table (), __h_Functor_t });
     // ----------
     return instance ;
@@ -1292,8 +1296,8 @@ typedef struct Monad_Maybe_int_int__H_Table {
 typedef struct Monad_Maybe_int_int {
   const Monad_Maybe_int_int__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion1419 */
-    struct { /* ciciliStruct1420 */
+  union { /* ciciliUnion1433 */
+    struct { /* ciciliStruct1434 */
     } Monad , _ ;
   } __h_data ;
 } Monad_Maybe_int_int;
@@ -1318,23 +1322,23 @@ Maybe_int returnA_Monad_Maybe_int_int (int value ) {
   return Just_int (value );
 }
 Maybe_int bind_Monad_Maybe_int_int (Maybe_int input , int_to_Maybe_int_t a_mb ) {
-  return ({ /* letn1470 */
+  return ({ /* letn1484 */
       typeof((((input . __h_data). Just). __h_0_mem)) value ;
       // ----------
       ;
-      ({ /* letn1472 */
-        bool __h_case_result  = (true  &&  (((input . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn1473 */
+      ({ /* letn1486 */
+        bool __h_case_result  = (true  &&  (((input . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn1487 */
               value  = (((input . __h_data). Just). __h_0_mem) ;
               true ;
             }) ) );
         // ----------
         
-        ((__h_case_result ) ? ({ /* progn1478 */
+        ((__h_case_result ) ? ({ /* progn1492 */
             a_mb (value );
-          }) : ({ /* letn1482 */
+          }) : ({ /* letn1496 */
             // ----------
             ;
-            ({ /* progn1484 */
+            ({ /* progn1498 */
               Nothing_int ();
             });
           }));
@@ -1345,7 +1349,7 @@ void free_Monad_Maybe_int_int (Monad_Maybe_int_int * this ) {
 }
 __attribute__((weak)) void free_Monad_Maybe_int_int_pointer (Monad_Maybe_int_int ** this ) {
   if (this )
-    { /* block1494 */
+    { /* block1508 */
       free_Monad_Maybe_int_int ((*this ));
     }
 }
@@ -1354,7 +1358,7 @@ const Monad_Maybe_int_int__H_Table * const get_Monad_Maybe_int_int__H_Table () {
   return (&table );
 }
 Monad_Maybe_int_int Monad_Maybe_int_int_ctor () {
-  { /* let1504 */
+  { /* let1518 */
     Monad_Maybe_int_int instance  = ((Monad_Maybe_int_int){ get_Monad_Maybe_int_int__H_Table (), __h_Monad_t });
     // ----------
     return instance ;
@@ -1390,8 +1394,8 @@ typedef struct Functor_Ap_Maybe_int_int__H_Table {
 typedef struct Functor_Ap_Maybe_int_int {
   const Functor_Ap_Maybe_int_int__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion1535 */
-    struct { /* ciciliStruct1536 */
+  union { /* ciciliUnion1549 */
+    struct { /* ciciliStruct1550 */
     } Functor , _ ;
   } __h_data ;
 } Functor_Ap_Maybe_int_int;
@@ -1427,11 +1431,11 @@ typedef struct Maybe_int_to_int_t__H_Table {
 typedef struct Maybe_int_to_int_t {
   const Maybe_int_to_int_t__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion1569 */
-    struct { /* ciciliStruct1570 */
+  union { /* ciciliUnion1583 */
+    struct { /* ciciliStruct1584 */
       int_to_int_t __h_0_mem ;
     } Just , _1 ;
-    struct { /* ciciliStruct1571 */
+    struct { /* ciciliStruct1585 */
     } Nothing , _ ;
   } __h_data ;
 } Maybe_int_to_int_t;
@@ -1467,8 +1471,8 @@ typedef struct Applicative_Ap_Maybe_int_int__H_Table {
 typedef struct Applicative_Ap_Maybe_int_int {
   const Applicative_Ap_Maybe_int_int__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion1607 */
-    struct { /* ciciliStruct1608 */
+  union { /* ciciliUnion1621 */
+    struct { /* ciciliStruct1622 */
     } Applicative , _ ;
   } __h_data ;
 } Applicative_Ap_Maybe_int_int;
@@ -1486,23 +1490,23 @@ Applicative_Ap_Maybe_int_int get_Applicative_Ap_Maybe_int_int ();
 #ifndef __Functor_Ap_Maybe_int_int__H_IMPL__
 #define __Functor_Ap_Maybe_int_int__H_IMPL__
 Maybe_int fmap_Functor_Ap_Maybe_int_int (int_to_int_t a_b , Maybe_int input ) {
-  return ({ /* letn1650 */
+  return ({ /* letn1664 */
       typeof((((input . __h_data). Just). __h_0_mem)) val ;
       // ----------
       ;
-      ({ /* letn1652 */
-        bool __h_case_result  = (true  &&  (((input . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn1653 */
+      ({ /* letn1666 */
+        bool __h_case_result  = (true  &&  (((input . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn1667 */
               val  = (((input . __h_data). Just). __h_0_mem) ;
               true ;
             }) ) );
         // ----------
         
-        ((__h_case_result ) ? ({ /* progn1658 */
+        ((__h_case_result ) ? ({ /* progn1672 */
             Just_int (a_b (val ));
-          }) : ({ /* letn1668 */
+          }) : ({ /* letn1682 */
             // ----------
             ;
-            ({ /* progn1670 */
+            ({ /* progn1684 */
               Nothing_int ();
             });
           }));
@@ -1513,7 +1517,7 @@ void free_Functor_Ap_Maybe_int_int (Functor_Ap_Maybe_int_int * this ) {
 }
 __attribute__((weak)) void free_Functor_Ap_Maybe_int_int_pointer (Functor_Ap_Maybe_int_int ** this ) {
   if (this )
-    { /* block1680 */
+    { /* block1694 */
       free_Functor_Ap_Maybe_int_int ((*this ));
     }
 }
@@ -1522,7 +1526,7 @@ const Functor_Ap_Maybe_int_int__H_Table * const get_Functor_Ap_Maybe_int_int__H_
   return (&table );
 }
 Functor_Ap_Maybe_int_int Functor_Ap_Maybe_int_int_ctor () {
-  { /* let1690 */
+  { /* let1704 */
     Functor_Ap_Maybe_int_int instance  = ((Functor_Ap_Maybe_int_int){ get_Functor_Ap_Maybe_int_int__H_Table (), __h_Functor_t });
     // ----------
     return instance ;
@@ -1538,7 +1542,7 @@ void free_Maybe_int_to_int_t (Maybe_int_to_int_t * this ) {
 }
 __attribute__((weak)) void free_Maybe_int_to_int_t_pointer (Maybe_int_to_int_t ** this ) {
   if (this )
-    { /* block1708 */
+    { /* block1722 */
       free_Maybe_int_to_int_t ((*this ));
     }
 }
@@ -1547,14 +1551,14 @@ const Maybe_int_to_int_t__H_Table * const get_Maybe_int_to_int_t__H_Table () {
   return (&table );
 }
 Maybe_int_to_int_t Just_int_to_int_t (int_to_int_t value ) {
-  { /* let1718 */
+  { /* let1732 */
     Maybe_int_to_int_t instance  = ((Maybe_int_to_int_t){ get_Maybe_int_to_int_t__H_Table (), __h_Just_t , .__h_data.Just = { value }});
     // ----------
     return instance ;
   }
 }
 Maybe_int_to_int_t Nothing_int_to_int_t () {
-  { /* let1723 */
+  { /* let1737 */
     Maybe_int_to_int_t instance  = ((Maybe_int_to_int_t){ get_Maybe_int_to_int_t__H_Table (), __h_Nothing_t });
     // ----------
     return instance ;
@@ -1564,23 +1568,23 @@ Maybe_int_to_int_t Nothing_int_to_int_t () {
 #ifndef __Applicative_Ap_Maybe_int_int__H_IMPL__
 #define __Applicative_Ap_Maybe_int_int__H_IMPL__
 Maybe_int ap_Applicative_Ap_Maybe_int_int (Maybe_int_to_int_t f_a_b , Maybe_int input ) {
-  return ({ /* letn1739 */
+  return ({ /* letn1753 */
       typeof((((f_a_b . __h_data). Just). __h_0_mem)) a_b ;
       // ----------
       ;
-      ({ /* letn1741 */
-        bool __h_case_result  = (true  &&  (((f_a_b . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn1742 */
+      ({ /* letn1755 */
+        bool __h_case_result  = (true  &&  (((f_a_b . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn1756 */
               a_b  = (((f_a_b . __h_data). Just). __h_0_mem) ;
               true ;
             }) ) );
         // ----------
         
-        ((__h_case_result ) ? ({ /* progn1747 */
+        ((__h_case_result ) ? ({ /* progn1761 */
             fmap_Functor_Ap_Maybe_int_int (a_b , input );
-          }) : ({ /* letn1752 */
+          }) : ({ /* letn1766 */
             // ----------
             ;
-            ({ /* progn1754 */
+            ({ /* progn1768 */
               Nothing_int ();
             });
           }));
@@ -1594,7 +1598,7 @@ void free_Applicative_Ap_Maybe_int_int (Applicative_Ap_Maybe_int_int * this ) {
 }
 __attribute__((weak)) void free_Applicative_Ap_Maybe_int_int_pointer (Applicative_Ap_Maybe_int_int ** this ) {
   if (this )
-    { /* block1768 */
+    { /* block1782 */
       free_Applicative_Ap_Maybe_int_int ((*this ));
     }
 }
@@ -1603,7 +1607,7 @@ const Applicative_Ap_Maybe_int_int__H_Table * const get_Applicative_Ap_Maybe_int
   return (&table );
 }
 Applicative_Ap_Maybe_int_int Applicative_Ap_Maybe_int_int_ctor () {
-  { /* let1778 */
+  { /* let1792 */
     Applicative_Ap_Maybe_int_int instance  = ((Applicative_Ap_Maybe_int_int){ get_Applicative_Ap_Maybe_int_int__H_Table (), __h_Applicative_t });
     // ----------
     return instance ;
@@ -1639,8 +1643,8 @@ typedef struct Functor_Ap_List_int_int__H_Table {
 typedef struct Functor_Ap_List_int_int {
   const Functor_Ap_List_int_int__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion1809 */
-    struct { /* ciciliStruct1810 */
+  union { /* ciciliUnion1823 */
+    struct { /* ciciliStruct1824 */
     } Functor , _ ;
   } __h_data ;
 } Functor_Ap_List_int_int;
@@ -1676,11 +1680,11 @@ typedef struct Maybe_int_to_int_t__H_Table {
 typedef struct Maybe_int_to_int_t {
   const Maybe_int_to_int_t__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion1845 */
-    struct { /* ciciliStruct1846 */
+  union { /* ciciliUnion1859 */
+    struct { /* ciciliStruct1860 */
       int_to_int_t __h_0_mem ;
     } Just , _1 ;
-    struct { /* ciciliStruct1847 */
+    struct { /* ciciliStruct1861 */
     } Nothing , _ ;
   } __h_data ;
 } Maybe_int_to_int_t;
@@ -1713,6 +1717,7 @@ typedef void (*free_List_int_to_int_t_t) (List_int_to_int_t * this_ptr );
 typedef struct List_int_to_int_t__H_Table {
   free_List_int_to_int_t_t freeClass ;
     int_to_int_t * (*toArray) (List_int_to_int_t list );
+    int_to_int_t * (*toArrayFrom) (List_int_to_int_t list , size_t count );
     List_int_to_int_t (*wrap) (const int_to_int_t item );
     List_int_to_int_t (*pure) (const int_to_int_t * buf , size_t len );
     size_t (*show) (FILE * file , List_int_to_int_t list );
@@ -1724,6 +1729,7 @@ typedef struct List_int_to_int_t__H_Table {
     List_int_to_int_t (*delete) (List_int_to_int_t list , List_int_to_int_t aimed );
     List_int_to_int_t (*insert) (List_int_to_int_t llist , int_to_int_t item , List_int_to_int_t rlist );
     List_int_to_int_t (*reverse) (List_int_to_int_t list );
+    List_int_to_int_t (*reverseOnto) (List_int_to_int_t list , List_int_to_int_t rlist );
     List_int_to_int_t (*append) (List_int_to_int_t llist , List_int_to_int_t rlist );
     List_int_to_int_t (*push) (int_to_int_t item , List_int_to_int_t list );
     List_int_to_int_t (*take) (size_t len , List_int_to_int_t list );
@@ -1740,12 +1746,12 @@ typedef struct List_int_to_int_t__H_Table {
 typedef struct class_List_int_to_int_t {
   const List_int_to_int_t__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion1900 */
-    struct { /* ciciliStruct1901 */
+  union { /* ciciliUnion1916 */
+    struct { /* ciciliStruct1917 */
       int_to_int_t __h_0_mem ;
       List_int_to_int_t __h_1_mem ;
     } Cons , _1 ;
-    struct { /* ciciliStruct1902 */
+    struct { /* ciciliStruct1918 */
     } Nil , _ ;
   } __h_data ;
 } class_List_int_to_int_t;
@@ -1755,6 +1761,7 @@ __attribute__((weak)) List_int_to_int_t Default_List_int_to_int_t () {
   return Nil_int_to_int_t ();
 }
 int_to_int_t * toArray_List_int_to_int_t (List_int_to_int_t list );
+int_to_int_t * toArrayFrom_List_int_to_int_t (List_int_to_int_t list , size_t count );
 List_int_to_int_t wrap_List_int_to_int_t (const int_to_int_t item );
 List_int_to_int_t pure_List_int_to_int_t (const int_to_int_t * buf , size_t len );
 size_t show_List_int_to_int_t (FILE * file , List_int_to_int_t list );
@@ -1766,6 +1773,7 @@ List_int_to_int_t replace_List_int_to_int_t (List_int_to_int_t list , int_to_int
 List_int_to_int_t delete_List_int_to_int_t (List_int_to_int_t list , List_int_to_int_t aimed );
 List_int_to_int_t insert_List_int_to_int_t (List_int_to_int_t llist , int_to_int_t item , List_int_to_int_t rlist );
 List_int_to_int_t reverse_List_int_to_int_t (List_int_to_int_t list );
+List_int_to_int_t reverseOnto_List_int_to_int_t (List_int_to_int_t list , List_int_to_int_t rlist );
 List_int_to_int_t append_List_int_to_int_t (List_int_to_int_t llist , List_int_to_int_t rlist );
 List_int_to_int_t push_List_int_to_int_t (int_to_int_t item , List_int_to_int_t list );
 List_int_to_int_t take_List_int_to_int_t (size_t len , List_int_to_int_t list );
@@ -1804,11 +1812,11 @@ typedef struct Maybe_List_int_to_int_t__H_Table {
 typedef struct Maybe_List_int_to_int_t {
   const Maybe_List_int_to_int_t__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion2003 */
-    struct { /* ciciliStruct2004 */
+  union { /* ciciliUnion2025 */
+    struct { /* ciciliStruct2026 */
       List_int_to_int_t __h_0_mem ;
     } Just , _1 ;
-    struct { /* ciciliStruct2005 */
+    struct { /* ciciliStruct2027 */
     } Nothing , _ ;
   } __h_data ;
 } Maybe_List_int_to_int_t;
@@ -1843,11 +1851,11 @@ typedef struct Maybe_int__H_Table {
 typedef struct Maybe_int {
   const Maybe_int__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion2036 */
-    struct { /* ciciliStruct2037 */
+  union { /* ciciliUnion2058 */
+    struct { /* ciciliStruct2059 */
       int __h_0_mem ;
     } Just , _1 ;
-    struct { /* ciciliStruct2038 */
+    struct { /* ciciliStruct2060 */
     } Nothing , _ ;
   } __h_data ;
 } Maybe_int;
@@ -1880,6 +1888,7 @@ typedef void (*free_List_int_t) (List_int * this_ptr );
 typedef struct List_int__H_Table {
   free_List_int_t freeClass ;
     int * (*toArray) (List_int list );
+    int * (*toArrayFrom) (List_int list , size_t count );
     List_int (*wrap) (const int item );
     List_int (*pure) (const int * buf , size_t len );
     size_t (*show) (FILE * file , List_int list );
@@ -1891,6 +1900,7 @@ typedef struct List_int__H_Table {
     List_int (*delete) (List_int list , List_int aimed );
     List_int (*insert) (List_int llist , int item , List_int rlist );
     List_int (*reverse) (List_int list );
+    List_int (*reverseOnto) (List_int list , List_int rlist );
     List_int (*append) (List_int llist , List_int rlist );
     List_int (*push) (int item , List_int list );
     List_int (*take) (size_t len , List_int list );
@@ -1907,12 +1917,12 @@ typedef struct List_int__H_Table {
 typedef struct class_List_int {
   const List_int__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion2091 */
-    struct { /* ciciliStruct2092 */
+  union { /* ciciliUnion2115 */
+    struct { /* ciciliStruct2116 */
       int __h_0_mem ;
       List_int __h_1_mem ;
     } Cons , _1 ;
-    struct { /* ciciliStruct2093 */
+    struct { /* ciciliStruct2117 */
     } Nil , _ ;
   } __h_data ;
 } class_List_int;
@@ -1922,6 +1932,7 @@ __attribute__((weak)) List_int Default_List_int () {
   return Nil_int ();
 }
 int * toArray_List_int (List_int list );
+int * toArrayFrom_List_int (List_int list , size_t count );
 List_int wrap_List_int (const int item );
 List_int pure_List_int (const int * buf , size_t len );
 size_t show_List_int (FILE * file , List_int list );
@@ -1933,6 +1944,7 @@ List_int replace_List_int (List_int list , int item , List_int aimed );
 List_int delete_List_int (List_int list , List_int aimed );
 List_int insert_List_int (List_int llist , int item , List_int rlist );
 List_int reverse_List_int (List_int list );
+List_int reverseOnto_List_int (List_int list , List_int rlist );
 List_int append_List_int (List_int llist , List_int rlist );
 List_int push_List_int (int item , List_int list );
 List_int take_List_int (size_t len , List_int list );
@@ -1971,11 +1983,11 @@ typedef struct Maybe_List_int__H_Table {
 typedef struct Maybe_List_int {
   const Maybe_List_int__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion2194 */
-    struct { /* ciciliStruct2195 */
+  union { /* ciciliUnion2224 */
+    struct { /* ciciliStruct2225 */
       List_int __h_0_mem ;
     } Just , _1 ;
-    struct { /* ciciliStruct2196 */
+    struct { /* ciciliStruct2226 */
     } Nothing , _ ;
   } __h_data ;
 } Maybe_List_int;
@@ -2010,11 +2022,11 @@ typedef struct Maybe_List_int__H_Table {
 typedef struct Maybe_List_int {
   const Maybe_List_int__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion2227 */
-    struct { /* ciciliStruct2228 */
+  union { /* ciciliUnion2257 */
+    struct { /* ciciliStruct2258 */
       List_int __h_0_mem ;
     } Just , _1 ;
-    struct { /* ciciliStruct2229 */
+    struct { /* ciciliStruct2259 */
     } Nothing , _ ;
   } __h_data ;
 } Maybe_List_int;
@@ -2047,6 +2059,7 @@ typedef void (*free_List_List_int_t) (List_List_int * this_ptr );
 typedef struct List_List_int__H_Table {
   free_List_List_int_t freeClass ;
     List_int * (*toArray) (List_List_int list );
+    List_int * (*toArrayFrom) (List_List_int list , size_t count );
     List_List_int (*wrap) (const List_int item );
     List_List_int (*pure) (const List_int * buf , size_t len );
     size_t (*show) (FILE * file , List_List_int list );
@@ -2058,6 +2071,7 @@ typedef struct List_List_int__H_Table {
     List_List_int (*delete) (List_List_int list , List_List_int aimed );
     List_List_int (*insert) (List_List_int llist , List_int item , List_List_int rlist );
     List_List_int (*reverse) (List_List_int list );
+    List_List_int (*reverseOnto) (List_List_int list , List_List_int rlist );
     List_List_int (*append) (List_List_int llist , List_List_int rlist );
     List_List_int (*push) (List_int item , List_List_int list );
     List_List_int (*take) (size_t len , List_List_int list );
@@ -2074,12 +2088,12 @@ typedef struct List_List_int__H_Table {
 typedef struct class_List_List_int {
   const List_List_int__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion2282 */
-    struct { /* ciciliStruct2283 */
+  union { /* ciciliUnion2314 */
+    struct { /* ciciliStruct2315 */
       List_int __h_0_mem ;
       List_List_int __h_1_mem ;
     } Cons , _1 ;
-    struct { /* ciciliStruct2284 */
+    struct { /* ciciliStruct2316 */
     } Nil , _ ;
   } __h_data ;
 } class_List_List_int;
@@ -2089,6 +2103,7 @@ __attribute__((weak)) List_List_int Default_List_List_int () {
   return Nil_List_int ();
 }
 List_int * toArray_List_List_int (List_List_int list );
+List_int * toArrayFrom_List_List_int (List_List_int list , size_t count );
 List_List_int wrap_List_List_int (const List_int item );
 List_List_int pure_List_List_int (const List_int * buf , size_t len );
 size_t show_List_List_int (FILE * file , List_List_int list );
@@ -2100,6 +2115,7 @@ List_List_int replace_List_List_int (List_List_int list , List_int item , List_L
 List_List_int delete_List_List_int (List_List_int list , List_List_int aimed );
 List_List_int insert_List_List_int (List_List_int llist , List_int item , List_List_int rlist );
 List_List_int reverse_List_List_int (List_List_int list );
+List_List_int reverseOnto_List_List_int (List_List_int list , List_List_int rlist );
 List_List_int append_List_List_int (List_List_int llist , List_List_int rlist );
 List_List_int push_List_List_int (List_int item , List_List_int list );
 List_List_int take_List_List_int (size_t len , List_List_int list );
@@ -2138,11 +2154,11 @@ typedef struct Maybe_List_List_int__H_Table {
 typedef struct Maybe_List_List_int {
   const Maybe_List_List_int__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion2385 */
-    struct { /* ciciliStruct2386 */
+  union { /* ciciliUnion2423 */
+    struct { /* ciciliStruct2424 */
       List_List_int __h_0_mem ;
     } Just , _1 ;
-    struct { /* ciciliStruct2387 */
+    struct { /* ciciliStruct2425 */
     } Nothing , _ ;
   } __h_data ;
 } Maybe_List_List_int;
@@ -2182,8 +2198,8 @@ typedef struct Monoid_List_int__H_Table {
 typedef struct Monoid_List_int {
   const Monoid_List_int__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion2432 */
-    struct { /* ciciliStruct2433 */
+  union { /* ciciliUnion2470 */
+    struct { /* ciciliStruct2471 */
       Monoid_List_int_mappend_t __h_0_mem ;
       List_int __h_1_mem ;
       Monoid_List_int_mconcat_t __h_2_mem ;
@@ -2219,8 +2235,8 @@ typedef struct Semigroup_List_int__H_Table {
 typedef struct Semigroup_List_int {
   const Semigroup_List_int__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion2458 */
-    struct { /* ciciliStruct2459 */
+  union { /* ciciliUnion2496 */
+    struct { /* ciciliStruct2497 */
       Monoid_List_int_mappend_t __h_0_mem ;
     } Semigroup , _ ;
   } __h_data ;
@@ -2261,8 +2277,8 @@ typedef struct Applicative_Ap_List_int_int__H_Table {
 typedef struct Applicative_Ap_List_int_int {
   const Applicative_Ap_List_int_int__H_Table * __h_table ;
   char __h_ctor ;
-  union { /* ciciliUnion2505 */
-    struct { /* ciciliStruct2506 */
+  union { /* ciciliUnion2543 */
+    struct { /* ciciliStruct2544 */
     } Applicative , _ ;
   } __h_data ;
 } Applicative_Ap_List_int_int;
@@ -2280,27 +2296,27 @@ Applicative_Ap_List_int_int get_Applicative_Ap_List_int_int ();
 #ifndef __Functor_Ap_List_int_int__H_IMPL__
 #define __Functor_Ap_List_int_int__H_IMPL__
 List_int fmap_Functor_Ap_List_int_int (int_to_int_t a_b , List_int input ) {
-  return ({ /* letn2548 */
+  return ({ /* letn2586 */
       typeof((((input -> __h_data). Cons). __h_0_mem)) head ;
       typeof((((input -> __h_data). Cons). __h_1_mem)) tail ;
       // ----------
       ;
-      ({ /* letn2550 */
-        bool __h_case_result  = (true  &&  (((input -> __h_ctor) ==  __h_Cons_t  ) &&  (({ /* progn2551 */
+      ({ /* letn2588 */
+        bool __h_case_result  = (true  &&  (((input -> __h_ctor) ==  __h_Cons_t  ) &&  (({ /* progn2589 */
                 head  = (((input -> __h_data). Cons). __h_0_mem) ;
                 true ;
-              }) &&  ({ /* progn2553 */
+              }) &&  ({ /* progn2591 */
                 tail  = (((input -> __h_data). Cons). __h_1_mem) ;
                 true ;
               }) ) ) );
         // ----------
         
-        ((__h_case_result ) ? ({ /* progn2558 */
+        ((__h_case_result ) ? ({ /* progn2596 */
             Cons_int (a_b (head ), fmap_Functor_Ap_List_int_int (a_b , tail ));
-          }) : ({ /* letn2564 */
+          }) : ({ /* letn2602 */
             // ----------
             ;
-            ({ /* progn2566 */
+            ({ /* progn2604 */
               Nil_int ();
             });
           }));
@@ -2311,7 +2327,7 @@ void free_Functor_Ap_List_int_int (Functor_Ap_List_int_int * this ) {
 }
 __attribute__((weak)) void free_Functor_Ap_List_int_int_pointer (Functor_Ap_List_int_int ** this ) {
   if (this )
-    { /* block2576 */
+    { /* block2614 */
       free_Functor_Ap_List_int_int ((*this ));
     }
 }
@@ -2320,7 +2336,7 @@ const Functor_Ap_List_int_int__H_Table * const get_Functor_Ap_List_int_int__H_Ta
   return (&table );
 }
 Functor_Ap_List_int_int Functor_Ap_List_int_int_ctor () {
-  { /* let2586 */
+  { /* let2624 */
     Functor_Ap_List_int_int instance  = ((Functor_Ap_List_int_int){ get_Functor_Ap_List_int_int__H_Table (), __h_Functor_t });
     // ----------
     return instance ;
@@ -2336,7 +2352,7 @@ void free_Maybe_int_to_int_t (Maybe_int_to_int_t * this ) {
 }
 __attribute__((weak)) void free_Maybe_int_to_int_t_pointer (Maybe_int_to_int_t ** this ) {
   if (this )
-    { /* block2606 */
+    { /* block2644 */
       free_Maybe_int_to_int_t ((*this ));
     }
 }
@@ -2345,14 +2361,14 @@ const Maybe_int_to_int_t__H_Table * const get_Maybe_int_to_int_t__H_Table () {
   return (&table );
 }
 Maybe_int_to_int_t Just_int_to_int_t (int_to_int_t value ) {
-  { /* let2616 */
+  { /* let2654 */
     Maybe_int_to_int_t instance  = ((Maybe_int_to_int_t){ get_Maybe_int_to_int_t__H_Table (), __h_Just_t , .__h_data.Just = { value }});
     // ----------
     return instance ;
   }
 }
 Maybe_int_to_int_t Nothing_int_to_int_t () {
-  { /* let2621 */
+  { /* let2659 */
     Maybe_int_to_int_t instance  = ((Maybe_int_to_int_t){ get_Maybe_int_to_int_t__H_Table (), __h_Nothing_t });
     // ----------
     return instance ;
@@ -2362,52 +2378,9 @@ Maybe_int_to_int_t Nothing_int_to_int_t () {
 #ifndef __List_int_to_int_t__H_IMPL__
 #define __List_int_to_int_t__H_IMPL__
 int_to_int_t * toArray_List_int_to_int_t (List_int_to_int_t list ) {
-  int_to_int_t * array (List_int_to_int_t list , size_t count ) {
-    return ({ /* letn2633 */
-        typeof((((list -> __h_data). Cons). __h_0_mem)) head ;
-        typeof((((list -> __h_data). Cons). __h_1_mem)) tail ;
-        // ----------
-        ;
-        ({ /* letn2635 */
-          bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  (({ /* progn2636 */
-                  head  = (((list -> __h_data). Cons). __h_0_mem) ;
-                  true ;
-                }) &&  ({ /* progn2638 */
-                  tail  = (((list -> __h_data). Cons). __h_1_mem) ;
-                  true ;
-                }) ) ) );
-          // ----------
-          
-          ((__h_case_result ) ? ({ /* progn2643 */
-              ({ /* letn2645 */
-                int_to_int_t * arr  = array (tail , (count  +  1 ));
-                // ----------
-                arr [count ] = head ;
-                arr ;
-              });
-            }) : ({ /* letn2649 */
-              // ----------
-              ;
-              ({ /* progn2651 */
-                ((int_to_int_t *)calloc (count , sizeof(int_to_int_t)));
-              });
-            }));
-        });
-      });
-  }
-  return array (list , 0);
+  return toArrayFrom_List_int_to_int_t (list , 0);
 }
-List_int_to_int_t wrap_List_int_to_int_t (const int_to_int_t item ) {
-  return Cons_int_to_int_t (item , Nil_int_to_int_t ());
-}
-List_int_to_int_t pure_List_int_to_int_t (const int_to_int_t * buf , size_t len ) {
-  return (((buf  ==  NULL  )) ? Nil_int_to_int_t () : ({ /* letn2661 */
-        int_to_int_t item  = (*buf );
-        // ----------
-        (((len  ==  0 )) ? Nil_int_to_int_t () : Cons_int_to_int_t (item , pure_List_int_to_int_t ((++buf ), (--len ))));
-      }));
-}
-size_t show_List_int_to_int_t (FILE * file , List_int_to_int_t list ) {
+int_to_int_t * toArrayFrom_List_int_to_int_t (List_int_to_int_t list , size_t count ) {
   return ({ /* letn2673 */
       typeof((((list -> __h_data). Cons). __h_0_mem)) head ;
       typeof((((list -> __h_data). Cons). __h_1_mem)) tail ;
@@ -2424,28 +2397,71 @@ size_t show_List_int_to_int_t (FILE * file , List_int_to_int_t list ) {
         // ----------
         
         ((__h_case_result ) ? ({ /* progn2683 */
-            (({ /* letn2689 */
+            ({ /* letn2685 */
+              int_to_int_t * arr  = toArrayFrom_List_int_to_int_t (tail , (count  +  1 ));
+              // ----------
+              arr [count ] = head ;
+              arr ;
+            });
+          }) : ({ /* letn2690 */
+            // ----------
+            ;
+            ({ /* progn2692 */
+              ((int_to_int_t *)calloc (count , sizeof(int_to_int_t)));
+            });
+          }));
+      });
+    });
+}
+List_int_to_int_t wrap_List_int_to_int_t (const int_to_int_t item ) {
+  return Cons_int_to_int_t (item , Nil_int_to_int_t ());
+}
+List_int_to_int_t pure_List_int_to_int_t (const int_to_int_t * buf , size_t len ) {
+  return (((buf  ==  NULL  )) ? Nil_int_to_int_t () : ({ /* letn2702 */
+        int_to_int_t item  = (*buf );
+        // ----------
+        (((len  ==  0 )) ? Nil_int_to_int_t () : Cons_int_to_int_t (item , pure_List_int_to_int_t ((++buf ), (--len ))));
+      }));
+}
+size_t show_List_int_to_int_t (FILE * file , List_int_to_int_t list ) {
+  return ({ /* letn2714 */
+      typeof((((list -> __h_data). Cons). __h_0_mem)) head ;
+      typeof((((list -> __h_data). Cons). __h_1_mem)) tail ;
+      // ----------
+      ;
+      ({ /* letn2716 */
+        bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  (({ /* progn2717 */
+                head  = (((list -> __h_data). Cons). __h_0_mem) ;
+                true ;
+              }) &&  ({ /* progn2719 */
+                tail  = (((list -> __h_data). Cons). __h_1_mem) ;
+                true ;
+              }) ) ) );
+        // ----------
+        
+        ((__h_case_result ) ? ({ /* progn2724 */
+            (({ /* letn2730 */
                 // ----------
                 ;
-                ({ /* letn2691 */
+                ({ /* letn2732 */
                   bool __h_case_result  = (true  &&  ((tail -> __h_ctor) ==  __h_Cons_t  ) );
                   // ----------
                   
-                  ((__h_case_result ) ? ({ /* progn2695 */
+                  ((__h_case_result ) ? ({ /* progn2736 */
                       (fprintf (file , "%p", ((void *)head )) +  fprintf (file , "%s", " ") );
-                    }) : ({ /* letn2704 */
+                    }) : ({ /* letn2745 */
                       // ----------
                       ;
-                      ({ /* progn2706 */
+                      ({ /* progn2747 */
                         fprintf (file , "%p", ((void *)head ));
                       });
                     }));
                 });
               }) +  show_List_int_to_int_t (file , tail ) );
-          }) : ({ /* letn2714 */
+          }) : ({ /* letn2755 */
             // ----------
             ;
-            ({ /* progn2716 */
+            ({ /* progn2757 */
               0;
             });
           }));
@@ -2453,27 +2469,27 @@ size_t show_List_int_to_int_t (FILE * file , List_int_to_int_t list ) {
     });
 }
 List_int_to_int_t copy_List_int_to_int_t (List_int_to_int_t list ) {
-  return ({ /* letn2724 */
+  return ({ /* letn2765 */
       typeof((((list -> __h_data). Cons). __h_0_mem)) head ;
       typeof((((list -> __h_data). Cons). __h_1_mem)) tail ;
       // ----------
       ;
-      ({ /* letn2726 */
-        bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  (({ /* progn2727 */
+      ({ /* letn2767 */
+        bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  (({ /* progn2768 */
                 head  = (((list -> __h_data). Cons). __h_0_mem) ;
                 true ;
-              }) &&  ({ /* progn2729 */
+              }) &&  ({ /* progn2770 */
                 tail  = (((list -> __h_data). Cons). __h_1_mem) ;
                 true ;
               }) ) ) );
         // ----------
         
-        ((__h_case_result ) ? ({ /* progn2734 */
+        ((__h_case_result ) ? ({ /* progn2775 */
             Cons_int_to_int_t (head , copy_List_int_to_int_t (tail ));
-          }) : ({ /* letn2740 */
+          }) : ({ /* letn2781 */
             // ----------
             ;
-            ({ /* progn2742 */
+            ({ /* progn2783 */
               Nil_int_to_int_t ();
             });
           }));
@@ -2481,44 +2497,44 @@ List_int_to_int_t copy_List_int_to_int_t (List_int_to_int_t list ) {
     });
 }
 List_int_to_int_t replaceAt_List_int_to_int_t (List_int_to_int_t list , int_to_int_t item , size_t index ) {
-  return ({ /* letn2751 */
+  return ({ /* letn2792 */
       typeof((((list -> __h_data). Cons). __h_0_mem)) head ;
       typeof((((list -> __h_data). Cons). __h_1_mem)) tail ;
       // ----------
       ;
-      ({ /* letn2753 */
-        bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  ((({ /* progn2754 */
+      ({ /* letn2794 */
+        bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  ((({ /* progn2795 */
                   head  = (((list -> __h_data). Cons). __h_0_mem) ;
                   true ;
-                }) &&  ({ /* progn2756 */
+                }) &&  ({ /* progn2797 */
                   tail  = (((list -> __h_data). Cons). __h_1_mem) ;
                   true ;
                 }) ) &&  (index  >  0 ) ) ) );
         // ----------
         
-        ((__h_case_result ) ? ({ /* progn2761 */
+        ((__h_case_result ) ? ({ /* progn2802 */
             Cons_int_to_int_t (head , replaceAt_List_int_to_int_t (tail , item , (index  -  1 )));
-          }) : ({ /* letn2767 */
+          }) : ({ /* letn2808 */
             // ----------
             ;
-            ({ /* progn2769 */
-              ({ /* letn2775 */
+            ({ /* progn2810 */
+              ({ /* letn2816 */
                 typeof((((list -> __h_data). Cons). __h_1_mem)) taill ;
                 // ----------
                 ;
-                ({ /* letn2777 */
-                  bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  ({ /* progn2778 */
+                ({ /* letn2818 */
+                  bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  ({ /* progn2819 */
                         taill  = (((list -> __h_data). Cons). __h_1_mem) ;
                         true ;
                       }) ) );
                   // ----------
                   
-                  ((__h_case_result ) ? ({ /* progn2783 */
+                  ((__h_case_result ) ? ({ /* progn2824 */
                       Cons_int_to_int_t (item , copy_List_int_to_int_t (taill ));
-                    }) : ({ /* letn2789 */
+                    }) : ({ /* letn2830 */
                       // ----------
                       ;
-                      ({ /* progn2791 */
+                      ({ /* progn2832 */
                         Nil_int_to_int_t ();
                       });
                     }));
@@ -2530,44 +2546,44 @@ List_int_to_int_t replaceAt_List_int_to_int_t (List_int_to_int_t list , int_to_i
     });
 }
 List_int_to_int_t deleteAt_List_int_to_int_t (List_int_to_int_t list , size_t index ) {
-  return ({ /* letn2800 */
+  return ({ /* letn2841 */
       typeof((((list -> __h_data). Cons). __h_0_mem)) head ;
       typeof((((list -> __h_data). Cons). __h_1_mem)) tail ;
       // ----------
       ;
-      ({ /* letn2802 */
-        bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  ((({ /* progn2803 */
+      ({ /* letn2843 */
+        bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  ((({ /* progn2844 */
                   head  = (((list -> __h_data). Cons). __h_0_mem) ;
                   true ;
-                }) &&  ({ /* progn2805 */
+                }) &&  ({ /* progn2846 */
                   tail  = (((list -> __h_data). Cons). __h_1_mem) ;
                   true ;
                 }) ) &&  (index  >  0 ) ) ) );
         // ----------
         
-        ((__h_case_result ) ? ({ /* progn2810 */
+        ((__h_case_result ) ? ({ /* progn2851 */
             Cons_int_to_int_t (head , deleteAt_List_int_to_int_t (tail , (index  -  1 )));
-          }) : ({ /* letn2816 */
+          }) : ({ /* letn2857 */
             // ----------
             ;
-            ({ /* progn2818 */
-              ({ /* letn2824 */
+            ({ /* progn2859 */
+              ({ /* letn2865 */
                 typeof((((list -> __h_data). Cons). __h_1_mem)) taill ;
                 // ----------
                 ;
-                ({ /* letn2826 */
-                  bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  ({ /* progn2827 */
+                ({ /* letn2867 */
+                  bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  ({ /* progn2868 */
                         taill  = (((list -> __h_data). Cons). __h_1_mem) ;
                         true ;
                       }) ) );
                   // ----------
                   
-                  ((__h_case_result ) ? ({ /* progn2832 */
+                  ((__h_case_result ) ? ({ /* progn2873 */
                       copy_List_int_to_int_t (taill );
-                    }) : ({ /* letn2837 */
+                    }) : ({ /* letn2878 */
                       // ----------
                       ;
-                      ({ /* progn2839 */
+                      ({ /* progn2880 */
                         Nil_int_to_int_t ();
                       });
                     }));
@@ -2579,27 +2595,27 @@ List_int_to_int_t deleteAt_List_int_to_int_t (List_int_to_int_t list , size_t in
     });
 }
 List_int_to_int_t insertAt_List_int_to_int_t (List_int_to_int_t list , int_to_int_t item , size_t index ) {
-  return ({ /* letn2848 */
+  return ({ /* letn2889 */
       typeof((((list -> __h_data). Cons). __h_0_mem)) head ;
       typeof((((list -> __h_data). Cons). __h_1_mem)) tail ;
       // ----------
       ;
-      ({ /* letn2850 */
-        bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  ((({ /* progn2851 */
+      ({ /* letn2891 */
+        bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  ((({ /* progn2892 */
                   head  = (((list -> __h_data). Cons). __h_0_mem) ;
                   true ;
-                }) &&  ({ /* progn2853 */
+                }) &&  ({ /* progn2894 */
                   tail  = (((list -> __h_data). Cons). __h_1_mem) ;
                   true ;
                 }) ) &&  (index  >  0 ) ) ) );
         // ----------
         
-        ((__h_case_result ) ? ({ /* progn2858 */
+        ((__h_case_result ) ? ({ /* progn2899 */
             Cons_int_to_int_t (head , insertAt_List_int_to_int_t (tail , item , (index  -  1 )));
-          }) : ({ /* letn2864 */
+          }) : ({ /* letn2905 */
             // ----------
             ;
-            ({ /* progn2866 */
+            ({ /* progn2907 */
               Cons_int_to_int_t (item , copy_List_int_to_int_t (list ));
             });
           }));
@@ -2607,44 +2623,44 @@ List_int_to_int_t insertAt_List_int_to_int_t (List_int_to_int_t list , int_to_in
     });
 }
 List_int_to_int_t replace_List_int_to_int_t (List_int_to_int_t list , int_to_int_t item , List_int_to_int_t aimed ) {
-  return ({ /* letn2876 */
+  return ({ /* letn2917 */
       typeof((((list -> __h_data). Cons). __h_0_mem)) head ;
       typeof((((list -> __h_data). Cons). __h_1_mem)) tail ;
       // ----------
       ;
-      ({ /* letn2878 */
-        bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  ((({ /* progn2879 */
+      ({ /* letn2919 */
+        bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  ((({ /* progn2920 */
                   head  = (((list -> __h_data). Cons). __h_0_mem) ;
                   true ;
-                }) &&  ({ /* progn2881 */
+                }) &&  ({ /* progn2922 */
                   tail  = (((list -> __h_data). Cons). __h_1_mem) ;
                   true ;
                 }) ) &&  (list  !=  aimed  ) ) ) );
         // ----------
         
-        ((__h_case_result ) ? ({ /* progn2886 */
+        ((__h_case_result ) ? ({ /* progn2927 */
             Cons_int_to_int_t (head , replace_List_int_to_int_t (tail , item , aimed ));
-          }) : ({ /* letn2892 */
+          }) : ({ /* letn2933 */
             // ----------
             ;
-            ({ /* progn2894 */
-              ({ /* letn2900 */
+            ({ /* progn2935 */
+              ({ /* letn2941 */
                 typeof((((aimed -> __h_data). Cons). __h_1_mem)) taill ;
                 // ----------
                 ;
-                ({ /* letn2902 */
-                  bool __h_case_result  = (true  &&  (((aimed -> __h_ctor) ==  __h_Cons_t  ) &&  ({ /* progn2903 */
+                ({ /* letn2943 */
+                  bool __h_case_result  = (true  &&  (((aimed -> __h_ctor) ==  __h_Cons_t  ) &&  ({ /* progn2944 */
                         taill  = (((aimed -> __h_data). Cons). __h_1_mem) ;
                         true ;
                       }) ) );
                   // ----------
                   
-                  ((__h_case_result ) ? ({ /* progn2908 */
+                  ((__h_case_result ) ? ({ /* progn2949 */
                       Cons_int_to_int_t (item , copy_List_int_to_int_t (taill ));
-                    }) : ({ /* letn2914 */
+                    }) : ({ /* letn2955 */
                       // ----------
                       ;
-                      ({ /* progn2916 */
+                      ({ /* progn2957 */
                         Nil_int_to_int_t ();
                       });
                     }));
@@ -2656,44 +2672,44 @@ List_int_to_int_t replace_List_int_to_int_t (List_int_to_int_t list , int_to_int
     });
 }
 List_int_to_int_t delete_List_int_to_int_t (List_int_to_int_t list , List_int_to_int_t aimed ) {
-  return ({ /* letn2925 */
+  return ({ /* letn2966 */
       typeof((((list -> __h_data). Cons). __h_0_mem)) head ;
       typeof((((list -> __h_data). Cons). __h_1_mem)) tail ;
       // ----------
       ;
-      ({ /* letn2927 */
-        bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  ((({ /* progn2928 */
+      ({ /* letn2968 */
+        bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  ((({ /* progn2969 */
                   head  = (((list -> __h_data). Cons). __h_0_mem) ;
                   true ;
-                }) &&  ({ /* progn2930 */
+                }) &&  ({ /* progn2971 */
                   tail  = (((list -> __h_data). Cons). __h_1_mem) ;
                   true ;
                 }) ) &&  (list  !=  aimed  ) ) ) );
         // ----------
         
-        ((__h_case_result ) ? ({ /* progn2935 */
+        ((__h_case_result ) ? ({ /* progn2976 */
             Cons_int_to_int_t (head , delete_List_int_to_int_t (tail , aimed ));
-          }) : ({ /* letn2941 */
+          }) : ({ /* letn2982 */
             // ----------
             ;
-            ({ /* progn2943 */
-              ({ /* letn2949 */
+            ({ /* progn2984 */
+              ({ /* letn2990 */
                 typeof((((aimed -> __h_data). Cons). __h_1_mem)) taill ;
                 // ----------
                 ;
-                ({ /* letn2951 */
-                  bool __h_case_result  = (true  &&  (((aimed -> __h_ctor) ==  __h_Cons_t  ) &&  ({ /* progn2952 */
+                ({ /* letn2992 */
+                  bool __h_case_result  = (true  &&  (((aimed -> __h_ctor) ==  __h_Cons_t  ) &&  ({ /* progn2993 */
                         taill  = (((aimed -> __h_data). Cons). __h_1_mem) ;
                         true ;
                       }) ) );
                   // ----------
                   
-                  ((__h_case_result ) ? ({ /* progn2957 */
+                  ((__h_case_result ) ? ({ /* progn2998 */
                       copy_List_int_to_int_t (taill );
-                    }) : ({ /* letn2962 */
+                    }) : ({ /* letn3003 */
                       // ----------
                       ;
-                      ({ /* progn2964 */
+                      ({ /* progn3005 */
                         Nil_int_to_int_t ();
                       });
                     }));
@@ -2705,27 +2721,27 @@ List_int_to_int_t delete_List_int_to_int_t (List_int_to_int_t list , List_int_to
     });
 }
 List_int_to_int_t insert_List_int_to_int_t (List_int_to_int_t llist , int_to_int_t item , List_int_to_int_t rlist ) {
-  return ({ /* letn2973 */
+  return ({ /* letn3014 */
       typeof((((llist -> __h_data). Cons). __h_0_mem)) head ;
       typeof((((llist -> __h_data). Cons). __h_1_mem)) tail ;
       // ----------
       ;
-      ({ /* letn2975 */
-        bool __h_case_result  = (true  &&  (((llist -> __h_ctor) ==  __h_Cons_t  ) &&  ((({ /* progn2976 */
+      ({ /* letn3016 */
+        bool __h_case_result  = (true  &&  (((llist -> __h_ctor) ==  __h_Cons_t  ) &&  ((({ /* progn3017 */
                   head  = (((llist -> __h_data). Cons). __h_0_mem) ;
                   true ;
-                }) &&  ({ /* progn2978 */
+                }) &&  ({ /* progn3019 */
                   tail  = (((llist -> __h_data). Cons). __h_1_mem) ;
                   true ;
                 }) ) &&  (llist  !=  rlist  ) ) ) );
         // ----------
         
-        ((__h_case_result ) ? ({ /* progn2983 */
+        ((__h_case_result ) ? ({ /* progn3024 */
             Cons_int_to_int_t (head , insert_List_int_to_int_t (tail , item , rlist ));
-          }) : ({ /* letn2989 */
+          }) : ({ /* letn3030 */
             // ----------
             ;
-            ({ /* progn2991 */
+            ({ /* progn3032 */
               Cons_int_to_int_t (item , copy_List_int_to_int_t (rlist ));
             });
           }));
@@ -2733,83 +2749,83 @@ List_int_to_int_t insert_List_int_to_int_t (List_int_to_int_t llist , int_to_int
     });
 }
 List_int_to_int_t reverse_List_int_to_int_t (List_int_to_int_t list ) {
-  List_int_to_int_t _reverse (List_int_to_int_t list , List_int_to_int_t rlist ) {
-    return ({ /* letn3002 */
-        typeof((((list -> __h_data). Cons). __h_0_mem)) head ;
-        typeof((((list -> __h_data). Cons). __h_1_mem)) tail ;
-        // ----------
-        ;
-        ({ /* letn3004 */
-          bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  (({ /* progn3005 */
-                  head  = (((list -> __h_data). Cons). __h_0_mem) ;
-                  true ;
-                }) &&  ({ /* progn3007 */
-                  tail  = (((list -> __h_data). Cons). __h_1_mem) ;
-                  true ;
-                }) ) ) );
-          // ----------
-          
-          ((__h_case_result ) ? ({ /* progn3012 */
-              _reverse (tail , Cons_int_to_int_t (head , rlist ));
-            }) : ({ /* letn3017 */
-              // ----------
-              ;
-              ({ /* progn3019 */
-                rlist ;
-              });
-            }));
-        });
-      });
-  }
-  return ({ /* letn3025 */
+  return ({ /* letn3042 */
       typeof((((list -> __h_data). Cons). __h_0_mem)) head ;
       typeof((((list -> __h_data). Cons). __h_1_mem)) tail ;
       // ----------
       ;
-      ({ /* letn3027 */
-        bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  (({ /* progn3028 */
+      ({ /* letn3044 */
+        bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  (({ /* progn3045 */
                 head  = (((list -> __h_data). Cons). __h_0_mem) ;
                 true ;
-              }) &&  ({ /* progn3030 */
+              }) &&  ({ /* progn3047 */
                 tail  = (((list -> __h_data). Cons). __h_1_mem) ;
                 true ;
               }) ) ) );
         // ----------
         
-        ((__h_case_result ) ? ({ /* progn3035 */
-            _reverse (tail , Cons_int_to_int_t (head , Nil_int_to_int_t ()));
-          }) : ({ /* letn3041 */
+        ((__h_case_result ) ? ({ /* progn3052 */
+            reverseOnto_List_int_to_int_t (tail , Cons_int_to_int_t (head , Nil_int_to_int_t ()));
+          }) : ({ /* letn3059 */
             // ----------
             ;
-            ({ /* progn3043 */
+            ({ /* progn3061 */
               list ;
             });
           }));
       });
     });
 }
+List_int_to_int_t reverseOnto_List_int_to_int_t (List_int_to_int_t list , List_int_to_int_t rlist ) {
+  return ({ /* letn3069 */
+      typeof((((list -> __h_data). Cons). __h_0_mem)) head ;
+      typeof((((list -> __h_data). Cons). __h_1_mem)) tail ;
+      // ----------
+      ;
+      ({ /* letn3071 */
+        bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  (({ /* progn3072 */
+                head  = (((list -> __h_data). Cons). __h_0_mem) ;
+                true ;
+              }) &&  ({ /* progn3074 */
+                tail  = (((list -> __h_data). Cons). __h_1_mem) ;
+                true ;
+              }) ) ) );
+        // ----------
+        
+        ((__h_case_result ) ? ({ /* progn3079 */
+            reverseOnto_List_int_to_int_t (tail , Cons_int_to_int_t (head , rlist ));
+          }) : ({ /* letn3085 */
+            // ----------
+            ;
+            ({ /* progn3087 */
+              rlist ;
+            });
+          }));
+      });
+    });
+}
 List_int_to_int_t append_List_int_to_int_t (List_int_to_int_t llist , List_int_to_int_t rlist ) {
-  return ({ /* letn3051 */
+  return ({ /* letn3095 */
       typeof((((llist -> __h_data). Cons). __h_0_mem)) head ;
       typeof((((llist -> __h_data). Cons). __h_1_mem)) tail ;
       // ----------
       ;
-      ({ /* letn3053 */
-        bool __h_case_result  = (true  &&  (((llist -> __h_ctor) ==  __h_Cons_t  ) &&  (({ /* progn3054 */
+      ({ /* letn3097 */
+        bool __h_case_result  = (true  &&  (((llist -> __h_ctor) ==  __h_Cons_t  ) &&  (({ /* progn3098 */
                 head  = (((llist -> __h_data). Cons). __h_0_mem) ;
                 true ;
-              }) &&  ({ /* progn3056 */
+              }) &&  ({ /* progn3100 */
                 tail  = (((llist -> __h_data). Cons). __h_1_mem) ;
                 true ;
               }) ) ) );
         // ----------
         
-        ((__h_case_result ) ? ({ /* progn3061 */
+        ((__h_case_result ) ? ({ /* progn3105 */
             Cons_int_to_int_t (head , append_List_int_to_int_t (tail , rlist ));
-          }) : ({ /* letn3067 */
+          }) : ({ /* letn3111 */
             // ----------
             ;
-            ({ /* progn3069 */
+            ({ /* progn3113 */
               copy_List_int_to_int_t (rlist );
             });
           }));
@@ -2820,27 +2836,27 @@ List_int_to_int_t push_List_int_to_int_t (int_to_int_t item , List_int_to_int_t 
   return Cons_int_to_int_t (item , copy_List_int_to_int_t (list ));
 }
 List_int_to_int_t take_List_int_to_int_t (size_t len , List_int_to_int_t list ) {
-  return (((len  <=  0 )) ? Nil_int_to_int_t () : ({ /* letn3084 */
+  return (((len  <=  0 )) ? Nil_int_to_int_t () : ({ /* letn3128 */
         typeof((((list -> __h_data). Cons). __h_0_mem)) head ;
         typeof((((list -> __h_data). Cons). __h_1_mem)) tail ;
         // ----------
         ;
-        ({ /* letn3086 */
-          bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  (({ /* progn3087 */
+        ({ /* letn3130 */
+          bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  (({ /* progn3131 */
                   head  = (((list -> __h_data). Cons). __h_0_mem) ;
                   true ;
-                }) &&  ({ /* progn3089 */
+                }) &&  ({ /* progn3133 */
                   tail  = (((list -> __h_data). Cons). __h_1_mem) ;
                   true ;
                 }) ) ) );
           // ----------
           
-          ((__h_case_result ) ? ({ /* progn3094 */
+          ((__h_case_result ) ? ({ /* progn3138 */
               Cons_int_to_int_t (head , take_List_int_to_int_t ((--len ), tail ));
-            }) : ({ /* letn3100 */
+            }) : ({ /* letn3144 */
               // ----------
               ;
-              ({ /* progn3102 */
+              ({ /* progn3146 */
                 Nil_int_to_int_t ();
               });
             }));
@@ -2848,40 +2864,40 @@ List_int_to_int_t take_List_int_to_int_t (size_t len , List_int_to_int_t list ) 
       }));
 }
 List_int_to_int_t last_List_int_to_int_t (List_int_to_int_t list ) {
-  return ({ /* letn3111 */
+  return ({ /* letn3155 */
       typeof((((list -> __h_data). Cons). __h_1_mem)) tail ;
       // ----------
       ;
-      ({ /* letn3113 */
-        bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  ({ /* progn3114 */
+      ({ /* letn3157 */
+        bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  ({ /* progn3158 */
               tail  = (((list -> __h_data). Cons). __h_1_mem) ;
               true ;
             }) ) );
         // ----------
         
-        ((__h_case_result ) ? ({ /* progn3119 */
-            ({ /* letn3125 */
+        ((__h_case_result ) ? ({ /* progn3163 */
+            ({ /* letn3169 */
               // ----------
               ;
-              ({ /* letn3127 */
+              ({ /* letn3171 */
                 bool __h_case_result  = (true  &&  ((tail -> __h_ctor) ==  __h_Nil_t  ) );
                 // ----------
                 
-                ((__h_case_result ) ? ({ /* progn3131 */
+                ((__h_case_result ) ? ({ /* progn3175 */
                     copy_List_int_to_int_t (list );
-                  }) : ({ /* letn3136 */
+                  }) : ({ /* letn3180 */
                     // ----------
                     ;
-                    ({ /* progn3138 */
+                    ({ /* progn3182 */
                       last_List_int_to_int_t (tail );
                     });
                   }));
               });
             });
-          }) : ({ /* letn3143 */
+          }) : ({ /* letn3187 */
             // ----------
             ;
-            ({ /* progn3145 */
+            ({ /* progn3189 */
               Nil_int_to_int_t ();
             });
           }));
@@ -2889,27 +2905,27 @@ List_int_to_int_t last_List_int_to_int_t (List_int_to_int_t list ) {
     });
 }
 List_int_to_int_t init_List_int_to_int_t (List_int_to_int_t list ) {
-  return ({ /* letn3155 */
+  return ({ /* letn3199 */
       typeof((((list -> __h_data). Cons). __h_0_mem)) head ;
       typeof((((list -> __h_data). Cons). __h_1_mem)) tail ;
       // ----------
       ;
-      ({ /* letn3157 */
-        bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  ((({ /* progn3158 */
+      ({ /* letn3201 */
+        bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  ((({ /* progn3202 */
                   head  = (((list -> __h_data). Cons). __h_0_mem) ;
                   true ;
-                }) &&  ({ /* progn3160 */
+                }) &&  ({ /* progn3204 */
                   tail  = (((list -> __h_data). Cons). __h_1_mem) ;
                   true ;
                 }) ) &&  (true  &&  ((tail -> __h_ctor) ==  __h_Cons_t  ) ) ) ) );
         // ----------
         
-        ((__h_case_result ) ? ({ /* progn3165 */
+        ((__h_case_result ) ? ({ /* progn3209 */
             Cons_int_to_int_t (head , init_List_int_to_int_t (tail ));
-          }) : ({ /* letn3171 */
+          }) : ({ /* letn3215 */
             // ----------
             ;
-            ({ /* progn3173 */
+            ({ /* progn3217 */
               Nil_int_to_int_t ();
             });
           }));
@@ -2917,23 +2933,23 @@ List_int_to_int_t init_List_int_to_int_t (List_int_to_int_t list ) {
     });
 }
 size_t hasLen_List_int_to_int_t (List_int_to_int_t list , size_t desired ) {
-  return ({ /* letn3182 */
+  return ({ /* letn3226 */
       typeof((((list -> __h_data). Cons). __h_1_mem)) tail ;
       // ----------
       ;
-      ({ /* letn3184 */
-        bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  ({ /* progn3185 */
+      ({ /* letn3228 */
+        bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  ({ /* progn3229 */
               tail  = (((list -> __h_data). Cons). __h_1_mem) ;
               true ;
             }) ) );
         // ----------
         
-        ((__h_case_result ) ? ({ /* progn3190 */
+        ((__h_case_result ) ? ({ /* progn3234 */
             (((desired  ==  1 )) ? 1 : (1 +  hasLen_List_int_to_int_t (tail , (--desired )) ));
-          }) : ({ /* letn3196 */
+          }) : ({ /* letn3240 */
             // ----------
             ;
-            ({ /* progn3198 */
+            ({ /* progn3242 */
               0;
             });
           }));
@@ -2941,23 +2957,23 @@ size_t hasLen_List_int_to_int_t (List_int_to_int_t list , size_t desired ) {
     });
 }
 size_t len_List_int_to_int_t (List_int_to_int_t list ) {
-  return ({ /* letn3206 */
+  return ({ /* letn3250 */
       typeof((((list -> __h_data). Cons). __h_1_mem)) tail ;
       // ----------
       ;
-      ({ /* letn3208 */
-        bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  ({ /* progn3209 */
+      ({ /* letn3252 */
+        bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  ({ /* progn3253 */
               tail  = (((list -> __h_data). Cons). __h_1_mem) ;
               true ;
             }) ) );
         // ----------
         
-        ((__h_case_result ) ? ({ /* progn3214 */
+        ((__h_case_result ) ? ({ /* progn3258 */
             (1 +  len_List_int_to_int_t (tail ) );
-          }) : ({ /* letn3219 */
+          }) : ({ /* letn3263 */
             // ----------
             ;
-            ({ /* progn3221 */
+            ({ /* progn3265 */
               0;
             });
           }));
@@ -2968,23 +2984,23 @@ List_int_to_int_t tail_List_int_to_int_t (List_int_to_int_t list ) {
   return drop_List_int_to_int_t (1, list );
 }
 List_int_to_int_t drop_List_int_to_int_t (size_t len , List_int_to_int_t list ) {
-  return (((len  <=  0 )) ? copy_List_int_to_int_t (list ) : ({ /* letn3234 */
+  return (((len  <=  0 )) ? copy_List_int_to_int_t (list ) : ({ /* letn3278 */
         typeof((((list -> __h_data). Cons). __h_1_mem)) tail ;
         // ----------
         ;
-        ({ /* letn3236 */
-          bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  ({ /* progn3237 */
+        ({ /* letn3280 */
+          bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  ({ /* progn3281 */
                 tail  = (((list -> __h_data). Cons). __h_1_mem) ;
                 true ;
               }) ) );
           // ----------
           
-          ((__h_case_result ) ? ({ /* progn3242 */
+          ((__h_case_result ) ? ({ /* progn3286 */
               drop_List_int_to_int_t ((--len ), tail );
-            }) : ({ /* letn3247 */
+            }) : ({ /* letn3291 */
               // ----------
               ;
-              ({ /* progn3249 */
+              ({ /* progn3293 */
                 Nil_int_to_int_t ();
               });
             }));
@@ -2992,23 +3008,23 @@ List_int_to_int_t drop_List_int_to_int_t (size_t len , List_int_to_int_t list ) 
       }));
 }
 Maybe_int_to_int_t head_List_int_to_int_t (List_int_to_int_t list ) {
-  return ({ /* letn3259 */
+  return ({ /* letn3303 */
       typeof((((list -> __h_data). Cons). __h_0_mem)) head ;
       // ----------
       ;
-      ({ /* letn3261 */
-        bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  ({ /* progn3262 */
+      ({ /* letn3305 */
+        bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  ({ /* progn3306 */
               head  = (((list -> __h_data). Cons). __h_0_mem) ;
               true ;
             }) ) );
         // ----------
         
-        ((__h_case_result ) ? ({ /* progn3267 */
+        ((__h_case_result ) ? ({ /* progn3311 */
             Just_int_to_int_t (head );
-          }) : ({ /* letn3272 */
+          }) : ({ /* letn3316 */
             // ----------
             ;
-            ({ /* progn3274 */
+            ({ /* progn3318 */
               Nothing_int_to_int_t ();
             });
           }));
@@ -3016,23 +3032,23 @@ Maybe_int_to_int_t head_List_int_to_int_t (List_int_to_int_t list ) {
     });
 }
 List_int_to_int_t nthcdr_List_int_to_int_t (size_t index , List_int_to_int_t list ) {
-  return ({ /* letn3283 */
+  return ({ /* letn3327 */
       typeof((((list -> __h_data). Cons). __h_1_mem)) tail ;
       // ----------
       ;
-      ({ /* letn3285 */
-        bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  (({ /* progn3286 */
+      ({ /* letn3329 */
+        bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  (({ /* progn3330 */
                 tail  = (((list -> __h_data). Cons). __h_1_mem) ;
                 true ;
               }) &&  (index  >  0 ) ) ) );
         // ----------
         
-        ((__h_case_result ) ? ({ /* progn3291 */
+        ((__h_case_result ) ? ({ /* progn3335 */
             nthcdr_List_int_to_int_t ((--index ), tail );
-          }) : ({ /* letn3296 */
+          }) : ({ /* letn3340 */
             // ----------
             ;
-            ({ /* progn3298 */
+            ({ /* progn3342 */
               list ;
             });
           }));
@@ -3040,27 +3056,27 @@ List_int_to_int_t nthcdr_List_int_to_int_t (size_t index , List_int_to_int_t lis
     });
 }
 Maybe_int_to_int_t nth_List_int_to_int_t (size_t index , List_int_to_int_t list ) {
-  return ({ /* letn3307 */
+  return ({ /* letn3351 */
       typeof((((list -> __h_data). Cons). __h_0_mem)) head ;
       typeof((((list -> __h_data). Cons). __h_1_mem)) tail ;
       // ----------
       ;
-      ({ /* letn3309 */
-        bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  (({ /* progn3310 */
+      ({ /* letn3353 */
+        bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  (({ /* progn3354 */
                 head  = (((list -> __h_data). Cons). __h_0_mem) ;
                 true ;
-              }) &&  ({ /* progn3312 */
+              }) &&  ({ /* progn3356 */
                 tail  = (((list -> __h_data). Cons). __h_1_mem) ;
                 true ;
               }) ) ) );
         // ----------
         
-        ((__h_case_result ) ? ({ /* progn3317 */
+        ((__h_case_result ) ? ({ /* progn3361 */
             (((index  ==  0 )) ? Just_int_to_int_t (head ) : (((index  <  0 )) ? Nothing_int_to_int_t () : nth_List_int_to_int_t ((--index ), tail )));
-          }) : ({ /* letn3326 */
+          }) : ({ /* letn3370 */
             // ----------
             ;
-            ({ /* progn3328 */
+            ({ /* progn3372 */
               Nothing_int_to_int_t ();
             });
           }));
@@ -3068,38 +3084,38 @@ Maybe_int_to_int_t nth_List_int_to_int_t (size_t index , List_int_to_int_t list 
     });
 }
 void free_List_int_to_int_t (List_int_to_int_t * this_ptr ) {
-  { /* let3333 */
+  { /* let3377 */
     List_int_to_int_t this  = (*this_ptr );
     // ----------
-    { /* let3337 */
+    { /* let3381 */
       typeof((((this -> __h_data). Cons). __h_1_mem)) tail ;
       // ----------
       ;
-      ({ /* letn3339 */
-        bool __h_case_result  = (true  &&  (((this -> __h_ctor) ==  __h_Cons_t  ) &&  ({ /* progn3340 */
+      ({ /* letn3383 */
+        bool __h_case_result  = (true  &&  (((this -> __h_ctor) ==  __h_Cons_t  ) &&  ({ /* progn3384 */
               tail  = (((this -> __h_data). Cons). __h_1_mem) ;
               true ;
             }) ) );
         // ----------
         
         if (__h_case_result )
-          { /* block3347 */
-            { /* block3349 */
+          { /* block3391 */
+            { /* block3393 */
               free (this );
               free_List_int_to_int_t ((&tail ));
             }
           }
         else
-          { /* let3357 */
+          { /* let3401 */
             // ----------
             ;
-            ({ /* letn3359 */
+            ({ /* letn3403 */
               bool __h_case_result  = (true  &&  ((this -> __h_ctor) ==  __h_Nil_t  ) );
               // ----------
               
               if (__h_case_result )
-                { /* block3365 */
-                  { /* block3367 */
+                { /* block3409 */
+                  { /* block3411 */
                     free (this );
                   }
                 }
@@ -3111,16 +3127,16 @@ void free_List_int_to_int_t (List_int_to_int_t * this_ptr ) {
 }
 __attribute__((weak)) void free_List_int_to_int_t_pointer (List_int_to_int_t ** this_ptr ) {
   if (this_ptr )
-    { /* block3375 */
+    { /* block3419 */
       free_List_int_to_int_t ((*this_ptr ));
     }
 }
 List_int_to_int_t__H_Table * const get_List_int_to_int_t__H_Table () {
-  static List_int_to_int_t__H_Table table  = { free_List_int_to_int_t , toArray_List_int_to_int_t , wrap_List_int_to_int_t , pure_List_int_to_int_t , show_List_int_to_int_t , copy_List_int_to_int_t , replaceAt_List_int_to_int_t , deleteAt_List_int_to_int_t , insertAt_List_int_to_int_t , replace_List_int_to_int_t , delete_List_int_to_int_t , insert_List_int_to_int_t , reverse_List_int_to_int_t , append_List_int_to_int_t , push_List_int_to_int_t , take_List_int_to_int_t , last_List_int_to_int_t , init_List_int_to_int_t , hasLen_List_int_to_int_t , len_List_int_to_int_t , tail_List_int_to_int_t , drop_List_int_to_int_t , head_List_int_to_int_t , nthcdr_List_int_to_int_t , nth_List_int_to_int_t };
+  static List_int_to_int_t__H_Table table  = { free_List_int_to_int_t , toArray_List_int_to_int_t , toArrayFrom_List_int_to_int_t , wrap_List_int_to_int_t , pure_List_int_to_int_t , show_List_int_to_int_t , copy_List_int_to_int_t , replaceAt_List_int_to_int_t , deleteAt_List_int_to_int_t , insertAt_List_int_to_int_t , replace_List_int_to_int_t , delete_List_int_to_int_t , insert_List_int_to_int_t , reverse_List_int_to_int_t , reverseOnto_List_int_to_int_t , append_List_int_to_int_t , push_List_int_to_int_t , take_List_int_to_int_t , last_List_int_to_int_t , init_List_int_to_int_t , hasLen_List_int_to_int_t , len_List_int_to_int_t , tail_List_int_to_int_t , drop_List_int_to_int_t , head_List_int_to_int_t , nthcdr_List_int_to_int_t , nth_List_int_to_int_t };
   return (&table );
 }
 List_int_to_int_t Cons_int_to_int_t (int_to_int_t head , List_int_to_int_t tail ) {
-  { /* let3385 */
+  { /* let3429 */
     List_int_to_int_t instance  = malloc (sizeof(class_List_int_to_int_t));
     // ----------
     (*instance ) = ((class_List_int_to_int_t){ get_List_int_to_int_t__H_Table (), __h_Cons_t , .__h_data.Cons = { head , tail }});
@@ -3128,7 +3144,7 @@ List_int_to_int_t Cons_int_to_int_t (int_to_int_t head , List_int_to_int_t tail 
   }
 }
 List_int_to_int_t Nil_int_to_int_t () {
-  { /* let3391 */
+  { /* let3435 */
     List_int_to_int_t instance  = malloc (sizeof(class_List_int_to_int_t));
     // ----------
     (*instance ) = ((class_List_int_to_int_t){ get_List_int_to_int_t__H_Table (), __h_Nil_t });
@@ -3142,7 +3158,7 @@ void free_Maybe_List_int_to_int_t (Maybe_List_int_to_int_t * this ) {
 }
 __attribute__((weak)) void free_Maybe_List_int_to_int_t_pointer (Maybe_List_int_to_int_t ** this ) {
   if (this )
-    { /* block3406 */
+    { /* block3450 */
       free_Maybe_List_int_to_int_t ((*this ));
     }
 }
@@ -3151,14 +3167,14 @@ const Maybe_List_int_to_int_t__H_Table * const get_Maybe_List_int_to_int_t__H_Ta
   return (&table );
 }
 Maybe_List_int_to_int_t Just_List_int_to_int_t (List_int_to_int_t value ) {
-  { /* let3416 */
+  { /* let3460 */
     Maybe_List_int_to_int_t instance  = ((Maybe_List_int_to_int_t){ get_Maybe_List_int_to_int_t__H_Table (), __h_Just_t , .__h_data.Just = { value }});
     // ----------
     return instance ;
   }
 }
 Maybe_List_int_to_int_t Nothing_List_int_to_int_t () {
-  { /* let3421 */
+  { /* let3465 */
     Maybe_List_int_to_int_t instance  = ((Maybe_List_int_to_int_t){ get_Maybe_List_int_to_int_t__H_Table (), __h_Nothing_t });
     // ----------
     return instance ;
@@ -3171,7 +3187,7 @@ void free_Maybe_int (Maybe_int * this ) {
 }
 __attribute__((weak)) void free_Maybe_int_pointer (Maybe_int ** this ) {
   if (this )
-    { /* block3437 */
+    { /* block3481 */
       free_Maybe_int ((*this ));
     }
 }
@@ -3180,14 +3196,14 @@ const Maybe_int__H_Table * const get_Maybe_int__H_Table () {
   return (&table );
 }
 Maybe_int Just_int (int value ) {
-  { /* let3447 */
+  { /* let3491 */
     Maybe_int instance  = ((Maybe_int){ get_Maybe_int__H_Table (), __h_Just_t , .__h_data.Just = { value }});
     // ----------
     return instance ;
   }
 }
 Maybe_int Nothing_int () {
-  { /* let3452 */
+  { /* let3496 */
     Maybe_int instance  = ((Maybe_int){ get_Maybe_int__H_Table (), __h_Nothing_t });
     // ----------
     return instance ;
@@ -3197,90 +3213,90 @@ Maybe_int Nothing_int () {
 #ifndef __List_int__H_IMPL__
 #define __List_int__H_IMPL__
 int * toArray_List_int (List_int list ) {
-  int * array (List_int list , size_t count ) {
-    return ({ /* letn3464 */
-        typeof((((list -> __h_data). Cons). __h_0_mem)) head ;
-        typeof((((list -> __h_data). Cons). __h_1_mem)) tail ;
+  return toArrayFrom_List_int (list , 0);
+}
+int * toArrayFrom_List_int (List_int list , size_t count ) {
+  return ({ /* letn3510 */
+      typeof((((list -> __h_data). Cons). __h_0_mem)) head ;
+      typeof((((list -> __h_data). Cons). __h_1_mem)) tail ;
+      // ----------
+      ;
+      ({ /* letn3512 */
+        bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  (({ /* progn3513 */
+                head  = (((list -> __h_data). Cons). __h_0_mem) ;
+                true ;
+              }) &&  ({ /* progn3515 */
+                tail  = (((list -> __h_data). Cons). __h_1_mem) ;
+                true ;
+              }) ) ) );
         // ----------
-        ;
-        ({ /* letn3466 */
-          bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  (({ /* progn3467 */
-                  head  = (((list -> __h_data). Cons). __h_0_mem) ;
-                  true ;
-                }) &&  ({ /* progn3469 */
-                  tail  = (((list -> __h_data). Cons). __h_1_mem) ;
-                  true ;
-                }) ) ) );
-          // ----------
-          
-          ((__h_case_result ) ? ({ /* progn3474 */
-              ({ /* letn3476 */
-                int * arr  = array (tail , (count  +  1 ));
-                // ----------
-                arr [count ] = head ;
-                arr ;
-              });
-            }) : ({ /* letn3480 */
+        
+        ((__h_case_result ) ? ({ /* progn3520 */
+            ({ /* letn3522 */
+              int * arr  = toArrayFrom_List_int (tail , (count  +  1 ));
               // ----------
-              ;
-              ({ /* progn3482 */
-                ((int *)calloc (count , sizeof(int)));
-              });
-            }));
-        });
+              arr [count ] = head ;
+              arr ;
+            });
+          }) : ({ /* letn3527 */
+            // ----------
+            ;
+            ({ /* progn3529 */
+              ((int *)calloc (count , sizeof(int)));
+            });
+          }));
       });
-  }
-  return array (list , 0);
+    });
 }
 List_int wrap_List_int (const int item ) {
   return Cons_int (item , Nil_int ());
 }
 List_int pure_List_int (const int * buf , size_t len ) {
-  return (((buf  ==  NULL  )) ? Nil_int () : ({ /* letn3492 */
+  return (((buf  ==  NULL  )) ? Nil_int () : ({ /* letn3539 */
         int item  = (*buf );
         // ----------
         (((len  ==  0 )) ? Nil_int () : Cons_int (item , pure_List_int ((++buf ), (--len ))));
       }));
 }
 size_t show_List_int (FILE * file , List_int list ) {
-  return ({ /* letn3504 */
+  return ({ /* letn3551 */
       typeof((((list -> __h_data). Cons). __h_0_mem)) head ;
       typeof((((list -> __h_data). Cons). __h_1_mem)) tail ;
       // ----------
       ;
-      ({ /* letn3506 */
-        bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  (({ /* progn3507 */
+      ({ /* letn3553 */
+        bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  (({ /* progn3554 */
                 head  = (((list -> __h_data). Cons). __h_0_mem) ;
                 true ;
-              }) &&  ({ /* progn3509 */
+              }) &&  ({ /* progn3556 */
                 tail  = (((list -> __h_data). Cons). __h_1_mem) ;
                 true ;
               }) ) ) );
         // ----------
         
-        ((__h_case_result ) ? ({ /* progn3514 */
-            (({ /* letn3520 */
+        ((__h_case_result ) ? ({ /* progn3561 */
+            (({ /* letn3567 */
                 // ----------
                 ;
-                ({ /* letn3522 */
+                ({ /* letn3569 */
                   bool __h_case_result  = (true  &&  ((tail -> __h_ctor) ==  __h_Cons_t  ) );
                   // ----------
                   
-                  ((__h_case_result ) ? ({ /* progn3526 */
+                  ((__h_case_result ) ? ({ /* progn3573 */
                       (0 +  fprintf (file , "%s", " ") );
-                    }) : ({ /* letn3535 */
+                    }) : ({ /* letn3582 */
                       // ----------
                       ;
-                      ({ /* progn3537 */
+                      ({ /* progn3584 */
                         0;
                       });
                     }));
                 });
               }) +  show_List_int (file , tail ) );
-          }) : ({ /* letn3545 */
+          }) : ({ /* letn3592 */
             // ----------
             ;
-            ({ /* progn3547 */
+            ({ /* progn3594 */
               0;
             });
           }));
@@ -3288,27 +3304,27 @@ size_t show_List_int (FILE * file , List_int list ) {
     });
 }
 List_int copy_List_int (List_int list ) {
-  return ({ /* letn3555 */
+  return ({ /* letn3602 */
       typeof((((list -> __h_data). Cons). __h_0_mem)) head ;
       typeof((((list -> __h_data). Cons). __h_1_mem)) tail ;
       // ----------
       ;
-      ({ /* letn3557 */
-        bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  (({ /* progn3558 */
+      ({ /* letn3604 */
+        bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  (({ /* progn3605 */
                 head  = (((list -> __h_data). Cons). __h_0_mem) ;
                 true ;
-              }) &&  ({ /* progn3560 */
+              }) &&  ({ /* progn3607 */
                 tail  = (((list -> __h_data). Cons). __h_1_mem) ;
                 true ;
               }) ) ) );
         // ----------
         
-        ((__h_case_result ) ? ({ /* progn3565 */
+        ((__h_case_result ) ? ({ /* progn3612 */
             Cons_int (head , copy_List_int (tail ));
-          }) : ({ /* letn3571 */
+          }) : ({ /* letn3618 */
             // ----------
             ;
-            ({ /* progn3573 */
+            ({ /* progn3620 */
               Nil_int ();
             });
           }));
@@ -3316,44 +3332,44 @@ List_int copy_List_int (List_int list ) {
     });
 }
 List_int replaceAt_List_int (List_int list , int item , size_t index ) {
-  return ({ /* letn3582 */
+  return ({ /* letn3629 */
       typeof((((list -> __h_data). Cons). __h_0_mem)) head ;
       typeof((((list -> __h_data). Cons). __h_1_mem)) tail ;
       // ----------
       ;
-      ({ /* letn3584 */
-        bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  ((({ /* progn3585 */
+      ({ /* letn3631 */
+        bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  ((({ /* progn3632 */
                   head  = (((list -> __h_data). Cons). __h_0_mem) ;
                   true ;
-                }) &&  ({ /* progn3587 */
+                }) &&  ({ /* progn3634 */
                   tail  = (((list -> __h_data). Cons). __h_1_mem) ;
                   true ;
                 }) ) &&  (index  >  0 ) ) ) );
         // ----------
         
-        ((__h_case_result ) ? ({ /* progn3592 */
+        ((__h_case_result ) ? ({ /* progn3639 */
             Cons_int (head , replaceAt_List_int (tail , item , (index  -  1 )));
-          }) : ({ /* letn3598 */
+          }) : ({ /* letn3645 */
             // ----------
             ;
-            ({ /* progn3600 */
-              ({ /* letn3606 */
+            ({ /* progn3647 */
+              ({ /* letn3653 */
                 typeof((((list -> __h_data). Cons). __h_1_mem)) taill ;
                 // ----------
                 ;
-                ({ /* letn3608 */
-                  bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  ({ /* progn3609 */
+                ({ /* letn3655 */
+                  bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  ({ /* progn3656 */
                         taill  = (((list -> __h_data). Cons). __h_1_mem) ;
                         true ;
                       }) ) );
                   // ----------
                   
-                  ((__h_case_result ) ? ({ /* progn3614 */
+                  ((__h_case_result ) ? ({ /* progn3661 */
                       Cons_int (item , copy_List_int (taill ));
-                    }) : ({ /* letn3620 */
+                    }) : ({ /* letn3667 */
                       // ----------
                       ;
-                      ({ /* progn3622 */
+                      ({ /* progn3669 */
                         Nil_int ();
                       });
                     }));
@@ -3365,44 +3381,44 @@ List_int replaceAt_List_int (List_int list , int item , size_t index ) {
     });
 }
 List_int deleteAt_List_int (List_int list , size_t index ) {
-  return ({ /* letn3631 */
+  return ({ /* letn3678 */
       typeof((((list -> __h_data). Cons). __h_0_mem)) head ;
       typeof((((list -> __h_data). Cons). __h_1_mem)) tail ;
       // ----------
       ;
-      ({ /* letn3633 */
-        bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  ((({ /* progn3634 */
+      ({ /* letn3680 */
+        bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  ((({ /* progn3681 */
                   head  = (((list -> __h_data). Cons). __h_0_mem) ;
                   true ;
-                }) &&  ({ /* progn3636 */
+                }) &&  ({ /* progn3683 */
                   tail  = (((list -> __h_data). Cons). __h_1_mem) ;
                   true ;
                 }) ) &&  (index  >  0 ) ) ) );
         // ----------
         
-        ((__h_case_result ) ? ({ /* progn3641 */
+        ((__h_case_result ) ? ({ /* progn3688 */
             Cons_int (head , deleteAt_List_int (tail , (index  -  1 )));
-          }) : ({ /* letn3647 */
+          }) : ({ /* letn3694 */
             // ----------
             ;
-            ({ /* progn3649 */
-              ({ /* letn3655 */
+            ({ /* progn3696 */
+              ({ /* letn3702 */
                 typeof((((list -> __h_data). Cons). __h_1_mem)) taill ;
                 // ----------
                 ;
-                ({ /* letn3657 */
-                  bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  ({ /* progn3658 */
+                ({ /* letn3704 */
+                  bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  ({ /* progn3705 */
                         taill  = (((list -> __h_data). Cons). __h_1_mem) ;
                         true ;
                       }) ) );
                   // ----------
                   
-                  ((__h_case_result ) ? ({ /* progn3663 */
+                  ((__h_case_result ) ? ({ /* progn3710 */
                       copy_List_int (taill );
-                    }) : ({ /* letn3668 */
+                    }) : ({ /* letn3715 */
                       // ----------
                       ;
-                      ({ /* progn3670 */
+                      ({ /* progn3717 */
                         Nil_int ();
                       });
                     }));
@@ -3414,27 +3430,27 @@ List_int deleteAt_List_int (List_int list , size_t index ) {
     });
 }
 List_int insertAt_List_int (List_int list , int item , size_t index ) {
-  return ({ /* letn3679 */
+  return ({ /* letn3726 */
       typeof((((list -> __h_data). Cons). __h_0_mem)) head ;
       typeof((((list -> __h_data). Cons). __h_1_mem)) tail ;
       // ----------
       ;
-      ({ /* letn3681 */
-        bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  ((({ /* progn3682 */
+      ({ /* letn3728 */
+        bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  ((({ /* progn3729 */
                   head  = (((list -> __h_data). Cons). __h_0_mem) ;
                   true ;
-                }) &&  ({ /* progn3684 */
+                }) &&  ({ /* progn3731 */
                   tail  = (((list -> __h_data). Cons). __h_1_mem) ;
                   true ;
                 }) ) &&  (index  >  0 ) ) ) );
         // ----------
         
-        ((__h_case_result ) ? ({ /* progn3689 */
+        ((__h_case_result ) ? ({ /* progn3736 */
             Cons_int (head , insertAt_List_int (tail , item , (index  -  1 )));
-          }) : ({ /* letn3695 */
+          }) : ({ /* letn3742 */
             // ----------
             ;
-            ({ /* progn3697 */
+            ({ /* progn3744 */
               Cons_int (item , copy_List_int (list ));
             });
           }));
@@ -3442,44 +3458,44 @@ List_int insertAt_List_int (List_int list , int item , size_t index ) {
     });
 }
 List_int replace_List_int (List_int list , int item , List_int aimed ) {
-  return ({ /* letn3707 */
+  return ({ /* letn3754 */
       typeof((((list -> __h_data). Cons). __h_0_mem)) head ;
       typeof((((list -> __h_data). Cons). __h_1_mem)) tail ;
       // ----------
       ;
-      ({ /* letn3709 */
-        bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  ((({ /* progn3710 */
+      ({ /* letn3756 */
+        bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  ((({ /* progn3757 */
                   head  = (((list -> __h_data). Cons). __h_0_mem) ;
                   true ;
-                }) &&  ({ /* progn3712 */
+                }) &&  ({ /* progn3759 */
                   tail  = (((list -> __h_data). Cons). __h_1_mem) ;
                   true ;
                 }) ) &&  (list  !=  aimed  ) ) ) );
         // ----------
         
-        ((__h_case_result ) ? ({ /* progn3717 */
+        ((__h_case_result ) ? ({ /* progn3764 */
             Cons_int (head , replace_List_int (tail , item , aimed ));
-          }) : ({ /* letn3723 */
+          }) : ({ /* letn3770 */
             // ----------
             ;
-            ({ /* progn3725 */
-              ({ /* letn3731 */
+            ({ /* progn3772 */
+              ({ /* letn3778 */
                 typeof((((aimed -> __h_data). Cons). __h_1_mem)) taill ;
                 // ----------
                 ;
-                ({ /* letn3733 */
-                  bool __h_case_result  = (true  &&  (((aimed -> __h_ctor) ==  __h_Cons_t  ) &&  ({ /* progn3734 */
+                ({ /* letn3780 */
+                  bool __h_case_result  = (true  &&  (((aimed -> __h_ctor) ==  __h_Cons_t  ) &&  ({ /* progn3781 */
                         taill  = (((aimed -> __h_data). Cons). __h_1_mem) ;
                         true ;
                       }) ) );
                   // ----------
                   
-                  ((__h_case_result ) ? ({ /* progn3739 */
+                  ((__h_case_result ) ? ({ /* progn3786 */
                       Cons_int (item , copy_List_int (taill ));
-                    }) : ({ /* letn3745 */
+                    }) : ({ /* letn3792 */
                       // ----------
                       ;
-                      ({ /* progn3747 */
+                      ({ /* progn3794 */
                         Nil_int ();
                       });
                     }));
@@ -3491,44 +3507,44 @@ List_int replace_List_int (List_int list , int item , List_int aimed ) {
     });
 }
 List_int delete_List_int (List_int list , List_int aimed ) {
-  return ({ /* letn3756 */
+  return ({ /* letn3803 */
       typeof((((list -> __h_data). Cons). __h_0_mem)) head ;
       typeof((((list -> __h_data). Cons). __h_1_mem)) tail ;
       // ----------
       ;
-      ({ /* letn3758 */
-        bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  ((({ /* progn3759 */
+      ({ /* letn3805 */
+        bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  ((({ /* progn3806 */
                   head  = (((list -> __h_data). Cons). __h_0_mem) ;
                   true ;
-                }) &&  ({ /* progn3761 */
+                }) &&  ({ /* progn3808 */
                   tail  = (((list -> __h_data). Cons). __h_1_mem) ;
                   true ;
                 }) ) &&  (list  !=  aimed  ) ) ) );
         // ----------
         
-        ((__h_case_result ) ? ({ /* progn3766 */
+        ((__h_case_result ) ? ({ /* progn3813 */
             Cons_int (head , delete_List_int (tail , aimed ));
-          }) : ({ /* letn3772 */
+          }) : ({ /* letn3819 */
             // ----------
             ;
-            ({ /* progn3774 */
-              ({ /* letn3780 */
+            ({ /* progn3821 */
+              ({ /* letn3827 */
                 typeof((((aimed -> __h_data). Cons). __h_1_mem)) taill ;
                 // ----------
                 ;
-                ({ /* letn3782 */
-                  bool __h_case_result  = (true  &&  (((aimed -> __h_ctor) ==  __h_Cons_t  ) &&  ({ /* progn3783 */
+                ({ /* letn3829 */
+                  bool __h_case_result  = (true  &&  (((aimed -> __h_ctor) ==  __h_Cons_t  ) &&  ({ /* progn3830 */
                         taill  = (((aimed -> __h_data). Cons). __h_1_mem) ;
                         true ;
                       }) ) );
                   // ----------
                   
-                  ((__h_case_result ) ? ({ /* progn3788 */
+                  ((__h_case_result ) ? ({ /* progn3835 */
                       copy_List_int (taill );
-                    }) : ({ /* letn3793 */
+                    }) : ({ /* letn3840 */
                       // ----------
                       ;
-                      ({ /* progn3795 */
+                      ({ /* progn3842 */
                         Nil_int ();
                       });
                     }));
@@ -3540,27 +3556,27 @@ List_int delete_List_int (List_int list , List_int aimed ) {
     });
 }
 List_int insert_List_int (List_int llist , int item , List_int rlist ) {
-  return ({ /* letn3804 */
+  return ({ /* letn3851 */
       typeof((((llist -> __h_data). Cons). __h_0_mem)) head ;
       typeof((((llist -> __h_data). Cons). __h_1_mem)) tail ;
       // ----------
       ;
-      ({ /* letn3806 */
-        bool __h_case_result  = (true  &&  (((llist -> __h_ctor) ==  __h_Cons_t  ) &&  ((({ /* progn3807 */
+      ({ /* letn3853 */
+        bool __h_case_result  = (true  &&  (((llist -> __h_ctor) ==  __h_Cons_t  ) &&  ((({ /* progn3854 */
                   head  = (((llist -> __h_data). Cons). __h_0_mem) ;
                   true ;
-                }) &&  ({ /* progn3809 */
+                }) &&  ({ /* progn3856 */
                   tail  = (((llist -> __h_data). Cons). __h_1_mem) ;
                   true ;
                 }) ) &&  (llist  !=  rlist  ) ) ) );
         // ----------
         
-        ((__h_case_result ) ? ({ /* progn3814 */
+        ((__h_case_result ) ? ({ /* progn3861 */
             Cons_int (head , insert_List_int (tail , item , rlist ));
-          }) : ({ /* letn3820 */
+          }) : ({ /* letn3867 */
             // ----------
             ;
-            ({ /* progn3822 */
+            ({ /* progn3869 */
               Cons_int (item , copy_List_int (rlist ));
             });
           }));
@@ -3568,83 +3584,83 @@ List_int insert_List_int (List_int llist , int item , List_int rlist ) {
     });
 }
 List_int reverse_List_int (List_int list ) {
-  List_int _reverse (List_int list , List_int rlist ) {
-    return ({ /* letn3833 */
-        typeof((((list -> __h_data). Cons). __h_0_mem)) head ;
-        typeof((((list -> __h_data). Cons). __h_1_mem)) tail ;
-        // ----------
-        ;
-        ({ /* letn3835 */
-          bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  (({ /* progn3836 */
-                  head  = (((list -> __h_data). Cons). __h_0_mem) ;
-                  true ;
-                }) &&  ({ /* progn3838 */
-                  tail  = (((list -> __h_data). Cons). __h_1_mem) ;
-                  true ;
-                }) ) ) );
-          // ----------
-          
-          ((__h_case_result ) ? ({ /* progn3843 */
-              _reverse (tail , Cons_int (head , rlist ));
-            }) : ({ /* letn3848 */
-              // ----------
-              ;
-              ({ /* progn3850 */
-                rlist ;
-              });
-            }));
-        });
-      });
-  }
-  return ({ /* letn3856 */
+  return ({ /* letn3879 */
       typeof((((list -> __h_data). Cons). __h_0_mem)) head ;
       typeof((((list -> __h_data). Cons). __h_1_mem)) tail ;
       // ----------
       ;
-      ({ /* letn3858 */
-        bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  (({ /* progn3859 */
+      ({ /* letn3881 */
+        bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  (({ /* progn3882 */
                 head  = (((list -> __h_data). Cons). __h_0_mem) ;
                 true ;
-              }) &&  ({ /* progn3861 */
+              }) &&  ({ /* progn3884 */
                 tail  = (((list -> __h_data). Cons). __h_1_mem) ;
                 true ;
               }) ) ) );
         // ----------
         
-        ((__h_case_result ) ? ({ /* progn3866 */
-            _reverse (tail , Cons_int (head , Nil_int ()));
-          }) : ({ /* letn3872 */
+        ((__h_case_result ) ? ({ /* progn3889 */
+            reverseOnto_List_int (tail , Cons_int (head , Nil_int ()));
+          }) : ({ /* letn3896 */
             // ----------
             ;
-            ({ /* progn3874 */
+            ({ /* progn3898 */
               list ;
             });
           }));
       });
     });
 }
+List_int reverseOnto_List_int (List_int list , List_int rlist ) {
+  return ({ /* letn3906 */
+      typeof((((list -> __h_data). Cons). __h_0_mem)) head ;
+      typeof((((list -> __h_data). Cons). __h_1_mem)) tail ;
+      // ----------
+      ;
+      ({ /* letn3908 */
+        bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  (({ /* progn3909 */
+                head  = (((list -> __h_data). Cons). __h_0_mem) ;
+                true ;
+              }) &&  ({ /* progn3911 */
+                tail  = (((list -> __h_data). Cons). __h_1_mem) ;
+                true ;
+              }) ) ) );
+        // ----------
+        
+        ((__h_case_result ) ? ({ /* progn3916 */
+            reverseOnto_List_int (tail , Cons_int (head , rlist ));
+          }) : ({ /* letn3922 */
+            // ----------
+            ;
+            ({ /* progn3924 */
+              rlist ;
+            });
+          }));
+      });
+    });
+}
 List_int append_List_int (List_int llist , List_int rlist ) {
-  return ({ /* letn3882 */
+  return ({ /* letn3932 */
       typeof((((llist -> __h_data). Cons). __h_0_mem)) head ;
       typeof((((llist -> __h_data). Cons). __h_1_mem)) tail ;
       // ----------
       ;
-      ({ /* letn3884 */
-        bool __h_case_result  = (true  &&  (((llist -> __h_ctor) ==  __h_Cons_t  ) &&  (({ /* progn3885 */
+      ({ /* letn3934 */
+        bool __h_case_result  = (true  &&  (((llist -> __h_ctor) ==  __h_Cons_t  ) &&  (({ /* progn3935 */
                 head  = (((llist -> __h_data). Cons). __h_0_mem) ;
                 true ;
-              }) &&  ({ /* progn3887 */
+              }) &&  ({ /* progn3937 */
                 tail  = (((llist -> __h_data). Cons). __h_1_mem) ;
                 true ;
               }) ) ) );
         // ----------
         
-        ((__h_case_result ) ? ({ /* progn3892 */
+        ((__h_case_result ) ? ({ /* progn3942 */
             Cons_int (head , append_List_int (tail , rlist ));
-          }) : ({ /* letn3898 */
+          }) : ({ /* letn3948 */
             // ----------
             ;
-            ({ /* progn3900 */
+            ({ /* progn3950 */
               copy_List_int (rlist );
             });
           }));
@@ -3655,27 +3671,27 @@ List_int push_List_int (int item , List_int list ) {
   return Cons_int (item , copy_List_int (list ));
 }
 List_int take_List_int (size_t len , List_int list ) {
-  return (((len  <=  0 )) ? Nil_int () : ({ /* letn3915 */
+  return (((len  <=  0 )) ? Nil_int () : ({ /* letn3965 */
         typeof((((list -> __h_data). Cons). __h_0_mem)) head ;
         typeof((((list -> __h_data). Cons). __h_1_mem)) tail ;
         // ----------
         ;
-        ({ /* letn3917 */
-          bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  (({ /* progn3918 */
+        ({ /* letn3967 */
+          bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  (({ /* progn3968 */
                   head  = (((list -> __h_data). Cons). __h_0_mem) ;
                   true ;
-                }) &&  ({ /* progn3920 */
+                }) &&  ({ /* progn3970 */
                   tail  = (((list -> __h_data). Cons). __h_1_mem) ;
                   true ;
                 }) ) ) );
           // ----------
           
-          ((__h_case_result ) ? ({ /* progn3925 */
+          ((__h_case_result ) ? ({ /* progn3975 */
               Cons_int (head , take_List_int ((--len ), tail ));
-            }) : ({ /* letn3931 */
+            }) : ({ /* letn3981 */
               // ----------
               ;
-              ({ /* progn3933 */
+              ({ /* progn3983 */
                 Nil_int ();
               });
             }));
@@ -3683,40 +3699,40 @@ List_int take_List_int (size_t len , List_int list ) {
       }));
 }
 List_int last_List_int (List_int list ) {
-  return ({ /* letn3942 */
+  return ({ /* letn3992 */
       typeof((((list -> __h_data). Cons). __h_1_mem)) tail ;
       // ----------
       ;
-      ({ /* letn3944 */
-        bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  ({ /* progn3945 */
+      ({ /* letn3994 */
+        bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  ({ /* progn3995 */
               tail  = (((list -> __h_data). Cons). __h_1_mem) ;
               true ;
             }) ) );
         // ----------
         
-        ((__h_case_result ) ? ({ /* progn3950 */
-            ({ /* letn3956 */
+        ((__h_case_result ) ? ({ /* progn4000 */
+            ({ /* letn4006 */
               // ----------
               ;
-              ({ /* letn3958 */
+              ({ /* letn4008 */
                 bool __h_case_result  = (true  &&  ((tail -> __h_ctor) ==  __h_Nil_t  ) );
                 // ----------
                 
-                ((__h_case_result ) ? ({ /* progn3962 */
+                ((__h_case_result ) ? ({ /* progn4012 */
                     copy_List_int (list );
-                  }) : ({ /* letn3967 */
+                  }) : ({ /* letn4017 */
                     // ----------
                     ;
-                    ({ /* progn3969 */
+                    ({ /* progn4019 */
                       last_List_int (tail );
                     });
                   }));
               });
             });
-          }) : ({ /* letn3974 */
+          }) : ({ /* letn4024 */
             // ----------
             ;
-            ({ /* progn3976 */
+            ({ /* progn4026 */
               Nil_int ();
             });
           }));
@@ -3724,27 +3740,27 @@ List_int last_List_int (List_int list ) {
     });
 }
 List_int init_List_int (List_int list ) {
-  return ({ /* letn3986 */
+  return ({ /* letn4036 */
       typeof((((list -> __h_data). Cons). __h_0_mem)) head ;
       typeof((((list -> __h_data). Cons). __h_1_mem)) tail ;
       // ----------
       ;
-      ({ /* letn3988 */
-        bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  ((({ /* progn3989 */
+      ({ /* letn4038 */
+        bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  ((({ /* progn4039 */
                   head  = (((list -> __h_data). Cons). __h_0_mem) ;
                   true ;
-                }) &&  ({ /* progn3991 */
+                }) &&  ({ /* progn4041 */
                   tail  = (((list -> __h_data). Cons). __h_1_mem) ;
                   true ;
                 }) ) &&  (true  &&  ((tail -> __h_ctor) ==  __h_Cons_t  ) ) ) ) );
         // ----------
         
-        ((__h_case_result ) ? ({ /* progn3996 */
+        ((__h_case_result ) ? ({ /* progn4046 */
             Cons_int (head , init_List_int (tail ));
-          }) : ({ /* letn4002 */
+          }) : ({ /* letn4052 */
             // ----------
             ;
-            ({ /* progn4004 */
+            ({ /* progn4054 */
               Nil_int ();
             });
           }));
@@ -3752,23 +3768,23 @@ List_int init_List_int (List_int list ) {
     });
 }
 size_t hasLen_List_int (List_int list , size_t desired ) {
-  return ({ /* letn4013 */
+  return ({ /* letn4063 */
       typeof((((list -> __h_data). Cons). __h_1_mem)) tail ;
       // ----------
       ;
-      ({ /* letn4015 */
-        bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  ({ /* progn4016 */
+      ({ /* letn4065 */
+        bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  ({ /* progn4066 */
               tail  = (((list -> __h_data). Cons). __h_1_mem) ;
               true ;
             }) ) );
         // ----------
         
-        ((__h_case_result ) ? ({ /* progn4021 */
+        ((__h_case_result ) ? ({ /* progn4071 */
             (((desired  ==  1 )) ? 1 : (1 +  hasLen_List_int (tail , (--desired )) ));
-          }) : ({ /* letn4027 */
+          }) : ({ /* letn4077 */
             // ----------
             ;
-            ({ /* progn4029 */
+            ({ /* progn4079 */
               0;
             });
           }));
@@ -3776,23 +3792,23 @@ size_t hasLen_List_int (List_int list , size_t desired ) {
     });
 }
 size_t len_List_int (List_int list ) {
-  return ({ /* letn4037 */
+  return ({ /* letn4087 */
       typeof((((list -> __h_data). Cons). __h_1_mem)) tail ;
       // ----------
       ;
-      ({ /* letn4039 */
-        bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  ({ /* progn4040 */
+      ({ /* letn4089 */
+        bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  ({ /* progn4090 */
               tail  = (((list -> __h_data). Cons). __h_1_mem) ;
               true ;
             }) ) );
         // ----------
         
-        ((__h_case_result ) ? ({ /* progn4045 */
+        ((__h_case_result ) ? ({ /* progn4095 */
             (1 +  len_List_int (tail ) );
-          }) : ({ /* letn4050 */
+          }) : ({ /* letn4100 */
             // ----------
             ;
-            ({ /* progn4052 */
+            ({ /* progn4102 */
               0;
             });
           }));
@@ -3803,23 +3819,23 @@ List_int tail_List_int (List_int list ) {
   return drop_List_int (1, list );
 }
 List_int drop_List_int (size_t len , List_int list ) {
-  return (((len  <=  0 )) ? copy_List_int (list ) : ({ /* letn4065 */
+  return (((len  <=  0 )) ? copy_List_int (list ) : ({ /* letn4115 */
         typeof((((list -> __h_data). Cons). __h_1_mem)) tail ;
         // ----------
         ;
-        ({ /* letn4067 */
-          bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  ({ /* progn4068 */
+        ({ /* letn4117 */
+          bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  ({ /* progn4118 */
                 tail  = (((list -> __h_data). Cons). __h_1_mem) ;
                 true ;
               }) ) );
           // ----------
           
-          ((__h_case_result ) ? ({ /* progn4073 */
+          ((__h_case_result ) ? ({ /* progn4123 */
               drop_List_int ((--len ), tail );
-            }) : ({ /* letn4078 */
+            }) : ({ /* letn4128 */
               // ----------
               ;
-              ({ /* progn4080 */
+              ({ /* progn4130 */
                 Nil_int ();
               });
             }));
@@ -3827,23 +3843,23 @@ List_int drop_List_int (size_t len , List_int list ) {
       }));
 }
 Maybe_int head_List_int (List_int list ) {
-  return ({ /* letn4090 */
+  return ({ /* letn4140 */
       typeof((((list -> __h_data). Cons). __h_0_mem)) head ;
       // ----------
       ;
-      ({ /* letn4092 */
-        bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  ({ /* progn4093 */
+      ({ /* letn4142 */
+        bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  ({ /* progn4143 */
               head  = (((list -> __h_data). Cons). __h_0_mem) ;
               true ;
             }) ) );
         // ----------
         
-        ((__h_case_result ) ? ({ /* progn4098 */
+        ((__h_case_result ) ? ({ /* progn4148 */
             Just_int (head );
-          }) : ({ /* letn4103 */
+          }) : ({ /* letn4153 */
             // ----------
             ;
-            ({ /* progn4105 */
+            ({ /* progn4155 */
               Nothing_int ();
             });
           }));
@@ -3851,23 +3867,23 @@ Maybe_int head_List_int (List_int list ) {
     });
 }
 List_int nthcdr_List_int (size_t index , List_int list ) {
-  return ({ /* letn4114 */
+  return ({ /* letn4164 */
       typeof((((list -> __h_data). Cons). __h_1_mem)) tail ;
       // ----------
       ;
-      ({ /* letn4116 */
-        bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  (({ /* progn4117 */
+      ({ /* letn4166 */
+        bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  (({ /* progn4167 */
                 tail  = (((list -> __h_data). Cons). __h_1_mem) ;
                 true ;
               }) &&  (index  >  0 ) ) ) );
         // ----------
         
-        ((__h_case_result ) ? ({ /* progn4122 */
+        ((__h_case_result ) ? ({ /* progn4172 */
             nthcdr_List_int ((--index ), tail );
-          }) : ({ /* letn4127 */
+          }) : ({ /* letn4177 */
             // ----------
             ;
-            ({ /* progn4129 */
+            ({ /* progn4179 */
               list ;
             });
           }));
@@ -3875,27 +3891,27 @@ List_int nthcdr_List_int (size_t index , List_int list ) {
     });
 }
 Maybe_int nth_List_int (size_t index , List_int list ) {
-  return ({ /* letn4138 */
+  return ({ /* letn4188 */
       typeof((((list -> __h_data). Cons). __h_0_mem)) head ;
       typeof((((list -> __h_data). Cons). __h_1_mem)) tail ;
       // ----------
       ;
-      ({ /* letn4140 */
-        bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  (({ /* progn4141 */
+      ({ /* letn4190 */
+        bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  (({ /* progn4191 */
                 head  = (((list -> __h_data). Cons). __h_0_mem) ;
                 true ;
-              }) &&  ({ /* progn4143 */
+              }) &&  ({ /* progn4193 */
                 tail  = (((list -> __h_data). Cons). __h_1_mem) ;
                 true ;
               }) ) ) );
         // ----------
         
-        ((__h_case_result ) ? ({ /* progn4148 */
+        ((__h_case_result ) ? ({ /* progn4198 */
             (((index  ==  0 )) ? Just_int (head ) : (((index  <  0 )) ? Nothing_int () : nth_List_int ((--index ), tail )));
-          }) : ({ /* letn4157 */
+          }) : ({ /* letn4207 */
             // ----------
             ;
-            ({ /* progn4159 */
+            ({ /* progn4209 */
               Nothing_int ();
             });
           }));
@@ -3903,38 +3919,38 @@ Maybe_int nth_List_int (size_t index , List_int list ) {
     });
 }
 void free_List_int (List_int * this_ptr ) {
-  { /* let4164 */
+  { /* let4214 */
     List_int this  = (*this_ptr );
     // ----------
-    { /* let4168 */
+    { /* let4218 */
       typeof((((this -> __h_data). Cons). __h_1_mem)) tail ;
       // ----------
       ;
-      ({ /* letn4170 */
-        bool __h_case_result  = (true  &&  (((this -> __h_ctor) ==  __h_Cons_t  ) &&  ({ /* progn4171 */
+      ({ /* letn4220 */
+        bool __h_case_result  = (true  &&  (((this -> __h_ctor) ==  __h_Cons_t  ) &&  ({ /* progn4221 */
               tail  = (((this -> __h_data). Cons). __h_1_mem) ;
               true ;
             }) ) );
         // ----------
         
         if (__h_case_result )
-          { /* block4178 */
-            { /* block4180 */
+          { /* block4228 */
+            { /* block4230 */
               free (this );
               free_List_int ((&tail ));
             }
           }
         else
-          { /* let4188 */
+          { /* let4238 */
             // ----------
             ;
-            ({ /* letn4190 */
+            ({ /* letn4240 */
               bool __h_case_result  = (true  &&  ((this -> __h_ctor) ==  __h_Nil_t  ) );
               // ----------
               
               if (__h_case_result )
-                { /* block4196 */
-                  { /* block4198 */
+                { /* block4246 */
+                  { /* block4248 */
                     free (this );
                   }
                 }
@@ -3946,16 +3962,16 @@ void free_List_int (List_int * this_ptr ) {
 }
 __attribute__((weak)) void free_List_int_pointer (List_int ** this_ptr ) {
   if (this_ptr )
-    { /* block4206 */
+    { /* block4256 */
       free_List_int ((*this_ptr ));
     }
 }
 List_int__H_Table * const get_List_int__H_Table () {
-  static List_int__H_Table table  = { free_List_int , toArray_List_int , wrap_List_int , pure_List_int , show_List_int , copy_List_int , replaceAt_List_int , deleteAt_List_int , insertAt_List_int , replace_List_int , delete_List_int , insert_List_int , reverse_List_int , append_List_int , push_List_int , take_List_int , last_List_int , init_List_int , hasLen_List_int , len_List_int , tail_List_int , drop_List_int , head_List_int , nthcdr_List_int , nth_List_int };
+  static List_int__H_Table table  = { free_List_int , toArray_List_int , toArrayFrom_List_int , wrap_List_int , pure_List_int , show_List_int , copy_List_int , replaceAt_List_int , deleteAt_List_int , insertAt_List_int , replace_List_int , delete_List_int , insert_List_int , reverse_List_int , reverseOnto_List_int , append_List_int , push_List_int , take_List_int , last_List_int , init_List_int , hasLen_List_int , len_List_int , tail_List_int , drop_List_int , head_List_int , nthcdr_List_int , nth_List_int };
   return (&table );
 }
 List_int Cons_int (int head , List_int tail ) {
-  { /* let4216 */
+  { /* let4266 */
     List_int instance  = malloc (sizeof(class_List_int));
     // ----------
     (*instance ) = ((class_List_int){ get_List_int__H_Table (), __h_Cons_t , .__h_data.Cons = { head , tail }});
@@ -3963,7 +3979,7 @@ List_int Cons_int (int head , List_int tail ) {
   }
 }
 List_int Nil_int () {
-  { /* let4222 */
+  { /* let4272 */
     List_int instance  = malloc (sizeof(class_List_int));
     // ----------
     (*instance ) = ((class_List_int){ get_List_int__H_Table (), __h_Nil_t });
@@ -3977,7 +3993,7 @@ void free_Maybe_List_int (Maybe_List_int * this ) {
 }
 __attribute__((weak)) void free_Maybe_List_int_pointer (Maybe_List_int ** this ) {
   if (this )
-    { /* block4237 */
+    { /* block4287 */
       free_Maybe_List_int ((*this ));
     }
 }
@@ -3986,14 +4002,14 @@ const Maybe_List_int__H_Table * const get_Maybe_List_int__H_Table () {
   return (&table );
 }
 Maybe_List_int Just_List_int (List_int value ) {
-  { /* let4247 */
+  { /* let4297 */
     Maybe_List_int instance  = ((Maybe_List_int){ get_Maybe_List_int__H_Table (), __h_Just_t , .__h_data.Just = { value }});
     // ----------
     return instance ;
   }
 }
 Maybe_List_int Nothing_List_int () {
-  { /* let4252 */
+  { /* let4302 */
     Maybe_List_int instance  = ((Maybe_List_int){ get_Maybe_List_int__H_Table (), __h_Nothing_t });
     // ----------
     return instance ;
@@ -4006,7 +4022,7 @@ void free_Maybe_List_int (Maybe_List_int * this ) {
 }
 __attribute__((weak)) void free_Maybe_List_int_pointer (Maybe_List_int ** this ) {
   if (this )
-    { /* block4268 */
+    { /* block4318 */
       free_Maybe_List_int ((*this ));
     }
 }
@@ -4015,14 +4031,14 @@ const Maybe_List_int__H_Table * const get_Maybe_List_int__H_Table () {
   return (&table );
 }
 Maybe_List_int Just_List_int (List_int value ) {
-  { /* let4278 */
+  { /* let4328 */
     Maybe_List_int instance  = ((Maybe_List_int){ get_Maybe_List_int__H_Table (), __h_Just_t , .__h_data.Just = { value }});
     // ----------
     return instance ;
   }
 }
 Maybe_List_int Nothing_List_int () {
-  { /* let4283 */
+  { /* let4333 */
     Maybe_List_int instance  = ((Maybe_List_int){ get_Maybe_List_int__H_Table (), __h_Nothing_t });
     // ----------
     return instance ;
@@ -4032,90 +4048,90 @@ Maybe_List_int Nothing_List_int () {
 #ifndef __List_List_int__H_IMPL__
 #define __List_List_int__H_IMPL__
 List_int * toArray_List_List_int (List_List_int list ) {
-  List_int * array (List_List_int list , size_t count ) {
-    return ({ /* letn4295 */
-        typeof((((list -> __h_data). Cons). __h_0_mem)) head ;
-        typeof((((list -> __h_data). Cons). __h_1_mem)) tail ;
+  return toArrayFrom_List_List_int (list , 0);
+}
+List_int * toArrayFrom_List_List_int (List_List_int list , size_t count ) {
+  return ({ /* letn4347 */
+      typeof((((list -> __h_data). Cons). __h_0_mem)) head ;
+      typeof((((list -> __h_data). Cons). __h_1_mem)) tail ;
+      // ----------
+      ;
+      ({ /* letn4349 */
+        bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  (({ /* progn4350 */
+                head  = (((list -> __h_data). Cons). __h_0_mem) ;
+                true ;
+              }) &&  ({ /* progn4352 */
+                tail  = (((list -> __h_data). Cons). __h_1_mem) ;
+                true ;
+              }) ) ) );
         // ----------
-        ;
-        ({ /* letn4297 */
-          bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  (({ /* progn4298 */
-                  head  = (((list -> __h_data). Cons). __h_0_mem) ;
-                  true ;
-                }) &&  ({ /* progn4300 */
-                  tail  = (((list -> __h_data). Cons). __h_1_mem) ;
-                  true ;
-                }) ) ) );
-          // ----------
-          
-          ((__h_case_result ) ? ({ /* progn4305 */
-              ({ /* letn4307 */
-                List_int * arr  = array (tail , (count  +  1 ));
-                // ----------
-                arr [count ] = head ;
-                arr ;
-              });
-            }) : ({ /* letn4311 */
+        
+        ((__h_case_result ) ? ({ /* progn4357 */
+            ({ /* letn4359 */
+              List_int * arr  = toArrayFrom_List_List_int (tail , (count  +  1 ));
               // ----------
-              ;
-              ({ /* progn4313 */
-                ((List_int *)calloc (count , sizeof(List_int)));
-              });
-            }));
-        });
+              arr [count ] = head ;
+              arr ;
+            });
+          }) : ({ /* letn4364 */
+            // ----------
+            ;
+            ({ /* progn4366 */
+              ((List_int *)calloc (count , sizeof(List_int)));
+            });
+          }));
       });
-  }
-  return array (list , 0);
+    });
 }
 List_List_int wrap_List_List_int (const List_int item ) {
   return Cons_List_int (item , Nil_List_int ());
 }
 List_List_int pure_List_List_int (const List_int * buf , size_t len ) {
-  return (((buf  ==  NULL  )) ? Nil_List_int () : ({ /* letn4323 */
+  return (((buf  ==  NULL  )) ? Nil_List_int () : ({ /* letn4376 */
         List_int item  = (*buf );
         // ----------
         (((len  ==  0 )) ? Nil_List_int () : Cons_List_int (item , pure_List_List_int ((++buf ), (--len ))));
       }));
 }
 size_t show_List_List_int (FILE * file , List_List_int list ) {
-  return ({ /* letn4335 */
+  return ({ /* letn4388 */
       typeof((((list -> __h_data). Cons). __h_0_mem)) head ;
       typeof((((list -> __h_data). Cons). __h_1_mem)) tail ;
       // ----------
       ;
-      ({ /* letn4337 */
-        bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  (({ /* progn4338 */
+      ({ /* letn4390 */
+        bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  (({ /* progn4391 */
                 head  = (((list -> __h_data). Cons). __h_0_mem) ;
                 true ;
-              }) &&  ({ /* progn4340 */
+              }) &&  ({ /* progn4393 */
                 tail  = (((list -> __h_data). Cons). __h_1_mem) ;
                 true ;
               }) ) ) );
         // ----------
         
-        ((__h_case_result ) ? ({ /* progn4345 */
-            (({ /* letn4351 */
+        ((__h_case_result ) ? ({ /* progn4398 */
+            (({ /* letn4404 */
                 // ----------
                 ;
-                ({ /* letn4353 */
+                ({ /* letn4406 */
                   bool __h_case_result  = (true  &&  ((tail -> __h_ctor) ==  __h_Cons_t  ) );
                   // ----------
                   
-                  ((__h_case_result ) ? ({ /* progn4357 */
+                  ((__h_case_result ) ? ({ /* progn4410 */
                       (show_List_int (file , head ) +  fprintf (file , "%s", " ") );
-                    }) : ({ /* letn4367 */
+                    }) : ({ /* letn4420 */
                       // ----------
                       ;
-                      ({ /* progn4369 */
+                      ({ /* progn4422 */
                         show_List_int (file , head );
                       });
                     }));
                 });
               }) +  show_List_List_int (file , tail ) );
-          }) : ({ /* letn4377 */
+          }) : ({ /* letn4430 */
             // ----------
             ;
-            ({ /* progn4379 */
+            ({ /* progn4432 */
               0;
             });
           }));
@@ -4123,27 +4139,27 @@ size_t show_List_List_int (FILE * file , List_List_int list ) {
     });
 }
 List_List_int copy_List_List_int (List_List_int list ) {
-  return ({ /* letn4387 */
+  return ({ /* letn4440 */
       typeof((((list -> __h_data). Cons). __h_0_mem)) head ;
       typeof((((list -> __h_data). Cons). __h_1_mem)) tail ;
       // ----------
       ;
-      ({ /* letn4389 */
-        bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  (({ /* progn4390 */
+      ({ /* letn4442 */
+        bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  (({ /* progn4443 */
                 head  = (((list -> __h_data). Cons). __h_0_mem) ;
                 true ;
-              }) &&  ({ /* progn4392 */
+              }) &&  ({ /* progn4445 */
                 tail  = (((list -> __h_data). Cons). __h_1_mem) ;
                 true ;
               }) ) ) );
         // ----------
         
-        ((__h_case_result ) ? ({ /* progn4397 */
+        ((__h_case_result ) ? ({ /* progn4450 */
             Cons_List_int (head , copy_List_List_int (tail ));
-          }) : ({ /* letn4403 */
+          }) : ({ /* letn4456 */
             // ----------
             ;
-            ({ /* progn4405 */
+            ({ /* progn4458 */
               Nil_List_int ();
             });
           }));
@@ -4151,44 +4167,44 @@ List_List_int copy_List_List_int (List_List_int list ) {
     });
 }
 List_List_int replaceAt_List_List_int (List_List_int list , List_int item , size_t index ) {
-  return ({ /* letn4414 */
+  return ({ /* letn4467 */
       typeof((((list -> __h_data). Cons). __h_0_mem)) head ;
       typeof((((list -> __h_data). Cons). __h_1_mem)) tail ;
       // ----------
       ;
-      ({ /* letn4416 */
-        bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  ((({ /* progn4417 */
+      ({ /* letn4469 */
+        bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  ((({ /* progn4470 */
                   head  = (((list -> __h_data). Cons). __h_0_mem) ;
                   true ;
-                }) &&  ({ /* progn4419 */
+                }) &&  ({ /* progn4472 */
                   tail  = (((list -> __h_data). Cons). __h_1_mem) ;
                   true ;
                 }) ) &&  (index  >  0 ) ) ) );
         // ----------
         
-        ((__h_case_result ) ? ({ /* progn4424 */
+        ((__h_case_result ) ? ({ /* progn4477 */
             Cons_List_int (head , replaceAt_List_List_int (tail , item , (index  -  1 )));
-          }) : ({ /* letn4430 */
+          }) : ({ /* letn4483 */
             // ----------
             ;
-            ({ /* progn4432 */
-              ({ /* letn4438 */
+            ({ /* progn4485 */
+              ({ /* letn4491 */
                 typeof((((list -> __h_data). Cons). __h_1_mem)) taill ;
                 // ----------
                 ;
-                ({ /* letn4440 */
-                  bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  ({ /* progn4441 */
+                ({ /* letn4493 */
+                  bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  ({ /* progn4494 */
                         taill  = (((list -> __h_data). Cons). __h_1_mem) ;
                         true ;
                       }) ) );
                   // ----------
                   
-                  ((__h_case_result ) ? ({ /* progn4446 */
+                  ((__h_case_result ) ? ({ /* progn4499 */
                       Cons_List_int (item , copy_List_List_int (taill ));
-                    }) : ({ /* letn4452 */
+                    }) : ({ /* letn4505 */
                       // ----------
                       ;
-                      ({ /* progn4454 */
+                      ({ /* progn4507 */
                         Nil_List_int ();
                       });
                     }));
@@ -4200,44 +4216,44 @@ List_List_int replaceAt_List_List_int (List_List_int list , List_int item , size
     });
 }
 List_List_int deleteAt_List_List_int (List_List_int list , size_t index ) {
-  return ({ /* letn4463 */
+  return ({ /* letn4516 */
       typeof((((list -> __h_data). Cons). __h_0_mem)) head ;
       typeof((((list -> __h_data). Cons). __h_1_mem)) tail ;
       // ----------
       ;
-      ({ /* letn4465 */
-        bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  ((({ /* progn4466 */
+      ({ /* letn4518 */
+        bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  ((({ /* progn4519 */
                   head  = (((list -> __h_data). Cons). __h_0_mem) ;
                   true ;
-                }) &&  ({ /* progn4468 */
+                }) &&  ({ /* progn4521 */
                   tail  = (((list -> __h_data). Cons). __h_1_mem) ;
                   true ;
                 }) ) &&  (index  >  0 ) ) ) );
         // ----------
         
-        ((__h_case_result ) ? ({ /* progn4473 */
+        ((__h_case_result ) ? ({ /* progn4526 */
             Cons_List_int (head , deleteAt_List_List_int (tail , (index  -  1 )));
-          }) : ({ /* letn4479 */
+          }) : ({ /* letn4532 */
             // ----------
             ;
-            ({ /* progn4481 */
-              ({ /* letn4487 */
+            ({ /* progn4534 */
+              ({ /* letn4540 */
                 typeof((((list -> __h_data). Cons). __h_1_mem)) taill ;
                 // ----------
                 ;
-                ({ /* letn4489 */
-                  bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  ({ /* progn4490 */
+                ({ /* letn4542 */
+                  bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  ({ /* progn4543 */
                         taill  = (((list -> __h_data). Cons). __h_1_mem) ;
                         true ;
                       }) ) );
                   // ----------
                   
-                  ((__h_case_result ) ? ({ /* progn4495 */
+                  ((__h_case_result ) ? ({ /* progn4548 */
                       copy_List_List_int (taill );
-                    }) : ({ /* letn4500 */
+                    }) : ({ /* letn4553 */
                       // ----------
                       ;
-                      ({ /* progn4502 */
+                      ({ /* progn4555 */
                         Nil_List_int ();
                       });
                     }));
@@ -4249,27 +4265,27 @@ List_List_int deleteAt_List_List_int (List_List_int list , size_t index ) {
     });
 }
 List_List_int insertAt_List_List_int (List_List_int list , List_int item , size_t index ) {
-  return ({ /* letn4511 */
+  return ({ /* letn4564 */
       typeof((((list -> __h_data). Cons). __h_0_mem)) head ;
       typeof((((list -> __h_data). Cons). __h_1_mem)) tail ;
       // ----------
       ;
-      ({ /* letn4513 */
-        bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  ((({ /* progn4514 */
+      ({ /* letn4566 */
+        bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  ((({ /* progn4567 */
                   head  = (((list -> __h_data). Cons). __h_0_mem) ;
                   true ;
-                }) &&  ({ /* progn4516 */
+                }) &&  ({ /* progn4569 */
                   tail  = (((list -> __h_data). Cons). __h_1_mem) ;
                   true ;
                 }) ) &&  (index  >  0 ) ) ) );
         // ----------
         
-        ((__h_case_result ) ? ({ /* progn4521 */
+        ((__h_case_result ) ? ({ /* progn4574 */
             Cons_List_int (head , insertAt_List_List_int (tail , item , (index  -  1 )));
-          }) : ({ /* letn4527 */
+          }) : ({ /* letn4580 */
             // ----------
             ;
-            ({ /* progn4529 */
+            ({ /* progn4582 */
               Cons_List_int (item , copy_List_List_int (list ));
             });
           }));
@@ -4277,44 +4293,44 @@ List_List_int insertAt_List_List_int (List_List_int list , List_int item , size_
     });
 }
 List_List_int replace_List_List_int (List_List_int list , List_int item , List_List_int aimed ) {
-  return ({ /* letn4539 */
+  return ({ /* letn4592 */
       typeof((((list -> __h_data). Cons). __h_0_mem)) head ;
       typeof((((list -> __h_data). Cons). __h_1_mem)) tail ;
       // ----------
       ;
-      ({ /* letn4541 */
-        bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  ((({ /* progn4542 */
+      ({ /* letn4594 */
+        bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  ((({ /* progn4595 */
                   head  = (((list -> __h_data). Cons). __h_0_mem) ;
                   true ;
-                }) &&  ({ /* progn4544 */
+                }) &&  ({ /* progn4597 */
                   tail  = (((list -> __h_data). Cons). __h_1_mem) ;
                   true ;
                 }) ) &&  (list  !=  aimed  ) ) ) );
         // ----------
         
-        ((__h_case_result ) ? ({ /* progn4549 */
+        ((__h_case_result ) ? ({ /* progn4602 */
             Cons_List_int (head , replace_List_List_int (tail , item , aimed ));
-          }) : ({ /* letn4555 */
+          }) : ({ /* letn4608 */
             // ----------
             ;
-            ({ /* progn4557 */
-              ({ /* letn4563 */
+            ({ /* progn4610 */
+              ({ /* letn4616 */
                 typeof((((aimed -> __h_data). Cons). __h_1_mem)) taill ;
                 // ----------
                 ;
-                ({ /* letn4565 */
-                  bool __h_case_result  = (true  &&  (((aimed -> __h_ctor) ==  __h_Cons_t  ) &&  ({ /* progn4566 */
+                ({ /* letn4618 */
+                  bool __h_case_result  = (true  &&  (((aimed -> __h_ctor) ==  __h_Cons_t  ) &&  ({ /* progn4619 */
                         taill  = (((aimed -> __h_data). Cons). __h_1_mem) ;
                         true ;
                       }) ) );
                   // ----------
                   
-                  ((__h_case_result ) ? ({ /* progn4571 */
+                  ((__h_case_result ) ? ({ /* progn4624 */
                       Cons_List_int (item , copy_List_List_int (taill ));
-                    }) : ({ /* letn4577 */
+                    }) : ({ /* letn4630 */
                       // ----------
                       ;
-                      ({ /* progn4579 */
+                      ({ /* progn4632 */
                         Nil_List_int ();
                       });
                     }));
@@ -4326,44 +4342,44 @@ List_List_int replace_List_List_int (List_List_int list , List_int item , List_L
     });
 }
 List_List_int delete_List_List_int (List_List_int list , List_List_int aimed ) {
-  return ({ /* letn4588 */
+  return ({ /* letn4641 */
       typeof((((list -> __h_data). Cons). __h_0_mem)) head ;
       typeof((((list -> __h_data). Cons). __h_1_mem)) tail ;
       // ----------
       ;
-      ({ /* letn4590 */
-        bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  ((({ /* progn4591 */
+      ({ /* letn4643 */
+        bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  ((({ /* progn4644 */
                   head  = (((list -> __h_data). Cons). __h_0_mem) ;
                   true ;
-                }) &&  ({ /* progn4593 */
+                }) &&  ({ /* progn4646 */
                   tail  = (((list -> __h_data). Cons). __h_1_mem) ;
                   true ;
                 }) ) &&  (list  !=  aimed  ) ) ) );
         // ----------
         
-        ((__h_case_result ) ? ({ /* progn4598 */
+        ((__h_case_result ) ? ({ /* progn4651 */
             Cons_List_int (head , delete_List_List_int (tail , aimed ));
-          }) : ({ /* letn4604 */
+          }) : ({ /* letn4657 */
             // ----------
             ;
-            ({ /* progn4606 */
-              ({ /* letn4612 */
+            ({ /* progn4659 */
+              ({ /* letn4665 */
                 typeof((((aimed -> __h_data). Cons). __h_1_mem)) taill ;
                 // ----------
                 ;
-                ({ /* letn4614 */
-                  bool __h_case_result  = (true  &&  (((aimed -> __h_ctor) ==  __h_Cons_t  ) &&  ({ /* progn4615 */
+                ({ /* letn4667 */
+                  bool __h_case_result  = (true  &&  (((aimed -> __h_ctor) ==  __h_Cons_t  ) &&  ({ /* progn4668 */
                         taill  = (((aimed -> __h_data). Cons). __h_1_mem) ;
                         true ;
                       }) ) );
                   // ----------
                   
-                  ((__h_case_result ) ? ({ /* progn4620 */
+                  ((__h_case_result ) ? ({ /* progn4673 */
                       copy_List_List_int (taill );
-                    }) : ({ /* letn4625 */
+                    }) : ({ /* letn4678 */
                       // ----------
                       ;
-                      ({ /* progn4627 */
+                      ({ /* progn4680 */
                         Nil_List_int ();
                       });
                     }));
@@ -4375,27 +4391,27 @@ List_List_int delete_List_List_int (List_List_int list , List_List_int aimed ) {
     });
 }
 List_List_int insert_List_List_int (List_List_int llist , List_int item , List_List_int rlist ) {
-  return ({ /* letn4636 */
+  return ({ /* letn4689 */
       typeof((((llist -> __h_data). Cons). __h_0_mem)) head ;
       typeof((((llist -> __h_data). Cons). __h_1_mem)) tail ;
       // ----------
       ;
-      ({ /* letn4638 */
-        bool __h_case_result  = (true  &&  (((llist -> __h_ctor) ==  __h_Cons_t  ) &&  ((({ /* progn4639 */
+      ({ /* letn4691 */
+        bool __h_case_result  = (true  &&  (((llist -> __h_ctor) ==  __h_Cons_t  ) &&  ((({ /* progn4692 */
                   head  = (((llist -> __h_data). Cons). __h_0_mem) ;
                   true ;
-                }) &&  ({ /* progn4641 */
+                }) &&  ({ /* progn4694 */
                   tail  = (((llist -> __h_data). Cons). __h_1_mem) ;
                   true ;
                 }) ) &&  (llist  !=  rlist  ) ) ) );
         // ----------
         
-        ((__h_case_result ) ? ({ /* progn4646 */
+        ((__h_case_result ) ? ({ /* progn4699 */
             Cons_List_int (head , insert_List_List_int (tail , item , rlist ));
-          }) : ({ /* letn4652 */
+          }) : ({ /* letn4705 */
             // ----------
             ;
-            ({ /* progn4654 */
+            ({ /* progn4707 */
               Cons_List_int (item , copy_List_List_int (rlist ));
             });
           }));
@@ -4403,83 +4419,83 @@ List_List_int insert_List_List_int (List_List_int llist , List_int item , List_L
     });
 }
 List_List_int reverse_List_List_int (List_List_int list ) {
-  List_List_int _reverse (List_List_int list , List_List_int rlist ) {
-    return ({ /* letn4665 */
-        typeof((((list -> __h_data). Cons). __h_0_mem)) head ;
-        typeof((((list -> __h_data). Cons). __h_1_mem)) tail ;
-        // ----------
-        ;
-        ({ /* letn4667 */
-          bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  (({ /* progn4668 */
-                  head  = (((list -> __h_data). Cons). __h_0_mem) ;
-                  true ;
-                }) &&  ({ /* progn4670 */
-                  tail  = (((list -> __h_data). Cons). __h_1_mem) ;
-                  true ;
-                }) ) ) );
-          // ----------
-          
-          ((__h_case_result ) ? ({ /* progn4675 */
-              _reverse (tail , Cons_List_int (head , rlist ));
-            }) : ({ /* letn4680 */
-              // ----------
-              ;
-              ({ /* progn4682 */
-                rlist ;
-              });
-            }));
-        });
-      });
-  }
-  return ({ /* letn4688 */
+  return ({ /* letn4717 */
       typeof((((list -> __h_data). Cons). __h_0_mem)) head ;
       typeof((((list -> __h_data). Cons). __h_1_mem)) tail ;
       // ----------
       ;
-      ({ /* letn4690 */
-        bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  (({ /* progn4691 */
+      ({ /* letn4719 */
+        bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  (({ /* progn4720 */
                 head  = (((list -> __h_data). Cons). __h_0_mem) ;
                 true ;
-              }) &&  ({ /* progn4693 */
+              }) &&  ({ /* progn4722 */
                 tail  = (((list -> __h_data). Cons). __h_1_mem) ;
                 true ;
               }) ) ) );
         // ----------
         
-        ((__h_case_result ) ? ({ /* progn4698 */
-            _reverse (tail , Cons_List_int (head , Nil_List_int ()));
-          }) : ({ /* letn4704 */
+        ((__h_case_result ) ? ({ /* progn4727 */
+            reverseOnto_List_List_int (tail , Cons_List_int (head , Nil_List_int ()));
+          }) : ({ /* letn4734 */
             // ----------
             ;
-            ({ /* progn4706 */
+            ({ /* progn4736 */
               list ;
             });
           }));
       });
     });
 }
+List_List_int reverseOnto_List_List_int (List_List_int list , List_List_int rlist ) {
+  return ({ /* letn4744 */
+      typeof((((list -> __h_data). Cons). __h_0_mem)) head ;
+      typeof((((list -> __h_data). Cons). __h_1_mem)) tail ;
+      // ----------
+      ;
+      ({ /* letn4746 */
+        bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  (({ /* progn4747 */
+                head  = (((list -> __h_data). Cons). __h_0_mem) ;
+                true ;
+              }) &&  ({ /* progn4749 */
+                tail  = (((list -> __h_data). Cons). __h_1_mem) ;
+                true ;
+              }) ) ) );
+        // ----------
+        
+        ((__h_case_result ) ? ({ /* progn4754 */
+            reverseOnto_List_List_int (tail , Cons_List_int (head , rlist ));
+          }) : ({ /* letn4760 */
+            // ----------
+            ;
+            ({ /* progn4762 */
+              rlist ;
+            });
+          }));
+      });
+    });
+}
 List_List_int append_List_List_int (List_List_int llist , List_List_int rlist ) {
-  return ({ /* letn4714 */
+  return ({ /* letn4770 */
       typeof((((llist -> __h_data). Cons). __h_0_mem)) head ;
       typeof((((llist -> __h_data). Cons). __h_1_mem)) tail ;
       // ----------
       ;
-      ({ /* letn4716 */
-        bool __h_case_result  = (true  &&  (((llist -> __h_ctor) ==  __h_Cons_t  ) &&  (({ /* progn4717 */
+      ({ /* letn4772 */
+        bool __h_case_result  = (true  &&  (((llist -> __h_ctor) ==  __h_Cons_t  ) &&  (({ /* progn4773 */
                 head  = (((llist -> __h_data). Cons). __h_0_mem) ;
                 true ;
-              }) &&  ({ /* progn4719 */
+              }) &&  ({ /* progn4775 */
                 tail  = (((llist -> __h_data). Cons). __h_1_mem) ;
                 true ;
               }) ) ) );
         // ----------
         
-        ((__h_case_result ) ? ({ /* progn4724 */
+        ((__h_case_result ) ? ({ /* progn4780 */
             Cons_List_int (head , append_List_List_int (tail , rlist ));
-          }) : ({ /* letn4730 */
+          }) : ({ /* letn4786 */
             // ----------
             ;
-            ({ /* progn4732 */
+            ({ /* progn4788 */
               copy_List_List_int (rlist );
             });
           }));
@@ -4490,27 +4506,27 @@ List_List_int push_List_List_int (List_int item , List_List_int list ) {
   return Cons_List_int (item , copy_List_List_int (list ));
 }
 List_List_int take_List_List_int (size_t len , List_List_int list ) {
-  return (((len  <=  0 )) ? Nil_List_int () : ({ /* letn4747 */
+  return (((len  <=  0 )) ? Nil_List_int () : ({ /* letn4803 */
         typeof((((list -> __h_data). Cons). __h_0_mem)) head ;
         typeof((((list -> __h_data). Cons). __h_1_mem)) tail ;
         // ----------
         ;
-        ({ /* letn4749 */
-          bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  (({ /* progn4750 */
+        ({ /* letn4805 */
+          bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  (({ /* progn4806 */
                   head  = (((list -> __h_data). Cons). __h_0_mem) ;
                   true ;
-                }) &&  ({ /* progn4752 */
+                }) &&  ({ /* progn4808 */
                   tail  = (((list -> __h_data). Cons). __h_1_mem) ;
                   true ;
                 }) ) ) );
           // ----------
           
-          ((__h_case_result ) ? ({ /* progn4757 */
+          ((__h_case_result ) ? ({ /* progn4813 */
               Cons_List_int (head , take_List_List_int ((--len ), tail ));
-            }) : ({ /* letn4763 */
+            }) : ({ /* letn4819 */
               // ----------
               ;
-              ({ /* progn4765 */
+              ({ /* progn4821 */
                 Nil_List_int ();
               });
             }));
@@ -4518,40 +4534,40 @@ List_List_int take_List_List_int (size_t len , List_List_int list ) {
       }));
 }
 List_List_int last_List_List_int (List_List_int list ) {
-  return ({ /* letn4774 */
+  return ({ /* letn4830 */
       typeof((((list -> __h_data). Cons). __h_1_mem)) tail ;
       // ----------
       ;
-      ({ /* letn4776 */
-        bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  ({ /* progn4777 */
+      ({ /* letn4832 */
+        bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  ({ /* progn4833 */
               tail  = (((list -> __h_data). Cons). __h_1_mem) ;
               true ;
             }) ) );
         // ----------
         
-        ((__h_case_result ) ? ({ /* progn4782 */
-            ({ /* letn4788 */
+        ((__h_case_result ) ? ({ /* progn4838 */
+            ({ /* letn4844 */
               // ----------
               ;
-              ({ /* letn4790 */
+              ({ /* letn4846 */
                 bool __h_case_result  = (true  &&  ((tail -> __h_ctor) ==  __h_Nil_t  ) );
                 // ----------
                 
-                ((__h_case_result ) ? ({ /* progn4794 */
+                ((__h_case_result ) ? ({ /* progn4850 */
                     copy_List_List_int (list );
-                  }) : ({ /* letn4799 */
+                  }) : ({ /* letn4855 */
                     // ----------
                     ;
-                    ({ /* progn4801 */
+                    ({ /* progn4857 */
                       last_List_List_int (tail );
                     });
                   }));
               });
             });
-          }) : ({ /* letn4806 */
+          }) : ({ /* letn4862 */
             // ----------
             ;
-            ({ /* progn4808 */
+            ({ /* progn4864 */
               Nil_List_int ();
             });
           }));
@@ -4559,27 +4575,27 @@ List_List_int last_List_List_int (List_List_int list ) {
     });
 }
 List_List_int init_List_List_int (List_List_int list ) {
-  return ({ /* letn4818 */
+  return ({ /* letn4874 */
       typeof((((list -> __h_data). Cons). __h_0_mem)) head ;
       typeof((((list -> __h_data). Cons). __h_1_mem)) tail ;
       // ----------
       ;
-      ({ /* letn4820 */
-        bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  ((({ /* progn4821 */
+      ({ /* letn4876 */
+        bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  ((({ /* progn4877 */
                   head  = (((list -> __h_data). Cons). __h_0_mem) ;
                   true ;
-                }) &&  ({ /* progn4823 */
+                }) &&  ({ /* progn4879 */
                   tail  = (((list -> __h_data). Cons). __h_1_mem) ;
                   true ;
                 }) ) &&  (true  &&  ((tail -> __h_ctor) ==  __h_Cons_t  ) ) ) ) );
         // ----------
         
-        ((__h_case_result ) ? ({ /* progn4828 */
+        ((__h_case_result ) ? ({ /* progn4884 */
             Cons_List_int (head , init_List_List_int (tail ));
-          }) : ({ /* letn4834 */
+          }) : ({ /* letn4890 */
             // ----------
             ;
-            ({ /* progn4836 */
+            ({ /* progn4892 */
               Nil_List_int ();
             });
           }));
@@ -4587,23 +4603,23 @@ List_List_int init_List_List_int (List_List_int list ) {
     });
 }
 size_t hasLen_List_List_int (List_List_int list , size_t desired ) {
-  return ({ /* letn4845 */
+  return ({ /* letn4901 */
       typeof((((list -> __h_data). Cons). __h_1_mem)) tail ;
       // ----------
       ;
-      ({ /* letn4847 */
-        bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  ({ /* progn4848 */
+      ({ /* letn4903 */
+        bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  ({ /* progn4904 */
               tail  = (((list -> __h_data). Cons). __h_1_mem) ;
               true ;
             }) ) );
         // ----------
         
-        ((__h_case_result ) ? ({ /* progn4853 */
+        ((__h_case_result ) ? ({ /* progn4909 */
             (((desired  ==  1 )) ? 1 : (1 +  hasLen_List_List_int (tail , (--desired )) ));
-          }) : ({ /* letn4859 */
+          }) : ({ /* letn4915 */
             // ----------
             ;
-            ({ /* progn4861 */
+            ({ /* progn4917 */
               0;
             });
           }));
@@ -4611,23 +4627,23 @@ size_t hasLen_List_List_int (List_List_int list , size_t desired ) {
     });
 }
 size_t len_List_List_int (List_List_int list ) {
-  return ({ /* letn4869 */
+  return ({ /* letn4925 */
       typeof((((list -> __h_data). Cons). __h_1_mem)) tail ;
       // ----------
       ;
-      ({ /* letn4871 */
-        bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  ({ /* progn4872 */
+      ({ /* letn4927 */
+        bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  ({ /* progn4928 */
               tail  = (((list -> __h_data). Cons). __h_1_mem) ;
               true ;
             }) ) );
         // ----------
         
-        ((__h_case_result ) ? ({ /* progn4877 */
+        ((__h_case_result ) ? ({ /* progn4933 */
             (1 +  len_List_List_int (tail ) );
-          }) : ({ /* letn4882 */
+          }) : ({ /* letn4938 */
             // ----------
             ;
-            ({ /* progn4884 */
+            ({ /* progn4940 */
               0;
             });
           }));
@@ -4638,23 +4654,23 @@ List_List_int tail_List_List_int (List_List_int list ) {
   return drop_List_List_int (1, list );
 }
 List_List_int drop_List_List_int (size_t len , List_List_int list ) {
-  return (((len  <=  0 )) ? copy_List_List_int (list ) : ({ /* letn4897 */
+  return (((len  <=  0 )) ? copy_List_List_int (list ) : ({ /* letn4953 */
         typeof((((list -> __h_data). Cons). __h_1_mem)) tail ;
         // ----------
         ;
-        ({ /* letn4899 */
-          bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  ({ /* progn4900 */
+        ({ /* letn4955 */
+          bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  ({ /* progn4956 */
                 tail  = (((list -> __h_data). Cons). __h_1_mem) ;
                 true ;
               }) ) );
           // ----------
           
-          ((__h_case_result ) ? ({ /* progn4905 */
+          ((__h_case_result ) ? ({ /* progn4961 */
               drop_List_List_int ((--len ), tail );
-            }) : ({ /* letn4910 */
+            }) : ({ /* letn4966 */
               // ----------
               ;
-              ({ /* progn4912 */
+              ({ /* progn4968 */
                 Nil_List_int ();
               });
             }));
@@ -4662,23 +4678,23 @@ List_List_int drop_List_List_int (size_t len , List_List_int list ) {
       }));
 }
 Maybe_List_int head_List_List_int (List_List_int list ) {
-  return ({ /* letn4922 */
+  return ({ /* letn4978 */
       typeof((((list -> __h_data). Cons). __h_0_mem)) head ;
       // ----------
       ;
-      ({ /* letn4924 */
-        bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  ({ /* progn4925 */
+      ({ /* letn4980 */
+        bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  ({ /* progn4981 */
               head  = (((list -> __h_data). Cons). __h_0_mem) ;
               true ;
             }) ) );
         // ----------
         
-        ((__h_case_result ) ? ({ /* progn4930 */
+        ((__h_case_result ) ? ({ /* progn4986 */
             Just_List_int (head );
-          }) : ({ /* letn4935 */
+          }) : ({ /* letn4991 */
             // ----------
             ;
-            ({ /* progn4937 */
+            ({ /* progn4993 */
               Nothing_List_int ();
             });
           }));
@@ -4686,23 +4702,23 @@ Maybe_List_int head_List_List_int (List_List_int list ) {
     });
 }
 List_List_int nthcdr_List_List_int (size_t index , List_List_int list ) {
-  return ({ /* letn4946 */
+  return ({ /* letn5002 */
       typeof((((list -> __h_data). Cons). __h_1_mem)) tail ;
       // ----------
       ;
-      ({ /* letn4948 */
-        bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  (({ /* progn4949 */
+      ({ /* letn5004 */
+        bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  (({ /* progn5005 */
                 tail  = (((list -> __h_data). Cons). __h_1_mem) ;
                 true ;
               }) &&  (index  >  0 ) ) ) );
         // ----------
         
-        ((__h_case_result ) ? ({ /* progn4954 */
+        ((__h_case_result ) ? ({ /* progn5010 */
             nthcdr_List_List_int ((--index ), tail );
-          }) : ({ /* letn4959 */
+          }) : ({ /* letn5015 */
             // ----------
             ;
-            ({ /* progn4961 */
+            ({ /* progn5017 */
               list ;
             });
           }));
@@ -4710,27 +4726,27 @@ List_List_int nthcdr_List_List_int (size_t index , List_List_int list ) {
     });
 }
 Maybe_List_int nth_List_List_int (size_t index , List_List_int list ) {
-  return ({ /* letn4970 */
+  return ({ /* letn5026 */
       typeof((((list -> __h_data). Cons). __h_0_mem)) head ;
       typeof((((list -> __h_data). Cons). __h_1_mem)) tail ;
       // ----------
       ;
-      ({ /* letn4972 */
-        bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  (({ /* progn4973 */
+      ({ /* letn5028 */
+        bool __h_case_result  = (true  &&  (((list -> __h_ctor) ==  __h_Cons_t  ) &&  (({ /* progn5029 */
                 head  = (((list -> __h_data). Cons). __h_0_mem) ;
                 true ;
-              }) &&  ({ /* progn4975 */
+              }) &&  ({ /* progn5031 */
                 tail  = (((list -> __h_data). Cons). __h_1_mem) ;
                 true ;
               }) ) ) );
         // ----------
         
-        ((__h_case_result ) ? ({ /* progn4980 */
+        ((__h_case_result ) ? ({ /* progn5036 */
             (((index  ==  0 )) ? Just_List_int (head ) : (((index  <  0 )) ? Nothing_List_int () : nth_List_List_int ((--index ), tail )));
-          }) : ({ /* letn4989 */
+          }) : ({ /* letn5045 */
             // ----------
             ;
-            ({ /* progn4991 */
+            ({ /* progn5047 */
               Nothing_List_int ();
             });
           }));
@@ -4738,38 +4754,38 @@ Maybe_List_int nth_List_List_int (size_t index , List_List_int list ) {
     });
 }
 void free_List_List_int (List_List_int * this_ptr ) {
-  { /* let4996 */
+  { /* let5052 */
     List_List_int this  = (*this_ptr );
     // ----------
-    { /* let5000 */
+    { /* let5056 */
       typeof((((this -> __h_data). Cons). __h_1_mem)) tail ;
       // ----------
       ;
-      ({ /* letn5002 */
-        bool __h_case_result  = (true  &&  (((this -> __h_ctor) ==  __h_Cons_t  ) &&  ({ /* progn5003 */
+      ({ /* letn5058 */
+        bool __h_case_result  = (true  &&  (((this -> __h_ctor) ==  __h_Cons_t  ) &&  ({ /* progn5059 */
               tail  = (((this -> __h_data). Cons). __h_1_mem) ;
               true ;
             }) ) );
         // ----------
         
         if (__h_case_result )
-          { /* block5010 */
-            { /* block5012 */
+          { /* block5066 */
+            { /* block5068 */
               free (this );
               free_List_List_int ((&tail ));
             }
           }
         else
-          { /* let5020 */
+          { /* let5076 */
             // ----------
             ;
-            ({ /* letn5022 */
+            ({ /* letn5078 */
               bool __h_case_result  = (true  &&  ((this -> __h_ctor) ==  __h_Nil_t  ) );
               // ----------
               
               if (__h_case_result )
-                { /* block5028 */
-                  { /* block5030 */
+                { /* block5084 */
+                  { /* block5086 */
                     free (this );
                   }
                 }
@@ -4781,16 +4797,16 @@ void free_List_List_int (List_List_int * this_ptr ) {
 }
 __attribute__((weak)) void free_List_List_int_pointer (List_List_int ** this_ptr ) {
   if (this_ptr )
-    { /* block5038 */
+    { /* block5094 */
       free_List_List_int ((*this_ptr ));
     }
 }
 List_List_int__H_Table * const get_List_List_int__H_Table () {
-  static List_List_int__H_Table table  = { free_List_List_int , toArray_List_List_int , wrap_List_List_int , pure_List_List_int , show_List_List_int , copy_List_List_int , replaceAt_List_List_int , deleteAt_List_List_int , insertAt_List_List_int , replace_List_List_int , delete_List_List_int , insert_List_List_int , reverse_List_List_int , append_List_List_int , push_List_List_int , take_List_List_int , last_List_List_int , init_List_List_int , hasLen_List_List_int , len_List_List_int , tail_List_List_int , drop_List_List_int , head_List_List_int , nthcdr_List_List_int , nth_List_List_int };
+  static List_List_int__H_Table table  = { free_List_List_int , toArray_List_List_int , toArrayFrom_List_List_int , wrap_List_List_int , pure_List_List_int , show_List_List_int , copy_List_List_int , replaceAt_List_List_int , deleteAt_List_List_int , insertAt_List_List_int , replace_List_List_int , delete_List_List_int , insert_List_List_int , reverse_List_List_int , reverseOnto_List_List_int , append_List_List_int , push_List_List_int , take_List_List_int , last_List_List_int , init_List_List_int , hasLen_List_List_int , len_List_List_int , tail_List_List_int , drop_List_List_int , head_List_List_int , nthcdr_List_List_int , nth_List_List_int };
   return (&table );
 }
 List_List_int Cons_List_int (List_int head , List_List_int tail ) {
-  { /* let5048 */
+  { /* let5104 */
     List_List_int instance  = malloc (sizeof(class_List_List_int));
     // ----------
     (*instance ) = ((class_List_List_int){ get_List_List_int__H_Table (), __h_Cons_t , .__h_data.Cons = { head , tail }});
@@ -4798,7 +4814,7 @@ List_List_int Cons_List_int (List_int head , List_List_int tail ) {
   }
 }
 List_List_int Nil_List_int () {
-  { /* let5054 */
+  { /* let5110 */
     List_List_int instance  = malloc (sizeof(class_List_List_int));
     // ----------
     (*instance ) = ((class_List_List_int){ get_List_List_int__H_Table (), __h_Nil_t });
@@ -4812,7 +4828,7 @@ void free_Maybe_List_List_int (Maybe_List_List_int * this ) {
 }
 __attribute__((weak)) void free_Maybe_List_List_int_pointer (Maybe_List_List_int ** this ) {
   if (this )
-    { /* block5069 */
+    { /* block5125 */
       free_Maybe_List_List_int ((*this ));
     }
 }
@@ -4821,14 +4837,14 @@ const Maybe_List_List_int__H_Table * const get_Maybe_List_List_int__H_Table () {
   return (&table );
 }
 Maybe_List_List_int Just_List_List_int (List_List_int value ) {
-  { /* let5079 */
+  { /* let5135 */
     Maybe_List_List_int instance  = ((Maybe_List_List_int){ get_Maybe_List_List_int__H_Table (), __h_Just_t , .__h_data.Just = { value }});
     // ----------
     return instance ;
   }
 }
 Maybe_List_List_int Nothing_List_List_int () {
-  { /* let5084 */
+  { /* let5140 */
     Maybe_List_List_int instance  = ((Maybe_List_List_int){ get_Maybe_List_List_int__H_Table (), __h_Nothing_t });
     // ----------
     return instance ;
@@ -4838,27 +4854,27 @@ Maybe_List_List_int Nothing_List_List_int () {
 #ifndef __folds_List_int__H_IMPL__
 #define __folds_List_int__H_IMPL__
 List_int foldr_List_int (List_int (*folder) (List_int lhs , List_int rhs ), List_int neutral , List_List_int foldable ) {
-  return ({ /* letn5100 */
+  return ({ /* letn5156 */
       typeof((((foldable -> __h_data). Cons). __h_0_mem)) head ;
       typeof((((foldable -> __h_data). Cons). __h_1_mem)) tail ;
       // ----------
       ;
-      ({ /* letn5102 */
-        bool __h_case_result  = (true  &&  (((foldable -> __h_ctor) ==  __h_Cons_t  ) &&  (({ /* progn5103 */
+      ({ /* letn5158 */
+        bool __h_case_result  = (true  &&  (((foldable -> __h_ctor) ==  __h_Cons_t  ) &&  (({ /* progn5159 */
                 head  = (((foldable -> __h_data). Cons). __h_0_mem) ;
                 true ;
-              }) &&  ({ /* progn5105 */
+              }) &&  ({ /* progn5161 */
                 tail  = (((foldable -> __h_data). Cons). __h_1_mem) ;
                 true ;
               }) ) ) );
         // ----------
         
-        ((__h_case_result ) ? ({ /* progn5110 */
+        ((__h_case_result ) ? ({ /* progn5166 */
             foldr_List_int (folder , folder (neutral , head ), tail );
-          }) : ({ /* letn5115 */
+          }) : ({ /* letn5171 */
             // ----------
             ;
-            ({ /* progn5117 */
+            ({ /* progn5173 */
               neutral ;
             });
           }));
@@ -4872,7 +4888,7 @@ void free_Monoid_List_int (Monoid_List_int * this ) {
 }
 __attribute__((weak)) void free_Monoid_List_int_pointer (Monoid_List_int ** this ) {
   if (this )
-    { /* block5130 */
+    { /* block5186 */
       free_Monoid_List_int ((*this ));
     }
 }
@@ -4881,7 +4897,7 @@ const Monoid_List_int__H_Table * const get_Monoid_List_int__H_Table () {
   return (&table );
 }
 Monoid_List_int Monoid_List_int_ctor (Monoid_List_int_mappend_t mappend , List_int mempty , Monoid_List_int_mconcat_t mconcat ) {
-  { /* let5140 */
+  { /* let5196 */
     Monoid_List_int instance  = ((Monoid_List_int){ get_Monoid_List_int__H_Table (), __h_Monoid_t , .__h_data._ = { mappend , mempty , mconcat }});
     // ----------
     return instance ;
@@ -4894,7 +4910,7 @@ void free_Semigroup_List_int (Semigroup_List_int * this ) {
 }
 __attribute__((weak)) void free_Semigroup_List_int_pointer (Semigroup_List_int ** this ) {
   if (this )
-    { /* block5153 */
+    { /* block5209 */
       free_Semigroup_List_int ((*this ));
     }
 }
@@ -4903,7 +4919,7 @@ const Semigroup_List_int__H_Table * const get_Semigroup_List_int__H_Table () {
   return (&table );
 }
 Semigroup_List_int Semigroup_List_int_ctor (Monoid_List_int_mappend_t mappend ) {
-  { /* let5163 */
+  { /* let5219 */
     Semigroup_List_int instance  = ((Semigroup_List_int){ get_Semigroup_List_int__H_Table (), __h_Semigroup_t , .__h_data._ = { mappend }});
     // ----------
     return instance ;
@@ -4916,41 +4932,41 @@ List_int mempty_List_int () {
 List_int mappend_List_int (List_int lhs , List_int rhs ) {
   return append_List_int (lhs , rhs );
 }
-List_int mconcat_List_int (List_List_int list ) {
-  List_int step (List_List_int rest , List_int acc ) {
-    return ({ /* letn5180 */
-        typeof((((rest -> __h_data). Cons). __h_0_mem)) head ;
-        typeof((((rest -> __h_data). Cons). __h_1_mem)) tail ;
+List_int mconcatStep_List_int (List_List_int rest , List_int acc ) {
+  return ({ /* letn5234 */
+      typeof((((rest -> __h_data). Cons). __h_0_mem)) head ;
+      typeof((((rest -> __h_data). Cons). __h_1_mem)) tail ;
+      // ----------
+      ;
+      ({ /* letn5236 */
+        bool __h_case_result  = (true  &&  (((rest -> __h_ctor) ==  __h_Cons_t  ) &&  (({ /* progn5237 */
+                head  = (((rest -> __h_data). Cons). __h_0_mem) ;
+                true ;
+              }) &&  ({ /* progn5239 */
+                tail  = (((rest -> __h_data). Cons). __h_1_mem) ;
+                true ;
+              }) ) ) );
         // ----------
-        ;
-        ({ /* letn5182 */
-          bool __h_case_result  = (true  &&  (((rest -> __h_ctor) ==  __h_Cons_t  ) &&  (({ /* progn5183 */
-                  head  = (((rest -> __h_data). Cons). __h_0_mem) ;
-                  true ;
-                }) &&  ({ /* progn5185 */
-                  tail  = (((rest -> __h_data). Cons). __h_1_mem) ;
-                  true ;
-                }) ) ) );
-          // ----------
-          
-          ((__h_case_result ) ? ({ /* progn5190 */
-              ({ /* letn5192 */
-                List_int next  = mappend_List_int (acc , head );
-                // ----------
-                free_List_int ((&acc ));
-                step (tail , next );
-              });
-            }) : ({ /* letn5199 */
+        
+        ((__h_case_result ) ? ({ /* progn5244 */
+            ({ /* letn5246 */
+              List_int next  = mappend_List_int (acc , head );
               // ----------
-              ;
-              ({ /* progn5201 */
-                acc ;
-              });
-            }));
-        });
+              free_List_int ((&acc ));
+              mconcatStep_List_int (tail , next );
+            });
+          }) : ({ /* letn5254 */
+            // ----------
+            ;
+            ({ /* progn5256 */
+              acc ;
+            });
+          }));
       });
-  }
-  return step (list , Nil_int ());
+    });
+}
+List_int mconcat_List_int (List_List_int list ) {
+  return mconcatStep_List_int (list , Nil_int ());
 }
 Monoid_List_int get_Monoid_List_int () {
   return Monoid_List_int_ctor (mappend_List_int , Nil_int (), mconcat_List_int );
@@ -4961,23 +4977,23 @@ Semigroup_List_int get_Semigroup_List_int () {
 #ifndef __Applicative_Ap_List_int_int__H_IMPL__
 #define __Applicative_Ap_List_int_int__H_IMPL__
 List_int ap_Applicative_Ap_List_int_int (List_int_to_int_t f_a_b , List_int input ) {
-  return ({ /* letn5227 */
+  return ({ /* letn5286 */
       typeof((((f_a_b -> __h_data). Cons). __h_0_mem)) a_b ;
       typeof((((f_a_b -> __h_data). Cons). __h_1_mem)) tail ;
       // ----------
       ;
-      ({ /* letn5229 */
-        bool __h_case_result  = (true  &&  (((f_a_b -> __h_ctor) ==  __h_Cons_t  ) &&  (({ /* progn5230 */
+      ({ /* letn5288 */
+        bool __h_case_result  = (true  &&  (((f_a_b -> __h_ctor) ==  __h_Cons_t  ) &&  (({ /* progn5289 */
                 a_b  = (((f_a_b -> __h_data). Cons). __h_0_mem) ;
                 true ;
-              }) &&  ({ /* progn5232 */
+              }) &&  ({ /* progn5291 */
                 tail  = (((f_a_b -> __h_data). Cons). __h_1_mem) ;
                 true ;
               }) ) ) );
         // ----------
         
-        ((__h_case_result ) ? ({ /* progn5237 */
-            ({ /* letn5239 */
+        ((__h_case_result ) ? ({ /* progn5296 */
+            ({ /* letn5298 */
               List_int mapped  = fmap_Functor_Ap_List_int_int (a_b , input );
               List_int rest  = ap_Applicative_Ap_List_int_int (tail , input );
               List_List_int pair  = Cons_List_int (mapped , wrap_List_List_int (rest ));
@@ -4988,10 +5004,10 @@ List_int ap_Applicative_Ap_List_int_int (List_int_to_int_t f_a_b , List_int inpu
               free_List_int ((&rest ));
               result ;
             });
-          }) : ({ /* letn5251 */
+          }) : ({ /* letn5310 */
             // ----------
             ;
-            ({ /* progn5253 */
+            ({ /* progn5312 */
               Nil_int ();
             });
           }));
@@ -5005,7 +5021,7 @@ void free_Applicative_Ap_List_int_int (Applicative_Ap_List_int_int * this ) {
 }
 __attribute__((weak)) void free_Applicative_Ap_List_int_int_pointer (Applicative_Ap_List_int_int ** this ) {
   if (this )
-    { /* block5271 */
+    { /* block5330 */
       free_Applicative_Ap_List_int_int ((*this ));
     }
 }
@@ -5014,7 +5030,7 @@ const Applicative_Ap_List_int_int__H_Table * const get_Applicative_Ap_List_int_i
   return (&table );
 }
 Applicative_Ap_List_int_int Applicative_Ap_List_int_int_ctor () {
-  { /* let5281 */
+  { /* let5340 */
     Applicative_Ap_List_int_int instance  = ((Applicative_Ap_List_int_int){ get_Applicative_Ap_List_int_int__H_Table (), __h_Applicative_t });
     // ----------
     return instance ;
@@ -5027,12 +5043,12 @@ Applicative_Ap_List_int_int get_Applicative_Ap_List_int_int () {
 static int bad  = 0;
 int check (const char * what , long got , long want ) {
   if (got  ==  want  )
-    { /* block5291 */
+    { /* block5350 */
       printf ("ok   %-40s %ld\n", what , got );
       return 0;
     }
   else
-    { /* block5294 */
+    { /* block5353 */
       printf ("FAIL %-40s got %ld want %ld\n", what , got , want );
       return 1;
     }
@@ -5044,27 +5060,27 @@ int twice (int v ) {
   return (2 *  v  );
 }
 long sum_list (List_int l ) {
-  return ({ /* letn5303 */
+  return ({ /* letn5362 */
       typeof((((l -> __h_data). Cons). __h_0_mem)) head ;
       typeof((((l -> __h_data). Cons). __h_1_mem)) tail ;
       // ----------
       ;
-      ({ /* letn5305 */
-        bool __h_case_result  = (true  &&  (((l -> __h_ctor) ==  __h_Cons_t  ) &&  (({ /* progn5306 */
+      ({ /* letn5364 */
+        bool __h_case_result  = (true  &&  (((l -> __h_ctor) ==  __h_Cons_t  ) &&  (({ /* progn5365 */
                 head  = (((l -> __h_data). Cons). __h_0_mem) ;
                 true ;
-              }) &&  ({ /* progn5308 */
+              }) &&  ({ /* progn5367 */
                 tail  = (((l -> __h_data). Cons). __h_1_mem) ;
                 true ;
               }) ) ) );
         // ----------
         
-        ((__h_case_result ) ? ({ /* progn5313 */
+        ((__h_case_result ) ? ({ /* progn5372 */
             (((long)head ) +  sum_list (tail ) );
-          }) : ({ /* letn5317 */
+          }) : ({ /* letn5376 */
             // ----------
             ;
-            ({ /* progn5319 */
+            ({ /* progn5378 */
               0;
             });
           }));
@@ -5072,141 +5088,9 @@ long sum_list (List_int l ) {
     });
 }
 int main () {
-  ({ /* letn5325 */
+  ({ /* letn5384 */
     List_int l1  __attribute__((__cleanup__(free_List_int ))) = Cons_int (1, Cons_int (2, Cons_int (3, Cons_int (4, Nil_int ()))));
     // ----------
     bad  += check ("the list adds up before fmap", sum_list (l1 ), 10) ;
-    ({ /* letn5336 */
-      List_int l2  __attribute__((__cleanup__(free_List_int ))) = fmap_Functor_List_int_int (({ /* progn5340 */
-        int __ciciliC_5339 (int __h_value ) {
-          return (5 *  __h_value  );
-        }
-        __ciciliC_5339 ;
-      }), l1 );
-      // ----------
-      bad  += check ("fmap (*5) multiplies every element", sum_list (l2 ), 50) ;
-      bad  += check ("and leaves the length alone", ((long)len_List_int (l2 )), 4) ;
-    });
-  });
-  bad  += check ("bind on a Just runs the step", ({ /* letn5354 */
-        Maybe_int match5353  = bind_Monad_Maybe_int_int (Just_int (7), ({ /* progn5362 */
-          Maybe_int __ciciliC_5361 (int v ) {
-            return Just_int ((3 *  v  ));
-          }
-          __ciciliC_5361 ;
-        }));
-        typeof((((match5353 . __h_data). Just). __h_0_mem)) r ;
-        // ----------
-        ;
-        ({ /* letn5368 */
-          bool __h_case_result  = (true  &&  (((match5353 . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn5369 */
-                r  = (((match5353 . __h_data). Just). __h_0_mem) ;
-                true ;
-              }) ) );
-          // ----------
-          
-          ((__h_case_result ) ? ({ /* progn5374 */
-              ((long)r );
-            }) : ({ /* letn5378 */
-              // ----------
-              ;
-              ({ /* progn5380 */
-                -1;
-              });
-            }));
-        });
-      }), 21) ;
-  bad  += check ("bind on a Nothing short-circuits", ({ /* letn5387 */
-        Maybe_int match5386  = bind_Monad_Maybe_int_int (Nothing_int (), ({ /* progn5394 */
-          Maybe_int __ciciliC_5393 (int v ) {
-            return Just_int ((3 *  v  ));
-          }
-          __ciciliC_5393 ;
-        }));
-        typeof((((match5386 . __h_data). Just). __h_0_mem)) r ;
-        // ----------
-        ;
-        ({ /* letn5399 */
-          bool __h_case_result  = (true  &&  (((match5386 . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn5400 */
-                r  = (((match5386 . __h_data). Just). __h_0_mem) ;
-                true ;
-              }) ) );
-          // ----------
-          
-          ((__h_case_result ) ? ({ /* progn5405 */
-              ((long)r );
-            }) : ({ /* letn5409 */
-              // ----------
-              ;
-              ({ /* progn5411 */
-                -1;
-              });
-            }));
-        });
-      }), -1) ;
-  bad  += check ("ap of a Just function over a Just", ({ /* letn5418 */
-        Maybe_int match5417  = ap_Applicative_Ap_Maybe_int_int (Just_int_to_int_t (add100 ), Just_int (5));
-        typeof((((match5417 . __h_data). Just). __h_0_mem)) r ;
-        // ----------
-        ;
-        ({ /* letn5426 */
-          bool __h_case_result  = (true  &&  (((match5417 . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn5427 */
-                r  = (((match5417 . __h_data). Just). __h_0_mem) ;
-                true ;
-              }) ) );
-          // ----------
-          
-          ((__h_case_result ) ? ({ /* progn5432 */
-              ((long)r );
-            }) : ({ /* letn5436 */
-              // ----------
-              ;
-              ({ /* progn5438 */
-                -1;
-              });
-            }));
-        });
-      }), 105) ;
-  bad  += check ("ap of a Nothing function is nothing", ({ /* letn5445 */
-        Maybe_int match5444  = ap_Applicative_Ap_Maybe_int_int (Nothing_int_to_int_t (), Just_int (5));
-        typeof((((match5444 . __h_data). Just). __h_0_mem)) r ;
-        // ----------
-        ;
-        ({ /* letn5452 */
-          bool __h_case_result  = (true  &&  (((match5444 . __h_ctor) ==  __h_Just_t  ) &&  ({ /* progn5453 */
-                r  = (((match5444 . __h_data). Just). __h_0_mem) ;
-                true ;
-              }) ) );
-          // ----------
-          
-          ((__h_case_result ) ? ({ /* progn5458 */
-              ((long)r );
-            }) : ({ /* letn5462 */
-              // ----------
-              ;
-              ({ /* progn5464 */
-                -1;
-              });
-            }));
-        });
-      }), -1) ;
-  ({ /* letn5467 */
-    List_int_to_int_t fs  __attribute__((__cleanup__(free_List_int_to_int_t ))) = Cons_int_to_int_t (add100 , Cons_int_to_int_t (twice , Nil_int_to_int_t ()));
-    // ----------
-    ({ /* letn5475 */
-      List_int xs  __attribute__((__cleanup__(free_List_int ))) = Cons_int (1, Cons_int (2, Nil_int ()));
-      // ----------
-      ({ /* letn5481 */
-        List_int rs  __attribute__((__cleanup__(free_List_int ))) = ap_Applicative_Ap_List_int_int (fs , xs );
-        // ----------
-        bad  += check ("ap pairs every function with every value", ((long)len_List_int (rs )), 4) ;
-        bad  += check ("and the four results add up", sum_list (rs ), 209) ;
-      });
-    });
-  });
-  if (bad  ==  0 )
-    printf ("haskell-concepts: all ok\n");
-  else
-    printf ("haskell-concepts: %d FAILED\n", bad );
-  return bad ;
-}
+    ({ /* letn5395 */
+      List_int l2  __attribute__((__cleanup__(free_List_int ))) = fmap_Functor_List_int_int (

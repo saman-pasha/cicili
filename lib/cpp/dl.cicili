@@ -1,0 +1,29 @@
+;;;; Cicili declarations for <dlfcn.h> -- dlopen, dlsym, dladdr -- for a
+;;;; :cpp target, which carries no std prelude and so none of lib/std/c.
+;;;;
+;;;;     (include <dlfcn.h>)
+;;;;     (import "lib/cpp/dl.cicili")
+;;;;
+;;;; Nothing here emits. Dl_info is declared with the member a program reads
+;;;; (the path of the object a symbol lives in), and the two flags as int
+;;;; constants. A symbol dlsym answers is a void*; the cast to a function
+;;;; pointer type is the caller's, through a typedef of its own.
+(DEFPACKAGE :dl
+  (:USE :COMMON-LISP)
+  (:IMPORT-FROM :COMMON-LISP-USER "import" "generic" "cicili"))
+
+(IN-PACKAGE :dl)
+
+(DEFMACRO init-macro ()
+  `($$$
+     (decl) (struct Dl_info (member const char * dli_fname) (member void * dli_fbase)
+              (member const char * dli_sname) (member void * dli_saddr))
+     (typedef int RTLD_NOW)
+     (typedef int RTLD_LAZY)
+     (typedef int RTLD_GLOBAL)
+     (typedef int RTLD_LOCAL)
+     (decl) (func dlopen ((const char * path) (int flags)) (out void *))
+     (decl) (func dlsym ((void * handle) (const char * name)) (out void *))
+     (decl) (func dlclose ((void * handle)) (out int))
+     (decl) (func dlerror () (out char *))
+     (decl) (func dladdr ((const void * addr) (Dl_info * info)) (out int))))

@@ -18,8 +18,13 @@
 ;;;;   or: PGDATABASE=postgres sh test/run.sh test/c/postgres
 
 (source "postgres.c"
-  (make :std #t :compile "-I/usr/include/postgresql -c postgres.c"
-        :link ("-lpostgres.o" "-lpq" "-o" "postgres_test"))
+  ;; libpq's header and library: Debian's /usr/include/postgresql, and the
+  ;; keg-only Homebrew formula on an Intel or an Apple-silicon Mac; a -I or
+  ;; -L that names nothing is ignored. -Wno-unused-value for the same reason
+  ;; as test/c/sqlite.cicili: a (pg.… …) answering a value through a
+  ;; statement expression, used for its effect, is chatter under clang.
+  (make :std #t :compile "-Wno-unused-value -I/usr/include/postgresql -I/usr/local/opt/libpq/include -I/opt/homebrew/opt/libpq/include -c postgres.c"
+        :link ("-lpostgres.o" "-L/usr/local/opt/libpq/lib" "-L/opt/homebrew/opt/libpq/lib" "-lpq" "-o" "postgres_test"))
 
   (include <libpq-fe.h>)
   (import "lib/db/postgres.cicili" :pg)

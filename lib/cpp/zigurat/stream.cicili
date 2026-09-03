@@ -1,0 +1,101 @@
+;;;; The streams: std::string, the standard streams a program reads files
+;;;; and memory through, and Zigurat's binarystream family -- bufferstream
+;;;; being the one that holds bytes in memory and every ZiguratIP entry
+;;;; point taking a binarystream&.
+;;;;
+;;;; std::istream and std::ostream are declared separately and iostream
+;;;; carries both sets of methods, because Cicili's `inherits' names one
+;;;; base. bufferstream::string() is the GETTER; to put bytes in one, build
+;;;; it from them: (Zigurat::bufferstream bytes).
+;;; Part of the :zigurat library; see zigurat.cicili.
+(DEFPACKAGE :zigurat
+  (:USE :COMMON-LISP)
+  (:IMPORT-FROM :COMMON-LISP-USER "import" "generic" "cicili")
+  (:EXPORT "vector<" "consts<"))
+
+(IN-PACKAGE :zigurat)
+
+;;; (vector< 'std::string) -> the declaration of std::vector<std::string>
+(DEFUN vector< (type)
+  `((decl) (struct (t<> std::vector ,type)
+             (const) (method size  () (out size_t))
+             (const) (method empty () (out bool))
+             (method push_back ((const ,type & v)))
+             (method at ((size_t i)) (out ,type &))
+             (method data () (out ,type *))
+             (method clear ())
+             (method resize ((size_t n))))))
+
+;;; (consts< 'A 'B ...) -> one int typedef each: how a constant is declared
+(DEFUN consts< (&REST names)
+  (LOOP FOR n IN names COLLECT `(typedef int ,n)))
+
+(DEFMACRO init-macro ()
+  `($$$
+     (decl) (struct std::string
+              (const) (method c_str () (out const char *))
+              (const) (method data () (out const char *))
+              (const) (method size  () (out size_t))
+              (const) (method empty () (out bool))
+              (const) (method substr ((size_t pos) (size_t n)) (out std::string))
+              (const) (method find ((const char * s)) (out size_t))
+              (method push_back ((char c)))
+              (method clear ())
+              (method insert ((size_t pos) (size_t n) (char c)))
+              (method erase ((size_t pos) (size_t n)))
+              (method assign ((size_t n) (char c)))
+              (method resize ((size_t n)))
+              (method reserve ((size_t n))))
+     (typedef size_t std::string::npos)
+     (decl) (func std::to_string ((long v)) (out std::string))
+     (decl) (struct std::exception
+              (const) (method what () (out const char *)))
+     (decl) (struct std::runtime_error (inherits std::exception))
+     ,@(vector< 'std::string)
+     ,@(vector< 'u8)
+     ,@(vector< 'u32)
+
+     ;;; the standard streams, the methods a program uses
+     ,@(consts< 'std::ios::binary 'std::ios::in 'std::ios::out 'std::ios::trunc 'std::ios::end 'std::ios::beg)
+     (typedef int EOF)
+     (decl) (struct std::streambuf
+              (method in_avail () (out long)))
+     (decl) (struct std::istream
+              (method get () (out int))
+              (method peek () (out int))
+              (method read ((char * buf) (long n)))
+              (method gcount () (out long))
+              (const) (method good () (out bool))
+              (method clear ())
+              (method seekg ((long off) (int dir)))
+              (method tellg () (out long))
+              (method rdbuf () (out std::streambuf *)))
+     (decl) (struct std::ostream
+              (method write ((const char * buf) (long n)))
+              (method flush ())
+              (const) (method good () (out bool)))
+     (decl) (struct std::iostream
+              (method get () (out int))
+              (method peek () (out int))
+              (method read ((char * buf) (long n)))
+              (method gcount () (out long))
+              (const) (method good () (out bool))
+              (method clear ())
+              (method write ((const char * buf) (long n)))
+              (method flush ())
+              (method rdbuf () (out std::streambuf *)))
+     (decl) (struct std::ifstream (inherits std::istream))
+     (decl) (struct std::ofstream (inherits std::ostream))
+     (decl) (struct std::istringstream (inherits std::istream))
+     (decl) (struct std::ostringstream (inherits std::ostream)
+              (const) (method str () (out std::string)))
+
+     ;;; Zigurat's: binarystream is abstract (an iostream with the byte-order
+     ;;; methods pure), hbostream and nbostream are the two orders, and
+     ;;; bufferstream is the in-memory one every module builds.
+     (decl) (struct Zigurat::binarystream (inherits std::iostream))
+     (decl) (struct Zigurat::hbostream (inherits Zigurat::binarystream))
+     (decl) (struct Zigurat::nbostream (inherits Zigurat::binarystream))
+     (decl) (struct Zigurat::bufferstream (inherits Zigurat::hbostream)
+              (method string () (out std::string))
+              (method length () (out size_t)))))

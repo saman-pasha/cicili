@@ -1,0 +1,38 @@
+;;;; Zigurat::X509 -- keys, requests, certificates, signatures, from <x509.hpp>.
+;;;;
+;;;; Every entry point takes and answers Zigurat streams; the std::string
+;;;; parameters are by value in the header and declared so. `issue' is the
+;;;; eleven-argument form with the permissions vector.
+;;; Part of the :zigurat library; see zigurat.cicili.
+(DEFPACKAGE :zigurat
+  (:USE :COMMON-LISP)
+  (:IMPORT-FROM :COMMON-LISP-USER "import" "generic" "cicili")
+  (:EXPORT "vector<" "consts<"))
+
+(IN-PACKAGE :zigurat)
+
+(DEFMACRO init-macro ()
+  `($$$
+     (decl) (struct Zigurat::X509)
+     (decl) (func Zigurat::X509::keygen ((std::string signature) (std::string encryption) (std::string cipher) (std::string encoding)
+                                          (Zigurat::binarystream & pik) (Zigurat::binarystream & puk)) (out size_t))
+     (decl) (func Zigurat::X509::csr ((Zigurat::binarystream & subject) (Zigurat::binarystream & pik) (std::string cipher)
+                                       (std::string hash) (std::string encoding) (Zigurat::binarystream & csr)))
+     (decl) (func Zigurat::X509::issue ((Zigurat::binarystream & serial) (Zigurat::binarystream & issuer) (Zigurat::binarystream & pik)
+                                         (std::string cipher) (long from) (long to) (Zigurat::binarystream & csr)
+                                         (std::string hash) (std::string encoding) (const (t<> std::vector std::string) & permissions)
+                                         (Zigurat::binarystream & crt)))
+     (decl) (func Zigurat::X509::validate_by_pik ((Zigurat::binarystream & pik) (std::string cipher) (Zigurat::binarystream & crt)))
+     (decl) (func Zigurat::X509::validate_by_puk ((Zigurat::binarystream & puk) (Zigurat::binarystream & crt)))
+     (decl) (func Zigurat::X509::certificate_public_key ((Zigurat::binarystream & crt) (Zigurat::binarystream & puk)))
+     (decl) (func Zigurat::X509::certificate_subject ((Zigurat::binarystream & crt)) (out std::string))
+     (decl) (func Zigurat::X509::subject_file_name ((const std::string & subject)) (out std::string))
+     (decl) (func Zigurat::X509::file_name_subject ((const std::string & name)) (out std::string))
+     (decl) (func Zigurat::X509::certificate_permissions ((Zigurat::binarystream & crt)) (out (t<> std::vector std::string)))
+     (decl) (func Zigurat::X509::sign ((Zigurat::binarystream & pik) (std::string cipher) (std::string hash)
+                                        (Zigurat::binarystream & in) (Zigurat::binarystream & out)))
+     (decl) (func Zigurat::X509::verify ((Zigurat::binarystream & crt) (std::string hash) (Zigurat::binarystream & in)
+                                          (Zigurat::binarystream & signature)) (out bool))
+     (decl) (func Zigurat::X509::encrypt ((Zigurat::binarystream & crt) (Zigurat::binarystream & in) (Zigurat::binarystream & out)))
+     (decl) (func Zigurat::X509::decrypt ((Zigurat::binarystream & pik) (std::string cipher) (Zigurat::binarystream & in)
+                                           (Zigurat::binarystream & out)))))

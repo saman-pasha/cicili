@@ -1,3 +1,10 @@
+;;;; NEEDS GCC, WHICH IS WHY IT LIVES IN test/haskell AND NOT IN THE SUITE.
+;;;; The haskell layer's fmap, bind and the persistent tree's borrow/delete
+;;;; helpers are '(closure …) and nested functions, which doc/DOC-C.md marks
+;;;; GCC-only: clang refuses a function defined inside a function. test/run.sh
+;;;; walks test/c, test/std and test/cpp; run this one by hand, with gcc:
+;;;;
+;;;;     sbcl --script cicili.lisp test/haskell/btree-persistent.cicili
 ;;; test lib/std/haskell/persistent-btree.cicili on std rc
 ;;;
 ;;; A PERSISTENT tree shares subtrees between versions: an insert copies the

@@ -115,18 +115,21 @@
   ;;
   ;; The answer and, when the list is empty, the neutral are the CALLER's; only
   ;; what this made itself is freed here.
+  ;; The step is a SIBLING of mconcat rather than a function nested in it:
+  ;; a nested function is a gcc extension clang refuses outright, and this
+  ;; one captured nothing from its enclosing scope that the generic did not
+  ;; already know at expansion time.
+  (func (<> mconcatStep type) (((<> List a) rest) (a acc)) (out a)
+        (return (match rest
+                  (* Cons head tail
+                     (letn ((auto next . #'((<> mappend type) acc head)))
+                       (free-owned mod-own (<> free a) (aof acc))
+                       ((<> mconcatStep type) tail next)))
+                  (default acc))))
+
   (func (<> mconcat type) (((<> List a) list))
         (out a)
-
-        (func step (((<> List a) rest) (a acc)) (out a)
-              (return (match rest
-                        (* Cons head tail
-                           (letn ((auto next . #'((<> mappend type) acc head)))
-                             (free-owned mod-own (<> free a) (aof acc))
-                             (step tail next)))
-                        (default acc))))
-
-        (return (step list neutral)))
+        (return ((<> mconcatStep type) list neutral)))
 
   (func (<> get Monoid type) ()
         (out (<> Monoid type))

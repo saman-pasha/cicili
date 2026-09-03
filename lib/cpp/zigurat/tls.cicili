@@ -1,0 +1,61 @@
+;;;; Zigurat::tlsstream and Zigurat::TLS::HandshakeParameters, from
+;;;; <tlsstream.hpp> and <tls.hpp> -- and the slice of POSIX sockets a
+;;;; program that owns the descriptor itself needs beside them, because a
+;;;; :cpp target carries no std prelude and so none of lib/std/c/posix.
+;;;;
+;;;; The tlsstream constructor declared is the one over an open socket:
+;;;; (new* Zigurat::tlsstream Zigurat::TLS::ConnectionEnd::SERVER params fd true ms).
+;;; Part of the :zigurat library; see zigurat.cicili.
+(DEFPACKAGE :zigurat
+  (:USE :COMMON-LISP)
+  (:IMPORT-FROM :COMMON-LISP-USER "import" "generic" "cicili")
+  (:EXPORT "vector<" "consts<"))
+
+(IN-PACKAGE :zigurat)
+
+(DEFMACRO init-macro ()
+  `($$$
+     (decl) (struct Zigurat::TLS::Credentials
+              (member std::string certificate) (member std::string private_key)
+              (member std::string private_key_cipher) (member std::string authority))
+     (typedef int Zigurat::TLS::ClientAuth)
+     (typedef int Zigurat::TLS::ConnectionEnd)
+     ,@(consts< 'Zigurat::TLS::ClientAuth::REQUIRED 'Zigurat::TLS::ClientAuth::OPTIONAL 'Zigurat::TLS::ClientAuth::NONE
+                'Zigurat::TLS::ConnectionEnd::SERVER 'Zigurat::TLS::ConnectionEnd::CLIENT)
+     (decl) (struct Zigurat::TLS::HandshakeParameters
+              (member Zigurat::TLS::Credentials credentials)
+              (member Zigurat::TLS::ClientAuth client_auth)
+              (member std::string cipher_list))
+     (decl) (struct Zigurat::tlsstream (inherits Zigurat::nbostream)
+              (const) (method is_open () (out bool))
+              (method close ())
+              (const) (method peer_subject () (out const std::string &))
+              (const) (method peer_permissions () (out const (t<> std::vector std::string) &)))
+
+     ;;; ---- the sockets underneath ------------------------------------
+     (decl) (struct in_addr (member u32 s_addr))
+     (decl) (struct sockaddr)
+     (decl) (struct sockaddr_in (member int sin_family) (member u16 sin_port) (member in_addr sin_addr))
+     (decl) (struct pollfd (member int fd) (member short events) (member short revents))
+     (decl) (struct addrinfo (member int ai_family) (member int ai_socktype) (member int ai_protocol)
+              (member u32 ai_addrlen) (member sockaddr * ai_addr) (member addrinfo * ai_next))
+     (decl) (struct timeval (member long tv_sec) (member long tv_usec))
+     (typedef u32 socklen_t)
+     ,@(consts< 'AF_INET 'SOCK_STREAM 'SOL_SOCKET 'SO_REUSEADDR 'SO_RCVTIMEO 'POLLIN 'INADDR_LOOPBACK 'INET_ADDRSTRLEN
+                'EAGAIN 'EWOULDBLOCK 'ETIMEDOUT 'errno)
+     (decl) (func socket ((int domain) (int type) (int protocol)) (out int))
+     (decl) (func bind ((int fd) (const sockaddr * addr) (socklen_t len)) (out int))
+     (decl) (func listen ((int fd) (int backlog)) (out int))
+     (decl) (func accept ((int fd) (sockaddr * addr) (socklen_t * len)) (out int))
+     (decl) (func connect ((int fd) (const sockaddr * addr) (socklen_t len)) (out int))
+     (decl) (func poll ((pollfd * fds) (u32 n) (int ms)) (out int))
+     (decl) (func setsockopt ((int fd) (int level) (int name) (const void * value) (socklen_t len)) (out int))
+     (decl) (func getaddrinfo ((const char * host) (const char * service) (const addrinfo * hints) (addrinfo ** res)) (out int))
+     (decl) (func freeaddrinfo ((addrinfo * res)))
+     (decl) (func gai_strerror ((int code)) (out const char *))
+     (decl) (func inet_ntop ((int family) (const void * addr) (char * out) (socklen_t cap)) (out const char *))
+     (decl) (func htonl ((u32 v)) (out u32))
+     (decl) (func htons ((u16 v)) (out u16))
+     (decl) (func ntohs ((u16 v)) (out u16))
+     (decl) (func close ((int fd)) (out int))
+     (decl) (func strerror ((int err)) (out char *))))

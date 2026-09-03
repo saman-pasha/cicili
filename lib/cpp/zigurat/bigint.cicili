@@ -1,0 +1,29 @@
+;;;; Zigurat::BigInt -- Core's signed bignum, the one its RSA stands on.
+;;;;
+;;;; The arithmetic is C++ operators, which a Cicili program writes as its
+;;;; own: (+ a b), (- a b), (* a b), (/ a b), (% a b), (< a b) ... and C++
+;;;; resolves them on the class. `sign' is declared as the GETTER; negate
+;;;; by subtracting from zero. `to_octet_string' is the binarystream form.
+;;; Part of the :zigurat library; see zigurat.cicili.
+(DEFPACKAGE :zigurat
+  (:USE :COMMON-LISP)
+  (:IMPORT-FROM :COMMON-LISP-USER "import" "generic" "cicili")
+  (:EXPORT "vector<" "consts<"))
+
+(IN-PACKAGE :zigurat)
+
+(DEFMACRO init-macro ()
+  `($$$
+     (decl) (struct Zigurat::BigInt
+              (const) (method sign () (out bool))
+              (const) (method is_zero () (out bool))
+              (const) (method is_odd () (out bool))
+              (const) (method is_even () (out bool))
+              (const) (method to_octet_string ((Zigurat::binarystream & s) (bool with_sign)))
+              (method to_string () (out std::string)))
+     (decl) (func Zigurat::BigInt::cmp ((const Zigurat::BigInt & a) (const Zigurat::BigInt & b)) (out int))
+     (decl) (func Zigurat::BigInt::pow ((const Zigurat::BigInt & base) (const Zigurat::BigInt & exponent)) (out Zigurat::BigInt))
+     (decl) (func Zigurat::BigInt::mod_pow ((const Zigurat::BigInt & base) (const Zigurat::BigInt & exponent) (const Zigurat::BigInt & divisor)) (out Zigurat::BigInt))
+     (decl) (func Zigurat::BigInt::gcd ((const Zigurat::BigInt & a) (const Zigurat::BigInt & b)) (out Zigurat::BigInt))
+     (decl) (func Zigurat::BigInt::lcm ((const Zigurat::BigInt & a) (const Zigurat::BigInt & b)) (out Zigurat::BigInt))
+     (decl) (func Zigurat::BigInt::inverse ((const Zigurat::BigInt & a) (const Zigurat::BigInt & n)) (out Zigurat::BigInt))))

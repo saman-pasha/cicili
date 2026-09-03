@@ -13,7 +13,11 @@
 ;;;; Run:  sh test/run.sh test/c/sqlite
 
 (source "sqlite.c"
-  (make :std #t :compile #t :link ("-lsqlite.o" "-lsqlite3" "-o" "sqlite_test"))
+  ;; -Wno-unused-value: (sq.run …) answers the result code through a `({ … })'
+  ;; statement expression, and this file runs some statements for their
+  ;; effect alone; clang warns "expression result unused" for that and gcc
+  ;; does not, and Cicili treats either compiler's chatter as fatal.
+  (make :std #t :compile "-Wno-unused-value -c sqlite.c" :link ("-lsqlite.o" "-lsqlite3" "-o" "sqlite_test"))
 
   (include <sqlite3.h>)
   (import "lib/db/sqlite.cicili" :sq)

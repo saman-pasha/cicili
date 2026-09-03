@@ -55,6 +55,7 @@
               ;; emitted name is the same either way.
               (method register_module ((const std::string & name) (torch::nn::Linear m))
                       (out torch::nn::Linear))
+              (const) (method buffers () (out (t<> std::vector torch::Tensor)))
               (method to           ((torch::Device device))))
 
      ;;; ---- layers, class and holder --------------------------------
@@ -106,5 +107,19 @@
      (decl) (func torch::nn::functional::mse_loss
                   ((const torch::Tensor & input) (const torch::Tensor & target))
                   (out torch::Tensor))
+
+     ;;; ---- the sequence layers, and their options ------------------
+     (decl) (struct torch::nn::LSTMOptions
+              (method batch_first ((bool on)) (out torch::nn::LSTMOptions &)))
+     (decl) (struct torch::nn::LSTM
+              ;; forward answers a tuple: the output, then the (h, c) pair;
+              ;; ((t<> std::get 0) r) is the output
+              (method forward ((const torch::Tensor & x))
+                      (out (t<> std::tuple torch::Tensor (t<> std::tuple torch::Tensor torch::Tensor)))))
+     (decl) (struct torch::nn::Embedding
+              (method forward ((const torch::Tensor & ids)) (out torch::Tensor)))
+     (decl) (struct torch::nn::LayerNormOptions)
+     (decl) (struct torch::nn::LayerNorm
+              (method forward ((const torch::Tensor & x)) (out torch::Tensor)))
 
      ))

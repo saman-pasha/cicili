@@ -20,7 +20,14 @@
 ;;;; Run:  sh test/run.sh test/c/curl-tls
 
 (source "curl-tls.c"
-  (make :std #t :compile #t :link ("-lcurl-tls.o" "-lcurl" "-o" "curl_tls_test"))
+  ;; HOMEBREW'S libcurl WHERE THERE IS ONE, before the system's. Apple's own
+  ;; libcurl is built on SecureTransport, which does not take a self-signed
+  ;; certificate through CURLOPT_CAINFO and answers a receive error with
+  ;; verification off -- so with it every trust check below fails for a reason
+  ;; that is not the binding's. A -I or -L that names nothing is ignored, so
+  ;; Linux and the other Mac architecture cost nothing.
+  (make :std #t :compile "-I/usr/local/opt/curl/include -I/opt/homebrew/opt/curl/include -c curl-tls.c"
+        :link ("-lcurl-tls.o" "-L/usr/local/opt/curl/lib" "-L/opt/homebrew/opt/curl/lib" "-lcurl" "-o" "curl_tls_test"))
 
   (include <curl/curl.h>)
   (import "lib/net/curl.cicili" :cu)
@@ -68,9 +75,22 @@
   ;;; python3's http.server with a TLS socket wrapped round it. Written to a
   ;;; file and backgrounded, with its pid kept so it can be stopped again --
   ;;; a test that leaves a listener behind breaks the next run of itself.
+  ;;; `exec' IS THE PID FILE: `cd D && python3 … &' backgrounds a subshell,
+  ;;; $! names that subshell, and killing it leaves python running -- which
+  ;;; is exactly what happened, and the next run then trusted the wrong
+  ;;; certificate. With exec the subshell becomes python and $! is right.
+  ;;; THE PORTS MUST BE FREE FIRST. A server left behind by an interrupted run
+  ;;; answers the wait below perfectly well -- with ITS certificate, so the
+  ;;; trusted transfer fails and every check after it reads as a binding bug.
+  ;;; Answers 1 when nothing listens on either port.
+  (func ports_free () (out int)
+        (let ((char cmd [512]))
+          (snprintf cmd (sizeof cmd) "python3 -c \"import socket, sys\nfor p in (18443, 18444):\n    try:\n        socket.create_connection(('127.0.0.1', p), 0.25).close(); sys.exit(1)\n    except OSError:\n        pass\nsys.exit(0)\"")
+          (return (? (== 0 (system cmd)) 1 0))))
+
   (func start_server () (out int)
         (let ((char cmd [2048]))
-          (snprintf cmd (sizeof cmd) "cat > %s/serve.py <<'PYEOF'\nimport http.server, ssl\nsrv = http.server.HTTPServer(('127.0.0.1', 18443), http.server.SimpleHTTPRequestHandler)\nctx = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)\nctx.load_cert_chain('%s', '%s/key.pem')\nsrv.socket = ctx.wrap_socket(srv.socket, server_side=True)\nsrv.serve_forever()\nPYEOF\ncd %s && python3 serve.py >/dev/null 2>&1 & echo $! > %s/pid\ncd %s && python3 -m http.server 18444 --bind 127.0.0.1 >/dev/null 2>&1 & echo $! > %s/pid2" DIR CERT DIR DIR DIR DIR DIR)
+          (snprintf cmd (sizeof cmd) "cat > %s/serve.py <<'PYEOF'\nimport http.server, ssl\nsrv = http.server.HTTPServer(('127.0.0.1', 18443), http.server.SimpleHTTPRequestHandler)\nctx = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)\nctx.load_cert_chain('%s', '%s/key.pem')\nsrv.socket = ctx.wrap_socket(srv.socket, server_side=True)\nsrv.serve_forever()\nPYEOF\ncd %s && exec python3 serve.py >/dev/null 2>&1 & echo $! > %s/pid\ncd %s && exec python3 -m http.server 18444 --bind 127.0.0.1 >/dev/null 2>&1 & echo $! > %s/pid2" DIR CERT DIR DIR DIR DIR DIR)
           (if (!= 0 (system cmd)) (return 0))
           ;; Wait for the listener rather than sleeping a guess -- and wait in
           ;; PYTHON, not in the shell. `exec 3<>/dev/tcp/…' is a bash feature
@@ -81,9 +101,11 @@
             (snprintf wait (sizeof wait) "cat > %s/wait.py <<'PYEOF'\nimport socket, sys, time\nfor port in (18443, 18444):\n    for _ in range(40):\n        try:\n            socket.create_connection(('127.0.0.1', port), 0.25).close()\n            break\n        except OSError:\n            time.sleep(0.25)\n    else:\n        sys.exit(1)\nsys.exit(0)\nPYEOF\npython3 %s/wait.py" DIR DIR)
             (return (? (== 0 (system wait)) 1 0)))))
 
+  ;;; ...and wait for the ports to close before answering, so a run that
+  ;;; starts right after this one finds them free rather than half-dead.
   (func stop_server ()
-        (let ((char cmd [512]))
-          (snprintf cmd (sizeof cmd) "kill $(cat %s/pid) $(cat %s/pid2) 2>/dev/null; rm -rf %s" DIR DIR DIR)
+        (let ((char cmd [1024]))
+          (snprintf cmd (sizeof cmd) "kill $(cat %s/pid) $(cat %s/pid2) 2>/dev/null; rm -rf %s; python3 -c \"import socket, time\nfor _ in range(40):\n    try:\n        socket.create_connection(('127.0.0.1', 18443), 0.25).close(); time.sleep(0.25)\n    except OSError:\n        break\"" DIR DIR DIR)
           (system cmd)))
 
   (func have ((const char * tool)) (out int)
@@ -98,11 +120,18 @@
     ;; https:// URL, and nothing about a successful link says which one this is.
     (check "this libcurl was built with TLS" (cast llong (cu.has-ssl)) 1)
     (printf "     backend: %s\n" (cu.ssl-version))
+    ;; Apple's SecureTransport build cannot take part -- see the make line
+    (if (!= nil (strstr (cu.ssl-version) "SecureTransport"))
+        (block
+          (printf "skip -- this is Apple's SecureTransport libcurl, which ignores CURLOPT_CAINFO; brew install curl\n")
+          (return 0)))
 
     (if (or (== 0 (have "openssl")) (== 0 (have "python3")))
         (block
           (printf "skip -- openssl and python3 are needed to raise a TLS server\n")
           (return 0)))
+    (if (== 0 (ports_free))
+        (block (printf "skip -- 127.0.0.1:18443 or :18444 is already taken (a server left behind? kill it)\n") (return 0)))
     (if (== 0 (make_cert))
         (block (printf "skip -- could not make a self-signed certificate\n") (return 0)))
     (if (== 0 (start_server))
@@ -142,7 +171,8 @@
           (check "handshake lands between connect and done"
                  (cast llong (and (>= tls conn) (<= tls total))) 1)
           (check "verify-result is clean" (cast llong vr) 0)
-          (check_str "scheme is HTTPS" s "HTTPS")
+          ;; libcurl answered "HTTPS" up to 8.x and "https" after; either is the scheme
+          (check "scheme is https" (cast llong (== 0 (strcasecmp s "https"))) 1)
           (check "and the port is the one asked for" (cast llong port) 18443))
         (cu.free-buffer body))
       (cu.reset h)

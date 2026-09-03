@@ -1,0 +1,45 @@
+;;;; Cicili declarations for ZiguratIP -- the C++ classes cocolog's modules
+;;;; stand on, as type inference sees them.
+;;;;
+;;;;     (import "lib/cpp/zigurat/zigurat.cicili")        ; everything
+;;;;     (import "lib/cpp/zigurat/bigint.cicili")         ; or one part
+;;;;
+;;;; Requires in the target: (make :cpp #t), the ZiguratIP headers on the
+;;;; include path (a built checkout's home/include), and the (include ...)
+;;;; of whichever header the part wraps -- <bigint.hpp>, <shahelper.hpp>,
+;;;; <aes.hpp>, <der.hpp>, <x509.hpp>, <tlsstream.hpp> -- plus
+;;;; <bufferstream.hpp> for the streams every one of them speaks.
+;;;;
+;;;; NOTHING HERE EMITS C++. As lib/cpp/torch does for libtorch and
+;;;; lib/cpp/opencv for OpenCV, these files exist so a Cicili program can
+;;;; write (Zigurat::DER::encode_length b n) and (($ big is_zero)) and have
+;;;; the transpiler know what it is looking at; the real declarations come
+;;;; from the real headers at compile time.
+;;;;
+;;;; ONE SIGNATURE PER NAME is the language's rule, and ZiguratIP overloads
+;;;; freely -- so each file declares the ONE form a program reaches for and
+;;;; says which. Where a class offers a getter and a setter under one name
+;;;; (BigInt::sign, bufferstream::string) the getter is declared and the
+;;;; program gets the other effect another way: a bufferstream is built
+;;;; FROM a string rather than set to one, a BigInt is negated by
+;;;; subtraction rather than by sign(true).
+;;;;
+;;;; stream.cicili is first: every other part takes and answers
+;;;; Zigurat::binarystream&, and bufferstream is the concrete one that
+;;;; holds bytes in memory.
+;;; This file is part of the :zigurat library and owns its package; the full
+;;; explanation is in doc/DOC-C.md, under "A library's package".
+(DEFPACKAGE :zigurat
+  (:USE :COMMON-LISP)
+  (:IMPORT-FROM :COMMON-LISP-USER "import" "generic" "cicili")
+  (:EXPORT "vector<" "consts<"))
+
+(IN-PACKAGE :zigurat)
+
+(import "./stream.cicili")
+(import "./bigint.cicili")
+(import "./sha.cicili")
+(import "./aes.cicili")
+(import "./der.cicili")
+(import "./x509.cicili")
+(import "./tls.cicili")

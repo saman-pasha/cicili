@@ -101,8 +101,6 @@
      ;;; Declared as opaque: Cicili needs the NAME to type things with, and
      ;;; libtorch's real definitions are none of its business.
      (decl) (struct c10::IntArrayRef)
-     (decl) (struct torch::TensorOptions)
-     (decl) (struct torch::Device)
      (decl) (struct torch::Scalar)
      (decl) (struct torch::ScalarType)
 
@@ -210,7 +208,19 @@
               (const) (method to      ((torch::ScalarType ty))   (out torch::Tensor))
               (const) (method (t<> to double) ()                 (out torch::Tensor))
 
-              (const) (method print       ()))
+              (const) (method print       ())
+              ;;; the shape and device surface a lazy-graph engine reads
+              (const) (method select      ((i64 dim) (i64 index)) (out torch::Tensor))
+              (const) (method transpose   ((i64 a) (i64 b)) (out torch::Tensor))
+              (const) (method masked_fill ((const torch::Tensor & mask) (torch::Scalar value)) (out torch::Tensor))
+              (const) (method triu        ((i64 diagonal)) (out torch::Tensor))
+              (const) (method neg         ()          (out torch::Tensor))
+              (const) (method device      ()          (out torch::Device))
+              (const) (method scalar_type ()          (out torch::ScalarType))
+              (const) (method options     ()          (out torch::TensorOptions))
+              (const) (method is_leaf     ()          (out bool))
+              (method set_requires_grad   ((bool on)) (out torch::Tensor &))
+              (method copy_               ((const torch::Tensor & src)) (out torch::Tensor &)))
 
      ;;; ---- construction -------------------------------------------
      ;;; The size argument is an IntArrayRef -- write (dims 2 3), the macro
@@ -293,6 +303,45 @@
      ;;; destructor doing the work, which is exactly what letin* is for.
      (decl) (struct torch::NoGradGuard)
      (decl) (struct torch::AutoGradMode)
+
+     ;;; ---- more of the surface, for a program that runs its own graph ----
+     (typedef torch::ScalarType torch::kFloat)
+     (typedef torch::ScalarType torch::kLong)
+     (typedef torch::ScalarType torch::kBool)
+     (typedef int torch::kCPU)
+     (typedef int torch::kCUDA)
+     (typedef int torch::kMeta)
+     (decl) (func torch::relu ((const torch::Tensor & x)) (out torch::Tensor))
+     (decl) (func torch::sigmoid ((const torch::Tensor & x)) (out torch::Tensor))
+     (decl) (func torch::tanh ((const torch::Tensor & x)) (out torch::Tensor))
+     (decl) (func torch::gelu ((const torch::Tensor & x)) (out torch::Tensor))
+     (decl) (func torch::softmax ((const torch::Tensor & x) (i64 dim)) (out torch::Tensor))
+     (decl) (func torch::log_softmax ((const torch::Tensor & x) (i64 dim)) (out torch::Tensor))
+     (decl) (func torch::matmul ((const torch::Tensor & a) (const torch::Tensor & b)) (out torch::Tensor))
+     (decl) (func torch::arange ((double n)) (out torch::Tensor))
+     (decl) (func torch::eye ((i64 n)) (out torch::Tensor))
+     (decl) (func torch::randperm ((i64 n)) (out torch::Tensor))
+     (decl) (func torch::zeros_like ((const torch::Tensor & x)) (out torch::Tensor))
+     (decl) (func torch::empty_like ((const torch::Tensor & x)) (out torch::Tensor))
+     (decl) (func torch::nll_loss ((const torch::Tensor & out) (const torch::Tensor & target)) (out torch::Tensor))
+     (decl) (func torch::cross_entropy_loss ((const torch::Tensor & out) (const torch::Tensor & target)) (out torch::Tensor))
+     (decl) (func torch::binary_cross_entropy ((const torch::Tensor & out) (const torch::Tensor & target)) (out torch::Tensor))
+     (decl) (func torch::mse_loss ((const torch::Tensor & out) (const torch::Tensor & target)) (out torch::Tensor))
+     (decl) (func torch::autograd::grad ((c10::IntArrayRef outputs) (const (t<> std::vector torch::Tensor) & inputs)
+                                         (c10::IntArrayRef grad_outputs) (bool retain_graph) (bool create_graph) (bool allow_unused))
+                  (out (t<> std::vector torch::Tensor)))
+     (decl) (func torch::cuda::is_available () (out bool))
+     (decl) (func torch::cuda::device_count () (out size_t))
+     ;; torch::Device: (torch::Device torch::kCUDA 0); the index test is by type
+     ;; and, only when both name one, by index -- `cuda' IS `cuda:0'
+     (decl) (struct torch::Device
+              (const) (method has_index () (out bool))
+              (const) (method index () (out int))
+              (const) (method is_cuda () (out bool))
+              (const) (method type () (out int)))
+     (decl) (struct torch::TensorOptions
+              (const) (method dtype ((torch::ScalarType t)) (out torch::TensorOptions))
+              (const) (method device ((torch::Device d)) (out torch::TensorOptions)))
 
      ;;; ---- serialisation -------------------------------------------
      (decl) (func torch::manual_seed ((u64 seed)))

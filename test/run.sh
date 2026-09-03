@@ -19,8 +19,11 @@
 # that: it compiles faster, and a failure is debuggable where an -O3 one is
 # not. Run the suite plain.
 #
-# test/haskell is skipped: the haskell prelude load is commented out in
-# cicili.lisp while std is the focus, so those cannot pass right now.
+# test/haskell is not walked: the haskell prelude load is commented out in
+# cicili.lisp while std is the focus, and the tests of the haskell layer
+# over std live there too (haskell-concepts, btree-persistent, ownlist);
+# the first two need gcc's nested functions and closures, which clang
+# refuses. Run those by hand.
 
 cd "$(dirname "$0")/.." || exit 1
 ROOT=$(pwd)
