@@ -1,6 +1,7 @@
 #include "torch_stub.hpp"
 #include <cstdio>
 #include <memory>
+#include <cstdlib>
 #include "../../example/classifier.hpp"
 #include "../../example/classifier.cpp"
 int bad  = 0;
@@ -8,7 +9,7 @@ void check (const char * what , long got , long want ) {
   if (got  ==  want  )
     printf ("ok   %-38s %ld\n", what , got );
   else
-    { /* block118 */
+    { /* block119 */
       printf ("FAIL %-38s got %ld want %ld\n", what , got , want );
       (++bad );
     }
@@ -17,7 +18,7 @@ void check_true (const char * what , int cond ) {
   if (cond )
     printf ("ok   %-38s\n", what );
   else
-    { /* block124 */
+    { /* block125 */
       printf ("FAIL %-38s\n", what );
       (++bad );
     }
@@ -28,34 +29,34 @@ void fill (float * px , long n , long seed ) {
   }
 }
 int main () {
-  { /* let132 */
+  { /* let133 */
     float px [784];
     float qx [784];
     // ----------
     check ("net_inputs", net_inputs (), 784);
-    ({ /* letn135 */
+    ({ /* letn136 */
       std::shared_ptr<Classifier> net  = net_load ("");
       // ----------
       check_true ("net_load answers a handle", ((net . get)() !=  NULL  ));
       check_true ("the handle owns one net", ((net . use_count)() ==  1 ));
       fill (px , 784, 0);
       fill (qx , 784, 137);
-      ({ /* letn138 */
+      ({ /* letn139 */
         long a  = net_predict (net , px , 784);
         // ----------
         check_true ("a class in range", ((a  >=  0 ) &&  (a  <  10 ) ));
         check ("the same input twice agrees", net_predict (net , px , 784), a );
-        ({ /* letn141 */
+        ({ /* letn142 */
           long b  = net_predict (net , qx , 784);
           // ----------
           check_true ("a class in range, second input", ((b  >=  0 ) &&  (b  <  10 ) ));
         });
       });
-      ({ /* letn144 */
+      ({ /* letn145 */
         long sa  = net_score (net , px , 784);
         // ----------
         check ("the same input scores the same", net_score (net , px , 784), sa );
-        ({ /* letn147 */
+        ({ /* letn148 */
           long sb  = net_score (net , qx , 784);
           // ----------
           check_true ("a different input scores differently", (sa  !=  sb  ));

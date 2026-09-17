@@ -34,6 +34,14 @@
   (include "torch_stub.hpp")
   (include <cstdio>)
   (include <memory>)
+  ;; AND WHAT THE FRAGMENT USES, ASKED FOR BY NAME. A fragment carries no
+  ;; includes of its own -- that is the point of it -- so every header its
+  ;; text needs is the consumer's to list, exactly as a Zigurat BEGIN CPP
+  ;; block lists them. `mnist_dir' calls getenv, and the day libc++ stopped
+  ;; handing <cstdlib> out through <memory> this test stopped compiling
+  ;; while nothing about the emission had changed. Which is the thing this
+  ;; test exists to notice.
+  (include <cstdlib>)
 
   ;; the emitted fragments, in the order a consumer splices them: declarations
   ;; where the header goes, definitions where the implementation goes
