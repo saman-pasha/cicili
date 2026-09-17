@@ -9,10 +9,21 @@
   (when (probe-file quicklisp-init)
     (load quicklisp-init)))
 
+;; `--version' ANSWERS ON STDOUT AND NOTHING ELSE DOES, so a script reads
+;; V=$(sbcl --script cicili.lisp --version) and gets a bare number. It is
+;; answered HERE, before the system is loaded and the prelude read: asking
+;; what this is must not cost a transpiler's startup, and the number comes
+;; from cicili.asd's :version, which is the only place it is written.
+(when (member "--version" (uiop:command-line-arguments) :test #'string=)
+  (format t "~A~%" (asdf:component-version (asdf:find-system "cicili")))
+  (uiop:quit 0))
+
 ;; error handling and debuging
 (setf *print-pretty* t)
 (setf *print-vector-length* 500)
-(format t "~&sbcl reserved memory size: ~D Bs~%" (sb-ext:dynamic-space-size))
+;; DIAGNOSTICS GO TO STDERR. This line used to print on stdout, ahead of
+;; everything a caller might want to read from there.
+(format *error-output* "~&sbcl reserved memory size: ~D Bs~%" (sb-ext:dynamic-space-size))
 
 (asdf:load-system "cicili")
 

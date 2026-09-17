@@ -94,9 +94,27 @@ run_one() {
   fi
 }
 
+# THE VERSION ANSWERS, AND IT ANSWERS ALONE. Not a transpile target and not
+# a number this file knows: the SHAPE only -- a bare MAJOR.MINOR.PATCH on
+# stdout with the startup diagnostics kept off it -- because three
+# repositories read that number to say which transpiler built them, and a
+# case naming the number would be a second place to edit on every bump.
+version_case() {
+  printf '%-30s' 'cicili --version'
+  v=$(sbcl --script cicili.lisp --version 2>/dev/null)
+  if printf '%s' "$v" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+$'; then
+    echo 'GREEN'
+    pass=$((pass+1))
+  else
+    echo "RED  stdout is not a bare number: $v"
+    fail=$((fail+1)); failed="$failed cicili.lisp:--version"
+  fi
+}
+
 if [ $# -gt 0 ]; then
   for a in "$@"; do run_one "${a%.cicili}.cicili"; done
 else
+  version_case
   for f in $(find test/c test/std test/cpp -name '*.cicili' 2>/dev/null | sort); do
     run_one "$f"
   done

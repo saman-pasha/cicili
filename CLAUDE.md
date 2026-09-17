@@ -14,6 +14,30 @@ change touches.
 
 **This file is the exception the owner asked for**: notes, not machinery.
 
+## The version, and when it moves
+
+```bash
+sbcl --script cicili.lisp --version     # 1.0.0, and nothing else on stdout
+```
+
+It lives in **one place** — `cicili.asd`'s `:version` — and `--version` reads
+it back through ASDF and answers before the system is even loaded, so asking
+what this is costs nothing and `V=$(sbcl --script cicili.lisp --version)` gets a
+bare number. The startup diagnostics (`sbcl reserved memory size`) go to stderr
+for the same reason: stdout is the answer, not the commentary.
+
+**The patch is the default**: bump it for an ordinary change, in the *same
+commit* as the change, and keep bumping it. The minor is for a clause, a
+library or a macro a target can now reach; the major for something that
+transpiled and no longer does, or emits different C for the same source.
+Neither of those two is *taken* — it is proposed, with what changed observably,
+and the owner decides. A documentation-only commit does not bump: there is
+nothing new for the number to describe. Because this repository is an INPUT to
+the others, a bump here is what a downstream session quotes when it says which
+transpiler built its tree, so bumping late is worse than bumping loudly.
+`test/run.sh` pins the SHAPE and deliberately not the number — a case naming
+the number would be a second place to edit, and the one somebody forgets.
+
 ## Cicili is Lisp-syntax C, and the places it is not
 
 Every line below was paid for by a build that failed, and most of them failed
