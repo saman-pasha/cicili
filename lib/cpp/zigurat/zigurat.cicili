@@ -1,5 +1,5 @@
-;;;; Cicili declarations for ZiguratIP -- the C++ classes cocolog's modules
-;;;; stand on, as type inference sees them.
+;;;; Cicili declarations for ZiguratIP -- the C++ classes a module written
+;;;; against ZiguratIP stands on, as type inference sees them.
 ;;;;
 ;;;;     (import "lib/cpp/zigurat/zigurat.cicili")        ; everything
 ;;;;     (import "lib/cpp/zigurat/bigint.cicili")         ; or one part

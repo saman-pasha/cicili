@@ -6,11 +6,11 @@ and what has already cost real time to rediscover.
 
 ## This repository is an INPUT to the others
 
-cocolog and The Coco are written in Cicili and treat it as frozen: they may
-diagnose a transpiler problem and propose a patch, never apply one. So a change
-here is a change to the ground three repositories stand on, and the burden of
-proof is `sh test/run.sh` plus a rebuild of whatever downstream repository the
-change touches.
+The projects written in Cicili treat it as frozen: they may diagnose a
+transpiler problem and propose a patch, never apply one. So a change here is a
+change to the ground every one of them stands on, and the burden of proof is
+`sh test/run.sh` plus a rebuild of whatever downstream repository the change
+touches.
 
 **This file is the exception the owner asked for**: notes, not machinery.
 
@@ -187,7 +187,7 @@ the worked example: `(decl) (struct torch::Tensor (const) (method dim ()
 emitting nothing, and a `:cpp #t` target that imports it INSIDE the target
 writes libtorch as Cicili clauses -- `(($ t sizes))`, `(letin* ((v ((t<>
 std::vector int)))) …)`, `(try … (catch ((const std::exception & e)) …))`.
-Downstream, cocolog's rule for a C++ module is one such file per library
+The rule downstream holds a C++ module to is one such file per library
 and no C++ pasted into `(code "…")`; `doc/DOC-CPP.md` is the reference,
 and its limits are real: one signature per name, no `operator` (use the
 function forms), a `code` result has no type.
