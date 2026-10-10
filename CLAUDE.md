@@ -17,7 +17,7 @@ touches.
 ## The version, and when it moves
 
 ```bash
-sbcl --script cicili.lisp --version     # 1.0.0, and nothing else on stdout
+sbcl --script cicili.lisp --version     # 1.0.1, and nothing else on stdout
 ```
 
 It lives in **one place** — `cicili.asd`'s `:version` — and `--version` reads

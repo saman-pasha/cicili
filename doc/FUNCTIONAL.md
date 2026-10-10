@@ -207,7 +207,7 @@ Cicili's C core clauses are described in another doc [here](DOC-C.md).
 * A C compiler is required for compiling and linking. `config.lisp` uses [clang](https://clang.llvm.org) on macOS and [gcc](https://gcc.gnu.org) on Linux; `apt` or `brew` can install either. Currently tested with `Apple clang 21.0.0` on macOS and `gcc 15.2.0` on Linux.
 * Cicili uses [Libtool](https://www.gnu.org/software/libtool) as default for perfoming better compiling and linking `C` code. Install it for your platform and put it in the `PATH` environment variable. Compiler and linker could be set in `config.lisp` file. Current used version: `(GNU libtool) 2.5.4`
 * Download and copy cicili folder to `~/common-lisp` for enabling [ASDF](https://common-lisp.net/project/asdf) access to cicili package.
-* Install [Quicklisp](https://quicklisp.org)
+* Install [Quicklisp](https://quicklisp.org) into `~/quicklisp`, or anywhere else with `QUICKLISP_HOME` exported: `cicili.lisp` runs under `sbcl --script`, which reads no `~/.sbclrc`, and loads Quicklisp from one of those two.
 * Run `(ql:quickload "cicili")` in `sbcl`
 * Write your own cicili code and save it in `.cicili` extension.
 * Copy `cicili.lisp` file from source folder into your project path.

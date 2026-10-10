@@ -162,6 +162,9 @@ your.cicili ──read──► forms ──specify──► typed IR (sp tree, 
 2. Clone this repository. To make the package loadable through
    [ASDF](https://common-lisp.net/project/asdf)/[Quicklisp](https://quicklisp.org), place
    (or symlink) it under `~/common-lisp` and run `(ql:quickload "cicili")` once in `sbcl`.
+   `cicili.lisp` loads Quicklisp from `$QUICKLISP_HOME`, or from `~/quicklisp` when that
+   is unset or empty (`sbcl --script` reads no `~/.sbclrc`), so a Quicklisp anywhere else
+   wants `QUICKLISP_HOME` exported for every build.
 3. That's it — `cicili.lisp` is the entry point:
 
 ```sh
@@ -185,7 +188,7 @@ Write `hello.cicili`:
 ```sh
 sbcl --script /path/to/cicili.lisp hello.cicili   # writes hello.c, compiles, links
 ./main
-sbcl --script /path/to/cicili.lisp --version      # 1.0.0, alone on stdout
+sbcl --script /path/to/cicili.lisp --version      # 1.0.1, alone on stdout
 ```
 
 Read `hello.c` — that habit is the fastest way to learn the language. Then:

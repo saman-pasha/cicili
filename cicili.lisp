@@ -2,10 +2,15 @@
 
 (require "asdf")
 
-;;; The following lines added by ql:add-to-init-file:
+;;; Quicklisp from $QUICKLISP_HOME when it is set, else ~/quicklisp, its
+;;; installer's default. `sbcl --script' reads no ~/.sbclrc, so these lines
+;;; are how a build finds str and cl-ppcre.
 #-quicklisp
-(let ((quicklisp-init (merge-pathnames "quicklisp/setup.lisp"
-                                       (user-homedir-pathname))))
+(let* ((home (uiop:getenv "QUICKLISP_HOME"))
+       (quicklisp-init
+         (if (and home (plusp (length home)))
+             (merge-pathnames "setup.lisp" (uiop:ensure-directory-pathname home))
+             (merge-pathnames "quicklisp/setup.lisp" (user-homedir-pathname)))))
   (when (probe-file quicklisp-init)
     (load quicklisp-init)))
 
