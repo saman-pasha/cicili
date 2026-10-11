@@ -11,7 +11,10 @@
 ;; C keywords that stand alone as a statement and name nothing in the symbol
 ;; table, so 'specify-symbol-expr must emit them rather than resolve them
 (defvar *keywords* '(|break| |continue|))
-(defvar *attributes* '(|static| |decl|         |inline|  |register| |extern| |volatile|
+;; `inline' asks for the function to be inlined at every call, `weak' for its
+;; definition to be one the linker may replace -- what a generic's functions,
+;; instantiated in several files, need. Through 1.0.1 `inline' meant `weak'.
+(defvar *attributes* '(|static| |decl|         |inline|  |weak|    |register| |extern| |volatile|
                        |auto|   |thread-local| |atomic|   |defer|   |non-copy|
                        ;; C++ member functions. `const' is here and not in
                        ;; *modifiers* because it qualifies the method, not a

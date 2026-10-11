@@ -158,7 +158,7 @@
 ;;;; step to get wrong and no dependence on where the form stands beyond the
 ;;;; ordinary rules of C initialisation.
 ;;;;
-;;;; Neither calls the back-end constructor. Those are (inline), which is
+;;;; Neither calls the back-end constructor. Those are (weak), which is
 ;;;; __attribute__((weak)) and therefore never inlined -- a real call for what
 ;;;; is two stores. The expansion is the literal, so a maybe built in a loop
 ;;;; costs what writing the braces by hand would.

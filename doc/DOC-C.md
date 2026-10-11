@@ -139,7 +139,8 @@ applies to **the next clause only**. Several may be stacked: `(extern) (decl) (f
 | `decl` | `func`, `struct` | declaration only, no body |
 | `static` | `func`, `var`, `let` binding | `static` |
 | `extern` | `func`, `var` | `extern` |
-| `inline` | `func` | `__attribute__((weak))` |
+| `inline` | `func` | inlined at every call: `__attribute__((always_inline))` and C99's `inline` |
+| `weak` | `func` | `__attribute__((weak))`: the linker keeps one definition among several, and never inlines a call to it |
 | `auto` | `func` | `auto` storage class |
 | `register` | `var`, `let` binding | `register` |
 | `volatile` | `func`, `var`, `let` binding | `volatile` |
@@ -1303,7 +1304,12 @@ Points to know:
 * Attributes are set at declaration time, each in its own parentheses:
   * `(decl)` — declaration only, no body
   * `(static)`
-  * `(inline)` — emits `__attribute__((weak))`
+  * `(inline)` — inlined at every call: emits `__attribute__((always_inline))` and `inline`
+    (`(static) (inline)` is C99's `static inline`). Through 1.0.1 it emitted
+    `__attribute__((weak))`, which is `(weak)` now
+  * `(weak)` — emits `__attribute__((weak))`: one definition however many files
+    instantiate it, which is what a generic's functions want, and a call the
+    compiler may never inline
   * `(extern)`
   * `(auto)`
   * `(volatile)`
@@ -1516,7 +1522,7 @@ int main () {
           (member size_t low)
           (member size_t high))
 
-  (inline)
+  (weak)
   (func (<> free (<> vector a)) (((<> vector a) * vector))
         ((<> free rc (<> array a)) (aof (-> vector vec)))))
 ```

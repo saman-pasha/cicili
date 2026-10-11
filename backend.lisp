@@ -628,6 +628,7 @@
   (let ((is-static   nil)
 	    (is-declare  as-type)
 	    (is-inline   nil)
+	    (is-weak     nil)
 	    (is-extern   nil)
 	    (is-volatile nil)
 	    (is-auto     nil)
@@ -645,6 +646,7 @@
 	    ('|static|   (setq is-static   t))
 	    ('|decl|     (setq is-declare  t))
 	    ('|inline|   (setq is-inline   t))
+	    ('|weak|     (setq is-weak     t))
 	    ('|extern|   (setq is-extern   t))
 	    ('|volatile| (setq is-volatile t))
 	    ('|auto|     (setq is-auto     t))
@@ -694,8 +696,15 @@
         
         (output "~&~A" (indent (- lvl 1)))
         (when is-extern   (set-ast-line (output "extern ")))
-        (when is-inline   (set-ast-line (output "__attribute__((weak)) ")))
+        (when is-weak     (set-ast-line (output "__attribute__((weak)) ")))
+        ;; INLINE IS INLINED: `inline' alone is a hint clang weighs against
+        ;; its threshold, and gcc wants it beside `always_inline' or warns
+        ;; that the function might not be inlinable -- which this
+        ;; transpiler treats as fatal. `static inline' is the C99 form that
+        ;; needs no definition elsewhere.
+        (when is-inline   (set-ast-line (output "__attribute__((always_inline)) ")))
         (when (and is-static (not (key-eq name '|main|))) (set-ast-line (output "static ")))
+        (when is-inline   (set-ast-line (output "inline ")))
         (when is-auto     (set-ast-line (output "auto ")))
         ;; these two precede the return type; `const', `override' and `noexcept'
         ;; follow the parameter list and are emitted after it

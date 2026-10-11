@@ -91,12 +91,12 @@
 
   (impl-maybe ref a)
 
-  (inline)
+  (weak)
   (func (<> free vector a) (((<> vector a) ref vector))
         (syslog! (printf "FREE VEC: %p\n" (-> vector arr)))
         (free (-> vector arr)))
 
-  (inline)
+  (weak)
   (func (<> free vector a pointer) (((<> vector a) ** vector))
         ((<> free vector a) (cof vector)))
 
@@ -147,7 +147,7 @@
   ;;
   ;; `just' and `nothing' are the front ends, so this is a struct literal and
   ;; no call. Calling the back-end constructors instead would be a real call
-  ;; per element: they carry (inline), which emits __attribute__((weak)), and a
+  ;; per element: they carry (weak), which emits __attribute__((weak)), and a
   ;; weak symbol is one the compiler is not allowed to inline.
   (func (<> nth vector a) ((size_t index) ((<> vector a) ref vector))
         (out (<> Maybe ref a))

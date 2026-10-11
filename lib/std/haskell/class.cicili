@@ -135,9 +135,9 @@
                        (IF is-default
                            (IF (NULL params)
                                `($$$ (decl)   (func ,ct-name     () (out ,name))
-                                     (inline) (func ,def-ct-name () (out ,name) (return (,ct-name))))
+                                     (weak) (func ,def-ct-name () (out ,name) (return (,ct-name))))
                                `($$$ (decl)   (func ,ct-name ,real-params (out ,name))
-                                     (inline) (func ,def-ct-name ,real-params (out ,name)
+                                     (weak) (func ,def-ct-name ,real-params (out ,name)
                                                     (return (,ct-name ,@(MAPCAR #'(LAMBDA (param) (NTH 4 param)) params))))))
 
                            (IF (NULL params)
@@ -234,7 +234,7 @@
              (let ((,name this . #'(cof this_ptr)))
                ,@(CDDR free-def)))
 
-       (inline)
+       (weak)
        (func (<> free ,name pointer) ((,name ** this_ptr))
              (when this_ptr ((<> free ,name) (cof this_ptr))))
 

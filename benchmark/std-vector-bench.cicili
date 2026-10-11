@@ -323,7 +323,7 @@
 ;;;; 1. The rc'd nth called TWO weak functions per element. letn_cell passes the
 ;;;;    default as a closure ARGUMENT, so nothing_int() ran on every call even
 ;;;;    when the element was found, and the found path called just_int(). Both
-;;;;    carry (inline), which emits __attribute__((weak)) -- a symbol the
+;;;;    carry (weak), which emits __attribute__((weak)) -- a symbol the
 ;;;;    compiler may not inline. Making those two static inline by hand took the
 ;;;;    rc'd version from 4785 to 1894 ms: 60% of it was the calls, not the
 ;;;;    structure. The flat nth uses the brace-list front ends and calls nothing.
@@ -334,7 +334,9 @@
 ;;;;
 ;;;; Only (1) is a compiler matter and it is still there: any code forced to
 ;;;; CALL a std constructor -- an argument slot, a closure return -- pays a
-;;;; call that cannot be inlined. (inline) meaning weak is the reason.
+;;;; call that cannot be inlined. That they are weak is the reason: through
+;;;; 1.0.1 they were written (inline), which emitted weak; they are (weak) now,
+;;;; and (inline) is an attribute of its own that does inline.
 ;;;;
 ;;;; Sharing was not removed, it was moved. (new_rc vector ...) puts the vector
 ;;;; in an rc for callers who want one, and only they pay for it.

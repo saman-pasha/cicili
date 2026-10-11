@@ -95,7 +95,7 @@
   ;; the last owner frees the payload, the count and the box; everyone else
   ;; just drops the count. A dead or empty rc is a no-op, so double freeing is
   ;; not a special case anyone has to think about.
-  (inline)
+  (weak)
   (func (<> free rc a) (((<> rc a) * rc))
         (syslog! (printf "FREE RC: %p\n" (-> rc ptr)))
         (when (and (-> rc ptr) (-> rc count))
@@ -107,7 +107,7 @@
                 (free (-> rc ptr)))
               (-- (cof (-> rc count))))))
 
-  (inline)
+  (weak)
   (func (<> free rc a pointer) (((<> rc a) ** rc))
         ((<> free rc a) (cof rc)))
 
@@ -205,10 +205,10 @@
   (impl-maybe ref a)
 
   (guard __ARC_ATOMIC_IMPL_H_
-    (inline)
+    (weak)
     (func __cicili_arc_incr ((size_t * p)) (out size_t)
           (code "return __sync_add_and_fetch(p, 1);"))
-    (inline)
+    (weak)
     (func __cicili_arc_decr ((size_t * p)) (out size_t)
           (code "return __sync_sub_and_fetch(p, 1);")))
 
@@ -216,7 +216,7 @@
   ;; thread that sees zero is the one that took it there -- exactly one thread,
   ;; whatever the interleaving. rc reads the count and then decrements, which is
   ;; two steps and a race between them; that gap is the whole reason arc exists.
-  (inline)
+  (weak)
   (func (<> free arc a) (((<> arc a) * arc))
         (syslog! (printf "FREE ARC: %p\n" (-> arc ptr)))
         (when (and (-> arc ptr) (-> arc count))
@@ -226,7 +226,7 @@
                 (free (-> arc count))
                 (free (-> arc ptr))))))
 
-  (inline)
+  (weak)
   (func (<> free arc a pointer) (((<> arc a) ** arc))
         ((<> free arc a) (cof arc)))
 
@@ -337,7 +337,7 @@
                   (set (-> fresh ptr) (-> box ptr) (-> fresh count) (-> box count))
                   fresh)))
 
-  (inline)
+  (weak)
   (func (<> get name) ((name box))
         (out (<> Maybe ref a))
         (when (== box nil) (return (nothing)))
@@ -348,13 +348,13 @@
           ((<> free rc a) box)
           (free box)))
 
-  (inline)
+  (weak)
   (func (<> free name) ((name * box))
         (when box
           ((<> free name value) (cof box))
           (set (cof box) nil)))
 
-  (inline)
+  (weak)
   (func (<> free name pointer) ((name ** box))
         (when box ((<> free name) (cof box))))
 

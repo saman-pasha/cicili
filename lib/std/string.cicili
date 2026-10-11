@@ -72,11 +72,11 @@
 
   (impl-vector char)
 
-  (inline)
+  (weak)
   (func (<> free string) ((string ref str))
         ((<> free vector char) str))
 
-  (inline)
+  (weak)
   (func (<> free string pointer) ((string ** str))
         ((<> free vector char) (cof str)))
 

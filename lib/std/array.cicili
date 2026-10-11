@@ -57,12 +57,12 @@
   ;; the payload carrier for (<> nth array a)
   (impl-maybe ref a)
   
-  (inline)
+  (weak)
   (func (<> free array a) (((<> array a) ref array))
         (syslog! (printf "FREE ARR: %p\n" (-> array arr)))
         (free (-> array arr)))
 
-  (inline)
+  (weak)
   (func (<> free array a pointer) (((<> array a) ** array))
         ((<> free array a) (cof array)))
 
@@ -101,7 +101,7 @@
   ;;
   ;; `just' / `nothing' are brace lists typed by the return slot. Calling
   ;; (<> just ref a) instead would be a real call per element: those are
-  ;; (inline), i.e. __attribute__((weak)), which is never inlined -- 4x on the
+  ;; (weak), i.e. __attribute__((weak)), which is never inlined -- 4x on the
   ;; nth benchmark.
   (func (<> nth array a) ((size_t index) ((<> array a) ref array))
         (out (<> Maybe ref a))

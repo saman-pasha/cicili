@@ -148,12 +148,12 @@
     ;; one nested designator to the payload: reaching it positionally would be
     ;; initialising a subobject through elided braces, which -Wall rejects
     ;; (-Wmissing-braces) and this project builds -Werror
-    (inline)
+    (weak)
     (func (<> right mod-e e mod-a a) ((a mod-a value))
           (out (<> Either mod-e e mod-a a))
           (return (cast (<> Either mod-e e mod-a a) '{ $ctor RIGHT_CTOR $data.right.value value })))
 
-    (inline)
+    (weak)
     (func (<> left mod-e e mod-a a) ((e mod-e error))
           (out (<> Either mod-e e mod-a a))
           (return (cast (<> Either mod-e e mod-a a) '{ $ctor LEFT_CTOR $data.left.error error }))))
@@ -167,7 +167,7 @@
 ;;;; and the slot types it -- `return' casts to the out type, a declaration
 ;;;; casts to the declared type.
 ;;;;
-;;;; Neither calls the back-end constructor. Those are (inline), which is
+;;;; Neither calls the back-end constructor. Those are (weak), which is
 ;;;; __attribute__((weak)) and therefore never inlined -- a real call for what
 ;;;; is two stores.
 ;;;; ------------------------------------------------------------------

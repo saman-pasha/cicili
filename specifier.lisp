@@ -1589,6 +1589,7 @@
            (is-static  (if (key-eq name '|main|) t nil))
 	       (is-declare  nil)
 	       (is-inline   nil)
+	       (is-weak     nil)
 	       (is-extern   nil)
 	       (is-volatile nil)
 	       (is-auto     nil)
@@ -1622,14 +1623,17 @@
 	       (body (if has-out (nthcdr 4 def) (nthcdr 3 def)))
            (function-specifier nil))
 
+      ;; a lambda was marked `inline' when `inline' meant weak; it is marked
+      ;; `weak', so what it emits does not change
       (when (or (key-eq (car def) '|lambda|) (key-eq (car def) '|lambda*|))
-        (setq is-inline t))
-      
+        (setq is-weak t))
+
       (dolist (attr attrs)
         (let ((name (car attr)))
 	      (cond ((key-eq name '|static|)   (setq is-static   t))
 	            ((key-eq name '|decl|)     (setq is-declare  t))
 	            ((key-eq name '|inline|)   (setq is-inline   t))
+	            ((key-eq name '|weak|)     (setq is-weak     t))
 	            ((key-eq name '|extern|)   (setq is-extern   t))
 	            ((key-eq name '|volatile|) (setq is-volatile t))
 	            ((key-eq name '|auto|)     (setq is-auto     t))
@@ -1645,6 +1649,8 @@
                 ((key-eq name '|dtor|)     (setq is-dtor     t))
 	            (t (error (format nil "unknown function attribute ~A" attr))))))
       (when (and is-declare is-inline) (error (format nil "inline functions should be defined ~A" def)))
+      (when (and is-declare is-weak) (error (format nil "weak functions should be defined ~A" def)))
+      (when (and is-inline is-weak) (error (format nil "a function is inline or weak, not both ~A" def)))
       (when (< (length def) 3) (error (format nil "wrong function definition ~A" def)))
       (when (and is-declare body)
         (error (format nil "function declaration with body, may be 'out' missed '~A' ~A" name (first body))))
@@ -1654,6 +1660,7 @@
 	    (when is-extern   (push (cons '|extern|   t) attributes))
 	    (when is-volatile (push (cons '|volatile| t) attributes))
 	    (when is-inline   (push (cons '|inline|   t) attributes))
+	    (when is-weak     (push (cons '|weak|     t) attributes))
 	    (when is-static   (push (cons '|static|   t) attributes))
 	    (when is-auto     (push (cons '|auto|     t) attributes))
 	    (when is-declare  (push (cons '|decl|     t) attributes))

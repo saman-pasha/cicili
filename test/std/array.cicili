@@ -366,7 +366,7 @@
 ;;;;   Cicili 430 431 428 428 432
 ;;;;
 ;;;; Building the maybe through the (<> just maybe int) FUNCTION instead of the
-;;;; struct literal costs 1692 ms -- (inline) emits __attribute__((weak)), which
+;;;; struct literal costs 1692 ms -- (weak) emits __attribute__((weak)), which
 ;;;; the compiler is not allowed to inline. This is why `just' and `nothing' are
 ;;;; front-end macros that expand to the literal rather than wrappers over the
 ;;;; back-end constructors.

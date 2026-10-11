@@ -188,7 +188,7 @@ Write `hello.cicili`:
 ```sh
 sbcl --script /path/to/cicili.lisp hello.cicili   # writes hello.c, compiles, links
 ./main
-sbcl --script /path/to/cicili.lisp --version      # 1.0.1, alone on stdout
+sbcl --script /path/to/cicili.lisp --version      # 2.0.0, alone on stdout
 ```
 
 Read `hello.c` — that habit is the fastest way to learn the language. Then:
@@ -235,7 +235,8 @@ Conventions worth knowing:
 * `letin` binds `new`-constructed values and frees them, in reverse order, when the scope
   ends — the std types are designed around it.
 * A `move` binding transfers ownership; using a moved variable again is a compile error.
-* `(inline)` emits `__attribute__((weak))` — one definition serves every translation unit.
+* `(weak)` emits `__attribute__((weak))` — one definition serves every translation unit;
+  `(inline)` is inlined at every call (`always_inline`). Through 1.0.1 `(inline)` was weak.
 * `--syslog` builds show every `NEW` / `FREE` / `CLONE` / `GROW`, so leaks are visible
   before you reach for `leaks` or valgrind — and the suite runs clean under both.
 

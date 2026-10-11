@@ -63,7 +63,7 @@
   ;; (lib/std/vector.cicili:152), for exactly that reason.
   ;;
   ;; `just' and `nothing' are the front ends, so this is a struct literal and no
-  ;; call. The back-end constructors carry (inline), which emits
+  ;; call. The back-end constructors carry (weak), which emits
   ;; __attribute__((weak)), and a weak symbol is one the compiler may not inline.
   (func (<> get cell a) (((<> cell a) ref cell))
         (out (<> Maybe ref a))
@@ -71,14 +71,14 @@
             (return (just (-> cell ptr)))
           (return (nothing))))
 
-  (inline)
+  (weak)
   (func (<> free cell a) (((<> cell a) * cell))
         (syslog! (printf "FREE CELL: %p\n" (-> cell ptr)))
         (when (-> cell ptr)
           ((<> free a) (-> cell ptr))
           (free (-> cell ptr))))
 
-  (inline)
+  (weak)
   (func (<> free cell a pointer) (((<> cell a) ** cell))
         ((<> free cell a) (cof cell)))
 

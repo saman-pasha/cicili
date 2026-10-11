@@ -26,6 +26,13 @@
   ;; static: not visible outside this translation unit
   (static) (func triple ((int n)) (out int) (return (* n 3)))
 
+  ;; inline: inlined at every call -- `always_inline' beside C99's `static
+  ;; inline', which is what function.c shows. weak: a definition the linker
+  ;; may replace, and so one no call is ever inlined to; through 1.0.1 that
+  ;; was what (inline) emitted.
+  (static) (inline) (func quadruple ((int n)) (out int) (return (* n 4)))
+  (weak) (func halve ((int n)) (out int) (return (/ n 2)))
+
   ;; An unnamed parameter belongs on a DECLARATION. Omitting the name in a
   ;; definition is a C23 extension, which -Werror rejects, so a definition names
   ;; every parameter even when the body ignores one.
@@ -61,6 +68,8 @@
       ;; ---- calling ---------------------------------------------------
       (+= bad (check "plain call" (add 20 22) 42))
       (+= bad (check "static function" (triple 14) 42))
+      (+= bad (check "inline function" (quadruple 10) 40))
+      (+= bad (check "weak function" (halve 84) 42))
       (+= bad (check "unnamed parameter" (ignores_second 42 99) 42))
 
       (let ((int slot . 0))
