@@ -1532,7 +1532,7 @@ Three access operators:
 | operator | meaning |
 |---|---|
 | `($ obj member)` | `obj.member` — value member access; chains: `($ a b c)` is `a.b.c` |
-| `(-> ptr member)` | `ptr->member` |
+| `(-> ptr member)` | `ptr->member`; `ptr` may be a call: `(-> (f x) m)` is `f(x)->m` |
 | `(=> obj member arg…)` | calls a function **stored in** a member |
 
 `=>` is for a member that holds a function pointer — `(member func resolve ((char * prob)) (out char *))`
@@ -1545,6 +1545,14 @@ object you give it. To reach a member of a nested struct, hand it that struct:
 ```cicili
 (=> ($ emp duty) describe 6)     ; not (=> emp duty describe 6)
 ```
+
+The object of `->` and of `=>` may be a **call to a function by name**: the call's type is
+what the function returns, so `(-> (chain_tail c) value)` reads through the pointer
+`chain_tail` returns and `(=> (duty_of e) describe 7)` calls the function in the struct
+`duty_of` returns (2.0.1; through 2.0.0 both refused, `pointer storage not found` and
+`type of the object not found`). A call through a function pointer — a variable or a member
+holding one — or a C++ method's still has no type to read: dereference it,
+`($ (cof (($ h pick) n)) value)`.
 
 ### Lambda
 > tested in [`test/c/function.cicili`](../test/c/function.cicili)

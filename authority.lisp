@@ -148,6 +148,28 @@
                  (deep-storageof id  (default spec))
                  ;; (combine-types (deep-storageof-name id (cons (name spec) full-name) (default spec)) spec)
                  )
+                ;; A CALL'S STORAGE IS ITS CALLEE'S DECLARATION, whose `typeof'
+                ;; is what it returns, so (-> (f x) m) finds m on f's return
+                ;; type as (-> p m) finds it on p's. Without this the arrow
+                ;; raised "pointer storage not found" on any call, and only
+                ;; ($ (cof (f x)) m) -- which never asks -- reached a member
+                ;; through one. A call by NAME only, and the name looked up
+                ;; rather than walked: a callee that is itself an expression
+                ;; -- a C++ method, (($ v size)) -- would be resolved through
+                ;; types Cicili may never have seen (mvccs-lib's `dvec_t'),
+                ;; and through a function pointer the storage is the
+                ;; pointer's typedef, not the return type (func-typedef-of<).
+                ;; Both stay unknown, as before.
+                ((eql const-val '|@CALL|)
+                 (let* ((callee-spec (name spec))
+                        (callee-name (cond ((symbolp callee-spec) callee-spec)
+                                           ((and (typep callee-spec 'sp)
+                                                 (eql (construct callee-spec) '|@ATOM|)
+                                                 (key-eq (name callee-spec) '|@SYMBOL|))
+                                            (peel-type-tag< (default callee-spec)))))
+                        (callee (when (and callee-name (symbolp callee-name))
+                                  (*gets* callee-name))))
+                   (when (and callee (eql (construct callee) '|@FUNC|)) callee)))
                 (t nil)))
         nil)))
 

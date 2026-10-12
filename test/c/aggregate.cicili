@@ -76,6 +76,11 @@
 
   (func describe_impl ((int who)) (out int) (return (* who 3)))
 
+  ;; functions whose result is reached through: a pointer into the argument
+  ;; for ->, a struct by value for =>
+  (func chain_tail ((Chain * c)) (out Node *) (return (-> c tail)))
+  (func duty_of ((Employee * e)) (out Role) (return (-> e duty)))
+
   (func check ((const char * what) (llong got) (llong want))
         (out int)
         (if (== got want)
@@ -171,6 +176,26 @@
         (+= bad (check "two links deep"    (-> (-> ($ c tail) next) value) 22))
         ;; an incomplete type is fine to hold as a pointer
         (+= bad (check "opaque ptr is null" (? ($ c opaque) 1 0) 0)))
+
+      ;; ---- -> and => on a call's result -----------------------------
+      ;; A call by name has its callee's declaration for storage, whose type
+      ;; is what it returns: (-> (f x) m) reads m through the pointer f
+      ;; returns, and (=> (g x) m arg) calls the function in m of the struct g
+      ;; returns. Through 2.0.0 both refused ("pointer storage not found",
+      ;; "type of the object not found"); only ($ (cof (f x)) m) got through.
+      (let ((Node b . '{ 22 #f })
+            (Node a . '{ 11 #f })
+            (Chain c . '{ 1 #f #f })
+            (Employee e . '{ 1 "call" }))
+        (set ($ a next) (aof b))
+        (set ($ c tail) (aof a))
+        (+= bad (check "-> on a call"        (-> (chain_tail (aof c)) value) 11))
+        (+= bad (check "-> on -> on a call"  (-> (-> (chain_tail (aof c)) next) value) 22))
+        (set (-> (chain_tail (aof c)) value) 12)
+        (+= bad (check "-> on a call writes" ($ a value) 12))
+        (+= bad (check "$ on cof of a call"  ($ (cof (chain_tail (aof c))) value) 12))
+        (set ($ e duty describe) describe_impl)
+        (+= bad (check "=> on a call"        (=> (duty_of (aof e)) describe 7) 21)))
 
       ;; ---- cast to a tagged type ------------------------------------
       ;; (struct X) is ONE type. Handed to `cast' it used to be read as a
