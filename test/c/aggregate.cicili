@@ -81,6 +81,15 @@
   (func chain_tail ((Chain * c)) (out Node *) (return (-> c tail)))
   (func duty_of ((Employee * e)) (out Role) (return (-> e duty)))
 
+  ;; and the same through a function pointer: a typedef of one, a member
+  ;; holding one, a member holding a table of them
+  (typedef func Pick ((Node * n)) (out Node *))
+  (struct Picker
+    (member func pick ((Node * n)) (out Node *))
+    (member func both [2] ((Node * n)) (out Node *)))
+  (func pick_self ((Node * n)) (out Node *) (return n))
+  (func pick_next ((Node * n)) (out Node *) (return (-> n next)))
+
   (func check ((const char * what) (llong got) (llong want))
         (out int)
         (if (== got want)
@@ -178,11 +187,12 @@
         (+= bad (check "opaque ptr is null" (? ($ c opaque) 1 0) 0)))
 
       ;; ---- -> and => on a call's result -----------------------------
-      ;; A call by name has its callee's declaration for storage, whose type
+      ;; A call has the declaration of what it calls for storage, whose type
       ;; is what it returns: (-> (f x) m) reads m through the pointer f
       ;; returns, and (=> (g x) m arg) calls the function in m of the struct g
       ;; returns. Through 2.0.0 both refused ("pointer storage not found",
       ;; "type of the object not found"); only ($ (cof (f x)) m) got through.
+      ;; test/cpp/objects.cicili does the same through a C++ method.
       (let ((Node b . '{ 22 #f })
             (Node a . '{ 11 #f })
             (Chain c . '{ 1 #f #f })
@@ -195,7 +205,23 @@
         (+= bad (check "-> on a call writes" ($ a value) 12))
         (+= bad (check "$ on cof of a call"  ($ (cof (chain_tail (aof c))) value) 12))
         (set ($ e duty describe) describe_impl)
-        (+= bad (check "=> on a call"        (=> (duty_of (aof e)) describe 7) 21)))
+        (+= bad (check "=> on a call"        (=> (duty_of (aof e)) describe 7) 21))
+        ;; THROUGH A FUNCTION POINTER the call's type is what the pointer's
+        ;; function type returns, not the pointer's own typedef, and an
+        ;; element of a table of them is held by the table (2.0.2; through
+        ;; 2.0.1 "pointer storage not found" for every one of these holders)
+        (let ((func fp ((Node * n)) (out Node *) . pick_self)
+              (Pick tp . pick_self)
+              (func tbl [] ((Node * n)) (out Node *) . '{ pick_self pick_next })
+              (Picker pk . '{ pick_self '{ pick_self pick_next } })
+              (func dfp ((Employee * e)) (out Role) . duty_of))
+          (+= bad (check "-> on a pointer variable's call"  (-> (fp (aof a)) value) 12))
+          (+= bad (check "-> on a typedef'd pointer's call" (-> (tp (aof a)) value) 12))
+          (+= bad (check "-> on a pointer member's call"    (-> (($ pk pick) (aof a)) value) 12))
+          (+= bad (check "-> on a table's call"             (-> ((nth 1 tbl) (aof a)) value) 22))
+          (+= bad (check "-> on a member table's call"      (-> ((nth 1 ($ pk both)) (aof a)) value) 22))
+          (+= bad (check "-> on -> through a pointer"       (-> (-> (fp (aof a)) next) value) 22))
+          (+= bad (check "=> on a pointer variable's call"  (=> (dfp (aof e)) describe 8) 24))))
 
       ;; ---- cast to a tagged type ------------------------------------
       ;; (struct X) is ONE type. Handed to `cast' it used to be read as a

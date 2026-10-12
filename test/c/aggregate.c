@@ -58,21 +58,32 @@ Node * chain_tail (Chain * c ) {
 Role duty_of (Employee * e ) {
   return (e -> duty);
 }
+typedef Node * (*Pick) (Node * n );
+typedef struct Picker {
+    Node * (*pick) (Node * n );
+    Node * (*both[2]) (Node * n );
+} Picker;
+Node * pick_self (Node * n ) {
+  return n ;
+}
+Node * pick_next (Node * n ) {
+  return (n -> next);
+}
 int check (const char * what , long long got , long long want ) {
   if (got  ==  want  )
-    { /* block111 */
+    { /* block116 */
       printf ("ok   %-34s %lld\n", what , got );
       return 0;
     }
   else
-    { /* block114 */
+    { /* block119 */
       printf ("FAIL %-34s got %lld want %lld\n", what , got , want );
       return 1;
     }
   return 1;
 }
 int main () {
-  { /* let118 */
+  { /* let123 */
     int bad  = 0;
     // ----------
     bad  += check ("enum explicit", RED , 0) ;
@@ -81,7 +92,7 @@ int main () {
     bad  += check ("enum restarts", VIOLET , 10) ;
     bad  += check ("enum after restart", INDIGO , 11) ;
     bad  += check ("nested enum", SENIOR , 2) ;
-    { /* let120 */
+    { /* let125 */
       Mixed m  = { 0};
       // ----------
       (m . i) = 1065353216;
@@ -89,31 +100,31 @@ int main () {
       bad  += check ("union float view", ((int)(m . f)), 1) ;
       bad  += check ("sizeof union", sizeof(Mixed), 4) ;
     }
-    { /* let122 */
+    { /* let127 */
       Employee e  = { 7, "Ada"};
       // ----------
       bad  += check ("positional id", (e . id), 7) ;
       bad  += check ("positional name", strlen ((e . name)), 3) ;
     }
-    { /* let124 */
+    { /* let129 */
       Employee e  = { .id = 8, .name = "Grace"};
       // ----------
       bad  += check ("designated id", (e . id), 8) ;
       bad  += check ("designated name", strlen ((e . name)), 5) ;
     }
-    { /* let126 */
+    { /* let131 */
       Employee e  = { .id = 9, .extra.i = 1001};
       // ----------
       bad  += check ("nested designator", ((e . extra). i), 1001) ;
       bad  += check ("designator with nesting", (e . id), 9) ;
     }
-    { /* let128 */
+    { /* let133 */
       Employee e  = { 1, "u"};
       // ----------
       ((e . extra). i) = 5;
       bad  += check ("$ into union member", ((e . extra). i), 5) ;
     }
-    { /* let130 */
+    { /* let135 */
       Employee e  = { 1, "anon"};
       // ----------
       ((e . tag). tag_id) = 1001;
@@ -121,20 +132,20 @@ int main () {
       ((e . role). role_id) = 55;
       bad  += check ("$ into anonymous struct", ((e . role). role_id), 55) ;
     }
-    { /* let132 */
+    { /* let137 */
       Employee e  = { .id = 4, .tag.tag_id = 2002};
       // ----------
       bad  += check ("designated through tag", ((e . tag). tag_id), 2002) ;
       bad  += check ("designated sibling", (e . id), 4) ;
     }
-    { /* let134 */
+    { /* let139 */
       Employee es [] = { { 1, "one"}, { 2, "two"}};
       // ----------
       bad  += check ("array of struct 0", (es [0]. id), 1) ;
       bad  += check ("array of struct 1", (es [1]. id), 2) ;
       bad  += check ("array of struct name", strlen ((es [1]. name)), 3) ;
     }
-    { /* let136 */
+    { /* let141 */
       Employee e  = { 3, "Bob"};
       Employee * p  = false ;
       // ----------
@@ -146,14 +157,14 @@ int main () {
       bad  += check ("$ nested write", ((e . duty). role_id), 55) ;
       bad  += check ("-> then $ nested", (((*p ). duty). role_id), 55) ;
     }
-    { /* let138 */
+    { /* let143 */
       Employee e  = { 1, "fn"};
       // ----------
       ((e . duty). describe) = describe_impl ;
       bad  += check ("call member fn ptr", ((e . duty). describe)(5), 15) ;
       bad  += check ("=> calls member fn", ((e . duty). describe (6)), 18) ;
     }
-    { /* let140 */
+    { /* let145 */
       Node b  = { 22, false };
       Node a  = { 11, false };
       Chain c  = { 1, false , false };
@@ -165,7 +176,7 @@ int main () {
       bad  += check ("two links deep", (((c . tail)-> next)-> value), 22) ;
       bad  += check ("opaque ptr is null", (((c . opaque)) ? 1 : 0), 0) ;
     }
-    { /* let142 */
+    { /* let147 */
       Node b  = { 22, false };
       Node a  = { 11, false };
       Chain c  = { 1, false , false };
@@ -180,8 +191,23 @@ int main () {
       bad  += check ("$ on cof of a call", ((*chain_tail ((&c ))). value), 12) ;
       ((e . duty). describe) = describe_impl ;
       bad  += check ("=> on a call", (duty_of ((&e )). describe (7)), 21) ;
+      { /* let149 */
+              Node * (*fp) (Node * n ) = pick_self ;
+        Pick tp  = pick_self ;
+              Node * (*tbl[]) (Node * n ) = { pick_self , pick_next };
+        Picker pk  = { pick_self , { pick_self , pick_next }};
+              Role (*dfp) (Employee * e ) = duty_of ;
+        // ----------
+        bad  += check ("-> on a pointer variable's call", (fp ((&a ))-> value), 12) ;
+        bad  += check ("-> on a typedef'd pointer's call", (tp ((&a ))-> value), 12) ;
+        bad  += check ("-> on a pointer member's call", ((pk . pick)((&a ))-> value), 12) ;
+        bad  += check ("-> on a table's call", (tbl [1]((&a ))-> value), 22) ;
+        bad  += check ("-> on a member table's call", ((pk . both)[1]((&a ))-> value), 22) ;
+        bad  += check ("-> on -> through a pointer", ((fp ((&a ))-> next)-> value), 22) ;
+        bad  += check ("=> on a pointer variable's call", (dfp ((&e )). describe (8)), 24) ;
+      }
     }
-    { /* let144 */
+    { /* let154 */
       Node n  = ((struct Node){ 7, false });
       // ----------
       bad  += check ("cast (struct T)", (n . value), 7) ;

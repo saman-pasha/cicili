@@ -188,7 +188,7 @@ Write `hello.cicili`:
 ```sh
 sbcl --script /path/to/cicili.lisp hello.cicili   # writes hello.c, compiles, links
 ./main
-sbcl --script /path/to/cicili.lisp --version      # 2.0.1, alone on stdout
+sbcl --script /path/to/cicili.lisp --version      # 2.0.2, alone on stdout
 ```
 
 Read `hello.c` — that habit is the fastest way to learn the language. Then:

@@ -1,8 +1,9 @@
 #include <cstdio>
+#include <vector>
 int bad  = 0;
 void closefile (FILE ** f ) {
   if (*f )
-    { /* block106 */
+    { /* block107 */
       fclose ((*f ));
     }
 }
@@ -10,7 +11,7 @@ void check (const char * what , long got , long want ) {
   if (got  ==  want  )
     printf ("ok   %-30s %ld\n", what , got );
   else
-    { /* block112 */
+    { /* block113 */
       printf ("FAIL %-30s got %ld want %ld\n", what , got , want );
       (++bad );
     }
@@ -48,8 +49,28 @@ struct Counted {
     (--alive );
   }
 };
+struct Link {
+  int v ;
+  struct Link * next ;
+  Link * follow () {
+    return (this -> next);
+  }
+  Link self_copy () {
+    return (*this );
+  }
+  int plus (int k ) {
+    return ((this -> v) +  k  );
+  }
+};
+#define ivec_t std::vector<int> 
+int twice (int n ) {
+  return (2 *  n  );
+}
+int first_twice (const ivec_t & w ) {
+  return twice ((w . at)(0));
+}
 int main () {
-  ({ /* letn125 */
+  ({ /* letn133 */
     Square sq  = Square (3.0);
     // ----------
     check ("square area", ((long)(sq . area)()), 9);
@@ -57,18 +78,18 @@ int main () {
     (sq . scale)(2.0);
     check ("after scale", ((long)(sq . area)()), 36);
   });
-  ({ /* letn128 */
+  ({ /* letn136 */
     Square sq  = Square (4.0);
     // ----------
-    { /* let130 */
+    { /* let138 */
       Shape * s  = (&sq );
       // ----------
       check ("through base ptr", ((long)(s -> area)()), 16);
     }
   });
   check ("alive before", alive , 0);
-  { /* block132 */
-    ({ /* letn135 */
+  { /* block140 */
+    ({ /* letn143 */
       Counted c  = Counted (7);
       // ----------
       check ("alive inside", alive , 1);
@@ -76,11 +97,25 @@ int main () {
     });
   }
   check ("alive after", alive , 0);
-  ({ /* letn138 */
+  ({ /* letn146 */
     FILE * f  __attribute__((__cleanup__(closefile ))) = fopen ("/dev/null", "w");
     // ----------
     check ("opened", ((long)(f  !=  NULL  )), 1);
   });
+  { /* let148 */
+    Link l2  = { 22, NULL };
+    Link l1  = { 11, NULL };
+    // ----------
+    (l1 . next) = (&l2 );
+    check ("-> on a method call", ((long)((l1 . follow)()-> v)), 22);
+    check ("calling through it", ((long)((l1 . follow)()-> plus)(1)), 23);
+    check ("=> on a method call", ((long)((l1 . self_copy)(). plus (5))), 16);
+  }
+  { /* let150 */
+    ivec_t w  = { 21};
+    // ----------
+    check ("unseen type's method", ((long)first_twice (w )), 42);
+  }
   if (bad  ==  0 )
     printf ("cpp objects: all ok\n");
   else

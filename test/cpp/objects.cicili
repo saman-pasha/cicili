@@ -11,6 +11,7 @@
   (make :cpp #t :compile #t :link ("-lobjects.o" "-o" "objects_test"))
 
   (include <cstdio>)
+  (include <vector>)
 
   (var int bad . 0)
 
@@ -67,6 +68,29 @@
           (dtor ()
                 (-- alive)))
 
+  ;; ---- a method's result, reached through --------------------------
+  ;; A method call has for storage the @METHOD its receiver's type
+  ;; declares, whose type is what it returns, as a call by name has its
+  ;; @FUNC (2.0.2; through 2.0.1 "pointer storage not found" and "type of
+  ;; the object not found").
+  (struct Link
+          (member int v)
+          (member (struct Link) * next)
+          (method follow () (out Link *)
+                  (return ($ this next)))
+          (method self_copy () (out Link)
+                  (return (cof this)))
+          (method plus ((int k)) (out int)
+                  (return (+ ($ this v) k))))
+
+  ;; A TYPE CICILI HAS NEVER SEEN, named by a @define the way mvccs-lib
+  ;; names std::vector<double>: a method called on it in another call's
+  ;; arguments is asked for its storage there, which cannot be found -- and
+  ;; that must answer nil, as it always did, not raise "unknown struct type".
+  (@define (code "ivec_t std::vector<int>"))
+  (func twice ((int n)) (out int) (return (* 2 n)))
+  (func first_twice ((const ivec_t & w)) (out int) (return (twice (($ w at) 0))))
+
   (main
     (letin* ((sq (Square 3.0)))
       (check "square area"  (cast long (($ sq area))) 9)
@@ -91,6 +115,16 @@
     ;; the ADDRESS of the variable, because that is what __cleanup__ passes it.
     (letin* ((f (fopen "/dev/null" "w") closefile))
       (check "opened" (cast long (!= f nil)) 1))
+
+    ;; -> and => on a method call's result
+    (let ((Link l2 . '{ 22 nil })
+          (Link l1 . '{ 11 nil }))
+      (set ($ l1 next) (aof l2))
+      (check "-> on a method call"   (cast long (-> (($ l1 follow)) v)) 22)
+      (check "calling through it"    (cast long ((-> (($ l1 follow)) plus) 1)) 23)
+      (check "=> on a method call"   (cast long (=> (($ l1 self_copy)) plus 5)) 16))
+    (let ((ivec_t w . '{ 21 }))
+      (check "unseen type's method"  (cast long (first_twice w)) 42))
 
     (if (== bad 0)
         (printf "cpp objects: all ok\n")

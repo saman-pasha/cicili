@@ -148,28 +148,50 @@
                  (deep-storageof id  (default spec))
                  ;; (combine-types (deep-storageof-name id (cons (name spec) full-name) (default spec)) spec)
                  )
-                ;; A CALL'S STORAGE IS ITS CALLEE'S DECLARATION, whose `typeof'
-                ;; is what it returns, so (-> (f x) m) finds m on f's return
-                ;; type as (-> p m) finds it on p's. Without this the arrow
-                ;; raised "pointer storage not found" on any call, and only
-                ;; ($ (cof (f x)) m) -- which never asks -- reached a member
-                ;; through one. A call by NAME only, and the name looked up
-                ;; rather than walked: a callee that is itself an expression
-                ;; -- a C++ method, (($ v size)) -- would be resolved through
-                ;; types Cicili may never have seen (mvccs-lib's `dvec_t'),
-                ;; and through a function pointer the storage is the
-                ;; pointer's typedef, not the return type (func-typedef-of<).
-                ;; Both stay unknown, as before.
+                ;; A CALL'S STORAGE IS THE DECLARATION OF WHAT IT CALLS, whose
+                ;; `typeof' is what the call returns: (-> (f x) m) finds m on
+                ;; that type as (-> p m) finds it on p's, and (=> (g x) m a)
+                ;; calls the function in m of the struct g returns. Each kind
+                ;; of callee has one:
+                ;;   a function by name   (f x)            its @FUNC (2.0.1)
+                ;;   a C++ method         (($ v get))      the @METHOD v's type
+                ;;                                         declares
+                ;;   a function pointer   (fp x),          the @FUNC inside its
+                ;;     in a variable, a   (($ h pick) x),  function type
+                ;;     member, or a       ((nth i tbl) x)  (func-typedef-of<)
+                ;;     table of them
+                ;; -- a pointer's holder is typed by the pointer's typedef, not
+                ;; by what the call returns, and a table's element is held by
+                ;; the table, which is why (nth i tbl) is asked here and not
+                ;; given a storage of its own: every (nth i a) handed to a call
+                ;; would then be checked as the array itself (move-var). Through
+                ;; 2.0.0 every call answered
+                ;; nil, so the arrow raised "pointer storage not found" on any
+                ;; of them and only ($ (cof (f x)) m), which never asks,
+                ;; reached a member through one.
+                ;;
+                ;; THE WHOLE ANSWER IS UNDER IGNORE-ERRORS, and must stay so.
+                ;; Every call handed to another as an argument is asked for its
+                ;; storage (move-var), and a receiver of a type Cicili has never
+                ;; seen -- mvccs-lib's dvec_t, a std::vector named by a @define
+                ;; -- raises "unknown struct type" on the way to its method,
+                ;; where a call answered nil before and still must: what cannot
+                ;; be resolved stays unknown, as it always was.
                 ((eql const-val '|@CALL|)
-                 (let* ((callee-spec (name spec))
-                        (callee-name (cond ((symbolp callee-spec) callee-spec)
-                                           ((and (typep callee-spec 'sp)
-                                                 (eql (construct callee-spec) '|@ATOM|)
-                                                 (key-eq (name callee-spec) '|@SYMBOL|))
-                                            (peel-type-tag< (default callee-spec)))))
-                        (callee (when (and callee-name (symbolp callee-name))
-                                  (*gets* callee-name))))
-                   (when (and callee (eql (construct callee) '|@FUNC|)) callee)))
+                 (ignore-errors
+                  (let* ((callee-spec (name spec))
+                         (callee (cond ((not (typep callee-spec 'sp)) (*gets* callee-spec))
+                                       ((eql (construct callee-spec) '|@NTH|)
+                                        (deep-storageof id (default callee-spec)))
+                                       (t (deep-storageof id callee-spec)))))
+                    (cond ((null callee) nil)
+                          ((or (eql (construct callee) '|@FUNC|)
+                               (eql (construct callee) '|@METHOD|))
+                           callee)
+                          (t (let* ((td (func-typedef-of< callee))
+                                    (sig (when td (car (array-def td)))))
+                               (when (and (typep sig 'sp) (eql (construct sig) '|@FUNC|))
+                                 sig)))))))
                 (t nil)))
         nil)))
 

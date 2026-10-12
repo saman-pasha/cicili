@@ -17,7 +17,7 @@ touches.
 ## The version, and when it moves
 
 ```bash
-sbcl --script cicili.lisp --version     # 2.0.1, and nothing else on stdout
+sbcl --script cicili.lisp --version     # 2.0.2, and nothing else on stdout
 ```
 
 It lives in **one place** — `cicili.asd`'s `:version` — and `--version` reads
@@ -100,7 +100,7 @@ the failing form is written out in full.
 | you want | you write |
 |---|---|
 | `obj.member` | `($ obj member)` — and it **chains**: `($ a b c)` is `a.b.c` |
-| `ptr->member` | `(-> ptr member)` — `ptr` may be a call by name, `(-> (f x) m)` (2.0.1) |
+| `ptr->member` | `(-> ptr member)` — `ptr` may be a call: by name (2.0.1), or through a function pointer, a table of them or a C++ method (2.0.2) |
 | a function *stored in* a member | `(=> obj member args…)`, one level only |
 | `arr[i]` | `(nth i arr)` — **index first**. There is no `aref`. |
 | bitwise and/or/xor | `bitand`, `bitor`, `xor` — not `&`, `\|`, `^` |
