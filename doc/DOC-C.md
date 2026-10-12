@@ -422,6 +422,13 @@ Any other symbol in type position is passed through to C unchanged, so `size_t`,
 `pthread_t` and your own typedefs all work. `lib/std/c` declares the C standard library and
 POSIX so type inference knows them — see [lib/std/c/README.md](lib-std-c.md).
 
+A number with a fraction or an exponent is a `double` literal, as in C, and reaches the C
+with every digit it has: `3.14159265358979323846` is written `3.141592653589793`, and `1e-300`
+is written `1.0e-300`. Through 2.0.2 the reader took such a number as a single float, so pi
+reached the C as `3.1415927` and `1e-300` as `0.0`. A macro that computes a float while it
+expands must compute a double: `(sqrt 2.0)`, not `(sqrt 2)`, which Lisp answers as a single
+float that would be written `1.4142135f0`.
+
 ### The type descriptor
 
 Every place a type appears — a variable, a parameter, a struct member, a return type, a cast

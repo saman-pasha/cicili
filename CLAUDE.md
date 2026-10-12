@@ -17,7 +17,7 @@ touches.
 ## The version, and when it moves
 
 ```bash
-sbcl --script cicili.lisp --version     # 2.0.2, and nothing else on stdout
+sbcl --script cicili.lisp --version     # 3.0.0, and nothing else on stdout
 ```
 
 It lives in **one place** — `cicili.asd`'s `:version` — and `--version` reads
@@ -115,6 +115,12 @@ the failing form is written out in full.
 * **A string literal is RAW** — it reaches C untouched, so `"\n"` is two source
   characters and a newline only after the C compiler sees it. A literal may not
   contain a real newline, and may not end in a backslash.
+* **A number with a fraction or an exponent is a DOUBLE, every digit of it**
+  (3.0.0): `3.14159265358979323846` is written `3.141592653589793`, `1e-300`
+  `1.0e-300`. Through 2.0.2 the Lisp reader took it as a single float, and the
+  C got `3.1415927` and `0.0`. A macro that computes a float as it expands must
+  compute a double -- `(sqrt 2.0)`, never `(sqrt 2)`, a single float that now
+  prints with its marker, `1.4142135f0`, which no C compiler takes.
 * **Lambda-list markers are uppercase** in a macro: `&REST`, never `&rest`.
 
 ## `(code "…")` is the fire escape, not the door

@@ -32,6 +32,17 @@
 
 (asdf:load-system "cicili")
 
+;; A LITERAL WITH A FRACTION IS A DOUBLE, AS IN C. The reader's default is
+;; single-float, so `3.14159265358979323846' was read as 3.1415927 and written
+;; into the C as that, and `1e-300' was read as 0.0. Set here, after the
+;; system is loaded and before any .cicili file is read, it makes every
+;; literal of every file a double -- and a double prints back without a `d0'
+;; exactly while this is double-float, so the C gets every digit. A single
+;; float would now print WITH its marker (`1.4142135f0'): a macro that
+;; computes a float must compute a double, as (sqrt 2.0) does and (sqrt 2)
+;; does not.
+(setf *read-default-float-format* 'double-float)
+
 (cicili:load-macro-file "builtins.cicili" nil () "CICILI")
 (cicili:load-macro-file "cpp.cicili"      nil () "CICILI")
 ;; One prelude. The algebraic layer used to be a second load parked on this

@@ -52,89 +52,98 @@ int main () {
     bad  += check ("sizeof double", sizeof(double), 8) ;
     bad  += check ("sizeof real >= double", (((sizeof(long double) >=  sizeof(double) )) ? 1 : 0), 1) ;
     { /* let115 */
+      double vpi  = 3.141592653589793;
+      double ve  = 2.718281828459045;
+      double tiny  = 1.0e-300;
+      // ----------
+      bad  += check ("pi literal to 8 decimals", ((long long)(vpi  *  100000000 )), 314159265) ;
+      bad  += check ("e literal to 8 decimals", ((long long)(ve  *  100000000 )), 271828182) ;
+      bad  += check ("1e-300 is not 0", (((tiny  >  0.0 )) ? 1 : 0), 1) ;
+    }
+    { /* let117 */
       bool yes  = true ;
       bool no  = false ;
       // ----------
       bad  += check ("#t", ((yes ) ? 1 : 0), 1) ;
       bad  += check ("#f", ((no ) ? 1 : 0), 0) ;
     }
-    { /* let117 */
+    { /* let119 */
       unsigned char u  = 200;
       char s  = 100;
       // ----------
       bad  += check ("uchar holds 200", u , 200) ;
       bad  += check ("char holds 100", s , 100) ;
     }
-    { /* let119 */
+    { /* let121 */
       uint32_t big  = 4000000000;
       // ----------
       bad  += check ("u32 holds 4e9", big , 4000000000) ;
     }
-    { /* let121 */
+    { /* let123 */
       const int n  = (20 +  22 );
       // ----------
       bad  += check ("auto infers int", n , 42) ;
       bad  += check ("auto sizeof", sizeof(n), 4) ;
     }
-    { /* let123 */
+    { /* let125 */
       const double d  = 2.5;
       // ----------
       bad  += check ("auto infers double", sizeof(d), 8) ;
     }
-    { /* let125 */
+    { /* let127 */
       long long big  = 7;
       // ----------
-      { /* let127 */
+      { /* let129 */
         typeof(big ) same  = 9;
         // ----------
         bad  += check ("typeof of a variable", sizeof(same), 8) ;
       }
-      { /* let129 */
+      { /* let131 */
         typeof(add (1, 2)) r  = add (20, 22);
         // ----------
         bad  += check ("typeof of a call", r , 42) ;
       }
     }
-    { /* let131 */
+    { /* let133 */
       Counter c  = 5;
       Size n  = 9;
       // ----------
       bad  += check ("typedef Counter", c , 5) ;
       bad  += check ("typedef Size sizeof", sizeof(n), 8) ;
     }
-    { /* let133 */
+    { /* let135 */
       CString s  = "hi";
       // ----------
       bad  += check ("typedef CString", strlen (s ), 2) ;
     }
-    { /* let135 */
+    { /* let137 */
       BinOp op  = add ;
       // ----------
       bad  += check ("typedef function pointer", op (20, 22), 42) ;
     }
-    { /* let137 */
+    { /* let139 */
       int n  = 5;
       // ----------
-      { /* let139 */
+      { /* let141 */
         int * p  = (&n );
         // ----------
         bad  += check ("int * ", (*p ), 5) ;
-        { /* let141 */
+        { /* let143 */
           int ** pp  = (&p );
           // ----------
           bad  += check ("int **", (*(*pp )), 5) ;
         }
       }
     }
-    { /* let143 */
+    { /* let145 */
       int n  = 5;
       // ----------
-      { /* let145 */
+      { /* let147 */
         const int * cp  = (&n );
         // ----------
         bad  += check ("const int *", (*cp ), 5) ;
       }
-      { /* let147 */
+      { /* let149 */
         int * const pc  = (&n );
         // ----------
         (*pc ) = 6;
@@ -143,13 +152,13 @@ int main () {
     }
     bad  += check ("cast double->int", ((int)3.99), 3) ;
     bad  += check ("cast int->char", ((char)65), 65) ;
-    { /* let149 */
+    { /* let151 */
       int n  = 7;
       // ----------
       bad  += check ("int division", (n  /  2 ), 3) ;
       bad  += check ("cast then divide", ((int)((((double)n ) /  2 ) *  100 )), 350) ;
     }
-    { /* let151 */
+    { /* let153 */
       int n  = 0;
       void * v  = false ;
       // ----------

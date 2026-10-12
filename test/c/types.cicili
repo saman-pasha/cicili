@@ -54,6 +54,16 @@
       (+= bad (check "sizeof double" (sizeof double) 8))
       (+= bad (check "sizeof real >= double" (? (>= (sizeof real) (sizeof double)) 1 0) 1))
 
+      ;; ---- a literal with a fraction is a DOUBLE, to its last digit --
+      ;; Through 2.0.2 the reader took it as a single float: pi reached the
+      ;; C as 3.1415927, e as 2.7182817, and 1e-300 as 0.0
+      (let ((double vpi  . 3.14159265358979323846)
+            (double ve   . 2.71828182845904523536)
+            (double tiny . 1e-300))
+        (+= bad (check "pi literal to 8 decimals" (cast llong (* vpi 100000000)) 314159265))
+        (+= bad (check "e literal to 8 decimals"  (cast llong (* ve 100000000))  271828182))
+        (+= bad (check "1e-300 is not 0"          (? (> tiny 0.0) 1 0)            1)))
+
       ;; ---- bool, and the #t / #f literals --------------------------
       (let ((bool yes . #t)
             (bool no  . #f))
