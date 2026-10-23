@@ -34,6 +34,13 @@ __attribute__((always_inline)) static inline int quadruple (int n ) {
 __attribute__((weak)) int halve (int n ) {
   return (n  /  2 );
 }
+__attribute__((cold)) int negate (int n );
+__attribute__((cold)) int negate (int n ) {
+  return (-n );
+}
+__attribute__((weak)) __attribute__((cold)) int refuse (int n ) {
+  return (0 -  n  );
+}
 int ignores_second (int a , int);
 int ignores_second (int a , int unused ) {
   return a ;
@@ -53,27 +60,27 @@ static struct __ciciliS_divmod_ divmod (int a , int b ) {
 int * pick (int * xs , int i ) {
   return (&xs [i ]);
 }
-int __ciciliL_144 (int n ) {
+int __ciciliL_147 (int n ) {
   return (n  *  n  );
 }
-int __ciciliL_148 (int n ) {
+int __ciciliL_151 (int n ) {
   return (n  *  (n  *  n  ) );
 }
-int __ciciliL_153 (int n ) {
+int __ciciliL_156 (int n ) {
   return (n  +  2 );
 }
-void __ciciliL_159 (int * where , int what ) {
+void __ciciliL_162 (int * where , int what ) {
   (*where ) = what ;
 }
-int __ciciliL_163 (int n ) {
+int __ciciliL_166 (int n ) {
   return (n  +  3 );
 }
-int __ciciliL_169 (int m ) {
+int __ciciliL_172 (int m ) {
   return (m  *  2 );
 }
-int __ciciliL_166 (int n ) {
-  { /* let168 */
-      int (*inner) (int m ) = __ciciliL_169 ;
+int __ciciliL_169 (int n ) {
+  { /* let171 */
+      int (*inner) (int m ) = __ciciliL_172 ;
     // ----------
     return (inner (n ) +  2 );
   }
@@ -82,83 +89,85 @@ int cl_demo (int * base ) {
   return ((*base ) +  2 );
 }
 int main () {
-  { /* let126 */
+  { /* let129 */
     int bad  = 0;
     // ----------
     bad  += check ("plain call", add (20, 22), 42) ;
     bad  += check ("static function", triple (14), 42) ;
     bad  += check ("inline function", quadruple (10), 40) ;
     bad  += check ("weak function", halve (84), 42) ;
+    bad  += check ("cold function", negate (-42), 42) ;
+    bad  += check ("weak cold function", refuse (-42), 42) ;
     bad  += check ("unnamed parameter", ignores_second (42, 99), 42) ;
-    { /* let128 */
+    { /* let131 */
       int slot  = 0;
       // ----------
       store_into ((&slot ), 42);
       bad  += check ("void function wrote", slot , 42) ;
     }
-    { /* let130 */
+    { /* let133 */
           int (*op) (int a , int b ) = add ;
       // ----------
       bad  += check ("function pointer variable", op (20, 22), 42) ;
     }
     bad  += check ("function pointer parameter", apply_twice (triple , 2), 18) ;
-    { /* let133 */
+    { /* let136 */
           int (*ops[]) (int a , int b ) = { add , add };
       // ----------
       bad  += check ("array of function pointers", ops [1](20, 22), 42) ;
       bad  += check ("array of fn ptrs, first", ops [0](1, 2), 3) ;
     }
-    { /* let136 */
+    { /* let139 */
       BinOp typed_ops [] = { add , add };
       // ----------
       bad  += check ("typedef'd array of fn ptrs", typed_ops [1](20, 22), 42) ;
     }
     bad  += check ("variadic sum", sum_all (4, 1, 2, 3, 36), 42) ;
-    { /* let138 */
+    { /* let141 */
       typeof(divmod (1, 1)) d ;
       // ----------
       d  = divmod (47, 5);
       bad  += check ("multi return quotient", (d . q), 9) ;
       bad  += check ("multi return remainder", (d . r), 2) ;
     }
-    { /* let140 */
+    { /* let143 */
       int xs [] = { 1, 2, 3, 4};
       // ----------
       (*pick (xs , 2)) = 42;
       bad  += check ("returned pointer writes", xs [2], 42) ;
     }
-    { /* let142 */
-          int (*square) (int n ) = __ciciliL_144 ;
+    { /* let145 */
+          int (*square) (int n ) = __ciciliL_147 ;
       // ----------
       bad  += check ("lambda, explicit func type", square (7), 49) ;
     }
-    { /* let147 */
-          int (*cube) (int n ) = __ciciliL_148 ;
+    { /* let150 */
+          int (*cube) (int n ) = __ciciliL_151 ;
       // ----------
       bad  += check ("auto on the lambda itself", cube (4), 64) ;
     }
-    { /* let152 */
-      int called  = __ciciliL_153 (40);
+    { /* let155 */
+      int called  = __ciciliL_156 (40);
       // ----------
       bad  += check ("auto on a call of a lambda", called , 42) ;
     }
-    { /* let156 */
+    { /* let159 */
       int sink  = 0;
       // ----------
-      { /* let158 */
-              void (*store) (int * where , int what ) = __ciciliL_159 ;
+      { /* let161 */
+              void (*store) (int * where , int what ) = __ciciliL_162 ;
         // ----------
         store ((&sink ), 42);
         bad  += check ("auto on a void lambda", sink , 42) ;
       }
     }
-    bad  += check ("lambda as argument", apply_twice (__ciciliL_163 , 36), 42) ;
-    { /* let165 */
-          int (*outer) (int n ) = __ciciliL_166 ;
+    bad  += check ("lambda as argument", apply_twice (__ciciliL_166 , 36), 42) ;
+    { /* let168 */
+          int (*outer) (int n ) = __ciciliL_169 ;
       // ----------
       bad  += check ("nested lambda", outer (20), 42) ;
     }
-    { /* let175 */
+    { /* let178 */
       int base  = 40;
       // ----------
       bad  += check ("closure captures", cl_demo ((&base )), 42) ;

@@ -14,7 +14,9 @@
 ;; `inline' asks for the function to be inlined at every call, `weak' for its
 ;; definition to be one the linker may replace -- what a generic's functions,
 ;; instantiated in several files, need. Through 1.0.1 `inline' meant `weak'.
-(defvar *attributes* '(|static| |decl|         |inline|  |weak|    |register| |extern| |volatile|
+;; `cold' says the function is seldom called (3.1.0): the compiler takes every
+;; block that calls it as unlikely and lays the caller's hot path out without it.
+(defvar *attributes* '(|static| |decl|         |inline|  |weak|    |cold|     |register| |extern| |volatile|
                        |auto|   |thread-local| |atomic|   |defer|   |non-copy|
                        ;; C++ member functions. `const' is here and not in
                        ;; *modifiers* because it qualifies the method, not a

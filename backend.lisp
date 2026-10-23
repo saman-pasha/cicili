@@ -629,6 +629,7 @@
 	    (is-declare  as-type)
 	    (is-inline   nil)
 	    (is-weak     nil)
+	    (is-cold     nil)
 	    (is-extern   nil)
 	    (is-volatile nil)
 	    (is-auto     nil)
@@ -647,6 +648,7 @@
 	    ('|decl|     (setq is-declare  t))
 	    ('|inline|   (setq is-inline   t))
 	    ('|weak|     (setq is-weak     t))
+	    ('|cold|     (setq is-cold     t))
 	    ('|extern|   (setq is-extern   t))
 	    ('|volatile| (setq is-volatile t))
 	    ('|auto|     (setq is-auto     t))
@@ -697,6 +699,13 @@
         (output "~&~A" (indent (- lvl 1)))
         (when is-extern   (set-ast-line (output "extern ")))
         (when is-weak     (set-ast-line (output "__attribute__((weak)) ")))
+        ;; COLD IS SELDOM CALLED: clang and gcc take a block that calls it as
+        ;; unlikely, so the caller's hot path is laid out, and its other calls
+        ;; weighed for inlining, without that block's weight; the function
+        ;; itself is optimised for size, inlined only if it is tiny, and put
+        ;; in .text.unlikely. On a prototype too, where a caller in another
+        ;; file learns it.
+        (when is-cold     (set-ast-line (output "__attribute__((cold)) ")))
         ;; INLINE IS INLINED: `inline' alone is a hint clang weighs against
         ;; its threshold, and gcc wants it beside `always_inline' or warns
         ;; that the function might not be inlinable -- which this

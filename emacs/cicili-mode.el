@@ -141,7 +141,7 @@
   "Cicili clause names, highlighted with `font-lock-keyword-face'.")
 
 (defconst cicili-attributes
-  '(("static" . 1) ("decl" . 1) ("inline" . 1) ("weak" . 1) ("extern" . 1)
+  '(("static" . 1) ("decl" . 1) ("inline" . 1) ("weak" . 1) ("cold" . 1) ("extern" . 1)
     ("register" . 1) ("volatile" . 1) ("auto" . 1)
     ("defer" . 1) ("defer*" . 1) ("resolve" . 1) ("thread-local" . 1)
     ("define" . 1) ("atomic" . 0) ("non-copy" . 0))

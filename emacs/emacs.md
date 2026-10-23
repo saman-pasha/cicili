@@ -52,7 +52,7 @@ Every face group and indent rule from the old `mode.lisp` is carried over:
 |---|---|
 | types — `int`, `size_t`, `i64`, `List`, `Maybe`, `move`, `ref`, ... | `font-lock-type-face` |
 | clauses — `func`, `let`, `struct`, `switch`, `match`, `go`, `lock`, ... | `font-lock-keyword-face` |
-| attributes — `static`, `decl`, `inline`, `weak`, `defer`, `non-copy`, ... | `font-lock-warning-face` |
+| attributes — `static`, `decl`, `inline`, `weak`, `cold`, `defer`, `non-copy`, ... | `font-lock-warning-face` |
 | allocation and logging — `alloc`, `malloc`, `syslog!`, `debug!`, ... | `font-lock-warning-face` |
 | preprocessor — `(@define ...)`, `(guard NAME)`, `(generic NAME)` | `font-lock-preprocessor-face` |
 | definition names after `func`, `method`, `fn`, `member` | `font-lock-function-name-face` |

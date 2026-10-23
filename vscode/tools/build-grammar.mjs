@@ -88,7 +88,7 @@ const KEYWORDS = [
 
 // cicili-attributes -- declaration attributes, head position
 const ATTRIBUTES = [
-  'static', 'decl', 'inline', 'extern',
+  'static', 'decl', 'inline', 'weak', 'cold', 'extern',
   'register', 'volatile', 'auto',
   'defer', 'defer*', 'resolve', 'thread-local',
   'define', 'atomic', 'non-copy',

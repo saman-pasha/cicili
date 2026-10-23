@@ -166,7 +166,7 @@
     },
     "attribute": {
       "name": "storage.modifier.cicili",
-      "match": "(?<=\\()(?:thread-local|register|volatile|non-copy|resolve|static|inline|extern|defer\\*|define|atomic|defer|decl|auto)(?=[\\s()'\";]|$)"
+      "match": "(?<=\\()(?:thread-local|register|volatile|non-copy|resolve|static|inline|extern|defer\\*|define|atomic|defer|decl|weak|cold|auto)(?=[\\s()'\";]|$)"
     },
     "type-attribute": {
       "name": "storage.type.cicili",

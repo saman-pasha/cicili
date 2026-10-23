@@ -33,6 +33,14 @@
   (static) (inline) (func quadruple ((int n)) (out int) (return (* n 4)))
   (weak) (func halve ((int n)) (out int) (return (/ n 2)))
 
+  ;; cold: seldom called -- `__attribute__((cold))', so a block that calls it
+  ;; is taken as unlikely and its caller's hot path is laid out without it. A
+  ;; declaration may say so, which is how a caller in another file learns it,
+  ;; and (weak) (cold) is the out-of-line error path whose callers know it.
+  (decl) (cold) (func negate ((int n)) (out int))
+  (cold) (func negate ((int n)) (out int) (return (- n)))
+  (weak) (cold) (func refuse ((int n)) (out int) (return (- 0 n)))
+
   ;; An unnamed parameter belongs on a DECLARATION. Omitting the name in a
   ;; definition is a C23 extension, which -Werror rejects, so a definition names
   ;; every parameter even when the body ignores one.
@@ -70,6 +78,8 @@
       (+= bad (check "static function" (triple 14) 42))
       (+= bad (check "inline function" (quadruple 10) 40))
       (+= bad (check "weak function" (halve 84) 42))
+      (+= bad (check "cold function" (negate -42) 42))
+      (+= bad (check "weak cold function" (refuse -42) 42))
       (+= bad (check "unnamed parameter" (ignores_second 42 99) 42))
 
       (let ((int slot . 0))

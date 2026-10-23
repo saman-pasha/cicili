@@ -141,6 +141,7 @@ applies to **the next clause only**. Several may be stacked: `(extern) (decl) (f
 | `extern` | `func`, `var` | `extern` |
 | `inline` | `func` | inlined at every call: `__attribute__((always_inline))` and C99's `inline` |
 | `weak` | `func` | `__attribute__((weak))`: the linker keeps one definition among several, and never inlines a call to it |
+| `cold` | `func` | `__attribute__((cold))`: seldom called, so the compiler takes a block that calls it as unlikely (3.1.0) |
 | `auto` | `func` | `auto` storage class |
 | `register` | `var`, `let` binding | `register` |
 | `volatile` | `func`, `var`, `let` binding | `volatile` |
@@ -1317,6 +1318,19 @@ Points to know:
   * `(weak)` — emits `__attribute__((weak))`: one definition however many files
     instantiate it, which is what a generic's functions want, and a call the
     compiler may never inline
+  * `(cold)` — emits `__attribute__((cold))` (3.1.0): the function is seldom
+    called, an error path or a slow fallback. clang and gcc take every block
+    that calls it as unlikely, so the caller's hot path is laid out, and its
+    other calls are weighed for inlining, without that block's weight; the cold
+    function itself is optimised for size, inlined only if it is tiny, and put
+    in `.text.unlikely`, apart from the hot code. A `(decl)` may be cold too,
+    which is how a caller in another file learns it. `(weak) (cold)` keeps an
+    error path out of line and tells its callers so; `(inline) (cold)` is
+    refused. Why it matters: a test added to a hot loop gives its branch a
+    weight by the compiler's guess, 3/8 for a test against zero, and the calls
+    after it can fall under the threshold below which a call is not inlined;
+    `__builtin_expect` written in a helper that returns the tested value does
+    nothing for the caller, because it is lowered before the helper is inlined
   * `(extern)`
   * `(auto)`
   * `(volatile)`

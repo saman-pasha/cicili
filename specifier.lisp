@@ -1590,6 +1590,7 @@
 	       (is-declare  nil)
 	       (is-inline   nil)
 	       (is-weak     nil)
+	       (is-cold     nil)
 	       (is-extern   nil)
 	       (is-volatile nil)
 	       (is-auto     nil)
@@ -1634,6 +1635,7 @@
 	            ((key-eq name '|decl|)     (setq is-declare  t))
 	            ((key-eq name '|inline|)   (setq is-inline   t))
 	            ((key-eq name '|weak|)     (setq is-weak     t))
+	            ((key-eq name '|cold|)     (setq is-cold     t))
 	            ((key-eq name '|extern|)   (setq is-extern   t))
 	            ((key-eq name '|volatile|) (setq is-volatile t))
 	            ((key-eq name '|auto|)     (setq is-auto     t))
@@ -1651,6 +1653,10 @@
       (when (and is-declare is-inline) (error (format nil "inline functions should be defined ~A" def)))
       (when (and is-declare is-weak) (error (format nil "weak functions should be defined ~A" def)))
       (when (and is-inline is-weak) (error (format nil "a function is inline or weak, not both ~A" def)))
+      ;; cold keeps a function out of its callers' hot paths, inline puts it in
+      ;; every one. A (decl) may be cold: the prototype is where a caller in
+      ;; another file learns it.
+      (when (and is-inline is-cold) (error (format nil "a function is inline or cold, not both ~A" def)))
       (when (< (length def) 3) (error (format nil "wrong function definition ~A" def)))
       (when (and is-declare body)
         (error (format nil "function declaration with body, may be 'out' missed '~A' ~A" name (first body))))
@@ -1661,6 +1667,7 @@
 	    (when is-volatile (push (cons '|volatile| t) attributes))
 	    (when is-inline   (push (cons '|inline|   t) attributes))
 	    (when is-weak     (push (cons '|weak|     t) attributes))
+	    (when is-cold     (push (cons '|cold|     t) attributes))
 	    (when is-static   (push (cons '|static|   t) attributes))
 	    (when is-auto     (push (cons '|auto|     t) attributes))
 	    (when is-declare  (push (cons '|decl|     t) attributes))
