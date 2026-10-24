@@ -65,6 +65,7 @@
      (decl) (func exit         ((int status)))
      (decl) (func _Exit        ((int status)))
      (decl) (func getenv       ((const char * name)) (out char *))
+     (decl) (func realpath     ((const char * restrict path) (char * restrict resolved)) (out char *)) ; POSIX
      (decl) (func setenv       ((const char * name) (const char * value) (int overwrite)) (out int)) ; POSIX
      (decl) (func unsetenv     ((const char * name)) (out int))                                      ; POSIX
      (decl) (func quick_exit   ((int status)))

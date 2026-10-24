@@ -17,7 +17,7 @@ build, not a replacement for the two reference documents:
 - [`CLAUDE.md`](CLAUDE.md) — the repository's build and change rules.
 
 When this summary and the docs disagree, **the docs are the reference** and the
-generated C is the ground truth. Version at the time of writing: **3.1.0**.
+generated C is the ground truth. Version at the time of writing: **3.2.0**.
 
 ---
 
@@ -325,35 +325,140 @@ nothing.
 
 ---
 
-## 7. The standard library and bindings
+## 7. `lib/` is the declaration source — never redeclare it
 
-`lib/std` is loaded by the prelude; no import is needed:
+**Rule zero: before writing a `(decl) (func …)`, `(struct …)`, `(typedef …)`,
+`@define`, or a `(code …)` for a C/POSIX declaration, inspect `lib/`.**
 
-- `std/array`, `std/vector`, `std/string` (a `vector_char`), `std/cell`,
-  `std/rc`/`arc`, `std/maybe`, `std/either`, `std/btree`;
-- `std/pthread` is **not** preloaded; import
-  `lib/std/pthread/pthread.cicili` and include `<pthread.h>`;
-- `std/c` declares C17 and POSIX: `stdio`, `stdlib`, `string`, `math`, `time`,
-  `errno`, `signal`, `unistd`, `fcntl`, `socket`, `netdb`, `poll`, `pthread`,
-  `dirent`, `dlfcn`, `sys/stat`, `sys/mman`, `sys/time`, `sys/wait`;
-- `std/haskell` provides `data`, `match`, classes, Functor/Applicative/Monad,
-  lists and the persistent B-tree.
+The library files are the single source of truth for what Cicili already
+declares. Do not copy their declarations into a target, a module, a project,
+or this skill. If a declaration is missing, add it to `lib/` as a binding or
+to `lib/std/c/` as the corresponding declaration; do not paste a second copy
+into the consumer.
 
-Bindings are **declarations, not copies of headers**. Each needs its own import,
-the real header in the target, and link flags. See `lib/README.md` for SQLite,
-PostgreSQL, libcurl, CPython/numpy, libtorch, `std::shared_ptr`, `dlopen`, and
-OpenCV.
+Useful checks from the Cicili checkout:
 
-A binding follows a `decl-`/`impl-` shape:
+```sh
+sed -n '1,180p' lib/README.md
+grep -R "func NAME\|struct NAME\|typedef NAME" lib
+```
 
-1. Its own `DEFPACKAGE`.
-2. `(DEFMACRO init-macro () \`($$$ …))` with the C declarations,
-   `(typedef int NAME)` for constants, and no emitted code.
-3. A front-end macro for a C API with a dangerous or repetitive shape.
-4. A separate `impl-` macro for code that must actually emit.
+### 7.1 What the prelude already loads
 
-`init-macro` declares without emitting; that is why a binding can describe a
-library without defining it.
+`cicili.lisp` imports `lib/std/prelude.cicili` before reading a target. No
+import is needed for:
+
+| library | what it provides |
+|---|---|
+| [`std/prelude.cicili`](lib/std/prelude.cicili) | the load order and the automatically available layer |
+| [`std/array.cicili`](lib/std/array.cicili) | fixed-length indexable memory |
+| [`std/vector.cicili`](lib/std/vector.cicili) | a growable array that owns its headroom |
+| [`std/string.cicili`](lib/std/string.cicili) | `(<> vector char)` under the name `string` |
+| [`std/cell.cicili`](lib/std/cell.cicili) | one-owner heap value |
+| [`std/rc.cicili`](lib/std/rc.cicili) | reference-counted cell, including atomic `arc` |
+| [`std/maybe.cicili`](lib/std/maybe.cicili) | a value that may be absent |
+| [`std/either.cicili`](lib/std/either.cicili) | one of two answers |
+| [`std/btree.cicili`](lib/std/btree.cicili) | ordered map with logarithmic operations |
+
+It also imports [`std/c/c.cicili`](lib/std/c/c.cicili) and
+[`std/c/posix.cicili`](lib/std/c/posix.cicili), which carry the C17 and POSIX
+declarations as typed Cicili declarations:
+
+- C17: [`assert`](lib/std/c/assert.cicili), [`ctype`](lib/std/c/ctype.cicili),
+  [`errno`](lib/std/c/errno.cicili), [`fenv`](lib/std/c/fenv.cicili),
+  [`float`](lib/std/c/float.cicili), [`inttypes`](lib/std/c/inttypes.cicili),
+  [`limits`](lib/std/c/limits.cicili), [`locale`](lib/std/c/locale.cicili),
+  [`math`](lib/std/c/math.cicili), [`setjmp`](lib/std/c/setjmp.cicili),
+  [`signal`](lib/std/c/signal.cicili), [`stdarg`](lib/std/c/stdarg.cicili),
+  [`stdbool`](lib/std/c/stdbool.cicili), [`stddef`](lib/std/c/stddef.cicili),
+  [`stdint`](lib/std/c/stdint.cicili), [`stdio`](lib/std/c/stdio.cicili),
+  [`stdlib`](lib/std/c/stdlib.cicili), [`string`](lib/std/c/string.cicili),
+  [`time`](lib/std/c/time.cicili), [`wchar`](lib/std/c/wchar.cicili),
+  [`wctype`](lib/std/c/wctype.cicili).
+- POSIX: [`dirent`](lib/std/c/posix/dirent.cicili),
+  [`dlfcn`](lib/std/c/posix/dlfcn.cicili),
+  [`fcntl`](lib/std/c/posix/fcntl.cicili),
+  [`netdb`](lib/std/c/posix/netdb.cicili),
+  [`poll`](lib/std/c/posix/poll.cicili),
+  [`pthread`](lib/std/c/posix/pthread.cicili),
+  [`socket`](lib/std/c/posix/socket.cicili),
+  [`sys-mman`](lib/std/c/posix/sys-mman.cicili),
+  [`sys-stat`](lib/std/c/posix/sys-stat.cicili),
+  [`sys-time`](lib/std/c/posix/sys-time.cicili),
+  [`sys-types`](lib/std/c/posix/sys-types.cicili),
+  [`sys-wait`](lib/std/c/posix/sys-wait.cicili),
+  [`unistd`](lib/std/c/posix/unistd.cicili).
+
+The **structs, members, functions and constants** are in those files. Read them
+there; do not copy a POSIX header into the target. The one usual missing piece
+is a C typedef for a struct that has no typedef in the real header, e.g.
+`(@define (code "pollfd struct pollfd"))`; it must use the exact name under
+which std declares the members.
+
+The algebraic layer is also preloaded:
+[`std/haskell/data.cicili`](lib/std/haskell/data.cicili),
+[`match.cicili`](lib/std/haskell/match.cicili),
+[`class.cicili`](lib/std/haskell/class.cicili),
+[`core.cicili`](lib/std/haskell/core.cicili),
+[`haskell.cicili`](lib/std/haskell/haskell.cicili),
+[`prelude.cicili`](lib/std/haskell/prelude.cicili),
+[`maybe.cicili`](lib/std/haskell/maybe.cicili),
+[`either.cicili`](lib/std/haskell/either.cicili),
+[`bool.cicili`](lib/std/haskell/bool.cicili),
+[`ordering.cicili`](lib/std/haskell/ordering.cicili),
+[`tuple.cicili`](lib/std/haskell/tuple.cicili),
+[`list.cicili`](lib/std/haskell/list.cicili),
+[`ownlist.cicili`](lib/std/haskell/ownlist.cicili),
+[`range.cicili`](lib/std/haskell/range.cicili),
+[`persistent-btree.cicili`](lib/std/haskell/persistent-btree.cicili),
+[`monoid.cicili`](lib/std/haskell/monoid.cicili),
+[`functor.cicili`](lib/std/haskell/functor.cicili),
+[`applicative.cicili`](lib/std/haskell/applicative.cicili),
+[`monad.cicili`](lib/std/haskell/monad.cicili),
+[`arc.cicili`](lib/std/haskell/arc.cicili).
+
+### 7.2 Opt-in libraries and bindings
+
+These are **not** loaded by the prelude. Import the file, include the real
+header, and add the link flags. The import prefix is yours: with `:cu`,
+`(cu.get …)` is the front-end form.
+
+| import | needs | what it is |
+|---|---|---|
+| [`std/pthread/pthread.cicili`](lib/std/pthread/pthread.cicili) | `<pthread.h>` | pthread macros: `go`, `join`, `detach`, `cancel`, `exit-self`; the raw declarations are already in `std/c/posix` |
+| [`db/sqlite.cicili`](lib/db/sqlite.cicili) | `<sqlite3.h>`, `-lsqlite3` | SQLite3 with `open`/`exec`/`run`/`query`/`close`; prepare/bind/step/finalize is one form |
+| [`db/postgres.cicili`](lib/db/postgres.cicili) | `<libpq-fe.h>`, `-lpq` | libpq, same five-macro shape as SQLite |
+| [`net/curl.cicili`](lib/net/curl.cicili) | `<curl/curl.h>`, `-lcurl` | libcurl easy interface; typed option words (`timeout`, `ca-info`, `pin`, `tls-version`, `verify-peer`, `tls-time`) |
+| [`python/python.cicili`](lib/python/python.cicili) | `<Python.h>` first, `-export-dynamic -ldl` | CPython embedding API and numpy C API |
+| [`python/cpython.cicili`](lib/python/cpython.cicili), [`python/numpy.cicili`](lib/python/numpy.cicili) | as above | the two halves of the Python binding, importable alone |
+| [`python/module.cicili`](lib/python/module.cicili) | CPython | the other direction: a `.so` `import` loads, with functions written in Cicili |
+| [`cpp/torch/torch.cicili`](lib/cpp/torch/torch.cicili) | `<torch/torch.h>`, `:cpp #t` | libtorch, plus the network DSL; its parts are [`tensor`](lib/cpp/torch/tensor.cicili), [`nn`](lib/cpp/torch/nn.cicili), [`optim`](lib/cpp/torch/optim.cicili), [`data`](lib/cpp/torch/data.cicili), [`dsl`](lib/cpp/torch/dsl.cicili) |
+| [`cpp/memory.cicili`](lib/cpp/memory.cicili) | `<memory>`, `:cpp #t` | `std::shared_ptr` and `std::make_shared` |
+| [`cpp/dl.cicili`](lib/cpp/dl.cicili) | `<dlfcn.h>`, `:cpp #t` | `dlopen`, `dlsym`, `dladdr`, `Dl_info` |
+| [`cpp/zigurat/zigurat.cicili`](lib/cpp/zigurat/zigurat.cicili) | ZiguratIP `home/include`, `:cpp #t` | ZiguratIP behind one import; parts are [`stream`](lib/cpp/zigurat/stream.cicili), [`bigint`](lib/cpp/zigurat/bigint.cicili), [`sha`](lib/cpp/zigurat/sha.cicili), [`aes`](lib/cpp/zigurat/aes.cicili), [`der`](lib/cpp/zigurat/der.cicili), [`x509`](lib/cpp/zigurat/x509.cicili), [`tls`](lib/cpp/zigurat/tls.cicili) |
+| [`cpp/opencv/opencv.cicili`](lib/cpp/opencv/opencv.cicili) | `<opencv2/*.hpp>`, `:cpp #t`, pkg-config `opencv4` | OpenCV 4 declarations: `cv::Mat`, containers, imgcodecs, imgproc, drawing, dnn, objdetect, features2d, photo, video, videoio, calib3d, constants |
+| [`parsi/parsi.cicili`](lib/parsi/parsi.cicili) | ZiguratIP | macros for Parsi's seven objects; the import takes a third argument, the domain: `(import "lib/parsi/parsi.cicili" :parsi "demo")` |
+
+The **public surface and modes** of each binding are in its file and in
+[`lib/README.md`](lib/README.md); read the binding before using it. This skill
+does not restate those declarations.
+
+### 7.3 If something is missing
+
+- Add the declaration to `lib/std/c` or a new binding under `lib/`, with the
+  real header included by the target and the correct link flags.
+- A binding follows a `decl-`/`impl-` shape:
+  1. its own `DEFPACKAGE`;
+  2. `(DEFMACRO init-macro () \`($$$ …))` with the declarations and
+     `(typedef int NAME)` for constants, emitting no code;
+  3. a front-end macro for a C API with a dangerous or repetitive shape;
+  4. a separate `impl-` macro for code that must emit.
+- Do not copy a declaration from a consumer into `lib/`, and do not copy
+  `lib/` declarations into a consumer. That is how the two drift.
+- Use `(code …)` only for a typedef/constant the real C header exposes but
+  Cicili cannot spell, a genuinely unexposed declaration, or a compiler
+  builtin. It is not a place to re-declare a library whose declarations
+  already exist in `lib/`.
 
 ---
 
