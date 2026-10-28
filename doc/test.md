@@ -120,12 +120,12 @@ sed -n '/^Unhandled/,/^Backtrace/p' /tmp/cicili-run.log
 Parameters are named even where C would allow them unnamed: an unnamed parameter
 becomes `_`, and two of those in one list collide with "paramter exists".
 
-## Generated C is tracked on purpose
+## Generated C is not tracked
 
-`test/**/*.c` and `.h` are committed. They are the ground truth for what the
-backend actually emits, and reading them is usually faster than reasoning about
-the specifier. Object files, libtool files, `.run*` files and the binaries are
-ignored.
+`test/**/*.c` are generated from the `.cicili` sources and ignored; `run.sh`
+writes them before compiling. Read the file the transpiler writes when you want
+to see what the backend emitted. The generated headers remain tracked, and
+object files, libtool files, `.run*` files and the binaries are ignored.
 
 ## Clauses with known gaps
 

@@ -277,8 +277,8 @@
               ;; (get-universal-time), which is not a uniquifier at all: it has
               ;; one-second resolution, so two translation units compiled in
               ;; the same second collided, and it changed on every rebuild, so
-              ;; every regenerated .c differed from the committed one in names
-              ;; only. *target-file* + the gensym counter is both stronger and
+              ;; every regenerated .c differed from the previous emitted one in
+              ;; names only. *target-file* + the gensym counter is both stronger and
               ;; stable: the counter is reset per target (compiler.lisp), so
               ;; the pair is unique within a unit and the file name separates
               ;; the units.

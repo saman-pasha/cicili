@@ -156,10 +156,21 @@ benchmark/rust-vector-bench/main
 /benchmark/rust-vector-bench/target
 /_to_delete
 
+# ---- generated C outside test/ -------------------------------------------
+# These are targets of .cicili sources (or of the older Lisp front end). The
+# source of truth is the .cicili, not the emitted C.
+benchmark/*.c
+draft/fastcgi/router.c
+draft/tests/fastcgi/fastcgi_app.c
+draft/tests/pthread/pthread_atomic.c
+draft/types/dynamic.c
+lib/haskell/haskell.c
+
 # ---- test build artifacts -------------------------------------------------
-# test/ is now just c, std and haskell. The generated .c and .h are TRACKED on
-# purpose -- they are the ground truth for what the backend actually emits.
-# Everything below is rebuildable.
+# test/ is now just c, std and haskell. The generated .c are build output:
+# run.sh writes them from each .cicili before compiling. They are ignored; the
+# generated .h remain tracked. Everything below is rebuildable.
+test/**/*.c
 test/**/*.o
 test/**/*.lo
 test/**/*.la
