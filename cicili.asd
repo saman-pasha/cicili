@@ -2,7 +2,7 @@
   ;; THE VERSION, AND THE ONLY PLACE IT IS WRITTEN. `cicili.lisp --version'
   ;; reads it from here through ASDF and prints it alone on stdout, so a
   ;; script gets a bare number; CLAUDE.md carries the rule for moving it.
-  :version "3.2.0"
+  :version "3.3.0"
   :author  "Saman Heidarzadeh Pasha (saman.h.pasha@gmail.com)"
   :license "GPL-3.0 license"
   :depends-on ("sha1" "base64" "str" "cl-ppcre")

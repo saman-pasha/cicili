@@ -32,7 +32,20 @@
               (member blkcnt_t  st_blocks)
               (member time_t    st_atime)
               (member time_t    st_mtime)
-              (member time_t    st_ctime))
+              (member time_t    st_ctime)
+              ;; The same three times to the nanosecond, as struct timespec.
+              ;; POSIX.1-2008 names them st_atim/st_mtim/st_ctim (glibc,
+              ;; musl, the BSDs; glibc's st_mtime is #define'd to
+              ;; st_mtim.tv_sec); Darwin spells them st_atimespec,
+              ;; st_mtimespec and st_ctimespec. A declaration emits nothing,
+              ;; so both spellings are here and a target names the one its
+              ;; header has, under (@ifdef (code "__APPLE__")).
+              (member timespec  st_atim)
+              (member timespec  st_mtim)
+              (member timespec  st_ctim)
+              (member timespec  st_atimespec)
+              (member timespec  st_mtimespec)
+              (member timespec  st_ctimespec))
 
      ;;; ---- file type / mode constants ----
      (typedef mode_t S_IFMT)
