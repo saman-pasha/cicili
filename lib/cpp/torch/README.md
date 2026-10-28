@@ -371,12 +371,13 @@ the rest on the undeclared path — working, but with no return type to infer fr
 
 ## Examples
 
-All four are in [`example/`](../../../example) and all four run against real libtorch. The
-paths in their `make` forms are one machine's.
+The conformance check is [`test/cpp/libtorch.cicili`](../../../test/cpp/libtorch.cicili), in the
+suite and SKIPPED where libtorch is not installed; the other three are in
+[`example/`](../../../example). All four run against real libtorch.
 
 | file | what it shows |
 |---|---|
-| [torch.cicili](../../../example/torch.cicili) | the declarations, one assertion each — the conformance check |
+| [libtorch.cicili](../../../test/cpp/libtorch.cicili) | the declarations, one assertion each — the conformance check |
 | [mnist.cicili](../../../example/mnist.cicili) | MNIST **by hand**: the struct, the loop, no DSL |
 | [mnist-dsl.cicili](../../../example/mnist-dsl.cicili) | the same thing in the DSL — 5 lines against 23, identical numbers |
 | [mnist-conv.cicili](../../../example/mnist-conv.cicili) | a convolutional net: `image`, `conv`, `pool`, `flatten`, `dropout` |

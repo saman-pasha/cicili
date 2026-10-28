@@ -22,7 +22,7 @@
 ;;;;     PyArray_IS_C_CONTIGUOUS, or ask numpy for a contiguous copy first.
 ;;;;
 ;;;; The paths are this machine's. See example/numpy.cicili and
-;;;; example/torch.cicili.
+;;;; test/cpp/libtorch.cicili.
 
 (source "numpy_torch.cpp"
   (make :cpp #t

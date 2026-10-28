@@ -633,10 +633,11 @@ struct Net : public torch::nn::Module {
 > [torch_stub.hpp](../test/cpp/torch_stub.hpp), so it runs anywhere with nothing installed:
 > it checks that the declarations resolve, that members are found through them, that
 > inheriting `torch::nn::Module` works, and that `letin*` leaves destruction to C++.
-> [example/torch.cicili](../example/torch.cicili) builds against `<torch/torch.h>` and
-> links libtorch, so it checks the signatures against the real library — member templates,
-> autograd, `NoGradGuard`. It is not in `run.sh`, because it needs libtorch and the paths
-> in it are one machine's. Run it by hand.
+> [test/cpp/libtorch.cicili](../test/cpp/libtorch.cicili) builds against `<torch/torch.h>`
+> and links libtorch, so it checks the signatures against the real library — member
+> templates, autograd, `NoGradGuard`. It is in `run.sh` as well, and SKIPPED where libtorch
+> is not installed: its paths are the `{$TORCH_...}` tokens, and a token that cannot be
+> resolved on the machine is a SKIP, not a red.
 
 #### A DSL on top
 

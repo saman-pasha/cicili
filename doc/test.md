@@ -36,6 +36,21 @@ is not a verdict. `run.sh` also checks the transpiler log for an unhandled
 condition, for `cicili exited with status: (NIL NIL <non-zero>)` and for
 `error generated`, then runs the binary and requires exit 0.
 
+**A test that needs a library's header says so** on a line of its own,
+`;;;; needs: <libpq-fe.h>`, and `run.sh` looks for the header the way the test's
+own compile does, with the `-I` directories the test names (as C, then as
+C++). Where it is not installed the test is `SKIP needs <libpq-fe.h>, which is
+not installed` and is listed under `skipped:` after the totals, rather than red:
+a box without libpq is not a finding about the binding. `postgres` is the test
+that says so today; it also skips at run time when it can reach no server.
+
+**A test whose toolchain is not installed is skipped the same way.** Its paths
+are `{$TORCH_INCLUDE}`-style tokens that `config.lisp` resolves on the machine
+(`$LIBTORCH`, `$TORCH_ROOT`, else the pip package), and where one cannot be
+resolved the transpiler stops at `... cannot be resolved on this machine`, which
+`run.sh` reports as `SKIP needs {$TORCH_INCLUDE}: libtorch was not found`, the
+reason being the transpiler's own. `test/cpp/libtorch` is the test that needs it.
+
 `test/haskell` is skipped. The Haskell prelude load is commented out in
 `cicili.lisp` while `lib/std` is the focus, because its `match` would shadow the
 inference-driven one in `builtins.cicili`.
@@ -87,6 +102,7 @@ while the runner had been walking it all along.
 | `specialise` | `<>` specialisation reached as a METHOD, through `$` and `->`, and a macro dispatching on `CICILI:INFER-TYPE` — which is how Cicili spells an overload |
 | `torch` | `lib/cpp/torch` against `torch_stub.hpp`: tensors, autograd, `nn::Module`, and the `mean_t` dispatcher over a `code` escape |
 | `torch-fragment` | the C++ that `example/mnist-fragment.cicili` emits, compiled and run against the stub |
+| `libtorch` | `lib/cpp/torch` against the REAL libtorch, found through the `{$TORCH_...}` tokens: the signatures, member templates, autograd, `NoGradGuard`. SKIPPED where libtorch is not installed |
 
 `classifier-decl.cicili` is **not** a test. It holds declarations that
 `torch-fragment` imports, so it has no target and the runner reports it as

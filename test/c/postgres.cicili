@@ -10,6 +10,12 @@
 ;;;; is not the same finding as "the binding is wrong" and a suite that
 ;;;; conflated them would be red on every machine without postgres.
 ;;;;
+;;;; IT NEEDS LIBPQ'S HEADER TO BUILD AT ALL (Debian's libpq-dev, Homebrew's
+;;;; libpq), and the runner SKIPS the test where the header is not installed,
+;;;; by the line below -- the same finding as no server, said before the
+;;;; compile instead of by it:
+;;;; needs: <libpq-fe.h>
+;;;;
 ;;;; EVERYTHING IS IN A TEMPORARY TABLE, so the test leaves nothing behind and
 ;;;; two runs cannot see each other's rows -- a temp table dies with the
 ;;;; connection.

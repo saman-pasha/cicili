@@ -177,6 +177,8 @@ test/**/*.la
 test/**/.libs/
 test/**/*_test
 test/**/*_main
+# the one generated C++ under test/cpp that is not tracked: test/cpp/libtorch.cicili's
+test/cpp/libtorch.cpp
 # --separate keeps one file per resolver run
 test/**/*.run*.c
 test/**/*.run*.lo
@@ -205,7 +207,6 @@ example/mnist
 example/mnist_dsl
 example/mnist_conv
 example/tabular
-example/torch_example
 example/numpy_example
 example/numpy_torch
 example/numpy_ops

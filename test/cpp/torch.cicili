@@ -9,9 +9,9 @@
 ;;;
 ;;; It does NOT prove the signatures match the real libtorch: it compiles
 ;;; against test/cpp/torch_stub.hpp so that it runs anywhere, in the suite, with
-;;; nothing installed. That check is example/torch.cicili, which builds against
-;;; <torch/torch.h> and links libtorch -- run it by hand on a machine that has
-;;; libtorch, and it is where a wrong signature is caught.
+;;; nothing installed. That check is test/cpp/libtorch.cicili, which builds against
+;;; <torch/torch.h> and links libtorch -- in the suite too, and SKIPPED where
+;;; libtorch is not installed -- and it is where a wrong signature is caught.
 
 (source "torch.cpp"
   (make :cpp #t :compile #t :link ("-ltorch.o" "-o" "torch_test"))

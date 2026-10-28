@@ -25,7 +25,7 @@
 ;;;;
 ;;;;     TABULAR_CSV=housing.csv ./example/tabular
 ;;;;
-;;;; The paths in :compile and :link are this machine's. See example/torch.cicili.
+;;;; The paths in :compile and :link are this machine's. See test/cpp/libtorch.cicili.
 
 (source "tabular.cpp"
   (make :cpp #t

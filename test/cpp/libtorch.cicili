@@ -4,11 +4,19 @@
 ;;;; compiles against <torch/torch.h> and links libtorch, so a declaration in
 ;;;; lib/cpp/torch/ that does not match the real library fails here.
 ;;;;
-;;;; It is NOT in test/run.sh, because it needs libtorch installed and the paths
-;;;; below are this machine's. Build it by hand:
+;;;; IT IS IN THE SUITE, AND SKIPS WHERE LIBTORCH IS NOT INSTALLED. Its paths
+;;;; are the {$TORCH_...} tokens config.lisp resolves on the machine doing the
+;;;; build -- $LIBTORCH or $TORCH_ROOT, else the pip package's directory -- and
+;;;; where none of those answers, the transpiler stops at `{$TORCH_INCLUDE}
+;;;; cannot be resolved on this machine', which test/run.sh reports as SKIP: a
+;;;; box without libtorch is not a finding about the binding. It came from
+;;;; example/, where it was run by hand while those paths were one machine's.
 ;;;;
-;;;;     sbcl --script cicili.lisp ./example/torch.cicili
-;;;;     ./example/torch_example
+;;;;     sh test/run.sh test/cpp/libtorch
+;;;;
+;;;; THE LIBRARY DIRECTORY IS ITS RPATH, so the binary the runner starts finds
+;;;; libtorch.so without an LD_LIBRARY_PATH (the pip package's lib/ is on no
+;;;; loader path).
 ;;;;
 ;;;; On macOS the headers came from `brew install pytorch', which ships the C++
 ;;;; frontend under include/torch/csrc/api/include -- two -I flags, not one.
@@ -16,15 +24,16 @@
 ;;;; libtorch's own headers use a C++20 feature that -Werror would otherwise
 ;;;; reject.
 
-(source "torch_example.cpp"
+(source "libtorch.cpp"
   (make :cpp #t
         :compile ("-std=c++17" "-O3" "-Wno-c++20-extensions"
                   "-I{$TORCH_INCLUDE}"
                   "-I{$TORCH_API_INCLUDE}"
-                  "-c" "torch_example.cpp")
-        :link ("-ltorch_example.o"
-               "-L{$TORCH_LIBDIR}" "-ltorch" "-ltorch_cpu" "-lc10"
-               "-o" "torch_example"))
+                  "-c" "libtorch.cpp")
+        :link ("-llibtorch.o"
+               "-L{$TORCH_LIBDIR}" "-Wl,-rpath,{$TORCH_LIBDIR}"
+               "-ltorch" "-ltorch_cpu" "-lc10"
+               "-o" "libtorch_test"))
 
   (include <torch/torch.h>)
   (include <cstdio>)

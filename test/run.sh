@@ -28,7 +28,7 @@
 cd "$(dirname "$0")/.." || exit 1
 ROOT=$(pwd)
 LOG=/tmp/cicili-run.log
-pass=0; fail=0; failed=''
+pass=0; fail=0; failed=''; skipped=''
 
 # Binary name comes from the -o in a target's :link. Both spellings are matched:
 #   :link ("-lfoo.o" "-o" "foo_test")     list form, what `make' produces
@@ -60,7 +60,38 @@ run_one() {
     return
   fi
 
-  if ! sbcl --script cicili.lisp $CICILI_FLAGS "./$src" > "$LOG" 2>&1; then
+  # A TEST THAT NEEDS A LIBRARY'S HEADER SAYS SO, on a line of its own --
+  # `;;;; needs: <libpq-fe.h>' -- and is SKIPPED, by name, where the header
+  # is not installed: a box without libpq is not a finding about the binding,
+  # and a red that says so would be read as one. The header is looked for the
+  # way the test's own compile looks for it, with the -I directories the test
+  # names, as C and then as C++.
+  for h in $(sed -n 's/^;;*[[:space:]]*needs:[[:space:]]*<\([^>]*\)>.*/\1/p' "$src"); do
+    incs=$(grep -o -- '-I[^ "]*' "$src" | sort -u | tr '\n' ' ')
+    if ! printf '#include <%s>\n' "$h" | ${CC:-cc} -E -x c $incs - > /dev/null 2>&1 &&
+       ! printf '#include <%s>\n' "$h" | ${CXX:-c++} -E -x c++ $incs - > /dev/null 2>&1; then
+      echo "SKIP needs <$h>, which is not installed"
+      skipped="$skipped $src"
+      return
+    fi
+  done
+
+  sbcl --script cicili.lisp $CICILI_FLAGS "./$src" > "$LOG" 2>&1; tr=$?
+
+  # AND A TEST WHOSE TOOLCHAIN IS NOT INSTALLED IS SKIPPED, by the same rule:
+  # a {$TORCH_INCLUDE}-style token that config.lisp cannot resolve stops the
+  # transpiler with `... cannot be resolved on this machine' and the reason
+  # on the next line (libtorch was not found, no Python headers) -- which is
+  # the machine's answer, not the test's.
+  if grep -q 'cannot be resolved on this machine' "$LOG"; then
+    tok=$(grep -o '{\$[A-Z_]*} cannot be resolved' "$LOG" | head -1 | cut -d' ' -f1)
+    hint=$(sed -n '/cannot be resolved on this machine/{n;p;q;}' "$LOG" | sed 's/^[[:space:]]*//; s/\..*//')
+    echo "SKIP needs $tok: $hint"
+    skipped="$skipped $src"
+    return
+  fi
+
+  if [ "$tr" -ne 0 ]; then
     printf 'RED  transpile   '; why
     fail=$((fail+1)); failed="$failed $src"; return
   fi
@@ -123,4 +154,5 @@ fi
 echo
 echo "green: $pass   red: $fail"
 [ -n "$failed" ] && { echo "failed:"; for f in $failed; do echo "  $f"; done; }
+[ -n "$skipped" ] && { echo "skipped (what they need is not installed here):"; for f in $skipped; do echo "  $f"; done; }
 [ "$fail" -eq 0 ]

@@ -34,7 +34,7 @@
 ;;;; rather than the language. Reading the file and slicing batches with
 ;;;; `narrow' is the same program with more of it visible.
 ;;;;
-;;;; The paths in :compile and :link are this machine's. See example/torch.cicili.
+;;;; The paths in :compile and :link are this machine's. See test/cpp/libtorch.cicili.
 
 (source "mnist.cpp"
   (make :cpp #t
