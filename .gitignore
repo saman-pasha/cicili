@@ -235,3 +235,4 @@ test/guard/guard.cpp
 test/guard/guard.o
 test/guard/guard.lo
 test/guard/.libs/
+example/torch_example
